@@ -1,17 +1,45 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { MEETING_STATUS_META, type Meeting } from '@/lib/types/meetings'
+import { meetingsApi, type ExternalGEvent } from '@/lib/api/meetings'
 import { fmtTime } from './shared'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-export default function MeetingCalendarView({ meetings, onSelect }: { meetings: Meeting[]; onSelect: (id: string) => void }) {
+export default function MeetingCalendarView({
+  meetings,
+  onSelect,
+  orgId,
+  googleEnabled,
+}: {
+  meetings: Meeting[]
+  onSelect: (id: string) => void
+  orgId?: string
+  googleEnabled?: boolean
+}) {
   const [cursor, setCursor] = useState(() => {
     const d = new Date()
     return { year: d.getFullYear(), month: d.getMonth() }
   })
+
+  // Reverse view: the user's own external Google events for the visible month.
+  const [external, setExternal] = useState<ExternalGEvent[]>([])
+  useEffect(() => {
+    if (!googleEnabled || !orgId) {
+      setExternal([])
+      return
+    }
+    let alive = true
+    const from = new Date(cursor.year, cursor.month, 1, 0, 0, 0).toISOString()
+    const to = new Date(cursor.year, cursor.month + 1, 0, 23, 59, 59).toISOString()
+    meetingsApi
+      .googleEvents(orgId, from, to)
+      .then((r) => { if (alive) setExternal(r.events ?? []) })
+      .catch(() => { if (alive) setExternal([]) })
+    return () => { alive = false }
+  }, [googleEnabled, orgId, cursor.year, cursor.month])
 
   const byDate = useMemo(() => {
     const map = new Map<string, Meeting[]>()
@@ -24,6 +52,23 @@ export default function MeetingCalendarView({ meetings, onSelect }: { meetings: 
     }
     return map
   }, [meetings])
+
+  const externalByDate = useMemo(() => {
+    const map = new Map<string, ExternalGEvent[]>()
+    for (const e of external) {
+      let d: Date
+      if (e.allDay) {
+        const [y, mo, da] = e.start.slice(0, 10).split('-').map(Number)
+        d = new Date(y, (mo ?? 1) - 1, da ?? 1)
+      } else {
+        d = new Date(e.start)
+      }
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+      if (!map.has(key)) map.set(key, [])
+      map.get(key)!.push(e)
+    }
+    return map
+  }, [external])
 
   const firstDay = new Date(cursor.year, cursor.month, 1).getDay()
   const daysInMonth = new Date(cursor.year, cursor.month + 1, 0).getDate()
@@ -56,13 +101,15 @@ export default function MeetingCalendarView({ meetings, onSelect }: { meetings: 
         ))}
         {cells.map((day, i) => {
           const items = day ? byDate.get(`${cursor.year}-${cursor.month}-${day}`) ?? [] : []
+          const ext = day ? externalByDate.get(`${cursor.year}-${cursor.month}-${day}`) ?? [] : []
+          const meetingCap = ext.length ? 2 : 3
           return (
             <div key={i} className="bg-white min-h-[96px] p-1.5 align-top">
               {day && (
                 <>
                   <div className={['text-xs font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full', isToday(day) ? 'bg-[#2563EB] text-white' : 'text-[#475569]'].join(' ')}>{day}</div>
                   <div className="flex flex-col gap-1">
-                    {items.slice(0, 3).map((m) => {
+                    {items.slice(0, meetingCap).map((m) => {
                       const meta = MEETING_STATUS_META[m.status]
                       return (
                         <button
@@ -76,7 +123,20 @@ export default function MeetingCalendarView({ meetings, onSelect }: { meetings: 
                         </button>
                       )
                     })}
-                    {items.length > 3 && <span className="text-[11px] text-[#94A3B8] px-1">+{items.length - 3} more</span>}
+                    {items.length > meetingCap && <span className="text-[11px] text-[#94A3B8] px-1">+{items.length - meetingCap} more</span>}
+                    {/* External Google events — read-only, muted; click opens Google. */}
+                    {ext.slice(0, 2).map((e) => (
+                      <button
+                        key={e.googleEventId}
+                        onClick={() => { if (e.htmlLink) window.open(e.htmlLink, '_blank', 'noopener') }}
+                        className="w-full text-left text-[11px] leading-tight rounded px-1.5 py-1 truncate border border-dashed border-[#CBD5E1] bg-[#F8FAFC] text-[#64748B] flex items-center gap-1"
+                        title={`Google Calendar: ${e.title}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#94A3B8] shrink-0" />
+                        <span className="truncate">{e.allDay ? '' : `${fmtTime(e.start)} `}{e.title}</span>
+                      </button>
+                    ))}
+                    {ext.length > 2 && <span className="text-[11px] text-[#94A3B8] px-1">+{ext.length - 2} more from Google</span>}
                   </div>
                 </>
               )}
@@ -84,6 +144,12 @@ export default function MeetingCalendarView({ meetings, onSelect }: { meetings: 
           )
         })}
       </div>
+      {googleEnabled && (
+        <div className="mt-3 flex items-center gap-2 text-xs text-[#64748B]">
+          <span className="w-2.5 h-2.5 rounded-full border border-dashed border-[#CBD5E1] bg-[#F8FAFC]" />
+          Dashed items are your Google Calendar events (read-only). Meetings created here are mirrored to Google automatically.
+        </div>
+      )}
     </div>
   )
 }

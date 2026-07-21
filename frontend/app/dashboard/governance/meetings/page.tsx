@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { CalendarDays, List, Plus, Search, Video, MapPin, Users, Repeat, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth/context'
-import { meetingsApi } from '@/lib/api/meetings'
+import { meetingsApi, type GoogleSyncStatus } from '@/lib/api/meetings'
 import { getEmployees } from '@/lib/api/employees'
+import GoogleCalendarConnect from '@/components/meetings/GoogleCalendarConnect'
 import {
   TYPE_LABEL,
   type Meeting,
@@ -79,6 +80,24 @@ export default function MeetingsPage() {
   const [type, setType] = useState<MeetingType | ''>('')
   const [mine, setMine] = useState(false)
 
+  // Google Calendar connection (per-user). Owned here so the header button and the
+  // calendar's reverse view share one source of truth.
+  const [gcal, setGcal] = useState<GoogleSyncStatus | null>(null)
+  const refreshGcal = useCallback(() => {
+    meetingsApi.googleStatus().then(setGcal).catch(() => setGcal({ connected: false, configured: false }))
+  }, [])
+  useEffect(() => { refreshGcal() }, [refreshGcal])
+
+  // Handle the OAuth return (?gcal=connected|error): refresh status and clean the URL.
+  useEffect(() => {
+    const p = searchParams.get('gcal')
+    if (!p) return
+    if (p === 'connected') refreshGcal()
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('gcal')
+    router.replace(`/dashboard/governance/meetings${params.toString() ? `?${params.toString()}` : ''}`)
+  }, [searchParams, refreshGcal, router])
+
   const view = searchParams.get('view') === 'calendar' ? 'calendar' : 'list'
   function setView(v: 'list' | 'calendar') {
     const p = new URLSearchParams(searchParams.toString())
@@ -132,6 +151,7 @@ export default function MeetingsPage() {
           <Link href="/dashboard/governance/meetings/reports" className="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-[#475569] border border-[#E2E8F0] rounded-[8px] hover:bg-[#F8FAFC]">
             <BarChart3 size={16} /> Governance
           </Link>
+          <GoogleCalendarConnect status={gcal} onChanged={refreshGcal} />
           {perms.write && (
             <button onClick={() => setCreateOpen(true)} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px]">
               <Plus size={16} /> New Meeting
@@ -186,7 +206,12 @@ export default function MeetingsPage() {
         loading ? (
           <div className="p-10 text-center text-sm text-[#475569]">Loading…</div>
         ) : (
-          <MeetingCalendarView meetings={filtered} onSelect={(id) => router.push(`/dashboard/governance/meetings/${id}`)} />
+          <MeetingCalendarView
+            meetings={filtered}
+            onSelect={(id) => router.push(`/dashboard/governance/meetings/${id}`)}
+            orgId={orgId}
+            googleEnabled={!!gcal?.connected}
+          />
         )
       ) : (
         <ResponsiveTable

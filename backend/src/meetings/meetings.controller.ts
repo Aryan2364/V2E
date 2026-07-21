@@ -79,6 +79,20 @@ export class MeetingsController {
     return this.service.listDecisions(orgId, query);
   }
 
+  // ─── Google Calendar reverse view (the caller's OWN external events) ───────────
+  // Declared before ':id' so "google" isn't captured as a meeting id.
+  @Get('google/events')
+  @RequirePermission(MEETINGS, PermissionAction.read)
+  @ApiOperation({ summary: "The caller's external Google Calendar events in a window (deduped)" })
+  googleEvents(
+    @Param('orgId') orgId: string,
+    @Request() req: any,
+    @Query('from') from: string,
+    @Query('to') to: string,
+  ) {
+    return this.service.googleExternalEvents(orgId, actorOf(req), from, to);
+  }
+
   // ─── Busy view (organiser sees busy times before picking a slot) ──────────────
   @Post('busy')
   @RequirePermission(MEETINGS, PermissionAction.read)

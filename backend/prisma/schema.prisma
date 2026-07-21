@@ -218,6 +218,11 @@ model User {
   refresh_token          String?
   refresh_token_prev     String?
   refresh_token_prev_exp DateTime?
+  // Google Calendar OAuth refresh token for THIS user's own calendar. Stored
+  // ENCRYPTED at rest (AES-256-GCM), never raw — a DB leak must not hand out a
+  // live grant on someone's Google account. null = not connected. Each user
+  // connects their own calendar; the token is global to the user (not per-org).
+  google_refresh_token   String?
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
@@ -3378,6 +3383,13 @@ model Meeting {
   deleted_at         DateTime?
   deleted_by_user_id String?
   deletion_reason    String?          @db.Text
+  // Google Calendar mirror (forward sync). When the organiser has connected their
+  // Google account, this meeting is mirrored onto their primary calendar with the
+  // attendees invited by email. google_event_id = the mirrored event's id (used to
+  // update/delete it); google_ical_uid = its iCalUID, the stable key we dedupe on
+  // in the reverse view so a mirrored meeting doesn't show twice. null = not mirrored.
+  google_event_id    String?
+  google_ical_uid    String?
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
 

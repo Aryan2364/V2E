@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { PasswordResetService } from './password-reset.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { GcalModule } from '../gcal/gcal.module';
 
 @Module({
   imports: [
@@ -17,6 +18,10 @@ import { JwtStrategy } from './strategies/jwt.strategy';
         signOptions: { expiresIn: config.get<string>('JWT_EXPIRES_IN') as any },
       }),
     }),
+    // Google Calendar connect/callback/status/disconnect live under /api/v1/auth
+    // (the callback path registered with Google), so AuthController needs the
+    // GoogleAccountService.
+    GcalModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, PasswordResetService, JwtStrategy],

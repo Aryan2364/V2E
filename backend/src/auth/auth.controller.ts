@@ -1,7 +1,9 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Patch, Delete, Put } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Post, Body, UseGuards, Get, Param, Patch, Delete, Put, Query, Res } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { PasswordResetService } from './password-reset.service';
+import { GoogleAccountService } from '../gcal/google-account.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -18,6 +20,8 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private passwordResetService: PasswordResetService,
+    private googleAccounts: GoogleAccountService,
+    private config: ConfigService,
   ) {}
 
   @Post('register')
@@ -83,6 +87,51 @@ export class AuthController {
   @Get('my-orgs')
   myOrgs(@CurrentUser('id') userId: string) {
     return this.authService.getMyOrgs(userId);
+  }
+
+  // ─── Google Calendar (per-user OAuth, own calendar) ───────────────────────────
+  // The callback path (/api/v1/auth/google/callback) is what's registered with
+  // Google, so these routes live on the auth controller. url/status/disconnect are
+  // guarded; the callback is public (Google calls it) but carries a signed state.
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get the Google consent URL to connect the current user\'s calendar' })
+  @Get('google/url')
+  googleUrl(@CurrentUser('id') userId: string) {
+    return { url: this.googleAccounts.getConnectUrl(userId) };
+  }
+
+  @ApiOperation({ summary: 'OAuth redirect target — exchanges the code and stores the token' })
+  @Get('google/callback')
+  async googleCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Res() res: any,
+  ) {
+    const base = this.config.get<string>('FRONTEND_URL') ?? '';
+    const dest = `${base}/dashboard/governance/meetings`;
+    if (!code || !state) return res.redirect(`${dest}?gcal=error`);
+    try {
+      await this.googleAccounts.handleCallback(code, state);
+      return res.redirect(`${dest}?gcal=connected`);
+    } catch {
+      return res.redirect(`${dest}?gcal=error`);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('google/status')
+  googleStatus(@CurrentUser('id') userId: string) {
+    return this.googleAccounts.getStatus(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Delete('google')
+  googleDisconnect(@CurrentUser('id') userId: string) {
+    return this.googleAccounts.disconnect(userId);
   }
 
   // ─── Admin user management (super admin only) ─────────────────────────────────

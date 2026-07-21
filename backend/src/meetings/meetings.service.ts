@@ -16,6 +16,7 @@ import { PermissionsService, principalFromUser } from '../access-rights/permissi
 import { SubjectEligibilityService } from '../access-rights/subject-eligibility.service';
 import { ScopeService } from '../access-rights/scope.service';
 import { AccessVisibilityService } from '../access-rights/access-visibility.service';
+import { MeetingGoogleSyncService } from '../gcal/meeting-google-sync.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import {
   UpdateMeetingDto,
@@ -76,6 +77,7 @@ export class MeetingsService {
     private readonly subjects: SubjectEligibilityService,
     private readonly scope: ScopeService,
     private readonly visibility: AccessVisibilityService,
+    private readonly gsync: MeetingGoogleSyncService,
   ) {
     this.scope.registerWiredList(MEETING);
     this.visibility.registerCounter(MEETING, (orgId, userId) =>
@@ -187,6 +189,9 @@ export class MeetingsService {
       });
     }
 
+    // Mirror to the organiser's Google Calendar (best-effort; never blocks).
+    await this.gsync.syncUpsert(orgId, meeting.id);
+
     return this.getOne(orgId, actor, meeting.id);
   }
 
@@ -219,6 +224,15 @@ export class MeetingsService {
         _count: { select: { attendees: true, action_items: true, decisions: true } },
       },
     });
+  }
+
+  // Reverse view: the caller's own external Google events in [from, to], deduped
+  // against meetings already mirrored to them. Fail-soft (empty on any problem).
+  async googleExternalEvents(orgId: string, actor: Actor, from?: string, to?: string) {
+    if (!from || !to || isNaN(Date.parse(from)) || isNaN(Date.parse(to))) {
+      return { connected: false, configured: true, events: [] };
+    }
+    return this.gsync.listExternalForUser(orgId, actor.id, from, to);
   }
 
   async getOne(orgId: string, actor: Actor, id: string) {
@@ -329,6 +343,9 @@ export class MeetingsService {
       }
     }
 
+    // Re-mirror the edited meeting (time/title/attendees) to Google.
+    await this.gsync.syncUpsert(orgId, id);
+
     return this.getOne(orgId, actor, id);
   }
 
@@ -339,6 +356,8 @@ export class MeetingsService {
       where: { id },
       data: { is_deleted: true, deleted_at: new Date(), deleted_by_user_id: actor.id, deletion_reason: reason ?? null },
     });
+    // Remove the organiser's Google mirror for the now-deleted meeting.
+    await this.gsync.syncDelete(meeting.created_by_user_id, (meeting as any).google_event_id);
     await this.audit.record({
       orgId, actorId: actor.id, action: 'delete', resource: 'meeting',
       entityId: id, entityLabel: meeting.title,
@@ -451,7 +470,12 @@ export class MeetingsService {
   async cancel(orgId: string, actor: Actor, id: string, reason?: string) {
     const meeting = await this.findOrFail(orgId, id);
     await this.requireManage(orgId, meeting, actor);
-    await this.prisma.meeting.update({ where: { id }, data: { status: 'cancelled' } });
+    await this.prisma.meeting.update({
+      where: { id },
+      data: { status: 'cancelled', google_event_id: null, google_ical_uid: null },
+    });
+    // Pull the mirror off the organiser's Google Calendar (notifies attendees).
+    await this.gsync.syncDelete(meeting.created_by_user_id, (meeting as any).google_event_id);
     await this.audit.record({ orgId, actorId: actor.id, action: 'update', resource: 'meeting', entityId: id, entityLabel: meeting.title, changes: { status: { before: meeting.status, after: 'cancelled' } } });
     const attendees = await this.prisma.meetingAttendee.findMany({ where: { meeting_id: id } });
     await this.notifications.emit({
