@@ -75,13 +75,14 @@ export default function TopNav() {
   }, [user?.organizationId])
 
   // Until entitlements load, show everything (avoids a flash of missing tabs).
-  const workModules = ['tasks', 'projects', 'workflows', 'tickets'] as const
+  const workModules = ['tasks', 'projects', 'workflows', 'tickets', 'delegation'] as const
   const firstEnabledWorkModule = workModules.find((module) => entitlements?.[module] !== 'off')
   const workHref: Record<(typeof workModules)[number], string> = {
     tasks: '/dashboard/tasks',
     projects: '/dashboard/projects',
     workflows: '/dashboard/tasks/workflows',
     tickets: '/dashboard/tasks/tickets',
+    delegation: '/dashboard/tasks/delegation',
   }
   const visibleNav = NAV_ITEMS
     .filter((item) => {
@@ -253,14 +254,15 @@ export default function TopNav() {
 
       {/* User menu */}
       {user && (
-        <div className="relative px-6 shrink-0" ref={menuRef}>
+        <div className="relative px-3 sm:px-4 shrink-0" ref={menuRef}>
           <button
             onClick={() => setOpen((v) => !v)}
-            className="flex items-center gap-2.5 rounded-[8px] px-2 py-1.5 hover:bg-[#F1F5F9] transition-colors"
+            className="flex items-center gap-2.5 rounded-[8px] px-2 py-1.5 hover:bg-[#F1F5F9] transition-colors max-w-[52vw]"
           >
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-[#0F172A] leading-tight">{user.name}</p>
-              <p className="text-xs text-[#64748B] leading-tight">
+            {/* Cap + truncate so a long org name can't push the avatar off-screen */}
+            <div className="text-right hidden sm:block min-w-0 max-w-[150px] lg:max-w-[200px] xl:max-w-[240px]">
+              <p className="text-sm font-semibold text-[#0F172A] leading-tight truncate">{user.name}</p>
+              <p className="text-xs text-[#64748B] leading-tight truncate">
                 {currentOrg?.organization.name
                   ? `${currentOrg.organization.name} · ${roleLabel}`
                   : roleLabel}

@@ -11,7 +11,7 @@ import { MailService } from '../mail/mail.service';
 import { CreateOrgWithAdminDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { UpdateEntitlementsDto } from './dto/update-entitlements.dto';
-import { PERMISSION_REGISTRY, ENTITLEMENT_MODULE_KEYS } from '../access-rights/permission-registry';
+import { PERMISSION_REGISTRY, ENTITLEMENT_MODULE_KEYS, ENTITLEMENT_DEFAULT_BY_KEY } from '../access-rights/permission-registry';
 import { seedDefaultSystemRoles } from '../access-rights/default-system-roles';
 import { seedTaskMasters } from '../task-masters/seed-task-masters';
 
@@ -139,12 +139,18 @@ export class OrganizationsService {
     return this.getEntitlements(orgId);
   }
 
-  /** Seed all controlled modules to `full` for an org (new orgs + backfill). Idempotent. */
-  async seedEntitlements(orgId: string, state: EntitlementState = EntitlementState.full) {
+  /**
+   * Seed all controlled modules for an org (new orgs + backfill). Idempotent —
+   * only fills in missing rows, never overwrites an existing state. When `state`
+   * is omitted each module seeds to its per-key default (most `full`; opt-out
+   * modules like Delegation seed `off`); pass a state to force them all alike.
+   */
+  async seedEntitlements(orgId: string, state?: EntitlementState) {
     for (const key of ENTITLEMENT_MODULE_KEYS) {
+      const seed = state ?? ((ENTITLEMENT_DEFAULT_BY_KEY[key] ?? 'full') as EntitlementState);
       await this.prisma.orgModuleEntitlement.upsert({
         where: { organization_id_module_key: { organization_id: orgId, module_key: key } },
-        create: { organization_id: orgId, module_key: key, state },
+        create: { organization_id: orgId, module_key: key, state: seed },
         update: {},
       });
     }
@@ -222,12 +228,13 @@ export class OrganizationsService {
         data: { organization_id: organization.id, user_id: adminUser.id, is_admin: true, is_active: true },
       });
 
-      // Entitle all modules at `full` by default; the vendor can downgrade later.
+      // Seed each module to its per-key default (most `full`; opt-out modules like
+      // Delegation seed `off` and stay dark until the vendor hands them over).
       await tx.orgModuleEntitlement.createMany({
         data: ENTITLEMENT_MODULE_KEYS.map((module_key) => ({
           organization_id: organization.id,
           module_key,
-          state: EntitlementState.full,
+          state: (ENTITLEMENT_DEFAULT_BY_KEY[module_key] ?? 'full') as EntitlementState,
         })),
         skipDuplicates: true,
       });

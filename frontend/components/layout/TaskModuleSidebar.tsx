@@ -24,6 +24,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  ArrowRightLeft,
 } from 'lucide-react'
 
 interface NavItem {
@@ -50,7 +51,7 @@ const TASK_CONFIG_LEAVES = [
 
 interface NavGroup {
   label?: string
-  module: 'tasks' | 'projects' | 'workflows' | 'tickets'
+  module: 'tasks' | 'projects' | 'workflows' | 'tickets' | 'delegation'
   items: NavItem[]
 }
 
@@ -95,6 +96,15 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Assigned to Me', href: '/dashboard/tasks/tickets/assigned', Icon: Ticket },
       { label: 'Archive', href: '/dashboard/tasks/tickets/archive', Icon: Archive },
       { label: 'Reports', href: '/dashboard/tasks/tickets/reports', Icon: BarChart2 },
+    ],
+  },
+  {
+    // Sold separately and OFF by default — this whole group stays hidden until the
+    // vendor enables the `delegation` entitlement for the org (super-admin portal).
+    label: 'Delegation',
+    module: 'delegation',
+    items: [
+      { label: 'Delegation', href: '/dashboard/tasks/delegation', Icon: ArrowRightLeft },
     ],
   },
   {
@@ -143,6 +153,11 @@ export default function TaskModuleSidebar() {
     TASK_CONFIG_LEAVES.some(
       (k) => can(k, 'write') || can(k, 'edit') || can(k, 'delete'),
     )
+
+  // While the "Delegated to me" view is hidden, Delegation is a delegators-only
+  // tool — so a user who can't delegate shouldn't even see the nav entry. (Restore
+  // by loosening this alongside re-enabling the incoming view in the page.)
+  const canDelegate = isAdmin || can('delegation.delegation.manage', 'write')
 
   function toggleCollapsed() {
     setCollapsed((c) => {
@@ -198,6 +213,9 @@ export default function TaskModuleSidebar() {
         {NAV_GROUPS.map((group, gi) => {
           const entitlementState = entitlements?.[group.module]
           if (entitlementState === 'off') return null
+          // Delegation section is visible only to people who can delegate (its
+          // recipient view is currently hidden — see canDelegate above).
+          if (group.module === 'delegation' && !canDelegate) return null
           const visibleItems = group.items.filter((item) => {
             if (item.taskConfigGated) return canSeeMasters
             if (item.multiOrgOnly && !multiOrg) return false

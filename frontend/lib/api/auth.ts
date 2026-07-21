@@ -65,8 +65,8 @@ export async function logout(): Promise<void> {
   await apiClient.post('/api/v1/auth/logout');
 }
 
-export async function getMe(): Promise<AuthUser> {
-  const { data } = await apiClient.get<ApiResponse<AuthUser>>('/api/v1/auth/me');
+export async function getMe(config?: import('axios').AxiosRequestConfig): Promise<AuthUser> {
+  const { data } = await apiClient.get<ApiResponse<AuthUser>>('/api/v1/auth/me', config);
   return data.data;
 }
 

@@ -41,11 +41,21 @@ export interface PermissionSubModule {
   features: PermissionLeaf[];
 }
 
+/** Entitlement ceiling states a module can be seeded/set to. Mirrors the Prisma `EntitlementState` enum. */
+export type EntitlementDefault = 'full' | 'preview' | 'off';
+
 export interface PermissionModule {
   key: string;
   label: string;
   /** When true, this module sits under the per-org entitlement ceiling. */
   entitlementControlled: boolean;
+  /**
+   * State a *new* org is seeded to for this module. Defaults to `full` (the
+   * vendor sells everything on by default and downgrades later). Set to `off`
+   * for modules that must stay dark until the vendor explicitly hands them over
+   * per-org. Ignored for non-entitlement-controlled modules.
+   */
+  defaultEntitlement?: EntitlementDefault;
   subModules: PermissionSubModule[];
 }
 
@@ -200,6 +210,35 @@ export const PERMISSION_REGISTRY: PermissionModule[] = [
         features: [
           feature('projects.project.manage', 'Projects'),
           subject('projects.subject.member', 'Can be a project member'),
+        ],
+      },
+    ],
+  },
+  {
+    // Delegation lives inside the Work area (a section of the Work sidebar). It is
+    // sold separately and stays OFF for every org until the vendor hands it over
+    // per-org from the super-admin portal — hence `defaultEntitlement: 'off'`.
+    // Leafless for now (no permission switches) — the page is a placeholder to be
+    // designed; the module exists so the commercial ceiling + nav gating work.
+    key: 'delegation',
+    label: 'Delegation',
+    entitlementControlled: true,
+    defaultEntitlement: 'off',
+    subModules: [
+      {
+        key: 'delegation.management',
+        label: 'Delegation management',
+        features: [
+          // `write` = who may CREATE (delegate); `delete` = who may remove one. Both
+          // default OFF for non-admins (admins hold them implicitly), so delegation
+          // is admin-only until a role is granted it on the Access Rights page. Read
+          // and edit stay participation-based (delegator/owner) — no dead toggles.
+          feature(
+            'delegation.delegation.manage',
+            'Delegations',
+            [PermissionAction.write, PermissionAction.delete],
+            'Who can delegate (create) and delete delegations',
+          ),
         ],
       },
     ],
@@ -414,3 +453,17 @@ export const ALL_MODULE_KEYS: string[] = PERMISSION_REGISTRY.map((m) => m.key);
 export const ENTITLEMENT_MODULE_KEYS: string[] = PERMISSION_REGISTRY.filter(
   (m) => m.entitlementControlled,
 ).map((m) => m.key);
+
+/**
+ * Per-module seed state for a NEW org. Most modules default to `full`; a module
+ * can opt into `off` (e.g. Delegation) so it stays dark until the vendor hands it
+ * over per-org. Existing orgs are unaffected — a module with no stored row already
+ * reads as `off` via `entitlementMap`.
+ */
+export const ENTITLEMENT_DEFAULT_BY_KEY: Record<string, EntitlementDefault> =
+  Object.fromEntries(
+    PERMISSION_REGISTRY.filter((m) => m.entitlementControlled).map((m) => [
+      m.key,
+      m.defaultEntitlement ?? 'full',
+    ]),
+  );

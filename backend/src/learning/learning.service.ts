@@ -9,6 +9,7 @@ import {
   LearningPathStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { R2Service } from '../storage/r2.service';
 import { CreateLearningPathDto } from './dto/create-learning-path.dto';
 import { UpdateLearningPathDto } from './dto/update-learning-path.dto';
 import { CreateLearningItemDto } from './dto/create-learning-item.dto';
@@ -28,7 +29,27 @@ const PATH_INCLUDE = {
 
 @Injectable()
 export class LearningService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly r2: R2Service,
+  ) {}
+
+  /**
+   * Best-effort purge of the R2 objects backing a set of items (the original file
+   * plus any converted preview PDF). Deleting the DB row alone would orphan these
+   * bytes in the bucket — the only other place they're cleaned up is a file replace
+   * in LearningFilesService.uploadItemFile.
+   */
+  private async purgeItemObjects(
+    items: { storage_key: string | null; preview_storage_key: string | null }[],
+  ) {
+    const keys = items.flatMap((i) =>
+      [i.storage_key, i.preview_storage_key].filter((k): k is string => !!k),
+    );
+    // deleteObject already swallows errors (best-effort), so one missing object
+    // never blocks the DB delete.
+    await Promise.all(keys.map((k) => this.r2.deleteObject(k)));
+  }
 
   // ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -119,7 +140,15 @@ export class LearningService {
 
   async deletePath(pathId: string, orgId: string) {
     await this.findOnePath(pathId, orgId);
-    return this.prisma.learningPath.delete({ where: { id: pathId } });
+    // Collect the file objects of every item under this path before the DB cascade
+    // (onDelete: Cascade) wipes the rows, then purge them from R2.
+    const items = await this.prisma.learningItem.findMany({
+      where: { path_id: pathId },
+      select: { storage_key: true, preview_storage_key: true },
+    });
+    const deleted = await this.prisma.learningPath.delete({ where: { id: pathId } });
+    await this.purgeItemObjects(items);
+    return deleted;
   }
 
   // ─── Items ──────────────────────────────────────────────────────────────────
@@ -160,7 +189,10 @@ export class LearningService {
       where: { id: itemId, path_id: pathId },
     });
     if (!item) throw new NotFoundException(`Item ${itemId} not found`);
-    return this.prisma.learningItem.delete({ where: { id: itemId } });
+    const deleted = await this.prisma.learningItem.delete({ where: { id: itemId } });
+    // Purge the file + preview objects so deleting a material also frees the R2 bytes.
+    await this.purgeItemObjects([item]);
+    return deleted;
   }
 
   async reorderItems(pathId: string, orgId: string, dto: ReorderItemsDto) {

@@ -3960,3 +3960,57 @@ model ProcessTemplate {
 }
 
 
+
+// ─── Delegation ───────────────────────────────────────────────────────────────
+// A management "hand-off": a delegator transfers ownership of an outcome to an
+// owner, with measurable success criteria and a first review date. On creation a
+// linked review Task is spawned for the delegator (see review_task_id). Lives
+// inside the Work area; gated by the `delegation` entitlement (OFF by default).
+enum DelegationStatus {
+  active
+  completed
+  cancelled
+}
+
+model Delegation {
+  id                 String           @id @default(uuid())
+  organization_id    String
+  title              String
+  outcome            String           @db.Text
+  owner_user_id      String // the person the outcome is delegated TO
+  created_by_user_id String // the delegator
+  kra                String?          @db.Text // free text in v1
+  running_by         DateTime? // date the owner should be fully running this by
+  first_check_in     DateTime? // first review date
+  status             DelegationStatus @default(active)
+  review_task_id     String? // the auto-created review task for the delegator
+  completed_at       DateTime?
+  cancelled_at       DateTime?
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
+  criteria DelegationCriterion[]
+
+  @@index([organization_id])
+  @@index([owner_user_id])
+  @@index([created_by_user_id])
+  @@map("delegations")
+}
+
+// A single measurable "what done looks like" line for a delegation.
+model DelegationCriterion {
+  id              String   @id @default(uuid())
+  organization_id String
+  delegation_id   String
+  description     String   @db.Text // what done looks like
+  target          String? // the measurable target (e.g. "95%", "by Q3")
+  is_met          Boolean  @default(false)
+  order_index     Int      @default(0)
+  created_at      DateTime @default(now())
+
+  delegation Delegation @relation(fields: [delegation_id], references: [id], onDelete: Cascade)
+
+  @@index([delegation_id])
+  @@index([organization_id])
+  @@map("delegation_criteria")
+}

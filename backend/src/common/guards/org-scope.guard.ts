@@ -15,6 +15,7 @@ const SEGMENT_TO_MODULE: Record<string, string> = {
   tickets: 'tickets',
   workflows: 'workflows',
   projects: 'projects',
+  delegations: 'delegation',
   learning: 'learning',
   announcements: 'communication',
   bulletin: 'communication',

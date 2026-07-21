@@ -53,6 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [pendingOrgSelection, setPendingOrgSelection] = useState<OrgChoice[] | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function restoreSession() {
       const token = typeof window !== 'undefined'
         ? localStorage.getItem('access_token')
@@ -63,18 +65,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      try {
-        const me = await getMe();
-        setUser(me);
-      } catch {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-      } finally {
-        setIsLoading(false);
+      // On a cold start the Next dev proxy route and the backend build are still
+      // compiling on-demand, so the very first /auth/me can stall for many
+      // seconds. Give each attempt a bounded timeout and retry a few times so the
+      // boot self-heals instead of hanging the splash forever (previously this
+      // needed a manual page reload). A definitive auth failure (401) is already
+      // handled by the axios interceptor (refresh → redirect), so it won't retry.
+      const MAX_ATTEMPTS = 4;
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS && !cancelled; attempt++) {
+        try {
+          const me = await getMe({ timeout: 15_000 });
+          if (!cancelled) setUser(me);
+          break;
+        } catch (err) {
+          const status = (err as { response?: { status?: number } })?.response?.status;
+
+          // Genuine "session is gone" — clear it and stop. (A 401 that could be
+          // refreshed never reaches here; the interceptor handles those.)
+          if (status === 401 || status === 403) {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            break;
+          }
+
+          // Transient (timeout / network blip / cold-start 5xx): keep the session
+          // and retry with a short backoff. Only give up after the last attempt —
+          // and even then, keep the tokens so a later reload can recover.
+          if (attempt === MAX_ATTEMPTS) break;
+          await new Promise((r) => setTimeout(r, 600 * attempt));
+        }
       }
+
+      if (!cancelled) setIsLoading(false);
     }
 
     restoreSession();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Proactively refresh the access token shortly before it expires, so background
