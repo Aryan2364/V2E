@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CheckCircle2, ChevronLeft, ChevronRight, LayoutDashboard, Target } from 'lucide-react'
+import { CheckCircle2, ChevronLeft, ChevronRight, LayoutDashboard, LayoutGrid, Target } from 'lucide-react'
 import Tooltip from '@/components/ui/Tooltip'
 import { useAuth } from '@/lib/auth/context'
 import { goalsApi } from '@/lib/api/goals'
@@ -11,6 +11,7 @@ import { goalsApi } from '@/lib/api/goals'
 const NAV_ITEMS = [
   { key: 'list', label: 'Goals', href: '/goals/list', Icon: Target },
   { key: 'checkins', label: 'My check-ins', href: '/goals/my-check-ins', Icon: CheckCircle2 },
+  { key: 'scorecard', label: 'Balance Scorecard', href: '/goals/scorecard', Icon: LayoutGrid },
   { key: 'dashboard', label: 'Dashboard', href: '/goals/dashboard', Icon: LayoutDashboard },
 ]
 

@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/Toast'
 import { usePermissions } from '@/lib/auth/use-permissions'
 import { goalsApi } from '@/lib/api/goals'
 import { projectsApi } from '@/lib/api/projects'
-import { STATUS_META, type Goal } from '@/lib/types/goals'
+import { STATUS_META, type Goal, type GoalFocusArea } from '@/lib/types/goals'
 import type { Project } from '@/lib/types/projects'
 import GoalFormFields, {
   labelClass,
@@ -23,6 +23,7 @@ const EMPTY: GoalFormState = {
   title: '',
   description: '',
   ownerUserId: '',
+  focusArea: '',
   dueDate: '',
   targetValue: '',
   unit: '',
@@ -39,6 +40,8 @@ interface Props {
   onCreated: (goal: Goal) => void
   /** Pre-fills the owner (e.g. the current user creating their own goal). */
   defaultOwnerId?: string
+  /** Pre-fills the focus area (e.g. opened from a Balance Scorecard quadrant). */
+  defaultFocusArea?: GoalFocusArea
   /**
    * Whether this form offers the supporting-goal and project pickers. False for
    * the nested "new supporting goal" form opened FROM those pickers — otherwise
@@ -65,6 +68,7 @@ export default function CreateGoalModal({
   employees,
   onCreated,
   defaultOwnerId,
+  defaultFocusArea,
   allowLinking = true,
 }: Props) {
   const { addToast } = useToast()
@@ -106,11 +110,11 @@ export default function CreateGoalModal({
   // half-typed input is never lost behind a quick-create.
   useEffect(() => {
     if (!isOpen) return
-    setForm({ ...EMPTY, ownerUserId: defaultOwnerId ?? '' })
+    setForm({ ...EMPTY, ownerUserId: defaultOwnerId ?? '', focusArea: defaultFocusArea ?? '' })
     setSupportingIds([])
     setProjectIds([])
     loadPools()
-  }, [isOpen, defaultOwnerId, loadPools])
+  }, [isOpen, defaultOwnerId, defaultFocusArea, loadPools])
 
   const patch = (p: Partial<GoalFormState>) => setForm((f) => ({ ...f, ...p }))
 
@@ -145,6 +149,7 @@ export default function CreateGoalModal({
         title: form.title.trim(),
         description: form.description.trim() || undefined,
         owner_user_id: form.ownerUserId,
+        focus_area: form.focusArea || undefined,
         due_date: new Date(`${form.dueDate}T00:00:00`).toISOString(),
         target_value: target ? parseFloat(target.replace(/,/g, '')) : undefined,
         unit: form.unit.trim() || undefined,
