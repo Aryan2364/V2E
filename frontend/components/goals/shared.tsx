@@ -1,10 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { RefreshCw } from 'lucide-react'
 import { getMyPermissions } from '@/lib/api/permissions'
 import { getEmployees } from '@/lib/api/employees'
 import { getDepartments } from '@/lib/api/departments'
-import { STATUS_META, formatValue, type GoalStatus } from '@/lib/types/goals'
+import {
+  FOCUS_AREA_META,
+  STATUS_META,
+  formatValue,
+  type GoalFocusArea,
+  type GoalStatus,
+} from '@/lib/types/goals'
 import type { DeptOption, EmployeeOption } from './GoalFormFields'
 
 // ─── Formatting ────────────────────────────────────────────────────────────────
@@ -63,6 +70,32 @@ export function GoalStatusBadge({ status, withDot = true }: { status: GoalStatus
     >
       {withDot && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: m.dot }} />}
       {m.label}
+    </span>
+  )
+}
+
+/**
+ * Which part of the business the goal moves. Nothing shown when unset.
+ * `compact` uses the short label so it fits a table column; the full label
+ * carries the `title` either way, so nothing is lost by abbreviating.
+ */
+export function FocusAreaBadge({
+  focus,
+  compact = false,
+}: {
+  focus: GoalFocusArea | null | undefined
+  compact?: boolean
+}) {
+  if (!focus) return null
+  const m = FOCUS_AREA_META[focus]
+  return (
+    <span
+      title={m.label}
+      className="inline-flex items-center gap-1.5 font-medium text-[12px] rounded-full px-2.5 py-0.5 border whitespace-nowrap"
+      style={{ backgroundColor: m.bg, color: m.text, borderColor: m.border }}
+    >
+      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: m.dot }} />
+      {compact ? m.short : m.label}
     </span>
   )
 }
@@ -150,9 +183,22 @@ export interface GoalPerms {
 
 const FALLBACK: GoalPerms = { read: false, write: false, edit: false, delete: false }
 
-export function useGoalPermissions(orgId: string): { perms: GoalPerms; loading: boolean } {
+export function useGoalPermissions(orgId: string): {
+  perms: GoalPerms
+  loading: boolean
+  /**
+   * The permissions request itself failed (backend down, network blip, token
+   * refresh). This is NOT the same as being denied — callers must show a retry,
+   * never "you don't have access", which would be a flat lie and has scared
+   * people into thinking their role was changed.
+   */
+  failed: boolean
+  retry: () => void
+} {
   const [perms, setPerms] = useState<GoalPerms>(FALLBACK)
   const [loading, setLoading] = useState(true)
+  const [failed, setFailed] = useState(false)
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     let active = true
@@ -160,18 +206,49 @@ export function useGoalPermissions(orgId: string): { perms: GoalPerms; loading: 
       setLoading(false)
       return
     }
+    setLoading(true)
+    setFailed(false)
     getMyPermissions(orgId)
       .then((res) => {
-        if (active) setPerms(res.leaves?.goals ?? FALLBACK)
+        if (!active) return
+        setPerms(res.leaves?.goals ?? FALLBACK)
+        setFailed(false)
       })
-      .catch(() => active && setPerms(FALLBACK))
+      .catch(() => {
+        if (!active) return
+        setPerms(FALLBACK)
+        setFailed(true)
+      })
       .finally(() => active && setLoading(false))
     return () => {
       active = false
     }
-  }, [orgId])
+  }, [orgId, attempt])
 
-  return { perms, loading }
+  return { perms, loading, failed, retry: () => setAttempt((a) => a + 1) }
+}
+
+/**
+ * Shown when we could not find out what this person is allowed to do — as
+ * opposed to knowing they aren't allowed. Almost always a backend that is down
+ * or restarting.
+ */
+export function PermissionsUnavailable({ onRetry }: { onRetry: () => void }) {
+  return (
+    <EmptyState
+      icon={<RefreshCw size={26} />}
+      title="Couldn’t check your access"
+      subtitle="We couldn’t reach the server to confirm what you can see. This is a connection problem, not a change to your permissions."
+      action={
+        <button
+          onClick={onRetry}
+          className="mt-1 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold transition-colors"
+        >
+          <RefreshCw size={15} /> Try again
+        </button>
+      }
+    />
+  )
 }
 
 // ─── Reference data (owners + departments) ────────────────────────────────────
@@ -201,7 +278,13 @@ export function useGoalRefData(orgId: string): {
             department_name: e.department?.name ?? null,
           })),
         )
-        setDepartments((depts as any[]).map((d) => ({ id: d.id, name: d.name })))
+        setDepartments(
+          (depts as any[]).map((d) => ({
+            id: d.id,
+            name: d.name,
+            parent_department_id: d.parent_department_id ?? null,
+          })),
+        )
       },
     )
     return () => {

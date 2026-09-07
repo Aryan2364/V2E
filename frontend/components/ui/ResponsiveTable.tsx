@@ -45,6 +45,13 @@ interface ResponsiveTableProps<T> {
   headerRowClassName?: string
   /** Override each header cell (th) bg + text — e.g. white-on-blue. Defaults to gray-on-light. */
   headerCellClassName?: string
+  /**
+   * Minimum width of the table itself (px or any CSS length). Without this the
+   * table is `w-full` and SHRINKS to fit, so a wide column set silently squashes
+   * instead of overflowing — and no horizontal scrollbar ever appears. Set it on
+   * column-heavy tables so they scroll rather than cramming.
+   */
+  minTableWidth?: number | string
 }
 
 const alignClass = {
@@ -75,6 +82,7 @@ export default function ResponsiveTable<T>({
   scrollContainerRef,
   headerRowClassName = 'bg-[#F8FAFC] border-b border-[#E2E8F0]',
   headerCellClassName = 'text-[#475569] bg-[#F8FAFC]',
+  minTableWidth,
 }: ResponsiveTableProps<T>) {
   const primaryIdx = Math.max(0, columns.findIndex((c) => c.primary))
   const primary = columns[primaryIdx]
@@ -103,10 +111,17 @@ export default function ResponsiveTable<T>({
       {/* Desktop / tablet: real table (md+) */}
       <div
         ref={scrollContainerRef}
-        className={`hidden md:block ${bodyMaxHeight ? 'overflow-auto' : 'overflow-x-auto'}`}
+        className={`table-scroll hidden md:block ${bodyMaxHeight ? 'overflow-auto' : 'overflow-x-auto'}`}
         style={bodyMaxHeight ? { maxHeight: bodyMaxHeight } : undefined}
       >
-        <table className="w-full text-sm">
+        <table
+          className="w-full text-sm"
+          style={
+            minTableWidth
+              ? { minWidth: typeof minTableWidth === 'number' ? `${minTableWidth}px` : minTableWidth }
+              : undefined
+          }
+        >
           <thead className={`${headerRowClassName} ${bodyMaxHeight ? 'sticky top-0 z-10' : ''}`}>
             <tr>
               {columns.map((col) => (

@@ -38,9 +38,11 @@ import {
   CountBadge,
   DAYS_TONE,
   EmptyState,
+  FocusAreaBadge,
   GoalStatusBadge,
   daysLeftLabel,
   formatDate,
+  PermissionsUnavailable,
   useGoalPermissions,
   useGoalRefData,
 } from './shared'
@@ -50,7 +52,12 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
   const router = useRouter()
   const { addToast } = useToast()
   const orgId = user?.organizationId ?? ''
-  const { perms, loading: permsLoading } = useGoalPermissions(orgId)
+  const {
+    perms,
+    loading: permsLoading,
+    failed: permsFailed,
+    retry: retryPerms,
+  } = useGoalPermissions(orgId)
   const { employees } = useGoalRefData(orgId)
 
   const [goal, setGoal] = useState<Goal | null>(null)
@@ -101,6 +108,10 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
       setDeleting(false)
     }
   }
+
+  // A failed lookup is not a denial — offer a retry instead of claiming the
+  // role lacks access.
+  if (permsFailed) return <PermissionsUnavailable onRetry={retryPerms} />
 
   if (!permsLoading && !perms.read) {
     return <AccessHiddenState orgId={orgId} leaf="goals" moduleLabel="Goals" />
@@ -176,6 +187,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
             <h1 className="text-[26px] font-bold text-[#0F172A] leading-tight">{goal.title}</h1>
             <div className="flex items-center gap-2.5 flex-wrap mt-2">
               <GoalStatusBadge status={goal.status} />
+              <FocusAreaBadge focus={goal.focus_area} />
               <span className={`text-[13px] font-medium ${isClosed ? 'text-[#475569]' : DAYS_TONE[days.tone]}`}>
                 {isClosed ? formatDate(goal.due_date) : days.text}
               </span>
@@ -306,7 +318,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
             </button>
           )}
         </header>
-        <div className="flex-1 overflow-y-auto px-5 py-3">
+        <div className="table-scroll flex-1 overflow-y-auto px-5 py-3">
           {tasks.length === 0 ? (
             <p className="text-[13px] text-[#475569] py-4">
               No tasks yet. Attach the actual work so this goal isn’t just a number on a screen.

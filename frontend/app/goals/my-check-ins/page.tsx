@@ -13,6 +13,7 @@ import {
   EmptyState,
   GoalStatusBadge,
   formatDate,
+  PermissionsUnavailable,
   useGoalPermissions,
 } from '@/components/goals/shared'
 
@@ -28,7 +29,12 @@ export default function MyCheckInsPage() {
   const { user } = useAuth()
   const router = useRouter()
   const orgId = user?.organizationId ?? ''
-  const { perms, loading: permsLoading } = useGoalPermissions(orgId)
+  const {
+    perms,
+    loading: permsLoading,
+    failed: permsFailed,
+    retry: retryPerms,
+  } = useGoalPermissions(orgId)
 
   const [rows, setRows] = useState<GoalCheckInDue[]>([])
   const [loading, setLoading] = useState(true)
@@ -47,6 +53,10 @@ export default function MyCheckInsPage() {
   useEffect(() => {
     void load()
   }, [load])
+
+  // A failed lookup is not a denial — offer a retry instead of claiming the
+  // role lacks access.
+  if (permsFailed) return <PermissionsUnavailable onRetry={retryPerms} />
 
   if (!permsLoading && !perms.read) {
     return <AccessHiddenState orgId={orgId} leaf="goals" moduleLabel="Goals" />

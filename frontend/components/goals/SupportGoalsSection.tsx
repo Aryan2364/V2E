@@ -132,7 +132,7 @@ function LinkList({
         )}
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 py-3">
+      <div className="table-scroll flex-1 overflow-y-auto px-5 py-3">
         {links.length === 0 ? (
           <p className="text-[13px] text-[#475569] py-6">{emptyText}</p>
         ) : (

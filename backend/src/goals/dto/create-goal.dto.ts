@@ -7,7 +7,7 @@ import {
   IsUUID,
   MaxLength,
 } from 'class-validator';
-import { GoalCadence, GoalStatus } from '@prisma/client';
+import { GoalCadence, GoalFocusArea, GoalStatus } from '@prisma/client';
 
 export class CreateGoalDto {
   @IsString()
@@ -26,6 +26,11 @@ export class CreateGoalDto {
   @IsOptional()
   @IsUUID()
   department_id?: string;
+
+  /** Which part of the business this goal moves (Balanced-Scorecard perspective). */
+  @IsOptional()
+  @IsEnum(GoalFocusArea)
+  focus_area?: GoalFocusArea;
 
   @IsDateString()
   due_date!: string;

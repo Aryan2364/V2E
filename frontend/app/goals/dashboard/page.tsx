@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth/context'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import { goalsApi } from '@/lib/api/goals'
 import { STATUS_META, formatValue, type Goal, type GoalDashboard, type GoalStatus } from '@/lib/types/goals'
-import { CountBadge, EmptyState, GoalStatusBadge, formatDate, useGoalPermissions } from '@/components/goals/shared'
+import { CountBadge, EmptyState, GoalStatusBadge, formatDate, PermissionsUnavailable, useGoalPermissions } from '@/components/goals/shared'
 
 const ORDER: GoalStatus[] = ['not_started', 'on_track', 'at_risk', 'off_track', 'achieved', 'closed']
 
@@ -21,7 +21,12 @@ export default function GoalsDashboardPage() {
   const { user } = useAuth()
   const router = useRouter()
   const orgId = user?.organizationId ?? ''
-  const { perms, loading: permsLoading } = useGoalPermissions(orgId)
+  const {
+    perms,
+    loading: permsLoading,
+    failed: permsFailed,
+    retry: retryPerms,
+  } = useGoalPermissions(orgId)
 
   const [data, setData] = useState<GoalDashboard | null>(null)
   const [loading, setLoading] = useState(true)
@@ -41,6 +46,10 @@ export default function GoalsDashboardPage() {
   useEffect(() => {
     void load()
   }, [load])
+
+  // A failed lookup is not a denial — offer a retry instead of claiming the
+  // role lacks access.
+  if (permsFailed) return <PermissionsUnavailable onRetry={retryPerms} />
 
   if (!permsLoading && !perms.read) {
     return <AccessHiddenState orgId={orgId} leaf="goals" moduleLabel="Goals" />
@@ -162,7 +171,7 @@ function GoalPanel({
         </div>
         <p className="text-[12px] text-[#475569] mt-0.5">{hint}</p>
       </header>
-      <div className="flex-1 overflow-y-auto px-5 py-2">
+      <div className="table-scroll flex-1 overflow-y-auto px-5 py-2">
         {goals.length === 0 ? (
           <p className="text-[13px] text-[#475569] py-6">{empty}</p>
         ) : (

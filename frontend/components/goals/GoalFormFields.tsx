@@ -6,9 +6,12 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import {
   CADENCE_META,
   CADENCE_OPTIONS,
+  FOCUS_AREA_META,
+  FOCUS_AREA_OPTIONS,
   MANUAL_STATUSES,
   STATUS_META,
   type GoalCadence,
+  type GoalFocusArea,
   type GoalStatus,
 } from '@/lib/types/goals'
 
@@ -35,12 +38,14 @@ export interface EmployeeOption {
 export interface DeptOption {
   id: string
   name: string
+  parent_department_id?: string | null
 }
 
 export interface GoalFormState {
   title: string
   description: string
   ownerUserId: string
+  focusArea: GoalFocusArea | ''
   dueDate: string
   targetValue: string
   unit: string
@@ -108,6 +113,28 @@ export default function GoalFormFields({
           disabled={disabled}
           maxLength={5000}
         />
+      </div>
+
+      <div>
+        <label className={labelClass}>Focus area</label>
+        <StyledSelect
+          value={state.focusArea}
+          onChange={(v) => onChange({ focusArea: v as GoalFocusArea | '' })}
+          placeholder="Not set"
+          options={[
+            { value: '', label: 'Not set' },
+            ...FOCUS_AREA_OPTIONS.map((f) => ({
+              value: f,
+              label: FOCUS_AREA_META[f].label,
+              color: FOCUS_AREA_META[f].dot,
+            })),
+          ]}
+          disabled={disabled}
+        />
+        <p className="text-[11px] text-[#475569] mt-1">
+          Which part of the business this goal moves. One only — it’s what lets you see whether the
+          company is starving one area.
+        </p>
       </div>
 
       {/* Who owns it and when it's due — the two facts that make a goal real. */}

@@ -43,6 +43,7 @@ export default function EditGoalModal({
       title: goal.title,
       description: goal.description ?? '',
       ownerUserId: goal.owner_user_id,
+      focusArea: goal.focus_area ?? '',
       dueDate: toDateInput(goal.due_date),
       targetValue: goal.target_value === null ? '' : String(goal.target_value),
       unit: goal.unit ?? '',
@@ -75,6 +76,8 @@ export default function EditGoalModal({
         title: form.title.trim(),
         description: form.description.trim(),
         owner_user_id: form.ownerUserId,
+        // null clears it back to unset.
+        focus_area: form.focusArea || null,
         due_date: new Date(`${form.dueDate}T00:00:00`).toISOString(),
         // null clears the target (and the recorded number with it).
         target_value: target ? parseFloat(target.replace(/,/g, '')) : null,

@@ -8,7 +8,7 @@ import {
   MaxLength,
   ValidateIf,
 } from 'class-validator';
-import { GoalCadence, GoalStatus } from '@prisma/client';
+import { GoalCadence, GoalFocusArea, GoalStatus } from '@prisma/client';
 
 export class UpdateGoalDto {
   @IsOptional()
@@ -47,6 +47,12 @@ export class UpdateGoalDto {
   @IsString()
   @MaxLength(30)
   unit?: string | null;
+
+  // Nullable: sending null clears the focus area.
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @IsEnum(GoalFocusArea)
+  focus_area?: GoalFocusArea | null;
 
   @IsOptional()
   @IsEnum(GoalStatus)

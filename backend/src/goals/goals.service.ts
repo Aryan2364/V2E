@@ -93,6 +93,7 @@ export class GoalsService {
         description: dto.description?.trim() || null,
         owner_user_id: dto.owner_user_id,
         department_id: dto.department_id || null,
+        focus_area: dto.focus_area ?? null,
         due_date: dueDate,
         target_value: this.toDecimal(dto.target_value),
         current_value: this.toDecimal(dto.current_value),
@@ -291,6 +292,7 @@ export class GoalsService {
         ? { connect: { id: dto.department_id } }
         : { disconnect: true };
     }
+    if (dto.focus_area !== undefined) data.focus_area = dto.focus_area;
     if (dto.due_date !== undefined) data.due_date = this.parseDate(dto.due_date, 'due_date');
     if (dto.target_value !== undefined) data.target_value = this.toDecimal(dto.target_value);
     if (dto.unit !== undefined) data.unit = dto.unit?.trim() || null;
@@ -339,6 +341,7 @@ export class GoalsService {
         'status',
         'review_cadence',
         'department_id',
+        'focus_area',
       ]),
     });
 

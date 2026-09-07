@@ -13,7 +13,13 @@ import {
   type Goal,
   type GoalFocusArea,
 } from '@/lib/types/goals'
-import { GoalStatusBadge, formatDate, useGoalPermissions, useGoalRefData } from '@/components/goals/shared'
+import {
+  GoalStatusBadge,
+  PermissionsUnavailable,
+  formatDate,
+  useGoalPermissions,
+  useGoalRefData,
+} from '@/components/goals/shared'
 import CreateGoalModal from '@/components/goals/CreateGoalModal'
 
 /**
@@ -25,7 +31,12 @@ import CreateGoalModal from '@/components/goals/CreateGoalModal'
 export default function BalanceScorecardPage() {
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
-  const { perms, loading: permsLoading } = useGoalPermissions(orgId)
+  const {
+    perms,
+    loading: permsLoading,
+    failed: permsFailed,
+    retry: retryPerms,
+  } = useGoalPermissions(orgId)
   const { employees } = useGoalRefData(orgId)
 
   const [goals, setGoals] = useState<Goal[]>([])
@@ -47,6 +58,10 @@ export default function BalanceScorecardPage() {
   useEffect(() => {
     void load()
   }, [load])
+
+  // A failed lookup is not a denial — offer a retry instead of claiming the
+  // role lacks access.
+  if (permsFailed) return <PermissionsUnavailable onRetry={retryPerms} />
 
   if (!permsLoading && !perms.read) {
     return <AccessHiddenState orgId={orgId} leaf="goals" moduleLabel="Goals" />

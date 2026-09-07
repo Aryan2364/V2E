@@ -8,6 +8,9 @@
 export type GoalStatus = 'not_started' | 'on_track' | 'at_risk' | 'off_track' | 'achieved' | 'closed'
 export type GoalCadence = 'none' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly'
 
+/** Which part of the business a goal moves — the four Balanced-Scorecard views. */
+export type GoalFocusArea = 'customer' | 'finance' | 'learning_growth' | 'internal_process'
+
 /** The only three statuses a check-in may record. */
 export type CheckInStatus = Extract<GoalStatus, 'on_track' | 'at_risk' | 'off_track'>
 export const CHECK_IN_STATUSES: CheckInStatus[] = ['on_track', 'at_risk', 'off_track']
@@ -69,6 +72,7 @@ export interface Goal {
   description: string | null
   owner_user_id: string
   department_id: string | null
+  focus_area: GoalFocusArea | null
   due_date: string
   target_value: number | null
   current_value: number | null
@@ -170,6 +174,7 @@ export interface CreateGoalInput {
   description?: string
   owner_user_id: string
   department_id?: string
+  focus_area?: GoalFocusArea
   due_date: string
   target_value?: number
   current_value?: number
@@ -185,6 +190,7 @@ export interface UpdateGoalInput {
   description?: string
   owner_user_id?: string
   department_id?: string | null
+  focus_area?: GoalFocusArea | null
   due_date?: string
   target_value?: number | null
   unit?: string | null
@@ -219,6 +225,59 @@ export const STATUS_META: Record<
   achieved: { label: 'Achieved', bg: '#E0F2FE', text: '#0369A1', border: '#BAE6FD', dot: '#0891B2' },
   closed: { label: 'Closed', bg: '#F1F5F9', text: '#475569', border: '#E2E8F0', dot: '#64748B' },
 }
+
+/**
+ * The four focus areas. Colours are the old Balanced-Scorecard palette, which
+ * was already tuned to DESIGN_RULES — one hue per area so a goal's area reads
+ * at a glance without needing the label.
+ */
+export const FOCUS_AREA_META: Record<
+  GoalFocusArea,
+  { label: string; short: string; bg: string; text: string; border: string; dot: string }
+> = {
+  customer: {
+    label: 'Customer',
+    short: 'Customer',
+    bg: '#E0F2FE',
+    text: '#0369A1',
+    border: '#BAE6FD',
+    dot: '#0891B2',
+  },
+  finance: {
+    label: 'Finance',
+    short: 'Finance',
+    bg: '#DCFCE7',
+    text: '#16A34A',
+    border: '#BBF7D0',
+    dot: '#16A34A',
+  },
+  // `short` keeps the goals table narrow. Real words, not initialisms — "People"
+  // and "Process" stay readable where "L&G" and "IP" would need decoding.
+  learning_growth: {
+    label: 'Learning & Growth',
+    short: 'People',
+    bg: '#FEF9C3',
+    text: '#CA8A04',
+    border: '#FDE68A',
+    dot: '#D97706',
+  },
+  internal_process: {
+    label: 'Internal Process',
+    short: 'Process',
+    bg: '#EDE9FE',
+    text: '#6D28D9',
+    border: '#DDD6FE',
+    dot: '#7C3AED',
+  },
+}
+
+/** Display order — money, then who pays it, then how, then who does it. */
+export const FOCUS_AREA_OPTIONS: GoalFocusArea[] = [
+  'finance',
+  'customer',
+  'internal_process',
+  'learning_growth',
+]
 
 /** Statuses a person sets by hand on the goal (the rest come from check-ins). */
 export const MANUAL_STATUSES: GoalStatus[] = ['not_started', 'achieved', 'closed']

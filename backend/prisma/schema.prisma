@@ -3210,6 +3210,17 @@ model AuditLog {
 // is typed in by a person at a check-in.
 
 // A goal's single status field. `not_started` = no check-in yet. The three
+// Which part of the business a goal moves. The four Balanced-Scorecard
+// perspectives, kept as a flat TAG on any goal (not a level, as they were in
+// the old cascade) — so a company can ask "are we starving Learning & Growth?"
+// without imposing a hierarchy on anything.
+enum GoalFocusArea {
+  customer
+  finance
+  learning_growth
+  internal_process
+}
+
 // middle values are the owner's traffic light, set at each check-in. `achieved`
 // and `closed` are set by hand by a person.
 enum GoalStatus {
@@ -3232,11 +3243,12 @@ enum GoalCadence {
 }
 
 model Goal {
-  id              String   @id @default(uuid())
+  id              String         @id @default(uuid())
   organization_id String
   title           String
-  description     String?  @db.Text
+  description     String?        @db.Text
   owner_user_id   String // single accountable person (an employee's user)
+  focus_area      GoalFocusArea? // which part of the business this goal moves
   department_id   String? // optional — used for filtering only, never for access
   due_date        DateTime
 
