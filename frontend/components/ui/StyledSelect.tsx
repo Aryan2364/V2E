@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, Check } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronDown, Check, Search } from 'lucide-react'
 
 export interface StyledSelectOption {
   value: string
@@ -17,7 +17,9 @@ export interface StyledSelectOption {
 }
 
 /** Max height (px) of the open panel — capped further by the room actually available. */
-const PANEL_MAX = 260
+const PANEL_MAX = 300
+/** At this many options a list stops being scannable, so the search box turns itself on. */
+const SEARCH_AUTO_AT = 8
 
 /**
  * The clip rectangle (in viewport coords) that will crop the open panel: the nearest
@@ -51,6 +53,13 @@ interface Props {
   /** 'sm' shrinks the trigger to a compact, chip-scale control (inline rows); 'md' is the default form size. */
   size?: 'sm' | 'md'
   disabled?: boolean
+  /**
+   * Show the type-to-filter box. Left undefined it decides itself: on for lists of
+   * SEARCH_AUTO_AT (8) or more options, off for short ones. Pass true/false to force it.
+   */
+  searchable?: boolean
+  /** Placeholder inside the search box (e.g. "Search people…"). */
+  searchPlaceholder?: string
 }
 
 /**
@@ -60,8 +69,12 @@ interface Props {
  * relative wrapper) so it scrolls with the trigger and never drifts; safe inside
  * modals and on scrollable pages alike. See memory: no-overflow-parent.
  *
- * Use this anywhere a styled select with a small/medium option list is needed.
- * For the large, searchable, tree department picker use DepartmentSelect instead.
+ * Long lists (8+ options, or `searchable`) get a type-to-filter box pinned at the top
+ * of the panel plus ↑/↓/Enter keyboard picking, so a 40-person owner list is one word
+ * of typing instead of a scroll hunt.
+ *
+ * Use this anywhere a styled select is needed. For the large, searchable, tree
+ * department picker use DepartmentSelect instead.
  */
 export default function StyledSelect({
   value,
@@ -72,6 +85,8 @@ export default function StyledSelect({
   triggerClassName = '',
   size = 'md',
   disabled = false,
+  searchable,
+  searchPlaceholder = 'Type to search…',
 }: Props) {
   const [open, setOpen] = useState(false)
   // Open upward when the trigger sits low (e.g. bottom of a modal), so the list
@@ -81,8 +96,21 @@ export default function StyledSelect({
   // Cap its height to the real room available on the chosen side so it is never
   // sliced off behind the card edge — it always renders fully OVER the card.
   const [panelMaxH, setPanelMaxH] = useState(PANEL_MAX)
+  const [query, setQuery] = useState('')
+  // Which filtered row the keyboard is on (-1 = none highlighted yet).
+  const [active, setActive] = useState(-1)
   const wrapRef = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+
+  const showSearch = searchable ?? options.length >= SEARCH_AUTO_AT
+
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!showSearch || !q) return options
+    return options.filter((o) => o.label.toLowerCase().includes(q))
+  }, [options, query, showSearch])
 
   const toggle = () => {
     if (!open) {
@@ -100,10 +128,34 @@ export default function StyledSelect({
         setDropUp(up)
         // Fit within the chosen side's un-clipped room (never exceed PANEL_MAX).
         const room = Math.max(0, (up ? spaceAbove : spaceBelow) - 8)
-        setPanelMaxH(Math.min(PANEL_MAX, Math.max(120, room)))
+        setPanelMaxH(Math.min(PANEL_MAX, Math.max(140, room)))
       }
+      setQuery('')
+      setActive(-1)
     }
     setOpen((o) => !o)
+  }
+
+  // The search box is the whole point of opening a long list — put the caret in it.
+  useEffect(() => {
+    if (open && showSearch) searchRef.current?.focus()
+  }, [open, showSearch])
+
+  // Keep the keyboard-highlighted row visible inside the scrolling list.
+  useEffect(() => {
+    if (!open || active < 0) return
+    listRef.current
+      ?.querySelector<HTMLElement>(`[data-idx="${active}"]`)
+      ?.scrollIntoView({ block: 'nearest' })
+  }, [active, open])
+
+  const selected = options.find((o) => o.value === value) ?? null
+
+  const pick = (v: string) => {
+    onChange(v)
+    setOpen(false)
+    setQuery('')
+    setActive(-1)
   }
 
   useEffect(() => {
@@ -112,7 +164,30 @@ export default function StyledSelect({
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false)
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Escape') {
+        setOpen(false)
+        return
+      }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        if (shown.length === 0) return
+        e.preventDefault()
+        setActive((i) => {
+          const next = e.key === 'ArrowDown' ? i + 1 : i - 1
+          if (next < 0) return shown.length - 1
+          if (next >= shown.length) return 0
+          return next
+        })
+        return
+      }
+      if (e.key === 'Enter') {
+        // Enter takes the highlighted row — or the only remaining match, so a
+        // narrowing search is "type three letters, Enter" with no arrow keys.
+        const target = active >= 0 ? shown[active] : shown.length === 1 ? shown[0] : null
+        if (target) {
+          e.preventDefault()
+          pick(target.value)
+        }
+      }
     }
     document.addEventListener('mousedown', onDown)
     window.addEventListener('keydown', onKey)
@@ -120,14 +195,7 @@ export default function StyledSelect({
       document.removeEventListener('mousedown', onDown)
       window.removeEventListener('keydown', onKey)
     }
-  }, [open])
-
-  const selected = options.find((o) => o.value === value) ?? null
-
-  const pick = (v: string) => {
-    onChange(v)
-    setOpen(false)
-  }
+  }, [open, shown, active])
 
   const sizeCls =
     size === 'sm'
@@ -169,21 +237,48 @@ export default function StyledSelect({
           style={{ maxHeight: panelMaxH }}
           className={`absolute left-0 right-0 ${dropUp ? 'bottom-[calc(100%+6px)]' : 'top-[calc(100%+6px)]'} z-50 flex flex-col border border-[#E2E8F0] rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden`}
         >
-          <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 py-1">
-            {options.length === 0 ? (
-              <p className="px-3 py-6 text-center text-sm text-[#94A3B8]">No options.</p>
+          {showSearch && (
+            <div className="shrink-0 flex items-center gap-2 px-2.5 py-2 border-b border-[#E2E8F0] bg-white">
+              <Search size={15} className="shrink-0 text-[#94A3B8]" />
+              <input
+                ref={searchRef}
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  setActive(-1)
+                }}
+                placeholder={searchPlaceholder}
+                className="flex-1 min-w-0 bg-transparent text-[16px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none"
+              />
+            </div>
+          )}
+          <div ref={listRef} className="flex-1 overflow-y-auto overscroll-contain min-h-0 py-1">
+            {shown.length === 0 ? (
+              <p className="px-3 py-6 text-center text-sm text-[#94A3B8]">
+                {options.length === 0 ? 'No options.' : 'No match.'}
+              </p>
             ) : (
-              options.map((o) => {
+              shown.map((o, i) => {
                 const isSel = !o.action && o.value === value
                 const danger = o.variant === 'danger'
+                const isActive = i === active
                 return (
                   <div key={o.value}>
-                    {o.divider && <div className="my-1 border-t border-[#E2E8F0]" />}
+                    {/* A divider only means anything in the unfiltered list. */}
+                    {o.divider && !query.trim() && <div className="my-1 border-t border-[#E2E8F0]" />}
                     <button
                       type="button"
+                      data-idx={i}
+                      onMouseEnter={() => setActive(i)}
                       onClick={() => pick(o.value)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                        danger ? 'hover:bg-[#FEF2F2]' : isSel ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+                        danger
+                          ? 'bg-transparent hover:bg-[#FEF2F2]'
+                          : isSel
+                            ? 'bg-[#EFF6FF]'
+                            : isActive
+                              ? 'bg-[#F1F5F9]'
+                              : 'hover:bg-[#F8FAFC]'
                       }`}
                     >
                       {o.color && (

@@ -458,7 +458,7 @@ function ActionItemsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting
       {!locked && (
         <div className="flex flex-wrap items-end gap-2 mt-4 pt-4 border-t border-[#E2E8F0]">
           <input className={`${inputClass} flex-1 min-w-[200px]`} placeholder="New action item…" value={text} onChange={(e) => setText(e.target.value)} />
-          <StyledSelect wrapperClassName="w-44" value={owner} onChange={setOwner} placeholder="Owner" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
+          <StyledSelect wrapperClassName="w-48" value={owner} onChange={setOwner} placeholder="Owner" searchable searchPlaceholder="Search people…" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
           <DatePicker value={due} onChange={setDue} placeholder="Select date" />
           <button onClick={() => { if (!text.trim()) return; run(() => meetingsApi.addActionItem(orgId, meeting.id, { text: text.trim(), owner_user_id: owner || undefined, due_date: due ? new Date(due).toISOString() : undefined })); setText(''); setOwner(''); setDue('') }} className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px]"><Plus size={15} /> Add</button>
         </div>
@@ -475,7 +475,7 @@ function LinkTaskRow({ item, people, onAttachId, onCreate }: { item: { text: str
     <div className="mt-2 pt-2 border-t border-[#F1F5F9] flex flex-col gap-2">
       <div className="flex flex-wrap items-end gap-2">
         <input className={`${inputClass} flex-1 min-w-[160px]`} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Task title" />
-        <StyledSelect wrapperClassName="w-44" value={assignee} onChange={setAssignee} placeholder="Executor" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
+        <StyledSelect wrapperClassName="w-48" value={assignee} onChange={setAssignee} placeholder="Executor" searchable searchPlaceholder="Search people…" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
         <button onClick={() => assignee && onCreate(title, assignee, item.due_date ?? undefined)} disabled={!assignee || !title.trim()} className="px-3 py-2 text-sm font-medium text-white bg-[#2563EB] rounded-[8px] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]">Create &amp; link</button>
       </div>
       <div className="flex items-center gap-2">
@@ -515,7 +515,7 @@ function DecisionsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting: 
         <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[#E2E8F0]">
           <input className={inputClass} placeholder="Decision…" value={decision} onChange={(e) => setDecision(e.target.value)} />
           <div className="flex flex-wrap gap-2">
-            <StyledSelect wrapperClassName="w-44" value={owner} onChange={setOwner} placeholder="Owner" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
+            <StyledSelect wrapperClassName="w-48" value={owner} onChange={setOwner} placeholder="Owner" searchable searchPlaceholder="Search people…" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
             <input className={`${inputClass} flex-1 min-w-[160px]`} placeholder="One-line reason" value={reason} onChange={(e) => setReason(e.target.value)} />
             <button onClick={() => { if (!decision.trim()) return; run(() => meetingsApi.addDecision(orgId, meeting.id, { decision: decision.trim(), owner_user_id: owner || undefined, reason: reason || undefined })); setDecision(''); setOwner(''); setReason('') }} className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px]"><Plus size={15} /> Log decision</button>
           </div>
