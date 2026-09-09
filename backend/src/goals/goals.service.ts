@@ -179,6 +179,36 @@ export class GoalsService {
     }));
   }
 
+  // ─── Strategic map ──────────────────────────────────────────────────────────
+  /**
+   * Everything the Strategic Map canvas needs in ONE read: every live goal in a
+   * lean shape (the canvas draws a title and nothing else) plus every live link
+   * edge. The client lays the goals out in the four focus-area bands and draws
+   * the web between them, so there is no per-goal round trip and no layout
+   * state to keep in the database.
+   */
+  async strategyMap(orgId: string) {
+    const [goals, links] = await Promise.all([
+      this.prisma.goal.findMany({
+        where: { organization_id: orgId, is_deleted: false },
+        orderBy: [{ due_date: 'asc' }, { title: 'asc' }],
+        select: {
+          id: true,
+          title: true,
+          focus_area: true,
+          status: true,
+          due_date: true,
+          department_id: true,
+          owner: { select: { id: true, name: true } },
+          department: { select: { id: true, name: true } },
+        },
+      }),
+      this.allLinks(orgId),
+    ]);
+
+    return { goals, links };
+  }
+
   // ─── Detail ─────────────────────────────────────────────────────────────────
   async getOne(orgId: string, id: string, principal?: Principal) {
     const goal = await this.prisma.goal.findFirst({

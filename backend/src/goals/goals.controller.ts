@@ -85,6 +85,14 @@ export class GoalsController {
     return this.service.myCheckInCount(orgId, req.user.id);
   }
 
+  // Declared BEFORE :id so 'strategy-map' is never read as a goal id.
+  @Get('strategy-map')
+  @RequirePermission(GOALS, PermissionAction.read)
+  @ApiOperation({ summary: 'Every goal + every link edge, for the Strategic Map canvas' })
+  strategyMap(@Param('orgId') orgId: string) {
+    return this.service.strategyMap(orgId);
+  }
+
   @Get(':id')
   @RequirePermission(GOALS, PermissionAction.read)
   @ApiOperation({ summary: 'Goal detail (both sides of its web, check-ins, linked tasks)' })

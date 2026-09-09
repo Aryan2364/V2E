@@ -8,6 +8,7 @@ import type {
   GoalDashboard,
   GoalDeleteImpact,
   GoalLink,
+  StrategyMap,
   CreateGoalInput,
   UpdateGoalInput,
   CreateCheckInInput,
@@ -70,6 +71,12 @@ export const goalsApi = {
   dashboard: async (orgId: string): Promise<GoalDashboard> => {
     const res = await apiClient.get(`${base(orgId)}/dashboard`)
     return unwrap<GoalDashboard>(res)
+  },
+
+  /** Goals + the whole link web in one read — the Strategic Map canvas. */
+  strategyMap: async (orgId: string): Promise<StrategyMap> => {
+    const res = await apiClient.get(`${base(orgId)}/strategy-map`)
+    return unwrap<StrategyMap>(res)
   },
 
   myCheckIns: async (orgId: string): Promise<GoalCheckInDue[]> => {

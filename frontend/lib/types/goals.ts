@@ -148,6 +148,33 @@ export interface LinkedProject {
   project_manager_user_id: string
 }
 
+/**
+ * A goal as the Strategic Map canvas needs it — deliberately lean, because an
+ * oval on the map shows the title and nothing else. Everything richer lives one
+ * click away on the goal itself.
+ */
+export interface StrategyMapGoal {
+  id: string
+  title: string
+  focus_area: GoalFocusArea | null
+  status: GoalStatus
+  due_date: string
+  department_id: string | null
+  owner?: { id: string; name: string } | null
+  department?: { id: string; name: string } | null
+}
+
+/** One directed edge of the web: `supporting` helps `supported` happen. */
+export interface StrategyMapEdge {
+  supporting_goal_id: string
+  supported_goal_id: string
+}
+
+export interface StrategyMap {
+  goals: StrategyMapGoal[]
+  links: StrategyMapEdge[]
+}
+
 /** A row on "My check-ins" — a goal plus why it's being chased. */
 export interface GoalCheckInDue extends Goal {
   due_reason: string
