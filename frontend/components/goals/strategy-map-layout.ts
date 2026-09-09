@@ -188,6 +188,34 @@ export function buildStrategyMap(goals: StrategyMapGoal[], links: StrategyMapEdg
 }
 
 /**
+ * Every goal in the same web as `startId` — the WHOLE chain, not just the goals
+ * one link away. A goal that supports a goal that supports this one is still
+ * part of why this one happens, so it belongs in the same highlight. Direction
+ * is ignored on purpose: what feeds this goal and what it feeds are both part
+ * of its story.
+ *
+ * Breadth-first over the undirected edge list. A component is closed under its
+ * edges, so any connector with one end in the returned set has both ends in it
+ * — which is what lets the canvas test a connector by a single lookup.
+ */
+export function connectedFamily(
+  neighbours: Map<string, Set<string>>,
+  startId: string,
+): Set<string> {
+  const family = new Set<string>([startId])
+  const queue: string[] = [startId]
+  while (queue.length) {
+    const id = queue.shift()!
+    neighbours.get(id)?.forEach((n) => {
+      if (family.has(n)) return
+      family.add(n)
+      queue.push(n)
+    })
+  }
+  return family
+}
+
+/**
  * Crossing reduction (barycentre heuristic). Each band is re-sorted so a goal
  * sits above/below the goals it is linked to, which is what makes the web
  * readable instead of a ball of wool. Neighbours in ANY other band count — not

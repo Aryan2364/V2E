@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus } from 'lucide-react'
 import Tooltip from '@/components/ui/Tooltip'
@@ -11,6 +11,7 @@ import {
   OVAL_W,
   X_PAD,
   buildStrategyMap,
+  connectedFamily,
   type BandKey,
   type MapEdge,
 } from './strategy-map-layout'
@@ -28,6 +29,13 @@ const BAND_META: Record<BandKey, { label: string; bg: string; text: string; bord
     dot: '#94A3B8',
   },
 }
+
+/**
+ * Where a pinned selection is remembered. sessionStorage, not component state:
+ * opening a goal unmounts this canvas, and the family must still be pinned when
+ * the user comes back (DESIGN_RULES Part 10 — canvas state survives navigation).
+ */
+const SELECTION_KEY = 'goals-strategy-map-selected'
 
 /** Idle connector colour — neutral, so the ovals' colours stay the loud thing. */
 const EDGE_IDLE = '#94A3B8'
@@ -65,30 +73,85 @@ interface Props {
  * Learning goal straight up to a Finance one).
  *
  * Hovering an oval traces its web: its own connectors and the goals at the
- * other end stay lit while everything else fades back.
+ * other end stay lit while everything else fades back. A single CLICK pins that
+ * family so it stays traced with the mouse away — which is the only way to
+ * follow a chain across a crowded band — and a DOUBLE click opens the goal.
+ * Hovering while something is pinned previews the hovered family, then falls
+ * back to the pinned one.
  */
 export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props) {
   const router = useRouter()
   const [hovered, setHovered] = useState<string | null>(null)
+  const [pinned, setPinned] = useState<string | null>(null)
 
   const layout = useMemo(() => buildStrategyMap(map.goals, map.links), [map])
 
-  const lit = useMemo(() => {
-    if (!hovered) return null
-    const set = new Set<string>([hovered])
-    layout.neighbours.get(hovered)?.forEach((n) => set.add(n))
-    return set
-  }, [hovered, layout])
+  /** Pin a family (or clear it), remembering it across a trip into a goal. */
+  const pin = useCallback((id: string | null) => {
+    setPinned(id)
+    try {
+      if (id) window.sessionStorage.setItem(SELECTION_KEY, id)
+      else window.sessionStorage.removeItem(SELECTION_KEY)
+    } catch {
+      /* private mode / storage disabled — pinning just won't outlive the page */
+    }
+  }, [])
+
+  // Restore the pinned family on mount, so coming back from a goal lands with
+  // the same web still traced. Read in an effect (not useState) to keep the
+  // server and first client render identical.
+  useEffect(() => {
+    try {
+      const saved = window.sessionStorage.getItem(SELECTION_KEY)
+      if (saved) setPinned(saved)
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
+  // Drop a pin whose goal is no longer on the map (deleted, or retagged away).
+  useEffect(() => {
+    if (pinned && !layout.nodes.some((n) => n.goal.id === pinned)) pin(null)
+  }, [pinned, layout, pin])
+
+  // Escape is the keyboard way out of a traced state. It has to drop the focus
+  // trace as well as the pin: a clicked oval keeps DOM focus, and focus traces
+  // a web too (deliberately — that is how a keyboard user reads the map), so
+  // clearing only the pin would leave the family lit and look like Escape
+  // hadn't worked.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      pin(null)
+      setHovered(null)
+      const el = document.activeElement as HTMLElement | null
+      if (el?.closest?.('[data-goal-oval]')) el.blur()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [pin])
+
+  // Hover previews; the pin is what holds when the mouse is elsewhere.
+  const active = hovered ?? pinned
+
+  // The whole connected web, not just one link out — following a chain is the
+  // reason to trace at all.
+  const lit = useMemo(
+    () => (active ? connectedFamily(layout.neighbours, active) : null),
+    [active, layout],
+  )
 
   const isLit = (id: string) => !lit || lit.has(id)
-  const edgeLit = (e: MapEdge) => !hovered || e.from.goal.id === hovered || e.to.goal.id === hovered
+  // A component is closed under its edges, so one endpoint being in the family
+  // means both are.
+  const edgeLit = (e: MapEdge) => !lit || lit.has(e.from.goal.id)
 
   // Lit connectors are drawn last so a traced line is never buried under a
   // faded one (DESIGN_RULES Part 10 — the acted-on thing goes on top).
   const edges = useMemo(
     () => [...layout.edges].sort((a, b) => Number(edgeLit(a)) - Number(edgeLit(b))),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [layout, hovered],
+    [layout, lit],
   )
 
   return (
@@ -96,7 +159,14 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
     // below the last one) and only starts scrolling once the map is taller
     // than the room available.
     <div className="max-h-full rounded-[12px] border border-[#E2E8F0] bg-white overflow-auto shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)]">
-      <div className="flex min-w-full" style={{ minHeight: layout.height }}>
+      {/* The click-to-clear handler lives on this CONTENT row, not on the scroll
+          box above it: a click on the scroll box's own scrollbar targets that
+          box, so it can never reach here and can never drop the pin. */}
+      <div
+        className="flex min-w-full"
+        style={{ minHeight: layout.height }}
+        onClick={() => pin(null)}
+      >
         {/* ── Band labels: pinned to the left edge of the scroll box ───────── */}
         <div className="sticky left-0 z-20 shrink-0 border-r border-[#E2E8F0] w-[152px] md:w-[240px]">
           {layout.bands.map((band) => {
@@ -131,7 +201,10 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                   {canCreate && band.key !== 'untagged' && (
                     <Tooltip label={`New ${m.label} goal`}>
                       <button
-                        onClick={() => onAddInBand(band.key)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onAddInBand(band.key)
+                        }}
                         aria-label={`New ${m.label} goal`}
                         className="w-7 h-7 shrink-0 rounded-[8px] text-white flex items-center justify-center transition-[filter] duration-200"
                         style={{ backgroundColor: m.dot }}
@@ -226,18 +299,19 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
               ))}
             </defs>
             {edges.map((e) => {
-              const active = edgeLit(e)
+              const traced = edgeLit(e)
+              const onTrace = Boolean(active) && traced
               const m = BAND_META[e.from.band]
               return (
                 <path
                   key={e.id}
                   d={e.d}
                   fill="none"
-                  stroke={hovered && active ? m.dot : EDGE_IDLE}
-                  strokeWidth={hovered && active ? 2.2 : 1.5}
+                  stroke={onTrace ? m.dot : EDGE_IDLE}
+                  strokeWidth={onTrace ? 2.2 : 1.5}
                   strokeLinecap="round"
-                  markerEnd={`url(#sm-arrow-${hovered && active ? e.from.band : 'idle'})`}
-                  opacity={active ? (hovered ? 1 : 0.75) : 0.18}
+                  markerEnd={`url(#sm-arrow-${onTrace ? e.from.band : 'idle'})`}
+                  opacity={active ? (traced ? 1 : 0.18) : 0.75}
                   className="transition-[opacity,stroke-width] duration-200 ease-out"
                 />
               )
@@ -249,31 +323,60 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
           {layout.nodes.map((n) => {
             const m = BAND_META[n.band]
             const on = isLit(n.goal.id)
-            const focused = hovered === n.goal.id
+            const hot = hovered === n.goal.id
+            const isPinned = pinned === n.goal.id
+            const open = () => router.push(`/goals/${n.goal.id}`)
             return (
               <button
                 key={n.goal.id}
-                onClick={() => router.push(`/goals/${n.goal.id}`)}
+                // Click pins the family (never toggles — a double click fires
+                // click twice, and a toggle would undo itself on the way into
+                // the goal). Letting go of a pin is a click on empty canvas or
+                // Escape. Double click opens; Enter is its keyboard twin.
+                onClick={(e) => {
+                  e.stopPropagation()
+                  pin(n.goal.id)
+                }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation()
+                  pin(n.goal.id)
+                  open()
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    pin(n.goal.id)
+                    open()
+                  }
+                }}
                 onMouseEnter={() => setHovered(n.goal.id)}
+                onMouseLeave={() => setHovered(null)}
                 onFocus={() => setHovered(n.goal.id)}
                 onBlur={() => setHovered(null)}
-                title={n.goal.title}
+                title={`${n.goal.title} — double-click to open`}
+                aria-pressed={isPinned}
+                data-goal-oval=""
                 className={[
                   'absolute rounded-full flex items-center justify-center text-center px-4',
                   'transition-[opacity,box-shadow,transform,background-color] duration-200 ease-out',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2',
-                  focused ? 'z-10 -translate-y-0.5' : 'z-[1]',
+                  hot || isPinned ? 'z-10' : 'z-[1]',
+                  hot ? '-translate-y-0.5' : '',
                 ].join(' ')}
                 style={{
                   left: n.x,
                   top: n.y,
                   width: OVAL_W,
                   height: OVAL_H,
-                  backgroundColor: focused ? m.bg : '#FFFFFF',
-                  border: `1.5px solid ${focused ? m.dot : rgba(m.dot, 0.5)}`,
-                  boxShadow: focused
-                    ? `0 6px 16px ${rgba(m.dot, 0.28)}`
-                    : '0 1px 2px rgba(15,23,42,0.08)',
+                  backgroundColor: hot || isPinned ? m.bg : '#FFFFFF',
+                  border: `1.5px solid ${hot || isPinned ? m.dot : rgba(m.dot, 0.5)}`,
+                  // A pin reads as a held ring, so "this one is selected" is
+                  // distinguishable from "the mouse is over this one".
+                  boxShadow: isPinned
+                    ? `0 0 0 3px ${rgba(m.dot, 0.32)}, 0 4px 12px ${rgba(m.dot, 0.24)}`
+                    : hot
+                      ? `0 6px 16px ${rgba(m.dot, 0.28)}`
+                      : '0 1px 2px rgba(15,23,42,0.08)',
                   opacity: on ? 1 : 0.35,
                 }}
               >

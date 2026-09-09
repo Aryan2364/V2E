@@ -91,7 +91,7 @@ export default function StrategyMapPage() {
               <span className="text-[#64748B]">
                 {map.goals.length} goal{map.goals.length === 1 ? '' : 's'} · {linkCount} connection
                 {linkCount === 1 ? '' : 's'}
-                {linkCount > 0 && ' · hover a goal to trace its links'}
+                {linkCount > 0 && ' · click a goal to keep its links traced, double-click to open it'}
               </span>
             )}
           </p>
