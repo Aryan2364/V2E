@@ -153,7 +153,13 @@ export class LearningService {
       where: { path_id: pathId },
       select: { storage_key: true, preview_storage_key: true },
     });
-    const deleted = await this.prisma.learningPath.delete({ where: { id: pathId } });
+    // Assignments cascade with the path at the DB level, but clear them explicitly
+    // first so the delete also succeeds on a database that still carries the old
+    // ON DELETE RESTRICT constraint (their progress rows cascade off the assignment).
+    const deleted = await this.prisma.$transaction(async (tx) => {
+      await tx.learningPathAssignment.deleteMany({ where: { path_id: pathId } });
+      return tx.learningPath.delete({ where: { id: pathId } });
+    });
     await this.purgeItemObjects(items);
     return deleted;
   }

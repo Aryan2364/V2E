@@ -645,7 +645,7 @@ model LearningPathAssignment {
   status              AssignmentStatus @default(not_started)
   completed_at        DateTime?
 
-  path             LearningPath           @relation(fields: [path_id], references: [id])
+  path             LearningPath           @relation(fields: [path_id], references: [id], onDelete: Cascade)
   employee_profile EmployeeProfile        @relation(fields: [employee_profile_id], references: [id])
   item_progress    LearningItemProgress[]
   path_progress    LearningPathProgress?
