@@ -5,7 +5,27 @@
 // number is typed in by a person at a check-in, so there is no progress
 // percentage anywhere in this module.
 
-export type GoalStatus = 'not_started' | 'on_track' | 'at_risk' | 'off_track' | 'achieved' | 'closed'
+export type GoalStatus =
+  | 'not_started'
+  | 'in_progress'
+  | 'on_track'
+  | 'at_risk'
+  | 'off_track'
+  | 'on_hold'
+  | 'achieved'
+  | 'closed'
+
+/** Every status, in the order they read as a life-cycle. */
+export const ALL_STATUSES: GoalStatus[] = [
+  'not_started',
+  'in_progress',
+  'on_track',
+  'at_risk',
+  'off_track',
+  'on_hold',
+  'achieved',
+  'closed',
+]
 export type GoalCadence = 'none' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly'
 
 /** Which part of the business a goal moves — the four Balanced-Scorecard views. */
@@ -219,9 +239,11 @@ export const STATUS_META: Record<
   { label: string; bg: string; text: string; border: string; dot: string }
 > = {
   not_started: { label: 'Not started', bg: '#F1F5F9', text: '#475569', border: '#E2E8F0', dot: '#94A3B8' },
+  in_progress: { label: 'In progress', bg: '#DBEAFE', text: '#1D4ED8', border: '#BFDBFE', dot: '#2563EB' },
   on_track: { label: 'On track', bg: '#DCFCE7', text: '#16A34A', border: '#BBF7D0', dot: '#16A34A' },
   at_risk: { label: 'At risk', bg: '#FEF9C3', text: '#CA8A04', border: '#FDE68A', dot: '#D97706' },
   off_track: { label: 'Off track', bg: '#FEE2E2', text: '#DC2626', border: '#FECACA', dot: '#DC2626' },
+  on_hold: { label: 'On hold', bg: '#EDE9FE', text: '#6D28D9', border: '#DDD6FE', dot: '#7C3AED' },
   achieved: { label: 'Achieved', bg: '#E0F2FE', text: '#0369A1', border: '#BAE6FD', dot: '#0891B2' },
   closed: { label: 'Closed', bg: '#F1F5F9', text: '#475569', border: '#E2E8F0', dot: '#64748B' },
 }
@@ -280,7 +302,13 @@ export const FOCUS_AREA_OPTIONS: GoalFocusArea[] = [
 ]
 
 /** Statuses a person sets by hand on the goal (the rest come from check-ins). */
-export const MANUAL_STATUSES: GoalStatus[] = ['not_started', 'achieved', 'closed']
+export const MANUAL_STATUSES: GoalStatus[] = [
+  'not_started',
+  'in_progress',
+  'on_hold',
+  'achieved',
+  'closed',
+]
 
 export const CADENCE_META: Record<GoalCadence, { label: string; short: string }> = {
   none: { label: 'No set rhythm', short: 'Ad-hoc' },

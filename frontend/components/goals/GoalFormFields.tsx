@@ -261,7 +261,8 @@ export default function GoalFormFields({
             disabled={disabled}
           />
           <p className="text-[11px] text-[#475569] mt-1">
-            On track / At risk / Off track are set by check-ins, not here.
+            On track / At risk / Off track are set by check-ins, not here. On hold pauses
+            check-in reminders without closing the goal.
           </p>
         </div>
       )}

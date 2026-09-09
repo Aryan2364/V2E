@@ -10,13 +10,13 @@ import { buildDeptForest, type DeptNode } from '@/lib/tasks/dept-tree'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import { goalsApi } from '@/lib/api/goals'
 import {
+  ALL_STATUSES,
   FOCUS_AREA_META,
   FOCUS_AREA_OPTIONS,
   STATUS_META,
   formatValue,
   type Goal,
   type GoalFocusArea,
-  type GoalStatus,
 } from '@/lib/types/goals'
 import CreateGoalModal from './CreateGoalModal'
 import {
@@ -32,14 +32,7 @@ import {
   useGoalRefData,
 } from './shared'
 
-const STATUSES: GoalStatus[] = [
-  'not_started',
-  'on_track',
-  'at_risk',
-  'off_track',
-  'achieved',
-  'closed',
-]
+const STATUSES = ALL_STATUSES
 
 /**
  * Goals — one flat list. No nesting and no indentation: a goal's place in the

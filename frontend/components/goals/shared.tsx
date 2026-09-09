@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Check, ChevronDown, Loader2, RefreshCw } from 'lucide-react'
 import { getMyPermissions } from '@/lib/api/permissions'
 import { getEmployees } from '@/lib/api/employees'
 import { getDepartments } from '@/lib/api/departments'
 import {
   FOCUS_AREA_META,
+  MANUAL_STATUSES,
   STATUS_META,
   formatValue,
   type GoalFocusArea,
@@ -71,6 +72,125 @@ export function GoalStatusBadge({ status, withDot = true }: { status: GoalStatus
       {withDot && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: m.dot }} />}
       {m.label}
     </span>
+  )
+}
+
+/**
+ * The same badge, but clickable — change a goal's status where you read it,
+ * without opening the edit form (which still offers the identical list).
+ *
+ * Only the hand-set statuses are offered: On track / At risk / Off track are
+ * the check-in traffic light and would be a lie if typed in here. If the goal
+ * is currently sitting on one of those, it is shown at the top as the current
+ * value so the badge never misreports itself — it just can't be re-picked.
+ *
+ * Without edit rights this renders the plain read-only badge, so nobody is
+ * offered a control that would only fail.
+ */
+export function GoalStatusPicker({
+  status,
+  canEdit,
+  onSelect,
+}: {
+  status: GoalStatus
+  canEdit: boolean
+  onSelect: (next: GoalStatus) => Promise<void>
+}) {
+  const [open, setOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  // Close on click-away and on Escape — the panel is in-flow under the badge,
+  // so it moves with the sticky header instead of drifting on scroll.
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  if (!canEdit) return <GoalStatusBadge status={status} />
+
+  const m = STATUS_META[status]
+  const options: GoalStatus[] = MANUAL_STATUSES.includes(status)
+    ? MANUAL_STATUSES
+    : [status, ...MANUAL_STATUSES]
+
+  async function pick(next: GoalStatus) {
+    setOpen(false)
+    if (next === status || saving) return
+    setSaving(true)
+    try {
+      await onSelect(next)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        disabled={saving}
+        title="Change status"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="inline-flex items-center gap-1.5 font-medium text-[12px] rounded-full pl-2.5 pr-2 py-0.5 border whitespace-nowrap transition-shadow hover:shadow-[0_0_0_2px_rgba(37,99,235,0.18)] focus:outline-none focus:shadow-[0_0_0_2px_rgba(37,99,235,0.35)] disabled:opacity-70"
+        style={{ backgroundColor: m.bg, color: m.text, borderColor: m.border }}
+      >
+        {saving ? (
+          <Loader2 size={11} className="animate-spin shrink-0" />
+        ) : (
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: m.dot }} />
+        )}
+        {m.label}
+        <ChevronDown size={13} className={`shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div
+          role="listbox"
+          className="absolute left-0 top-full mt-1.5 z-30 w-[228px] bg-white border border-[#E2E8F0] rounded-[10px] shadow-[0_8px_24px_rgba(15,23,42,0.14)] py-1"
+        >
+          {options.map((s) => {
+            const om = STATUS_META[s]
+            const isCurrent = s === status
+            const isCheckIn = !MANUAL_STATUSES.includes(s)
+            return (
+              <button
+                key={s}
+                type="button"
+                role="option"
+                aria-selected={isCurrent}
+                disabled={isCheckIn}
+                onClick={() => pick(s)}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left transition-colors ${
+                  isCheckIn ? 'cursor-default text-[#475569]' : 'text-[#0F172A] hover:bg-[#F1F5F9]'
+                }`}
+              >
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: om.dot }} />
+                <span className="flex-1 truncate font-medium">{om.label}</span>
+                {isCurrent && <Check size={14} className="text-[#2563EB] shrink-0" />}
+              </button>
+            )
+          })}
+          <p className="text-[11px] text-[#475569] leading-snug px-3 pt-2 pb-1 mt-1 border-t border-[#F1F5F9]">
+            On track / At risk / Off track come from check-ins. On hold pauses check-in
+            reminders without closing the goal.
+          </p>
+        </div>
+      )}
+    </div>
   )
 }
 

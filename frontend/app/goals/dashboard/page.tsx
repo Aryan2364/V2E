@@ -6,10 +6,10 @@ import { AlertTriangle, CalendarClock, Clock, Loader2, Target } from 'lucide-rea
 import { useAuth } from '@/lib/auth/context'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import { goalsApi } from '@/lib/api/goals'
-import { STATUS_META, formatValue, type Goal, type GoalDashboard, type GoalStatus } from '@/lib/types/goals'
+import { ALL_STATUSES, STATUS_META, formatValue, type Goal, type GoalDashboard } from '@/lib/types/goals'
 import { CountBadge, EmptyState, GoalStatusBadge, formatDate, PermissionsUnavailable, useGoalPermissions } from '@/components/goals/shared'
 
-const ORDER: GoalStatus[] = ['not_started', 'on_track', 'at_risk', 'off_track', 'achieved', 'closed']
+const ORDER = ALL_STATUSES
 
 /**
  * Dashboard — deliberately minimal. Counts by status, then the three lists a
@@ -87,8 +87,9 @@ export default function GoalsDashboardPage() {
         </p>
       </div>
 
-      {/* Counts by status — every tile the same size, zeros shown so the set reads as one row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {/* Counts by status — every tile the same size, zeros shown so the set reads
+          as one block. Eight statuses, so four per row: no orphan tile. */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {ORDER.map((s) => {
           const m = STATUS_META[s]
           const n = data.counts[s] ?? 0

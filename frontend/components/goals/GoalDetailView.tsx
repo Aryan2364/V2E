@@ -23,9 +23,11 @@ import { useToast } from '@/components/ui/Toast'
 import { goalsApi } from '@/lib/api/goals'
 import {
   CADENCE_META,
+  STATUS_META,
   formatValue,
   type Goal,
   type GoalDeleteImpact,
+  type GoalStatus,
 } from '@/lib/types/goals'
 import CheckInHistory from './CheckInHistory'
 import CheckInModal from './CheckInModal'
@@ -39,7 +41,7 @@ import {
   DAYS_TONE,
   EmptyState,
   FocusAreaBadge,
-  GoalStatusBadge,
+  GoalStatusPicker,
   daysLeftLabel,
   formatDate,
   PermissionsUnavailable,
@@ -88,6 +90,20 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
   useEffect(() => {
     void load()
   }, [load])
+
+  // Status is changed straight from the header badge — the same values the edit
+  // form offers, without making someone open a form to move a goal on hold.
+  // The row is patched in place from the server's reply, so nothing re-mounts
+  // and nothing flickers.
+  async function changeStatus(next: GoalStatus) {
+    try {
+      const updated = await goalsApi.update(orgId, goalId, { status: next })
+      setGoal((prev) => (prev ? { ...prev, ...updated } : updated))
+      addToast(`Status set to ${STATUS_META[next].label}`, 'success')
+    } catch (err: any) {
+      addToast(err?.response?.data?.message ?? 'Could not change the status', 'error')
+    }
+  }
 
   async function openDelete() {
     setDeleteError(null)
@@ -186,7 +202,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
           <div className="min-w-0 flex-1">
             <h1 className="text-[26px] font-bold text-[#0F172A] leading-tight">{goal.title}</h1>
             <div className="flex items-center gap-2.5 flex-wrap mt-2">
-              <GoalStatusBadge status={goal.status} />
+              <GoalStatusPicker status={goal.status} canEdit={perms.edit} onSelect={changeStatus} />
               <FocusAreaBadge focus={goal.focus_area} />
               <span className={`text-[13px] font-medium ${isClosed ? 'text-[#475569]' : DAYS_TONE[days.tone]}`}>
                 {isClosed ? formatDate(goal.due_date) : days.text}

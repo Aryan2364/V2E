@@ -3225,9 +3225,11 @@ enum GoalFocusArea {
 // and `closed` are set by hand by a person.
 enum GoalStatus {
   not_started
+  in_progress // started, but no traffic light recorded yet
   on_track // green
   at_risk // amber
   off_track // red
+  on_hold // deliberately paused — never chased for a check-in
   achieved
   closed
 }

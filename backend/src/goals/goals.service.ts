@@ -29,6 +29,15 @@ export const CHECK_IN_STATUSES: GoalStatus[] = ['on_track', 'at_risk', 'off_trac
 /** Statuses that mean the goal is finished — no check-ins, never chased. */
 const CLOSED_STATUSES: GoalStatus[] = ['achieved', 'closed'];
 
+/**
+ * Statuses that mean nobody should be nudged about this goal right now:
+ * it is either finished, or deliberately parked. An `on_hold` goal is still
+ * live (it keeps its deadline and shows in every list) — it just stops being
+ * chased for check-ins and stops being reported as overdue, because the pause
+ * was a decision, not a slip.
+ */
+const UNCHASED_STATUSES: GoalStatus[] = [...CLOSED_STATUSES, 'on_hold'];
+
 /** The Projects module's permission leaf — goals only READ through it. */
 const PROJECTS_LEAF = 'projects.project.manage';
 
@@ -935,15 +944,20 @@ export class GoalsService {
 
     const counts: Record<GoalStatus, number> = {
       not_started: 0,
+      in_progress: 0,
       on_track: 0,
       at_risk: 0,
       off_track: 0,
+      on_hold: 0,
       achieved: 0,
       closed: 0,
     };
     for (const g of goals) counts[g.status] += 1;
 
     const live = goals.filter((g) => !CLOSED_STATUSES.includes(g.status));
+    // Parked goals drop out of the two "you owe something" lists, but stay in
+    // the counts and in every list view.
+    const chased = goals.filter((g) => !UNCHASED_STATUSES.includes(g.status));
     const withDays = (g: (typeof goals)[number]) => ({
       ...this.shape(g),
       days_left: this.daysBetween(now, g.due_date),
@@ -954,10 +968,10 @@ export class GoalsService {
       total: goals.length,
       counts,
       at_risk: live.filter((g) => g.status === 'at_risk' || g.status === 'off_track').map(withDays),
-      overdue: live
+      overdue: chased
         .filter((g) => g.due_date < now)
         .map((g) => ({ ...withDays(g), days_late: this.daysBetween(g.due_date, now) })),
-      needs_check_in: live
+      needs_check_in: chased
         .filter(
           (g) =>
             (g.next_review_date && g.next_review_date <= today) ||
@@ -1229,7 +1243,7 @@ export class GoalsService {
     const today = this.endOfDay(now);
     const staleBefore = this.daysAgo(now, GOAL_STALE_DAYS);
     return {
-      status: { notIn: CLOSED_STATUSES },
+      status: { notIn: UNCHASED_STATUSES },
       OR: [
         { next_review_date: { lte: today } },
         { review_cadence: 'none', last_check_in_at: { lt: staleBefore } },
