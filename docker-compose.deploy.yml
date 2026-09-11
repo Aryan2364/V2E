@@ -8,7 +8,7 @@
 # Requires a .env.production file next to this one (see .env.production.example).
 services:
   backend:
-    image: ghcr.io/aryan2145/v2e-backend:latest
+    image: ghcr.io/aryan2364/v2e-backend:latest
     env_file: .env.production
     environment:
       PORT: 3001
@@ -21,7 +21,7 @@ services:
       - v2e_prod
 
   frontend:
-    image: ghcr.io/aryan2145/v2e-frontend:latest
+    image: ghcr.io/aryan2364/v2e-frontend:latest
     environment:
       # Server-side rewrite target — reaches the backend over the compose network.
       BACKEND_URL: http://backend:3001

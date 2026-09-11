@@ -55,7 +55,7 @@ Private GHCR images need a login. On EC2 you log in **once** with a GitHub token
 
 2. **SSH into EC2 and log Docker in to GHCR:**
    ```bash
-   echo "ghp_YOUR_TOKEN_HERE" | docker login ghcr.io -u Aryan2145 --password-stdin
+   echo "ghp_YOUR_TOKEN_HERE" | docker login ghcr.io -u Aryan2364 --password-stdin
    ```
    You should see `Login Succeeded`. This is saved to `~/.docker/config.json`, so
    you only do it once (until the token expires).
@@ -68,7 +68,7 @@ Private GHCR images need a login. On EC2 you log in **once** with a GitHub token
    contains `docker-compose.deploy.yml` and `deploy.sh` after Part A), or `scp`
    just those two files up. In a working directory on EC2:
    ```bash
-   git clone https://github.com/Aryan2145/V2E.git
+   git clone https://github.com/Aryan2364/V2E.git
    cd V2E
    ```
 

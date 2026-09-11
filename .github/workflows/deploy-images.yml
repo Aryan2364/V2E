@@ -3,8 +3,8 @@
 # by hand from the Actions tab ("Run workflow").
 #
 # Images produced:
-#   ghcr.io/aryan2145/v2e-backend:latest   (+ a tag for the exact commit)
-#   ghcr.io/aryan2145/v2e-frontend:latest  (+ a tag for the exact commit)
+#   ghcr.io/aryan2364/v2e-backend:latest   (+ a tag for the exact commit)
+#   ghcr.io/aryan2364/v2e-frontend:latest  (+ a tag for the exact commit)
 #
 # GHCR login uses the automatic GITHUB_TOKEN — no secret to configure here.
 name: Build & push images
@@ -14,9 +14,9 @@ on:
     branches: [main]
   workflow_dispatch: {}   # lets you run it manually from the Actions tab
 
-# GHCR paths must be lowercase. Owner "Aryan2145" -> "aryan2145".
+# GHCR paths must be lowercase. Owner "Aryan2364" -> "aryan2364".
 env:
-  IMAGE_BASE: ghcr.io/aryan2145
+  IMAGE_BASE: ghcr.io/aryan2364
 
 # Allow this workflow to push packages (images) using GITHUB_TOKEN.
 permissions:
