@@ -12,6 +12,7 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import ScheduleEntryRow, { type ScheduleEntryDraft } from '@/components/tasks/ScheduleEntryRow'
 import SkipHolidaysField from './SkipHolidaysField'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
+import { DurationField } from './shared'
 
 const inputClass =
   'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
@@ -237,10 +238,6 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
               ]}
             />
           </div>
-          <div>
-            <label className={labelClass}>Duration (min)</label>
-            <input type="number" min={5} step={5} className={inputClass} value={durationMin} onChange={(e) => setDurationMin(Math.max(5, Number(e.target.value)))} />
-          </div>
           {type !== 'offline' && (
             <div>
               <label className={labelClass}>Meeting link</label>
@@ -254,6 +251,8 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
             </div>
           )}
         </div>
+
+        <DurationField value={durationMin} onChange={setDurationMin} />
 
         {/* Attendees */}
         <div>

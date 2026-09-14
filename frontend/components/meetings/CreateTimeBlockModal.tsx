@@ -12,6 +12,14 @@ const inputClass =
   'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
 
 function pad(n: number) { return String(n).padStart(2, '0') }
+function timeToMin(hhmm: string): number {
+  const [h, m] = hhmm.split(':').map(Number)
+  return h * 60 + m
+}
+function minutesBetween(start: string, end: string): number {
+  const diff = timeToMin(end) - timeToMin(start)
+  return diff > 0 ? diff : diff + 1440
+}
 function addMinutes(hhmm: string, mins: number): string {
   const [h, m] = hhmm.split(':').map(Number)
   const total = ((h * 60 + m + mins) % 1440 + 1440) % 1440
@@ -135,7 +143,7 @@ export default function CreateTimeBlockModal({
           </div>
           <div>
             <label className={labelClass}>Start</label>
-            <TimeField value={startTime} onChange={(t) => { setStartTime(t); setEndTime(addMinutes(t, 60)) }} />
+            <TimeField value={startTime} onChange={(t) => { setEndTime(addMinutes(t, minutesBetween(startTime, endTime))); setStartTime(t) }} />
           </div>
           <div>
             <label className={labelClass}>End</label>

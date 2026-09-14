@@ -8,6 +8,7 @@ import type { BusyView } from '@/lib/types/meetings'
 import DatePicker from '@/components/ui/DatePicker'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
 import Tooltip from '@/components/ui/Tooltip'
+import { DurationField } from './shared'
 
 // geometry
 const START_HOUR = 6
@@ -56,7 +57,6 @@ interface Props {
   onClose: () => void
 }
 
-const DURATIONS = [15, 30, 45, 60, 90, 120]
 
 export default function FindTimeDialog({
   orgId, people, attendees, optional, date, durationMin, initialStartMin,
@@ -187,18 +187,9 @@ export default function FindTimeDialog({
           </div>
         </div>
 
-        {/* duration chips */}
+        {/* duration */}
         <div className="flex items-center gap-2 px-5 py-2 border-b border-[#F1F5F9]">
-          <span className="text-sm text-[#64748B]">Duration</span>
-          {DURATIONS.map((d) => (
-            <button
-              key={d}
-              onClick={() => onChangeDuration(d)}
-              className={['px-2.5 py-1 text-sm rounded-[8px] border', durationMin === d ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'bg-white text-[#475569] border-[#E2E8F0] hover:border-[#CBD5E1]'].join(' ')}
-            >
-              {d < 60 ? `${d}m` : d === 60 ? '1h' : `${d / 60}h`}
-            </button>
-          ))}
+          <DurationField value={durationMin} onChange={onChangeDuration} label="Duration" inline />
           {loading && <Loader2 size={15} className="animate-spin text-[#94A3B8] ml-1" />}
         </div>
 

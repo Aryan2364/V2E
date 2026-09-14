@@ -10,12 +10,21 @@ import { useToast } from '@/components/ui/Toast'
 import { meetingsApi } from '@/lib/api/meetings'
 import type { Meeting, MeetingType } from '@/lib/types/meetings'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
+import { DurationField } from './shared'
 
 const labelClass = 'block text-sm font-medium text-[#334155] mb-1.5'
 const inputClass =
   'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2.5 text-[15px] text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
 
 function pad(n: number) { return String(n).padStart(2, '0') }
+function timeToMin(hhmm: string): number {
+  const [h, m] = hhmm.split(':').map(Number)
+  return h * 60 + m
+}
+function minutesBetween(start: string, end: string): number {
+  const diff = timeToMin(end) - timeToMin(start)
+  return diff > 0 ? diff : diff + 1440
+}
 function addMinutes(hhmm: string, mins: number): string {
   const [h, m] = hhmm.split(':').map(Number)
   const total = ((h * 60 + m + mins) % 1440 + 1440) % 1440
@@ -51,6 +60,7 @@ export default function EditMeetingModal({
   const [date, setDate] = useState('')
   const [startTime, setStartTime] = useState('10:00')
   const [endTime, setEndTime] = useState('11:00')
+  const [durationMin, setDurationMin] = useState(60)
   const [attendees, setAttendees] = useState<string[]>([])
   const [optional, setOptional] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
@@ -75,6 +85,9 @@ export default function EditMeetingModal({
     if (meeting.scheduled_end) {
       const e = new Date(meeting.scheduled_end)
       setEndTime(`${pad(e.getHours())}:${pad(e.getMinutes())}`)
+      if (meeting.scheduled_start) {
+        setDurationMin(Math.max(5, Math.round((e.getTime() - new Date(meeting.scheduled_start).getTime()) / 60000)))
+      }
     }
   }, [isOpen, meeting])
 
@@ -166,13 +179,18 @@ export default function EditMeetingModal({
           </div>
           <div>
             <label className={labelClass}>Start</label>
-            <TimeField value={startTime} onChange={(t) => { setStartTime(t); setEndTime(addMinutes(t, 30)) }} />
+            <TimeField value={startTime} onChange={(t) => { setStartTime(t); setEndTime(addMinutes(t, durationMin)) }} />
           </div>
           <div>
             <label className={labelClass}>End</label>
-            <TimeField value={endTime} onChange={setEndTime} />
+            <TimeField value={endTime} onChange={(t) => { setEndTime(t); setDurationMin(minutesBetween(startTime, t)) }} />
           </div>
         </div>
+
+        <DurationField
+          value={durationMin}
+          onChange={(min) => { setDurationMin(min); setEndTime(addMinutes(startTime, min)) }}
+        />
 
         <div>
           <label className={labelClass}>Attendees</label>

@@ -17,6 +17,7 @@ import ScheduleEntryRow, { type ScheduleEntryDraft } from '@/components/tasks/Sc
 import SkipHolidaysField from './SkipHolidaysField'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
 import FindTimeDialog from './FindTimeDialog'
+import { DurationField } from './shared'
 
 const inputClass =
   'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
@@ -35,7 +36,6 @@ interface Props {
 type CallMode = 'fixed' | 'log_past'
 type RecurMode = 'one_time' | 'recurring'
 
-const DURATIONS = [15, 30, 45, 60, 90, 120]
 const EMPTY_SCHED: ScheduleEntryDraft = {
   schedule_type: 'weekly', every: 1, days: [], month_days: [], yearly_dates: [],
   time: '10:00', start_date: '', end_condition: 'never', end_date: '', end_after: 12,
@@ -50,6 +50,10 @@ function addMinutes(time: string, mins: number): string {
   const [h, m] = time.split(':').map(Number)
   const t = h * 60 + m + mins
   return `${pad(Math.floor(t / 60) % 24)}:${pad(((t % 60) + 60) % 60)}`
+}
+function minutesBetween(start: string, end: string): number {
+  const diff = timeToMin(end) - timeToMin(start)
+  return diff > 0 ? diff : diff + 1440
 }
 function timeToMin(time: string): number {
   const [h, m] = time.split(':').map(Number)
@@ -292,21 +296,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
 
           {callMode === 'fixed' && (
             <>
-              <div>
-                <label className="block text-xs text-[#64748B] mb-1.5">Length</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {DURATIONS.map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => applyDuration(d)}
-                      className={['px-2.5 py-1 text-sm rounded-[8px] border', durationMin === d ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'bg-white text-[#475569] border-[#E2E8F0] hover:border-[#CBD5E1]'].join(' ')}
-                    >
-                      {d < 60 ? `${d}m` : d === 60 ? '1h' : `${d / 60}h`}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <DurationField value={durationMin} onChange={applyDuration} />
 
               {/* One-time vs recurring — recurring reuses the SAME editor as recurring tasks */}
               <div className="inline-flex w-fit rounded-[8px] border border-[#CBD5E1] overflow-hidden">
@@ -327,7 +317,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
                     </div>
                     <div>
                       <label className={labelClass}>End</label>
-                      <TimeField value={endTime} onChange={setEndTime} />
+                      <TimeField value={endTime} onChange={(t) => { setEndTime(t); setDurationMin(minutesBetween(startTime, t)) }} />
                     </div>
                   </div>
                   {attendees.length > 0 && date && (
