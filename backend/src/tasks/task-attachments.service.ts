@@ -12,6 +12,7 @@ import { R2Service } from '../storage/r2.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ClockService } from '../clock/clock.service';
 import { isTerminal } from './status-phase';
+import { ACTIVE_ASSIGNEE } from './active-assignee';
 
 /** 25 MB cap, matching the product decision for document attachments. */
 export const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
@@ -181,7 +182,9 @@ export class TaskAttachmentsService {
           select: {
             title: true,
             created_by_user_id: true,
-            assignees: { select: { user_id: true } },
+            // Ping the LIVE roster only — someone taken off the task shouldn't keep
+            // hearing about files added to it.
+            assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true } },
           },
         });
         if (task) {
@@ -280,6 +283,11 @@ export class TaskAttachmentsService {
         select: {
           completion_mode: true,
           status: { select: { type: true } },
+          // Deliberately NOT filtered by ACTIVE_ASSIGNEE: this reads the uploader's own
+          // part to decide whether their proof is already frozen as evidence. A completed
+          // part is a historical fact (see assigneeOutcome) — filtering removed rows here
+          // would UNFREEZE the proof for someone taken off the task and let them delete
+          // the evidence of a part they had already completed.
           assignees: { where: { user_id: userId, is_cc: false }, select: { is_completed: true } },
         },
       });
@@ -315,7 +323,9 @@ export class TaskAttachmentsService {
         proof_allowed_extensions: true,
         completion_mode: true,
         created_by_user_id: true,
-        assignees: { select: { user_id: true, is_cc: true } },
+        // The proof gate asks "is this person ON the task right now?" — a removed
+        // assignee may no longer submit or promote proof.
+        assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
       },
     });
     if (!task) throw new NotFoundException(`Task ${taskId} not found`);

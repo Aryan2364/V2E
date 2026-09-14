@@ -195,6 +195,10 @@ export default function ScorecardRosterPage() {
                   <th className="px-3 py-3 font-semibold text-center" title="Average of (completion date − due date). Minus means finished early.">Avg delay</th>
                   <th className="px-3 py-3 font-semibold text-center" title="The single worst delay for this person.">Longest Delay</th>
                   <th className="px-3 py-3 font-semibold">Grade</th>
+                  {/* Appended after Grade so the client's signed-off column order is intact. */}
+                  <th className="px-3 py-3 font-semibold text-center" title="Tasks this person was taken off BEFORE the original due date without finishing. They were released in good standing, so these are left out of every figure above — including Total entries and the Grade — and shown here only so the removal is visible.">Withdrawn</th>
+                  <th className="px-3 py-3 font-semibold text-center" title="Tasks that were ALREADY LATE when this person was taken off and they were given to someone else. The delay stays on their record (counted in Total entries), frozen at the day they handed it over — but it is NOT counted as pending or overdue, because the work is no longer theirs to finish. Open the person to see who holds each one now.">Handed over</th>
+                  <th className="px-3 py-3 font-semibold text-center" title="Tasks whose due date has been changed at least once. Every on-time / late / delay figure is measured against the ORIGINAL due date, so moving a deadline cannot turn a late task on time.">Revised</th>
                   <th className="px-3 py-3 w-8" />
                 </tr>
               </thead>
@@ -224,11 +228,14 @@ export default function ScorecardRosterPage() {
                     <td className="px-3 py-3 text-center text-[#475569] tabular-nums">{p.avg_delay_days ?? '—'}</td>
                     <td className="px-3 py-3 text-center text-[#475569] tabular-nums">{p.longest_delay_days ?? '—'}</td>
                     <td className="px-3 py-3"><GradePill grade={p.grade} /></td>
+                    <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.withdrawn ? '#64748B' : '#CBD5E1' }}>{num(p.withdrawn)}</td>
+                    <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.handed_over ? '#475569' : '#CBD5E1' }}>{num(p.handed_over)}</td>
+                    <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.revised_entries ? '#B45309' : '#CBD5E1' }}>{num(p.revised_entries)}</td>
                     <td className="px-3 py-3 text-right"><ChevronRight size={16} className="text-[#CBD5E1]" /></td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={12} className="px-4 py-10 text-center text-[#94A3B8]"><UserSquare2 size={22} className="mx-auto mb-2" />No people match your search.</td></tr>
+                  <tr><td colSpan={14} className="px-4 py-10 text-center text-[#94A3B8]"><UserSquare2 size={22} className="mx-auto mb-2" />No people match your search.</td></tr>
                 )}
               </tbody>
               {totals && filtered.length > 0 && selectedDeptIds.length === 0 && !search.trim() && (
@@ -245,6 +252,10 @@ export default function ScorecardRosterPage() {
                     <td className="px-3 py-3 text-center tabular-nums">{totals.avg_delay_days ?? '—'}</td>
                     <td className="px-3 py-3 text-center tabular-nums">{totals.longest_delay_days ?? '—'}</td>
                     <td className="px-3 py-3" />
+                    {/* Withdrawn is its own total — not folded into Total entries / Completed / On time. */}
+                    <td className="px-3 py-3 text-center tabular-nums">{num(totals.withdrawn)}</td>
+                    <td className="px-3 py-3 text-center tabular-nums">{num(totals.handed_over)}</td>
+                    <td className="px-3 py-3 text-center tabular-nums">{num(totals.revised_entries)}</td>
                     <td className="px-3 py-3" />
                   </tr>
                 </tfoot>

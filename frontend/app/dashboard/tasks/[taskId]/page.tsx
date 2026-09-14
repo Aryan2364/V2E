@@ -751,29 +751,35 @@ export default function TaskDetailPage() {
     setAssigneeError(null)
     setSavingAssignees(true)
     try {
-      const currentIds = new Set((task.assignees ?? []).map((a) => a.user_id))
-      const newIds = new Set(editAssigneesList.map((a) => a.user_id))
-
-      // Remove assignees that are no longer in the list
-      const toRemove = Array.from(currentIds).filter((id) => !newIds.has(id))
-      await Promise.all(toRemove.map((uid) => tasksApi.removeAssignee(orgId, taskId, uid).catch(() => null)))
-
-      // Add new assignees
-      const toAdd = editAssigneesList.filter((a) => !currentIds.has(a.user_id))
-      await Promise.all(toAdd.map((a) => tasksApi.addAssignee(orgId, taskId, a.user_id, a.is_cc).catch(() => null)))
-
-      // Update is_cc for existing (remove and re-add)
-      const toUpdateCC = editAssigneesList.filter((a) => {
-        const existing = (task.assignees ?? []).find((ea) => ea.user_id === a.user_id)
-        return existing && existing.is_cc !== a.is_cc
-      })
-      await Promise.all(toUpdateCC.map(async (a) => {
-        await tasksApi.removeAssignee(orgId, taskId, a.user_id).catch(() => null)
-        await tasksApi.addAssignee(orgId, taskId, a.user_id, a.is_cc).catch(() => null)
-      }))
-
+      // ONE atomic call, replacing the old client-side diff against the add/remove
+      // endpoints. That approach had three real faults:
+      //   - a CC↔assignee flip was done as remove-then-re-add, which destroyed that
+      //     person's status and completion progress and sent them a contradictory
+      //     "removed you" + "assigned you" pair for a single click;
+      //   - every call was wrapped in `.catch(() => null)`, so a rejected change (no
+      //     permission, ineligible assignee) looked like a success;
+      //   - a partial failure left the roster half-applied.
+      // The backend reconciles the whole roster in one transaction instead, flipping
+      // roles in place and soft-removing so history survives.
+      //
+      // Send only what this user may change: a participant without assigner rights
+      // gets to manage CC, and omitting `assignee_user_ids` leaves the working
+      // roster untouched rather than silently clearing it.
+      await tasksApi.updateTask(orgId, taskId, {
+        ...(canEditRoster
+          ? { assignee_user_ids: editAssigneesList.filter((a) => !a.is_cc).map((a) => a.user_id) }
+          : {}),
+        cc_user_ids: editAssigneesList.filter((a) => a.is_cc).map((a) => a.user_id),
+      } as any)
       await loadTask()
       setEditingAssignees(false)
+    } catch (e) {
+      // Surface the server's real reason (outside your assignable set, not eligible
+      // to hold a task, task is closed) instead of failing silently.
+      const m = (e as { response?: { data?: { message?: string | string[] } } })?.response?.data?.message
+      setAssigneeError(
+        (Array.isArray(m) ? m[0] : m) || 'Could not save those changes. Please try again.',
+      )
     } finally {
       setSavingAssignees(false)
     }
@@ -851,6 +857,12 @@ export default function TaskDetailPage() {
   const isTaskTerminal = !!task.status && TERMINAL_STATUS_PHASES.includes(task.status.type)
   const isIncompleteStatus = task.status?.type === 'incomplete'
   const isPartiallyCompletedStatus = task.status?.type === 'partially_completed'
+  // Split rights (matches the backend's updateTask): reassigning the work is an
+  // assigner-level act, but looping a colleague in as CC changes nobody's workload
+  // and is trivially undone — so anyone actually on the task may manage CC. A closed
+  // task's people are a frozen record, so nobody edits them there.
+  const canManageCc = (!!canEdit || isAssignee || currentUserIsCC) && !isFutureTask && !isTaskTerminal
+  const canEditRoster = !!canEdit && !isTaskTerminal
   const myTrackId = myAssignee?.status_id ?? notStartedId
   const canMoveSharedStatus = (isAssignee || !!canEdit) && !isFutureTask
   // Names of assignees who haven't finished — used in the owner's heads-up before a
@@ -1666,6 +1678,15 @@ export default function TaskDetailPage() {
                     <div>
                       <p className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wide">Deadline</p>
                       <p className={`text-sm ${deadlineColor(task.deadline)}`}>{formatDate(task.deadline)}</p>
+                      {/* A revised deadline says so, with the date compliance actually
+                          grades against — the live date can move, the baseline can't. */}
+                      {(task.deadline_revision_count ?? 0) > 0 && task.original_deadline && (
+                        <p className="text-[11px] text-[#475569]">
+                          Revised {task.deadline_revision_count}
+                          {task.deadline_revision_count === 1 ? ' time' : ' times'} · graded against{' '}
+                          {formatDate(task.original_deadline)}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1791,8 +1812,9 @@ export default function TaskDetailPage() {
                   <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
                   <p className="text-[11px] font-bold text-[#16A34A] uppercase tracking-widest">Assignees</p>
                 </div>
-                {/* Only the creator / admin may change assignees — a plain assignee cannot. */}
-                {canEdit && (!editingAssignees ? (
+                {/* The creator / admin may change who the work is assigned to; anyone
+                    on the task may manage CC (see canManageCc). */}
+                {canManageCc && (!editingAssignees ? (
                   <button
                     type="button"
                     onClick={() => {
@@ -1831,12 +1853,51 @@ export default function TaskDetailPage() {
               <div className="p-4">
                 {editingAssignees ? (
                   <div className="space-y-2">
-                    <AssigneeSelector
-                      orgId={orgId}
-                      value={editAssigneesList}
-                      onChange={(v) => { setEditAssigneesList(v); if (assigneeError) setAssigneeError(null) }}
-                      currentUser={user ? { user_id: user.id, name: user.name } : undefined}
-                    />
+                    {canEditRoster ? (
+                      <>
+                        <AssigneeSelector
+                          orgId={orgId}
+                          value={editAssigneesList}
+                          onChange={(v) => { setEditAssigneesList(v); if (assigneeError) setAssigneeError(null) }}
+                          currentUser={user ? { user_id: user.id, name: user.name } : undefined}
+                        />
+                        <p className="text-[11px] text-[#475569]">
+                          Click someone&apos;s badge to switch them between Assignee and CC — they keep their progress.
+                        </p>
+                      </>
+                    ) : (
+                      /* CC-only: this person may loop others in but not reassign the
+                         work, so the working assignees stay read-only. They're kept in
+                         the list that gets saved, so nothing is dropped. */
+                      <>
+                        <div className="flex flex-wrap gap-1.5">
+                          {editAssigneesList.filter((a) => !a.is_cc).map((a) => (
+                            <span
+                              key={a.user_id}
+                              className="inline-flex items-center rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2.5 py-1 text-[13px] text-[#1E293B]"
+                            >
+                              {a.name}
+                            </span>
+                          ))}
+                        </div>
+                        <AssigneeSelector
+                          orgId={orgId}
+                          value={editAssigneesList.filter((a) => a.is_cc)}
+                          onChange={(v) => {
+                            setEditAssigneesList([
+                              ...editAssigneesList.filter((a) => !a.is_cc),
+                              ...v.map((x) => ({ ...x, is_cc: true })),
+                            ])
+                            if (assigneeError) setAssigneeError(null)
+                          }}
+                          currentUser={user ? { user_id: user.id, name: user.name } : undefined}
+                        />
+                        <p className="text-[11px] text-[#475569]">
+                          You can CC people in. Changing who the task is assigned to is up to{' '}
+                          {task.created_by?.name ?? 'whoever assigned it'}.
+                        </p>
+                      </>
+                    )}
                     {assigneeError && (
                       <p className="text-xs text-[#DC2626] bg-[#FEE2E2] border border-[#FECACA] rounded-[6px] px-2.5 py-2">
                         {assigneeError}
@@ -1992,6 +2053,40 @@ export default function TaskDetailPage() {
                                 {email && <p className="text-xs text-[#475569] truncate">{email}</p>}
                               </div>
                               <span className="text-[10px] font-semibold bg-[#FEF9C3] text-[#D97706] border border-[#FDE68A] rounded px-1.5 py-0.5">CC</span>
+                            </div>
+                          )
+                        })}
+                      </>
+                    )}
+                    {/* People taken off the task. Removal is soft on purpose: the
+                        record that someone held this task has to survive, or a person
+                        who was already late could be quietly removed into a clean
+                        scorecard. They're excluded from every count and gate above. */}
+                    {(task.removed_assignees?.length ?? 0) > 0 && (
+                      <>
+                        <p className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wide pt-1">
+                          Previously on this task
+                        </p>
+                        {task.removed_assignees!.map((a) => {
+                          const name = a.user?.name ?? a.user_name ?? 'Unknown'
+                          return (
+                            <div key={a.id} className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-[#E2E8F0] flex items-center justify-center text-[#475569] text-[10px] font-bold shrink-0">
+                                {getInitials(name)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-[#475569] truncate">{name}</p>
+                                <p className="text-xs text-[#475569] truncate">
+                                  {a.is_cc ? 'CC · ' : ''}
+                                  {a.removed_at ? `Removed ${formatDate(a.removed_at)}` : 'Removed'}
+                                  {a.removed_by?.name ? ` by ${a.removed_by.name}` : ''}
+                                </p>
+                              </div>
+                              {a.is_completed && (
+                                <span className="text-[10px] font-semibold bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0] rounded px-1.5 py-0.5">
+                                  Had finished
+                                </span>
+                              )}
                             </div>
                           )
                         })}

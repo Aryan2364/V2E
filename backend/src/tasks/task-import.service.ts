@@ -6,6 +6,7 @@ import { ChecklistAccessService } from '../task-masters/checklist-access.service
 import { HolidaysService } from '../holidays/holidays.service';
 import { LeaveService } from '../leave/leave.service';
 import { TasksService } from './tasks.service';
+import { ACTIVE_ASSIGNEE } from './active-assignee';
 import { CreateTaskDto } from './dto/create-task.dto';
 import {
   BulkTaskImportRowDto,
@@ -410,7 +411,13 @@ export class TaskImportService {
       // Open tasks in this org — to flag likely duplicates (same title + shared assignee).
       this.prisma.task.findMany({
         where: { organization_id: orgId, is_deleted: false },
-        select: { title: true, deadline: true, assignees: { where: { is_cc: false }, select: { user_id: true } } },
+        // Duplicate detection compares against who HOLDS the task now: someone taken
+        // off it no longer has it, so importing it to them isn't a duplicate.
+        select: {
+          title: true,
+          deadline: true,
+          assignees: { where: { ...ACTIVE_ASSIGNEE, is_cc: false }, select: { user_id: true } },
+        },
       }),
     ]);
 

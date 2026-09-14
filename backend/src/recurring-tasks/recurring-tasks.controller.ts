@@ -97,7 +97,10 @@ export class RecurringTasksController {
   @ApiOperation({ summary: 'Update a recurring task template' })
   async update(@Param('orgId') orgId: string, @Request() req: any, @Param('id') id: string, @Body() dto: UpdateRecurringDto) {
     await this.service.assertCanAccessTemplate(orgId, principalFromUser(req.user), id, PermissionAction.edit);
-    return this.service.updateTemplate(orgId, id, dto);
+    // The editor's own id, not the template creator's: the save-time assignee-visibility
+    // check must be judged against the person actually making the change, and any
+    // propagated removal is attributed to them on each child task.
+    return this.service.updateTemplate(orgId, id, dto, req.user.id);
   }
 
   @Post(':id/pause')

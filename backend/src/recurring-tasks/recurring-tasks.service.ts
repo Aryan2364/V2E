@@ -1,13 +1,22 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { DataScope, PermissionAction, RecurringAccessKind, RecurringAccessLevel } from '@prisma/client';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  DataScope,
+  PermissionAction,
+  RecurringAccessKind,
+  RecurringAccessLevel,
+  type TaskActionType,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ScopeService } from '../access-rights/scope.service';
+import { SubjectEligibilityService } from '../access-rights/subject-eligibility.service';
+import { AssigneeVisibilityService } from '../assignee-visibility/assignee-visibility.service';
 import { Principal } from '../access-rights/permissions.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateRecurringDto } from './dto/create-recurring.dto';
-import { UpdateRecurringDto } from './dto/update-recurring.dto';
+import { RecurringEditScope, UpdateRecurringDto } from './dto/update-recurring.dto';
 import { CreateScheduleEntryDto } from './dto/create-schedule-entry.dto';
 import { TERMINAL_TYPES } from '../tasks/status-phase';
+import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
 import { normaliseExtensions } from '../tasks/task-attachments.service';
 import { assertActiveOrgMembers } from '../common/org-members';
 import { assertMastersUsable } from '../common/task-masters-usable';
@@ -17,6 +26,22 @@ const ENTRY_INCLUDE = { orderBy: { order_index: 'asc' as const } };
 
 /** Recurring templates are task content — they share the task content leaf. */
 const TASK_LEAF = 'tasks.task.manage';
+
+/**
+ * SUBJECT-eligibility leaf: "may this person be given a task at all?" — the same key
+ * `TasksService.TASK_SUBJECT` uses. A recurring template is a task factory, so the
+ * people on it must clear exactly the gate a one-time task's assignees clear; the
+ * scheduler will otherwise mint real tasks for an ineligible person every cycle.
+ */
+const TASK_SUBJECT = 'tasks.subject.assignable';
+
+/** What an edit actually did to already-spawned work, so the UI can say it out loud. */
+export interface RecurringPropagationSummary {
+  /** Open child tasks whose roster was actually changed. */
+  applied_to: number;
+  /** Open child tasks deliberately left alone, each with a human reason. */
+  skipped: Array<{ task_id: string; title: string; reason: string }>;
+}
 
 /** Which slice of templates the caller wants: work they SENT vs work they RECEIVED. */
 export type RecurringRelation = 'incoming' | 'outgoing' | 'all';
@@ -33,10 +58,14 @@ export interface ListTemplatesQuery {
 
 @Injectable()
 export class RecurringTasksService {
+  private readonly logger = new Logger(RecurringTasksService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly scope: ScopeService,
     private readonly notifications: NotificationsService,
+    private readonly assigneeVisibility: AssigneeVisibilityService,
+    private readonly subjects: SubjectEligibilityService,
   ) {}
 
   /** Read a JSON user-id array column safely. */
@@ -316,6 +345,26 @@ export class RecurringTasksService {
     if (!goal) throw new BadRequestException('Linked goal not found in this organization');
   }
 
+  /**
+   * The assignee picker's visibility rules re-checked at SAVE time — the exact twin of
+   * `TasksService.assertAssigneesVisible`, using the same resolved pool the picker
+   * itself renders. A hand-crafted request must not be able to put someone the editor
+   * can't even see onto a recurring template, because the scheduler then spawns a real
+   * task for that person every single cycle. Applies to working assignees AND CCs
+   * (both are chosen through the same visibility-scoped picker).
+   */
+  private async assertAssigneesVisible(orgId: string, assignerId: string, userIds: string[]): Promise<void> {
+    const ids = [...new Set(userIds.filter(Boolean))];
+    if (!ids.length) return;
+    const { pool } = await this.assigneeVisibility.resolve(orgId, assignerId);
+    const outside = ids.filter((id) => !pool.has(id));
+    if (outside.length) {
+      throw new BadRequestException(
+        'One or more selected people are outside the set you are allowed to assign tasks to.',
+      );
+    }
+  }
+
   private entryData(orgId: string, templateId: string, dto: CreateScheduleEntryDto, index = 0) {
     return {
       organization_id: orgId,
@@ -459,6 +508,19 @@ export class RecurringTasksService {
       [...(dto.assignee_user_ids ?? []), ...(dto.cc_user_ids ?? [])],
       'assignees or CC recipients',
     );
+
+    // Subject eligibility (fail loud, before any writes): every WORKING assignee must be
+    // eligible to be assigned a task at all — even if they have no Tasks actor access.
+    // CCs are observers, so they are deliberately exempt.
+    await this.subjects.assertAllEligible(orgId, TASK_SUBJECT, dto.assignee_user_ids ?? []);
+
+    // The picker's visibility rules re-checked at save time: the creator may only put
+    // people they're allowed to assign to on the template (assignees AND CCs).
+    await this.assertAssigneesVisible(orgId, userId, [
+      ...(dto.assignee_user_ids ?? []),
+      ...(dto.cc_user_ids ?? []),
+    ]);
+
     const template = await this.prisma.recurringTemplate.create({
       data: {
         organization_id: orgId,
@@ -496,8 +558,8 @@ export class RecurringTasksService {
 
   // ─── Update ──────────────────────────────────────────────────────────────────
 
-  async updateTemplate(orgId: string, templateId: string, dto: UpdateRecurringDto) {
-    await this.findTemplateOrFail(orgId, templateId);
+  async updateTemplate(orgId: string, templateId: string, dto: UpdateRecurringDto, actingUserId: string) {
+    const existing = await this.findTemplateOrFail(orgId, templateId);
     await this.assertGoalInOrg(orgId, dto.linked_goal_id);
     await assertMastersUsable(this.prisma, orgId, {
       category_id: dto.category_id,
@@ -511,6 +573,23 @@ export class RecurringTasksService {
       [...(dto.assignee_user_ids ?? []), ...(dto.cc_user_ids ?? [])],
       'assignees or CC recipients',
     );
+
+    // The roster this edit RESULTS in — an omitted field keeps what's already stored.
+    const nextAssignees = dto.assignee_user_ids ?? this.jsonIds(existing.assignee_user_ids);
+    const nextCc = dto.cc_user_ids ?? this.jsonIds(existing.cc_user_ids);
+    // Gate the whole resulting set, not just the ids being added: a partial payload
+    // (e.g. only `cc_user_ids`) must still leave a template whose every person clears
+    // both gates. Only run it when the edit actually touches the roster, so an
+    // unrelated edit (a title fix) by someone with a narrower picker than the original
+    // creator isn't blocked by people they didn't choose and aren't changing.
+    if (dto.assignee_user_ids !== undefined || dto.cc_user_ids !== undefined) {
+      // Fail loud BEFORE any write: every working assignee must be eligible to be
+      // assigned a task at all. CCs are observers, so they're deliberately exempt.
+      await this.subjects.assertAllEligible(orgId, TASK_SUBJECT, nextAssignees);
+      // …and every person on the template — assignee or CC — must be inside the set
+      // this editor is allowed to assign to (the picker's rules, re-checked at save).
+      await this.assertAssigneesVisible(orgId, actingUserId, [...nextAssignees, ...nextCc]);
+    }
 
     if (dto.schedule_entries !== undefined) {
       if (dto.schedule_entries.length === 0) {
@@ -552,7 +631,189 @@ export class RecurringTasksService {
       },
       include: { schedule_entries: ENTRY_INCLUDE },
     });
-    return this.enrichTemplate(updated);
+
+    // Ask-every-time propagation. Absent field = `future_only` = exactly the behaviour
+    // that shipped before this option existed, so old clients are unaffected.
+    const applyTo = dto.apply_to ?? RecurringEditScope.future_only;
+    const rosterTouched = dto.assignee_user_ids !== undefined || dto.cc_user_ids !== undefined;
+    const propagation: RecurringPropagationSummary =
+      applyTo === RecurringEditScope.future_and_open && rosterTouched
+        ? await this.propagateRosterToOpenInstances(orgId, templateId, actingUserId, nextAssignees, nextCc)
+        : { applied_to: 0, skipped: [] };
+
+    const enriched = (await this.enrichTemplate(updated))!;
+    return { ...enriched, propagation };
+  }
+
+  /**
+   * Push the template's new roster onto work that has ALREADY been spawned.
+   *
+   * A recurring template is a factory: editing it normally only changes the copies the
+   * scheduler makes next. When the editor picks `future_and_open`, the new roster is
+   * also applied to every child task that is still open — so "Priya left, Rahul takes
+   * over" actually moves the task sitting in Priya's list today, not only next month's.
+   *
+   * The rules that keep already-recorded work intact:
+   *   - adding someone REVIVES their soft-removed row (clears `removed_at`) rather than
+   *     creating a second one, restoring their prior status / checklist / proof state;
+   *   - removing someone is a SOFT removal (`removed_at` + `removed_by_user_id`), never
+   *     a hard delete — compliance reporting must still show they held the task;
+   *   - a person moving between assignee and CC is an IN-PLACE `is_cc` flip, never a
+   *     delete-and-recreate, which would throw away their completion state;
+   *   - a child that would be left with nobody actually doing the work is SKIPPED and
+   *     reported — never silently emptied, and never allowed to fail the whole edit.
+   *
+   * Only the roster travels. Title / description / schedule stay with the template.
+   */
+  private async propagateRosterToOpenInstances(
+    orgId: string,
+    templateId: string,
+    actingUserId: string,
+    assigneeIds: string[],
+    ccIds: string[],
+  ): Promise<RecurringPropagationSummary> {
+    const summary: RecurringPropagationSummary = { applied_to: 0, skipped: [] };
+
+    // A person named as both a worker and a CC is a worker (the stronger role wins),
+    // matching how a spawned instance is built.
+    const workers = [...new Set(assigneeIds.filter(Boolean))];
+    const observers = [...new Set(ccIds.filter(Boolean))].filter((id) => !workers.includes(id));
+    const desired = new Map<string, boolean>();
+    for (const id of workers) desired.set(id, false);
+    for (const id of observers) desired.set(id, true);
+
+    // "Not yet completed" = not in any terminal phase (completed / partially_completed /
+    // incomplete) and not soft-deleted. Closed history is never rewritten.
+    const terminalStatuses = await this.prisma.taskStatus.findMany({
+      where: { organization_id: orgId, type: { in: TERMINAL_TYPES } },
+      select: { id: true },
+    });
+
+    const children = await this.prisma.task.findMany({
+      where: {
+        organization_id: orgId,
+        recurring_template_id: templateId,
+        is_deleted: false,
+        status_id: { notIn: terminalStatuses.map((s) => s.id) },
+      },
+      select: {
+        id: true,
+        title: true,
+        assignees: { select: { id: true, user_id: true, is_cc: true, removed_at: true } },
+      },
+    });
+    if (children.length === 0) return summary;
+
+    const now = new Date();
+    // Same single source of truth the rest of the app filters rosters by
+    // (tasks/active-assignee.ts) — applied in memory here because the revive path
+    // deliberately needs the soft-removed rows too.
+    const isActive = (r: { removed_at: Date | null }) => r.removed_at === ACTIVE_ASSIGNEE.removed_at;
+
+    for (const child of children) {
+      const rows = child.assignees;
+
+      // An open task with no active non-CC assignee is nobody's job. If this roster
+      // would produce that, leave the child exactly as it is and report it.
+      if (workers.length === 0) {
+        summary.skipped.push({
+          task_id: child.id,
+          title: child.title,
+          reason:
+            'Left unchanged — the new list has no working assignee, and an open task cannot be left with nobody doing it.',
+        });
+        continue;
+      }
+
+      // Nothing to do if this child's live roster already matches.
+      const liveKey = rows
+        .filter(isActive)
+        .map((r) => `${r.user_id}:${r.is_cc}`)
+        .sort()
+        .join('|');
+      const desiredKey = [...desired.entries()].map(([id, isCc]) => `${id}:${isCc}`).sort().join('|');
+      if (liveKey === desiredKey) continue;
+
+      const added: string[] = [];
+      const removed: string[] = [];
+      const roleChanged: string[] = [];
+
+      // One child = one transaction, so a child is never left half-rostered.
+      await this.prisma.$transaction(async (tx) => {
+        // Soft-remove whoever is no longer on the template.
+        for (const row of rows) {
+          if (desired.has(row.user_id) || !isActive(row)) continue;
+          await tx.taskAssignee.update({
+            where: { id: row.id },
+            data: { removed_at: now, removed_by_user_id: actingUserId },
+          });
+          removed.push(row.user_id);
+        }
+        // Add / revive / re-role everyone the template now names.
+        for (const [userId, isCc] of desired) {
+          const row = rows.find((r) => r.user_id === userId);
+          if (!row) {
+            await tx.taskAssignee.create({
+              data: { organization_id: orgId, task_id: child.id, user_id: userId, is_cc: isCc },
+            });
+            added.push(userId);
+            continue;
+          }
+          const wasActive = isActive(row);
+          if (wasActive && row.is_cc === isCc) continue;
+          await tx.taskAssignee.update({
+            where: { id: row.id },
+            data: { is_cc: isCc, removed_at: null, removed_by_user_id: null },
+          });
+          if (wasActive) roleChanged.push(userId);
+          else added.push(userId);
+        }
+      });
+
+      if (added.length === 0 && removed.length === 0 && roleChanged.length === 0) continue;
+      summary.applied_to += 1;
+      await this.logChildRosterChange(orgId, child.id, actingUserId, { added, removed, roleChanged });
+    }
+
+    return summary;
+  }
+
+  /**
+   * Mirror of `TasksService.logActivity` for the children this edit touched, so the
+   * change is traceable on each task's own history rather than only on the template.
+   * Best-effort by design: it runs AFTER the roster change has committed, so a
+   * transient failure here must never turn an already-successful edit into a 500.
+   */
+  private async logChildRosterChange(
+    orgId: string,
+    taskId: string,
+    actorId: string,
+    change: { added: string[]; removed: string[]; roleChanged: string[] },
+  ): Promise<void> {
+    // Pure additions read as 'assigned'; anything that moved or dropped a person is a
+    // reassignment — the same two actions tasks.service.ts uses for roster edits.
+    const action: TaskActionType =
+      change.removed.length > 0 || change.roleChanged.length > 0 ? 'reassigned' : 'assigned';
+    try {
+      await this.prisma.taskActivityLog.create({
+        data: {
+          organization_id: orgId,
+          task_id: taskId,
+          performed_by_user_id: actorId,
+          action,
+          metadata: {
+            source: 'recurring_template_update',
+            added_user_ids: change.added,
+            removed_user_ids: change.removed,
+            role_changed_user_ids: change.roleChanged,
+          } as never,
+        },
+      });
+    } catch (err) {
+      this.logger.warn(
+        `Roster activity log (${action}) failed for task ${taskId}: ${(err as Error).message}`,
+      );
+    }
   }
 
 

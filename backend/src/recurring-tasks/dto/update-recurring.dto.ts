@@ -14,6 +14,24 @@ import { CreateScheduleEntryDto } from './create-schedule-entry.dto';
 import { RecurringChecklistItemDto } from './create-recurring.dto';
 import { ReminderSpecDto } from '../../common/reminders/reminder-spec.dto';
 
+/**
+ * How far an edit reaches — the edit-side twin of the three delete modes
+ * (`stop` / `delete-future` / `delete-all`). A recurring template is a factory, so a
+ * change to it is ambiguous by default: does it only shape the copies the scheduler
+ * makes from now on, or does it also move the work already sitting in people's lists?
+ * The caller must say, and the answer is asked for on every edit rather than guessed.
+ *
+ *   future_only     — today's behaviour, and the default when the field is absent:
+ *                     only instances spawned from now on carry the change.
+ *   future_and_open — additionally re-rosters every already-spawned instance that is
+ *                     still open (non-terminal, not deleted). ONLY the assignee/CC
+ *                     roster travels; title/description/schedule stay with the template.
+ */
+export enum RecurringEditScope {
+  future_only = 'future_only',
+  future_and_open = 'future_and_open',
+}
+
 export class UpdateRecurringDto {
   @IsOptional()
   @IsString()
@@ -96,4 +114,10 @@ export class UpdateRecurringDto {
   @IsOptional()
   @IsString()
   department_id?: string;
+
+  // How far the assignee/CC change reaches: future instances only (default), or also
+  // every already-spawned instance that is still open. See RecurringEditScope above.
+  @IsOptional()
+  @IsEnum(RecurringEditScope)
+  apply_to?: RecurringEditScope;
 }

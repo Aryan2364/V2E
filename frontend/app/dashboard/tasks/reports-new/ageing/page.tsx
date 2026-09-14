@@ -15,21 +15,37 @@ import DepartmentMultiSelect from '@/components/employees/DepartmentMultiSelect'
 import StyledSelect from '@/components/ui/StyledSelect'
 import PendingDrillDrawer, { type DrillFilter } from '@/components/reports/PendingDrillDrawer'
 import { exportAgeingXlsx } from '@/lib/reports/ageing-export'
-import { BUCKETS, OVER_MONTH_BUCKETS, BUCKET_LABEL, countColor, fmtDate, fmtAsOn } from '@/lib/reports/ageing-format'
+import { BUCKETS, WITHDRAWN_META, HANDED_OVER_META, OVER_MONTH_BUCKETS, BUCKET_LABEL, countColor, fmtDate, fmtAsOn } from '@/lib/reports/ageing-format'
 import { useSort } from '@/lib/reports/use-sort'
 import { ArrowLeft, Search, Download, Lock, CalendarClock, ArrowUpDown, AlertTriangle, Inbox } from 'lucide-react'
 
 type Tab = 'person' | 'task' | 'pending'
 const STATE_KEY = 'ageing-report-state-v1'
 
-// Columns after the identity column(s): seven bands + four derived figures. Shared
-// by the Person-wise and Task-wise grids.
+// Columns after the identity column(s): seven bands + four derived figures, then the
+// two integrity columns APPENDED at the end so the client's signed-off column order is
+// untouched. Shared by the Person-wise and Task-wise grids.
 const BAND_COLS: { id: string; label: string; title: string }[] = [
   ...BUCKETS.map((b) => ({ id: b.key, label: b.short, title: b.label })),
-  { id: 'total_pending', label: 'Total', title: 'Total Pending — every open task, including Not Yet Due' },
+  { id: 'total_pending', label: 'Total', title: 'Total Pending — every open task, including Not Yet Due (Withdrawn excluded)' },
   { id: 'over_month_late', label: '› Month', title: 'More than a Month Late — everything above 30 days (the review column)' },
   { id: 'oldest_late_days', label: 'Oldest', title: 'Oldest Late Task, in days (Not Yet Due excluded)' },
   { id: 'avg_late_days', label: 'Avg Late', title: 'Average Days Late (Not Yet Due excluded)' },
+  {
+    id: 'withdrawn',
+    label: 'Withdrawn',
+    title: 'Removed from the task before its original due date without finishing — listed so the removal is visible, but not aged and not counted in Total Pending',
+  },
+  {
+    id: 'handed_over',
+    label: 'Handed over',
+    title: 'Already late when this person was taken off and the task was given to someone else. Listed so the delay stays visible, but not aged and not counted in Total Pending — it is not their work to finish any more. Open it to see who holds each one now',
+  },
+  {
+    id: 'revised_entries',
+    label: 'Revised',
+    title: 'Pending tasks whose due date has been revised at least once. Ageing is always measured against the ORIGINAL due date, so moving a deadline cannot change a band',
+  },
 ]
 
 const bandAccessors = Object.fromEntries(BAND_COLS.map((c) => [c.id, (r: AgeBuckets) => (r as any)[c.id] as number | null]))
@@ -169,7 +185,11 @@ export default function AgeingReportPage() {
     return report.pending.filter((r) => {
       if (names && !(r.department && names.has(r.department))) return false
       if (pendingFreq !== 'all' && r.frequency !== pendingFreq) return false
-      if (bandSet && !bandSet.has(r.bucket)) return false
+      // "All ages" means all AGE bands — withdrawn rows are not aged and are not part
+      // of Total Pending, so they surface only under their own option. Same rule the
+      // drill drawer applies, so the two views never disagree about what "all" means.
+      if (!bandSet) { if (r.bucket === 'withdrawn' || r.bucket === 'handed_over') return false }
+      else if (!bandSet.has(r.bucket)) return false
       if (q && !r.title.toLowerCase().includes(q) && !r.assigned_to.toLowerCase().includes(q) && !(r.assigned_by ?? '').toLowerCase().includes(q)) return false
       return true
     })
@@ -202,6 +222,8 @@ export default function AgeingReportPage() {
     { value: 'all', label: 'All ages' },
     ...BUCKETS.map((b) => ({ value: b.key, label: b.label })),
     { value: 'over_month', label: 'More than a Month Late' },
+    { value: WITHDRAWN_META.key, label: WITHDRAWN_META.label },
+    { value: HANDED_OVER_META.key, label: HANDED_OVER_META.label },
   ]
 
   // Drill openers.
@@ -237,7 +259,7 @@ export default function AgeingReportPage() {
           />
           <button
             onClick={downloadReport}
-            disabled={downloading || !report || report.totals.total_pending === 0}
+            disabled={downloading || !report || (report.totals.total_pending === 0 && report.totals.withdrawn === 0 && report.totals.handed_over === 0)}
             className="flex items-center gap-1.5 px-3.5 py-[7px] bg-[#2563EB] text-white rounded-[8px] text-sm font-semibold hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors"
           >
             <Download size={15} /> {downloading ? 'Preparing…' : 'Download'}
@@ -383,11 +405,28 @@ export default function AgeingReportPage() {
                     title="Open task"
                   >
                     <td className="px-4 py-3 font-medium text-[#0F172A] max-w-[280px]"><span className="line-clamp-2">{r.title}</span></td>
-                    <td className="px-3 py-3 text-[#0F172A] whitespace-nowrap">{r.assigned_to}</td>
+                    <td className="px-3 py-3 text-[#0F172A] whitespace-nowrap">
+                      {r.assigned_to}
+                      {r.handover && (
+                        <span className="block text-[11px] font-normal text-[#475569]" title={`Taken off ${r.assigned_to} on ${fmtDate(r.handover.at)}. This is no longer pending on them.`}>
+                          → now with {r.handover.to.length ? r.handover.to.join(', ') : 'no one'}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-3 py-3 text-[#475569] whitespace-nowrap">{r.assigned_by ?? '—'}</td>
                     <td className="px-3 py-3 text-[#475569] whitespace-nowrap">{r.department ?? '—'}</td>
                     <td className="px-3 py-3 text-[#475569] whitespace-nowrap">{r.frequency}</td>
-                    <td className="px-3 py-3 text-[#475569] whitespace-nowrap tabular-nums">{fmtDate(r.due_date)}</td>
+                    <td className="px-3 py-3 text-[#475569] whitespace-nowrap tabular-nums">
+                      {fmtDate(r.due_date)}
+                      {/* The due date shown is the LIVE one; the ageing beside it was measured
+                          against the original. Say so when the two differ, rather than letting
+                          a moved deadline quietly explain away the Days Late figure. */}
+                      {r.deadline_revision_count > 0 && (
+                        <span className="block text-[11px] font-medium text-[#B45309]" title={`Originally due ${fmtDate(r.original_deadline)} — aged from that date`}>
+                          Revised {r.deadline_revision_count}× · was {fmtDate(r.original_deadline)}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-3 py-3 text-center tabular-nums font-semibold whitespace-nowrap" style={{ color: r.days_late === null ? '#94A3B8' : r.days_late > 30 ? '#DC2626' : '#B45309' }}>{r.days_late ?? '—'}</td>
                     <td className="px-3 py-3 whitespace-nowrap"><span className={`text-xs font-medium ${r.status === 'Overdue' ? 'text-[#B91C1C]' : 'text-[#475569]'}`}>{r.bucket_label}</span></td>
                   </tr>
@@ -481,6 +520,27 @@ function BandCells({ b, onDrill }: { b: AgeBuckets; onDrill: (buckets: AgeBucket
       <CountCell value={b.over_month_late} color={b.over_month_late ? '#DC2626' : '#CBD5E1'} bold onClick={() => onDrill(OVER_MONTH_BUCKETS, 'More than a Month Late')} />
       <td className="px-3 py-3 text-center tabular-nums text-[#475569]">{b.oldest_late_days ?? '—'}</td>
       <td className="px-3 py-3 text-center tabular-nums text-[#475569]">{b.avg_late_days ?? '—'}</td>
+      {/* Clickable like every other count: it passes the 'withdrawn' bucket explicitly,
+          which is the only way withdrawn rows are reachable in the drawer — so this
+          count and the rows it opens match exactly, same as the age bands. */}
+      <CountCell
+        value={b.withdrawn}
+        color={countColor('withdrawn', b.withdrawn)}
+        onClick={() => onDrill(['withdrawn'], WITHDRAWN_META.label)}
+      />
+      {/* Same contract: reachable only by clicking its own count, so this number and
+          the rows it opens match exactly. Never part of Total Pending. */}
+      <CountCell
+        value={b.handed_over}
+        color={b.handed_over ? '#475569' : '#CBD5E1'}
+        onClick={() => onDrill(['handed_over'], 'Handed over to someone else')}
+      />
+      {/* Not click-through: `revised_entries` cuts ACROSS the buckets (a revised task is
+          still in whichever band it belongs to), so it is not a filter dimension the
+          drawer can honour without breaking count === rows. Read-only flag. */}
+      <td className="px-3 py-3 text-center tabular-nums" style={{ color: b.revised_entries ? '#B45309' : '#CBD5E1' }}>
+        {b.revised_entries.toLocaleString()}
+      </td>
     </>
   )
 }
@@ -496,6 +556,10 @@ function TotalsFoot({ label, totals, leadCols }: { label: string; totals: AgeBuc
         <td className="px-3 py-3 text-center tabular-nums" style={{ color: totals.over_month_late ? '#DC2626' : '#0F172A' }}>{totals.over_month_late.toLocaleString()}</td>
         <td className="px-3 py-3 text-center tabular-nums">{totals.oldest_late_days ?? '—'}</td>
         <td className="px-3 py-3 text-center tabular-nums">{totals.avg_late_days ?? '—'}</td>
+        {/* Withdrawn is its own total — never folded into Total Pending or a band. */}
+        <td className="px-3 py-3 text-center tabular-nums">{totals.withdrawn.toLocaleString()}</td>
+        <td className="px-3 py-3 text-center tabular-nums">{totals.handed_over.toLocaleString()}</td>
+        <td className="px-3 py-3 text-center tabular-nums">{totals.revised_entries.toLocaleString()}</td>
       </tr>
     </tfoot>
   )

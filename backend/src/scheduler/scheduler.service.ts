@@ -13,6 +13,7 @@ import { shouldEntryFireToday } from '../common/recurrence/should-fire-today';
 import { filterActiveOrgMembers } from '../common/org-members';
 import { resolveRemindAt, expandReminderRows, type ReminderSpec } from '../common/reminders/reminder-spec';
 import { isTerminal, TERMINAL_TYPES } from '../tasks/status-phase';
+import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
 import { GoalsService } from '../goals/goals.service';
 
 // Rolling look-ahead for meeting rhythms: the nightly cron keeps the next 60 days
@@ -330,6 +331,10 @@ export class SchedulerService {
               : [],
             goal_id: goalId,
             deadline: adjustedDeadline,
+            // The date this occurrence is born committed to, frozen as its compliance
+            // baseline. A spawned task is graded against this, so someone revising the
+            // occurrence's deadline later can't turn a late one on-time.
+            original_deadline: adjustedDeadline,
             recurring_template_id: template.id,
             recurring_spawn_date: todayStart, // date-only; unique index blocks a same-day duplicate
             created_at: now, // align instance date with the (possibly simulated) clock
@@ -661,7 +666,9 @@ export class SchedulerService {
         deadline: true,
         created_by_user_id: true,
         status: { select: { type: true } },
-        assignees: { select: { user_id: true, is_cc: true } },
+        // Reminders route to the LIVE roster (both primary and CC), so a person taken
+        // off the task stops being reminded about it.
+        assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
       },
     });
     const taskMap = new Map(tasks.map((t) => [t.id, t]));
@@ -827,7 +834,8 @@ export class SchedulerService {
       include: {
         status: { select: { type: true } },
         escalations: { where: { is_active: true }, orderBy: { level: 'asc' } },
-        assignees: { where: { is_cc: false }, select: { user_id: true } },
+        // Escalation copies go to the LIVE roster only.
+        assignees: { where: { ...ACTIVE_ASSIGNEE, is_cc: false }, select: { user_id: true } },
       },
     });
 

@@ -2,16 +2,19 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Plus } from 'lucide-react'
+import { X, Plus, History } from 'lucide-react'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import StyledSelect from '@/components/ui/StyledSelect'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import FileDropzone, { AttachmentErrorBox } from '@/components/ui/FileDropzone'
 import { PendingFileList, AttachmentList } from '@/components/ui/AttachmentList'
 import { useAuth } from '@/lib/auth/context'
+import { usePermissions } from '@/lib/auth/use-permissions'
 import { tasksApi } from '@/lib/api/tasks'
 import { holidaysApi } from '@/lib/api/holidays'
-import type { Task, TaskCategory, TaskPriority, TaskStatus, CompletionMode, ChecklistTemplate, TaskAttachment } from '@/lib/types/tasks'
+import AssigneeSelector from '@/components/tasks/AssigneeSelector'
+import type { Task, TaskCategory, TaskPriority, TaskStatus, CompletionMode, ChecklistTemplate, TaskAttachment, SelectedAssignee } from '@/lib/types/tasks'
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import type { HolidayCheckResult } from '@/lib/types/holidays'
 import ChecklistBuilderField, {
@@ -47,10 +50,29 @@ const toLocalTimeStr = (iso: string) => {
   const d = new Date(iso)
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
 }
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+
+/** Order-independent signature of who is on a task and in which role — for the dirty check. */
+const rosterSig = (r: { user_id: string; is_cc: boolean }[]) =>
+  JSON.stringify(r.map((x) => `${x.user_id}:${x.is_cc ? 1 : 0}`).sort())
 
 export default function EditTaskModal({ task, categories, priorities, statuses, onClose, onSaved }: Props) {
   const { user } = useAuth()
+  const { can, isAdmin } = usePermissions()
   const orgId = user?.organizationId ?? ''
+
+  // ── Split rights (see the backend's updateTask for the authoritative rule) ──────
+  // Reassigning the work and moving the deadline are assigner-level acts. Looping a
+  // colleague in as CC is not — it changes nobody's workload and is trivially undone,
+  // so anyone already on the task may do it. Gated on the real permission leaf, never
+  // a hardcoded role: the creator and admins qualify, as does anyone holding
+  // tasks.task.manage/edit. The backend re-checks (including data scope, which the
+  // client can't evaluate) and returns a plain-language reason if it disagrees.
+  const isCreator = task.created_by_user_id === user?.id
+  const canReassign = isCreator || isAdmin || can('tasks.task.manage', 'edit')
+  const isOnTask = (task.assignees ?? []).some((a) => a.user_id === user?.id)
+  const canEditCc = canReassign || isOnTask
 
   const [title, setTitle] = useState(task.title)
   const [description, setDescription] = useState(task.description ?? '')
@@ -109,8 +131,18 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
     ? new Date(deadlineTime ? `${deadlineDate}T${deadlineTime}` : `${deadlineDate}T23:59`).toISOString()
     : ''
 
+  // Optional note on WHY the deadline moved. Not mandatory — the reports grade
+  // against the original date, so a revision can't buy a clean score and a forced
+  // justification box would be friction with no integrity benefit.
+  const [deadlineReason, setDeadlineReason] = useState('')
+  const [revisionsOpen, setRevisionsOpen] = useState(false)
+
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // In-app confirmations (DESIGN_RULES Part 7 — never a native browser dialog).
+  const [discardOpen, setDiscardOpen] = useState(false)
+  const [pendingAttachmentRemoval, setPendingAttachmentRemoval] = useState<TaskAttachment | null>(null)
+  const [holidayPrompt, setHolidayPrompt] = useState<string | null>(null)
   const [holidayCheck, setHolidayCheck] = useState<HolidayCheckResult | null>(null)
   // The system suggests a non-working-day adjustment; the user may override it.
   const [holidayOverride, setHolidayOverride] = useState(false)
@@ -120,8 +152,26 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
-  const primaryAssignees = (task.assignees ?? []).filter((a) => !a.is_cc)
+  // The task's people, now editable here rather than only on the detail page.
+  // AssigneeSelector carries both roles in one list (CC is a toggle on a selected
+  // chip), which is also how the backend reconcile wants them.
+  const [roster, setRoster] = useState<SelectedAssignee[]>(() =>
+    (task.assignees ?? []).map((a) => ({
+      user_id: a.user_id,
+      name: a.user?.name ?? a.user_name ?? 'Unknown',
+      is_cc: a.is_cc,
+    })),
+  )
+  const initialRosterSig = React.useMemo(
+    () => rosterSig((task.assignees ?? []).map((a) => ({ user_id: a.user_id, is_cc: a.is_cc }))),
+    [task.assignees],
+  )
+
+  const primaryAssignees = roster.filter((a) => !a.is_cc)
+  const ccAssignees = roster.filter((a) => a.is_cc)
   const assigneeCount = primaryAssignees.length
+  // Derived from the LIVE edit, so the leave warning and the completion-mode control
+  // react as people are added or removed — not just to whoever was on it at open.
   const primaryIdsKey = primaryAssignees.map((a) => a.user_id).sort().join(',')
 
   // Warn if the task's existing assignees are on leave around the (possibly changed) deadline.
@@ -183,10 +233,12 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
     proofRequired !== (task.proof_required ?? false) ||
     goalId !== (task.goal_id ?? '') ||
     attachmentFiles.length > 0 ||
+    (!taskIsTerminal && rosterSig(roster) !== initialRosterSig) ||
+    deadlineReason.trim() !== '' ||
     (!taskIsTerminal && JSON.stringify(buildChecklistItems(checklistGroups) ?? []) !== initialChecklistSig)
 
   function handleCloseAttempt() {
-    if (isDirty && !window.confirm('Discard your unsaved changes?')) return
+    if (isDirty) { setDiscardOpen(true); return }
     onClose()
   }
 
@@ -200,13 +252,20 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
   // uploader only). It's a file the user chose to delete — no "Save" needed.
   async function handleRemoveExistingAttachment(a: TaskAttachment) {
     if (deletingAttachmentIds.has(a.id)) return
-    if (!window.confirm(`Remove “${a.file_name}”? This deletes the file for everyone on the task.`)) return
+    setPendingAttachmentRemoval(a)
+  }
+
+  async function confirmRemoveAttachment() {
+    const a = pendingAttachmentRemoval
+    if (!a) return
     setDeletingAttachmentIds((prev) => new Set(prev).add(a.id))
     try {
       await tasksApi.deleteAttachment(orgId, task.id, a.id)
       setExistingAttachments((prev) => prev.filter((x) => x.id !== a.id))
+      setPendingAttachmentRemoval(null)
     } catch (e2) {
       setError(apiErrorMessage(e2, 'Could not remove that file. Please try again.'))
+      setPendingAttachmentRemoval(null)
     } finally {
       setDeletingAttachmentIds((prev) => { const n = new Set(prev); n.delete(a.id); return n })
     }
@@ -217,6 +276,11 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
     const useHolidayOverride = holidayOverrideArg ?? holidayOverride
     if (!title.trim()) { setError('Title is required.'); return }
     if (!deadlineDate) { setError('Deadline is required.'); return }
+    // Mirrors the backend rule, caught here so the user isn't bounced by a 400.
+    if (!taskIsTerminal && canReassign && primaryAssignees.length === 0) {
+      setError('A task needs at least one assignee. Add someone to do the work, or make a CC an assignee.')
+      return
+    }
     setSubmitting(true)
     setError(null)
     try {
@@ -233,10 +297,26 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
         proof_required: proofRequired,
         proof_allowed_extensions: proofRequired ? proofAllowedExtensions : [],
         goal_id: goalId || undefined,
-        // Checklist edits only apply to an open task (the backend freezes it once closed).
+        // Only send a reason when the date actually moved off an existing one —
+        // otherwise it's a note attached to nothing.
+        ...(task.deadline && deadline !== task.deadline && deadlineReason.trim()
+          ? { deadline_reason: deadlineReason.trim() }
+          : {}),
+        // Roster + checklist edits only apply to an open task (the backend freezes
+        // both once closed). Send only the lists this user is allowed to change:
+        // omitting a list leaves that group untouched, so a plain assignee's CC-only
+        // save cannot disturb who is doing the work.
         ...(taskIsTerminal
           ? {}
           : {
+              ...(canReassign
+                ? {
+                    assignee_user_ids: primaryAssignees.map((a) => a.user_id),
+                    cc_user_ids: ccAssignees.map((a) => a.user_id),
+                  }
+                : canEditCc
+                  ? { cc_user_ids: ccAssignees.map((a) => a.user_id) }
+                  : {}),
               checklist_items: buildChecklistItems(checklistGroups) ?? [],
               checklist_template_ids: Array.from(
                 new Set(checklistGroups.filter((g) => g.templateId).map((g) => g.templateId as string)),
@@ -261,18 +341,23 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
     } catch (e2) {
       const msg = apiErrorMessage(e2, 'Failed to save changes. Please try again.')
       // The holiday rule never forces itself — if this is the holiday rejection,
-      // offer to keep the date as-is instead of just failing.
+      // offer to keep the date as-is instead of just failing. Styled dialog, not a
+      // native confirm (DESIGN_RULES Part 7).
       if (/non-working day/i.test(msg)) {
-        if (window.confirm(`${msg}\n\nKeep this date anyway?`)) {
-          setSubmitting(false)
-          await handleSubmit(e, true)
-          return
-        }
+        setHolidayPrompt(msg)
+        return
       }
       setError(msg)
     } finally {
       setSubmitting(false)
     }
+  }
+
+  /** Re-save with the holiday rule explicitly overridden, keeping the chosen date. */
+  async function keepHolidayDateAnyway() {
+    setHolidayPrompt(null)
+    setHolidayOverride(true)
+    await handleSubmit({ preventDefault: () => {} } as React.FormEvent, true)
   }
 
   if (!mounted) return null
@@ -312,6 +397,109 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
               </span>
             </div>
           </div>
+
+          {/* Assignees & CC — finally where you'd look for them, rather than only on
+              the detail page. One list carries both roles: click a person's chip to
+              flip them between Assignee and CC. A flip is an in-place role change on
+              the server, so that person keeps their status and checklist progress. */}
+          {(canReassign || canEditCc) && (
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <label className="text-sm font-medium text-[#374151]">
+                  Assignees &amp; CC <span className="text-[#DC2626]">*</span>
+                </label>
+                {roster.length > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">
+                    {roster.length}
+                  </span>
+                )}
+              </div>
+
+              {taskIsTerminal ? (
+                <>
+                  <div className="flex flex-wrap gap-1.5">
+                    {roster.map((a) => (
+                      <span
+                        key={a.user_id}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] pl-2 pr-2.5 py-1 text-[13px] text-[#1E293B]"
+                      >
+                        {a.name}
+                        {a.is_cc && (
+                          <span className="text-[10px] font-semibold text-[#0369A1] bg-[#E0F2FE] border border-[#BAE6FD] rounded-full px-1.5">
+                            CC
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-[#475569] mt-1.5">
+                    This task is closed, so its people are a frozen record. Reopen it to change who is on it.
+                  </p>
+                </>
+              ) : canReassign ? (
+                <>
+                  <AssigneeSelector
+                    orgId={orgId}
+                    value={roster}
+                    onChange={setRoster}
+                    disabled={submitting}
+                    currentUser={user ? { user_id: user.id, name: user.name } : undefined}
+                  />
+                  <p className="text-[11px] text-[#475569] mt-1">
+                    Add or remove people · click their badge to toggle between Assignee and CC
+                  </p>
+                </>
+              ) : (
+                /* Split rights: this user may loop people in as CC but not reassign
+                   the work, so the working assignees stay read-only and only the CC
+                   list is editable. */
+                <>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {primaryAssignees.map((a) => (
+                      <span
+                        key={a.user_id}
+                        className="inline-flex items-center rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2.5 py-1 text-[13px] text-[#1E293B]"
+                      >
+                        {a.name}
+                      </span>
+                    ))}
+                  </div>
+                  <AssigneeSelector
+                    orgId={orgId}
+                    value={ccAssignees}
+                    onChange={(next) =>
+                      setRoster([...primaryAssignees, ...next.map((x) => ({ ...x, is_cc: true }))])
+                    }
+                    disabled={submitting}
+                    currentUser={user ? { user_id: user.id, name: user.name } : undefined}
+                  />
+                  <p className="text-[11px] text-[#475569] mt-1">
+                    You can CC people in on this task. Changing who it&apos;s assigned to is up to{' '}
+                    {task.created_by?.name ?? 'whoever assigned it'}.
+                  </p>
+                </>
+              )}
+
+              {/* People taken off the task. Removal is soft on purpose — the record
+                  that someone held this task survives, so a person who was already
+                  late can't be quietly removed into a clean scorecard. */}
+              {(task.removed_assignees?.length ?? 0) > 0 && (
+                <div className="mt-2.5 rounded-[8px] border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2">
+                  <p className="text-[11px] font-semibold text-[#475569] mb-1">Previously on this task</p>
+                  <ul className="space-y-0.5">
+                    {task.removed_assignees!.map((a) => (
+                      <li key={a.id} className="text-[12px] text-[#475569]">
+                        <span className="text-[#1E293B]">{a.user?.name ?? a.user_name ?? 'Unknown'}</span>
+                        {a.is_cc ? ' (CC)' : ''}
+                        {a.removed_at ? ` · removed ${fmtDate(a.removed_at)}` : ''}
+                        {a.removed_by?.name ? ` by ${a.removed_by.name}` : ''}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Completion mode */}
           {assigneeCount > 1 && (
@@ -371,6 +559,70 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
               onToggleOverride={setHolidayOverride}
             />
             {deadlineDate && <LeaveWarningBadge availability={leaveAvail} deadline={deadlineDate} today={todayStr} />}
+
+            {/* The compliance baseline. On-time vs late is graded against the date
+                this task was FIRST committed to, not the live one — so moving a
+                deadline is allowed and visible, but never rewrites history. Saying so
+                here is the point: it's what stops a revision feeling like a loophole. */}
+            {(task.deadline_revision_count ?? 0) > 0 && task.original_deadline && (
+              <div className="mt-2 rounded-[8px] border border-[#FDE68A] bg-[#FEF9C3] px-3 py-2">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-[12px] text-[#713F12]">
+                    Originally due <strong className="font-semibold">{fmtDate(task.original_deadline)}</strong>
+                    {' · '}revised {task.deadline_revision_count}
+                    {task.deadline_revision_count === 1 ? ' time' : ' times'}.
+                    <br />
+                    Compliance reporting grades this task against the original date.
+                  </p>
+                  {(task.deadline_revisions?.length ?? 0) > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setRevisionsOpen((v) => !v)}
+                      aria-expanded={revisionsOpen}
+                      className="flex items-center gap-1 shrink-0 text-[11px] font-semibold text-[#713F12] hover:text-[#0F172A] transition-colors"
+                    >
+                      <History size={12} />
+                      {revisionsOpen ? 'Hide' : 'History'}
+                    </button>
+                  )}
+                </div>
+                {revisionsOpen && (
+                  <ul className="mt-2 space-y-1 border-t border-[#FDE68A] pt-2 max-h-[160px] overflow-y-auto">
+                    {task.deadline_revisions!.map((r) => (
+                      <li key={r.id} className="text-[11px] text-[#713F12]">
+                        {r.from_deadline ? fmtDate(r.from_deadline) : 'no deadline'} →{' '}
+                        {r.to_deadline ? fmtDate(r.to_deadline) : 'no deadline'}
+                        {r.changed_by?.name ? ` · ${r.changed_by.name}` : ''}
+                        {' · '}
+                        {fmtDate(r.changed_at)}
+                        {r.reason ? <span className="block italic">“{r.reason}”</span> : null}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            {/* Optional reason, shown only once the date has actually been moved off
+                an existing one — a note attached to nothing is just noise. */}
+            {task.deadline && deadline !== task.deadline && (
+              <div className="mt-2">
+                <label className="block text-sm font-medium text-[#374151] mb-1.5">
+                  Why is the deadline changing? <span className="text-[#475569] font-normal">Optional</span>
+                </label>
+                <input
+                  type="text"
+                  value={deadlineReason}
+                  onChange={(e) => setDeadlineReason(e.target.value.slice(0, 500))}
+                  maxLength={500}
+                  placeholder="e.g. client pushed the review to next week"
+                  className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white"
+                />
+                <p className="text-[11px] text-[#475569] mt-1">
+                  Recorded against this change, and everyone on the task is told the date moved.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Description */}
@@ -539,6 +791,45 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           </div>
         </div>
       </div>
+
+      {/* Styled confirmations — never a native browser dialog (DESIGN_RULES Part 7). */}
+      <ConfirmDialog
+        open={discardOpen}
+        title="Discard unsaved changes?"
+        message="Your edits to this task haven't been saved yet."
+        confirmLabel="Discard"
+        cancelLabel="Keep editing"
+        danger
+        onConfirm={() => { setDiscardOpen(false); onClose() }}
+        onCancel={() => setDiscardOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={!!pendingAttachmentRemoval}
+        title="Remove this file?"
+        message={
+          pendingAttachmentRemoval
+            ? `“${pendingAttachmentRemoval.file_name}” will be deleted for everyone on the task.`
+            : undefined
+        }
+        confirmLabel="Remove"
+        danger
+        loading={!!pendingAttachmentRemoval && deletingAttachmentIds.has(pendingAttachmentRemoval.id)}
+        onConfirm={confirmRemoveAttachment}
+        onCancel={() => setPendingAttachmentRemoval(null)}
+      />
+
+      {/* The holiday rule suggests, it never forces — so a rejected date offers to
+          stand rather than just failing (no dead end). */}
+      <ConfirmDialog
+        open={!!holidayPrompt}
+        title="Keep this date anyway?"
+        message={holidayPrompt ?? undefined}
+        confirmLabel="Keep the date"
+        cancelLabel="Pick another"
+        onConfirm={keepHolidayDateAnyway}
+        onCancel={() => { setHolidayPrompt(null); setError(null) }}
+      />
     </div>,
     document.body,
   )

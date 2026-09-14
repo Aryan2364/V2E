@@ -1224,6 +1224,17 @@ model Task {
   reopened_at               DateTime?
   reopen_expires_at         DateTime?
   deadline                  DateTime?
+  // The deadline this task was FIRST committed to — frozen at creation and never
+  // rewritten by an edit. `deadline` is the live/working date; this is the yardstick.
+  // Compliance reporting (person scorecard, ageing, monthly calendar) grades on-time
+  // vs late against THIS date, so revising a deadline can never turn a late task
+  // on-time retroactively. Null only for tasks that never had a deadline.
+  original_deadline         DateTime?
+  // How many times `deadline` has been revised away from `original_deadline`.
+  // Denormalized on purpose: the three report queries scan thousands of task rows
+  // and need the "revised 2x" flag without a join per row. Full history lives in
+  // `TaskDeadlineRevision`.
+  deadline_revision_count   Int               @default(0)
   is_overdue                Boolean           @default(false) // persisted by the auto-overdue sweep (mirrors Ticket.sla_breached)
   overdue_at                DateTime? // business time the task crossed its deadline
   completed_at              DateTime? // when the task reached a terminal `completed` OR `incomplete` status
@@ -1255,14 +1266,15 @@ model Task {
   status        TaskStatus        @relation(fields: [status_id], references: [id])
   goal          Goal?             @relation(fields: [goal_id], references: [id])
   import_batch  TaskImportBatch?  @relation(fields: [import_batch_id], references: [id], onDelete: SetNull)
-  assignees     TaskAssignee[]
-  checklist     TaskChecklist[]
-  reminders     TaskReminder[]
-  escalations   TaskEscalation[]
-  activity_logs TaskActivityLog[]
-  comments      TaskComment[]
-  attachments   TaskAttachment[]
-  views         TaskView[]
+  assignees          TaskAssignee[]
+  checklist          TaskChecklist[]
+  reminders          TaskReminder[]
+  escalations        TaskEscalation[]
+  activity_logs      TaskActivityLog[]
+  comments           TaskComment[]
+  attachments        TaskAttachment[]
+  views              TaskView[]
+  deadline_revisions TaskDeadlineRevision[]
 
   @@unique([recurring_template_id, recurring_spawn_date], map: "tasks_recurring_template_day_unique")
   @@index([goal_id])
@@ -1311,6 +1323,16 @@ model TaskAssignee {
   cannot_complete_reason String?   @db.Text
   cannot_complete_at     DateTime?
   is_cc                  Boolean   @default(false)
+  // Soft removal. Taking someone off a task must never erase the fact that they were
+  // on it: compliance reporting still has to show they held the task and what they
+  // did with it, so a "late" person cannot be quietly removed into a clean scorecard.
+  // `removed_at != null` = no longer an active participant — hidden from the task's
+  // working views, excluded from completion gates and n/N counts, still present in
+  // history, audit and the reports. Re-adding the same person CLEARS these fields and
+  // revives the original row, restoring their prior status/checklist/proof state
+  // (the [task_id, user_id] unique key makes that the natural behaviour).
+  removed_at             DateTime?
+  removed_by_user_id     String?
   created_at             DateTime  @default(now())
 
   task   Task        @relation(fields: [task_id], references: [id], onDelete: Cascade)
@@ -1320,7 +1342,35 @@ model TaskAssignee {
   @@index([user_id])
   @@index([organization_id])
   @@index([organization_id, user_id, is_completed])
+  // Active-participant lookups always filter on `removed_at: null`; these keep the
+  // hot paths (a task's live roster, a person's live workload) index-only.
+  @@index([task_id, removed_at])
+  @@index([organization_id, user_id, removed_at])
   @@map("task_assignees")
+}
+
+// Immutable audit of every deadline revision on a task. `Task.original_deadline` is
+// the frozen baseline the reports grade against; this is the paper trail explaining
+// how the live `deadline` drifted away from it. Append-only — never updated or
+// deleted (a task delete cascades, since the task itself is then gone).
+model TaskDeadlineRevision {
+  id                 String   @id @default(uuid())
+  organization_id    String
+  task_id            String
+  from_deadline      DateTime? // null when a deadline was added to a task that had none
+  to_deadline        DateTime? // null when a deadline was cleared entirely
+  // Optional: the reports grade against the original date, so the loophole is already
+  // closed and a mandatory justification box would only add friction. Captured and
+  // shown when the reviser bothers to explain.
+  reason             String?  @db.Text
+  changed_by_user_id String
+  changed_at         DateTime @default(now())
+
+  task Task @relation(fields: [task_id], references: [id], onDelete: Cascade)
+
+  @@index([task_id])
+  @@index([organization_id])
+  @@map("task_deadline_revisions")
 }
 
 // A checklist item is the shared DEFINITION (title/group/order). HOW it is "done"

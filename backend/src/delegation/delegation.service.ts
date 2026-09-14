@@ -281,9 +281,15 @@ export class DelegationService {
         type: 'one_time',
         completion_mode: 'any_can_complete',
         deadline: delegation.first_check_in ?? undefined,
+        // Frozen compliance baseline — the date this task is born committed to. Kept
+        // in step with every other task-creation path so a later deadline revision
+        // can't retroactively turn a late task on-time.
+        original_deadline: delegation.first_check_in ?? undefined,
       },
     });
 
+    // Safe as a plain create (no upsert / removed_at revive needed): the task was just
+    // created above, so no TaskAssignee row for [task_id, user_id] can already exist.
     await this.prisma.taskAssignee.create({
       data: { organization_id: orgId, task_id: task.id, user_id: delegatorId, is_cc: false },
     });

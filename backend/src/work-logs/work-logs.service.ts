@@ -10,6 +10,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { ClockService } from '../clock/clock.service';
 import { AssigneeVisibilityService } from '../assignee-visibility/assignee-visibility.service';
 import { SubjectEligibilityService } from '../access-rights/subject-eligibility.service';
+import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
 import {
   CreateDemandDto,
   CreateReaderGrantDto,
@@ -244,7 +245,7 @@ export class WorkLogsService {
           organization_id: orgId,
           is_deleted: false,
           deadline: { gte: start, lte: end },
-          assignees: { some: { user_id: actor.id } },
+          assignees: { some: { ...ACTIVE_ASSIGNEE, user_id: actor.id } },
         },
         select: { id: true, title: true, deadline: true, status: { select: { label: true, type: true } } },
         orderBy: { deadline: 'asc' },

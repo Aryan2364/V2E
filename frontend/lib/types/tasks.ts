@@ -90,6 +90,28 @@ export interface TaskAssigneeUser {
   cannot_complete?: boolean
   cannot_complete_reason?: string | null
   cannot_complete_at?: string | null
+  /**
+   * Set when this person was taken off the task. Present only on `removed_assignees`
+   * — the live `assignees` list never contains a removed row.
+   */
+  removed_at?: string | null
+  removed_by_user_id?: string | null
+  removed_by?: { id: string; name: string; email?: string } | null
+}
+
+/** One recorded move of a task's deadline. Append-only; never edited or deleted. */
+export interface TaskDeadlineRevision {
+  id: string
+  task_id: string
+  /** Null only in the defensive case of a task that had no deadline. */
+  from_deadline?: string | null
+  /** Null when the deadline was cleared entirely. */
+  to_deadline?: string | null
+  /** Optional note the reviser gave. Not mandatory — see the DTO for why. */
+  reason?: string | null
+  changed_by_user_id: string
+  changed_by?: { id: string; name: string; email?: string } | null
+  changed_at: string
 }
 
 /** One person's state for a checklist item (all_must_complete mode). */
@@ -156,6 +178,16 @@ export interface Task {
   } | null
   is_deleted: boolean
   deadline?: string
+  /**
+   * The deadline this task was FIRST committed to, frozen at creation. Compliance
+   * reporting grades on-time vs late against this, never the live `deadline`, so
+   * revising a date cannot turn a late task on-time after the fact.
+   */
+  original_deadline?: string | null
+  /** How many times the deadline has been revised away from `original_deadline`. */
+  deadline_revision_count?: number
+  /** The deadline paper trail, newest first (detail view only). */
+  deadline_revisions?: TaskDeadlineRevision[]
   /** Quarterly goal this task is linked to as an initiative (null/absent = unlinked). */
   goal_id?: string | null
   recurring_template_id?: string
@@ -184,6 +216,12 @@ export interface Task {
   priority?: TaskPriority
   status?: TaskStatus
   assignees?: TaskAssigneeUser[]
+  /**
+   * People taken OFF this task. Removal is soft, so the record that someone held the
+   * task survives for reporting — they're excluded from every count and gate, but
+   * still shown in the task's history. Detail view only.
+   */
+  removed_assignees?: TaskAssigneeUser[]
   checklist?: TaskChecklistItem[]
   /** The user who created/assigned the task (resolved server-side). */
   created_by?: { id: string; name: string; email?: string } | null

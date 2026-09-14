@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClockService } from '../clock/clock.service';
 import { TERMINAL_TYPES } from './status-phase';
+import { ACTIVE_ASSIGNEE } from './active-assignee';
 
 @Injectable()
 export class TasksAnalyticsService {
@@ -209,7 +210,9 @@ export class TasksAnalyticsService {
       TasksAnalyticsService.TIMINGS.map((t) =>
         this.prisma.taskAssignee.groupBy({
           by: ['user_id'],
-          where: { is_cc: false, task: { ...where, ...this.timingWhere(t) } },
+          // Work Overview is a live-workload dashboard (not one of the three compliance
+          // reports), so it counts only tasks each person currently holds.
+          where: { ...ACTIVE_ASSIGNEE, is_cc: false, task: { ...where, ...this.timingWhere(t) } },
           _count: { _all: true },
         }),
       ),

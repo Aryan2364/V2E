@@ -10,6 +10,7 @@ import { ClockService } from '../clock/clock.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateLeaveDto, DecideLeaveDto, UpdateLeaveMasterDto } from './dto/leave.dto';
 import { TERMINAL_TYPES } from '../tasks/status-phase';
+import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
 
 const CONFIG_TTL_MS = 5_000;
 
@@ -440,6 +441,7 @@ export class LeaveService {
     const assignments = await this.prisma.taskAssignee.findMany({
       where: {
         organization_id: orgId,
+        ...ACTIVE_ASSIGNEE, // a task they were taken off is no longer their conflict
         user_id: leave.user_id,
         is_cc: false,
         task: {

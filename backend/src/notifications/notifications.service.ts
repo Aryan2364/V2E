@@ -5,6 +5,7 @@ import { NotificationsGateway } from './notifications.gateway';
 import { PushService } from './push.service';
 import { NotifModule } from './notification-events';
 import { TERMINAL_TYPES } from '../tasks/status-phase';
+import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
 
 export interface EmitParams {
   orgId: string;
@@ -361,7 +362,9 @@ export class NotificationsService {
         title: true,
         deadline: true,
         created_by_user_id: true,
-        assignees: { where: { is_cc: false }, select: { user_id: true } },
+        // Overdue pings go to the LIVE roster — someone taken off the task must not
+        // keep receiving its overdue/followup notifications.
+        assignees: { where: { ...ACTIVE_ASSIGNEE, is_cc: false }, select: { user_id: true } },
       },
     });
 

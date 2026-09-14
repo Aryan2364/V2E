@@ -71,6 +71,10 @@ export default function EditRecurringModal({ template, orgId, categories, priori
   const [goalId, setGoalId] = useState(template.linked_goal_id ?? '')
   const [assignees, setAssignees] = useState<SelectedAssignee[]>([])
   const [assigneesLoaded, setAssigneesLoaded] = useState(false)
+  // Whether a roster change should reach occurrences that already exist. Defaults to
+  // future-only — today's behaviour — so an unrelated edit never quietly reshuffles
+  // live tasks. Only offered once the roster has actually changed (below).
+  const [applyTo, setApplyTo] = useState<'future_only' | 'future_and_open'>('future_only')
   const [scheduleEntries, setScheduleEntries] = useState<ScheduleEntryDraft[]>(
     (template.schedule_entries ?? []).length > 0
       ? (template.schedule_entries ?? []).map(entryToScheduleEntryDraft)
@@ -103,6 +107,10 @@ export default function EditRecurringModal({ template, orgId, categories, priori
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // A committed save that propagation could not fully apply — held so the user sees
+  // which occurrences were left alone before the modal closes.
+  const [savedResult, setSavedResult] = useState<RecurringTemplate | null>(null)
+  const [skippedNote, setSkippedNote] = useState<{ title: string; reason: string }[]>([])
   // Portal target only exists on the client — guard against SSR mismatch.
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
@@ -143,6 +151,23 @@ export default function EditRecurringModal({ template, orgId, categories, priori
       .finally(() => { if (!cancelled) setAssigneesLoaded(true) })
     return () => { cancelled = true }
   }, [orgId, template.id, template.assignee_user_ids, template.cc_user_ids])
+
+  // Has the roster actually moved? Drives whether we bother asking about existing
+  // occurrences. Order-independent, and only once the current roster has loaded —
+  // before that `assignees` is [] and everything would look "changed".
+  const initialRosterSig = React.useMemo(
+    () =>
+      JSON.stringify(
+        [
+          ...(template.assignee_user_ids ?? []).map((u) => `${u}:0`),
+          ...(template.cc_user_ids ?? []).map((u) => `${u}:1`),
+        ].sort(),
+      ),
+    [template.assignee_user_ids, template.cc_user_ids],
+  )
+  const rosterChanged =
+    assigneesLoaded &&
+    JSON.stringify(assignees.map((a) => `${a.user_id}:${a.is_cc ? 1 : 0}`).sort()) !== initialRosterSig
 
   // Existing template attachments + the checklist templates this user may apply.
   useEffect(() => {
@@ -213,7 +238,10 @@ export default function EditRecurringModal({ template, orgId, categories, priori
         })) as never,
         assignee_user_ids: assignees.filter((a) => !a.is_cc).map((a) => a.user_id),
         cc_user_ids: assignees.filter((a) => a.is_cc).map((a) => a.user_id),
-      })
+        // Only meaningful when the roster moved; harmless otherwise (the backend
+        // treats it as future-only unless there is actually a roster change).
+        apply_to: rosterChanged ? applyTo : 'future_only',
+      } as never)
       // Upload any newly added documents — future instances will carry them.
       if (pendingFiles.length > 0) {
         try {
@@ -226,6 +254,18 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           setSubmitting(false)
           return
         }
+      }
+      // Propagating a roster to open occurrences can legitimately skip some — an open
+      // task can't be left with nobody doing it. That has to be said out loud, or the
+      // user walks away believing every occurrence was updated. Hold the modal open
+      // with the list; the save itself has already committed.
+      const skipped = (result as unknown as { propagation?: { skipped?: { title: string; reason: string }[] } })
+        ?.propagation?.skipped ?? []
+      if (skipped.length > 0) {
+        setSavedResult(result!)
+        setSkippedNote(skipped)
+        setSubmitting(false)
+        return
       }
       onUpdated(result!)
     } catch {
@@ -259,7 +299,15 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             <div className="text-sm text-[#9A3412] space-y-1">
               <p className="font-semibold">What happens when you save?</p>
               <ul className="list-disc list-inside space-y-0.5 text-[13px]">
-                <li>Already-created task instances are <span className="font-medium">not affected</span> — they stay as-is.</li>
+                <li>
+                  Already-created task instances are{' '}
+                  <span className="font-medium">
+                    {rosterChanged && applyTo === 'future_and_open'
+                      ? 'updated too — but only who they’re assigned to, and only if still open'
+                      : 'not affected'}
+                  </span>
+                  {rosterChanged && applyTo === 'future_and_open' ? '.' : ' — they stay as-is.'}
+                </li>
                 <li>The next scheduled task and all future ones follow your updated settings, checklist, reminders and attachments.</li>
                 <li>Schedule changes <span className="font-medium">fully replace</span> the existing schedule.</li>
               </ul>
@@ -295,6 +343,46 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                   ? 'Add people · click their badge to toggle between Assignee and CC'
                   : 'Loading current assignees…'}
               </p>
+
+              {/* Only asked once the roster has actually changed — a toggle nobody
+                  needs is worse than no toggle. Mirrors the three delete modes, so it
+                  should feel familiar. */}
+              {rosterChanged && (
+                <div className="mt-3 rounded-[10px] border border-[#BAE6FD] bg-[#E0F2FE] px-4 py-3">
+                  <p className="text-sm font-semibold text-[#0369A1] mb-2">
+                    You changed who this task goes to. Apply that to existing occurrences?
+                  </p>
+                  <div className="space-y-2">
+                    {([
+                      {
+                        v: 'future_only' as const,
+                        label: 'Future occurrences only',
+                        hint: 'Tasks already created keep their current people.',
+                      },
+                      {
+                        v: 'future_and_open' as const,
+                        label: 'This and all open occurrences',
+                        hint: 'Also updates every not-yet-completed task from this template. Closed ones are never touched.',
+                      },
+                    ]).map((opt) => (
+                      <label key={opt.v} className="flex items-start gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="applyTo"
+                          value={opt.v}
+                          checked={applyTo === opt.v}
+                          onChange={() => setApplyTo(opt.v)}
+                          className="accent-[#2563EB] mt-0.5"
+                        />
+                        <span>
+                          <span className="block text-sm text-[#0F172A]">{opt.label}</span>
+                          <span className="block text-[11px] text-[#475569]">{opt.hint}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             {primaryAssigneeCount > 1 && (
               <div>
@@ -445,10 +533,38 @@ export default function EditRecurringModal({ template, orgId, categories, priori
         </form>
 
         {/* Footer — no Cancel button; the header X closes the modal (see DESIGN_RULES) */}
-        <div className="shrink-0 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-6 py-4 border-t border-[#E2E8F0]">
-          <button type="button" onClick={handleSubmit} disabled={submitting} className="w-full sm:w-auto px-5 py-[10px] text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed transition-colors">
-            {submitting ? 'Saving...' : 'Save Changes'}
-          </button>
+        <div className="shrink-0 px-6 py-4 border-t border-[#E2E8F0] space-y-3">
+          {/* Saved, but some open occurrences were deliberately left alone. */}
+          {skippedNote.length > 0 && (
+            <div className="rounded-[8px] border border-[#FDE68A] bg-[#FEF9C3] px-4 py-3">
+              <p className="text-sm font-semibold text-[#713F12]">
+                Saved. {skippedNote.length} open{' '}
+                {skippedNote.length === 1 ? 'occurrence was' : 'occurrences were'} left unchanged:
+              </p>
+              <ul className="mt-1.5 space-y-1 max-h-[140px] overflow-y-auto">
+                {skippedNote.map((s, i) => (
+                  <li key={i} className="text-[12px] text-[#713F12]">
+                    <span className="font-medium">{s.title}</span> — {s.reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            {savedResult ? (
+              <button
+                type="button"
+                onClick={() => onUpdated(savedResult)}
+                className="w-full sm:w-auto px-5 py-[10px] text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors"
+              >
+                Done
+              </button>
+            ) : (
+              <button type="button" onClick={handleSubmit} disabled={submitting} className="w-full sm:w-auto px-5 py-[10px] text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed transition-colors">
+                {submitting ? 'Saving...' : 'Save Changes'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

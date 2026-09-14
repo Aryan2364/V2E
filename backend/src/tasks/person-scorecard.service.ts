@@ -5,6 +5,7 @@ import { ScopeService } from '../access-rights/scope.service';
 import { Principal } from '../access-rights/permissions.service';
 import { ClockService } from '../clock/clock.service';
 import { isSuccessful, isTerminal } from './status-phase';
+import { assigneeOutcome, handoverLateness, isReleased } from './active-assignee';
 import { shouldEntryFireToday, type RecurrenceEntry } from '../common/recurrence/should-fire-today';
 
 /**
@@ -19,6 +20,26 @@ import { shouldEntryFireToday, type RecurrenceEntry } from '../common/recurrence
  *
  * Strictly scope-aware and reuses the SAME visibility model as the rest of Work: a
  * viewer only ever sees people inside their effective scope (own/team/dept/org).
+ *
+ * ── Two integrity rules this report has to hold ───────────────────────────────
+ *
+ * 1. GRADE AGAINST THE FROZEN BASELINE, NOT THE LIVE DEADLINE.
+ *    `Task.deadline` is editable, so anyone about to be marked late could push the
+ *    date and land back on time. Every on-time / late / delay / overdue judgement
+ *    below therefore uses `original_deadline ?? deadline` — the date the task was
+ *    FIRST committed to (see `baselineOf`). The live `deadline` survives only where
+ *    it is shown as forward-looking "when is this due" information, and in the
+ *    created_at date-range filter (which never touched a deadline anyway).
+ *    `deadline_revision_count` + `original_deadline` ride along on every detail row
+ *    so the UI can flag "revised 2x" instead of silently trusting the new date.
+ *
+ * 2. INCLUDE REMOVED ASSIGNEES, BUT GRADE THEM BY `assigneeOutcome()`.
+ *    Removal is a soft delete (`TaskAssignee.removed_at`), so this report deliberately
+ *    reads the FULL historical roster — no `ACTIVE_ASSIGNEE` filter — otherwise taking
+ *    a late person off a task would wipe the lateness out of their score. People
+ *    released while still in good standing ('withdrawn') are counted in their own
+ *    `withdrawn` bucket and kept out of every metric and denominator, so they are
+ *    neither rewarded nor punished; everyone else is graded exactly as before.
  */
 
 const TASK_LEAF = 'tasks.task.manage';
@@ -29,6 +50,20 @@ const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ROW_CAP = 80000;
+
+/**
+ * The compliance yardstick for a task: the deadline it was FIRST committed to.
+ *
+ * `original_deadline` is frozen at creation and never rewritten by an edit, so it is
+ * immune to someone pushing the date to escape a late mark. The coalesce onto the live
+ * `deadline` is deliberate and defensive: a task that never had a deadline has both
+ * columns null, and any row that somehow escaped the backfill still grades against
+ * something rather than silently becoming "undated" (which would drop it out of the
+ * On-Time Rate denominator — a second way to launder a bad score).
+ */
+function baselineOf(t: { original_deadline?: Date | null; deadline: Date | null }): Date | null {
+  return t.original_deadline ?? t.deadline ?? null;
+}
 
 export interface ScorecardFilters {
   from_date?: string;
@@ -90,6 +125,22 @@ export interface ScorecardMetrics {
   longest_delay_days: number | null;         // COMPLETED work only: worst single delay
   avg_pending_age_days: number | null;       // PENDING work only: mean (today − due) over overdue tasks
   longest_pending_age_days: number | null;   // PENDING work only: oldest overdue task
+  // ── Integrity columns (additive; not part of the client's signed-off column set) ──
+  withdrawn: number;         // entries the person was removed from BEFORE their baseline
+                             // deadline without finishing (`assigneeOutcome` = 'withdrawn').
+                             // Deliberately NOT part of total_given / completed / pending /
+                             // any rate or grade denominator — the person was released in
+                             // good standing, so they are neither credited nor blamed. Shown
+                             // only so the removal stays visible.
+  handed_over: number;       // entries that were ALREADY LATE when taken off this person and
+                             // given to someone else. Counted in total_given and shown as a
+                             // late mark they still own, but deliberately kept out of
+                             // pending / overdue / the pending-age averages: the work is no
+                             // longer theirs to finish, so it must not read as outstanding
+                             // and must not keep ageing after they stopped holding it.
+  revised_entries: number;   // graded entries whose deadline has been revised at least once
+                             // (deadline_revision_count > 0). A "this score was measured
+                             // against a moved goalpost" flag for the UI.
   grade: ScorecardGrade;
 }
 
@@ -101,7 +152,23 @@ export type ScorecardTotals = Omit<ScorecardMetrics, 'grade' | 'recurring_unique
  * A task past its due date and not finished is 'overdue' no matter what stage the
  * person left it in.
  */
-export type EntryDateStatus = 'completed' | 'overdue' | 'in_progress' | 'not_yet_due' | 'closed';
+export type EntryDateStatus =
+  | 'completed'
+  | 'overdue'
+  | 'in_progress'
+  | 'not_yet_due'
+  | 'closed'
+  // Taken off this person and given to someone else. A TERMINAL state for them: it is
+  // never pending, never ageing, and never chased. `is_withdrawn` says whether they
+  // are graded for it; `handover.to` says who to actually ask about it now.
+  | 'handed_over';
+
+/** Where a released entry went, so no reader is left chasing the wrong person. */
+export interface HandoverInfo {
+  at: string;                       // when they were taken off
+  to: string[];                     // who holds it NOW (live roster, may be empty)
+  days_late_at_handover: number | null; // frozen lateness they carry; 0 = handed over in time
+}
 
 /** One row per task entry — the "Task Data" detail sheet + the person detail list. */
 export interface TaskEntryRow {
@@ -114,9 +181,18 @@ export interface TaskEntryRow {
   completion_date: string | null;
   status: string | null;              // the work stage label (what the person did)
   date_status: EntryDateStatus;       // where it stands today (from the dates)
-  delay_days: number | null;          // completed only: signed (completion − due); minus = early
-  days_late: number | null;           // completed → signed delay; overdue → today − due (positive); else null
+  delay_days: number | null;          // completed only: signed (completion − baseline due); minus = early
+  days_late: number | null;           // completed → signed delay; overdue → today − baseline due (positive); else null
   on_time: 'Yes' | 'No' | '';
+  // ── Integrity columns (additive) ─────────────────────────────────────────────
+  original_deadline: string | null;   // the frozen baseline every judgement above used.
+                                      // Differs from due_date exactly when the deadline moved.
+  deadline_revision_count: number;    // how many times the deadline was pushed/pulled
+  is_withdrawn: boolean;              // person was removed before the baseline deadline without
+                                      // finishing → listed, but excluded from every metric
+  // Set exactly when the person no longer holds this entry (either released outcome).
+  // Non-null ⇒ `date_status` is 'handed_over' and this row is NOT open work for them.
+  handover: HandoverInfo | null;
 }
 
 /** Supporting "unique recurring tasks held" row. */
@@ -134,6 +210,12 @@ export interface RecurringRow {
   last_completed_at: string | null;
   freshness_state: 'current' | 'behind' | 'none';
   freshness_label: string;
+  // Occurrences of this template the person was withdrawn from — kept out of
+  // fired / done / on_time_rate / the behind-count, surfaced separately.
+  withdrawn: number;
+  // Occurrences that were already late when handed to someone else. Same exclusion:
+  // no longer this person's backlog, so they never age against their cadence.
+  handed_over: number;
 }
 
 export interface Scorecard {
@@ -164,6 +246,10 @@ interface Acc {
   delayMax: number | null;   // worst (max) signed delay, or null if none
   pendingAgeSum: number;     // Σ (today − due) over overdue tasks
   pendingAgeMax: number | null; // oldest overdue task, or null if none
+  withdrawn: number;         // entries released in good standing — no other counter sees them
+  handedOver: number;        // entries already late when passed to someone else — a late mark
+                             // that never reaches overdue/pendingAge (not their work any more)
+  revised: number;           // graded entries whose deadline was revised at least once
   entries: TaskEntryRow[];
 }
 
@@ -181,6 +267,9 @@ interface RawCounts {
   delayMax: number | null;
   pendingAgeSum: number;
   pendingAgeMax: number | null;
+  withdrawn: number;
+  handedOver: number;
+  revised: number;
 }
 
 /** The client's grade ladder — strict order, first match wins. */
@@ -215,6 +304,15 @@ function finalize(r: RawCounts): ScorecardMetrics {
     longest_delay_days: r.delayMax,
     avg_pending_age_days: r.overdue > 0 ? Math.round((r.pendingAgeSum / r.overdue) * 100) / 100 : null,
     longest_pending_age_days: r.pendingAgeMax,
+    withdrawn: r.withdrawn,
+    handed_over: r.handedOver,
+    revised_entries: r.revised,
+    // `r.total` already excludes withdrawn entries, so the grade is computed over what
+    // the person actually still owed. Note the deliberate consequence: releasing someone
+    // in good standing from enough work CAN drop them under the 25-entry floor into
+    // "Too Few Tasks to Judge". That is the correct reading — there is genuinely too
+    // little left to judge — and `withdrawn` is published beside it so the reason is
+    // visible rather than mysterious.
     grade: gradeOf(r.total, onRate, completionRate),
   };
 }
@@ -289,7 +387,9 @@ export class PersonScorecardService {
     opts: ComputeOpts,
   ): Promise<Map<string, Scorecard>> {
     // Default window = all-time (like the client's "data as on" report). A supplied
-    // range narrows entries by the date they were created / fell due.
+    // range narrows entries by the date they were CREATED — never by a deadline — so
+    // it is untouched by the baseline switch: revising a deadline can neither pull a
+    // task into the window nor push it out of one.
     const from = filters.from_date ? new Date(filters.from_date) : null;
     const to = filters.to_date ? new Date(filters.to_date) : null;
     const dateWhere = from || to ? { created_at: { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) } } : {};
@@ -301,7 +401,7 @@ export class PersonScorecardService {
         employee: p,
         titles: new Set<string>(),
         total: 0, completed: 0, overdue: 0, ongoing: 0, onTime: 0, completedWithDate: 0, noDate: 0,
-        delaySum: 0, delayMax: null, pendingAgeSum: 0, pendingAgeMax: null,
+        delaySum: 0, delayMax: null, pendingAgeSum: 0, pendingAgeMax: null, withdrawn: 0, handedOver: 0, revised: 0,
         entries: [],
       });
     }
@@ -335,29 +435,58 @@ export class PersonScorecardService {
         recurring_template_id: true,
         created_by_user_id: true,
         deadline: true,
+        original_deadline: true,        // the frozen grading baseline
+        deadline_revision_count: true,  // revision transparency for the detail rows
         completed_at: true,
         completed_by_user_id: true,
         completion_timing: true,
         completion_mode: true,
         is_overdue: true,
         status: { select: { label: true, type: true } },
-        assignees: { where: { is_cc: false }, select: { user_id: true, is_completed: true, completed_at: true, cannot_complete: true } },
+        // NOTE: deliberately NOT filtered by ACTIVE_ASSIGNEE. This is a historical
+        // compliance read: removed people must stay in the roster so lateness they had
+        // already incurred cannot be deleted by taking them off the task. `removed_at`
+        // is selected so `assigneeOutcome()` can sort them into graded vs withdrawn.
+        assignees: {
+          where: { is_cc: false },
+          select: { user_id: true, is_completed: true, completed_at: true, cannot_complete: true, removed_at: true },
+        },
       },
       take: ROW_CAP,
     });
 
-    // Resolve assigner names once.
-    const creatorIds = Array.from(new Set(tasks.map((t) => t.created_by_user_id).filter(Boolean))) as string[];
-    const creators = creatorIds.length
-      ? await this.prisma.user.findMany({ where: { id: { in: creatorIds } }, select: { id: true, name: true } })
+    // Resolve assigner names once — plus the name of anyone who currently holds a task
+    // that somebody was taken off, so a released row can say WHO to ask instead of
+    // leaving the reader to chase the person who no longer has it.
+    const nameIds = new Set<string>();
+    for (const t of tasks) {
+      if (t.created_by_user_id) nameIds.add(t.created_by_user_id);
+      // Only tasks that actually saw a removal need their live roster named.
+      if (t.assignees.some((a) => a.removed_at)) {
+        for (const a of t.assignees) if (!a.removed_at) nameIds.add(a.user_id);
+      }
+    }
+    const named = nameIds.size
+      ? await this.prisma.user.findMany({ where: { id: { in: Array.from(nameIds) } }, select: { id: true, name: true } })
       : [];
-    const creatorName = new Map(creators.map((c) => [c.id, c.name]));
+    const creatorName = new Map(named.map((c) => [c.id, c.name]));
 
     for (const t of tasks) {
       const frequency = t.recurring_template_id ? (freqByTemplate.get(t.recurring_template_id) ?? 'Recurring') : 'One-time';
+      // `deadline` = the live/working date, shown to the user as "when is this due".
+      // `baseline` = the date the task was first committed to; EVERY on-time / late /
+      // delay / overdue judgement below uses this one, so pushing the deadline cannot
+      // retroactively rescue a late task.
       const deadline = t.deadline ?? null;
-      const past = !!deadline && deadline <= now;
+      const baseline = baselineOf(t);
+      const past = !!baseline && baseline <= now;
       const anyCan = t.completion_mode !== 'all_must_complete';
+      // Who the work sits with TODAY. Empty only if the task was left with nobody —
+      // itself worth showing, so the row reads "no one" rather than staying silent.
+      const heldNowBy = t.assignees
+        .filter((a) => !a.removed_at)
+        .map((a) => creatorName.get(a.user_id))
+        .filter((n): n is string => !!n);
 
       for (const a of t.assignees) {
         if (!inTarget(a.user_id)) continue;
@@ -367,14 +496,25 @@ export class PersonScorecardService {
         const completed = anyCan ? isSuccessful(t.status?.type) : a.is_completed;
         const completionDate = anyCan ? (t.completed_at ?? null) : (a.completed_at ?? null);
 
-        // Signed delay + on-time. Judgeable only when the entry is completed AND
-        // carries both a completion date and a due date (matches the client sheet:
-        // pending / undated tasks are kept out of the On-Time Rate denominator).
+        // How a removed person is graded. `completed` (not `a.is_completed`) is fed in
+        // on purpose: in any_can_complete mode the win is recorded on the task, not on
+        // the assignee row, and "finished before being removed → graded" has to hold in
+        // both completion modes. The removal is judged against the BASELINE deadline too
+        // — otherwise pushing the date out first would turn an already-late person's
+        // removal into a clean "withdrawal".
+        const outcome = assigneeOutcome({ removed_at: a.removed_at, is_completed: completed }, baseline);
+        const withdrawn = outcome === 'withdrawn';
+        const released = isReleased(outcome);
+
+        // Signed delay + on-time, against the BASELINE. Judgeable only when the entry is
+        // completed AND carries both a completion date and a baseline due date (matches
+        // the client sheet: pending / undated tasks are kept out of the On-Time Rate
+        // denominator).
         let delayDays: number | null = null;
         let onTime: 'Yes' | 'No' | '' = '';
-        const hasDates = completed && !!completionDate && !!deadline;
+        const hasDates = completed && !!completionDate && !!baseline;
         if (hasDates) {
-          delayDays = Math.floor((completionDate!.getTime() - deadline!.getTime()) / DAY_MS);
+          delayDays = Math.floor((completionDate!.getTime() - baseline!.getTime()) / DAY_MS);
           onTime = delayDays <= 0 ? 'Yes' : 'No'; // finished on OR before due = on time
         }
 
@@ -387,21 +527,71 @@ export class PersonScorecardService {
         const terminalNotSuccess = !completed && isTerminal(t.status?.type);
         let dateStatus: EntryDateStatus;
         let daysLate: number | null = null;
-        if (completed) {
+        if (released) {
+          // TERMINAL for this person, and checked before every open state on purpose.
+          // They no longer hold the task, so it is not overdue/in-progress/pending for
+          // them and must never appear as work to chase. Any lateness is frozen at the
+          // handover — letting it keep growing would charge them for days the task was
+          // sitting in someone else's queue.
+          dateStatus = 'handed_over';
+          daysLate = withdrawn ? null : handoverLateness(a.removed_at, baseline);
+        } else if (completed) {
           dateStatus = 'completed';
           daysLate = delayDays; // signed; may be early (negative) or null if no dates
         } else if (terminalNotSuccess) {
           dateStatus = 'closed';
         } else if (past) {
+          // Past its BASELINE and still open ⇒ overdue, however far the live deadline
+          // has since been pushed out. This is the one existing field whose meaning
+          // genuinely shifts: "overdue" is now measured against the original commitment.
           dateStatus = 'overdue';
-          daysLate = Math.floor((now.getTime() - deadline!.getTime()) / DAY_MS);
+          daysLate = Math.floor((now.getTime() - baseline!.getTime()) / DAY_MS);
         } else {
           dateStatus = t.status?.type === 'in_progress' ? 'in_progress' : 'not_yet_due';
+        }
+
+        // Released entries — the work is no longer theirs. Both kinds leave here before
+        // touching a single open-work counter (`overdue`, `ongoing`, `pendingAge*`), so
+        // neither can ever be read as something still owed by this person.
+        //
+        // They differ only in whether the person is graded:
+        //   withdrawn   — let go before it was due. Ungraded: out of total_given, the
+        //                 distinct-title count, every rate and the grade denominator.
+        //   handed_over — already late when passed on. The lateness is real and stays
+        //                 on their record (counted in total_given and `handed_over`,
+        //                 frozen at the handover date), but it is a CLOSED late mark,
+        //                 not outstanding work.
+        if (released) {
+          if (withdrawn) {
+            row.withdrawn += 1;
+          } else {
+            row.total += 1;
+            row.titles.add(t.title);
+            if (t.deadline_revision_count > 0) row.revised += 1;
+            row.handedOver += 1;
+          }
+          if (opts.includeDetail) {
+            row.entries.push(this.entryRow(t, a, {
+              frequency,
+              department: deptOf.get(a.user_id) ?? null,
+              assignedBy: t.created_by_user_id ? creatorName.get(t.created_by_user_id) ?? null : null,
+              deadline,
+              completionDate,
+              dateStatus,
+              delayDays: null,
+              daysLate,
+              onTime: '',
+              withdrawn,
+              handedOverTo: heldNowBy,
+            }));
+          }
+          continue;
         }
 
         // Metric buckets. Total = every entry given; distinct titles = real scope.
         row.total += 1;
         row.titles.add(t.title);
+        if (t.deadline_revision_count > 0) row.revised += 1;
         if (completed) {
           row.completed += 1;
           if (hasDates) {
@@ -421,20 +611,13 @@ export class PersonScorecardService {
         }
 
         if (opts.includeDetail) {
-          row.entries.push({
-            task_id: t.id,
-            title: t.title,
+          row.entries.push(this.entryRow(t, a, {
             frequency,
             department: deptOf.get(a.user_id) ?? null,
-            assigned_by: t.created_by_user_id ? creatorName.get(t.created_by_user_id) ?? null : null,
-            due_date: deadline ? deadline.toISOString() : null,
-            completion_date: completionDate ? completionDate.toISOString() : null,
-            status: t.status?.label ?? null,
-            date_status: dateStatus,
-            delay_days: delayDays,
-            days_late: daysLate,
-            on_time: onTime,
-          });
+            assignedBy: t.created_by_user_id ? creatorName.get(t.created_by_user_id) ?? null : null,
+            deadline, completionDate, dateStatus, delayDays, daysLate, onTime, withdrawn: false,
+            handedOverTo: heldNowBy,
+          }));
         }
       }
     }
@@ -457,6 +640,63 @@ export class PersonScorecardService {
     return out;
   }
 
+  /**
+   * Build one "Task Data" detail row. Shared by the graded and the withdrawn path so
+   * the two can never drift in shape.
+   *
+   * `due_date` is the LIVE deadline on purpose — the detail list doubles as a
+   * forward-looking "what do I owe and when" view, and showing a stale original date
+   * there would be actively misleading. The grading columns beside it (`delay_days`,
+   * `days_late`, `on_time`) were all computed against `original_deadline`, which is
+   * published alongside so the two dates can be compared instead of conflated.
+   */
+  private entryRow(
+    t: {
+      id: string; title: string; deadline: Date | null;
+      original_deadline: Date | null; deadline_revision_count: number;
+      status: { label: string; type: string } | null;
+    },
+    a: { removed_at: Date | null },
+    x: {
+      frequency: string; department: string | null; assignedBy: string | null;
+      deadline: Date | null; completionDate: Date | null; dateStatus: EntryDateStatus;
+      delayDays: number | null; daysLate: number | null; onTime: 'Yes' | 'No' | ''; withdrawn: boolean;
+      handedOverTo?: string[];
+    },
+  ): TaskEntryRow {
+    return {
+      task_id: t.id,
+      title: t.title,
+      frequency: x.frequency,
+      department: x.department,
+      assigned_by: x.assignedBy,
+      due_date: x.deadline ? x.deadline.toISOString() : null,
+      completion_date: x.completionDate ? x.completionDate.toISOString() : null,
+      status: t.status?.label ?? null,
+      date_status: x.dateStatus,
+      delay_days: x.delayDays,
+      days_late: x.daysLate,
+      on_time: x.onTime,
+      // Report the effective baseline (post-coalesce), not the raw column: this is the
+      // date the row was actually graded against, which is what the UI needs to explain
+      // a score. Equal to due_date whenever the deadline was never moved.
+      original_deadline: (t.original_deadline ?? t.deadline)?.toISOString() ?? null,
+      deadline_revision_count: t.deadline_revision_count,
+      is_withdrawn: x.withdrawn,
+      // Present exactly when the person has been taken off. Carrying the receiving
+      // name here is the difference between "Seema, overdue" (wrong, and a dead end
+      // for whoever reads it) and "left Seema on 22 Sep, 75 days late — now with
+      // Ajay Rathod", which tells the reader both what happened and who to ask.
+      handover: a.removed_at
+        ? {
+            at: a.removed_at.toISOString(),
+            to: x.handedOverTo ?? [],
+            days_late_at_handover: x.daysLate,
+          }
+        : null,
+    };
+  }
+
   /** Project a per-person accumulator to the raw counts `finalize` needs. */
   private rawOf(r: Acc): RawCounts {
     return {
@@ -472,6 +712,9 @@ export class PersonScorecardService {
       delayMax: r.delayMax,
       pendingAgeSum: r.pendingAgeSum,
       pendingAgeMax: r.pendingAgeMax,
+      withdrawn: r.withdrawn,
+      handedOver: r.handedOver,
+      revised: r.revised,
     };
   }
 
@@ -484,7 +727,7 @@ export class PersonScorecardService {
     const agg: RawCounts = {
       different: 0, total: 0, completed: 0, overdue: 0, ongoing: 0,
       onTime: 0, completedWithDate: 0, noDate: 0, delaySum: 0, delayMax: null,
-      pendingAgeSum: 0, pendingAgeMax: null,
+      pendingAgeSum: 0, pendingAgeMax: null, withdrawn: 0, handedOver: 0, revised: 0,
     };
     for (const c of cards) {
       const m = c.metrics;
@@ -498,6 +741,11 @@ export class PersonScorecardService {
       agg.noDate += m.completed_no_date;
       if (m.completed_with_date > 0 && m.avg_delay_days !== null) agg.delaySum += m.avg_delay_days * m.completed_with_date;
       if (m.longest_delay_days !== null && (agg.delayMax === null || m.longest_delay_days > agg.delayMax)) agg.delayMax = m.longest_delay_days;
+      // Withdrawn stays its OWN total — never folded into total_given / completed /
+      // on-time / late, so the Totals row reads "N entries graded, plus M withdrawn".
+      agg.withdrawn += m.withdrawn;
+      agg.handedOver += m.handed_over;
+      agg.revised += m.revised_entries;
       if (m.overdue > 0 && m.avg_pending_age_days !== null) agg.pendingAgeSum += m.avg_pending_age_days * m.overdue;
       if (m.longest_pending_age_days !== null && (agg.pendingAgeMax === null || m.longest_pending_age_days > agg.pendingAgeMax)) agg.pendingAgeMax = m.longest_pending_age_days;
     }
@@ -527,7 +775,7 @@ export class PersonScorecardService {
     });
 
     // Per (template, user) occurrence tally over ALL occurrences (for freshness).
-    type Agg = { fired: number; done: number; onTime: number; lastCompleted: Date | null; dueOpen: Date[] };
+    type Agg = { fired: number; done: number; onTime: number; withdrawn: number; handedOver: number; lastCompleted: Date | null; dueOpen: Date[] };
     const agg = new Map<string, Agg>();
     const keyOf = (tid: string, uid: string) => `${tid}:${uid}`;
 
@@ -536,37 +784,55 @@ export class PersonScorecardService {
       const occ = await this.prisma.task.findMany({
         where: { organization_id: orgId, recurring_template_id: { in: templateIds }, is_deleted: false },
         select: {
-          recurring_template_id: true, deadline: true, completed_at: true, completed_by_user_id: true,
-          completion_timing: true, completion_mode: true, is_overdue: true,
+          recurring_template_id: true, deadline: true, original_deadline: true, completed_at: true,
+          completed_by_user_id: true, completion_timing: true, completion_mode: true, is_overdue: true,
           status: { select: { type: true } },
-          assignees: { where: { is_cc: false }, select: { user_id: true, is_completed: true, completed_at: true } },
+          // Full historical roster again (no ACTIVE_ASSIGNEE) — see the main query.
+          assignees: { where: { is_cc: false }, select: { user_id: true, is_completed: true, completed_at: true, removed_at: true } },
         },
         take: ROW_CAP,
       });
       for (const o of occ) {
         const tid = o.recurring_template_id!;
         const timing = this.timing(o);
-        const deadline = o.deadline ?? null;
-        const past = !!deadline && deadline <= now;
+        // Baseline again for every late / behind judgement in this tally.
+        const baseline = baselineOf(o);
+        const past = !!baseline && baseline <= now;
         const anyCan = o.completion_mode !== 'all_must_complete';
         for (const a of o.assignees) {
           if (!idSet.has(a.user_id)) continue;
           const k = keyOf(tid, a.user_id);
           let row = agg.get(k);
-          if (!row) { row = { fired: 0, done: 0, onTime: 0, lastCompleted: null, dueOpen: [] }; agg.set(k, row); }
-          row.fired += 1;
+          if (!row) { row = { fired: 0, done: 0, onTime: 0, withdrawn: 0, handedOver: 0, lastCompleted: null, dueOpen: [] }; agg.set(k, row); }
+
           let done = false; let doneAt: Date | null = null; let late = false;
           if (!anyCan) {
-            if (a.is_completed) { done = true; doneAt = a.completed_at ?? null; late = !!(a.completed_at && deadline && a.completed_at > deadline); }
+            if (a.is_completed) { done = true; doneAt = a.completed_at ?? null; late = !!(a.completed_at && baseline && a.completed_at > baseline); }
           } else if ((timing === 'early' || timing === 'on_time' || timing === 'late') && o.completed_by_user_id === a.user_id) {
-            done = true; doneAt = o.completed_at ?? null; late = timing === 'late';
+            done = true; doneAt = o.completed_at ?? null;
+            // `completion_timing` was stamped against the live deadline at completion
+            // time, so re-derive lateness from the baseline whenever we have both dates.
+            late = doneAt && baseline ? doneAt > baseline : timing === 'late';
           }
+
+          // Occurrences the person no longer holds are counted on their own and left out
+          // of fired / done / on_time_rate and — critically — out of `dueOpen`, which
+          // drives the "behind" count. An occurrence sitting in someone else's queue is
+          // not this person's backlog, so it must never age against their cadence.
+          const occOutcome = assigneeOutcome({ removed_at: a.removed_at, is_completed: done }, baseline);
+          if (isReleased(occOutcome)) {
+            if (occOutcome === 'withdrawn') row.withdrawn += 1;
+            else row.handedOver += 1;
+            continue;
+          }
+
+          row.fired += 1;
           if (done) {
             row.done += 1;
             if (!late) row.onTime += 1;
             if (doneAt && (!row.lastCompleted || doneAt > row.lastCompleted)) row.lastCompleted = doneAt;
           } else if (past) {
-            row.dueOpen.push(deadline!);
+            row.dueOpen.push(baseline!);
           }
         }
       }
@@ -595,6 +861,8 @@ export class PersonScorecardService {
           fired, done, on_time_rate: done > 0 ? Math.round(((a?.onTime ?? 0) / done) * 100) : null,
           last_completed_at: a?.lastCompleted ? a.lastCompleted.toISOString() : null,
           freshness_state: fresh.state, freshness_label: fresh.label,
+          withdrawn: a?.withdrawn ?? 0,
+          handed_over: a?.handedOver ?? 0,
         });
         byUser.set(uid, list);
       }

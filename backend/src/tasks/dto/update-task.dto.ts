@@ -90,11 +90,29 @@ export class UpdateTaskDto {
   @IsBoolean()
   holiday_override?: boolean;
 
+  // Optional note explaining WHY the deadline moved, stored on the revision record.
+  // Deliberately not mandatory: the reports grade against `Task.original_deadline`,
+  // so a revision can't buy a clean scorecard and a forced justification box would be
+  // friction with no integrity benefit. Ignored unless `deadline` actually changes.
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  deadline_reason?: string;
+
+  // The task's full, authoritative WORKING roster (non-CC). When present the backend
+  // reconciles to match it: people added are created (or, if previously removed,
+  // revived with their prior state intact), people missing are SOFT-removed, and
+  // anyone moving between this list and `cc_user_ids` is flipped in place — never
+  // deleted and recreated, which would destroy their status and completion progress.
+  // Omit the field to leave the roster untouched. An empty array is rejected: a task
+  // must always have someone doing the work.
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   assignee_user_ids?: string[];
 
+  // The task's full, authoritative CC roster, reconciled exactly like the above.
+  // An empty array is valid — a task with no observers is fine.
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

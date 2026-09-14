@@ -31,13 +31,73 @@ function windowLabel(from: string, to: string) {
   return `${from || '…'} → ${to || '…'}`
 }
 
-const isPending = (e: TaskEntryRow) => e.date_status === 'overdue' || e.date_status === 'in_progress' || e.date_status === 'not_yet_due'
+// Work this person no longer holds is NOT pending on them — whether they were taken
+// off before it came due (withdrawn) or after (handed over). `date_status` is already
+// 'handed_over' for both, so one check covers it, and the per-task group tallies stay
+// in step with the KPI tiles above, which exclude released work the same way.
+//
+// This is the reading that matters: a row sitting under someone's name in a Pending
+// list is an instruction to go and chase them. If they handed the task on weeks ago,
+// that instruction is wrong and wastes a phone call to find out.
+const isPending = (e: TaskEntryRow) =>
+  e.date_status === 'overdue' || e.date_status === 'in_progress' || e.date_status === 'not_yet_due'
 
 /** The Days Late cell text, respecting where the task stands today. */
 function daysLateCell(e: TaskEntryRow): string {
+  // Released work reports the lateness it HAD when it left them, never a number that
+  // keeps climbing afterwards. Withdrawn carries none at all (they were let go in good
+  // standing); a handover carries the frozen figure, clearly labelled as historic.
+  if (e.date_status === 'handed_over') {
+    const d = e.handover?.days_late_at_handover
+    return d != null && d > 0 ? `${d} at handover` : '—'
+  }
   if (e.date_status === 'not_yet_due' || e.date_status === 'in_progress') return 'Not Yet Due'
   if (e.date_status === 'closed') return '—'
   return daysLateShort(e.days_late)
+}
+
+/**
+ * The "was this goalpost moved?" note under a due date. The date above it is the LIVE
+ * one (what is expected now); the on-time / delay columns beside it were measured
+ * against the original. Saying both is the whole point — a silent live date would let
+ * a revision explain away a late mark.
+ */
+function DueDateNote({ e }: { e: TaskEntryRow }) {
+  if (e.deadline_revision_count === 0) return null
+  return (
+    <span className="block text-[11px] font-medium text-[#B45309]" title={`Graded against the original due date, ${fmt(e.original_deadline)}`}>
+      revised {e.deadline_revision_count}× · was {fmt(e.original_deadline)}
+    </span>
+  )
+}
+
+/**
+ * Standing for an entry the person no longer holds.
+ *
+ * Always names who has it now. A tag that only said "Withdrawn" told the reader the
+ * work had moved but not where, which is a dead end — they would go back to the person
+ * on the row, be told it was reassigned, and still have nobody to ask.
+ */
+function WithdrawnTag({ e }: { e: TaskEntryRow }) {
+  const to = e.handover?.to?.length ? e.handover.to.join(', ') : 'no one'
+  const late = e.handover?.days_late_at_handover
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-medium bg-[#F1F5F9] text-[#475569]"
+      title={
+        `Taken off this task on ${fmt(e.handover?.at ?? null)}` +
+        (e.is_withdrawn
+          ? ', before it came due — kept out of every figure above'
+          : late != null && late > 0
+            ? `, already ${late} ${late === 1 ? 'day' : 'days'} late. That delay stays on their record, frozen at the handover; it is not pending on them any more.`
+            : '') +
+        ` Now with ${to}.`
+      }
+    >
+      {e.is_withdrawn ? 'Withdrawn' : late != null && late > 0 ? `Was ${late} ${late === 1 ? 'day' : 'days'} late` : 'Handed over'}
+      <span className="font-normal">· now with {to}</span>
+    </span>
+  )
 }
 
 /** A plain KPI count / rate tile. Colour is passed in only when it carries meaning. */
@@ -229,6 +289,12 @@ export default function ScorecardDetailPage() {
           <p className="text-[13px] text-[#64748B]">
             Showing {m.total_given.toLocaleString()} {m.total_given === 1 ? 'entry' : 'entries'}, {windowLabel(fromDate, toDate)}, {m.different_tasks} different {m.different_tasks === 1 ? 'task' : 'tasks'}.
             {m.completed_no_date > 0 && ` ${m.completed_no_date.toLocaleString()} completed ${m.completed_no_date === 1 ? 'task has' : 'tasks have'} no completion date entered, so ${m.completed_no_date === 1 ? 'it is' : 'they are'} kept out of the on-time and delay figures.`}
+            {/* Say plainly what the numbers above did and did not count. Withdrawn work is
+                excluded from every figure, and every on-time/late/delay figure was measured
+                against the ORIGINAL due date — both facts change how the score reads. */}
+            {m.withdrawn > 0 && ` ${m.withdrawn.toLocaleString()} ${m.withdrawn === 1 ? 'entry was' : 'entries were'} withdrawn — taken off this person before the original due date without finishing — so ${m.withdrawn === 1 ? 'it is' : 'they are'} listed below but kept out of every figure above, including the grade.`}
+            {m.handed_over > 0 && ` ${m.handed_over.toLocaleString()} ${m.handed_over === 1 ? 'entry was' : 'entries were'} handed over to someone else after already running late. The delay ${m.handed_over === 1 ? 'stays' : 'stay'} on this person's record, frozen at the day ${m.handed_over === 1 ? 'it' : 'they'} left them — but ${m.handed_over === 1 ? 'it is' : 'they are'} NOT counted as pending or overdue here, because the work is not theirs to finish any more. Each row below names who holds it now.`}
+            {m.revised_entries > 0 && ` ${m.revised_entries.toLocaleString()} ${m.revised_entries === 1 ? 'entry has' : 'entries have'} had the due date changed at least once; on-time and delay are always measured against the original due date.`}
           </p>
 
           {/* Recurring tasks held */}
@@ -249,6 +315,8 @@ export default function ScorecardDetailPage() {
                     <th className="px-4 py-2.5 font-semibold text-center">Fired</th>
                     <th className="px-4 py-2.5 font-semibold text-center">Done</th>
                     <th className="px-4 py-2.5 font-semibold text-center">On time</th>
+                    <th className="px-4 py-2.5 font-semibold text-center" title="Occurrences of this task the person was taken off before their due date — kept out of Fired, Done and On time.">Withdrawn</th>
+                    <th className="px-4 py-2.5 font-semibold text-center" title="Occurrences already late when they were taken off and given to someone else. Kept out of Fired, Done, On time and the behind-count — the work is no longer theirs to close.">Handed over</th>
                     <th className="px-4 py-2.5 font-semibold">Freshness</th>
                   </tr>
                 </thead>
@@ -262,6 +330,8 @@ export default function ScorecardDetailPage() {
                       <td className="px-4 py-2.5 text-center tabular-nums text-[#475569]">{r.fired}</td>
                       <td className="px-4 py-2.5 text-center tabular-nums" style={{ color: r.fired > 0 && r.done === 0 ? RED : INK }}>{r.done}</td>
                       <td className="px-4 py-2.5 text-center tabular-nums">{r.on_time_rate === null ? <span className="text-[#94A3B8]">—</span> : `${r.on_time_rate}%`}</td>
+                      <td className="px-4 py-2.5 text-center tabular-nums" style={{ color: r.withdrawn ? '#64748B' : '#CBD5E1' }}>{r.withdrawn}</td>
+                    <td className="px-4 py-2.5 text-center tabular-nums" style={{ color: r.handed_over ? '#475569' : '#CBD5E1' }}>{r.handed_over}</td>
                       <td className="px-4 py-2.5">
                         <span
                           className="inline-flex items-center rounded-full px-2 py-0.5 text-[12px] font-medium"
@@ -279,7 +349,7 @@ export default function ScorecardDetailPage() {
                     </tr>
                   ))}
                   {card.recurring_tasks.length === 0 && (
-                    <tr><td colSpan={8} className="px-4 py-8 text-center text-[#94A3B8]">No recurring tasks held.</td></tr>
+                    <tr><td colSpan={9} className="px-4 py-8 text-center text-[#94A3B8]">No recurring tasks held.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -373,10 +443,12 @@ export default function ScorecardDetailPage() {
                                   <tbody>
                                     {g.rows.map((e, i) => (
                                       <tr key={`${e.task_id}-${i}`} className="border-t border-[#EEF2F7] whitespace-nowrap">
-                                        <td className="px-2 py-1.5 text-[#475569]">{fmt(e.due_date)}</td>
+                                        <td className="px-2 py-1.5 text-[#475569]">{fmt(e.due_date)}<DueDateNote e={e} /></td>
                                         <td className="px-2 py-1.5 text-[#475569]">{e.status ?? '—'}</td>
-                                        <td className="px-2 py-1.5"><DateStatusTag status={e.date_status} daysLate={e.days_late} /></td>
-                                        <td className="px-2 py-1.5 tabular-nums" style={{ color: e.days_late == null ? MUTE : e.date_status === 'overdue' ? pendingAgeColor(e.days_late) : completedDelayColor(e.days_late) }}>{daysLateCell(e)}</td>
+                                        <td className="px-2 py-1.5">
+                                          {e.date_status === 'handed_over' ? <WithdrawnTag e={e} /> : <DateStatusTag status={e.date_status} daysLate={e.days_late} />}
+                                        </td>
+                                        <td className="px-2 py-1.5 tabular-nums" style={{ color: e.days_late == null || e.date_status === 'handed_over' ? MUTE : e.date_status === 'overdue' ? pendingAgeColor(e.days_late) : completedDelayColor(e.days_late) }}>{daysLateCell(e)}</td>
                                         {!pendingView && <td className="px-2 py-1.5 text-[#475569]">{fmt(e.completion_date)}</td>}
                                         {!pendingView && <td className="px-2 py-1.5 font-medium" style={{ color: e.on_time === 'Yes' ? '#15803D' : e.on_time === 'No' ? RED : MUTE }}>{e.on_time || '—'}</td>}
                                       </tr>
@@ -413,10 +485,12 @@ export default function ScorecardDetailPage() {
                       <tr key={`${e.task_id}-${i}`} className="border-b border-[#F1F5F9] last:border-0">
                         <td className="px-4 py-2 font-medium text-[#0F172A]">{e.title}</td>
                         <td className="px-3 py-2 text-[#475569]">{e.frequency}</td>
-                        <td className="px-3 py-2 text-[#475569]">{fmt(e.due_date)}</td>
+                        <td className="px-3 py-2 text-[#475569]">{fmt(e.due_date)}<DueDateNote e={e} /></td>
                         <td className="px-3 py-2 text-[#475569]">{e.status ?? '—'}</td>
-                        <td className="px-3 py-2"><DateStatusTag status={e.date_status} daysLate={e.days_late} /></td>
-                        <td className="px-3 py-2 tabular-nums" style={{ color: e.days_late == null ? MUTE : e.date_status === 'overdue' ? pendingAgeColor(e.days_late) : completedDelayColor(e.days_late) }}>{daysLateCell(e)}</td>
+                        <td className="px-3 py-2">
+                          {e.date_status === 'handed_over' ? <WithdrawnTag e={e} /> : <DateStatusTag status={e.date_status} daysLate={e.days_late} />}
+                        </td>
+                        <td className="px-3 py-2 tabular-nums" style={{ color: e.days_late == null || e.date_status === 'handed_over' ? MUTE : e.date_status === 'overdue' ? pendingAgeColor(e.days_late) : completedDelayColor(e.days_late) }}>{daysLateCell(e)}</td>
                         {!pendingView && <td className="px-3 py-2 text-[#475569]">{fmt(e.completion_date)}</td>}
                         {!pendingView && <td className="px-3 py-2 text-center font-medium" style={{ color: e.on_time === 'Yes' ? '#15803D' : e.on_time === 'No' ? RED : MUTE }}>{e.on_time || '—'}</td>}
                       </tr>

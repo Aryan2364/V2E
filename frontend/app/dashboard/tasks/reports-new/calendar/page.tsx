@@ -205,6 +205,12 @@ export default function CalendarReportPage() {
           <Stat label="Done late" value={t.late} color="#92400E" />
           <Stat label="Missed" value={t.missed} color={t.missed ? '#991B1B' : '#94A3B8'} />
           <Stat label="Brought forward" value={t.brought_forward} color={t.brought_forward ? '#991B1B' : '#94A3B8'} />
+          {/* Own tiles, never folded into Scheduled or a verdict: Withdrawn = removed
+              before the original due date (no verdict earned or owed); Revised = due
+              dates that were moved, which the marks were NOT graded against. */}
+          {t.withdrawn > 0 && <Stat label="Withdrawn" value={t.withdrawn} color="#64748B" />}
+          {t.handed_over > 0 && <Stat label="Handed over" value={t.handed_over} color="#475569" />}
+          {t.revised_entries > 0 && <Stat label="Due date revised" value={t.revised_entries} color="#B45309" />}
           <Stat label="On-time rate" value={onTimePct === null ? '—' : `${onTimePct}%`} color={onTimePct === null ? '#94A3B8' : onTimePct >= 60 ? '#166534' : onTimePct >= 30 ? '#92400E' : '#991B1B'} />
         </div>
       )}

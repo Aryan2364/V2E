@@ -22,17 +22,44 @@ export const BUCKETS: BucketMeta[] = [
   { key: 'd90_plus', label: 'More than 90 Days Late', short: '90+', color: '#B91C1C', headTint: '#FEE2E2' },
 ]
 
+/**
+ * Withdrawn is deliberately NOT in `BUCKETS`: it is not an age band, it never feeds
+ * Total Pending, and keeping it out leaves the seven signed-off band columns (and the
+ * Excel band headers built from them) exactly as they were. It gets its own neutral
+ * slate treatment because it is informational, not a severity — nobody is late here.
+ */
+export const WITHDRAWN_META: BucketMeta = {
+  key: 'withdrawn',
+  label: 'Withdrawn (removed before due)',
+  short: 'Withdrawn',
+  color: '#64748B',
+  headTint: '#F1F5F9',
+}
+
+/**
+ * Handed over is also NOT an age band, for the same reasons and one more: the person
+ * on the row cannot act on it at all. It carries the lateness the task HAD when they
+ * let it go, frozen — never a number that keeps climbing while someone else holds it.
+ */
+export const HANDED_OVER_META: BucketMeta = {
+  key: 'handed_over',
+  label: 'Handed over to someone else',
+  short: 'Handed over',
+  color: '#475569',
+  headTint: '#F1F5F9',
+}
+
 /** The three late bands that make up "More than a Month Late". */
 export const OVER_MONTH_BUCKETS: AgeBucketKey[] = ['d31_60', 'd61_90', 'd90_plus']
 
 export const BUCKET_LABEL: Record<AgeBucketKey, string> = Object.fromEntries(
-  BUCKETS.map((b) => [b.key, b.label]),
+  [...BUCKETS, WITHDRAWN_META, HANDED_OVER_META].map((b) => [b.key, b.label]),
 ) as Record<AgeBucketKey, string>
 
 /** Count colour: muted when zero (so the eye skips empty cells), band colour otherwise. */
 export function countColor(key: AgeBucketKey, value: number): string {
   if (value === 0) return '#CBD5E1'
-  return BUCKETS.find((b) => b.key === key)?.color ?? '#0F172A'
+  return [...BUCKETS, WITHDRAWN_META, HANDED_OVER_META].find((b) => b.key === key)?.color ?? '#0F172A'
 }
 
 export function bandValue(b: AgeBuckets, key: AgeBucketKey): number {

@@ -35,6 +35,7 @@ import { R2Service } from '../storage/r2.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { AddAssigneeDto } from './dto/add-assignee.dto';
 import { TERMINAL_TYPES, isSuccessful, isTerminal } from './status-phase';
+import { ACTIVE_ASSIGNEE, gradingDeadline } from './active-assignee';
 import { resolveRemindAt, expandReminderRows } from '../common/reminders/reminder-spec';
 import { ancestorChain, descendantIds } from '../holidays/dept-tree.util';
 import { TasksAnalyticsService } from './tasks-analytics.service';
@@ -43,7 +44,13 @@ const TASK_INCLUDE = {
   status: true,
   priority: true,
   category: true,
-  assignees: true,
+  // The task's LIVE roster only. Taking someone off a task is a SOFT removal — the
+  // TaskAssignee row is kept so compliance reporting can still show they held it (see
+  // active-assignee.ts) — so every operational read flowing through this include must
+  // see active participants only, or a removed person silently reappears in a
+  // completion gate, an n/N count or a notification fan-out. The compliance reports
+  // deliberately do NOT use this constant; they want the full historical roster.
+  assignees: { where: ACTIVE_ASSIGNEE },
   checklist: { orderBy: { order_index: 'asc' as const } },
   escalations: true,
   reminders: true,
@@ -178,7 +185,12 @@ export class TasksService {
     if (!principal) return;
     const task = await this.prisma.task.findFirst({
       where: { id: taskId, organization_id: orgId, is_deleted: false },
-      select: { created_by_user_id: true, assignees: { select: { user_id: true, is_cc: true } } },
+      select: {
+        created_by_user_id: true,
+        // Live roster: being taken off a task ends the access it granted. Someone
+        // removed can still reach it only if their data scope covers it.
+        assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
+      },
     });
     if (!task) throw new NotFoundException(`Task ${taskId} not found`);
     await this.assertParticipantView(orgId, principal, task.created_by_user_id, task.assignees);
@@ -462,7 +474,7 @@ export class TasksService {
     const completionNow = await this.clock.now(orgId);
     const timing =
       outcome === 'completed'
-        ? this.completionTiming(completionNow, task.deadline)
+        ? this.completionTiming(completionNow, gradingDeadline(task))
         : outcome === 'partial'
           ? CompletionTiming.partial
           : CompletionTiming.incomplete;
@@ -621,7 +633,7 @@ export class TasksService {
     // Reopen ONLY that person's part — clear a completion AND any can't-complete flag
     // (keep their proof; they may just be refining it).
     await this.prisma.taskAssignee.updateMany({
-      where: { task_id: taskId, user_id: targetUserId, is_cc: false },
+      where: { task_id: taskId, user_id: targetUserId, is_cc: false, ...ACTIVE_ASSIGNEE },
       data: {
         is_completed: false,
         completed_at: null,
@@ -813,6 +825,10 @@ export class TasksService {
         proof_required: dto.proof_required ?? false,
         proof_allowed_extensions: normaliseExtensions(dto.proof_allowed_extensions),
         deadline: dto.deadline ? new Date(dto.deadline) : undefined,
+        // The date the task is FIRST committed to, frozen here and never rewritten by
+        // an edit. Compliance reporting grades against this, so a later revision can
+        // never turn a late task on-time retroactively.
+        original_deadline: dto.deadline ? new Date(dto.deadline) : undefined,
         goal_id: dto.goal_id,
       },
       include: TASK_INCLUDE,
@@ -835,8 +851,15 @@ export class TasksService {
         );
       }
       if (adjusted.getTime() !== rawDeadline.getTime()) {
-        await this.prisma.task.update({ where: { id: task.id }, data: { deadline: adjusted } });
+        // The holiday-shifted date is the one the task is actually born with, so it —
+        // not the raw picked date — becomes the frozen compliance baseline. Shifting
+        // off a non-working day at birth is not a "revision".
+        await this.prisma.task.update({
+          where: { id: task.id },
+          data: { deadline: adjusted, original_deadline: adjusted },
+        });
         (task as any).deadline = adjusted;
+        (task as any).original_deadline = adjusted;
       }
     }
 
@@ -1244,12 +1267,12 @@ export class TasksService {
 
     const [names, aTotal, aOverdue, aDone, asg, timingGroups] = await Promise.all([
       this.analytics.enrichUserNames(userIds),
-      this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, user_id: { in: userIds }, task: base }, _count: { _all: true } }),
-      this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, user_id: { in: userIds }, task: { ...base, deadline: { lt: now }, ...openTask } }, _count: { _all: true } }),
-      this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, user_id: { in: userIds }, task: { ...base, status: { type: 'completed' } } }, _count: { _all: true } }),
+      this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: base }, _count: { _all: true } }),
+      this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: { ...base, deadline: { lt: now }, ...openTask } }, _count: { _all: true } }),
+      this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: { ...base, status: { type: 'completed' } } }, _count: { _all: true } }),
       this.prisma.task.groupBy({ by: ['created_by_user_id'], where: { ...base, created_by_user_id: { in: userIds } }, _count: { _all: true } }),
       Promise.all(TasksAnalyticsService.TIMINGS.map((t) =>
-        this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, user_id: { in: userIds }, task: { ...base, ...this.analytics.timingWhere(t) } }, _count: { _all: true } }),
+        this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: { ...base, ...this.analytics.timingWhere(t) } }, _count: { _all: true } }),
       )),
     ]);
     const cnt = (arr: any[], key: string) => new Map(arr.map((g) => [g[key], g._count._all]));
@@ -1304,7 +1327,7 @@ export class TasksService {
     const scopeWhere = await this.scope.whereForScope(orgId, principal.userId, TasksService.TASK_LEAF, effective);
     const base = this.buildTaskWhere(orgId, scopeWhere, filters, 'created_at');
     const now = await this.clock.now(orgId);
-    const asAssignee = { ...base, assignees: { some: { user_id: targetUserId, is_cc: false } } };
+    const asAssignee = { ...base, assignees: { some: { ...ACTIVE_ASSIGNEE, user_id: targetUserId, is_cc: false } } };
     const asAssigner = { ...base, created_by_user_id: targetUserId };
 
     const [assigneeKpis, assignerKpis, assigneeDims] = await Promise.all([
@@ -1380,7 +1403,7 @@ export class TasksService {
       where,
       select: {
         created_by_user_id: true, completion_timing: true, is_overdue: true, status_id: true,
-        assignees: { where: { is_cc: false }, select: { user_id: true } },
+        assignees: { where: { is_cc: false, ...ACTIVE_ASSIGNEE }, select: { user_id: true } },
       },
       take: CAP,
     });
@@ -1518,8 +1541,12 @@ export class TasksService {
         title: true,
         created_by_user_id: true,
         completion_mode: true,
+        // Needed by the deadline branch: a bulk move is a real revision and has to
+        // freeze/keep the compliance baseline like any single edit.
+        deadline: true,
+        original_deadline: true,
         status: { select: { type: true } },
-        assignees: { select: { user_id: true, is_cc: true } },
+        assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
       },
     });
     if (!candidates.length) return { updated: 0, skipped };
@@ -1592,11 +1619,93 @@ export class TasksService {
         // re-flags if it lapses again). Holiday adjustment is not forced here — a
         // bulk deadline is an explicit, deliberate user choice.
         const stillOverdue = !!newDeadline && newDeadline < new Date();
-        await this.prisma.task.updateMany({
-          where: { id: { in: ids } },
-          data: { deadline: newDeadline, is_overdue: stillOverdue, overdue_at: stillOverdue ? new Date() : null },
-        });
+        const byId = new Map(editable.map((t) => [t.id, t]));
+
+        // A bulk move gets exactly the same treatment as a single edit. Without this
+        // it was the loophole that made the whole baseline pointless: select fifty
+        // tasks, push the date, and every scorecard comes up clean.
+        const revising = ids.filter((id) => byId.get(id)!.deadline !== null);
+        const firstTime = ids.filter((id) => byId.get(id)!.deadline === null);
+
+        // Tasks getting their FIRST deadline: this IS the baseline, not a revision.
+        if (firstTime.length) {
+          await this.prisma.task.updateMany({
+            where: { id: { in: firstTime } },
+            data: {
+              deadline: newDeadline,
+              original_deadline: newDeadline,
+              is_overdue: stillOverdue,
+              overdue_at: stillOverdue ? new Date() : null,
+            },
+          });
+        }
+
+        // Genuine revisions: the live date moves, the baseline stands, counter ticks.
+        if (revising.length) {
+          await this.prisma.task.updateMany({
+            where: { id: { in: revising } },
+            data: {
+              deadline: newDeadline,
+              is_overdue: stillOverdue,
+              overdue_at: stillOverdue ? new Date() : null,
+              deadline_revision_count: { increment: 1 },
+            },
+          });
+          // Defensive: freeze a baseline for any row predating the column (the
+          // migration backfilled every task, so this should never fire).
+          await Promise.all(
+            revising
+              .filter((id) => byId.get(id)!.original_deadline === null)
+              .map((id) =>
+                this.prisma.task
+                  .update({ where: { id }, data: { original_deadline: byId.get(id)!.deadline } })
+                  .catch(() => null),
+              ),
+          );
+          await this.prisma.taskDeadlineRevision.createMany({
+            data: revising.map((id) => ({
+              organization_id: orgId,
+              task_id: id,
+              from_deadline: byId.get(id)!.deadline,
+              to_deadline: newDeadline,
+              reason: 'Changed in a bulk update',
+              changed_by_user_id: principal.userId,
+            })),
+          });
+        }
+
+        // Relative reminders were derived from the OLD dates — re-hang them, or they
+        // fire after the deadline they were meant to pre-empt (or never fire).
+        for (const id of ids) {
+          await this.recomputeRemindersForDeadline(orgId, id, newDeadline).catch(() => null);
+        }
+
         await Promise.all(ids.map((id) => this.logActivity(orgId, id, principal.userId, 'edited', { bulk: true, field: 'deadline' }).catch(() => null)));
+
+        // Tell the people who have to hit these dates. Same event as a single edit,
+        // so an org that finds it noisy can switch it off in one place.
+        const actorName = await this.notifications.userName(principal.userId);
+        const fmt = (d: Date | null) =>
+          d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'no deadline';
+        for (const id of ids) {
+          const t = byId.get(id)!;
+          const recipients = [t.created_by_user_id, ...t.assignees.map((a) => a.user_id)].filter(
+            (uid) => uid !== principal.userId,
+          );
+          if (!recipients.length) continue;
+          await this.notifications
+            .emit({
+              orgId,
+              module: 'tasks',
+              event_type: 'task_deadline_changed',
+              recipients,
+              title: `${actorName} changed a task deadline`,
+              body: `“${t.title}”\n${fmt(t.deadline)} → ${fmt(newDeadline)}`,
+              link: `/dashboard/tasks/${id}`,
+              entity: { type: 'task', id },
+            })
+            .catch(() => null);
+        }
       }
       return { updated: ids.length, skipped };
     }
@@ -1668,7 +1777,7 @@ export class TasksService {
       where: {
         organization_id: orgId,
         is_deleted: false,
-        assignees: { some: { user_id: userId, is_cc: false } },
+        assignees: { some: { ...ACTIVE_ASSIGNEE, user_id: userId, is_cc: false } },
       },
       include: TASK_INCLUDE,
       orderBy: { created_at: 'desc' },
@@ -1681,7 +1790,7 @@ export class TasksService {
       where: {
         organization_id: orgId,
         is_deleted: false,
-        assignees: { some: { user_id: userId, is_cc: true } },
+        assignees: { some: { ...ACTIVE_ASSIGNEE, user_id: userId, is_cc: true } },
       },
       include: TASK_INCLUDE,
       orderBy: { created_at: 'desc' },
@@ -1817,6 +1926,10 @@ export class TasksService {
       include: {
         ...TASK_INCLUDE,
         activity_logs: { orderBy: { created_at: 'desc' } },
+        // The deadline paper trail, newest first. `Task.original_deadline` is the date
+        // the compliance reports grade against; this explains how the live `deadline`
+        // drifted from it, so the detail screen can show "revised 2×" and by whom.
+        deadline_revisions: { orderBy: { changed_at: 'desc' } },
         comments: {
           where: { is_deleted: false, reply_to_comment_id: null },
           include: { replies: { where: { is_deleted: false } } },
@@ -1841,11 +1954,25 @@ export class TasksService {
       });
     }
 
+    // People taken OFF this task. Deliberately fetched apart from the live roster —
+    // `TASK_INCLUDE` filters them out so no gate, count or notification can pick them
+    // up by accident — but they belong on the screen: "Removed on 7 Sep by X" is the
+    // record that stops a removal from quietly erasing what someone did here.
+    const removedAssignees = await this.prisma.taskAssignee.findMany({
+      where: { task_id: taskId, organization_id: orgId, removed_at: { not: null } },
+      orderBy: { removed_at: 'desc' },
+    });
+
     const allUserIds = new Set<string>();
     allUserIds.add(task.created_by_user_id);
     if (task.completed_by_user_id) allUserIds.add(task.completed_by_user_id);
     if (task.status_actor_user_id) allUserIds.add(task.status_actor_user_id);
     for (const a of task.assignees) allUserIds.add(a.user_id);
+    for (const a of removedAssignees) {
+      allUserIds.add(a.user_id);
+      if (a.removed_by_user_id) allUserIds.add(a.removed_by_user_id);
+    }
+    for (const r of (task as any).deadline_revisions ?? []) allUserIds.add(r.changed_by_user_id);
     for (const c of task.comments as any[]) {
       allUserIds.add(c.user_id);
       for (const r of c.replies ?? []) allUserIds.add(r.user_id);
@@ -1853,10 +1980,18 @@ export class TasksService {
 
     // Per-person checklist states (all_must_complete). Fetched here so their actors
     // are resolved to names in the same batch as everyone else.
+    // Scoped to the LIVE roster. A person taken off the task keeps their state rows
+    // (that's the point of a soft removal), but counting them here while the "n/N"
+    // denominator below counts only current workers is how the badge ends up reading
+    // an impossible 3/2.
+    const liveWorkerIds = task.assignees.filter((a) => !a.is_cc).map((a) => a.user_id);
     const checklistIds = task.checklist.map((c: any) => c.id);
-    const checklistStates = checklistIds.length
-      ? await this.prisma.taskChecklistItemState.findMany({ where: { task_id: taskId } })
-      : [];
+    const checklistStates =
+      checklistIds.length && liveWorkerIds.length
+        ? await this.prisma.taskChecklistItemState.findMany({
+            where: { task_id: taskId, user_id: { in: liveWorkerIds } },
+          })
+        : [];
     for (const s of checklistStates) {
       allUserIds.add(s.user_id);
       allUserIds.add(s.marked_by_user_id);
@@ -1935,6 +2070,17 @@ export class TasksService {
       status_actor: nameOf(task.status_actor_user_id),
       proof_summary,
       assignees: enrichedAssignees,
+      // Former participants, with who removed them and when, so the detail screen can
+      // show the full history of who has held this task.
+      removed_assignees: removedAssignees.map((a) => ({
+        ...a,
+        user: userMap.get(a.user_id) ?? null,
+        removed_by: nameOf(a.removed_by_user_id),
+      })),
+      deadline_revisions: ((task as any).deadline_revisions ?? []).map((r: any) => ({
+        ...r,
+        changed_by: nameOf(r.changed_by_user_id),
+      })),
       checklist: enrichedChecklist,
       comments: (task.comments as any[]).map((c) => {
         const cu = userMap.get(c.user_id);
@@ -1956,7 +2102,26 @@ export class TasksService {
 
   async updateTask(orgId: string, userId: string, taskId: string, dto: UpdateTaskDto) {
     const old = await this.findTaskOrFail(orgId, taskId, true);
-    await this.assertAssignerRights(orgId, userId, old);
+
+    // Split rights. Looping a colleague in as CC is an everyday courtesy, not a
+    // reassignment: it changes nobody's workload and is trivially reversible. So when
+    // an edit touches NOTHING but the CC list, anyone actually on the task may make
+    // it. Every other change — the working roster, the deadline, the fields — still
+    // requires assigner rights (creator / admin / task-edit role + edit scope).
+    //
+    // This is safe by construction, not just by intention: the only door to the
+    // roster is `reconcileTaskRoster`, and with `assignee_user_ids` absent it keeps
+    // the current workers verbatim. A CC-only payload therefore cannot touch who is
+    // doing the work even though it skipped the assigner gate.
+    const touchedFields = (Object.keys(dto) as (keyof UpdateTaskDto)[]).filter(
+      (k) => dto[k] !== undefined,
+    );
+    const isCcOnlyEdit = touchedFields.length === 1 && touchedFields[0] === 'cc_user_ids';
+    const actorIsOnTask = ((old as any).assignees ?? []).some((a: any) => a.user_id === userId);
+    if (!(isCcOnlyEdit && actorIsOnTask)) {
+      await this.assertAssignerRights(orgId, userId, old);
+    }
+
     await this.assertGoalInOrg(orgId, dto.goal_id);
     // Edited master references get the same org+active validation as create.
     await this.assertMastersUsable(orgId, {
@@ -1983,6 +2148,11 @@ export class TasksService {
     const changedFields: Array<{ field: string; from: unknown; to: unknown }> = [];
 
     const updateData: any = {};
+
+    // Set when the deadline genuinely moves off an existing date; drives the revision
+    // record, the reminder recompute and the "your deadline changed" notification,
+    // all of which must happen only after the task row itself commits.
+    let deadlineRevision: { from: Date; to: Date | null; reason: string | null } | null = null;
 
     const trackField = (field: string, oldVal: unknown, newVal: unknown) => {
       if (newVal !== undefined && newVal !== oldVal) {
@@ -2037,6 +2207,26 @@ export class TasksService {
           updateData.is_overdue = stillOverdue;
           updateData.overdue_at = stillOverdue ? new Date() : null;
         }
+
+        if (old.deadline === null) {
+          // Nothing to revise — the task never had a deadline, so this IS its first
+          // commitment and becomes the compliance baseline. Not a revision, and not
+          // counted as one; the plain 'edited' activity entry already records it.
+          updateData.original_deadline = newDeadline;
+        } else {
+          // A genuine revision. Freeze the baseline if this row predates the column
+          // (defensive — the migration backfilled every existing task), then record
+          // the move. `original_deadline` is never written again after this point.
+          if ((old as any).original_deadline === null) {
+            updateData.original_deadline = old.deadline;
+          }
+          deadlineRevision = {
+            from: old.deadline,
+            to: newDeadline,
+            reason: dto.deadline_reason?.trim() || null,
+          };
+          updateData.deadline_revision_count = { increment: 1 };
+        }
       }
     }
 
@@ -2076,14 +2266,14 @@ export class TasksService {
         // so the scoreboard starts coherent instead of blank.
         const seedId = isTerminal((updated as any).status?.type) ? null : updated.status_id;
         await this.prisma.taskAssignee.updateMany({
-          where: { task_id: taskId, is_cc: false },
+          where: { task_id: taskId, is_cc: false, ...ACTIVE_ASSIGNEE },
           data: { status_id: seedId },
         });
         await this.rollUpTaskOpenStatus(orgId, taskId);
       } else {
         // all → any: collapse to one shared status; personal tracks no longer apply.
         await this.prisma.taskAssignee.updateMany({
-          where: { task_id: taskId },
+          where: { task_id: taskId, ...ACTIVE_ASSIGNEE },
           data: { status_id: null },
         });
         await this.prisma.task.update({
@@ -2091,6 +2281,62 @@ export class TasksService {
           data: { status_actor_user_id: userId },
         });
       }
+    }
+
+    // Reconcile who is on the task (add / remove / flip between assignee and CC).
+    // Runs AFTER the completion-mode switch above so a newly-added worker is seeded
+    // against the mode the task now has, not the one it just left. `updated` carries
+    // the post-commit status and live roster.
+    const rosterChange = await this.reconcileTaskRoster(orgId, userId, updated, {
+      assigneeIds: dto.assignee_user_ids,
+      ccIds: dto.cc_user_ids,
+    });
+    if (rosterChange.added.length || rosterChange.removed.length || rosterChange.flipped.length) {
+      changedFields.push({
+        field: 'assignees',
+        from: ((old as any).assignees ?? []).map((a: any) => a.user_id),
+        to: null,
+      });
+    }
+
+    // ── Deadline revision side-effects ───────────────────────────────────────────
+    if (deadlineRevision) {
+      // The immutable paper trail explaining how the live deadline drifted from the
+      // baseline the reports grade against.
+      await this.prisma.taskDeadlineRevision.create({
+        data: {
+          organization_id: orgId,
+          task_id: taskId,
+          from_deadline: deadlineRevision.from,
+          to_deadline: deadlineRevision.to,
+          reason: deadlineRevision.reason,
+          changed_by_user_id: userId,
+        },
+      });
+
+      await this.recomputeRemindersForDeadline(orgId, taskId, deadlineRevision.to);
+
+      // Moving someone's deadline without telling them is how a task gets missed.
+      // Everyone on it — workers and CCs — plus the creator, minus whoever did it.
+      const actorName = await this.notifications.userName(userId);
+      const recipients = [
+        old.created_by_user_id,
+        ...((updated as any).assignees ?? []).map((a: any) => a.user_id),
+      ].filter((uid: string) => uid !== userId);
+      const fmt = (d: Date | null) =>
+        d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'no deadline';
+      await this.notifications.emit({
+        orgId,
+        module: 'tasks',
+        event_type: 'task_deadline_changed',
+        recipients,
+        title: `${actorName} changed a task deadline`,
+        body:
+          `“${old.title}”\n${fmt(deadlineRevision.from)} → ${fmt(deadlineRevision.to)}` +
+          (deadlineRevision.reason ? `\nReason: ${deadlineRevision.reason}` : ''),
+        link: `/dashboard/tasks/${taskId}`,
+        entity: { type: 'task', id: taskId },
+      });
     }
 
     // Reconcile the checklist (add / edit / remove items). Runs as part of the edit;
@@ -2194,6 +2440,331 @@ export class TasksService {
     return changed;
   }
 
+  /**
+   * Re-hang the task's relative reminders off a NEW deadline.
+   *
+   * A reminder set as "3 days before the deadline" stores that provenance in
+   * `offset_days`. Without this, moving a deadline left those rows pointing at
+   * instants derived from the OLD date — so a reminder could fire after the deadline
+   * it was meant to pre-empt, or sit in the past and never fire at all, which is the
+   * one job a reminder has.
+   *
+   * Only unsent, one-time, relative reminders are touched:
+   *   - absolute reminders (`offset_days` null) were pinned to a specific instant by
+   *     the user and are none of this function's business;
+   *   - `yearly` ones are anniversary re-arms with their own roll-forward rule;
+   *   - already-sent rows are history.
+   * The user's chosen time-of-day is carried over from the existing row. A recomputed
+   * instant that is now in the past, or would land after the new deadline, is dropped
+   * — matching exactly what task creation does with such reminders.
+   */
+  private async recomputeRemindersForDeadline(
+    orgId: string,
+    taskId: string,
+    newDeadline: Date | null,
+  ): Promise<void> {
+    const pending = await this.prisma.taskReminder.findMany({
+      where: {
+        task_id: taskId,
+        organization_id: orgId,
+        is_sent: false,
+        recurrence: 'one_time',
+        offset_days: { not: null },
+      },
+    });
+    if (!pending.length) return;
+
+    // No deadline left to be relative to — a "3 days before" reminder is meaningless.
+    if (!newDeadline) {
+      await this.prisma.taskReminder.deleteMany({ where: { id: { in: pending.map((r) => r.id) } } });
+      return;
+    }
+
+    const now = await this.clock.now(orgId);
+    const stale: string[] = [];
+    for (const r of pending) {
+      const prev = new Date(r.remind_at);
+      const next = new Date(newDeadline);
+      next.setDate(next.getDate() - (r.offset_days ?? 0));
+      next.setHours(prev.getHours(), prev.getMinutes(), 0, 0);
+      if (next <= now || next > newDeadline) {
+        stale.push(r.id);
+        continue;
+      }
+      if (next.getTime() !== prev.getTime()) {
+        await this.prisma.taskReminder.update({ where: { id: r.id }, data: { remind_at: next } });
+      }
+    }
+    if (stale.length) {
+      await this.prisma.taskReminder.deleteMany({ where: { id: { in: stale } } });
+    }
+  }
+
+  /**
+   * Make the task's people match `incoming` exactly, preserving everything that can
+   * be preserved. This is the single writer for "who is on this task" — the edit
+   * modal, the detail-page Assignees card and the legacy add/remove endpoints all
+   * funnel through it, so the rules below can't be bypassed by picking a different
+   * door.
+   *
+   * Three operations, deliberately distinct:
+   *   - **flip** (worker ⇄ CC): `is_cc` updated IN PLACE. The old code did this as a
+   *     delete followed by a re-add, which silently destroyed that person's status
+   *     track, completion stamp and can't-complete flag, and fired a contradictory
+   *     "removed you" + "assigned you" notification pair for what the user
+   *     experienced as one click.
+   *   - **remove**: SOFT — stamps `removed_at`/`removed_by_user_id`. The row survives
+   *     so compliance reporting can still show the person held the task; see
+   *     active-assignee.ts for how they are then graded.
+   *   - **add**: upsert that CLEARS `removed_at`. Re-adding someone previously removed
+   *     revives their original row, so their earlier ticks, proof and status come back
+   *     with them rather than the task pretending they are new.
+   *
+   * Passing only one of the two lists leaves the other group's membership alone.
+   * Returns what actually changed, for the activity trail and notifications.
+   */
+  private async reconcileTaskRoster(
+    orgId: string,
+    actorId: string,
+    task: any,
+    incoming: { assigneeIds?: string[]; ccIds?: string[] },
+  ): Promise<{
+    added: { user_id: string; is_cc: boolean }[];
+    removed: { user_id: string; is_cc: boolean }[];
+    flipped: { user_id: string; to_cc: boolean }[];
+  }> {
+    const noChange = { added: [], removed: [], flipped: [] };
+    if (incoming.assigneeIds === undefined && incoming.ccIds === undefined) return noChange;
+
+    // Who a closed task was assigned to is part of its frozen record — the same rule
+    // the checklist follows. Reopen it to change the people.
+    if (isTerminal(task.status?.type)) {
+      throw new BadRequestException(
+        'This task is closed. Reopen it before changing who it is assigned to.',
+      );
+    }
+
+    const live: { user_id: string; is_cc: boolean }[] = task.assignees ?? [];
+    const currentWorkers = live.filter((a) => !a.is_cc).map((a) => a.user_id);
+    const currentCcs = live.filter((a) => a.is_cc).map((a) => a.user_id);
+
+    // A worker outranks a CC: if a hand-crafted payload lists someone in both, they
+    // are the person doing the work, not an observer.
+    const desiredWorkers = [...new Set(incoming.assigneeIds ?? currentWorkers)];
+    const desiredCcs = [...new Set(incoming.ccIds ?? currentCcs)].filter(
+      (id) => !desiredWorkers.includes(id),
+    );
+
+    if (desiredWorkers.length === 0) {
+      throw new BadRequestException(
+        'A task must have at least one assignee. Add another assignee before removing the last one.',
+      );
+    }
+
+    const desired = new Map<string, boolean>([
+      ...desiredWorkers.map((id) => [id, false] as [string, boolean]),
+      ...desiredCcs.map((id) => [id, true] as [string, boolean]),
+    ]);
+    const liveByUser = new Map(live.map((a) => [a.user_id, a]));
+
+    const added: { user_id: string; is_cc: boolean }[] = [];
+    const removed: { user_id: string; is_cc: boolean }[] = [];
+    const flipped: { user_id: string; to_cc: boolean }[] = [];
+    for (const [userId, isCc] of desired) {
+      const existing = liveByUser.get(userId);
+      if (!existing) added.push({ user_id: userId, is_cc: isCc });
+      else if (existing.is_cc !== isCc) flipped.push({ user_id: userId, to_cc: isCc });
+    }
+    for (const a of live) {
+      if (!desired.has(a.user_id)) removed.push({ user_id: a.user_id, is_cc: a.is_cc });
+    }
+
+    if (!added.length && !removed.length && !flipped.length) return noChange;
+
+    // ── Authorization, before any write ──────────────────────────────────────────
+    // Everyone newly put on the task gets the exact same gates as at creation. A
+    // flip is not re-gated: that person already passed these checks to get on the
+    // task, and moving worker→CC only ever reduces what they are being asked to do.
+    const newlyOn = added.map((a) => a.user_id);
+    if (newlyOn.length) {
+      await assertActiveOrgMembers(this.prisma, orgId, newlyOn, 'assignees or CC recipients');
+      await this.assertAssigneesVisible(orgId, actorId, newlyOn);
+      // Only real workers need to be *assignable*; a CC is an observer.
+      await this.subjects.assertAllEligible(
+        orgId,
+        TasksService.TASK_SUBJECT,
+        added.filter((a) => !a.is_cc).map((a) => a.user_id),
+      );
+    }
+
+    // ── Apply ────────────────────────────────────────────────────────────────────
+    const now = await this.clock.now(orgId);
+
+    // A brand-new worker on an all_must_complete task needs a personal status track,
+    // seeded from the task's current open status so the scoreboard stays coherent
+    // (same seeding the any→all mode switch performs).
+    const seedStatusId =
+      task.completion_mode === CompletionMode.all_must_complete && !isTerminal(task.status?.type)
+        ? task.status_id
+        : null;
+
+    for (const { user_id, to_cc } of flipped) {
+      await this.prisma.taskAssignee.update({
+        where: { task_id_user_id: { task_id: task.id, user_id } },
+        // `is_cc` only. Their status/completion columns are left untouched on purpose:
+        // every count and gate in this service filters on `is_cc: false`, so a CC's
+        // stale progress is inert — and if they are flipped back to working, their
+        // real progress is still there instead of having been zeroed.
+        data: { is_cc: to_cc },
+      });
+    }
+
+    for (const { user_id, is_cc } of added) {
+      await this.prisma.taskAssignee.upsert({
+        where: { task_id_user_id: { task_id: task.id, user_id } },
+        create: {
+          organization_id: orgId,
+          task_id: task.id,
+          user_id,
+          is_cc,
+          status_id: is_cc ? null : seedStatusId,
+        },
+        // Reviving a previously-removed person: clear the removal stamps and restore
+        // the requested role, but leave their historical progress columns alone so
+        // they come back exactly where they left off.
+        update: { is_cc, removed_at: null, removed_by_user_id: null },
+      });
+    }
+
+    if (removed.length) {
+      await this.prisma.taskAssignee.updateMany({
+        where: {
+          task_id: task.id,
+          user_id: { in: removed.map((r) => r.user_id) },
+          ...ACTIVE_ASSIGNEE,
+        },
+        data: { removed_at: now, removed_by_user_id: actorId },
+      });
+    }
+
+    // Assigner→assignee frequency powers the picker's "most assigned" ordering; keep
+    // it fed from edits too, not just creation. Best-effort, exactly as at create.
+    const newWorkers = added.filter((a) => !a.is_cc).map((a) => a.user_id);
+    if (newWorkers.length) {
+      await Promise.all(
+        newWorkers.map((assigneeUserId) =>
+          this.prisma.taskAssigneeFrequency
+            .upsert({
+              where: {
+                organization_id_assigner_user_id_assignee_user_id: {
+                  organization_id: orgId,
+                  assigner_user_id: actorId,
+                  assignee_user_id: assigneeUserId,
+                },
+              },
+              create: {
+                organization_id: orgId,
+                assigner_user_id: actorId,
+                assignee_user_id: assigneeUserId,
+                frequency_count: 1,
+                last_assigned_at: new Date(),
+              },
+              update: { frequency_count: { increment: 1 }, last_assigned_at: new Date() },
+            })
+            .catch(() => null),
+        ),
+      );
+    }
+
+    // ── Settle the completion maths ──────────────────────────────────────────────
+    // Losing a worker — by removal OR by being demoted to CC — changes who the task
+    // is still waiting on. If everyone REMAINING has already responded it must settle
+    // now (Completed / Partial / Incomplete) rather than sit open forever waiting on
+    // somebody who is no longer on it.
+    if (task.completion_mode === CompletionMode.all_must_complete) {
+      const lostAWorker =
+        removed.some((r) => !r.is_cc) || flipped.some((f) => f.to_cc);
+      if (lostAWorker) await this.settleAllMustComplete(orgId, task.id, actorId);
+      await this.rollUpTaskOpenStatus(orgId, task.id);
+    }
+
+    // ── Trail + notifications ───────────────────────────────────────────────────
+    // `is_cc` is recorded on both sides so the history can distinguish "CC removed"
+    // from "assignee removed" — the old log couldn't.
+    if (added.length || flipped.length) {
+      await this.logActivity(orgId, task.id, actorId, 'assigned', {
+        added: added.map((a) => ({ user_id: a.user_id, is_cc: a.is_cc })),
+        role_changed: flipped.map((f) => ({ user_id: f.user_id, is_cc: f.to_cc })),
+      });
+    }
+    if (removed.length) {
+      await this.logActivity(orgId, task.id, actorId, 'reassigned', {
+        removed: removed.map((r) => ({ user_id: r.user_id, is_cc: r.is_cc })),
+      });
+    }
+
+    const actorName = await this.notifications.userName(actorId);
+    const notify = async (
+      recipients: string[],
+      event_type: 'task_assigned' | 'task_unassigned',
+      title: string,
+      body: string,
+    ) => {
+      const to = recipients.filter((uid) => uid !== actorId);
+      if (!to.length) return;
+      await this.notifications.emit({
+        orgId,
+        module: 'tasks',
+        event_type,
+        recipients: to,
+        title,
+        body,
+        link: `/dashboard/tasks/${task.id}`,
+        entity: { type: 'task', id: task.id },
+      });
+    };
+
+    await notify(
+      added.filter((a) => !a.is_cc).map((a) => a.user_id),
+      'task_assigned',
+      `${actorName} assigned you a task`,
+      `“${task.title}”`,
+    );
+    await notify(
+      added.filter((a) => a.is_cc).map((a) => a.user_id),
+      'task_assigned',
+      `${actorName} CC’d you on a task`,
+      `“${task.title}”`,
+    );
+    // One honest message per flip direction, instead of the old remove+add pair.
+    await notify(
+      flipped.filter((f) => f.to_cc).map((f) => f.user_id),
+      'task_assigned',
+      `${actorName} moved you to CC`,
+      `“${task.title}”\nYou’re now an observer — no action needed from you.`,
+    );
+    await notify(
+      flipped.filter((f) => !f.to_cc).map((f) => f.user_id),
+      'task_assigned',
+      `${actorName} made you an assignee`,
+      `“${task.title}”\nYou were CC’d on this — it’s now yours to action.`,
+    );
+    await notify(
+      removed.filter((r) => !r.is_cc).map((r) => r.user_id),
+      'task_unassigned',
+      `${actorName} removed you from a task`,
+      `“${task.title}”\nYou’re no longer responsible for this task — thank you for your contribution.`,
+    );
+    await notify(
+      removed.filter((r) => r.is_cc).map((r) => r.user_id),
+      'task_unassigned',
+      `${actorName} removed you from CC`,
+      `“${task.title}”\nYou’ll no longer get updates on this task.`,
+    );
+
+    return { added, removed, flipped };
+  }
+
   // ─── Delete Task ──────────────────────────────────────────────────────────────
 
   async deleteTask(orgId: string, userId: string, taskId: string, reason: string) {
@@ -2239,6 +2810,15 @@ export class TasksService {
    * the dashboard reasons about timing). `early` = finished before the deadline day,
    * `on_time` = finished on the deadline day (or the task had no deadline), `late` =
    * finished after. Set once at completion and never recomputed.
+   */
+  /**
+   * The early/on_time/late verdict stamped on a task when it closes.
+   *
+   * ALWAYS pass the compliance BASELINE (`original_deadline ?? deadline`), never the
+   * live `deadline` — use `gradingDeadline()` below. This stamp is persisted and read
+   * back by the reports and the Work Overview timing dashboard, so grading it against
+   * an editable date is the same loophole in a different place: push the deadline,
+   * complete the task, and a late task is stamped `on_time` forever.
    */
   private completionTiming(completedAt: Date, deadline: Date | null | undefined): CompletionTiming {
     if (!deadline) return CompletionTiming.on_time;
@@ -2296,7 +2876,7 @@ export class TasksService {
     // intentionally bypasses the per-person proof gate (admin escape hatch).
     if (task.completion_mode === CompletionMode.all_must_complete && closeWholeTask) {
       await this.prisma.taskAssignee.updateMany({
-        where: { task_id: taskId, is_cc: false },
+        where: { task_id: taskId, is_cc: false, ...ACTIVE_ASSIGNEE },
         data: {
           is_completed: true,
           completed_at: new Date(),
@@ -2314,7 +2894,7 @@ export class TasksService {
             status_id: completedStatus.id,
             reopen_expires_at: new Date(now.getTime() + config.reopen_window_minutes * 60_000),
             completed_at: completionNow,
-            completion_timing: this.completionTiming(completionNow, task.deadline),
+            completion_timing: this.completionTiming(completionNow, gradingDeadline(task)),
             completed_by_user_id: userId,
           },
         });
@@ -2335,7 +2915,7 @@ export class TasksService {
       // Mark this person's part done — and clear any earlier can't-complete flag,
       // since finishing supersedes it.
       await this.prisma.taskAssignee.updateMany({
-        where: { task_id: taskId, user_id: target, is_cc: false },
+        where: { task_id: taskId, user_id: target, is_cc: false, ...ACTIVE_ASSIGNEE },
         data: {
           is_completed: true,
           completed_at: new Date(),
@@ -2374,7 +2954,7 @@ export class TasksService {
             status_id: completedStatus.id,
             reopen_expires_at: reopenExpiresAt,
             completed_at: completionNow,
-            completion_timing: this.completionTiming(completionNow, task.deadline),
+            completion_timing: this.completionTiming(completionNow, gradingDeadline(task)),
             completed_by_user_id: userId,
           },
         });
@@ -2383,7 +2963,7 @@ export class TasksService {
         }
       }
       await this.prisma.taskAssignee.updateMany({
-        where: { task_id: taskId, user_id: userId, is_cc: false },
+        where: { task_id: taskId, user_id: userId, is_cc: false, ...ACTIVE_ASSIGNEE },
         data: { is_completed: true, completed_at: new Date() },
       });
     }
@@ -2476,7 +3056,9 @@ export class TasksService {
 
     // Reset all assignee completion flags, per-person tracks, and any can't-complete flags.
     await this.prisma.taskAssignee.updateMany({
-      where: { task_id: taskId },
+      // Live roster only: someone taken off the task keeps the frozen record of what
+      // they did on it, so a whole-task reopen must not rewrite their history.
+      where: { task_id: taskId, ...ACTIVE_ASSIGNEE },
       data: {
         is_completed: false,
         completed_at: null,
@@ -2644,7 +3226,7 @@ export class TasksService {
     }
 
     await this.prisma.taskAssignee.updateMany({
-      where: { task_id: taskId, user_id: target, is_cc: false },
+      where: { task_id: taskId, user_id: target, is_cc: false, ...ACTIVE_ASSIGNEE },
       data: { cannot_complete: true, cannot_complete_reason: trimmed, cannot_complete_at: new Date() },
     });
 
@@ -2680,7 +3262,7 @@ export class TasksService {
       await this.assertAssignerRights(orgId, actorId, task);
     }
     await this.prisma.taskAssignee.updateMany({
-      where: { task_id: taskId, user_id: target, is_cc: false },
+      where: { task_id: taskId, user_id: target, is_cc: false, ...ACTIVE_ASSIGNEE },
       data: { cannot_complete: false, cannot_complete_reason: null, cannot_complete_at: null },
     });
     await this.rollUpTaskOpenStatus(orgId, taskId);
@@ -2699,7 +3281,9 @@ export class TasksService {
   async proofSummary(orgId: string, taskId: string) {
     const [assignees, proofs] = await Promise.all([
       this.prisma.taskAssignee.findMany({
-        where: { task_id: taskId, is_cc: false },
+        // Live roster only — a removed person must not inflate the "n/N submitted"
+        // denominator or keep a proof gate open forever.
+        where: { task_id: taskId, is_cc: false, ...ACTIVE_ASSIGNEE },
         select: { user_id: true },
       }),
       this.prisma.taskAttachment.findMany({
@@ -2714,10 +3298,22 @@ export class TasksService {
         select: { uploaded_by_user_id: true },
       }),
     ]);
-    const submitted_user_ids = Array.from(new Set(proofs.map((p) => p.uploaded_by_user_id)));
+    // The scoreboard answers "how many of the people who MUST submit, have?", so the
+    // numerator has to be scoped to the same live roster as the denominator. A person
+    // who submitted proof and was later taken off the task still has their file on
+    // record, but counting them here would push the badge to an impossible 3/2 —
+    // exactly the bug the checklist counts had.
+    const required_user_ids = assignees.map((a) => a.user_id);
+    const requiredSet = new Set(required_user_ids);
+    const submitted_user_ids = Array.from(
+      new Set(proofs.map((p) => p.uploaded_by_user_id).filter((id) => requiredSet.has(id))),
+    );
     return {
-      required_user_ids: assignees.map((a) => a.user_id),
+      required_user_ids,
       submitted_user_ids,
+      // Deliberately NOT scoped: this answers "does this task have any evidence at
+      // all?", which drives the any_can_complete gate. Proof submitted by someone
+      // since removed is still proof the work was evidenced.
       task_has_any_proof: proofs.length > 0,
     };
   }
@@ -3184,7 +3780,7 @@ export class TasksService {
     const { notStarted, inProgress } = await this.getCanonicalStatuses(orgId);
     const openStatusId = inProgress?.id ?? notStarted?.id ?? null;
     await this.prisma.taskAssignee.updateMany({
-      where: { task_id: taskId, user_id: targetUserId, is_cc: false },
+      where: { task_id: taskId, user_id: targetUserId, is_cc: false, ...ACTIVE_ASSIGNEE },
       data: { is_completed: false, completed_at: null, status_id: openStatusId },
     });
 
@@ -3231,93 +3827,52 @@ export class TasksService {
 
   // ─── Assignees ────────────────────────────────────────────────────────────────
 
+  /**
+   * Put one person on the task, or change the role they hold on it.
+   *
+   * A thin wrapper over `reconcileTaskRoster` — the single writer for a task's people
+   * — so this endpoint cannot drift from the edit modal's behaviour. In particular,
+   * calling this for someone already on the task in the other role is a genuine
+   * in-place FLIP, not the delete-and-recreate it used to be.
+   */
   async addAssignee(orgId: string, userId: string, taskId: string, dto: AddAssigneeDto) {
-    const task = await this.findTaskOrFail(orgId, taskId);
+    // isWrite: a task created in a simulated future can't have its people changed
+    // until the clock reaches it — the guard every other task mutation applies.
+    const task = await this.findTaskOrFail(orgId, taskId, true);
     // Only the creator (or an admin / scope-verified editor) may change who a task
     // is assigned to — a plain assignee can't reassign the work.
     await this.assertAssignerRights(orgId, userId, task);
-    // Anyone put on a task — assignee or CC — must be an active member of this org.
-    await assertActiveOrgMembers(this.prisma, orgId, [dto.user_id], 'assignees or CC recipients');
-    // …and within the people this actor is allowed to assign to (picker rules re-checked).
-    await this.assertAssigneesVisible(orgId, userId, [dto.user_id]);
-    // A real assignee (not a CC) must additionally be eligible to be assigned a task. Fail loud.
-    if (!dto.is_cc) {
-      await this.subjects.assertEligible(orgId, TasksService.TASK_SUBJECT, dto.user_id);
-    }
-    const assignee = await this.prisma.taskAssignee.upsert({
-      where: { task_id_user_id: { task_id: taskId, user_id: dto.user_id } },
-      create: {
-        organization_id: orgId,
-        task_id: taskId,
-        user_id: dto.user_id,
-        is_cc: dto.is_cc ?? false,
-      },
-      update: { is_cc: dto.is_cc ?? false },
-    });
-    await this.logActivity(orgId, taskId, userId, 'assigned', { user_id: dto.user_id, is_cc: dto.is_cc });
 
-    if (dto.user_id !== userId) {
-      const assignerName = await this.notifications.userName(userId);
-      await this.notifications.emit({
-        orgId,
-        module: 'tasks',
-        event_type: 'task_assigned',
-        recipients: [dto.user_id],
-        title: dto.is_cc ? `${assignerName} CC’d you on a task` : `${assignerName} assigned you a task`,
-        body: `“${task.title}”`,
-        link: `/dashboard/tasks/${taskId}`,
-        entity: { type: 'task', id: taskId },
-      });
-    }
-    return assignee;
+    const live: { user_id: string; is_cc: boolean }[] = (task as any).assignees ?? [];
+    const isCc = dto.is_cc ?? false;
+    const keep = live.filter((a) => a.user_id !== dto.user_id);
+    await this.reconcileTaskRoster(orgId, userId, task, {
+      assigneeIds: [...keep.filter((a) => !a.is_cc).map((a) => a.user_id), ...(isCc ? [] : [dto.user_id])],
+      ccIds: [...keep.filter((a) => a.is_cc).map((a) => a.user_id), ...(isCc ? [dto.user_id] : [])],
+    });
+    return this.getTask(orgId, taskId);
   }
 
+  /**
+   * Take one person off the task. Soft — see `reconcileTaskRoster` and
+   * active-assignee.ts: the record that they held it survives for reporting.
+   */
   async removeAssignee(orgId: string, userId: string, taskId: string, assigneeUserId: string) {
-    const task = await this.findTaskOrFail(orgId, taskId);
+    const task = await this.findTaskOrFail(orgId, taskId, true);
     // Only the creator (or an admin / scope-verified editor) may change assignees.
     await this.assertAssignerRights(orgId, userId, task);
-    const existing = await this.prisma.taskAssignee.findUnique({
-      where: { task_id_user_id: { task_id: taskId, user_id: assigneeUserId } },
-    });
-    if (!existing) throw new NotFoundException(`Assignee ${assigneeUserId} not found on task`);
-    // A task must always have at least one real assignee (someone to do the work).
-    // Removing the last primary — leaving only CCs — is not allowed.
-    if (!existing.is_cc) {
-      const primaryCount = await this.prisma.taskAssignee.count({
-        where: { task_id: taskId, is_cc: false },
-      });
-      if (primaryCount <= 1) {
-        throw new BadRequestException(
-          'A task must have at least one assignee. Add another assignee before removing this one.',
-        );
-      }
-    }
-    await this.prisma.taskAssignee.delete({
-      where: { task_id_user_id: { task_id: taskId, user_id: assigneeUserId } },
-    });
-    await this.logActivity(orgId, taskId, userId, 'reassigned', { removed_user_id: assigneeUserId });
 
-    // Removing a worker changes the completion maths: if everyone REMAINING has already
-    // responded, the task must settle now (Completed / Partial / Incomplete) instead of
-    // sitting open forever waiting on the person who just left.
-    if (!existing.is_cc && task.completion_mode === CompletionMode.all_must_complete && !isTerminal((task as any).status?.type)) {
-      await this.settleAllMustComplete(orgId, taskId, userId);
+    const live: { user_id: string; is_cc: boolean }[] = (task as any).assignees ?? [];
+    if (!live.some((a) => a.user_id === assigneeUserId)) {
+      throw new NotFoundException(`Assignee ${assigneeUserId} not found on task`);
     }
-
-    // Let the removed person know — politely — that they're no longer on the task.
-    if (assigneeUserId !== userId) {
-      const removerName = await this.notifications.userName(userId);
-      await this.notifications.emit({
-        orgId,
-        module: 'tasks',
-        event_type: 'task_unassigned',
-        recipients: [assigneeUserId],
-        title: `${removerName} removed you from a task`,
-        body: `“${task.title}”\nYou’re no longer responsible for this task — thank you for your contribution.`,
-        link: `/dashboard/tasks/${taskId}`,
-        entity: { type: 'task', id: taskId },
-      });
-    }
+    // The "a task must keep at least one assignee" rule, the settle-the-completion-
+    // maths step and the notification all live in the reconcile.
+    const keep = live.filter((a) => a.user_id !== assigneeUserId);
+    await this.reconcileTaskRoster(orgId, userId, task, {
+      assigneeIds: keep.filter((a) => !a.is_cc).map((a) => a.user_id),
+      ccIds: keep.filter((a) => a.is_cc).map((a) => a.user_id),
+    });
     return { message: 'Assignee removed' };
   }
 
@@ -3355,7 +3910,11 @@ export class TasksService {
         status: true,
         priority: true,
         category: true,
-        assignees: { where: { is_cc: false } },
+        // Live roster. This legacy Analytics roll-up has no notion of WHY someone left
+        // a task, so counting a cleanly-withdrawn person's task as their overdue would
+        // be worse than either option. The policy-correct graded treatment of removed
+        // people lives in the three compliance reports (see assigneeOutcome).
+        assignees: { where: { is_cc: false, ...ACTIVE_ASSIGNEE } },
       },
     });
 
@@ -3495,6 +4054,7 @@ export class TasksService {
           where: {
             organization_id: orgId,
             is_cc: false,
+            ...ACTIVE_ASSIGNEE,
             user_id: { in: eligibleUserIdArray },
             task: { is_deleted: false, status: { type: { notIn: TERMINAL_TYPES } } },
           },
@@ -3597,6 +4157,7 @@ export class TasksService {
           where: {
             organization_id: orgId,
             is_cc: false,
+            ...ACTIVE_ASSIGNEE,
             user_id: { in: ids },
             task: { is_deleted: false, status: { type: { notIn: TERMINAL_TYPES } } },
           },

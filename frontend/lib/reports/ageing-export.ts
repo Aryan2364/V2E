@@ -19,11 +19,16 @@ function styleHeader(row: ExcelJS.Row) {
   })
 }
 
-/** The seven bands + three derived figures, in sheet order. */
+/**
+ * The seven bands + three derived figures, in sheet order — then the two integrity
+ * columns APPENDED at the end. Appending (rather than inserting) keeps every
+ * signed-off column exactly where the client expects it.
+ */
 function bands(b: AgeBuckets): (number | string)[] {
   return [
     b.not_yet_due, b.d1_7, b.d8_15, b.d16_30, b.d31_60, b.d61_90, b.d90_plus,
     b.total_pending, b.over_month_late, b.oldest_late_days ?? '', b.avg_late_days ?? '',
+    b.withdrawn, b.revised_entries,
   ]
 }
 
@@ -31,6 +36,7 @@ const BAND_HEADERS = [
   'Not Yet Due', '1 to 7 Days Late', '8 to 15 Days Late', '16 to 30 Days Late',
   '31 to 60 Days Late', '61 to 90 Days Late', 'More than 90 Days Late',
   'Total Pending', 'More than a Month Late', 'Oldest Late Task (Days)', 'Average Days Late',
+  'Withdrawn (Removed Before Due)', 'Due Date Revised',
 ]
 
 /**
@@ -49,10 +55,10 @@ export async function exportAgeingXlsx(report: AgeingReport, filename: string) {
   ps.columns = [{ width: 7 }, { width: 24 }, ...BAND_HEADERS.map(() => ({ width: 13 }))]
   const pTitle = ps.addRow(['Person-wise Pending & Overdue Ageing'])
   pTitle.font = { bold: true, size: 15, color: { argb: 'FF0F172A' } }
-  ps.mergeCells(1, 1, 1, 13)
+  ps.mergeCells(1, 1, 1, 2 + BAND_HEADERS.length)
   const pSub = ps.addRow([`Position as on ${asOn}`])
   pSub.font = { italic: true, color: { argb: 'FF64748B' } }
-  ps.mergeCells(2, 1, 2, 13)
+  ps.mergeCells(2, 1, 2, 2 + BAND_HEADERS.length)
   styleHeader(ps.addRow(['Sr. No.', 'Person Name', ...BAND_HEADERS]))
   report.people.forEach((p: PersonAgeRow, i) => {
     ps.addRow([i + 1, p.name, ...bands(p)]).alignment = { vertical: 'middle' }
@@ -66,10 +72,10 @@ export async function exportAgeingXlsx(report: AgeingReport, filename: string) {
   ts.columns = [{ width: 7 }, { width: 40 }, { width: 12 }, ...BAND_HEADERS.map(() => ({ width: 13 }))]
   const tTitle = ts.addRow(['Task-wise Pending & Overdue Ageing'])
   tTitle.font = { bold: true, size: 15, color: { argb: 'FF0F172A' } }
-  ts.mergeCells(1, 1, 1, 14)
+  ts.mergeCells(1, 1, 1, 3 + BAND_HEADERS.length)
   const tSub = ts.addRow([`Position as on ${asOn}`])
   tSub.font = { italic: true, color: { argb: 'FF64748B' } }
-  ts.mergeCells(2, 1, 2, 14)
+  ts.mergeCells(2, 1, 2, 3 + BAND_HEADERS.length)
   styleHeader(ts.addRow(['Sr. No.', 'Task Name', 'Frequency', ...BAND_HEADERS]))
   report.tasks.forEach((t: TaskAgeRow, i) => {
     ts.addRow([i + 1, t.title, t.frequency, ...bands(t)]).alignment = { vertical: 'middle' }
@@ -80,22 +86,32 @@ export async function exportAgeingXlsx(report: AgeingReport, filename: string) {
 
   // ── Pending Task List ────────────────────────────────────────────────────────--
   const ls = wb.addWorksheet('Pending Task List', { views: [{ state: 'frozen', ySplit: 3 }] })
+  // The three integrity columns are APPENDED after Status, never inserted, so the ten
+  // signed-off columns keep their exact positions for anyone with a saved filter/pivot.
+  const LIST_HEADERS = [
+    'Sr. No.', 'Task Name', 'Assigned To', 'Assigned By', 'Department',
+    'Frequency', 'Due Date', 'Days Late', 'How Late', 'Status',
+    'Original Due Date', 'Times Due Date Revised', 'Taken Off On', 'Now With',
+  ]
   ls.columns = [
     { width: 7 }, { width: 40 }, { width: 22 }, { width: 20 }, { width: 20 },
     { width: 12 }, { width: 14 }, { width: 11 }, { width: 20 }, { width: 12 },
+    { width: 16 }, { width: 12 }, { width: 14 }, { width: 24 },
   ]
   const lHead = ls.addRow(['Position As On Date', asOn])
   lHead.font = { bold: true, color: { argb: 'FF0F172A' } }
   ls.addRow([])
-  styleHeader(ls.addRow([
-    'Sr. No.', 'Task Name', 'Assigned To', 'Assigned By', 'Department',
-    'Frequency', 'Due Date', 'Days Late', 'How Late', 'Status',
-  ]))
-  ls.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: 10 } }
+  styleHeader(ls.addRow(LIST_HEADERS))
+  ls.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: LIST_HEADERS.length } }
   report.pending.forEach((r, i) => {
     ls.addRow([
       i + 1, r.title, r.assigned_to, r.assigned_by ?? '', r.department ?? '',
+      // Due Date stays the LIVE date (what is expected now); Original Due Date is the
+      // date Days Late was actually measured from. Both are present so the reader can
+      // see a moved goalpost instead of having to trust one column.
       r.frequency, fmtDate(r.due_date), r.days_late ?? '', r.bucket_label, r.status,
+      fmtDate(r.original_deadline), r.deadline_revision_count, fmtDate(r.handover?.at ?? null),
+      (r.handover?.to ?? []).join(', '),
     ])
   })
 
@@ -110,10 +126,12 @@ export async function exportAgeingXlsx(report: AgeingReport, filename: string) {
     '5. More than a Month Late — the last three Late columns added together (everything above 30 days). This is the column to look at first in a review meeting.',
     '6. Oldest Late Task (Days) — the age of the single oldest task lying with that person or task. An average can look fine while one very old task hides in the pile, so both are shown.',
     '7. Average Days Late — the average age of the late work. Not Yet Due tasks are kept out of this average.',
+    '8. Days Late is always measured from the ORIGINAL Due Date — the date the task was first committed to. Changing a due date later cannot move a task into a younger column. Where a date has been changed, Times Due Date Revised shows how often and Original Due Date shows the date used.',
+    '9. Withdrawn (Removed Before Due) — the person was taken off the task before its original due date, without finishing. They are listed so the removal is visible, but the task is not aged against them and is NOT counted in Total Pending. Anyone removed AFTER the due date is still counted as late, because the lateness was already real.',
   ]
   notes.forEach((n) => {
     const r = ls.addRow([n])
-    ls.mergeCells(r.number, 1, r.number, 10)
+    ls.mergeCells(r.number, 1, r.number, LIST_HEADERS.length)
     r.getCell(1).alignment = { wrapText: true, vertical: 'top' }
     r.height = 28
     r.font = { color: { argb: 'FF334155' } }

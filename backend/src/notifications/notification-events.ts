@@ -7,6 +7,7 @@ export const NOTIF_EVENTS = {
     'task_assigned',
     'task_unassigned', // removed from a task's assignees/CC
     'task_status_changed', // status moved (e.g. In Progress → Done) outside the Complete action
+    'task_deadline_changed', // the deadline was revised — the people who have to hit it are told
     'task_attachment_added', // a file attached directly to the task (not via a comment)
     'task_completed',
     'task_incomplete', // task closed as not-done (terminal Incomplete) with a reason

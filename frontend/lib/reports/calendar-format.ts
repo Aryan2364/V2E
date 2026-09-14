@@ -16,9 +16,17 @@ export const RESULT_META: Record<DayResult, ResultMeta> = {
   late: { code: 'L', label: 'Done late', fg: '#92400E', bg: '#FEF3C7', border: '#FCD34D' },
   missed: { code: 'X', label: 'Missed — still not done', fg: '#991B1B', bg: '#FEE2E2', border: '#FCA5A5' },
   future: { code: 'W', label: 'Due, date not yet arrived', fg: '#475569', bg: '#FFFFFF', border: '#CBD5E1' },
+  // Neutral slate, not a severity colour: the person was taken off this occurrence
+  // before its original due date, so there is no verdict to convey — only the fact of
+  // the removal. Excluded from Scheduled and from every D/L/X/W count.
+  withdrawn: { code: '–', label: 'Withdrawn — removed before due', fg: '#64748B', bg: '#F1F5F9', border: '#CBD5E1' },
+  // Same neutral treatment, different fact: it WAS late when they let it go, and the
+  // square's tooltip says by how much. Kept out of the red 'missed' count because it
+  // is no longer a miss this person can close — someone else holds the occurrence.
+  handed_over: { code: '→', label: 'Handed over to someone else', fg: '#475569', bg: '#F1F5F9', border: '#CBD5E1' },
 }
 
-export const RESULT_ORDER: DayResult[] = ['on_time', 'late', 'missed', 'future']
+export const RESULT_ORDER: DayResult[] = ['on_time', 'late', 'missed', 'future', 'withdrawn', 'handed_over']
 
 export function fmtDate(iso: string | null): string {
   if (!iso) return '—'

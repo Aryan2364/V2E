@@ -250,6 +250,10 @@ export class WorkflowEngineService {
         completion_mode: 'any_can_complete',
         created_by_user_id: step.assigner_user_id,
         deadline: instanceStep.scheduled_at ?? undefined,
+        // Frozen compliance baseline — the date this step is born committed to. Kept
+        // in step with every other task-creation path so a later deadline revision
+        // can't retroactively turn a late task on-time.
+        original_deadline: instanceStep.scheduled_at ?? undefined,
         workflow_instance_step_id: instanceStep.id,
         assignees: {
           create: [{ organization_id: step.organization_id, user_id: instanceStep.assigned_to_user_id, is_cc: false }],

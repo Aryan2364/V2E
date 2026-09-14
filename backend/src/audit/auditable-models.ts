@@ -89,6 +89,8 @@ export const GLOBAL_RELATION_LABELS: Record<string, RelationHint> = {
   requester_id: { model: 'User' },
   requester_user_id: { model: 'User' },
   approver_user_id: { model: 'User' },
+  changed_by_user_id: { model: 'User' },
+  removed_by_user_id: { model: 'User' },
   department_id: { model: 'Department' },
   dept_id: { model: 'Department' },
   role_id: { model: 'Role' },
@@ -120,6 +122,9 @@ const EXPLICIT: Record<string, ModelAuditConfig> = {
     },
   },
   TaskAssignee: { resource: 'task', labelFields: [] },
+  // Append-only deadline paper trail. Rows are never updated, so the audit value is
+  // the create snapshot (from → to, who, why) — which the default diff already gives.
+  TaskDeadlineRevision: { resource: 'task', labelFields: [] },
   TaskComment: { resource: 'task', labelFields: [] },
   TaskChecklist: { resource: 'task', labelFields: ['title'] },
   TaskStatus: { resource: 'task_status', labelFields: ['name'] },

@@ -1,5 +1,6 @@
 import { DataScope } from '@prisma/client';
 import { isValidLeaf } from './permission-registry';
+import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
 
 /**
  * Data-scope registry — the single source of truth for ROW-LEVEL visibility.
@@ -46,7 +47,9 @@ export const CONTENT_LEAF_POLICY: Record<string, ContentLeafPolicy> = {
     whereForUsers: (ids) => ({
       OR: [
         { created_by_user_id: { in: ids } },
-        { assignees: { some: { user_id: { in: ids }, is_cc: false } } },
+        // Participation is the LIVE roster: being taken off a task ends the row-level
+        // visibility it granted (both for the person and for anyone scoped over them).
+        { assignees: { some: { ...ACTIVE_ASSIGNEE, user_id: { in: ids }, is_cc: false } } },
       ],
     }),
   },

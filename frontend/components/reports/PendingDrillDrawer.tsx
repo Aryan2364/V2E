@@ -52,7 +52,13 @@ export default function PendingDrillDrawer({
     return pending.filter((r) => {
       if (filter.personId && r.assigned_to_user_id !== filter.personId) return false
       if (filter.taskTitle && r.title !== filter.taskTitle) return false
-      if (bset && !bset.has(r.bucket)) return false
+      // An unconstrained band ("Total Pending", or a band chip the reviewer cleared)
+      // must NOT pick up RELEASED rows: the backend keeps both `withdrawn` and
+      // `handed_over` out of `total_pending`, so including them here would break the
+      // contract that the clicked count equals the rows shown. They are reachable only
+      // by clicking their own count, which passes that bucket explicitly.
+      if (!bset) return r.bucket !== 'withdrawn' && r.bucket !== 'handed_over'
+      if (!bset.has(r.bucket)) return false
       return true
     })
   }, [pending, filter])
@@ -174,7 +180,16 @@ export default function PendingDrillDrawer({
                         <span className="line-clamp-2">{r.title}</span>
                       </td>
                     )}
-                    {!singlePerson && <td className="px-3 py-3 text-[#0F172A] whitespace-nowrap">{r.assigned_to}</td>}
+                    {!singlePerson && (
+                      <td className="px-3 py-3 text-[#0F172A] whitespace-nowrap">
+                        {r.assigned_to}
+                        {r.handover && (
+                        <span className="block text-[11px] font-normal text-[#475569]" title={`Taken off ${r.assigned_to} on ${fmtDate(r.handover.at)}. This is no longer pending on them.`}>
+                          → now with {r.handover.to.length ? r.handover.to.join(', ') : 'no one'}
+                        </span>
+                      )}
+                      </td>
+                    )}
                     <td className="px-3 py-3 text-[#475569] whitespace-nowrap">{r.frequency}</td>
                     <td className="px-3 py-3 text-[#475569] whitespace-nowrap">{r.assigned_by ?? '—'}</td>
                     <td className="px-3 py-3 text-[#475569] whitespace-nowrap tabular-nums">{fmtDate(r.due_date)}</td>

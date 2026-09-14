@@ -6,14 +6,20 @@ const HEADER_FILL = 'FF2563EB'
 const TOTAL_FILL = 'FFEFF6FF'
 
 const CELL_FILL: Record<DayResult, string> = {
-  on_time: 'FFDCFCE7', late: 'FFFEF3C7', missed: 'FFFEE2E2', future: 'FFFFFFFF',
+  on_time: 'FFDCFCE7', late: 'FFFEF3C7', missed: 'FFFEE2E2', future: 'FFFFFFFF', withdrawn: 'FFF1F5F9',
+  handed_over: 'FFF1F5F9',
 }
 const CELL_FONT: Record<DayResult, string> = {
-  on_time: 'FF166534', late: 'FF92400E', missed: 'FF991B1B', future: 'FF475569',
+  on_time: 'FF166534', late: 'FF92400E', missed: 'FF991B1B', future: 'FF475569', withdrawn: 'FF64748B',
+  handed_over: 'FF475569',
 }
-const SEVERITY: Record<DayResult, number> = { future: 1, on_time: 2, late: 3, missed: 4 }
+// `withdrawn` ranks 0: it is the absence of a verdict, so any real mark on the same
+// day must beat it in the worst-mark-wins tiebreak. Mirrors the backend's SEVERITY.
+const SEVERITY: Record<DayResult, number> = { withdrawn: 0, handed_over: 0, future: 1, on_time: 2, late: 3, missed: 4 }
 const RESULT_LABEL: Record<DayResult, string> = {
   on_time: 'Done On Time', late: 'Done Late', missed: 'Missed', future: 'Due, date not yet arrived',
+  withdrawn: 'Withdrawn (removed before due)',
+  handed_over: 'Handed over to someone else',
 }
 
 function fmtDate(iso: string | null): string {
@@ -47,12 +53,15 @@ export async function exportCalendarXlsx(report: CalendarReport, filename: strin
   // ── Calendar ─────────────────────────────────────────────────────────────────--
   const cal = wb.addWorksheet('Calendar', { views: [{ state: 'frozen', xSplit: 5, ySplit: 4 }] })
   const dayCount = report.days.length
-  const lastCol = 5 + dayCount + 4
+  // 5 identity columns + the day grid + the four signed-off tallies + the two
+  // integrity columns appended after them (Withdrawn, Due Dates Revised).
+  const TAIL_COLS = 6
+  const lastCol = 5 + dayCount + TAIL_COLS
 
   const title = cal.addRow([`Monthly Task Compliance Calendar — ${report.month_label}`])
   title.font = { bold: true, size: 15, color: { argb: 'FF0F172A' } }
   cal.mergeCells(1, 1, 1, lastCol)
-  const sub = cal.addRow([`Position as on ${fmtDate(report.as_on_date)}   ·   D = Done On Time, L = Done Late, X = Missed, W = Due (date not yet arrived), blank = not scheduled`])
+  const sub = cal.addRow([`Position as on ${fmtDate(report.as_on_date)}   ·   D = Done On Time, L = Done Late, X = Missed, W = Due (date not yet arrived), – = Withdrawn (removed before due), blank = not scheduled   ·   Every mark is judged against the task's ORIGINAL due date, so changing a due date later cannot repaint a missed day`])
   sub.font = { italic: true, color: { argb: 'FF64748B' } }
   cal.mergeCells(2, 1, 2, lastCol)
   cal.addRow([])
@@ -61,6 +70,7 @@ export async function exportCalendarXlsx(report: CalendarReport, filename: strin
     'Sr. No.', 'Task Name', 'Person Name', 'Frequency', 'Brought Forward',
     ...report.days.map((d) => `${d.day} ${d.dow}`),
     'Scheduled This Month', 'Done On Time', 'Done Late', 'Missed',
+    'Withdrawn (Removed Before Due)', 'Due Dates Revised',
   ])
   head.font = { bold: true, color: { argb: 'FFFFFFFF' } }
   head.eachCell((cell) => {
@@ -73,7 +83,7 @@ export async function exportCalendarXlsx(report: CalendarReport, filename: strin
   cal.getColumn(4).width = 11
   cal.getColumn(5).width = 9
   for (let i = 0; i < dayCount; i++) cal.getColumn(6 + i).width = 4.5
-  for (let i = 0; i < 4; i++) cal.getColumn(6 + dayCount + i).width = 11
+  for (let i = 0; i < TAIL_COLS; i++) cal.getColumn(6 + dayCount + i).width = 11
 
   report.rows.forEach((row, i) => {
     const marks = dayMarks(row)
@@ -82,7 +92,9 @@ export async function exportCalendarXlsx(report: CalendarReport, filename: strin
       const r = marks.get(d.day)
       cells.push(r ? RESULT_META[r].code : '')
     }
-    cells.push(row.scheduled, row.on_time, row.late, row.missed)
+    // Scheduled stays graded-only (= D + L + X + W), so the client's identity holds;
+    // withdrawn is reported beside it rather than folded in.
+    cells.push(row.scheduled, row.on_time, row.late, row.missed, row.withdrawn, row.revised_entries)
     const xrow = cal.addRow(cells)
     xrow.alignment = { vertical: 'middle' }
     // Colour the day cells by result.
@@ -98,29 +110,41 @@ export async function exportCalendarXlsx(report: CalendarReport, filename: strin
 
   const t = report.totals
   const totalRow = cal.addRow(['', `Total / Overall · ${t.rows} rows`, '', '', t.brought_forward || '',
-    ...report.days.map(() => ''), t.scheduled, t.on_time, t.late, t.missed])
+    ...report.days.map(() => ''), t.scheduled, t.on_time, t.late, t.missed, t.withdrawn, t.revised_entries])
   totalRow.font = { bold: true }
   totalRow.eachCell((cell) => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: TOTAL_FILL } } })
 
   // ── Calendar Data ──────────────────────────────────────────────────────────────
   const data = wb.addWorksheet('Calendar Data', { views: [{ state: 'frozen', ySplit: 1 }] })
-  const dHead = data.addRow(['Task Name', 'Assigned To', 'Frequency', 'Due Date', 'Completion Date', 'Status', 'Day Result', 'Severity', 'Row Key'])
+  // Row Key stays column 9 so any saved lookup against it keeps working; the three
+  // integrity columns are appended after it.
+  const D_HEADERS = [
+    'Task Name', 'Assigned To', 'Frequency', 'Due Date', 'Completion Date', 'Status',
+    'Day Result', 'Severity', 'Row Key',
+    'Original Due Date', 'Times Due Date Revised', 'Taken Off On', 'Now With',
+  ]
+  const dHead = data.addRow(D_HEADERS)
   dHead.font = { bold: true, color: { argb: 'FFFFFFFF' } }
   dHead.eachCell((cell) => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: HEADER_FILL } } })
   data.columns = [
     { width: 40 }, { width: 22 }, { width: 11 }, { width: 14 }, { width: 15 },
     { width: 12 }, { width: 22 }, { width: 9 }, { width: 40 },
+    { width: 16 }, { width: 12 }, { width: 14 }, { width: 24 },
   ]
-  data.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: 9 } }
+  data.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: D_HEADERS.length } }
 
   const flat = report.rows
     .flatMap((row) => row.cells.map((c) => ({ row, c })))
     .sort((a, b) => b.c.due_date.localeCompare(a.c.due_date) || (SEVERITY[b.c.result] - SEVERITY[a.c.result]))
   for (const { row, c } of flat) {
     data.addRow([
+      // Due Date is the LIVE date — it is also what placed the square in its day
+      // column. Original Due Date is what Day Result was actually judged against.
       row.title, row.person, row.frequency, fmtDate(c.due_date), fmtDate(c.completion_date),
       c.status ?? (c.result === 'missed' || c.result === 'future' ? 'overdue' : 'complete'),
       RESULT_LABEL[c.result], SEVERITY[c.result], `${row.title}|${row.person}|${excelSerial(c.due_date)}`,
+      fmtDate(c.original_deadline), c.deadline_revision_count, fmtDate(c.handover?.at ?? null),
+      (c.handover?.to ?? []).join(', '),
     ])
   }
 
