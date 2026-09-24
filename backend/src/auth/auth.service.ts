@@ -15,6 +15,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { SwitchOrgDto } from './dto/switch-org.dto';
 import { classifyIdentifier } from '../common/identifier.util';
+import { ORG_DEACTIVATED_MESSAGE, isOrganizationDeactivated } from '../common/org-status.util';
 
 @Injectable()
 export class AuthService {
@@ -77,14 +78,25 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.password, user.password_hash);
     if (!valid) throw new UnauthorizedException('Incorrect password. Please try again.');
 
-    const memberships = await this.prisma.organizationMember.findMany({
+    const allMemberships = await this.prisma.organizationMember.findMany({
       where: { user_id: user.id, is_active: true },
-      include: { organization: { select: { id: true, name: true, slug: true, logo_url: true } } },
+      include: {
+        organization: { select: { id: true, name: true, slug: true, logo_url: true, status: true } },
+      },
       orderBy: { joined_at: 'asc' },
     });
 
+    // A deactivated firm keeps its memberships intact, so the membership row alone
+    // can't say whether this person may sign in — the org's status decides. Super
+    // admins are exempt so support can still get in. See org-status.util.ts.
+    const memberships = user.is_super_admin
+      ? allMemberships
+      : allMemberships.filter((m) => !isOrganizationDeactivated(m.organization.status));
+
     if (memberships.length === 0) {
-      throw new UnauthorizedException('No active organization membership');
+      throw new UnauthorizedException(
+        allMemberships.length > 0 ? ORG_DEACTIVATED_MESSAGE : 'No active organization membership',
+      );
     }
 
     if (memberships.length === 1) {
@@ -116,19 +128,33 @@ export class AuthService {
   async switchOrg(userId: string, dto: SwitchOrgDto) {
     const member = await this.prisma.organizationMember.findFirst({
       where: { user_id: userId, organization_id: dto.organizationId, is_active: true },
+      include: { organization: { select: { status: true } } },
     });
     if (!member) throw new ForbiddenException('Not a member of this organization');
 
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.is_active) throw new UnauthorizedException();
 
+    if (!user.is_super_admin && isOrganizationDeactivated(member.organization.status)) {
+      throw new ForbiddenException(ORG_DEACTIVATED_MESSAGE);
+    }
+
     const tokens = await this.issueFullTokens(user.id, user.email, dto.organizationId, false);
     return { ...tokens, user: await this.buildUserPayload(user, dto.organizationId, member.is_admin, false) };
   }
 
   async getMyOrgs(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { is_super_admin: true },
+    });
     return this.prisma.organizationMember.findMany({
-      where: { user_id: userId, is_active: true },
+      where: {
+        user_id: userId,
+        is_active: true,
+        // Never offer a deactivated firm as somewhere to switch into.
+        ...(user?.is_super_admin ? {} : { organization: { status: { not: 'inactive' } } }),
+      },
       include: {
         organization: { select: { id: true, name: true, slug: true, logo_url: true, industry: true } },
       },
@@ -163,8 +189,13 @@ export class AuthService {
       if (organizationId) {
         const member = await this.prisma.organizationMember.findFirst({
           where: { user_id: user.id, organization_id: organizationId, is_active: true },
-          select: { is_admin: true },
+          select: { is_admin: true, organization: { select: { status: true } } },
         });
+        // Deactivating a firm must end sessions that are already open, not just
+        // block new logins — so a refresh for a dead org is refused.
+        if (!user.is_super_admin && isOrganizationDeactivated(member?.organization?.status)) {
+          throw new UnauthorizedException(ORG_DEACTIVATED_MESSAGE);
+        }
         isAdmin = member?.is_admin ?? false;
       }
       // Rotate, demoting the just-used current hash into the grace slot.

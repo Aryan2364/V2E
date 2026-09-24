@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Socket } from 'socket.io';
 import { PrismaService } from '../prisma/prisma.service';
+import { isOrganizationDeactivated } from '../common/org-status.util';
 
 export interface WsPrincipal {
   userId: string;
@@ -72,9 +73,19 @@ export class WsAuthService {
     const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
     if (!user || !user.is_active) return null;
 
-    return {
-      userId: user.id,
-      organizationId: typeof payload.organizationId === 'string' ? payload.organizationId : null,
-    };
+    const organizationId =
+      typeof payload.organizationId === 'string' ? payload.organizationId : null;
+
+    // Same kill switch as jwt.strategy.ts: a firm deactivated from the super-admin
+    // portal must lose its live sockets too, not keep receiving realtime events.
+    if (organizationId && !user.is_super_admin) {
+      const org = await this.prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { status: true },
+      });
+      if (isOrganizationDeactivated(org?.status)) return null;
+    }
+
+    return { userId: user.id, organizationId };
   }
 }

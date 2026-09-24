@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ORG_DEACTIVATED_MESSAGE, isOrganizationDeactivated } from '../../common/org-status.util';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -37,7 +38,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       const [org, profile, member] = await Promise.all([
         this.prisma.organization.findUnique({
           where: { id: organizationId },
-          select: { is_test: true },
+          select: { is_test: true, status: true },
         }),
         this.prisma.employeeProfile.findFirst({
           where: { user_id: user.id, organization_id: organizationId },
@@ -48,6 +49,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           select: { is_admin: true },
         }),
       ]);
+      // A firm deactivated from the super-admin portal loses access immediately —
+      // an access token minted before the switch was thrown must stop working, not
+      // keep the session alive until it expires. Super admins are exempt so they
+      // can still open the firm to inspect or reactivate it.
+      if (!user.is_super_admin && isOrganizationDeactivated(org?.status)) {
+        throw new UnauthorizedException(ORG_DEACTIVATED_MESSAGE);
+      }
+
       isTestOrg = org?.is_test ?? false;
       employeeProfileId = profile?.id ?? null;
       systemRoleId = profile?.system_role_id ?? null;

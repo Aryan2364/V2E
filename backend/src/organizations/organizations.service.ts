@@ -405,12 +405,27 @@ export class OrganizationsService {
     });
   }
 
+  /**
+   * Firm-wide kill switch. Only the org's status flips — memberships, users and
+   * passwords stay intact, so reactivating restores everyone as they were. The
+   * lockout itself is enforced in auth (see `common/org-status.util.ts`).
+   */
   async deactivate(id: string) {
     await this.findOne(id);
 
     return this.prisma.organization.update({
       where: { id },
       data: { status: 'inactive' },
+    });
+  }
+
+  /** Undo a deactivation — the firm's users can sign in again immediately. */
+  async reactivate(id: string) {
+    await this.findOne(id);
+
+    return this.prisma.organization.update({
+      where: { id },
+      data: { status: 'active' },
     });
   }
 }

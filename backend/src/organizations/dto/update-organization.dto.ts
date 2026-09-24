@@ -6,7 +6,7 @@ import { CreateOrganizationDto } from './create-organization.dto';
 export enum OrgStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
-  SUSPENDED = 'suspended',
+  PENDING_SETUP = 'pending_setup',
 }
 
 export class UpdateOrganizationDto extends PartialType(CreateOrganizationDto) {

@@ -80,6 +80,12 @@ export class OrganizationsController {
     return this.organizationsService.deactivate(id);
   }
 
+  @Post(':id/reactivate')
+  @SuperAdmin()
+  reactivate(@Param('id') id: string) {
+    return this.organizationsService.reactivate(id);
+  }
+
   // ─── Module entitlements (vendor ceiling — superadmin only) ───────────────────
 
   @Get(':id/entitlements')

@@ -78,6 +78,10 @@ export async function deactivateOrganization(id: string): Promise<void> {
   await apiClient.delete(`/api/v1/organizations/${id}/deactivate`);
 }
 
+export async function reactivateOrganization(id: string): Promise<void> {
+  await apiClient.post(`/api/v1/organizations/${id}/reactivate`);
+}
+
 // ─── Module entitlements (vendor ceiling — superadmin only) ────────────────────
 
 export type EntitlementState = 'full' | 'preview' | 'off';

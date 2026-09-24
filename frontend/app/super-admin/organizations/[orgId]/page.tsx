@@ -15,10 +15,12 @@ import {
   Pencil,
   Eye,
   EyeOff,
+  Power,
 } from 'lucide-react'
 import {
   getOrganization,
   deactivateOrganization,
+  reactivateOrganization,
   getEntitlements,
   setEntitlements,
   type ModuleEntitlement,
@@ -361,6 +363,9 @@ export default function OrgDetailPage() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [isDeactivating, setIsDeactivating] = useState(false)
   const [deactivateError, setDeactivateError] = useState<string | null>(null)
+  const [showReactivate, setShowReactivate] = useState(false)
+  const [isReactivating, setIsReactivating] = useState(false)
+  const [reactivateError, setReactivateError] = useState<string | null>(null)
   const [editingMember, setEditingMember] = useState<OrgMember | null>(null)
 
   useEffect(() => {
@@ -390,6 +395,21 @@ export default function OrgDetailPage() {
       setDeactivateError(err?.response?.data?.message ?? 'Failed to deactivate.')
     } finally {
       setIsDeactivating(false)
+    }
+  }
+
+  const handleReactivate = async () => {
+    if (!orgId) return
+    setIsReactivating(true)
+    setReactivateError(null)
+    try {
+      await reactivateOrganization(orgId)
+      setOrg((prev) => prev ? { ...prev, status: 'active' } : prev)
+      setShowReactivate(false)
+    } catch (err: any) {
+      setReactivateError(err?.response?.data?.message ?? 'Failed to reactivate.')
+    } finally {
+      setIsReactivating(false)
     }
   }
 
@@ -430,7 +450,12 @@ export default function OrgDetailPage() {
         </button>
         <div className="flex items-center justify-between">
           <h1 className="text-[28px] font-bold text-[#0F172A]">{org.name}</h1>
-          {org.status === 'active' && (
+          {org.status === 'inactive' ? (
+            <Button onClick={() => setShowReactivate(true)}>
+              <Power size={15} />
+              Reactivate
+            </Button>
+          ) : (
             <Button variant="danger" onClick={() => setShowConfirm(true)}>
               <AlertTriangle size={15} />
               Deactivate
@@ -597,8 +622,9 @@ export default function OrgDetailPage() {
           <div className="flex items-start gap-3 p-3 rounded-[8px] bg-[#FEF2F2] border border-[#FECACA]">
             <AlertTriangle size={18} className="text-[#DC2626] shrink-0 mt-0.5" />
             <p className="text-sm text-[#7F1D1D]">
-              Deactivating <strong>{org.name}</strong> will prevent all its users from
-              accessing V2E. This action can be reversed by re-activating the organization.
+              Deactivating <strong>{org.name}</strong> signs out everyone in the firm
+              immediately and blocks them from signing in again — their accounts and data
+              are kept untouched. You can reverse this at any time with Reactivate.
             </p>
           </div>
           {deactivateError && <p className="text-sm text-[#DC2626]">{deactivateError}</p>}
@@ -608,6 +634,35 @@ export default function OrgDetailPage() {
               variant="secondary"
               onClick={() => { setShowConfirm(false); setDeactivateError(null) }}
               disabled={isDeactivating}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Reactivate confirm modal */}
+      <Modal
+        isOpen={showReactivate}
+        onClose={() => { setShowReactivate(false); setReactivateError(null) }}
+        title="Reactivate Organization"
+        size="sm"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex items-start gap-3 p-3 rounded-[8px] bg-[#EFF6FF] border border-[#BFDBFE]">
+            <Power size={18} className="text-[#2563EB] shrink-0 mt-0.5" />
+            <p className="text-sm text-[#1E3A8A]">
+              Reactivating <strong>{org.name}</strong> lets all its users sign in again
+              straight away, with the same accounts and passwords they had before.
+            </p>
+          </div>
+          {reactivateError && <p className="text-sm text-[#DC2626]">{reactivateError}</p>}
+          <div className="flex gap-3 pt-1">
+            <Button isLoading={isReactivating} onClick={handleReactivate}>Reactivate</Button>
+            <Button
+              variant="secondary"
+              onClick={() => { setShowReactivate(false); setReactivateError(null) }}
+              disabled={isReactivating}
             >
               Cancel
             </Button>
