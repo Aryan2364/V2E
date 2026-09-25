@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Emit .next/standalone: a server.js plus only the traced node_modules files,
+  // which is all the Dockerfile's runner stage ships. Does not affect `next dev`
+  // or `next start`; it only adds an extra output directory at build time.
+  output: 'standalone',
   experimental: { workerThreads: false, cpus: 1 },
   transpilePackages: ['reactflow', '@reactflow/core', '@reactflow/background', '@reactflow/controls', '@reactflow/minimap'],
   images: {
