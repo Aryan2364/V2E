@@ -43,6 +43,13 @@ ENV NODE_ENV=production
 # leave the container unable to start.
 COPY package*.json ./
 COPY prisma ./prisma
+# prisma.config.ts is load-bearing at RUNTIME, not just for local CLI use: the
+# Prisma 7 CLI no longer reads DATABASE_URL by itself, so without this file
+# `prisma migrate deploy` in the CMD below dies with "The datasource.url
+# property is required in your Prisma config file" and the container never
+# starts. The single-stage build got it incidentally via `COPY . .`; here it has
+# to be named.
+COPY prisma.config.ts ./
 RUN npm ci --omit=dev --legacy-peer-deps && npx prisma generate && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
