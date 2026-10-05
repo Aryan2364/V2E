@@ -25,6 +25,8 @@ import RecurringFilterToolbar, {
   type RecurringFilters,
   EMPTY_RECURRING_FILTERS,
   isRecurringFiltered,
+  normalizeRecurringFilters,
+  tagsOnTemplates,
 } from '@/components/tasks/RecurringFilterToolbar'
 import { useSessionState } from '@/lib/tasks/useSessionState'
 import ScopeSwitcher from '@/components/tasks/overview/ScopeSwitcher'
@@ -314,7 +316,9 @@ export default function RecurringPage() {
   // Filters
   const [searchInput, setSearchInput] = useSessionState('tasks:recurring:search', '')
   const [search, setSearch] = useState('')
-  const [filters, setFilters] = useSessionState<RecurringFilters>('tasks:recurring:filters', { ...EMPTY_RECURRING_FILTERS })
+  // Stored filters may predate a section (e.g. tags) — normalise so old objects still load.
+  const [storedFilters, setFilters] = useSessionState<RecurringFilters>('tasks:recurring:filters', { ...EMPTY_RECURRING_FILTERS })
+  const filters = useMemo(() => normalizeRecurringFilters(storedFilters), [storedFilters])
 
   // Data
   const [templates, setTemplates] = useState<RecurringTemplate[]>([])
@@ -332,7 +336,7 @@ export default function RecurringPage() {
   const [manageTarget, setManageTarget] = useState<RecurringTemplate | null>(null)
 
   useEffect(() => {
-    const t = setTimeout(() => setSearch(searchInput.trim()), 350)
+    const t = setTimeout(() => setSearch(searchInput.trim()), 300)
     return () => clearTimeout(t)
   }, [searchInput])
 
@@ -356,14 +360,14 @@ export default function RecurringPage() {
     })
   }, [orgId])
 
-  // The filter sections (status / priority / category / assignee) are all applied
-  // client-side over the loaded set, so the server query only carries scope, relation
-  // and the text search.
+  // The filter sections (status / priority / category / tags / assignee) AND the text
+  // search are all applied client-side over the loaded (unpaginated) set, so the server
+  // query only carries scope and relation. Search runs here because the server's search
+  // covers title + description only, and kit §27.1 needs it to cover tags and people too.
   const query = useMemo(() => ({
     scope: requestedScope,
     relation: appliedScope === 'org' ? undefined : relation,
-    search: search || undefined,
-  }), [requestedScope, relation, appliedScope, search])
+  }), [requestedScope, relation, appliedScope])
 
   const queryKey = JSON.stringify(query)
   const loadData = useCallback(() => {
@@ -402,16 +406,35 @@ export default function RecurringPage() {
     return Array.from(groups, ([department, people]) => ({ department, people }))
   }, [templates, userMap])
 
-  // Apply all filter sections client-side over the server-filtered (scope/relation/search) set.
+  // Tags on the loaded templates — the Tags filter offers only these (sorted by name).
+  const tagOptions = useMemo(() => tagsOnTemplates(templates), [templates])
+
+  // Apply the search and every filter section client-side over the scope/relation set.
   const visibleTemplates = useMemo(() => {
+    const q = search.toLowerCase()
+    const catName = new Map(categories.map((c) => [c.id, c.name]))
+    const matchesSearch = (t: RecurringTemplate) => {
+      if (!q) return true
+      return [
+        t.title,
+        t.description ?? '',
+        t.category_id ? catName.get(t.category_id) ?? '' : '',
+        ...(t.tags ?? []).map((tag) => tag.name),
+        t.created_by_name ?? '',
+        t.department_name ?? '',
+        ...(t.assignee_names ?? []),
+      ].join(' ').toLowerCase().includes(q)
+    }
     return templates.filter((t) => {
+      if (!matchesSearch(t)) return false
       if (filters.statuses.length && !filters.statuses.some((s) => (s === 'active' ? t.is_active : !t.is_active))) return false
       if (filters.priorityIds.length && !(t.priority_id && filters.priorityIds.includes(t.priority_id))) return false
       if (filters.categoryIds.length && !(t.category_id && filters.categoryIds.includes(t.category_id))) return false
       if (filters.assigneeIds.length && !(t.assignee_user_ids ?? []).some((id) => filters.assigneeIds.includes(id))) return false
+      if (filters.tagIds.length && !(t.tags ?? []).some((tag) => filters.tagIds.includes(tag.id))) return false
       return true
     })
-  }, [templates, filters])
+  }, [templates, filters, search, categories])
 
   function handleScopeChange(s: WorkScope) {
     setRequestedScope(s)
@@ -446,7 +469,7 @@ export default function RecurringPage() {
     ? { icon: <ArrowUpRight size={24} className="text-[#94A3B8]" />, title: 'Nothing sent yet', sub: 'Recurring tasks you set up for others show here.' }
     : { icon: <Inbox size={24} className="text-[#94A3B8]" />, title: 'Nothing received', sub: 'Recurring tasks assigned to you show here.' }
   const emptyState = filtersActive
-    ? { icon: <RotateCcw size={24} className="text-[#94A3B8]" />, title: 'No templates match your filters', sub: 'Try adjusting or clearing the search and filters.' }
+    ? { icon: <RotateCcw size={24} className="text-[#94A3B8]" />, title: search ? `No templates match ‘${search}’` : 'No templates match your filters', sub: 'Try adjusting or clearing the search and filters.' }
     : appliedScope === 'org'
       ? { icon: <RotateCcw size={24} className="text-[#94A3B8]" />, title: 'No recurring templates', sub: 'No templates match this view.' }
       : relationEmpty
@@ -494,6 +517,7 @@ export default function RecurringPage() {
         onFilters={setFilters}
         priorities={priorities}
         categories={categories}
+        tags={tagOptions}
         peopleGroups={peopleGroups}
       />
 

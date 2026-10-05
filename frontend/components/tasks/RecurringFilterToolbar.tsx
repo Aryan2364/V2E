@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Filter, Search, X, Square, SquareCheck, SquareMinus, AlertTriangle } from 'lucide-react'
-import type { TaskCategory, TaskPriority } from '@/lib/types/tasks'
+import type { TaskCategory, TaskPriority, TaskTagRef } from '@/lib/types/tasks'
+import { tagDotClass } from '@/lib/tasks/tagColors'
 import PeopleDeptFilter, { type DeptGroup } from './PeopleDeptFilter'
 
 // ─── Filter model ───────────────────────────────────────────────────────────────
@@ -23,6 +24,8 @@ export interface RecurringFilters {
   categoryIds: string[]
   /** Selected assignee ids — empty = all (Anyone). */
   assigneeIds: string[]
+  /** Selected tag ids — empty = all. A template matches when it carries ANY of them. */
+  tagIds: string[]
 }
 
 export const EMPTY_RECURRING_FILTERS: RecurringFilters = {
@@ -30,10 +33,35 @@ export const EMPTY_RECURRING_FILTERS: RecurringFilters = {
   priorityIds: [],
   categoryIds: [],
   assigneeIds: [],
+  tagIds: [],
+}
+
+/**
+ * Fill in any section a stored filter object is missing. Filters persist in
+ * sessionStorage, so an object saved before a section existed (e.g. `tagIds`) must
+ * still load: missing or malformed fields fall back to "all".
+ */
+export function normalizeRecurringFilters(raw: Partial<RecurringFilters> | null | undefined): RecurringFilters {
+  const r = (raw ?? {}) as Partial<RecurringFilters>
+  const arr = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : [])
+  return {
+    statuses: arr<RecurringStatusKey>(r.statuses).filter((k) => ALL_STATUSES.includes(k)),
+    priorityIds: arr(r.priorityIds),
+    categoryIds: arr(r.categoryIds),
+    assigneeIds: arr(r.assigneeIds),
+    tagIds: arr(r.tagIds),
+  }
 }
 
 export function isRecurringFiltered(f: RecurringFilters): boolean {
-  return f.statuses.length > 0 || f.priorityIds.length > 0 || f.categoryIds.length > 0 || f.assigneeIds.length > 0
+  return f.statuses.length > 0 || f.priorityIds.length > 0 || f.categoryIds.length > 0 || f.assigneeIds.length > 0 || f.tagIds.length > 0
+}
+
+/** The tags on a set of templates (not the whole master list), de-duplicated and sorted by name. */
+export function tagsOnTemplates(templates: { tags?: TaskTagRef[] }[]): TaskTagRef[] {
+  const byId = new Map<string, TaskTagRef>()
+  for (const t of templates) for (const tag of t.tags ?? []) if (!byId.has(tag.id)) byId.set(tag.id, tag)
+  return Array.from(byId.values()).sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
 }
 
 export function countActiveRecurringFilters(f: RecurringFilters): number {
@@ -41,13 +69,16 @@ export function countActiveRecurringFilters(f: RecurringFilters): number {
     (f.statuses.length > 0 ? 1 : 0) +
     (f.priorityIds.length > 0 ? 1 : 0) +
     (f.categoryIds.length > 0 ? 1 : 0) +
-    (f.assigneeIds.length > 0 ? 1 : 0)
+    (f.assigneeIds.length > 0 ? 1 : 0) +
+    (f.tagIds.length > 0 ? 1 : 0)
   )
 }
 
 // ─── Little building blocks (mirror TaskFilterPopover) ───────────────────────────
 
-function Pill({ active, onClick, color, children }: { active: boolean; onClick: () => void; color?: string; children: React.ReactNode }) {
+// `color` is a master's stored hex; `dotClassName` is the class-based alternative used by
+// tags, whose colours live only in globals.css.
+function Pill({ active, onClick, color, dotClassName, children }: { active: boolean; onClick: () => void; color?: string; dotClassName?: string; children: React.ReactNode }) {
   return (
     <button
       type="button"
@@ -57,6 +88,7 @@ function Pill({ active, onClick, color, children }: { active: boolean; onClick: 
       }`}
     >
       {color && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />}
+      {!color && dotClassName && <span className={`w-2 h-2 rounded-full shrink-0 ${dotClassName}`} />}
       {children}
     </button>
   )
@@ -99,6 +131,7 @@ interface RDraft {
   priorities: Set<string>
   categories: Set<string>
   assignees: Set<string>
+  tags: Set<string>
 }
 
 // ─── Collapsed Filters popover ───────────────────────────────────────────────────
@@ -113,12 +146,15 @@ function RecurringFilterPopover({
   onChange,
   priorities,
   categories,
+  tags,
   peopleGroups,
 }: {
   filters: RecurringFilters
   onChange: (f: RecurringFilters) => void
   priorities: TaskPriority[]
   categories: TaskCategory[]
+  /** Tags on the templates in view — the only ones that can match. */
+  tags: TaskTagRef[]
   peopleGroups: DeptGroup[]
 }) {
   const [open, setOpen] = useState(false)
@@ -144,12 +180,19 @@ function RecurringFilterPopover({
   const allPriorityIds = useMemo(() => priorities.map((p) => p.id), [priorities])
   const allCategoryIds = useMemo(() => categories.map((c) => c.id), [categories])
   const allUserIds = useMemo(() => peopleGroups.flatMap((g) => g.people.map((p) => p.id)), [peopleGroups])
+  const allTagIds = useMemo(() => tags.map((t) => t.id), [tags])
 
   const buildDraft = (f: RecurringFilters): RDraft => ({
     statuses: new Set(f.statuses.length ? f.statuses : ALL_STATUSES),
     priorities: new Set(f.priorityIds.length ? f.priorityIds : allPriorityIds),
     categories: new Set(f.categoryIds.length ? f.categoryIds : allCategoryIds),
     assignees: new Set(f.assigneeIds.length ? f.assigneeIds : allUserIds),
+    // A stored tag no longer on any template in view cannot be shown; drop it, and treat
+    // "nothing left" as the default (every tag).
+    tags: (() => {
+      const known = f.tagIds.filter((id) => allTagIds.includes(id))
+      return new Set(known.length ? known : allTagIds)
+    })(),
   })
   const [draft, setDraft] = useState<RDraft>(() => buildDraft(filters))
 
@@ -196,8 +239,9 @@ function RecurringFilterPopover({
     if (allPriorityIds.length > 0 && draft.priorities.size === 0) list.push('Priority')
     if (allCategoryIds.length > 0 && draft.categories.size === 0) list.push('Category')
     if (allUserIds.length > 0 && draft.assignees.size === 0) list.push('Assignee')
+    if (allTagIds.length > 0 && draft.tags.size === 0) list.push('Tags')
     return list
-  }, [draft, allPriorityIds.length, allCategoryIds.length, allUserIds.length])
+  }, [draft, allPriorityIds.length, allCategoryIds.length, allUserIds.length, allTagIds.length])
 
   const apply = () => {
     if (empties.length) return
@@ -206,6 +250,7 @@ function RecurringFilterPopover({
       priorityIds: eqSet(draft.priorities, allPriorityIds) ? [] : Array.from(draft.priorities),
       categoryIds: eqSet(draft.categories, allCategoryIds) ? [] : Array.from(draft.categories),
       assigneeIds: eqSet(draft.assignees, allUserIds) ? [] : Array.from(draft.assignees),
+      tagIds: eqSet(draft.tags, allTagIds) ? [] : Array.from(draft.tags),
     })
     setOpen(false)
   }
@@ -296,6 +341,19 @@ function RecurringFilterPopover({
             </Section>
           )}
 
+          {/* Tags — only the tags on the templates in view; hidden when none has one. */}
+          {tags.length > 0 && (
+            <Section title="Tags" right={<CheckToggle state={tick(draft.tags, allTagIds)} label="All" onClick={() => toggleAllIn('tags', allTagIds)} />}>
+              <div className="flex flex-wrap gap-1.5">
+                {tags.map((tag) => (
+                  <Pill key={tag.id} active={draft.tags.has(tag.id)} onClick={() => toggleValue('tags', tag.id)} dotClassName={tagDotClass(tag.color, !tag.is_active)}>
+                    {tag.name}
+                  </Pill>
+                ))}
+              </div>
+            </Section>
+          )}
+
           {/* Assignee — department-grouped multi-select over the people on these templates. */}
           <PeopleDeptFilter
             title="Assignee"
@@ -316,12 +374,14 @@ function RecurringFilterChips({
   onChange,
   priorities,
   categories,
+  tags,
   peopleGroups,
 }: {
   filters: RecurringFilters
   onChange: (f: RecurringFilters) => void
   priorities: TaskPriority[]
   categories: TaskCategory[]
+  tags: TaskTagRef[]
   peopleGroups: DeptGroup[]
 }) {
   const set = (patch: Partial<RecurringFilters>) => onChange({ ...filters, ...patch })
@@ -340,6 +400,11 @@ function RecurringFilterChips({
     const names = filters.categoryIds.map((id) => categories.find((x) => x.id === id)?.name ?? '—')
     const label = names.length <= 2 ? `Category: ${names.join(', ')}` : `Category: ${names.length} selected`
     chips.push({ key: 'category', label, onRemove: () => set({ categoryIds: [] }) })
+  }
+  if (filters.tagIds.length > 0) {
+    const names = filters.tagIds.map((id) => tags.find((x) => x.id === id)?.name ?? 'Unknown tag')
+    const label = names.length <= 2 ? `Tags: ${names.join(', ')}` : `Tags: ${names.length} selected`
+    chips.push({ key: 'tags', label, onRemove: () => set({ tagIds: [] }) })
   }
   if (filters.assigneeIds.length > 0) {
     const nameOf = (id: string) => peopleGroups.flatMap((g) => g.people).find((p) => p.id === id)?.name ?? '—'
@@ -394,6 +459,7 @@ export default function RecurringFilterToolbar({
   onFilters,
   priorities,
   categories,
+  tags = [],
   peopleGroups,
   trailing,
 }: {
@@ -403,6 +469,8 @@ export default function RecurringFilterToolbar({
   onFilters: (f: RecurringFilters) => void
   priorities: TaskPriority[]
   categories: TaskCategory[]
+  /** Tags on the templates in view (see `tagsOnTemplates`). Omit or [] to hide the section. */
+  tags?: TaskTagRef[]
   peopleGroups: DeptGroup[]
   trailing?: React.ReactNode
 }) {
@@ -415,7 +483,7 @@ export default function RecurringFilterToolbar({
             type="text"
             value={search}
             onChange={(e) => onSearch(e.target.value)}
-            placeholder="Search templates by title or description"
+            placeholder="Search templates by title, tag, category or person"
             className="w-full h-[38px] pl-9 pr-9 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] focus:bg-white transition-colors"
           />
           {search && (
@@ -434,6 +502,7 @@ export default function RecurringFilterToolbar({
           onChange={onFilters}
           priorities={priorities}
           categories={categories}
+          tags={tags}
           peopleGroups={peopleGroups}
         />
         {trailing}
@@ -443,6 +512,7 @@ export default function RecurringFilterToolbar({
         onChange={onFilters}
         priorities={priorities}
         categories={categories}
+        tags={tags}
         peopleGroups={peopleGroups}
       />
     </div>

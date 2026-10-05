@@ -8,10 +8,10 @@ import type { Task, TaskCategory, TaskPriority, TaskStatus } from '@/lib/types/t
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import TaskListRow from '@/components/tasks/TaskListRow'
 import TaskListToolbar from '@/components/tasks/TaskListToolbar'
-import { useTaskListView, GroupedTaskList } from '@/components/tasks/taskListView'
+import { useTaskListView, GroupedTaskList, ClearNarrowingButton } from '@/components/tasks/taskListView'
 import { type TaskSort, DEFAULT_TASK_SORT } from '@/components/tasks/TaskSortControl'
 import { useSessionState } from '@/lib/tasks/useSessionState'
-import { type TaskFilters, EMPTY_TASK_FILTERS, isTaskFiltered, applyTaskFilters } from '@/components/tasks/TaskFilterBar'
+import { type TaskFilters, EMPTY_TASK_FILTERS, isTaskFiltered, applyTaskFilters, normalizeTaskFilters } from '@/components/tasks/TaskFilterBar'
 import { AlertTriangle } from 'lucide-react'
 
 export default function EscalatedPage() {
@@ -24,7 +24,9 @@ export default function EscalatedPage() {
   const [priorities, setPriorities] = useState<TaskPriority[]>([])
   const [statuses, setStatuses] = useState<TaskStatus[]>([])
   const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useSessionState<TaskFilters>('tasks:escalated:filters', { ...EMPTY_TASK_FILTERS })
+  // Stored filters may predate a section (e.g. tags) — normalise so old objects still load.
+  const [storedFilters, setFilters] = useSessionState<TaskFilters>('tasks:escalated:filters', { ...EMPTY_TASK_FILTERS })
+  const filters = useMemo(() => normalizeTaskFilters(storedFilters), [storedFilters])
   const [search, setSearch] = useSessionState('tasks:escalated:search', '')
   const [sort, setSort] = useSessionState<TaskSort>('tasks:escalated:sort', { ...DEFAULT_TASK_SORT })
 
@@ -135,11 +137,16 @@ export default function EscalatedPage() {
             <AlertTriangle size={24} className="text-[#D97706]" />
           </div>
           <p className="font-semibold text-[#0F172A]">
-            {search.trim() ? 'No tasks match your search' : isFiltered ? 'No tasks match your filters' : 'No escalated tasks'}
+            {search.trim() ? `No tasks match ‘${search.trim()}’` : isFiltered ? 'No tasks match your filters' : 'No escalated tasks'}
           </p>
           <p className="text-sm text-[#475569] mt-1">
             {search.trim() ? 'Try a different search term.' : isFiltered ? 'Try adjusting your filters.' : 'Tasks flagged for escalation will appear here.'}
           </p>
+          <ClearNarrowingButton
+            hasSearch={!!search.trim()}
+            hasFilters={isFiltered}
+            onClear={() => { setSearch(''); setFilters({ ...EMPTY_TASK_FILTERS }) }}
+          />
         </div>
       ) : (
         <GroupedTaskList groups={groups} sortedTasks={sortedTasks} renderRow={renderRow} />

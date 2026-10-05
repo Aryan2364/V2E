@@ -20,8 +20,9 @@ import { FILE_TYPE_GROUPS, groupsFromExtensions } from '@/lib/attachments'
 import {
   ArrowLeft, RotateCcw, Play, Pause, Edit2, Zap,
   CheckCircle2, Clock, ListChecks, BarChart2, Filter, Users,
-  Calendar, Shield, CheckSquare, Flame, Target, TrendingUp, Bell, Paperclip, Download,
+  Calendar, Shield, CheckSquare, Flame, Target, TrendingUp, Bell, Paperclip, Download, Tag,
 } from 'lucide-react'
+import TagChip from '@/components/ui/TagChip'
 
 // ─── Schedule helpers (mirrors recurring/page.tsx) ────────────────────────────
 
@@ -882,7 +883,7 @@ export default function RecurringDetailPage() {
            </div>
 
            {/* Settings / Details */}
-           {(template.category_id || template.priority_id || template.linked_goal_id || escalationIds.length > 0) && (
+           {(template.category_id || template.priority_id || template.linked_goal_id || escalationIds.length > 0 || (template.tags?.length ?? 0) > 0) && (
              <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
                <div className="flex items-center gap-2 px-4 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
                  <span className="w-2 h-2 rounded-full bg-[#64748B]" />
@@ -918,6 +919,20 @@ export default function RecurringDetailPage() {
                      <div className="flex items-center gap-2">
                        <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: categories.find((c) => c.id === template.category_id)?.color }} />
                        <span className="text-sm text-[#0F172A]">{categories.find((c) => c.id === template.category_id)?.name}</span>
+                     </div>
+                   )}
+                   {/* Tags copied onto every new occurrence — read-only here; edit via Edit. */}
+                   {(template.tags?.length ?? 0) > 0 && (
+                     <div className="flex items-start gap-2">
+                       <Tag size={14} className="text-[#94A3B8] mt-0.5 shrink-0" />
+                       <div className="min-w-0">
+                         <p className="text-[#475569] text-xs mb-1">Tags</p>
+                         <div className="flex flex-wrap gap-1">
+                           {template.tags!.map((t) => (
+                             <TagChip key={t.id} tag={t} size="sm" />
+                           ))}
+                         </div>
+                       </div>
                      </div>
                    )}
                    {template.priority_id && priorities.find((p) => p.id === template.priority_id) && (

@@ -27,6 +27,7 @@ import { ClockService } from '../clock/clock.service';
 import { CreateRecurringDto } from './dto/create-recurring.dto';
 import { UpdateRecurringDto } from './dto/update-recurring.dto';
 import { CreateScheduleEntryDto } from './dto/create-schedule-entry.dto';
+import { parseTagIdsQuery } from '../common/tag-ids-query';
 import { MAX_ATTACHMENT_BYTES, type UploadedFile as UploadedFileType } from '../tasks/task-attachments.service';
 
 @ApiTags('recurring-tasks')
@@ -53,12 +54,24 @@ export class RecurringTasksController {
     @Query('priority_id') priorityId?: string,
     @Query('department_id') departmentId?: string,
     @Query('search') search?: string,
+    // Tag ids as CSV and/or a repeated param; a template matches when it carries any of them.
+    @Query('tag_ids') tagIds?: string | string[],
   ) {
     const now = await this.clock.now(orgId);
+    const tag_ids = parseTagIdsQuery(tagIds);
     return this.service.listTemplates(
       orgId,
       principalFromUser(req.user),
-      { scope, relation, status, category_id: categoryId, priority_id: priorityId, department_id: departmentId, search },
+      {
+        scope,
+        relation,
+        status,
+        category_id: categoryId,
+        priority_id: priorityId,
+        department_id: departmentId,
+        tag_ids: tag_ids.length ? tag_ids : undefined,
+        search,
+      },
       now,
     );
   }

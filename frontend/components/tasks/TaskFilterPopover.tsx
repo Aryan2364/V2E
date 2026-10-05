@@ -2,8 +2,9 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Filter, Square, SquareCheck, SquareMinus, AlertTriangle } from 'lucide-react'
-import type { Task, TaskCategory, TaskPriority, TaskStatus } from '@/lib/types/tasks'
+import type { Task, TaskCategory, TaskPriority, TaskStatus, TaskTagRef } from '@/lib/types/tasks'
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
+import { tagDotClass } from '@/lib/tasks/tagColors'
 import PeopleDeptFilter, { type DeptGroup } from './PeopleDeptFilter'
 import {
   type TaskFilters,
@@ -18,7 +19,9 @@ const DEADLINE_LABEL: Record<DeadlineKey, string> = { overdue: 'Overdue', upcomi
 
 // ─── Little building blocks ─────────────────────────────────────────────────────
 
-function Pill({ active, onClick, color, count, children }: { active: boolean; onClick: () => void; color?: string; count?: number; children: React.ReactNode }) {
+// `color` is a master's stored hex (statuses, priorities, categories); `dotClassName` is
+// the class-based alternative used by tags, whose colours live only in globals.css.
+function Pill({ active, onClick, color, dotClassName, count, children }: { active: boolean; onClick: () => void; color?: string; dotClassName?: string; count?: number; children: React.ReactNode }) {
   return (
     <button
       type="button"
@@ -28,6 +31,7 @@ function Pill({ active, onClick, color, count, children }: { active: boolean; on
       }`}
     >
       {color && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />}
+      {!color && dotClassName && <span className={`w-2 h-2 rounded-full shrink-0 ${dotClassName}`} />}
       {children}
       {count !== undefined && <span className={`tabular-nums ${active ? 'text-[#2563EB]' : 'text-[#94A3B8]'}`}>{count}</span>}
     </button>
@@ -76,6 +80,7 @@ interface Draft {
   priorities: Set<string>
   categories: Set<string>
   users: Set<string>
+  tags: Set<string>
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -130,6 +135,15 @@ export default function TaskFilterPopover({
   const allPriorityIds = useMemo(() => priorities.map((p) => p.id), [priorities])
   const allCategoryIds = useMemo(() => categories.map((c) => c.id), [categories])
 
+  // Tags actually on the tasks in view (not the whole master list), so every option can
+  // match something. Sorted by name; the section hides when no task here has a tag.
+  const tagOptions = useMemo<TaskTagRef[]>(() => {
+    const byId = new Map<string, TaskTagRef>()
+    for (const t of tasks) for (const tag of t.tags ?? []) if (!byId.has(tag.id)) byId.set(tag.id, tag)
+    return Array.from(byId.values()).sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+  }, [tasks])
+  const allTagIds = useMemo(() => tagOptions.map((t) => t.id), [tagOptions])
+
   // People appearing on these tasks, grouped by department, each with their job role.
   const peopleGroups = useMemo<DeptGroup[]>(() => {
     const byId = new Map<string, { name: string; role?: string | null; dept: string }>()
@@ -157,6 +171,12 @@ export default function TaskFilterPopover({
     priorities: new Set(f.priorityIds.length ? f.priorityIds : allPriorityIds),
     categories: new Set(f.categoryIds.length ? f.categoryIds : allCategoryIds),
     users: new Set(f.userIds.length ? f.userIds : allUserIds),
+    // A stored tag that is no longer on any task in view cannot be shown or matched;
+    // drop it, and treat "nothing left" as the default (every tag).
+    tags: (() => {
+      const known = f.tagIds.filter((id) => allTagIds.includes(id))
+      return new Set(known.length ? known : allTagIds)
+    })(),
   })
   const [draft, setDraft] = useState<Draft>(() => buildDraft(filters))
 
@@ -206,8 +226,9 @@ export default function TaskFilterPopover({
     if (allPriorityIds.length > 0 && draft.priorities.size === 0) list.push('Priority')
     if (allCategoryIds.length > 0 && draft.categories.size === 0) list.push('Category')
     if (allUserIds.length > 0 && draft.users.size === 0) list.push('Assignee')
+    if (allTagIds.length > 0 && draft.tags.size === 0) list.push('Tags')
     return list
-  }, [draft, allStatusIds.length, allPriorityIds.length, allCategoryIds.length, allUserIds.length])
+  }, [draft, allStatusIds.length, allPriorityIds.length, allCategoryIds.length, allUserIds.length, allTagIds.length])
 
   // ── Per-option task counts ──────────────────────────────────────────────────────
   // For each section, count tasks matching each option AFTER applying every OTHER
@@ -227,6 +248,7 @@ export default function TaskFilterPopover({
       priorityIds: subset('priorities', draft.priorities, allPriorityIds),
       categoryIds: subset('categories', draft.categories, allCategoryIds),
       userIds: subset('users', draft.users, allUserIds),
+      tagIds: subset('tags', draft.tags, allTagIds),
     }
   }
   const counts = useMemo(() => {
@@ -244,15 +266,24 @@ export default function TaskFilterPopover({
         if (!seen.has(a.user_id)) { seen.add(a.user_id); users.set(a.user_id, (users.get(a.user_id) ?? 0) + 1) }
       }
     }
+    // A task carries several tags, so each of its tags counts it once.
+    const tags = new Map<string, number>()
+    for (const t of applyTaskFilters(tasks, draftToFilters('tags'), statuses)) {
+      const seen = new Set<string>()
+      for (const tag of t.tags ?? []) {
+        if (!seen.has(tag.id)) { seen.add(tag.id); tags.set(tag.id, (tags.get(tag.id) ?? 0) + 1) }
+      }
+    }
     return {
       status: tally(applyTaskFilters(tasks, draftToFilters('statuses'), statuses), (t) => t.status_id),
       deadline: { overdue: dl.filter((t) => t.is_overdue).length, upcoming: dl.filter((t) => !t.is_overdue).length } as Record<DeadlineKey, number>,
       priority: tally(applyTaskFilters(tasks, draftToFilters('priorities'), statuses), (t) => t.priority_id),
       category: tally(applyTaskFilters(tasks, draftToFilters('categories'), statuses), (t) => t.category_id),
       user: users,
+      tag: tags,
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tasks, draft, statuses, allStatusIds, openStatusIds, allPriorityIds, allCategoryIds, allUserIds])
+  }, [tasks, draft, statuses, allStatusIds, openStatusIds, allPriorityIds, allCategoryIds, allUserIds, allTagIds])
 
   // How many tasks the ENTIRE current draft matches (all sections combined) — the top
   // line, so a narrowing combo that yields nothing (e.g. Overdue + Low) is obvious. An
@@ -265,10 +296,11 @@ export default function TaskFilterPopover({
       priorityIds: eqSet(draft.priorities, allPriorityIds) ? [] : Array.from(draft.priorities),
       categoryIds: eqSet(draft.categories, allCategoryIds) ? [] : Array.from(draft.categories),
       userIds: eqSet(draft.users, allUserIds) ? [] : Array.from(draft.users),
+      tagIds: eqSet(draft.tags, allTagIds) ? [] : Array.from(draft.tags),
     }
     return applyTaskFilters(tasks, f, statuses).length
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tasks, draft, empties.length, statuses, allStatusIds, openStatusIds, allPriorityIds, allCategoryIds, allUserIds])
+  }, [tasks, draft, empties.length, statuses, allStatusIds, openStatusIds, allPriorityIds, allCategoryIds, allUserIds, allTagIds])
 
   const apply = () => {
     if (empties.length) return
@@ -283,6 +315,7 @@ export default function TaskFilterPopover({
       priorityIds: eqSet(draft.priorities, allPriorityIds) ? [] : Array.from(draft.priorities),
       categoryIds: eqSet(draft.categories, allCategoryIds) ? [] : Array.from(draft.categories),
       userIds: eqSet(draft.users, allUserIds) ? [] : Array.from(draft.users),
+      tagIds: eqSet(draft.tags, allTagIds) ? [] : Array.from(draft.tags),
     })
     setOpen(false)
   }
@@ -399,6 +432,20 @@ export default function TaskFilterPopover({
                 {categories.map((c) => (
                   <Pill key={c.id} active={draft.categories.has(c.id)} onClick={() => toggleValue('categories', c.id)} color={c.color} count={counts.category.get(c.id) ?? 0}>
                     {c.name}
+                  </Pill>
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {/* Tags — only the tags on the tasks in view; hidden when none of them has one.
+              Picking several matches a task carrying ANY of them. */}
+          {tagOptions.length > 0 && (
+            <Section title="Tags" right={<CheckToggle state={tick(draft.tags, allTagIds)} label="All" onClick={() => toggleMany('tags', allTagIds)} />}>
+              <div className="flex flex-wrap gap-1.5">
+                {tagOptions.map((tag) => (
+                  <Pill key={tag.id} active={draft.tags.has(tag.id)} onClick={() => toggleValue('tags', tag.id)} dotClassName={tagDotClass(tag.color, !tag.is_active)} count={counts.tag.get(tag.id) ?? 0}>
+                    {tag.name}
                   </Pill>
                 ))}
               </div>

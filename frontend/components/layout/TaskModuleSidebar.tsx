@@ -48,6 +48,7 @@ const TASK_CONFIG_LEAVES = [
   'tasks.config.statuses.manage',
   'tasks.config.checklist_templates.manage',
   'tasks.config.assignee_visibility.manage',
+  'tasks.config.tags.manage',
 ]
 
 interface NavGroup {

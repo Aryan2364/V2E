@@ -36,6 +36,8 @@ export class BulkTaskImportRowDto {
   @IsOptional() @IsString() priority?: string;
   @ApiProperty({ required: false, description: 'Category name (must already exist)' })
   @IsOptional() @IsString() category?: string;
+  @ApiProperty({ required: false, description: 'Tag names, pipe- or newline-separated (each must already exist and be active; max 10)' })
+  @IsOptional() @IsString() tags?: string;
 
   @ApiProperty({ required: false, description: 'YYYY-MM-DD' })
   @IsOptional() @IsString() deadline_date?: string;
@@ -105,6 +107,8 @@ export class BulkImportTasksDto {
 export interface TaskImportOptions {
   priorities: { id: string; label: string }[];
   categories: { id: string; name: string }[];
+  // Active task tags, sorted by name — the valid values for the `tags` column.
+  tags: { id: string; name: string }[];
   goals: { id: string; title: string }[];
   checklist_templates: { id: string; name: string }[];
   // Everyone the current user is allowed to assign a task to (the eligible pool).
@@ -134,6 +138,8 @@ export interface TaskImportRowIssue {
 export interface TaskImportResolved {
   priority?: string;
   category?: string;
+  tags?: string[]; // resolved tag display names, in cell order
+  tag_ids?: string[]; // resolved tag ids, in cell order (de-duplicated)
   deadline?: string; // human-readable resolved deadline
   assignees?: string[];
   cc?: string[];

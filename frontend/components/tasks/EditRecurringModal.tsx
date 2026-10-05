@@ -19,6 +19,8 @@ import RemindersField, { buildReminderSpecs, rowsFromReminderSpecs, type Reminde
 import EscalationLevelsField from '@/components/tasks/EscalationLevelsField'
 import GoalSelectField from '@/components/tasks/GoalSelectField'
 import ProofRequirementField from '@/components/tasks/ProofRequirementField'
+import TagPicker from '@/components/tasks/TagPicker'
+import { isListboxOpen } from '@/components/tasks/InlineTaskTags'
 
 export interface EditRecurringModalProps {
   template: RecurringTemplate
@@ -59,11 +61,20 @@ function entryToScheduleEntryDraft(e: RecurringScheduleEntry): ScheduleEntryDraf
   }
 }
 
+/** Order-insensitive identity of a tag-id list. */
+const tagSig = (ids: string[]) => [...ids].sort().join(',')
+
 export default function EditRecurringModal({ template, orgId, categories, priorities, onClose, onUpdated }: EditRecurringModalProps) {
   const [title, setTitle] = useState(template.title)
   const [description, setDescription] = useState(template.description ?? '')
   const [priorityId, setPriorityId] = useState(template.priority_id ?? '')
   const [categoryId, setCategoryId] = useState(template.category_id ?? '')
+  // Tags copied onto every future spawned instance. Seeded from the server-resolved
+  // `tags` (unknown ids already dropped), falling back to the raw `tag_ids`.
+  const [initialTagIds] = useState<string[]>(() =>
+    template.tags ? template.tags.map((t) => t.id) : template.tag_ids ?? [],
+  )
+  const [tagIds, setTagIds] = useState<string[]>(initialTagIds)
   const [completionMode, setCompletionMode] = useState<CompletionMode>(template.completion_mode as CompletionMode)
   const [proofRequired, setProofRequired] = useState(template.proof_required)
   const [proofAllowedExtensions, setProofAllowedExtensions] = useState<string[]>(template.proof_allowed_extensions ?? [])
@@ -116,7 +127,8 @@ export default function EditRecurringModal({ template, orgId, categories, priori
   useEffect(() => setMounted(true), [])
 
   useEffect(() => {
-    function handle(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
+    // Escape inside an open picker (e.g. the Tags search) closes only that picker.
+    function handle(e: KeyboardEvent) { if (e.key === 'Escape' && !isListboxOpen()) onClose() }
     document.addEventListener('keydown', handle)
     return () => document.removeEventListener('keydown', handle)
   }, [onClose])
@@ -215,6 +227,10 @@ export default function EditRecurringModal({ template, orgId, categories, priori
         description: description.trim() || undefined,
         priority_id: priorityId || undefined,
         category_id: categoryId || undefined,
+        // Only when the set changed (order-insensitive): resending an untouched list would
+        // undo someone else's tag change since this form opened, and could be refused
+        // over a tag merged or deactivated meanwhile. [] is sent when the user cleared them.
+        ...(tagSig(tagIds) !== tagSig(initialTagIds) ? { tag_ids: tagIds } : {}),
         completion_mode: completionMode,
         proof_required: proofRequired,
         proof_allowed_extensions: proofRequired ? proofAllowedExtensions : [],
@@ -426,6 +442,12 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                   ]}
                 />
               </div>
+            </div>
+            {/* Tags — full width, directly under Category/Priority. */}
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1.5">Tags</label>
+              <TagPicker orgId={orgId} value={tagIds} onChange={setTagIds} disabled={submitting} knownTags={template.tags} />
+              <p className="text-[11px] text-[#475569] mt-1">Copied onto every new occurrence.</p>
             </div>
             <GoalSelectField orgId={orgId} value={goalId} onChange={setGoalId} />
           </div>

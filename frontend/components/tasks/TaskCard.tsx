@@ -7,6 +7,7 @@ import type { Task, TaskPriority, TaskStatus, TaskCategory } from '@/lib/types/t
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import AssigneeAvatars, { type AvatarPerson } from './AssigneeAvatars'
 import Tooltip from '@/components/ui/Tooltip'
+import TagList from './TagList'
 // import QuadrantBadge from './QuadrantBadge'
 
 interface TaskCardProps {
@@ -244,6 +245,8 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
               {category.name}
             </span>
           )}
+          {/* Tags sit with the category as one classification fact (two chips + "+N"). */}
+          <TagList tags={task.tags} max={2} />
           {task.workflow_step?.show_on_card && (
             <span className="inline-flex items-center gap-0.5 rounded-[999px] px-2 py-0.5 text-[10px] font-semibold bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
               <GitBranch size={9} />

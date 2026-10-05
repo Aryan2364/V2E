@@ -21,13 +21,15 @@ function startOfDay(d: Date): number {
 }
 
 // Free-text match across the fields a person would search by: title, description,
-// category, and the people on the task — including each person's job role and department.
+// category, tag names (kit §27.1), and the people on the task — including each person's
+// job role and department.
 export function matchesSearch(t: Task, q: string): boolean {
   if (!q) return true
   const hay = [
     t.title,
     t.description ?? '',
     t.category?.name ?? '',
+    ...(t.tags ?? []).map((tag) => tag.name),
     t.created_by?.name ?? '',
     ...(t.assignees ?? []).flatMap((a) => [
       a.user?.name ?? a.user_name ?? '',
@@ -148,6 +150,35 @@ export function useTaskListView(
   }, [sortedTasks, sort.field])
 
   return { sortedTasks, groups }
+}
+
+// ─── Nothing-found action (kit §13) ─────────────────────────────────────────────
+
+/**
+ * The one action on a "nothing found" empty state: clears whatever narrowed the list
+ * to nothing — the search, the filters, or both. Renders nothing when neither is set
+ * (that is the "nothing yet" state, which offers its own way forward).
+ */
+export function ClearNarrowingButton({
+  hasSearch,
+  hasFilters,
+  onClear,
+}: {
+  hasSearch: boolean
+  hasFilters: boolean
+  onClear: () => void
+}) {
+  if (!hasSearch && !hasFilters) return null
+  const label = hasSearch && hasFilters ? 'Clear search and filters' : hasSearch ? 'Clear search' : 'Clear filters'
+  return (
+    <button
+      type="button"
+      onClick={onClear}
+      className="mt-4 h-11 sm:h-9 px-4 rounded-btn border border-primary bg-white text-sm font-medium text-primary hover:bg-primary-light focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
+    >
+      {label}
+    </button>
+  )
 }
 
 // ─── Presentational list — day sections, or one flat list ───────────────────────

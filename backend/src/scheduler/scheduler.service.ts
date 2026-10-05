@@ -35,6 +35,38 @@ export class SchedulerService {
   ) {}
 
   /**
+   * Link a freshly spawned instance to the template's tags that are still active in
+   * the template's org (TASK_TAGS_PLAN.md §4.4). Inactive, deleted or foreign ids are
+   * dropped silently; any failure is logged and swallowed so the spawn still counts.
+   * The links are attributed to the same actor as the task's `created_by`.
+   */
+  private async copyTemplateTagsToTask(
+    template: { id: string; organization_id: string; created_by_user_id: string; tag_ids?: string[] | null },
+    taskId: string,
+  ): Promise<void> {
+    const wanted = [...new Set((template.tag_ids ?? []).filter(Boolean))];
+    if (wanted.length === 0) return;
+    try {
+      const active = await this.prisma.taskTag.findMany({
+        where: { id: { in: wanted }, organization_id: template.organization_id, is_active: true },
+        select: { id: true },
+      });
+      if (active.length === 0) return;
+      await this.prisma.taskTagLink.createMany({
+        data: active.map((t) => ({
+          organization_id: template.organization_id,
+          task_id: taskId,
+          tag_id: t.id,
+          created_by_user_id: template.created_by_user_id,
+        })),
+        skipDuplicates: true,
+      });
+    } catch (err) {
+      this.logger.warn(`Tag copy failed for template ${template.id} → task ${taskId}: ${(err as Error).message}`);
+    }
+  }
+
+  /**
    * Copy every (non-deleted) attachment from a recurring template into a freshly
    * spawned child task. Each copy is an independent R2 object + TaskAttachment row,
    * so the child behaves exactly like a manually-attached task (its own download,
@@ -365,6 +397,12 @@ export class SchedulerService {
           skipDuplicates: true,
         });
       }
+
+      // Carry the template's tags onto this instance. Re-validated per spawn: only
+      // tags still active in this org are linked — one deactivated (or deleted)
+      // since the template was saved is skipped silently. Best-effort: a tag
+      // problem must never cost the org the instance itself.
+      await this.copyTemplateTagsToTask(template, task.id);
 
       // Materialize the template's escalation contacts so the escalation engine
       // fires when this instance goes overdue (level = list position + 1).

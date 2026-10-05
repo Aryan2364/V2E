@@ -23,6 +23,8 @@ import ChecklistBuilderField, {
   type ChecklistGroup,
 } from '@/components/tasks/ChecklistBuilderField'
 import GoalSelectField from '@/components/tasks/GoalSelectField'
+import TagPicker from '@/components/tasks/TagPicker'
+import { isListboxOpen } from '@/components/tasks/InlineTaskTags'
 import ProofRequirementField from './ProofRequirementField'
 import HolidayWarningBadge from '@/components/holidays/HolidayWarningBadge'
 import LeaveWarningBadge from '@/components/leave/LeaveWarningBadge'
@@ -57,6 +59,9 @@ const fmtDate = (iso: string) =>
 const rosterSig = (r: { user_id: string; is_cc: boolean }[]) =>
   JSON.stringify(r.map((x) => `${x.user_id}:${x.is_cc ? 1 : 0}`).sort())
 
+/** Order-independent signature of a tag selection — for the dirty check. */
+const tagSig = (ids: string[]) => [...ids].sort().join(',')
+
 export default function EditTaskModal({ task, categories, priorities, statuses, onClose, onSaved }: Props) {
   const { user } = useAuth()
   const { can, isAdmin } = usePermissions()
@@ -78,6 +83,8 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
   const [description, setDescription] = useState(task.description ?? '')
   const [priorityId, setPriorityId] = useState(task.priority_id ?? '')
   const [categoryId, setCategoryId] = useState(task.category_id ?? '')
+  const initialTagIds = React.useMemo(() => (task.tags ?? []).map((t) => t.id), [task.tags])
+  const [tagIds, setTagIds] = useState<string[]>(initialTagIds)
   const [statusId, setStatusId] = useState(task.status_id)
   // Terminal states (Complete / Incomplete) are managed via the task's actions, not
   // edited here — so a closed task shows its status read-only, and the picker only
@@ -204,7 +211,8 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
   }, [deadlineDate, orgId])
 
   useEffect(() => {
-    function handle(e: KeyboardEvent) { if (e.key === 'Escape') handleCloseAttempt() }
+    // Escape inside an open picker (e.g. the Tags search) closes only that picker.
+    function handle(e: KeyboardEvent) { if (e.key === 'Escape' && !isListboxOpen()) handleCloseAttempt() }
     document.addEventListener('keydown', handle)
     return () => document.removeEventListener('keydown', handle)
   })
@@ -227,6 +235,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
     description !== (task.description ?? '') ||
     priorityId !== (task.priority_id ?? '') ||
     categoryId !== (task.category_id ?? '') ||
+    tagSig(tagIds) !== tagSig(initialTagIds) ||
     (!taskIsTerminal && statusId !== task.status_id) ||
     deadline !== (task.deadline ?? '') ||
     completionMode !== (task.completion_mode ?? 'any_can_complete') ||
@@ -289,6 +298,10 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
         description: description.trim() || undefined,
         priority_id: priorityId || undefined,
         category_id: categoryId || undefined,
+        // Only when the set changed (order-insensitive): resending an untouched list would
+        // undo someone else's tag change since this form opened, and could be refused
+        // over a tag merged or deactivated meanwhile. [] is sent when the user cleared them.
+        ...(tagSig(tagIds) !== tagSig(initialTagIds) ? { tag_ids: tagIds } : {}),
         // Don't touch status for a closed task — that's the Reopen action's job.
         status_id: taskIsTerminal ? undefined : (statusId || undefined),
         deadline: deadline || undefined,
@@ -687,6 +700,12 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 />
               )}
             </div>
+          </div>
+
+          {/* Tags — full width, directly under Priority/Category/Status. */}
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1.5">Tags</label>
+            <TagPicker orgId={orgId} value={tagIds} onChange={setTagIds} disabled={submitting} knownTags={task.tags} />
           </div>
 
           {/* Proof required + allowed file types */}

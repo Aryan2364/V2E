@@ -13,11 +13,22 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
+    // Anything a thrower attached to the exception body beyond the standard
+    // statusCode/error/message — e.g. a machine-readable `code` plus the records
+    // behind a refusal. Without this the filter would flatten every error to its
+    // message alone, and the UI could only print it, never act on it.
+    let extra: Record<string, unknown> = {};
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const res = exception.getResponse();
-      message = typeof res === 'string' ? res : (res as any).message || message;
+      if (typeof res === 'string') {
+        message = res;
+      } else {
+        const { message: m, statusCode: _sc, error: _err, ...rest } = (res ?? {}) as any;
+        message = m || message;
+        extra = rest;
+      }
     } else if (exception instanceof Prisma.PrismaClientValidationError) {
       // Malformed query data (missing required field, wrong type, bad enum value).
       // The full message is a multi-line code frame — surface only the final
@@ -68,6 +79,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       data: null,
       message: Array.isArray(message) ? message.join(', ') : message,
       meta: null,
+      ...extra,
       ...(debug ? { debug } : {}),
     });
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 interface TooltipProps {
@@ -10,6 +10,12 @@ interface TooltipProps {
   children: React.ReactElement
   /** Preferred side; flips automatically when there isn't room. */
   placement?: 'top' | 'bottom'
+  /**
+   * Also open on a tap/click, and stay open until a press elsewhere, Escape or a scroll.
+   * For text a touch user must be able to read — the reason a control is disabled
+   * (kit §19, §26) — since a tablet can neither hover nor Tab. Used by PermissionTooltip.
+   */
+  openOnTap?: boolean
 }
 
 /**
@@ -22,7 +28,7 @@ interface TooltipProps {
  * an existing element without changing layout. Keep `aria-label` on the child for screen
  * readers; this only adds the visual bubble.
  */
-export default function Tooltip({ label, children, placement = 'top' }: TooltipProps) {
+export default function Tooltip({ label, children, placement = 'top', openOnTap = false }: TooltipProps) {
   const [pos, setPos] = useState<{ x: number; y: number; place: 'top' | 'bottom' } | null>(null)
   const elRef = useRef<HTMLElement | null>(null)
 
@@ -40,6 +46,24 @@ export default function Tooltip({ label, children, placement = 'top' }: TooltipP
   }, [placement])
 
   const hide = useCallback(() => setPos(null), [])
+
+  // A tapped-open bubble has no hover to end it: close on a press elsewhere, Escape or scroll.
+  const isOpen = pos !== null
+  useEffect(() => {
+    if (!openOnTap || !isOpen) return
+    const onDown = (e: PointerEvent) => {
+      if (elRef.current && !elRef.current.contains(e.target as Node)) hide()
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') hide() }
+    document.addEventListener('pointerdown', onDown, true)
+    document.addEventListener('keydown', onKey)
+    window.addEventListener('scroll', hide, true)
+    return () => {
+      document.removeEventListener('pointerdown', onDown, true)
+      document.removeEventListener('keydown', onKey)
+      window.removeEventListener('scroll', hide, true)
+    }
+  }, [openOnTap, isOpen, hide])
 
   // Merge our ref with any ref the child already carries.
   const setRef = useCallback(
@@ -61,6 +85,7 @@ export default function Tooltip({ label, children, placement = 'top' }: TooltipP
     onMouseLeave: (e: unknown) => { hide(); childProps.onMouseLeave?.(e) },
     onFocus: (e: unknown) => { show(); childProps.onFocus?.(e) },
     onBlur: (e: unknown) => { hide(); childProps.onBlur?.(e) },
+    ...(openOnTap ? { onClick: (e: unknown) => { show(); childProps.onClick?.(e) } } : {}),
   } as Record<string, unknown>)
 
   return (

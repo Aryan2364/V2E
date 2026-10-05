@@ -14,6 +14,7 @@ import {
 } from '@/lib/tasks/kanban-actions'
 import QuadrantBadge from './QuadrantBadge'
 import AssigneeAvatars from './AssigneeAvatars'
+import TagList from './TagList'
 
 interface Props {
   orgId: string
@@ -184,7 +185,9 @@ export default function KanbanView({
                   >
                     <p className="text-sm font-semibold text-[#0F172A] leading-snug mb-2 line-clamp-2">{task.title}</p>
 
-                    {/* Badges row */}
+                    {/* Badges row — urgency (quadrant + priority), then tags. The column is the
+                        status (kit §35.5), so the card stays at title · urgency · tags · one
+                        meta line. Tags wrap onto their own line when the card is narrow. */}
                     <div className="flex items-center gap-1.5 flex-wrap mb-2">
                       <QuadrantBadge quadrant={task.quadrant} />
                       {priority && (
@@ -192,6 +195,7 @@ export default function KanbanView({
                           {priority.label}
                         </span>
                       )}
+                      <TagList tags={task.tags} max={2} />
                     </div>
 
                     {/* Per-person + roll-up context (assignee, all_must, open) */}

@@ -44,6 +44,67 @@ export interface TaskCategory {
   created_at: string
 }
 
+// ─── Tags (TASK_TAGS_PLAN.md §10.1) ───────────────────────────────────────────
+
+/**
+ * Palette KEY, never a hex: the DB stores the key and globals.css owns the colours
+ * (`--tag-<key>-*` tokens), so a re-theme changes every tag at once. Map a key to
+ * its classes with `lib/tasks/tagColors.ts`.
+ */
+export type TagColor = 'slate' | 'ochre' | 'indigo' | 'rose' | 'teal' | 'green' | 'violet' | 'amber'
+
+/** Every palette key, in swatch order. */
+export const TAG_COLORS: TagColor[] = ['slate', 'ochre', 'indigo', 'rose', 'teal', 'green', 'violet', 'amber']
+
+/** Most tags one task may carry (plan §8 Q4). The server enforces the same limit. */
+export const MAX_TAGS_PER_TASK = 10
+
+/** Light reference embedded in tasks and recurring templates. */
+export interface TaskTagRef {
+  id: string
+  name: string
+  color: TagColor
+  is_active: boolean
+}
+
+/** Master row (GET masters/tags). */
+export interface TaskTag extends TaskTagRef {
+  organization_id: string
+  description: string | null
+  created_at: string
+  updated_at: string
+  /** Present ONLY when the caller holds tasks.config.tags.manage (any action) or is admin. */
+  usage_count?: number
+  /** Present ONLY when the caller holds tasks.config.tags.manage (any action) or is admin. */
+  created_by?: { id: string; name: string } | null
+}
+
+/** POST masters/tags. When `color` is omitted the server picks the least-used palette colour. */
+export interface CreateTagInput {
+  name: string
+  color?: TagColor
+  description?: string | null
+}
+
+/** PATCH masters/tags/:id — a real partial; every field is optional. */
+export interface UpdateTagInput {
+  name?: string
+  color?: TagColor
+  description?: string | null
+  is_active?: boolean
+}
+
+/** DELETE masters/tags/:id — a used tag is deactivated instead of deleted. */
+export interface DeleteTagResult {
+  result: 'deleted' | 'deactivated'
+}
+
+/** POST masters/tags/:id/merge. */
+export interface MergeTagResult {
+  moved: number
+  into: TaskTag
+}
+
 export interface TaskPriority {
   id: string
   organization_id: string
@@ -213,6 +274,8 @@ export interface Task {
   created_at: string
   updated_at: string
   category?: TaskCategory
+  /** Tags on this task, sorted by name. Inactive tags stay on the tasks that carry them. */
+  tags?: TaskTagRef[]
   priority?: TaskPriority
   status?: TaskStatus
   assignees?: TaskAssigneeUser[]
@@ -229,6 +292,37 @@ export interface Task {
   /** Comments the current viewer hasn't seen since last opening the task. */
   unread_comments?: number
 }
+
+/** POST / (create task) body. */
+export interface CreateTaskInput {
+  title: string
+  description?: string
+  quadrant?: string
+  priority_id?: string
+  category_id?: string
+  status_id?: string
+  deadline?: string
+  completion_mode?: string
+  proof_required?: boolean
+  proof_allowed_extensions?: string[]
+  assignee_user_ids?: string[]
+  cc_user_ids?: string[]
+  checklist_items?: { title: string; order_index: number; group_title?: string }[]
+  checklist_template_id?: string
+  checklist_template_ids?: string[]
+  reminders?: ReminderSpec[]
+  escalation_user_ids?: string[]
+  goal_id?: string
+  /** Up to MAX_TAGS_PER_TASK active tag ids. */
+  tag_ids?: string[]
+}
+
+/**
+ * PATCH /:id body. `tag_ids` is the full authoritative list, like `assignee_user_ids`:
+ * omitted means unchanged and `[]` clears every tag. Send `[]` explicitly when the
+ * user clears the field — never `tag_ids || undefined`.
+ */
+export type UpdateTaskInput = Partial<Task> & { tag_ids?: string[] }
 
 export interface TaskComment {
   id: string
@@ -330,6 +424,10 @@ export interface RecurringTemplate {
   linked_goal_id?: string | null
   assignee_user_ids: string[]
   cc_user_ids: string[]
+  /** Tags copied onto every future spawned instance (deactivated ones are skipped at spawn). */
+  tag_ids?: string[]
+  /** `tag_ids` resolved by the server, sorted by name; unknown ids are dropped. */
+  tags?: TaskTagRef[]
   /** Flattened checklist definition copied into every spawned instance. */
   checklist_items?: { title: string; order_index: number; group_title?: string | null }[]
   /** Reminder specs re-resolved against each spawned instance's deadline. */
@@ -361,6 +459,8 @@ export interface RecurringListQuery {
   category_id?: string
   priority_id?: string
   department_id?: string
+  /** Templates carrying ANY of these tags. Sent as `tag_ids=a,b`. */
+  tag_ids?: string[] | string
   search?: string
 }
 
@@ -684,6 +784,12 @@ export interface TaskDashboard {
   by_status: DashboardBreakdownItem[]
   by_priority: DashboardBreakdownItem[]
   by_category: DashboardBreakdownItem[]
+  /**
+   * Same item shape as by_category (`color` is a TagColor key). One task counts in every
+   * tag it carries, so the totals can exceed the task count. Optional until the
+   * backend's Phase 5 ships it.
+   */
+  by_tag?: DashboardBreakdownItem[]
   by_department: DashboardBreakdownItem[]
   by_type: DashboardBreakdownItem[]
   by_assignee: DashboardBreakdownItem[]
@@ -750,7 +856,20 @@ export interface EmployeeReport {
   }
 }
 
-export type BulkAction = 'status' | 'deadline' | 'complete'
+export type BulkAction = 'status' | 'deadline' | 'complete' | 'add_tags' | 'remove_tags'
+
+/** POST bulk body (minus task_ids/action). `tag_ids` goes with add_tags / remove_tags. */
+export interface BulkUpdatePayload {
+  status_id?: string
+  deadline?: string | null
+  tag_ids?: string[]
+}
+
+/** POST bulk result: tasks the caller could not edit are skipped, with the reason. */
+export interface BulkUpdateResult {
+  updated: number
+  skipped?: { id: string; title: string; reason: string }[]
+}
 
 export interface PagedTasks {
   items: Task[]
@@ -766,6 +885,8 @@ export interface WorkQuery {
   status_id?: string
   priority_id?: string
   category_id?: string
+  /** Tasks carrying ANY of these tags. Serialised as `tag_ids=a,b` (an empty list is dropped). */
+  tag_ids?: string[] | string
   department_id?: string
   department_ids?: string // comma-separated — a department subtree drill
   role_id?: string // job-role drill (resolved to its assignees server-side)

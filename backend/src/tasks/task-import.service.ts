@@ -8,6 +8,7 @@ import { LeaveService } from '../leave/leave.service';
 import { TasksService } from './tasks.service';
 import { ACTIVE_ASSIGNEE } from './active-assignee';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { MAX_TAGS_PER_TASK, tagNameKey } from '../task-masters/task-tag.constants';
 import {
   BulkTaskImportRowDto,
   IMPORT_ASSIGNEE_SLOTS,
@@ -62,6 +63,8 @@ interface ExistingTaskRef {
 interface ImportContext {
   priorityByLabel: Map<string, { id: string; label: string }>;
   categoryByName: Map<string, { id: string; name: string }>;
+  // Active tags keyed by tagNameKey (trimmed, whitespace-collapsed, lower-cased).
+  tagByKey: Map<string, { id: string; name: string }>;
   goalByTitle: Map<string, { id: string; title: string }>;
   checklistByName: Map<string, ChecklistTemplateRef>;
   // Eligible-pool people, resolvable by full "Name · Dept · Role" value or by bare name.
@@ -99,7 +102,7 @@ export class TaskImportService {
 
   /** Reference data for the template's dropdowns + hint rows (scoped to this actor). */
   async getImportOptions(orgId: string, userId: string): Promise<TaskImportOptions> {
-    const [priorities, categories, goals, templates, { pool }, profileMap] = await Promise.all([
+    const [priorities, categories, tags, goals, templates, { pool }, profileMap] = await Promise.all([
       this.prisma.taskPriority.findMany({
         where: { organization_id: orgId, is_active: true },
         orderBy: { order_index: 'asc' },
@@ -108,6 +111,12 @@ export class TaskImportService {
       this.prisma.taskCategory.findMany({
         where: { organization_id: orgId, is_active: true },
         orderBy: { name: 'asc' },
+        select: { id: true, name: true },
+      }),
+      // Sorted case-insensitively (name_key), like every other tag list.
+      this.prisma.taskTag.findMany({
+        where: { organization_id: orgId, is_active: true },
+        orderBy: { name_key: 'asc' },
         select: { id: true, name: true },
       }),
       this.prisma.goal.findMany({
@@ -135,6 +144,7 @@ export class TaskImportService {
     return {
       priorities,
       categories,
+      tags,
       goals: goals.map((g) => ({ id: g.id, title: g.title })),
       checklist_templates: templates.map((t) => ({ id: t.id, name: t.name })),
       assignees,
@@ -401,9 +411,11 @@ export class TaskImportService {
   }
 
   private async loadContext(orgId: string, userId: string): Promise<ImportContext> {
-    const [priorities, categories, goals, templates, { pool }, profileMap, existingTasks] = await Promise.all([
+    const [priorities, categories, tags, goals, templates, { pool }, profileMap, existingTasks] = await Promise.all([
       this.prisma.taskPriority.findMany({ where: { organization_id: orgId, is_active: true }, select: { id: true, label: true } }),
       this.prisma.taskCategory.findMany({ where: { organization_id: orgId, is_active: true }, select: { id: true, name: true } }),
+      // Only ACTIVE tags resolve — importing never creates or revives a tag.
+      this.prisma.taskTag.findMany({ where: { organization_id: orgId, is_active: true }, select: { id: true, name: true, name_key: true } }),
       this.prisma.goal.findMany({ where: { organization_id: orgId, is_deleted: false }, select: { id: true, title: true } }),
       this.checklistAccess.listAccessibleTemplates(orgId, userId),
       this.assigneeVisibility.resolve(orgId, userId),
@@ -433,6 +445,7 @@ export class TaskImportService {
 
     const priorityByLabel = new Map(priorities.map((p) => [p.label.trim().toLowerCase(), p]));
     const categoryByName = new Map(categories.map((c) => [c.name.trim().toLowerCase(), c]));
+    const tagByKey = new Map(tags.map((t) => [t.name_key || tagNameKey(t.name), { id: t.id, name: t.name }]));
     const goalByTitle = new Map(goals.map((g) => [g.title.trim().toLowerCase(), g]));
     const checklistByName = new Map<string, ChecklistTemplateRef>(
       templates.map((t) => {
@@ -458,7 +471,7 @@ export class TaskImportService {
       personByName.set(nk, [...(personByName.get(nk) ?? []), ref]);
     }
 
-    return { priorityByLabel, categoryByName, goalByTitle, checklistByName, personByValue, personByName, existingByTitle };
+    return { priorityByLabel, categoryByName, tagByKey, goalByTitle, checklistByName, personByValue, personByName, existingByTitle };
   }
 
   /** Resolve one dropdown person value to a user, or push a field error. */
@@ -524,6 +537,24 @@ export class TaskImportService {
       const c = ctx.categoryByName.get(categoryRaw.toLowerCase());
       if (!c) push(`Category "${categoryRaw}" not found`, 'category');
       else { categoryId = c.id; resolved.category = c.name; }
+    }
+
+    // Tags (optional) — pipe/newline-separated names matched on name_key. An unknown
+    // (or deactivated) name is a row error: import never creates tags, so a bad sheet
+    // can't litter the org with junk ones.
+    const tagIds: string[] = [];
+    const tagNames: string[] = [];
+    const tagRaws = this.splitList(row.tags);
+    if (tagRaws.length) {
+      for (const raw of tagRaws) {
+        const t = ctx.tagByKey.get(tagNameKey(raw));
+        if (!t) push(`Tag "${raw}" not found`, 'tags');
+        else if (!tagIds.includes(t.id)) { tagIds.push(t.id); tagNames.push(t.name); }
+      }
+      if (tagIds.length > MAX_TAGS_PER_TASK) {
+        push(`A task can have at most ${MAX_TAGS_PER_TASK} tags (this row has ${tagIds.length})`, 'tags');
+      }
+      if (tagIds.length) { resolved.tags = tagNames; resolved.tag_ids = tagIds; }
     }
 
     // Deadline — required. The frontend precomputes the browser-local ISO instant
@@ -677,6 +708,7 @@ export class TaskImportService {
         description: description || undefined,
         priority_id: priorityId,
         category_id: categoryId,
+        tag_ids: tagIds.length ? tagIds : undefined,
         deadline: deadlineIso,
         holiday_override: !this.isNo(row.holiday_override), // import keeps chosen dates by default
         completion_mode: completionMode,

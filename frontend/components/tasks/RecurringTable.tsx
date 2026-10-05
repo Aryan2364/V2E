@@ -5,6 +5,7 @@ import { RotateCcw, Pause, Shield } from 'lucide-react'
 import type { RecurringTemplate, TaskCategory, TaskPriority } from '@/lib/types/tasks'
 import { scheduleLabel, formatDate } from '@/lib/tasks/recurrence-label'
 import Tooltip from '@/components/ui/Tooltip'
+import TagList from './TagList'
 
 function peopleSummary(names: string[] | undefined): string {
   if (!names || names.length === 0) return '—'
@@ -38,7 +39,7 @@ export default function RecurringTable({
   return (
     <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse min-w-[1040px]">
+        <table className="w-full border-collapse min-w-[1200px]">
           <thead>
             <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
               <th className={TH}>Template</th>
@@ -48,6 +49,7 @@ export default function RecurringTable({
               <th className={TH}>Cadence</th>
               <th className={TH}>Status</th>
               <th className={TH}>Category</th>
+              <th className={TH}>Tags</th>
               <th className={TH}>Priority</th>
               <th className={`${TH} text-right`}>Occur.</th>
               <th className={TH}>Next run</th>
@@ -93,6 +95,11 @@ export default function RecurringTable({
                         {cat.name}
                       </span>
                     ) : '—'}
+                  </td>
+                  <td className={`${TD} whitespace-nowrap`}>
+                    {/* Two chips + "+N"; chips truncate with a tooltip. The list stops its
+                        own clicks, so opening "+N" never opens the template. */}
+                    {t.tags && t.tags.length > 0 ? <TagList tags={t.tags} max={2} className="max-w-[240px]" /> : '—'}
                   </td>
                   <td className={`${TD} whitespace-nowrap`}>
                     {prio ? (

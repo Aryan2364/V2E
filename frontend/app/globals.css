@@ -128,3 +128,99 @@ input[type='number'] {
   [class*="animate-[slideInLeft"],
   [class*="animate-[popIn"] { animation: none !important; }
 }
+
+/* ─── Task tag palette (TASK_TAGS_PLAN.md §6.1) ───────────────────────────────
+   A tag stores a palette KEY (slate, ochre, indigo, rose, teal, green, violet,
+   amber), never a hex, so these eight blocks are the only place a tag colour
+   exists. Each key has a fill, a text and a border colour, plus the full-strength
+   dot used for swatches and option markers. Seeded from the kit §21 categorical
+   colours (ochre #C2841D, indigo #3B5A9A, rose #A34A5E, light teal #6FA8A4, warm
+   grey #7A7268 as slate); green, violet and amber sit at the same weight.
+
+   Measured contrast, text on fill (WCAG 2.x, minimum 4.5:1):
+     slate 8.37  ochre 6.35  indigo 7.87  rose 7.31
+     teal 6.22   green 6.39  violet 7.44  amber 6.46   inactive 6.92
+   Every text colour also clears 7:1 on white.
+
+   Components never name these properties: lib/tasks/tagColors.ts maps a key to
+   the .tag-chip-* / .tag-dot-* classes below. The classes sit outside any
+   @layer on purpose, so Tailwind never purges them even though the class names
+   are built from data. */
+:root {
+  --tag-slate-bg: #F1EFEC;
+  --tag-slate-text: #4A443D;
+  --tag-slate-border: #D9D4CD;
+  --tag-slate-dot: #7A7268;
+
+  --tag-ochre-bg: #FBF1DE;
+  --tag-ochre-text: #7A4F0C;
+  --tag-ochre-border: #EED3A0;
+  --tag-ochre-dot: #C2841D;
+
+  --tag-indigo-bg: #E8EEF8;
+  --tag-indigo-text: #2E4778;
+  --tag-indigo-border: #C3D0EA;
+  --tag-indigo-dot: #3B5A9A;
+
+  --tag-rose-bg: #F8E9EC;
+  --tag-rose-text: #7E3343;
+  --tag-rose-border: #E9C3CC;
+  --tag-rose-dot: #A34A5E;
+
+  --tag-teal-bg: #E3F1F0;
+  --tag-teal-text: #2F5F5B;
+  --tag-teal-border: #B8DAD7;
+  --tag-teal-dot: #6FA8A4;
+
+  --tag-green-bg: #E7F2E5;
+  --tag-green-text: #33602F;
+  --tag-green-border: #C1DDBD;
+  --tag-green-dot: #4F8A4B;
+
+  --tag-violet-bg: #F0EAF7;
+  --tag-violet-text: #573E7E;
+  --tag-violet-border: #D6C8EA;
+  --tag-violet-dot: #7A5BA6;
+
+  --tag-amber-bg: #FCEBDF;
+  --tag-amber-text: #8A3F12;
+  --tag-amber-border: #F2C7A8;
+  --tag-amber-dot: #C8642A;
+
+  /* A deactivated tag: neutral, dashed, still readable (6.92:1). */
+  --tag-inactive-bg: #F1F5F9;
+  --tag-inactive-text: #475569;
+  --tag-inactive-border: #94A3B8;
+
+  /* Hover fill behind a chip's remove ✕ — a tint of whatever chip it sits on. */
+  --tag-remove-hover: rgba(15, 23, 42, 0.10);
+}
+
+.tag-chip-slate  { background-color: var(--tag-slate-bg);  color: var(--tag-slate-text);  border-color: var(--tag-slate-border); }
+.tag-chip-ochre  { background-color: var(--tag-ochre-bg);  color: var(--tag-ochre-text);  border-color: var(--tag-ochre-border); }
+.tag-chip-indigo { background-color: var(--tag-indigo-bg); color: var(--tag-indigo-text); border-color: var(--tag-indigo-border); }
+.tag-chip-rose   { background-color: var(--tag-rose-bg);   color: var(--tag-rose-text);   border-color: var(--tag-rose-border); }
+.tag-chip-teal   { background-color: var(--tag-teal-bg);   color: var(--tag-teal-text);   border-color: var(--tag-teal-border); }
+.tag-chip-green  { background-color: var(--tag-green-bg);  color: var(--tag-green-text);  border-color: var(--tag-green-border); }
+.tag-chip-violet { background-color: var(--tag-violet-bg); color: var(--tag-violet-text); border-color: var(--tag-violet-border); }
+.tag-chip-amber  { background-color: var(--tag-amber-bg);  color: var(--tag-amber-text);  border-color: var(--tag-amber-border); }
+.tag-chip-inactive {
+  background-color: var(--tag-inactive-bg);
+  color: var(--tag-inactive-text);
+  border-color: var(--tag-inactive-border);
+  border-style: dashed;
+}
+
+.tag-dot-slate  { background-color: var(--tag-slate-dot); }
+.tag-dot-ochre  { background-color: var(--tag-ochre-dot); }
+.tag-dot-indigo { background-color: var(--tag-indigo-dot); }
+.tag-dot-rose   { background-color: var(--tag-rose-dot); }
+.tag-dot-teal   { background-color: var(--tag-teal-dot); }
+.tag-dot-green  { background-color: var(--tag-green-dot); }
+.tag-dot-violet { background-color: var(--tag-violet-dot); }
+.tag-dot-amber  { background-color: var(--tag-amber-dot); }
+.tag-dot-inactive { background-color: var(--tag-inactive-border); }
+
+.tag-chip-remove { color: inherit; }
+.tag-chip-remove:hover,
+.tag-chip-remove:focus-visible { background-color: var(--tag-remove-hover); }

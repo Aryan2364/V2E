@@ -13,6 +13,7 @@ import { CompletionMode, TaskQuadrant } from '@prisma/client';
 import { CreateScheduleEntryDto } from './create-schedule-entry.dto';
 import { RecurringChecklistItemDto } from './create-recurring.dto';
 import { ReminderSpecDto } from '../../common/reminders/reminder-spec.dto';
+import { MAX_TAGS_PER_TASK } from '../../task-masters/task-tag.constants';
 
 /**
  * How far an edit reaches — the edit-side twin of the three delete modes
@@ -114,6 +115,15 @@ export class UpdateRecurringDto {
   @IsOptional()
   @IsString()
   department_id?: string;
+
+  // Full replacement of the template's tags — future spawns only; omitted = unchanged,
+  // [] = clear. Validated by assertTagsUsable: own-org ids only; a tag already on the
+  // template may since have been deactivated, a newly added one must be active.
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(MAX_TAGS_PER_TASK)
+  tag_ids?: string[];
 
   // How far the assignee/CC change reaches: future instances only (default), or also
   // every already-spawned instance that is still open. See RecurringEditScope above.

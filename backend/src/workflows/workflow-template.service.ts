@@ -6,6 +6,7 @@ import { UpdateTemplateDto } from './dto/update-template.dto'
 import { CreateStepDto } from './dto/create-step.dto'
 import { UpdateStepDto } from './dto/update-step.dto'
 import { CreateTriggerDto } from './dto/create-trigger.dto'
+import { flattenTags, TASK_TAG_REF_SELECT } from '../common/task-masters-usable'
 
 @Injectable()
 export class WorkflowTemplateService {
@@ -303,10 +304,12 @@ export class WorkflowTemplateService {
       select: { task_id: true },
     })
     const taskIds = steps.map((s) => s.task_id!)
-    return this.prisma.task.findMany({
-      where: { id: { in: taskIds } },
-      include: { status: true, priority: true, category: true, assignees: true },
+    const tasks = await this.prisma.task.findMany({
+      where: { id: { in: taskIds }, organization_id: orgId },
+      include: { status: true, priority: true, category: true, assignees: true, ...TASK_TAG_REF_SELECT },
     })
+    // Flat `tags: TaskTagRef[]` — the join row never leaves the API (TASK_TAGS_PLAN.md §10.1).
+    return tasks.map((t) => flattenTags(t))
   }
 
   async cancelInstance(orgId: string, templateId: string, userId: string, instanceId: string) {

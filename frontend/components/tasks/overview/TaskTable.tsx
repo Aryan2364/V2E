@@ -4,6 +4,8 @@ import React from 'react'
 import { ArrowDown, ArrowUp, CheckSquare } from 'lucide-react'
 import StyledSelect from '@/components/ui/StyledSelect'
 import EmployeePicker, { type EmployeePickerOption } from '@/components/ui/EmployeePicker'
+import TagList from '@/components/tasks/TagList'
+import TagSelect from './TagSelect'
 import {
   TIMINGS, TIMING_META, taskTiming,
   type Task, type TaskStatus, type TaskPriority, type TaskCategory,
@@ -33,8 +35,13 @@ function Badge({ label, color }: { label: string; color?: string }) {
  * them with a compact native select per filterable column, so several filters can be active
  * at once (e.g. High priority + Sales dept + Not Started). Active filters also surface as
  * removable chips above the table (rendered by the page).
+ *
+ * Tags take several values, so their header filter is the tag multi-select (any of the
+ * chosen tags) rather than a TableFilterKey select; it writes the same page state as the
+ * filter panel's Tags field.
  */
 export default function TaskTable({
+  orgId,
   rows,
   loading,
   total,
@@ -54,9 +61,12 @@ export default function TaskTable({
   onAssignerFilter,
   filters,
   onFilter,
+  tagIds,
+  onTagFilter,
   sortDir,
   onToggleDeadlineSort,
 }: {
+  orgId: string
   rows: Task[]
   loading: boolean
   total: number
@@ -76,6 +86,9 @@ export default function TaskTable({
   onAssignerFilter: (value: string) => void
   filters: TableFilters
   onFilter: (key: TableFilterKey, value: string) => void
+  /** Tag filter (matches any of these tags). */
+  tagIds: string[]
+  onTagFilter: (ids: string[]) => void
   sortDir: 'asc' | 'desc' | null
   onToggleDeadlineSort: () => void
 }) {
@@ -112,6 +125,7 @@ export default function TaskTable({
               <Th>Assigned By</Th>
               <Th>Department</Th>
               <Th>Category</Th>
+              <Th>Tags</Th>
               <Th>Priority</Th>
               <Th>Status</Th>
               <Th>Timing</Th>
@@ -158,6 +172,9 @@ export default function TaskTable({
               <td className="px-3 py-2 align-top min-w-[130px]">
                 {filterCell('category_id', 'All', categories.map((c) => ({ value: c.id, label: c.name, color: c.color })))}
               </td>
+              <td className="px-3 py-2 align-top min-w-[180px]">
+                <TagSelect orgId={orgId} value={tagIds} onChange={onTagFilter} placeholder="All" />
+              </td>
               <td className="px-3 py-2 align-top min-w-[120px]">
                 {filterCell('priority_id', 'All', priorities.map((p) => ({ value: p.id, label: p.label, color: p.color })))}
               </td>
@@ -172,10 +189,10 @@ export default function TaskTable({
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={10} className="py-16 text-center"><div className="inline-block w-6 h-6 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" /></td></tr>
+              <tr><td colSpan={11} className="py-16 text-center"><div className="inline-block w-6 h-6 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" /></td></tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={10} className="py-16 text-center">
+                <td colSpan={11} className="py-16 text-center">
                   <div className="w-12 h-12 rounded-full bg-[#F1F5F9] flex items-center justify-center mx-auto mb-3"><CheckSquare size={20} className="text-[#94A3B8]" /></div>
                   <p className="font-semibold text-[#0F172A]">No tasks match these filters</p>
                   <p className="text-sm text-[#475569] mt-1">Clear a filter to widen the view.</p>
@@ -198,6 +215,9 @@ export default function TaskTable({
                     <td className="px-3 py-2.5 align-top text-[#475569] whitespace-nowrap">{t.created_by?.name ?? '—'}</td>
                     <td className="px-3 py-2.5 align-top text-[#475569] whitespace-nowrap">{(t.department_id && deptName.get(t.department_id)) || '—'}</td>
                     <td className="px-3 py-2.5 align-top text-[#475569] whitespace-nowrap">{t.category?.name ?? '—'}</td>
+                    <td className="px-3 py-2.5 align-top">
+                      {t.tags?.length ? <TagList tags={t.tags} max={2} /> : <span className="text-[#475569]">—</span>}
+                    </td>
                     <td className="px-3 py-2.5 align-top">{t.priority ? <Badge label={t.priority.label} color={t.priority.color} /> : '—'}</td>
                     <td className="px-3 py-2.5 align-top">{t.status ? <Badge label={t.status.label} color={t.status.color} /> : '—'}</td>
                     <td className="px-3 py-2.5 align-top whitespace-nowrap">

@@ -20,6 +20,8 @@ import RemindersField, {
 } from '@/components/tasks/RemindersField'
 import EscalationLevelsField from '@/components/tasks/EscalationLevelsField'
 import GoalSelectField from '@/components/tasks/GoalSelectField'
+import TagPicker from '@/components/tasks/TagPicker'
+import { isListboxOpen } from '@/components/tasks/InlineTaskTags'
 import { useAuth } from '@/lib/auth/context'
 import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
@@ -128,6 +130,7 @@ export default function CreateTaskModal({
   // const [quadrant, setQuadrant] = useState<TaskQuadrant>('Q2')
   const [priorityId, setPriorityId] = useState('')
   const [categoryId, setCategoryId] = useState('')
+  const [tagIds, setTagIds] = useState<string[]>([])
   const [statusId, setStatusId] = useState('')
   const [deadlineDate, setDeadlineDate] = useState('')
   const [deadlineTime, setDeadlineTime] = useState('')
@@ -225,7 +228,8 @@ export default function CreateTaskModal({
   useEffect(() => {
     if (!isOpen) return
     function handle(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
+      // Escape inside an open picker (e.g. the Tags search) closes only that picker.
+      if (e.key === 'Escape' && !isListboxOpen()) onClose()
     }
     document.addEventListener('keydown', handle)
     return () => document.removeEventListener('keydown', handle)
@@ -262,6 +266,7 @@ export default function CreateTaskModal({
     // setQuadrant('Q2')
     setPriorityId('')
     setCategoryId('')
+    setTagIds([])
     setStatusId(
       selectableStatuses.find((s) => s.type === 'not_started')?.id ??
         selectableStatuses.find((s) => s.is_default)?.id ??
@@ -335,6 +340,7 @@ export default function CreateTaskModal({
         // quadrant,
         priority_id: priorityId || undefined,
         category_id: categoryId || undefined,
+        ...(tagIds.length > 0 ? { tag_ids: tagIds } : {}),
         status_id: statusId || undefined,
         deadline: deadline || undefined,
         holiday_override: useHolidayOverride,
@@ -416,6 +422,7 @@ export default function CreateTaskModal({
         description: description.trim() || undefined,
         category_id: categoryId || undefined,
         priority_id: priorityId || undefined,
+        ...(tagIds.length > 0 ? { tag_ids: tagIds } : {}),
         schedule_entries: scheduleEntries.map((en, idx) => ({
           schedule_type: en.schedule_type,
           every: en.every,
@@ -826,6 +833,13 @@ export default function CreateTaskModal({
                 ]}
               />
             </div>
+          </div>
+
+          {/* Tags — full width, directly under Category/Priority. On a recurring task
+              they are copied onto every spawned instance. */}
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1.5">Tags</label>
+            <TagPicker orgId={orgId} value={tagIds} onChange={setTagIds} disabled={submitting} />
           </div>
 
           {/* Link to goal — the task (or every spawned instance) counts as an

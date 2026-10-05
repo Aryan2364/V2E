@@ -1168,6 +1168,51 @@ model TaskCategory {
   @@map("task_categories")
 }
 
+// An org-wide label with a colour. A task carries 0–10 of them via TaskTagLink.
+// Unlike a category (one per task, the kind of work), a tag is a cross-cutting
+// label used to find and slice work. Created on the spot while tagging
+// (`tasks.tags.create`), curated in Work Settings (`tasks.config.tags.manage`).
+// A tag in use is deactivated, never deleted — only a never-used tag hard-deletes.
+model TaskTag {
+  id                 String   @id @default(uuid())
+  organization_id    String
+  name               String // display form, trimmed, max 40
+  // lower(trim(name)) with inner whitespace collapsed — the uniqueness and
+  // import-matching key, so "Audit" and " audit " can never both exist.
+  name_key           String
+  color              String   @default("slate") // palette KEY (TAG_COLORS), never a hex
+  description        String?
+  is_active          Boolean  @default(true)
+  created_by_user_id String
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  tasks TaskTagLink[]
+
+  @@unique([organization_id, name_key])
+  @@index([organization_id, is_active])
+  @@map("task_tags")
+}
+
+// Join row: one tag on one task. Cascades with the task (import undo and create
+// rollbacks hard-delete tasks); RESTRICTs on the tag so a used tag can't vanish.
+model TaskTagLink {
+  id                 String   @id @default(uuid())
+  organization_id    String
+  task_id            String
+  tag_id             String
+  created_by_user_id String
+  created_at         DateTime @default(now())
+
+  task Task    @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  tag  TaskTag @relation(fields: [tag_id], references: [id], onDelete: Restrict)
+
+  @@unique([task_id, tag_id])
+  @@index([tag_id])
+  @@index([organization_id])
+  @@map("task_tag_links")
+}
+
 model TaskPriority {
   id              String   @id @default(uuid())
   organization_id String
@@ -1275,6 +1320,7 @@ model Task {
   attachments        TaskAttachment[]
   views              TaskView[]
   deadline_revisions TaskDeadlineRevision[]
+  tags               TaskTagLink[]
 
   @@unique([recurring_template_id, recurring_spawn_date], map: "tasks_recurring_template_day_unique")
   @@index([goal_id])
@@ -1643,6 +1689,9 @@ model RecurringTemplate {
   reminder_specs           Json           @default("[]")
   department_id            String?
   linked_goal_id           String?
+  // TaskTag ids copied onto every spawned instance. Re-validated at spawn time:
+  // a tag deactivated since is skipped silently.
+  tag_ids                  String[]       @default([])
   created_by_user_id       String
   created_at               DateTime       @default(now())
   updated_at               DateTime       @updatedAt

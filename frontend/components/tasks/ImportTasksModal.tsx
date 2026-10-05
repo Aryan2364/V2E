@@ -24,6 +24,9 @@ import { PendingFileList } from '@/components/ui/AttachmentList'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
+import TagList from '@/components/tasks/TagList'
+import { useTaskTags } from '@/lib/tasks/useTaskTags'
+import type { TaskTagRef } from '@/lib/types/tasks'
 import {
   getImportOptions,
   validateTaskImport,
@@ -35,6 +38,7 @@ import {
   type TaskImportOptions,
   type TaskImportValidationResult,
   type TaskImportValidationRow,
+  type TaskImportResolved,
   type TaskImportResult,
   type TaskImportBatchSummary,
   type TaskImportBatchDetail,
@@ -53,12 +57,13 @@ interface Props {
 /** Glue for combined dropdown values, e.g. "Jane Doe · Sales · Manager". Must match the backend. */
 const VALUE_SEPARATOR = ' · '
 
-// Machine column keys, in template order (A…Z — 26 columns).
+// Machine column keys, in template order (A…AA — 27 columns).
 const COLUMNS = [
   'title',
   'description',
   'priority',
   'category',
+  'tags',
   'deadline_date',
   'deadline_time',
   'assignee_1',
@@ -92,6 +97,7 @@ const HEADER_LABEL: Record<Column, string> = {
   description: 'description',
   priority: 'priority',
   category: 'category',
+  tags: 'tags',
   deadline_date: 'deadline_date *',
   deadline_time: 'deadline_time',
   assignee_1: 'assignee_1 *',
@@ -126,6 +132,7 @@ const COLUMN_RULE: Record<Column, string> = {
   description: '≤2000 chars (Error)',
   priority: 'Pick from list (Error if unknown)',
   category: 'Pick from list (Error if unknown)',
+  tags: 'Pipe-separated; must match an existing tag',
   deadline_date: 'Required · today or later · YYYY-MM-DD (Error) · holiday/leave flagged (Warning)',
   deadline_time: 'HH:mm · defaults 23:59',
   assignee_1: 'Required · pick from list (Error)',
@@ -166,6 +173,7 @@ Object.assign(COLUMN_ALIASES, {
   cc: 'cc_1',
   goal: 'linked_goal',
   checklist: 'checklist_items',
+  tag: 'tags',
 })
 
 function normalizeHeader(h: string): string {
@@ -220,6 +228,7 @@ const FIELD_FAILURE_LABEL: Record<string, string> = {
   description: 'Description',
   priority: 'Priority',
   category: 'Category',
+  tags: 'Tags',
   deadline_date: 'Deadline',
   deadline_time: 'Deadline',
   assignee_1: 'Assignee',
@@ -341,6 +350,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
   // ─── Template (.xlsx with reference sheets + dropdowns) ───────────────────────
   async function downloadTemplate() {
     if (!options) return
+    const importTags = options.tags ?? []
     setBuilding(true)
     try {
       const mod: any = await import('exceljs')
@@ -349,6 +359,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
       const ws = wb.addWorksheet('Tasks')
       const wsPri = wb.addWorksheet('Priorities')
       const wsCat = wb.addWorksheet('Categories')
+      const wsTag = wb.addWorksheet('Tags')
       const wsGoal = wb.addWorksheet('Goals')
       const wsTpl = wb.addWorksheet('Checklist Templates')
       const wsPeople = wb.addWorksheet('Assignees')
@@ -371,6 +382,12 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
       refHeader(wsCat, ['Sr. No.', 'Category'])
       options.categories.forEach((c, i) => wsCat.addRow([i + 1, c.name]))
       wsCat.columns.forEach((c: any, i: number) => (c.width = i === 0 ? 8 : 28))
+
+      // Tags — the valid names for the `tags` column. A cell takes several, so it gets
+      // no dropdown; it is checked against this list on upload.
+      refHeader(wsTag, ['Sr. No.', 'Tag'])
+      importTags.forEach((t, i) => wsTag.addRow([i + 1, t.name]))
+      wsTag.columns.forEach((c: any, i: number) => (c.width = i === 0 ? 8 : 28))
 
       refHeader(wsGoal, ['Sr. No.', 'Quarterly Goal'])
       options.goals.forEach((g, i) => wsGoal.addRow([i + 1, g.title]))
@@ -416,25 +433,27 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
       // Two example rows using real option values where available.
       const p0 = options.priorities[0]?.label ?? ''
       const c0 = options.categories[0]?.name ?? ''
+      const tg0 = importTags.slice(0, 2).map((t) => t.name).join(' | ')
       const a0 = options.assignees[0]?.value ?? 'Jane Doe · Sales'
       const a1 = options.assignees[1]?.value ?? ''
       const tpl0 = options.checklist_templates[0]?.name ?? ''
       const today = getNow()
       const soon = new Date(today.getTime() + 7 * 864e5)
       ws.addRow([
-        'Prepare Q3 report', 'Draft and circulate the quarterly report', p0, c0,
+        'Prepare Q3 report', 'Draft and circulate the quarterly report', p0, c0, tg0,
         toYmd(soon), '17:00', a0, a1, '', '', '', '', '', '',
         a1 ? 'all_must_complete' : 'any_can_complete', 'No', '', '', '', '', '',
         '2', tpl0, 'Collect figures | Write summary | Send for review', '', 'No',
       ])
       ws.addRow([
-        'Kickoff meeting notes', '', p0, c0,
+        'Kickoff meeting notes', '', p0, c0, '',
         toYmd(soon), '', a0, '', '', '', '', '', '', '',
         'any_can_complete', 'Yes', 'pdf | docx', '', '', '', '', '1', '', '', 'notes.pdf', 'No',
       ])
 
-      // Column letters A…Z.
-      const letter = (idx: number) => String.fromCharCode(65 + idx)
+      // Column letters A…Z, then AA, AB… (there are more than 26 columns).
+      const letter = (idx: number): string =>
+        idx < 26 ? String.fromCharCode(65 + idx) : letter(Math.floor(idx / 26) - 1) + String.fromCharCode(65 + (idx % 26))
       const LAST = 500
       const addListDV = (col: Column, formula: string) => {
         const L = letter(COLUMNS.indexOf(col))
@@ -766,6 +785,23 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
   // Map a backend row number (index+2) back to the real spreadsheet row for display.
   const excelRow = (rowNum: number) => sourceRows[rowNum - 2] ?? rowNum
 
+  // A row's resolved tags as chips: colours from the shared tag list, names falling back
+  // to the import options (unknown names are row errors, listed under Issues).
+  const { tags: orgTags } = useTaskTags(orgId, { includeInactive: true })
+  const resolvedTags = useCallback(
+    (resolved: TaskImportResolved): TaskTagRef[] => {
+      const ids = resolved.tag_ids ?? []
+      const names = resolved.tags ?? []
+      return ids.map((id, i) => {
+        const known = orgTags.find((t) => t.id === id)
+        if (known) return known
+        const name = names[i] ?? options?.tags?.find((t) => t.id === id)?.name ?? 'Tag'
+        return { id, name, color: 'slate', is_active: true }
+      })
+    },
+    [orgTags, options],
+  )
+
   const visibleRows = useMemo(() => {
     if (!validation) return []
     const rows = validation.rows
@@ -844,7 +880,8 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                     deadline_date, assignee_1. <strong>Priority</strong>, <strong>category</strong>, <strong>assignees</strong>,{' '}
                     <strong>CC</strong>, <strong>escalation</strong>, <strong>goal</strong> and <strong>checklist template</strong>{' '}
                     are <strong>dropdowns</strong>. The assignee / CC / escalation dropdowns only list people you’re allowed to
-                    assign to. Checklist items and attachment filenames are pipe-separated (<code>a | b | c</code>). The
+                    assign to. Checklist items, <strong>tags</strong> and attachment filenames are pipe-separated (<code>a | b | c</code>);
+                    each tag must match one on the template’s Tags sheet. The
                     template’s <strong>second row spells out each column’s rule</strong> — it’s ignored on upload, so you can leave or delete it.
                   </p>
                   {optionsError ? (
@@ -964,6 +1001,9 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                                 <div className="font-medium text-[#0F172A]">{r.title || '—'}</div>
                                 {r.resolved.checklist_item_count ? (
                                   <div className="text-[#94A3B8]">{r.resolved.checklist_item_count} checklist item{r.resolved.checklist_item_count !== 1 ? 's' : ''}</div>
+                                ) : null}
+                                {r.resolved.tag_ids?.length ? (
+                                  <TagList tags={resolvedTags(r.resolved)} max={3} className="mt-1" />
                                 ) : null}
                               </td>
                               <td className="px-3 py-2 text-[#475569]">

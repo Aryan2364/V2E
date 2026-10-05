@@ -11,6 +11,7 @@ import {
   CompletionTiming,
   DataScope,
   PermissionAction,
+  Prisma,
   TaskActionType,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -30,7 +31,14 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { normaliseExtensions } from './task-attachments.service';
 import { assertActiveOrgMembers } from '../common/org-members';
-import { assertMastersUsable as assertMastersUsableShared } from '../common/task-masters-usable';
+import {
+  assertMastersUsable as assertMastersUsableShared,
+  assertTagsUsable,
+  loadTagRefMap,
+  TASK_TAG_REF_SELECT,
+  TaskTagRef,
+  toTagRefs,
+} from '../common/task-masters-usable';
 import { R2Service } from '../storage/r2.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { AddAssigneeDto } from './dto/add-assignee.dto';
@@ -39,6 +47,7 @@ import { ACTIVE_ASSIGNEE, gradingDeadline } from './active-assignee';
 import { resolveRemindAt, expandReminderRows } from '../common/reminders/reminder-spec';
 import { ancestorChain, descendantIds } from '../holidays/dept-tree.util';
 import { TasksAnalyticsService } from './tasks-analytics.service';
+import { MAX_TAGS_PER_TASK } from '../task-masters/task-tag.constants';
 
 const TASK_INCLUDE = {
   status: true,
@@ -62,7 +71,34 @@ const TASK_INCLUDE = {
       attachments: { where: { is_deleted: false } },
     },
   },
+  // Tags, sorted by name. Loaded as join rows; every response flattens them to
+  // `tags: TaskTagRef[]` (see `withTagRefs`) so the join row never leaves the API.
+  ...TASK_TAG_REF_SELECT,
 };
+
+/** Upper bound on `tag_ids` in a list filter — a filter, not a bulk payload. */
+const MAX_TAG_FILTER_IDS = 50;
+
+/** Refusal for writing to a task whose created_at is after the org's (simulated) now. */
+const SIMULATED_FUTURE_TASK_MESSAGE =
+  'This task was created in a simulated future. To interact with it, please time-travel to this date or later.';
+
+/**
+ * The single response serializer for tags: replace a loaded task's `tags` join rows
+ * (`{ tag: {...} }[]`) with flat `TaskTagRef[]` (TASK_TAGS_PLAN.md §10.1). A row loaded
+ * without the relation comes back with `tags: []`, so the shape is always stable.
+ * Used by `enrichTaskList` (every list / my / cc / assigned / escalated / paged /
+ * export / collective read) and `getTask` (detail + every create/update/action result).
+ */
+function withTagRefs<T extends { tags?: unknown }>(task: T): Omit<T, 'tags'> & { tags: ReturnType<typeof toTagRefs> } {
+  return { ...task, tags: toTagRefs(task.tags as Parameters<typeof toTagRefs>[0]) };
+}
+
+/** Parse a CSV id filter: trimmed, de-duplicated, empties dropped, capped. */
+function parseIdCsv(raw: string | undefined, cap: number): string[] {
+  if (!raw) return [];
+  return [...new Set(raw.split(',').map((s) => s.trim()).filter(Boolean))].slice(0, cap);
+}
 
 /** Shared filter shape for list / paged / dashboard task queries. */
 export interface TaskListFilters {
@@ -82,6 +118,7 @@ export interface TaskListFilters {
   assignee_person_dept_id?: string; // matrix drill: assignee's home dept (subtree) → assignees
   role_id?: string; // job-role drill — resolved to the assignees holding that role
   goal_id?: string;
+  tag_ids?: string; // comma-separated; matches a task carrying ANY of them
   search?: string;
   from_date?: string;
   to_date?: string;
@@ -213,7 +250,7 @@ export class TasksService {
     if (isWrite) {
       const now = await this.clock.now(orgId);
       if (task.created_at > now) {
-        throw new ForbiddenException("This task was created in a simulated future. To interact with it, please time-travel to this date or later.");
+        throw new ForbiddenException(SIMULATED_FUTURE_TASK_MESSAGE);
       }
     }
     return task;
@@ -809,6 +846,10 @@ export class TasksService {
       statusId = await this.getDefaultStatusId(orgId);
     }
 
+    // Tags: org-owned and active (a foreign/unknown/deactivated id fails loud with a
+    // 400 BEFORE any write). Creating a task never needs `keep` — nothing is on it yet.
+    const tagIds = await assertTagsUsable(this.prisma, orgId, dto.tag_ids ?? []);
+
     const task = await this.prisma.task.create({
       data: {
         organization_id: orgId,
@@ -891,6 +932,20 @@ export class TasksService {
           task_id: task.id,
           user_id: uid,
           is_cc: true,
+        })),
+        skipDuplicates: true,
+      });
+    }
+
+    // Tag links (validated above). They cascade with the task, so the rollback
+    // deletes above — and import undo — take them along.
+    if (tagIds.length > 0) {
+      await this.prisma.taskTagLink.createMany({
+        data: tagIds.map((tagId) => ({
+          organization_id: orgId,
+          task_id: task.id,
+          tag_id: tagId,
+          created_by_user_id: userId,
         })),
         skipDuplicates: true,
       });
@@ -1065,7 +1120,17 @@ export class TasksService {
       where.OR = [
         { title: { contains: filters.search, mode: 'insensitive' } },
         { description: { contains: filters.search, mode: 'insensitive' } },
+        // Search covers tags too (kit §27.1): a task matches when any of its tags'
+        // names contains the query.
+        { tags: { some: { tag: { name: { contains: filters.search, mode: 'insensitive' } } } } },
       ];
+    }
+    // Tag filter ("any of"). Pushed into AND — never assigned to a top-level key — so
+    // it can't clobber the search OR or the assignee filter, and stays ANDed with the
+    // row scope: filtering can never reveal a task the viewer couldn't already see.
+    const tagIds = parseIdCsv(filters.tag_ids, MAX_TAG_FILTER_IDS);
+    if (tagIds.length) {
+      where.AND = [...(where.AND ?? []), { tags: { some: { tag_id: { in: tagIds } } } }];
     }
     if (filters.from_date || filters.to_date) {
       const range: any = {};
@@ -1208,7 +1273,7 @@ export class TasksService {
         applied_scope: null,
         max_scope: max,
         kpis: this.analytics.emptyKpis(),
-        by_status: [], by_priority: [], by_category: [], by_department: [], by_type: [],
+        by_status: [], by_priority: [], by_category: [], by_tag: [], by_department: [], by_type: [],
         by_assignee: [], by_assigner: [], by_role: [],
         by_timing: this.analytics.emptyTiming(), trend: [], trend_monthly: [],
       };
@@ -1526,11 +1591,24 @@ export class TasksService {
     orgId: string,
     principal: Principal,
     taskIds: string[],
-    action: 'status' | 'deadline' | 'complete',
-    payload: { status_id?: string; deadline?: string | null },
+    action: 'status' | 'deadline' | 'complete' | 'add_tags' | 'remove_tags',
+    payload: { status_id?: string; deadline?: string | null; tag_ids?: string[] },
   ) {
     const skipped: { id: string; title: string; reason: string }[] = [];
     if (!taskIds?.length) return { updated: 0, skipped };
+
+    // Tag actions: validate the payload before touching any task. Adding needs active
+    // tags of this org (same validator as create/edit); removing only needs the ids to
+    // be this org's own — taking a deactivated tag OFF tasks is exactly what cleanup is.
+    const isTagAction = action === 'add_tags' || action === 'remove_tags';
+    let bulkTagIds: string[] = [];
+    if (isTagAction) {
+      bulkTagIds =
+        action === 'add_tags'
+          ? await assertTagsUsable(this.prisma, orgId, payload.tag_ids ?? [])
+          : await this.assertTagIdsInOrg(orgId, payload.tag_ids ?? []);
+      if (!bulkTagIds.length) throw new BadRequestException('Pick at least one tag.');
+    }
 
     // Read visibility bounds the candidate set…
     const scopeWhere = await this.scope.listWhere(orgId, principal, TasksService.TASK_LEAF);
@@ -1540,6 +1618,9 @@ export class TasksService {
         id: true,
         title: true,
         created_by_user_id: true,
+        // Needed by the tag branch: updateTask (findTaskOrFail isWrite) refuses tasks
+        // created in a simulated future, so bulk tagging skips them too.
+        created_at: true,
         completion_mode: true,
         // Needed by the deadline branch: a bulk move is a real revision and has to
         // freeze/keep the compliance baseline like any single edit.
@@ -1547,14 +1628,50 @@ export class TasksService {
         original_deadline: true,
         status: { select: { type: true } },
         assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
+        // Needed by the tag branch to diff and to log names.
+        ...TASK_TAG_REF_SELECT,
       },
     });
     if (!candidates.length) return { updated: 0, skipped };
 
+    // Tags are a task FIELD, so bulk tagging needs exactly the rights a single edit
+    // (updateTask → assertAssignerRights) needs: creator, admin, or the org's
+    // task-edit-roles gate AND edit scope over the task's core participants. Being an
+    // assignee is enough to move a status, but not to retag someone else's task.
+    // (The edit-roles lookup is per actor, so it runs at most once.)
+    let editRoleAllowed: boolean | undefined;
+    const canEditFields = async (t: (typeof candidates)[number]): Promise<boolean> => {
+      if (t.created_by_user_id === principal.userId || principal.isAdmin) return true;
+      if (editRoleAllowed === undefined) {
+        editRoleAllowed = await this.checkTaskPermission(orgId, principal.userId, 'task_edit_roles').then(
+          () => true,
+          () => false,
+        );
+      }
+      if (!editRoleAllowed) return false;
+      try {
+        await this.scope.assertCanActOn(orgId, principal, TasksService.TASK_LEAF, PermissionAction.edit, [
+          t.created_by_user_id,
+          ...t.assignees.filter((a) => !a.is_cc).map((a) => a.user_id),
+        ]);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
     // …then each task needs EDIT rights: participants act on their own tasks; anyone
     // else must hold edit scope over the task's core participants.
     const editable: typeof candidates = [];
+    // Same org clock findTaskOrFail(isWrite) uses — respects a test org's simulated time.
+    const tagNow = isTagAction ? await this.clock.now(orgId) : null;
     for (const t of candidates) {
+      if (isTagAction) {
+        if (tagNow && t.created_at > tagNow) skipped.push({ id: t.id, title: t.title, reason: SIMULATED_FUTURE_TASK_MESSAGE });
+        else if (await canEditFields(t)) editable.push(t);
+        else skipped.push({ id: t.id, title: t.title, reason: 'You do not have edit access to this task.' });
+        continue;
+      }
       const onTask =
         t.created_by_user_id === principal.userId ||
         t.assignees.some((a) => a.user_id === principal.userId && !a.is_cc);
@@ -1732,7 +1849,92 @@ export class TasksService {
       return { updated, skipped };
     }
 
+    if (isTagAction) {
+      return this.bulkApplyTags(orgId, principal.userId, editable, action, bulkTagIds, skipped);
+    }
+
     throw new BadRequestException('Unknown bulk action');
+  }
+
+  /**
+   * Remove-side validation for bulk tagging: de-duplicated ids that must all be tags
+   * of THIS org (active or not). A foreign/unknown id is a 400, never silently ignored.
+   */
+  private async assertTagIdsInOrg(orgId: string, tagIds: string[]): Promise<string[]> {
+    if (!Array.isArray(tagIds) || tagIds.some((id) => typeof id !== 'string')) {
+      throw new BadRequestException('tag_ids must be a list of tag ids.');
+    }
+    const ids = [...new Set(tagIds.map((id) => id.trim()).filter(Boolean))];
+    if (ids.length > MAX_TAG_FILTER_IDS) {
+      throw new BadRequestException(`Pick at most ${MAX_TAG_FILTER_IDS} tags.`);
+    }
+    if (!ids.length) return [];
+    const found = await this.prisma.taskTag.count({ where: { id: { in: ids }, organization_id: orgId } });
+    if (found !== ids.length) throw new BadRequestException('Tag not found in this organization.');
+    return ids;
+  }
+
+  /**
+   * The add_tags / remove_tags half of bulkUpdate, over tasks already cleared for
+   * edit. `updated` counts tasks whose tags actually changed; a task that already
+   * carries (add) or lacks (remove) every chosen tag is neither updated nor skipped.
+   * A task that would pass the per-task limit is skipped with the reason.
+   */
+  private async bulkApplyTags(
+    orgId: string,
+    actorId: string,
+    editable: { id: string; title: string; tags: Parameters<typeof toTagRefs>[0] }[],
+    action: 'add_tags' | 'remove_tags',
+    tagIds: string[],
+    skipped: { id: string; title: string; reason: string }[],
+  ) {
+    const refs = action === 'add_tags' ? await loadTagRefMap(this.prisma, orgId, tagIds) : new Map<string, TaskTagRef>();
+    const chosen = new Set(tagIds);
+    const changes: { id: string; entry: NonNullable<ReturnType<TasksService['tagChangeEntry']>> }[] = [];
+    const addRows: { organization_id: string; task_id: string; tag_id: string; created_by_user_id: string }[] = [];
+    const removeFrom: string[] = [];
+
+    for (const t of editable) {
+      const current = toTagRefs(t.tags);
+      const currentIds = new Set(current.map((c) => c.id));
+      let next: TaskTagRef[];
+      if (action === 'add_tags') {
+        const toAdd = tagIds.filter((id) => !currentIds.has(id));
+        if (!toAdd.length) continue;
+        if (currentIds.size + toAdd.length > MAX_TAGS_PER_TASK) {
+          skipped.push({ id: t.id, title: t.title, reason: `A task can have at most ${MAX_TAGS_PER_TASK} tags.` });
+          continue;
+        }
+        for (const tagId of toAdd) {
+          addRows.push({ organization_id: orgId, task_id: t.id, tag_id: tagId, created_by_user_id: actorId });
+        }
+        next = [...current, ...toAdd.map((id) => refs.get(id)).filter((r): r is TaskTagRef => !!r)];
+      } else {
+        if (!current.some((c) => chosen.has(c.id))) continue;
+        removeFrom.push(t.id);
+        next = current.filter((c) => !chosen.has(c.id));
+      }
+      const entry = this.tagChangeEntry(current, next);
+      if (entry) changes.push({ id: t.id, entry });
+    }
+
+    if (addRows.length) {
+      await this.prisma.taskTagLink.createMany({ data: addRows, skipDuplicates: true });
+    }
+    if (removeFrom.length) {
+      await this.prisma.taskTagLink.deleteMany({
+        where: { organization_id: orgId, task_id: { in: removeFrom }, tag_id: { in: tagIds } },
+      });
+    }
+
+    // One 'edited' entry per task actually changed, in the same `changes` shape a
+    // single edit writes, so the activity feed renders the tag diff identically.
+    await Promise.all(
+      changes.map(({ id, entry }) =>
+        this.logActivity(orgId, id, actorId, 'edited', { bulk: true, changes: [entry] }).catch(() => null),
+      ),
+    );
+    return { updated: changes.length, skipped };
   }
 
   // ─── CSV export ────────────────────────────────────────────────────────────────
@@ -1753,7 +1955,7 @@ export class TasksService {
     const tasks = await this.prisma.task.findMany({ where, include: TASK_INCLUDE, orderBy: this.taskOrderBy('created_desc'), take: 5000 });
     const enriched = await this.enrichTaskList(tasks);
 
-    const headers = ['Title', 'Status', 'Priority', 'Category', 'Type', 'Assigned By', 'Assignees', 'Deadline', 'Created'];
+    const headers = ['Title', 'Status', 'Priority', 'Category', 'Tags', 'Type', 'Assigned By', 'Assignees', 'Deadline', 'Created'];
     const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const lines = [headers.join(',')];
     for (const t of enriched as any[]) {
@@ -1762,6 +1964,8 @@ export class TasksService {
         t.status?.label ?? '',
         t.priority?.label ?? '',
         t.category?.name ?? '',
+        // " | " — the same delimiter the import reads back (TASK_TAGS_PLAN.md §10.2).
+        (t.tags ?? []).map((tag: { name: string }) => tag.name).join(' | '),
         t.type,
         t.created_by?.name ?? '',
         (t.assignees ?? []).filter((a: any) => !a.is_cc).map((a: any) => a.user?.name).filter(Boolean).join('; '),
@@ -1886,7 +2090,7 @@ export class TasksService {
     const profileMap = new Map(profiles.map((p) => [`${p.organization_id}:${p.user_id}`, p]));
 
     return tasks.map((task) => ({
-      ...task,
+      ...withTagRefs(task),
       created_by: userMap.get(task.created_by_user_id) ?? null,
       unread_comments: unreadMap.get(task.id) ?? 0,
       assignees: (task.assignees ?? []).map((a: any) => {
@@ -2064,7 +2268,7 @@ export class TasksService {
     const proof_summary = task.proof_required ? await this.proofSummary(orgId, taskId) : null;
 
     return {
-      ...task,
+      ...withTagRefs(task),
       created_by: userMap.get(task.created_by_user_id) ?? null,
       completed_by: nameOf(task.completed_by_user_id),
       status_actor: nameOf(task.status_actor_user_id),
@@ -2129,6 +2333,17 @@ export class TasksService {
       priority_id: dto.priority_id !== old.priority_id ? dto.priority_id : undefined,
       department_id: dto.department_id !== old.department_id ? dto.department_id : undefined,
     });
+
+    // Tags: `tag_ids` is the full authoritative list (omitted = unchanged, [] = clear).
+    // Validated BEFORE any write. Tags already on the task may be inactive — a task
+    // carrying a since-deactivated tag can still be saved — but a newly added one must
+    // be an active tag of this org. Tags sit behind the same assigner gate as category
+    // above: a `tag_ids` payload is never a CC-only edit.
+    const currentTags = toTagRefs((old as any).tags);
+    const nextTagIds =
+      dto.tag_ids !== undefined
+        ? await assertTagsUsable(this.prisma, orgId, dto.tag_ids, { keep: currentTags.map((t) => t.id) })
+        : undefined;
 
     // Editing the checklist is only allowed while the task is open (once closed it's a
     // frozen record — mirrors assertTaskOpenForChecklist), and any freshly-applied
@@ -2348,6 +2563,13 @@ export class TasksService {
       }
     }
 
+    // Reconcile the tags to the authoritative list. Logged only when the SET changed
+    // (re-sending the same tags in another order is not an edit).
+    if (nextTagIds !== undefined) {
+      const tagChange = await this.reconcileTaskTags(orgId, userId, taskId, currentTags, nextTagIds);
+      if (tagChange) changedFields.push(tagChange);
+    }
+
     if (changedFields.length > 0) {
       const action: TaskActionType = changedFields.some((f) => f.field === 'status_id') ? 'status_changed' : 'edited';
       await this.logActivity(orgId, taskId, userId, action, { changes: changedFields });
@@ -2375,6 +2597,72 @@ export class TasksService {
     // Return the fully-enriched task (per-person status + overdue + attribution) so
     // callers that swap it straight into view state don't lose the scoreboard data.
     return this.getTask(orgId, taskId);
+  }
+
+  /**
+   * The activity-log entry for a tag change: tag NAMES (sorted, case-insensitive)
+   * before and after, or `null` when the set of tags did not change.
+   */
+  private tagChangeEntry(
+    from: TaskTagRef[],
+    to: TaskTagRef[],
+  ): { field: 'tags'; from: string[]; to: string[] } | null {
+    const fromIds = new Set(from.map((t) => t.id));
+    const toIds = new Set(to.map((t) => t.id));
+    if (fromIds.size === toIds.size && [...toIds].every((id) => fromIds.has(id))) return null;
+    const names = (refs: TaskTagRef[]) =>
+      refs.map((t) => t.name).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    return { field: 'tags', from: names(from), to: names(to) };
+  }
+
+  /**
+   * Make one task's tag links match `nextIds` (already validated by assertTagsUsable)
+   * by diff — delete the removed links, create the added ones; links that stay are
+   * never touched. Both writes are scoped by task AND org. Returns the activity-log
+   * entry, or `null` when nothing changed.
+   */
+  private async reconcileTaskTags(
+    orgId: string,
+    actorId: string,
+    taskId: string,
+    current: TaskTagRef[],
+    nextIds: string[],
+  ): Promise<{ field: 'tags'; from: string[]; to: string[] } | null> {
+    const currentIds = new Set(current.map((t) => t.id));
+    const nextSet = new Set(nextIds);
+    const removed = [...currentIds].filter((id) => !nextSet.has(id));
+    const added = nextIds.filter((id) => !currentIds.has(id));
+    if (!removed.length && !added.length) return null;
+
+    const ops: Prisma.PrismaPromise<unknown>[] = [];
+    if (removed.length) {
+      ops.push(
+        this.prisma.taskTagLink.deleteMany({
+          where: { task_id: taskId, organization_id: orgId, tag_id: { in: removed } },
+        }),
+      );
+    }
+    if (added.length) {
+      ops.push(
+        this.prisma.taskTagLink.createMany({
+          data: added.map((tagId) => ({
+            organization_id: orgId,
+            task_id: taskId,
+            tag_id: tagId,
+            created_by_user_id: actorId,
+          })),
+          skipDuplicates: true,
+        }),
+      );
+    }
+    await this.prisma.$transaction(ops);
+
+    const addedRefs = await loadTagRefMap(this.prisma, orgId, added);
+    const next = [
+      ...current.filter((t) => nextSet.has(t.id)),
+      ...added.map((id) => addedRefs.get(id)).filter((t): t is TaskTagRef => !!t),
+    ];
+    return this.tagChangeEntry(current, next);
   }
 
   /**
@@ -2780,7 +3068,9 @@ export class TasksService {
       data: {
         organization_id: orgId,
         original_task_id: taskId,
-        task_snapshot: task as any,
+        // Tags are snapshotted as flat refs (name + colour at deletion time), the
+        // same shape every task response carries.
+        task_snapshot: withTagRefs(task) as any,
         deleted_by_user_id: userId,
         deletion_reason: reason,
         deleted_at: new Date(),
@@ -3915,6 +4205,7 @@ export class TasksService {
         // be worse than either option. The policy-correct graded treatment of removed
         // people lives in the three compliance reports (see assigneeOutcome).
         assignees: { where: { is_cc: false, ...ACTIVE_ASSIGNEE } },
+        ...TASK_TAG_REF_SELECT,
       },
     });
 
@@ -3932,6 +4223,8 @@ export class TasksService {
     const deptMap = new Map<string, { department_id: string; total: number; completed: number; overdue: number }>();
     const priorityMap = new Map<string, { label: string; color: string; total: number; completed: number; overdue: number }>();
     const categoryMap = new Map<string, { label: string; color: string; total: number; completed: number; overdue: number }>();
+    // One task counts once in EACH of its tags (tags are multi-valued, unlike category).
+    const tagMap = new Map<string, { id: string; label: string; color: string; is_active: boolean; total: number; completed: number; overdue: number }>();
     const statusMap = new Map<string, { label: string; color: string; total: number }>();
     let recurringTotal = 0, recurringCompleted = 0, oneTimeTotal = 0, oneTimeCompleted = 0;
 
@@ -3953,6 +4246,15 @@ export class TasksService {
         }
         const c = categoryMap.get(task.category_id)!;
         c.total++; if (isCompleted) c.completed++; if (isOverdue) c.overdue++;
+      }
+
+      for (const tag of toTagRefs(task.tags)) {
+        let t = tagMap.get(tag.id);
+        if (!t) {
+          t = { id: tag.id, label: tag.name, color: tag.color, is_active: tag.is_active, total: 0, completed: 0, overdue: 0 };
+          tagMap.set(tag.id, t);
+        }
+        t.total++; if (isCompleted) t.completed++; if (isOverdue) t.overdue++;
       }
 
       if (task.status) {
@@ -4009,6 +4311,7 @@ export class TasksService {
       })),
       priority_breakdown: Array.from(priorityMap.values()),
       category_breakdown: Array.from(categoryMap.values()),
+      tag_breakdown: Array.from(tagMap.values()).sort((a, b) => b.total - a.total),
       status_breakdown: Array.from(statusMap.values()),
       frequency_breakdown: {
         recurring: { total: recurringTotal, completed: recurringCompleted },
@@ -4255,6 +4558,8 @@ export class TasksService {
             priority: true,
             category: true,
             assignees: true,
+            // Flattened to `tags: TaskTagRef[]` by enrichTaskList.
+            ...TASK_TAG_REF_SELECT,
           },
           orderBy: { created_at: 'desc' },
           take: 100,

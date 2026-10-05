@@ -42,6 +42,7 @@ interface DefaultRoleBlueprint {
 /** Create/view/edit (NO delete) on the work-content modules these roles operate. */
 const WORK_CONTENT_GRANTS: RoleGrant[] = [
   { feature_key: 'tasks.task.manage', actions: RWE }, // scopable
+  { feature_key: 'tasks.tags.create', actions: [PermissionAction.write] }, // org config; create tags while tagging (option C)
   { feature_key: 'goals', actions: RWE }, // scopable (legacy key)
   { feature_key: 'meetings', actions: RWE }, // scopable (legacy key)
   { feature_key: 'tickets.ticket.manage', actions: RWE }, // scopable

@@ -130,6 +130,7 @@ const EXPLICIT: Record<string, ModelAuditConfig> = {
   TaskStatus: { resource: 'task_status', labelFields: ['name'] },
   TaskPriority: { resource: 'task_priority', labelFields: ['name'] },
   TaskCategory: { resource: 'task_category', labelFields: ['name'] },
+  TaskTag: { resource: 'task_tag', labelFields: ['name'], ignoreFields: ['name_key'] },
   Ticket: {
     resource: 'ticket',
     labelFields: ['title', 'subject'],

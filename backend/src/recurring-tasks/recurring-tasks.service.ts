@@ -19,7 +19,14 @@ import { TERMINAL_TYPES } from '../tasks/status-phase';
 import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
 import { normaliseExtensions } from '../tasks/task-attachments.service';
 import { assertActiveOrgMembers } from '../common/org-members';
-import { assertMastersUsable } from '../common/task-masters-usable';
+import {
+  assertMastersUsable,
+  assertTagsUsable,
+  flattenTags,
+  loadTagRefMap,
+  tagRefsFor,
+  TASK_TAG_REF_SELECT,
+} from '../common/task-masters-usable';
 import { shouldEntryFireToday, type RecurrenceEntry } from '../common/recurrence/should-fire-today';
 
 const ENTRY_INCLUDE = { orderBy: { order_index: 'asc' as const } };
@@ -53,6 +60,8 @@ export interface ListTemplatesQuery {
   category_id?: string;
   priority_id?: string;
   department_id?: string;
+  /** Any-of tag filter: a template matches when it carries at least one of these ids. */
+  tag_ids?: string[];
   search?: string;
 }
 
@@ -86,13 +95,15 @@ export class RecurringTasksService {
       this.jsonIds(t.cc_user_ids).forEach((id) => userIds.add(id));
       if (t.department_id) deptIds.add(t.department_id);
     }
-    const [users, depts] = await Promise.all([
+    const [users, depts, tagRefs] = await Promise.all([
       userIds.size
         ? this.prisma.user.findMany({ where: { id: { in: [...userIds] } }, select: { id: true, name: true } })
         : Promise.resolve([]),
       deptIds.size
         ? this.prisma.department.findMany({ where: { id: { in: [...deptIds] } }, select: { id: true, name: true } })
         : Promise.resolve([]),
+      // One tag lookup for the whole page, never one per row.
+      loadTagRefMap(this.prisma, templates[0].organization_id, templates.flatMap((t) => t.tag_ids ?? [])),
     ]);
     const nameMap = new Map(users.map((u) => [u.id, u.name]));
     const deptMap = new Map(depts.map((d) => [d.id, d.name]));
@@ -125,6 +136,8 @@ export class RecurringTasksService {
         assignee_names: assignees.map(nameOf),
         cc_names: cc.map(nameOf),
         department_name: t.department_id ? deptMap.get(t.department_id) ?? null : null,
+        tag_ids: t.tag_ids ?? [],
+        tags: tagRefsFor(t.tag_ids, tagRefs),
         occurrences,
         next_run: this.nextRunDate(t, now),
         can_manage: principal ? t.created_by_user_id === principal.userId || principal.isAdmin : false,
@@ -137,13 +150,18 @@ export class RecurringTasksService {
 
   private async enrichTemplate(template: any) {
     if (!template) return null;
-    const user = await this.prisma.user.findUnique({
-      where: { id: template.created_by_user_id },
-      select: { name: true },
-    });
+    const [user, tagRefs] = await Promise.all([
+      this.prisma.user.findUnique({
+        where: { id: template.created_by_user_id },
+        select: { name: true },
+      }),
+      loadTagRefMap(this.prisma, template.organization_id, template.tag_ids ?? []),
+    ]);
     return {
       ...template,
       created_by_name: user?.name ?? 'Unknown',
+      tag_ids: template.tag_ids ?? [],
+      tags: tagRefsFor(template.tag_ids, tagRefs),
     };
   }
 
@@ -425,6 +443,7 @@ export class RecurringTasksService {
     if (query.category_id) where.category_id = query.category_id;
     if (query.priority_id) where.priority_id = query.priority_id;
     if (query.department_id) where.department_id = query.department_id;
+    if (query.tag_ids?.length) where.tag_ids = { hasSome: query.tag_ids };
     if (query.search) {
       where.OR = [
         { title: { contains: query.search, mode: 'insensitive' } },
@@ -501,6 +520,8 @@ export class RecurringTasksService {
       priority_id: dto.priority_id,
       department_id: dto.department_id,
     });
+    // Own-org, active tags only; stored de-duplicated. Spawns re-check activity.
+    const tagIds = await assertTagsUsable(this.prisma, orgId, dto.tag_ids);
     await assertActiveOrgMembers(this.prisma, orgId, dto.escalation_user_ids, 'escalation contacts');
     await assertActiveOrgMembers(
       this.prisma,
@@ -541,6 +562,7 @@ export class RecurringTasksService {
         checklist_items: (dto.checklist_items ?? []) as never,
         reminder_specs: (dto.reminders ?? []) as never,
         department_id: dto.department_id,
+        tag_ids: tagIds ?? [],
       },
     });
 
@@ -566,6 +588,10 @@ export class RecurringTasksService {
       priority_id: dto.priority_id,
       department_id: dto.department_id,
     });
+    // A tag already on the template may since have been deactivated and still be
+    // kept; only newly added ones must be active. Affects future spawns only —
+    // already-spawned instances keep their own tags (same as category).
+    const tagIds = await assertTagsUsable(this.prisma, orgId, dto.tag_ids, { keep: existing.tag_ids ?? [] });
     await assertActiveOrgMembers(this.prisma, orgId, dto.escalation_user_ids, 'escalation contacts');
     await assertActiveOrgMembers(
       this.prisma,
@@ -627,6 +653,7 @@ export class RecurringTasksService {
         ...(dto.checklist_items !== undefined && { checklist_items: dto.checklist_items as never }),
         ...(dto.reminders !== undefined && { reminder_specs: dto.reminders as never }),
         ...(dto.department_id !== undefined && { department_id: dto.department_id }),
+        ...(tagIds !== undefined && { tag_ids: tagIds }),
         has_multiple_schedules: entryCount > 1,
       },
       include: { schedule_entries: ENTRY_INCLUDE },
@@ -963,13 +990,13 @@ export class RecurringTasksService {
     await this.findTemplateOrFail(orgId, templateId);
     const tasks = await this.prisma.task.findMany({
       where: { organization_id: orgId, recurring_template_id: templateId, is_deleted: false },
-      include: { status: true, priority: true, category: true, assignees: true },
+      include: { status: true, priority: true, category: true, assignees: true, ...TASK_TAG_REF_SELECT },
       orderBy: { created_at: 'desc' },
     });
 
     // Enrich assignees with user name + dept/role (same shape as the task list API).
     const userIds = Array.from(new Set(tasks.flatMap((t) => t.assignees.map((a) => a.user_id))));
-    if (userIds.length === 0) return tasks;
+    if (userIds.length === 0) return tasks.map((task) => flattenTags(task));
     const [users, profiles] = await Promise.all([
       this.prisma.user.findMany({
         where: { id: { in: userIds } },
@@ -988,7 +1015,7 @@ export class RecurringTasksService {
     const profileMap = new Map(profiles.map((p) => [p.user_id, p]));
 
     return tasks.map((task) => ({
-      ...task,
+      ...flattenTags(task),
       assignees: task.assignees.map((a) => {
         const u = userMap.get(a.user_id);
         const p = profileMap.get(a.user_id);

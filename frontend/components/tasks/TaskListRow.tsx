@@ -8,6 +8,7 @@ import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import AssigneeAvatars, { type AvatarPerson } from './AssigneeAvatars'
 import { StatusControl } from './TaskCard'
 import Tooltip from '@/components/ui/Tooltip'
+import TagList from './TagList'
 
 interface TaskListRowProps {
   task: Task
@@ -151,6 +152,9 @@ export default function TaskListRow({
                 {category.name}
               </span>
             )}
+            {/* Tags join priority + category as one classification cluster: at most two
+                chips plus "+N", and nothing at all when the task has none. */}
+            <TagList tags={task.tags} max={2} />
 
             {showAssigner && (
               <Tooltip label={`Assigned by ${assignerName}`}>

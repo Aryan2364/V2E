@@ -12,6 +12,8 @@ import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 // import QuadrantBadge from '@/components/tasks/QuadrantBadge'
 import AssigneeSelector from '@/components/tasks/AssigneeSelector'
 import EditTaskModal from '@/components/tasks/EditTaskModal'
+import InlineTaskTags from '@/components/tasks/InlineTaskTags'
+import { useCanEditTask } from '@/lib/tasks/useCanEditTask'
 import TaskChecklistCard from '@/components/tasks/TaskChecklistCard'
 import ProofOfCompletionCard from '@/components/tasks/ProofOfCompletionCard'
 import StyledSelect from '@/components/ui/StyledSelect'
@@ -40,6 +42,7 @@ import {
   History,
   MoreVertical,
   XCircle,
+  Tag,
 } from 'lucide-react'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -803,6 +806,20 @@ export default function TaskDetailPage() {
   // ('employee' in task_delete_roles). Being the creator does NOT grant delete — so
   // don't show the button to creators who'd just get a 403.
   const canDelete = !!user?.is_admin || (config?.task_delete_roles ?? []).includes('employee')
+
+  // Tags are edited inline. Gated on the real rule the server applies to updateTask
+  // (creator, admin, or task-edit gate + tasks.task.manage edit within scope) — not the
+  // page's older `canEdit` below. undefined = not known yet: chips without controls.
+  const canEditTags = useCanEditTask(task, config)
+  const handleTagsUpdated = useCallback(
+    (updated: Task) => {
+      // Patch in place — only what a tag change touches — so nothing on the page flickers.
+      setTask((prev) => (prev ? { ...prev, tags: updated.tags, updated_at: updated.updated_at ?? prev.updated_at } : prev))
+      // The change is recorded in the activity trail; refresh it quietly.
+      tasksApi.getLogs(orgId, taskId).then(setActivityLogs).catch(() => {})
+    },
+    [orgId, taskId],
+  )
 
   if (!orgId) {
     return (
@@ -1654,6 +1671,22 @@ export default function TaskDetailPage() {
                     </span>
                   </div>
                 )}
+
+                <div className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 rounded-[6px] bg-[#F1F5F9] flex items-center justify-center shrink-0">
+                    <Tag size={13} className="text-[#475569]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wide mb-1">Tags</p>
+                    <InlineTaskTags
+                      orgId={orgId}
+                      taskId={task.id}
+                      tags={task.tags}
+                      canEdit={canEditTags}
+                      onUpdated={handleTagsUpdated}
+                    />
+                  </div>
+                </div>
 
                 {priority && (
                   <div className="flex items-center gap-2.5">

@@ -45,6 +45,13 @@ export default function TaskFilterChips({
     return m
   }, [tasks])
 
+  // Resolve a tag id → name from the tags on these tasks (the same source the popover offers).
+  const tagName = useMemo(() => {
+    const m = new Map<string, string>()
+    for (const t of tasks) for (const tag of t.tags ?? []) m.set(tag.id, tag.name)
+    return m
+  }, [tasks])
+
   const set = (patch: Partial<TaskFilters>) => onChange({ ...filters, ...patch })
 
   const chips: Chip[] = []
@@ -79,6 +86,13 @@ export default function TaskFilterChips({
     const names = filters.categoryIds.map((id) => categories.find((x) => x.id === id)?.name ?? '—')
     const label = names.length <= 2 ? `Category: ${names.join(', ')}` : `Category: ${names.length} selected`
     chips.push({ key: 'category', label, onRemove: () => set({ categoryIds: [] }) })
+  }
+
+  // Tags — one chip for the selected tags, worded like Category (same order as the Filters panel).
+  if (filters.tagIds.length > 0) {
+    const names = filters.tagIds.map((id) => tagName.get(id) ?? 'Unknown tag')
+    const label = names.length <= 2 ? `Tags: ${names.join(', ')}` : `Tags: ${names.length} selected`
+    chips.push({ key: 'tags', label, onRemove: () => set({ tagIds: [] }) })
   }
 
   // Assignee — one chip for the selected people ("Me" for the current user).

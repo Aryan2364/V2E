@@ -1,3 +1,4 @@
+import axios from 'axios'
 import apiClient from './client'
 import type {
   Task,
@@ -36,19 +37,91 @@ import type {
   RecurringListQuery,
   RecurringAccessPanel,
   RecurringAccessLevel,
+  TaskTag,
+  CreateTagInput,
+  UpdateTagInput,
+  DeleteTagResult,
+  MergeTagResult,
+  CreateTaskInput,
+  UpdateTaskInput,
+  BulkUpdatePayload,
+  BulkUpdateResult,
 } from '@/lib/types/tasks'
 
 const base = (orgId: string) => `/api/v1/org/${orgId}/tasks`
 
-/** Serialise a WorkQuery to a query string, dropping empty/undefined values. */
+/** A list filter as the server wants it: comma-separated, empties dropped. */
+function csv(v: string[] | string | undefined | null): string {
+  if (Array.isArray(v)) return v.filter(Boolean).join(',')
+  return v ?? ''
+}
+
+/**
+ * Serialise a WorkQuery to a query string, dropping empty/undefined values. Arrays
+ * (e.g. `tag_ids`) go out comma-separated — `tag_ids=a,b` — and an empty array is dropped.
+ */
 function workQs(query: WorkQuery): string {
   const params = new URLSearchParams()
   for (const [k, v] of Object.entries(query as Record<string, unknown>)) {
-    if (v !== undefined && v !== null && v !== '') params.set(k, String(v))
+    const value = Array.isArray(v) ? csv(v as string[]) : v
+    if (value !== undefined && value !== null && value !== '') params.set(k, String(value))
   }
   const qs = params.toString()
   return qs ? `?${qs}` : ''
 }
+
+// ─── Tag errors ───────────────────────────────────────────────────────────────
+
+/**
+ * Thrown by `tasksApi.createTag` when the name matches a DEACTIVATED tag (HTTP 409).
+ * `tagId` is that existing tag, so a caller allowed to manage tags can reactivate it
+ * (`updateTag(orgId, tagId, { is_active: true })`) instead of creating a duplicate.
+ * An exact match on an ACTIVE tag is not an error: the server returns that tag (200).
+ */
+export class TagConflictError extends Error {
+  readonly status = 409 as const
+  constructor(message: string, readonly tagId: string | null) {
+    super(message)
+    this.name = 'TagConflictError'
+  }
+}
+
+export function isTagConflictError(e: unknown): e is TagConflictError {
+  return e instanceof TagConflictError
+}
+
+/**
+ * The server's human-readable message for a failed tag call (400 / 403 / 409 / 429),
+ * or a plain fallback. Use it for the inline message under a tag field.
+ */
+export function tagErrorMessage(e: unknown, fallback = 'Something went wrong. Try again.'): string {
+  if (e instanceof TagConflictError) return e.message
+  if (axios.isAxiosError(e)) {
+    const data = e.response?.data as { message?: unknown } | undefined
+    if (typeof data?.message === 'string' && data.message) return data.message
+    if (e.response?.status === 429) return 'Too many new tags in a short time. Try again later.'
+  }
+  return fallback
+}
+
+/** Lift a 409 from POST masters/tags into a TagConflictError; anything else passes through untouched. */
+function asTagConflict(e: unknown): unknown {
+  if (axios.isAxiosError(e) && e.response?.status === 409) {
+    const data = (e.response.data ?? {}) as {
+      message?: unknown
+      tag_id?: unknown
+      data?: { tag_id?: unknown } | null
+    }
+    const message =
+      typeof data.message === 'string' && data.message ? data.message : 'That tag exists but is deactivated'
+    const rawId = data.tag_id ?? data.data?.tag_id
+    return new TagConflictError(message, typeof rawId === 'string' ? rawId : null)
+  }
+  return e
+}
+
+/** Deadline for tag list reads, so a stalled request reaches the error branch (kit §14.4). */
+const TAG_REQUEST_TIMEOUT_MS = 15_000
 
 // ─── Response unwrapper ───────────────────────────────────────────────────────
 
@@ -72,6 +145,59 @@ function normalizeRecurringList(raw: any): RecurringTemplateList {
 
 export const tasksApi = {
   // ── Masters ─────────────────────────────────────────────────────────────────
+
+  // ── Tags (TASK_TAGS_PLAN.md §10.2) ──────────────────────────────────────────
+
+  /** Org tag list, sorted by name. Active only unless `includeInactive`. Open to any org member. */
+  getTags: async (orgId: string, opts: { includeInactive?: boolean } = {}): Promise<TaskTag[]> => {
+    const qs = opts.includeInactive ? '?include_inactive=true' : ''
+    const res = await apiClient.get(`${base(orgId)}/masters/tags${qs}`, { timeout: TAG_REQUEST_TIMEOUT_MS })
+    return unwrap<TaskTag[]>(res) ?? []
+  },
+
+  /**
+   * Create a tag, or get back the existing ACTIVE tag with the same name (case and
+   * surrounding spaces ignored) — callers treat both the same.
+   * @throws TagConflictError when the name matches a deactivated tag (409). It carries
+   *   the server's message and the existing tag's id (`tagId`).
+   * @throws the AxiosError for 400 / 403 (no create permission) / 429 (rate limit);
+   *   read its message with `tagErrorMessage(e)`.
+   */
+  createTag: async (orgId: string, body: CreateTagInput): Promise<TaskTag> =>
+    (await tasksApi.createTagDetailed(orgId, body)).tag,
+
+  /**
+   * `createTag`, but also says whether the server made a new tag (201, `created: true`)
+   * or answered with the existing active tag of that name (200, `created: false`) — for
+   * the Work Settings Tags tab, which must not present an existing tag as new.
+   * Throws exactly as `createTag`.
+   */
+  createTagDetailed: async (orgId: string, body: CreateTagInput): Promise<{ tag: TaskTag; created: boolean }> => {
+    try {
+      const res = await apiClient.post(`${base(orgId)}/masters/tags`, body)
+      return { tag: unwrap<TaskTag>(res), created: res.status === 201 }
+    } catch (e) {
+      throw asTagConflict(e)
+    }
+  },
+
+  /** Rename / recolour / describe / (re)activate. 409 on a name collision — read it with tagErrorMessage. */
+  updateTag: async (orgId: string, id: string, body: UpdateTagInput): Promise<TaskTag> => {
+    const res = await apiClient.patch(`${base(orgId)}/masters/tags/${id}`, body)
+    return unwrap<TaskTag>(res)
+  },
+
+  /** Hard-deletes an unused tag; a tag in use is deactivated instead. The result says which. */
+  deleteTag: async (orgId: string, id: string): Promise<DeleteTagResult> => {
+    const res = await apiClient.delete(`${base(orgId)}/masters/tags/${id}`)
+    return unwrap<DeleteTagResult>(res)
+  },
+
+  /** Move every use of tag `id` onto `intoId`, then delete `id`. */
+  mergeTag: async (orgId: string, id: string, intoId: string): Promise<MergeTagResult> => {
+    const res = await apiClient.post(`${base(orgId)}/masters/tags/${id}/merge`, { into_tag_id: intoId })
+    return unwrap<MergeTagResult>(res)
+  },
 
   getConfig: async (orgId: string): Promise<TaskMasterConfig> => {
     const res = await apiClient.get(`${base(orgId)}/masters/config`)
@@ -237,9 +363,9 @@ export const tasksApi = {
     return unwrap<{ csv: string; count: number }>(res)
   },
 
-  bulkUpdate: async (orgId: string, taskIds: string[], action: BulkAction, payload: { status_id?: string; deadline?: string | null } = {}): Promise<{ updated: number }> => {
+  bulkUpdate: async (orgId: string, taskIds: string[], action: BulkAction, payload: BulkUpdatePayload = {}): Promise<BulkUpdateResult> => {
     const res = await apiClient.post(`${base(orgId)}/bulk`, { task_ids: taskIds, action, ...payload })
-    return unwrap<{ updated: number }>(res)
+    return unwrap<BulkUpdateResult>(res)
   },
 
   getMyTasks: async (orgId: string): Promise<Task[]> => {
@@ -262,26 +388,7 @@ export const tasksApi = {
     return unwrap<Task[]>(res)
   },
 
-  createTask: async (orgId: string, dto: {
-    title: string
-    description?: string
-    quadrant?: string
-    priority_id?: string
-    category_id?: string
-    status_id?: string
-    deadline?: string
-    completion_mode?: string
-    proof_required?: boolean
-    proof_allowed_extensions?: string[]
-    assignee_user_ids?: string[]
-    cc_user_ids?: string[]
-    checklist_items?: { title: string; order_index: number; group_title?: string }[]
-    checklist_template_id?: string
-    checklist_template_ids?: string[]
-    reminders?: ReminderSpec[]
-    escalation_user_ids?: string[]
-    goal_id?: string
-  }): Promise<Task> => {
+  createTask: async (orgId: string, dto: CreateTaskInput): Promise<Task> => {
     const res = await apiClient.post(`${base(orgId)}`, dto)
     return unwrap<Task>(res)
   },
@@ -291,7 +398,7 @@ export const tasksApi = {
     return unwrap<Task>(res)
   },
 
-  updateTask: async (orgId: string, taskId: string, dto: Partial<Task>): Promise<Task> => {
+  updateTask: async (orgId: string, taskId: string, dto: UpdateTaskInput): Promise<Task> => {
     const res = await apiClient.patch(`${base(orgId)}/${taskId}`, dto)
     return unwrap<Task>(res)
   },
@@ -531,6 +638,8 @@ export const tasksApi = {
     if (query.category_id) params.set('category_id', query.category_id)
     if (query.priority_id) params.set('priority_id', query.priority_id)
     if (query.department_id) params.set('department_id', query.department_id)
+    const tagIds = csv(query.tag_ids)
+    if (tagIds) params.set('tag_ids', tagIds)
     if (query.search) params.set('search', query.search)
     const qs = params.toString()
     const res = await apiClient.get(`${base(orgId)}/recurring${qs ? `?${qs}` : ''}`)
@@ -571,6 +680,8 @@ export const tasksApi = {
     checklist_items?: { title: string; order_index: number; group_title?: string }[]
     reminders?: ReminderSpec[]
     department_id?: string
+    /** Copied onto every spawned instance. */
+    tag_ids?: string[]
   }): Promise<RecurringTemplate> => {
     const res = await apiClient.post(`${base(orgId)}/recurring`, dto)
     return unwrap<RecurringTemplate>(res)
@@ -631,6 +742,8 @@ export const tasksApi = {
     checklist_items: { title: string; order_index: number; group_title?: string }[]
     reminders: ReminderSpec[]
     department_id: string
+    /** Full list; affects future spawns only. `[]` clears. */
+    tag_ids: string[]
   }>): Promise<RecurringTemplate> => {
     const res = await apiClient.patch(`${base(orgId)}/recurring/${id}`, dto)
     return unwrap<RecurringTemplate>(res)

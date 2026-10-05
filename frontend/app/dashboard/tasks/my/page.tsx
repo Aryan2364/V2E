@@ -8,13 +8,13 @@ import type { Task, TaskCategory, TaskPriority, TaskStatus } from '@/lib/types/t
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import TaskListRow from '@/components/tasks/TaskListRow'
 import TaskListToolbar from '@/components/tasks/TaskListToolbar'
-import { useTaskListView, GroupedTaskList } from '@/components/tasks/taskListView'
+import { useTaskListView, GroupedTaskList, ClearNarrowingButton } from '@/components/tasks/taskListView'
 import { type TaskSort, DEFAULT_TASK_SORT } from '@/components/tasks/TaskSortControl'
 import { useSessionState } from '@/lib/tasks/useSessionState'
 import KanbanView from '@/components/tasks/KanbanView'
 import CalendarView from '@/components/tasks/CalendarView'
 import CreateTaskModal from '@/components/tasks/CreateTaskModal'
-import { type TaskFilters, EMPTY_TASK_FILTERS, isTaskFiltered, applyTaskFilters } from '@/components/tasks/TaskFilterBar'
+import { type TaskFilters, EMPTY_TASK_FILTERS, isTaskFiltered, applyTaskFilters, normalizeTaskFilters } from '@/components/tasks/TaskFilterBar'
 import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
 import { CheckSquare, LayoutList, Columns, CalendarDays, AlertCircle, Plus } from 'lucide-react'
@@ -57,7 +57,9 @@ export default function MyTasksPage() {
     router.replace(`/dashboard/tasks/my?${params.toString()}`)
   }
 
-  const [filters, setFilters] = useSessionState<TaskFilters>('tasks:my:filters', { ...EMPTY_TASK_FILTERS })
+  // Stored filters may predate a section (e.g. tags) — normalise so old objects still load.
+  const [storedFilters, setFilters] = useSessionState<TaskFilters>('tasks:my:filters', { ...EMPTY_TASK_FILTERS })
+  const filters = useMemo(() => normalizeTaskFilters(storedFilters), [storedFilters])
   const [search, setSearch] = useSessionState('tasks:my:search', '')
   const [sort, setSort] = useSessionState<TaskSort>('tasks:my:sort', { ...DEFAULT_TASK_SORT })
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -302,11 +304,16 @@ export default function MyTasksPage() {
                 <CheckSquare size={24} className="text-[#94A3B8]" />
               </div>
               <p className="font-semibold text-[#0F172A]">
-                {search.trim() ? 'No tasks match your search' : isFiltered ? 'No tasks match your filters' : 'No tasks assigned to you'}
+                {search.trim() ? `No tasks match ‘${search.trim()}’` : isFiltered ? 'No tasks match your filters' : 'No tasks assigned to you'}
               </p>
               <p className="text-sm text-[#475569] mt-1">
                 {search.trim() ? 'Try a different search term.' : isFiltered ? 'Try adjusting your filters.' : 'Tasks assigned to you will appear here.'}
               </p>
+            <ClearNarrowingButton
+              hasSearch={!!search.trim()}
+              hasFilters={isFiltered}
+              onClear={() => { setSearch(''); setFilters({ ...EMPTY_TASK_FILTERS }) }}
+            />
             </div>
           ) : (
             <GroupedTaskList groups={groups} sortedTasks={sortedTasks} renderRow={renderRow} />

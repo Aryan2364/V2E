@@ -28,6 +28,7 @@ import { RecurringTasksService, type RecurringRelation } from '../recurring-task
 import { ClockService } from '../clock/clock.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { parseTagIdsQuery } from '../common/tag-ids-query';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { AddAssigneeDto } from './dto/add-assignee.dto';
 import { SubmitProofDto } from './dto/submit-proof.dto';
@@ -36,6 +37,17 @@ import { SubmitProofDto } from './dto/submit-proof.dto';
 function toDataScope(raw?: string): DataScope | undefined {
   if (raw && (Object.values(DataScope) as string[]).includes(raw)) return raw as DataScope;
   return undefined;
+}
+
+/**
+ * `?tag_ids=` as the CSV the service parses. Accepts `tag_ids=a,b` and the repeated
+ * `tag_ids=a&tag_ids=b` form (which Express hands over as an array). Empty → undefined.
+ * Parsed by `parseTagIdsQuery` (non-strings ignored); the service's `buildTaskWhere`
+ * trims, de-duplicates and caps again for any other caller.
+ */
+function toTagIdsCsv(raw?: string | string[]): string | undefined {
+  const ids = parseTagIdsQuery(raw);
+  return ids.length ? ids.join(',') : undefined;
 }
 
 @ApiTags('tasks')
@@ -71,6 +83,7 @@ export class TasksController {
     @Query('status_id') status_id?: string,
     @Query('priority_id') priority_id?: string,
     @Query('category_id') category_id?: string,
+    @Query('tag_ids') tag_ids?: string | string[],
     @Query('quadrant') quadrant?: string,
     @Query('type') type?: string,
     @Query('assignee_user_id') assignee_user_id?: string,
@@ -80,7 +93,7 @@ export class TasksController {
     @Query('to_date') to_date?: string,
   ) {
     return this.service.listTasks(orgId, principalFromUser(req.user), {
-      status_id, priority_id, category_id, quadrant, type,
+      status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), quadrant, type,
       assignee_user_id, goal_id, search, from_date, to_date,
     });
   }
@@ -103,12 +116,24 @@ export class TasksController {
     @Query('priority_id') priorityId?: string,
     @Query('department_id') departmentId?: string,
     @Query('search') search?: string,
+    // CSV of tag ids (any-of) — must match RecurringTasksController.list exactly.
+    @Query('tag_ids') tagIds?: string | string[],
   ) {
     const now = await this.clock.now(orgId);
+    const tag_ids = parseTagIdsQuery(tagIds);
     return this.recurringService.listTemplates(
       orgId,
       principalFromUser(req.user),
-      { scope: toDataScope(scope), relation, status, category_id: categoryId, priority_id: priorityId, department_id: departmentId, search },
+      {
+        scope: toDataScope(scope),
+        relation,
+        status,
+        category_id: categoryId,
+        priority_id: priorityId,
+        department_id: departmentId,
+        tag_ids: tag_ids.length ? tag_ids : undefined,
+        search,
+      },
       now,
     );
   }
@@ -184,6 +209,7 @@ export class TasksController {
     @Query('status_id') status_id?: string,
     @Query('priority_id') priority_id?: string,
     @Query('category_id') category_id?: string,
+    @Query('tag_ids') tag_ids?: string | string[],
     @Query('department_id') department_id?: string,
     @Query('department_ids') department_ids?: string,
     @Query('role_id') role_id?: string,
@@ -196,7 +222,7 @@ export class TasksController {
   ) {
     return this.service.getDashboard(orgId, principalFromUser(req.user), {
       scope: toDataScope(scope),
-      status_id, priority_id, category_id, department_id, department_ids, role_id, created_by_user_id,
+      status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, created_by_user_id,
       assignee_user_id, type, search, from_date, to_date,
     });
   }
@@ -210,6 +236,7 @@ export class TasksController {
     @Query('status_id') status_id?: string,
     @Query('priority_id') priority_id?: string,
     @Query('category_id') category_id?: string,
+    @Query('tag_ids') tag_ids?: string | string[],
     @Query('department_id') department_id?: string,
     @Query('department_ids') department_ids?: string,
     @Query('role_id') role_id?: string,
@@ -220,7 +247,7 @@ export class TasksController {
   ) {
     return this.service.getWorkFlow(orgId, principalFromUser(req.user), {
       scope: toDataScope(scope),
-      status_id, priority_id, category_id, department_id, department_ids, role_id, type, search, from_date, to_date,
+      status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, type, search, from_date, to_date,
     });
   }
 
@@ -237,6 +264,7 @@ export class TasksController {
     @Query('status_id') status_id?: string,
     @Query('priority_id') priority_id?: string,
     @Query('category_id') category_id?: string,
+    @Query('tag_ids') tag_ids?: string | string[],
     @Query('department_id') department_id?: string,
     @Query('department_ids') department_ids?: string,
     @Query('role_id') role_id?: string,
@@ -253,7 +281,7 @@ export class TasksController {
     return this.service.listTasksPaged(
       orgId,
       principalFromUser(req.user),
-      { status_id, priority_id, category_id, department_id, department_ids, role_id, timing, assigner_person_dept_id, assignee_person_dept_id, created_by_user_id, assignee_user_id, type, search, from_date, to_date },
+      { status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, timing, assigner_person_dept_id, assignee_person_dept_id, created_by_user_id, assignee_user_id, type, search, from_date, to_date },
       toDataScope(scope),
       page ? parseInt(page, 10) : 1,
       page_size ? parseInt(page_size, 10) : 25,
@@ -271,6 +299,7 @@ export class TasksController {
     @Query('status_id') status_id?: string,
     @Query('priority_id') priority_id?: string,
     @Query('category_id') category_id?: string,
+    @Query('tag_ids') tag_ids?: string | string[],
     @Query('department_id') department_id?: string,
     @Query('department_ids') department_ids?: string,
     @Query('role_id') role_id?: string,
@@ -280,7 +309,7 @@ export class TasksController {
     @Query('to_date') to_date?: string,
   ) {
     return this.service.getPeopleTree(orgId, principalFromUser(req.user), toDataScope(scope), {
-      status_id, priority_id, category_id, department_id, department_ids, role_id, type, search, from_date, to_date,
+      status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, type, search, from_date, to_date,
     });
   }
 
@@ -306,6 +335,7 @@ export class TasksController {
     @Query('status_id') status_id?: string,
     @Query('priority_id') priority_id?: string,
     @Query('category_id') category_id?: string,
+    @Query('tag_ids') tag_ids?: string | string[],
     @Query('department_id') department_id?: string,
     @Query('department_ids') department_ids?: string,
     @Query('role_id') role_id?: string,
@@ -322,22 +352,30 @@ export class TasksController {
     return this.service.exportCsv(
       orgId,
       principalFromUser(req.user),
-      { status_id, priority_id, category_id, department_id, department_ids, role_id, timing, assigner_person_dept_id, assignee_person_dept_id, created_by_user_id, assignee_user_id, type, search, from_date, to_date },
+      { status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, timing, assigner_person_dept_id, assignee_person_dept_id, created_by_user_id, assignee_user_id, type, search, from_date, to_date },
       toDataScope(scope),
       bucket,
     );
   }
 
   @Post('bulk')
-  @ApiOperation({ summary: 'Bulk status / deadline / complete on a set of tasks (scope-gated)' })
+  @ApiOperation({ summary: 'Bulk status / deadline / complete / add_tags / remove_tags on a set of tasks (scope-gated)' })
   bulkUpdate(
     @Param('orgId') orgId: string,
     @Request() req: any,
-    @Body() body: { task_ids: string[]; action: 'status' | 'deadline' | 'complete'; status_id?: string; deadline?: string | null },
+    @Body()
+    body: {
+      task_ids: string[];
+      action: 'status' | 'deadline' | 'complete' | 'add_tags' | 'remove_tags';
+      status_id?: string;
+      deadline?: string | null;
+      tag_ids?: string[];
+    },
   ) {
     return this.service.bulkUpdate(orgId, principalFromUser(req.user), body.task_ids ?? [], body.action, {
       status_id: body.status_id,
       deadline: body.deadline,
+      tag_ids: body.tag_ids,
     });
   }
 

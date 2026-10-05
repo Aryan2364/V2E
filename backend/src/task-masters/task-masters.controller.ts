@@ -6,9 +6,12 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PermissionAction } from '@prisma/client';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -26,6 +29,10 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { CreatePriorityDto } from './dto/create-priority.dto';
 import { CreateStatusDto } from './dto/create-status.dto';
 import { CreateChecklistTemplateDto } from './dto/create-checklist-template.dto';
+import { CreateTagDto } from './dto/create-tag.dto';
+import { UpdateTagDto } from './dto/update-tag.dto';
+import { MergeTagDto } from './dto/merge-tag.dto';
+import { TaskTagsService } from './task-tags.service';
 
 @ApiTags('task-masters')
 @ApiBearerAuth()
@@ -37,6 +44,7 @@ export class TaskMastersController {
     private readonly checklistAccess: ChecklistAccessService,
     private readonly checklistImport: ChecklistImportService,
     private readonly permissions: PermissionsService,
+    private readonly tags: TaskTagsService,
   ) {}
 
   // ─── Config ─────────────────────────────────────────────────────────────────
@@ -100,6 +108,63 @@ export class TaskMastersController {
   @ApiOperation({ summary: 'Deactivate a task category' })
   deleteCategory(@Param('orgId') orgId: string, @Param('id') id: string) {
     return this.service.deactivateCategory(orgId, id);
+  }
+
+  // ─── Tags ───────────────────────────────────────────────────────────────────
+  // Org configuration, not participant content: action gate + org filter is the
+  // complete gate (TASK_TAGS_PLAN.md §3). Every ':id' route 404s on a foreign id.
+  // NOTE: 'tags/:id/merge' is a deeper path than 'tags/:id', so the two never collide;
+  // any future static 'tags/<word>' route MUST be declared before 'tags/:id'.
+
+  @Get('tags')
+  @ApiOperation({ summary: 'List task tags (usage count + creator only for tag managers)' })
+  listTags(
+    @Param('orgId') orgId: string,
+    @Request() req: any,
+    @Query('include_inactive') includeInactive?: string,
+  ) {
+    return this.tags.listTags(orgId, principalFromUser(req.user), includeInactive === 'true');
+  }
+
+  @Post('tags')
+  @ApiOperation({ summary: 'Create a task tag — 201 new, 200 when an active tag with that name exists' })
+  async createTag(
+    @Param('orgId') orgId: string,
+    @Request() req: any,
+    @Body() dto: CreateTagDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // Gated in the service: tasks.tags.create write OR tasks.config.tags.manage write.
+    const { tag, created } = await this.tags.createTag(orgId, principalFromUser(req.user), dto);
+    res.status(created ? 201 : 200);
+    return tag;
+  }
+
+  @Patch('tags/:id')
+  @RequirePermission('tasks.config.tags.manage', PermissionAction.edit)
+  @ApiOperation({ summary: 'Rename, recolour, describe, deactivate or reactivate a task tag' })
+  updateTag(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: UpdateTagDto) {
+    return this.tags.updateTag(orgId, id, dto);
+  }
+
+  @Delete('tags/:id')
+  @RequirePermission('tasks.config.tags.manage', PermissionAction.delete)
+  @ApiOperation({ summary: 'Delete a never-used task tag, otherwise deactivate it' })
+  deleteTag(@Param('orgId') orgId: string, @Param('id') id: string) {
+    return this.tags.deleteTag(orgId, id);
+  }
+
+  @Post('tags/:id/merge')
+  @RequirePermission('tasks.config.tags.manage', PermissionAction.edit)
+  @ApiOperation({ summary: 'Merge a task tag into another (needs manage edit + delete)' })
+  mergeTag(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Request() req: any,
+    @Body() dto: MergeTagDto,
+  ) {
+    // `delete` is checked in the service — the decorator holds one action only.
+    return this.tags.mergeTag(orgId, principalFromUser(req.user), id, dto.into_tag_id);
   }
 
   // ─── Priorities ─────────────────────────────────────────────────────────────

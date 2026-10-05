@@ -23,6 +23,8 @@ export interface TaskFilters {
   categoryIds: string[]
   /** Selected assignee ids — empty = all (Anyone). */
   userIds: string[]
+  /** Selected tag ids — empty = all. A task matches when it carries ANY of them. */
+  tagIds: string[]
 }
 
 // Default view: Open tasks, everything else unfiltered.
@@ -33,6 +35,27 @@ export const EMPTY_TASK_FILTERS: TaskFilters = {
   priorityIds: [],
   categoryIds: [],
   userIds: [],
+  tagIds: [],
+}
+
+/**
+ * Fill in any section a stored filter object is missing. Filters persist in
+ * sessionStorage, so an object saved before a section existed (e.g. `tagIds`) must still
+ * load: unknown or malformed fields fall back to the defaults rather than crashing.
+ */
+export function normalizeTaskFilters(raw: Partial<TaskFilters> | null | undefined): TaskFilters {
+  const r = (raw ?? {}) as Partial<TaskFilters>
+  const arr = <T,>(v: unknown, fallback: T[]): T[] => (Array.isArray(v) ? (v as T[]) : fallback)
+  const mode = r.statusMode === 'all' || r.statusMode === 'custom' || r.statusMode === 'open' ? r.statusMode : EMPTY_TASK_FILTERS.statusMode
+  return {
+    statusMode: mode,
+    statusIds: arr(r.statusIds, []),
+    deadlines: arr(r.deadlines, []),
+    priorityIds: arr(r.priorityIds, []),
+    categoryIds: arr(r.categoryIds, []),
+    userIds: arr(r.userIds, []),
+    tagIds: arr(r.tagIds, []),
+  }
 }
 
 export function isTaskFiltered(f: TaskFilters): boolean {
@@ -41,7 +64,8 @@ export function isTaskFiltered(f: TaskFilters): boolean {
     f.deadlines.length > 0 ||
     f.priorityIds.length > 0 ||
     f.categoryIds.length > 0 ||
-    f.userIds.length > 0
+    f.userIds.length > 0 ||
+    f.tagIds.length > 0
   )
 }
 
@@ -52,7 +76,8 @@ export function countActiveFilters(f: TaskFilters): number {
     (f.deadlines.length > 0 ? 1 : 0) +
     (f.priorityIds.length > 0 ? 1 : 0) +
     (f.categoryIds.length > 0 ? 1 : 0) +
-    (f.userIds.length > 0 ? 1 : 0)
+    (f.userIds.length > 0 ? 1 : 0) +
+    (f.tagIds.length > 0 ? 1 : 0)
   )
 }
 
@@ -80,6 +105,7 @@ export function applyTaskFilters(tasks: Task[], f: TaskFilters, statuses: TaskSt
     matchesDeadline(t, f.deadlines) &&
     (f.priorityIds.length === 0 || (!!t.priority_id && f.priorityIds.includes(t.priority_id))) &&
     (f.categoryIds.length === 0 || (!!t.category_id && f.categoryIds.includes(t.category_id))) &&
-    (f.userIds.length === 0 || (t.assignees ?? []).some((a) => f.userIds.includes(a.user_id))),
+    (f.userIds.length === 0 || (t.assignees ?? []).some((a) => f.userIds.includes(a.user_id))) &&
+    (f.tagIds.length === 0 || (t.tags ?? []).some((tag) => f.tagIds.includes(tag.id))),
   )
 }

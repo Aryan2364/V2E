@@ -1,15 +1,15 @@
 'use client'
 
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
-import { tasksApi } from '@/lib/api/tasks'
+import { tasksApi, tagErrorMessage } from '@/lib/api/tasks'
 import { getDepartments } from '@/lib/api/departments'
 import { getEmployees } from '@/lib/api/employees'
 import type { Department, EmployeeProfile } from '@/lib/types'
 import type {
   Task, TaskCategory, TaskPriority, TaskStatus, TaskDashboard, PeopleTree as PeopleTreeData,
-  WorkScope, WorkBucket, WorkQuery, Timing, WorkFlow,
+  WorkScope, WorkBucket, WorkQuery, Timing, WorkFlow, TaskTagRef, BulkUpdateResult,
 } from '@/lib/types/tasks'
 import { TIMING_META } from '@/lib/types/tasks'
 import { buildDeptForest, subtreeIds, pathTo } from '@/lib/tasks/dept-tree'
@@ -29,17 +29,21 @@ import TeamView from '@/components/tasks/overview/TeamView'
 import StatusTimingChart from '@/components/tasks/overview/StatusTimingChart'
 import PrioritySpreadChart from '@/components/tasks/overview/PrioritySpreadChart'
 import CategorySpreadChart from '@/components/tasks/overview/CategorySpreadChart'
+import TagSpreadChart from '@/components/tasks/overview/TagSpreadChart'
+import TagSelect from '@/components/tasks/overview/TagSelect'
 import MonthlyTrendChart from '@/components/tasks/overview/MonthlyTrendChart'
 import KeyInsights from '@/components/tasks/overview/KeyInsights'
 import SegmentDrawer from '@/components/tasks/overview/SegmentDrawer'
 import TaskRow from '@/components/tasks/overview/TaskRow'
 import TaskDrawer from '@/components/tasks/overview/TaskDrawer'
-import BulkActionBar from '@/components/tasks/overview/BulkActionBar'
+import BulkActionBar, { type BulkTagAction } from '@/components/tasks/overview/BulkActionBar'
 import StyledSelect from '@/components/ui/StyledSelect'
 import EmployeePicker, { type EmployeePickerOption } from '@/components/ui/EmployeePicker'
 import DateRangePicker from '@/components/ui/DateRangePicker'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import { usePermissions } from '@/lib/auth/use-permissions'
+import { useToast } from '@/components/ui/Toast'
+import { useTaskTags } from '@/lib/tasks/useTaskTags'
 import { Plus, Search, SlidersHorizontal, X, BarChart3, Download, ListChecks, CheckSquare } from 'lucide-react'
 
 const PAGE_SIZE = 25
@@ -53,11 +57,164 @@ const SCOPE_BLURB: Record<WorkScope, string> = {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
+// ── Overview state in the URL ─────────────────────────────────────────────────
+// Kit §27.3: filters, search and sort survive opening a task and coming back. They live
+// in the query string (replaced in place: no history entry, no scroll jump), so Back
+// from a task page, a reload, a shared link and the Work Settings "Used on N tasks"
+// link (`/dashboard/tasks?tag_ids=<id>`) all land on the same filtered list.
+//
+//   view  scope  q  status_id  priority_id  category_id  tag_ids (a,b)  department_id
+//   type  timing  assignee_user_id  created_by_user_id  from  to (YYYY-MM-DD)  sort
+//
+// Defaults are left out. `view` defaults to Table when any filter is set (a filtered
+// link wants the matching tasks) and to Analytics otherwise; it is written only when it
+// differs from that default.
+
+const DEFAULT_SORT = 'created_desc'
+const SORT_VALUES = ['created_desc', 'created_asc', 'deadline_asc', 'deadline_desc', 'updated_desc'] as const
+const SCOPE_VALUES: readonly WorkScope[] = ['own', 'team', 'department', 'org']
+const TYPE_VALUES = ['one_time', 'recurring'] as const
+const TIMING_VALUES: readonly Timing[] = ['early', 'on_time', 'late', 'overdue', 'pending']
+const YMD = /^\d{4}-\d{2}-\d{2}$/
+const MAX_URL_TAGS = 50
+
+interface OverviewUrlState {
+  view: View
+  scope: WorkScope | undefined
+  search: string
+  statusId: string
+  priorityId: string
+  categoryId: string
+  tagIds: string[]
+  departmentId: string
+  typeFilter: string
+  timingFilter: string
+  assigneeUserId: string
+  createdByUserId: string
+  fromDate: string
+  toDate: string
+  sort: string
+}
+
+function hasUrlFilters(s: OverviewUrlState): boolean {
+  return !!(s.search || s.statusId || s.priorityId || s.categoryId || s.tagIds.length || s.departmentId ||
+    s.typeFilter || s.timingFilter || s.assigneeUserId || s.createdByUserId || s.fromDate || s.toDate)
+}
+
+function readOverviewUrl(sp: { get(key: string): string | null }): OverviewUrlState {
+  const str = (k: string) => (sp.get(k) ?? '').trim().slice(0, 200)
+  const oneOf = <T extends string>(k: string, allowed: readonly T[]): T | '' => {
+    const v = str(k)
+    return (allowed as readonly string[]).includes(v) ? (v as T) : ''
+  }
+  const date = (k: string) => { const v = str(k); return YMD.test(v) ? v : '' }
+  const tagIds = Array.from(new Set((sp.get('tag_ids') ?? '').split(',').map((x) => x.trim()).filter(Boolean))).slice(0, MAX_URL_TAGS)
+  const state: OverviewUrlState = {
+    view: 'analytics',
+    scope: oneOf('scope', SCOPE_VALUES) || undefined,
+    search: str('q'),
+    statusId: str('status_id'),
+    priorityId: str('priority_id'),
+    categoryId: str('category_id'),
+    tagIds,
+    departmentId: str('department_id'),
+    typeFilter: oneOf('type', TYPE_VALUES),
+    timingFilter: oneOf('timing', TIMING_VALUES),
+    assigneeUserId: str('assignee_user_id'),
+    createdByUserId: str('created_by_user_id'),
+    fromDate: date('from'),
+    toDate: date('to'),
+    sort: oneOf('sort', SORT_VALUES) || DEFAULT_SORT,
+  }
+  const v = sp.get('view')
+  state.view = v === 'table' || v === 'analytics' ? v : hasUrlFilters(state) ? 'table' : 'analytics'
+  return state
+}
+
+function writeOverviewUrl(s: OverviewUrlState): string {
+  const p = new URLSearchParams()
+  if (s.view !== (hasUrlFilters(s) ? 'table' : 'analytics')) p.set('view', s.view)
+  if (s.scope) p.set('scope', s.scope)
+  if (s.search) p.set('q', s.search)
+  if (s.statusId) p.set('status_id', s.statusId)
+  if (s.priorityId) p.set('priority_id', s.priorityId)
+  if (s.categoryId) p.set('category_id', s.categoryId)
+  if (s.tagIds.length) p.set('tag_ids', s.tagIds.join(','))
+  if (s.departmentId) p.set('department_id', s.departmentId)
+  if (s.typeFilter) p.set('type', s.typeFilter)
+  if (s.timingFilter) p.set('timing', s.timingFilter)
+  if (s.assigneeUserId) p.set('assignee_user_id', s.assigneeUserId)
+  if (s.createdByUserId) p.set('created_by_user_id', s.createdByUserId)
+  if (s.fromDate) p.set('from', s.fromDate)
+  if (s.toDate) p.set('to', s.toDate)
+  if (s.sort !== DEFAULT_SORT) p.set('sort', s.sort)
+  return p.toString()
+}
+
+// ── Bulk tag result → one toast line ─────────────────────────────────────────
+
+/** "You do not have edit access to this task." → "no edit access". */
+function shortSkipReason(reason: string): string {
+  const r = (reason ?? '').trim().replace(/\.$/, '')
+  if (!r) return 'not changed'
+  if (/edit access/i.test(r)) return 'no edit access'
+  const limit = r.match(/at most (\d+) tags/i)
+  if (limit) return `would pass ${limit[1]} tags`
+  return r.charAt(0).toLowerCase() + r.slice(1)
+}
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
+
+/**
+ * E.g. "Tagged 18 tasks · 3 already had them · 2 skipped (no edit access)".
+ *
+ * `knownUnchanged` lists the selected tasks whose loaded tags show the action was a
+ * no-op for them (add: had every tag; remove: had none). Only those are reported as
+ * unchanged — the server also silently drops tasks that were deleted or fell out of
+ * scope, and those must not be passed off as "already had them". Any remainder goes
+ * unattributed.
+ */
+function bulkTagMessage(
+  action: BulkTagAction,
+  selectedCount: number,
+  res: BulkUpdateResult,
+  knownUnchanged: string[],
+): { text: string; type: 'success' | 'warning' | 'info' } {
+  const skipped = res.skipped ?? []
+  const updated = res.updated ?? 0
+  const skippedIds = new Set(skipped.map((s) => s.id))
+  const unchanged = Math.min(
+    knownUnchanged.filter((id) => !skippedIds.has(id)).length,
+    Math.max(0, selectedCount - updated - skipped.length),
+  )
+  const parts: string[] = [
+    action === 'add_tags' ? `Tagged ${plural(updated, 'task', 'tasks')}` : `Removed tags from ${plural(updated, 'task', 'tasks')}`,
+  ]
+  if (unchanged > 0) parts.push(action === 'add_tags' ? `${unchanged} already had them` : `${unchanged} didn’t have them`)
+  if (skipped.length > 0) {
+    const counts = new Map<string, number>()
+    for (const sk of skipped) {
+      const r = shortSkipReason(sk.reason)
+      counts.set(r, (counts.get(r) ?? 0) + 1)
+    }
+    const why = counts.size === 1
+      ? Array.from(counts.keys())[0]
+      : Array.from(counts.entries()).map(([r, n]) => `${n} ${r}`).join(', ')
+    parts.push(`${skipped.length} skipped (${why})`)
+  }
+  return { text: parts.join(' · '), type: skipped.length > 0 ? 'warning' : updated > 0 ? 'success' : 'info' }
+}
+
 export default function TasksOverviewPage() {
   const { user } = useAuth()
   const router = useRouter()
   const orgId = user?.organizationId ?? ''
   const { can, loading: permsLoading } = usePermissions()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const { addToast } = useToast()
+  // Filters / search / sort / view / scope start from the URL (see OverviewUrlState).
+  const [initialUrl] = useState(() => readOverviewUrl(searchParams))
 
   // Masters + departments
   const [categories, setCategories] = useState<TaskCategory[]>([])
@@ -67,29 +224,36 @@ export default function TasksOverviewPage() {
   const [employees, setEmployees] = useState<EmployeePickerOption[]>([])
 
   // View (analytics canvas vs data table)
-  const [view, setView] = useState<View>('analytics')
+  const [view, setView] = useState<View>(initialUrl.view)
 
   // Scope / lens / drill
-  const [requestedScope, setRequestedScope] = useState<WorkScope | undefined>(undefined)
+  const [requestedScope, setRequestedScope] = useState<WorkScope | undefined>(initialUrl.scope)
   const [lens, setLens] = useState<Lens>('dept')
   const [deptDrill, setDeptDrill] = useState<string | null>(null)
   const [personDrill, setPersonDrill] = useState<string | null>(null)
   const [breakdownDim, setBreakdownDim] = useState<BreakdownDim>('dept')
 
   // Filters
-  const [searchInput, setSearchInput] = useState('')
-  const [search, setSearch] = useState('')
-  const [statusId, setStatusId] = useState('')
-  const [priorityId, setPriorityId] = useState('')
-  const [categoryId, setCategoryId] = useState('')
-  const [departmentId, setDepartmentId] = useState('')
-  const [typeFilter, setTypeFilter] = useState('')
-  const [timingFilter, setTimingFilter] = useState('')
-  const [assigneeUserId, setAssigneeUserId] = useState('')
-  const [createdByUserId, setCreatedByUserId] = useState('')
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-  const [sort, setSort] = useState('created_desc')
+  const [searchInput, setSearchInput] = useState(initialUrl.search)
+  const [search, setSearch] = useState(initialUrl.search)
+  const [statusId, setStatusId] = useState(initialUrl.statusId)
+  const [priorityId, setPriorityId] = useState(initialUrl.priorityId)
+  const [categoryId, setCategoryId] = useState(initialUrl.categoryId)
+  const [tagIds, setTagIds] = useState<string[]>(initialUrl.tagIds)
+  // The org's tags, for the filter pills' names (one shared, cached request). A filtered
+  // id the cached list lacks (a tag created since) triggers one refetch.
+  const { tags: orgTags, loading: tagsLoading, error: tagsError, resolving: tagsResolving } = useTaskTags(orgId, {
+    includeInactive: true,
+    ensureIds: tagIds,
+  })
+  const [departmentId, setDepartmentId] = useState(initialUrl.departmentId)
+  const [typeFilter, setTypeFilter] = useState(initialUrl.typeFilter)
+  const [timingFilter, setTimingFilter] = useState(initialUrl.timingFilter)
+  const [assigneeUserId, setAssigneeUserId] = useState(initialUrl.assigneeUserId)
+  const [createdByUserId, setCreatedByUserId] = useState(initialUrl.createdByUserId)
+  const [fromDate, setFromDate] = useState(initialUrl.fromDate)
+  const [toDate, setToDate] = useState(initialUrl.toDate)
+  const [sort, setSort] = useState(initialUrl.sort)
   const [showFilters, setShowFilters] = useState(false)
   const [showInsights, setShowInsights] = useState(true)
   const [bucket, setBucket] = useState<WorkBucket | null>(null)
@@ -120,6 +284,42 @@ export default function TasksOverviewPage() {
     const t = setTimeout(() => setSearch(searchInput.trim()), 350)
     return () => clearTimeout(t)
   }, [searchInput])
+
+  // ── URL ⇄ state ─────────────────────────────────────────────────────────────
+  // State → URL with router.replace (no history entry, no scroll). URL → state only when
+  // the query string changed from outside (a link to a filtered overview, the sidebar's
+  // plain link, Back/Forward). Our own replaces are recognised and skipped, so a quick
+  // run of changes never bounces back to an older one.
+  const desiredQs = writeOverviewUrl({
+    view, scope: requestedScope, search, statusId, priorityId, categoryId, tagIds, departmentId,
+    typeFilter, timingFilter, assigneeUserId, createdByUserId, fromDate, toDate, sort,
+  })
+  const urlQs = searchParams.toString()
+  const syncedQs = useRef(urlQs) // the query string the state currently mirrors
+  const pendingQs = useRef<string[]>([]) // our replaces not yet seen in useSearchParams
+
+  useEffect(() => {
+    const mine = pendingQs.current.indexOf(urlQs)
+    if (mine >= 0) { pendingQs.current.splice(0, mine + 1); return }
+    if (urlQs === syncedQs.current) return
+    pendingQs.current = []
+    syncedQs.current = urlQs
+    const s = readOverviewUrl(new URLSearchParams(urlQs))
+    setView(s.view); setRequestedScope(s.scope)
+    setSearchInput(s.search); setSearch(s.search)
+    setStatusId(s.statusId); setPriorityId(s.priorityId); setCategoryId(s.categoryId); setTagIds(s.tagIds)
+    setDepartmentId(s.departmentId); setTypeFilter(s.typeFilter); setTimingFilter(s.timingFilter)
+    setAssigneeUserId(s.assigneeUserId); setCreatedByUserId(s.createdByUserId)
+    setFromDate(s.fromDate); setToDate(s.toDate); setSort(s.sort)
+  }, [urlQs])
+
+  useEffect(() => {
+    if (desiredQs === syncedQs.current) return
+    syncedQs.current = desiredQs
+    pendingQs.current.push(desiredQs)
+    router.replace(desiredQs ? `${pathname}?${desiredQs}` : pathname, { scroll: false })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [desiredQs])
 
   useEffect(() => {
     if (!orgId) return
@@ -170,6 +370,7 @@ export default function TasksOverviewPage() {
     status_id: statusId || undefined,
     priority_id: priorityId || undefined,
     category_id: categoryId || undefined,
+    tag_ids: tagIds.length ? tagIds : undefined,
     department_id: departmentId || undefined,
     type: typeFilter || undefined,
     timing: (timingFilter || undefined) as WorkQuery['timing'],
@@ -177,7 +378,7 @@ export default function TasksOverviewPage() {
     created_by_user_id: createdByUserId || undefined,
     from_date: fromDate || undefined,
     to_date: toDate ? `${toDate}T23:59:59` : undefined,
-  }), [requestedScope, search, statusId, priorityId, categoryId, departmentId, typeFilter, timingFilter, assigneeUserId, createdByUserId, fromDate, toDate])
+  }), [requestedScope, search, statusId, priorityId, categoryId, tagIds, departmentId, typeFilter, timingFilter, assigneeUserId, createdByUserId, fromDate, toDate])
 
   // The dept subtree currently drilled (Departments lens).
   const deptNode = deptDrill ? forest.byId.get(deptDrill) ?? null : null
@@ -259,6 +460,23 @@ export default function TasksOverviewPage() {
     return () => { cancelled = true }
   }, [orgId, requestedScope])
 
+  // Refetch the rows already on screen (every loaded page) and swap them in place: no
+  // loading state, same keys, so a bulk change never blanks or jumps the list.
+  const reloadInPlace = useCallback(async () => {
+    if (!orgId) return
+    const pages = Math.max(1, page)
+    const q = { ...JSON.parse(listQueryKey), bucket: effectiveBucket ?? undefined, sort, page_size: PAGE_SIZE }
+    try {
+      const res = await Promise.all(Array.from({ length: pages }, (_, i) => tasksApi.listTasksPaged(orgId, { ...q, page: i + 1 })))
+      const seen = new Set<string>()
+      const items = res.flatMap((r) => r.items).filter((t) => (seen.has(t.id) ? false : (seen.add(t.id), true)))
+      const last = res[res.length - 1]
+      setRows(items); setTotal(last.total); setHasMore(last.has_more); setPage(pages)
+    } catch { /* keep the rows on screen; the next change refetches */ }
+    tasksApi.getDashboard(orgId, JSON.parse(boardKey)).then(setDashboard).catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId, listKey, page, boardKey])
+
   const refreshAll = useCallback(() => {
     fetchList(1, true)
     tasksApi.getDashboard(orgId, JSON.parse(boardKey)).then(setDashboard).catch(() => {})
@@ -294,6 +512,7 @@ export default function TasksOverviewPage() {
     openSegment(label, 'Status × timing', { status_id: id, timing })
   const onPrioritySegment = (id: string, label: string) => openSegment(`${label} priority`, 'Current view', { priority_id: id })
   const onCategorySegment = (id: string, label: string) => openSegment(label, 'Category', { category_id: id })
+  const onTagSegment = (id: string, label: string) => openSegment(label, 'Tag', { tag_ids: [id] })
   const onMonthSegment = (month: string, label: string) => {
     const d = new Date(month)
     const to = new Date(d.getFullYear(), d.getMonth() + 1, 0)
@@ -320,6 +539,10 @@ export default function TasksOverviewPage() {
     if (statusId) list.push({ label: `Status: ${statuses.find((s) => s.id === statusId)?.label ?? '—'}`, clear: () => setStatusId('') })
     if (priorityId) list.push({ label: `Priority: ${priorities.find((p) => p.id === priorityId)?.label ?? '—'}`, clear: () => setPriorityId('') })
     if (categoryId) list.push({ label: `Category: ${categories.find((c) => c.id === categoryId)?.name ?? '—'}`, clear: () => setCategoryId('') })
+    for (const id of tagIds) {
+      const name = orgTags.find((t) => t.id === id)?.name ?? (tagsLoading || tagsResolving ? '…' : 'Unknown tag')
+      list.push({ label: `Tag: ${name}`, clear: () => setTagIds((prev) => prev.filter((x) => x !== id)) })
+    }
     if (departmentId) list.push({ label: `Dept: ${departments.find((d) => d.id === departmentId)?.name ?? '—'}`, clear: () => setDepartmentId('') })
     if (typeFilter) list.push({ label: `Type: ${typeFilter === 'recurring' ? 'Recurring' : 'One-time'}`, clear: () => setTypeFilter('') })
     if (timingFilter) list.push({ label: `Timing: ${TIMING_META[timingFilter as Timing].label}`, clear: () => setTimingFilter('') })
@@ -327,11 +550,11 @@ export default function TasksOverviewPage() {
     if (createdByUserId) list.push({ label: `Assigned by: ${employees.find((e) => e.user_id === createdByUserId)?.name ?? '—'}`, clear: () => setCreatedByUserId('') })
     if (fromDate || toDate) list.push({ label: `Date: ${fromDate || '…'} → ${toDate || '…'}`, clear: () => { setFromDate(''); setToDate('') } })
     return list
-  }, [search, statusId, priorityId, categoryId, departmentId, typeFilter, timingFilter, assigneeUserId, createdByUserId, fromDate, toDate, statuses, priorities, categories, departments, employees])
+  }, [search, statusId, priorityId, categoryId, tagIds, departmentId, typeFilter, timingFilter, assigneeUserId, createdByUserId, fromDate, toDate, statuses, priorities, categories, orgTags, tagsLoading, tagsResolving, departments, employees])
 
   const filtersActive = pills.length > 0
   function clearFilters() {
-    setSearchInput(''); setSearch(''); setStatusId(''); setPriorityId(''); setCategoryId('')
+    setSearchInput(''); setSearch(''); setStatusId(''); setPriorityId(''); setCategoryId(''); setTagIds([])
     setDepartmentId(''); setTypeFilter(''); setTimingFilter(''); setAssigneeUserId(''); setCreatedByUserId(''); setFromDate(''); setToDate('')
   }
 
@@ -372,6 +595,42 @@ export default function TasksOverviewPage() {
   function toggleSelect(id: string) {
     setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
   }
+  // Tags of every selected task, including ones on pages since replaced: what the bulk
+  // bar's "Remove tags" offers. The cache only grows with tasks this page has shown.
+  const seenTaskTags = useRef(new Map<string, TaskTagRef[]>())
+  const selectedTags = useMemo(() => {
+    for (const r of rows) seenTaskTags.current.set(r.id, r.tags ?? [])
+    const union = new Map<string, TaskTagRef>()
+    selected.forEach((id) => (seenTaskTags.current.get(id) ?? []).forEach((t) => union.set(t.id, t)))
+    return Array.from(union.values()).sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+  }, [rows, selected])
+
+  async function runTagBulk(action: BulkTagAction, ids: string[]): Promise<boolean> {
+    const taskIds = Array.from(selected)
+    if (!taskIds.length || !ids.length) return false
+    setBulkBusy(true)
+    try {
+      // Tasks whose loaded tags already show this is a no-op for them (see bulkTagMessage).
+      const knownUnchanged = taskIds.filter((id) => {
+        const had = seenTaskTags.current.get(id)
+        if (!had) return false
+        const hadIds = new Set(had.map((t) => t.id))
+        return action === 'add_tags' ? ids.every((t) => hadIds.has(t)) : !ids.some((t) => hadIds.has(t))
+      })
+      const res = await tasksApi.bulkUpdate(orgId, taskIds, action, { tag_ids: ids })
+      const msg = bulkTagMessage(action, taskIds.length, res, knownUnchanged)
+      addToast(msg.text, msg.type)
+      setSelected(new Set())
+      void reloadInPlace()
+      return true
+    } catch (e) {
+      addToast(tagErrorMessage(e, action === 'add_tags' ? 'Couldn’t add those tags. Try again.' : 'Couldn’t remove those tags. Try again.'), 'error')
+      return false
+    } finally {
+      setBulkBusy(false)
+    }
+  }
+
   async function runBulk(action: 'status' | 'deadline' | 'complete', payload: { status_id?: string; deadline?: string | null } = {}) {
     const ids = Array.from(selected)
     if (!ids.length) return
@@ -412,6 +671,10 @@ export default function TasksOverviewPage() {
   }
 
   const drilled = (lens === 'dept' && deptNode) || (lens === 'people' && personDrill)
+  const hasTagBreakdown = !!dashboard?.by_tag?.some((t) => t.id && t.total > 0)
+  // The Tags filter shows once the org has tags (or a link already filters by one). The
+  // field shows its own skeleton while they load, so nothing jumps.
+  const showTagFilter = tagsLoading || !!tagsError || orgTags.length > 0 || tagIds.length > 0
 
   return (
     <div className="space-y-5 pb-24">
@@ -512,10 +775,12 @@ export default function TasksOverviewPage() {
               ) : null}
 
               {/* Secondary charts */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+              {/* With a tag breakdown there are four charts: two by two, not three and a stray. */}
+              <div className={`grid grid-cols-1 gap-3 ${hasTagBreakdown ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
                 <StatusTimingChart items={dashboard.by_status} onSegment={onStatusSegment} />
                 <PrioritySpreadChart items={dashboard.by_priority} onSegment={onPrioritySegment} />
                 <CategorySpreadChart items={dashboard.by_category} onSegment={onCategorySegment} />
+                <TagSpreadChart items={dashboard.by_tag} onSegment={onTagSegment} />
               </div>
 
               {/* Cross-department flow matrix */}
@@ -582,6 +847,9 @@ export default function TasksOverviewPage() {
               placeholder="All categories"
               options={[{ value: '', label: 'All categories' }, ...categories.map((c) => ({ value: c.id, label: c.name, color: c.color }))]}
             />
+          )}
+          {showTagFilter && (
+            <TagSelect orgId={orgId} value={tagIds} onChange={setTagIds} placeholder="All tags" />
           )}
           <StyledSelect
             value={departmentId}
@@ -703,6 +971,7 @@ export default function TasksOverviewPage() {
       </div>
 
       <TaskTable
+        orgId={orgId}
         rows={rows}
         loading={loadingList}
         total={total}
@@ -722,6 +991,8 @@ export default function TasksOverviewPage() {
         onAssignerFilter={setCreatedByUserId}
         filters={tableFilters}
         onFilter={onTableFilter}
+        tagIds={tagIds}
+        onTagFilter={setTagIds}
         sortDir={deadlineSortDir}
         onToggleDeadlineSort={toggleDeadlineSort}
       />
@@ -729,12 +1000,15 @@ export default function TasksOverviewPage() {
       )}
 
       <BulkActionBar
+        orgId={orgId}
         count={selected.size}
         statuses={statuses}
+        selectedTags={selectedTags}
         busy={bulkBusy}
         onStatus={(id) => runBulk('status', { status_id: id })}
         onComplete={() => runBulk('complete')}
         onDeadline={(d) => runBulk('deadline', { deadline: `${d}T23:59:59` })}
+        onTags={runTagBulk}
         onClear={() => setSelected(new Set())}
       />
 

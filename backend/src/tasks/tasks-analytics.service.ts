@@ -145,13 +145,14 @@ export class TasksAnalyticsService {
   }
 
   public async dimensionBreakdowns(orgId: string, where: any) {
-    const [statusGroups, priorityGroups, categoryGroups, deptGroups, typeGroups, assignerGroups] = await Promise.all([
+    const [statusGroups, priorityGroups, categoryGroups, deptGroups, typeGroups, assignerGroups, by_tag] = await Promise.all([
       this.prisma.task.groupBy({ by: ['status_id', 'completion_timing', 'is_overdue'], where, _count: { _all: true } }),
       this.prisma.task.groupBy({ by: ['priority_id', 'completion_timing', 'is_overdue'], where, _count: { _all: true } }),
       this.prisma.task.groupBy({ by: ['category_id', 'completion_timing', 'is_overdue'], where, _count: { _all: true } }),
       this.prisma.task.groupBy({ by: ['department_id', 'completion_timing', 'is_overdue'], where, _count: { _all: true } }),
       this.prisma.task.groupBy({ by: ['type', 'completion_timing', 'is_overdue'], where, _count: { _all: true } }),
       this.prisma.task.groupBy({ by: ['created_by_user_id', 'completion_timing', 'is_overdue'], where, _count: { _all: true } }),
+      this.tagBreakdown(orgId, where),
     ]);
     const statusFold = this.foldTimingGroups(statusGroups, 'status_id');
     const priorityFold = this.foldTimingGroups(priorityGroups, 'priority_id');
@@ -195,7 +196,55 @@ export class TasksAnalyticsService {
         .map(([id, v]) => ({ id, label: assignerNames.get(id)?.name ?? 'Unknown', total: v.total, timing: v.timing }))
         .sort((a, b) => b.total - a.total)
         .slice(0, 12),
+      by_tag,
     };
+  }
+
+  /**
+   * `by_tag` (TASK_TAGS_PLAN.md §7 Phase 5): the same item shape as `by_category`, but
+   * a task counts once in EVERY tag it carries, so totals can exceed the task count.
+   * Tasks with no tags are not listed (there is no "Untagged" bucket). Deactivated
+   * tags still label their historical tasks.
+   *
+   * `task_tag_links` carries no timing columns, so — exactly like `peopleDimensions`
+   * does for assignees — it runs one link groupBy per timing bucket with the bucket's
+   * condition folded into the relation filter: 7 groupBys + 1 label lookup, however
+   * many tags exist. `where` is the dashboard's own task where-clause (scope, org,
+   * filters), so the tag counts can never see a task the rest of the dashboard can't.
+   */
+  public async tagBreakdown(orgId: string, where: any) {
+    const timingGroups = await Promise.all(
+      TasksAnalyticsService.TIMINGS.map((t) =>
+        this.prisma.taskTagLink.groupBy({
+          by: ['tag_id'],
+          where: { organization_id: orgId, task: { ...where, ...this.timingWhere(t) } },
+          _count: { _all: true },
+        }),
+      ),
+    );
+    const byTag = new Map<string, { total: number; timing: ReturnType<TasksAnalyticsService['emptyTiming']> }>();
+    TasksAnalyticsService.TIMINGS.forEach((t, i) => {
+      for (const g of timingGroups[i]) {
+        let e = byTag.get(g.tag_id);
+        if (!e) { e = { total: 0, timing: this.emptyTiming() }; byTag.set(g.tag_id, e); }
+        e.total += g._count._all;
+        e.timing[t] += g._count._all;
+      }
+    });
+    if (byTag.size === 0) return [];
+
+    // Labels for every counted tag, active or not (historical data stays readable).
+    const tags = await this.prisma.taskTag.findMany({
+      where: { organization_id: orgId, id: { in: [...byTag.keys()] } },
+      select: { id: true, name: true, color: true },
+    });
+    const tagMap = new Map(tags.map((t) => [t.id, t]));
+    return [...byTag.entries()]
+      .map(([id, v]) => {
+        const tag = tagMap.get(id);
+        return { id, label: tag?.name ?? 'Unknown tag', color: tag?.color ?? 'slate', total: v.total, timing: v.timing };
+      })
+      .sort((a, b) => b.total - a.total || a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
   }
 
   public async enrichUserNames(ids: (string | null | undefined)[]) {

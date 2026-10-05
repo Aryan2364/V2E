@@ -5,6 +5,7 @@ import { Calendar, ArrowRight, Repeat, Check } from 'lucide-react'
 import { getNow } from '@/lib/clock'
 import type { Task } from '@/lib/types/tasks'
 import AssigneeAvatars, { type AvatarPerson } from '@/components/tasks/AssigneeAvatars'
+import TagList from '@/components/tasks/TagList'
 
 // ─── Deadline helpers (mirror TaskCard) ─────────────────────────────────────────
 
@@ -41,7 +42,7 @@ function Chip({ label, color }: { label: string; color: string }) {
 
 /**
  * Dense, dashboard-grade task row: priority rail, title, assigner → assignees,
- * category + status chips, and a colour-coded deadline. Built for high information
+ * category + priority + tag chips, status, and a colour-coded deadline. Built for high information
  * density across the result surface and drill-down panels.
  */
 export default function TaskRow({
@@ -107,6 +108,8 @@ export default function TaskRow({
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           {category && <Chip label={category.name} color={category.color} />}
           {priority && <Chip label={priority.label} color={priority.color} />}
+          {/* Tags: two chips, then "+N" (kit §11.6 card budget). Clicks never open the row. */}
+          <TagList tags={task.tags} max={2} />
           {assigner && (
             <span className="inline-flex items-center gap-1 text-[11px] text-[#475569]">
               <span className="text-[#94A3B8]">by</span>

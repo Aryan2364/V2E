@@ -36,10 +36,11 @@ import type {
 } from '@/lib/types/tickets'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import StyledSelect from '@/components/ui/StyledSelect'
-import { Plus, Pencil, Trash2, Save, X, Settings2, Tag, BarChart, Activity, List, Users, Ticket as TicketIcon, CheckSquare, Bell, Loader2, GripVertical, ChevronUp, ChevronDown, ArrowLeft, Upload } from 'lucide-react'
+import { Plus, Pencil, Trash2, Save, X, Settings2, Tag, Tags, BarChart, Activity, List, Users, Ticket as TicketIcon, CheckSquare, Bell, Loader2, GripVertical, ChevronUp, ChevronDown, ArrowLeft, Upload } from 'lucide-react'
 import { notificationsApi, type NotificationMaster } from '@/lib/api/notifications'
 import { AssigneeVisibilityTab } from '@/components/tasks/AssigneeVisibilityTab'
 import ImportChecklistsModal from '@/components/tasks/ImportChecklistsModal'
+import TagsTab from '@/components/tasks/masters/TagsTab'
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -81,7 +82,7 @@ function Spinner() {
 
 // ─── Task Masters Tabs ────────────────────────────────────────────────────────
 
-type TaskMasterTab = 'config' | 'categories' | 'priorities' | 'statuses' | 'checklists' | 'assignee_visibility'
+type TaskMasterTab = 'config' | 'categories' | 'tags' | 'priorities' | 'statuses' | 'checklists' | 'assignee_visibility'
 
 function ConfigTab({ orgId }: { orgId: string }) {
   const [config, setConfig] = useState<TaskMasterConfig | null>(null)
@@ -2006,6 +2007,7 @@ const taskTabs: { key: TaskMasterTab; label: string; icon: React.ReactNode }[] =
   { key: 'assignee_visibility', label: 'Assignee Visibility', icon: <Users size={15} /> },
   { key: 'checklists', label: 'Checklist Templates', icon: <List size={15} /> },
   { key: 'categories', label: 'Categories', icon: <Tag size={15} /> },
+  { key: 'tags', label: 'Tags', icon: <Tags size={15} /> },
   { key: 'priorities', label: 'Priorities', icon: <BarChart size={15} /> },
   { key: 'statuses', label: 'Statuses', icon: <Activity size={15} /> },
   { key: 'config', label: 'Config', icon: <Settings2 size={15} /> },
@@ -2017,6 +2019,7 @@ const taskTabs: { key: TaskMasterTab; label: string; icon: React.ReactNode }[] =
 const TASK_TAB_LEAF: Record<TaskMasterTab, string> = {
   config: 'tasks.config.settings.manage',
   categories: 'tasks.config.categories.manage',
+  tags: 'tasks.config.tags.manage',
   priorities: 'tasks.config.priorities.manage',
   statuses: 'tasks.config.statuses.manage',
   checklists: 'tasks.config.checklist_templates.manage',
@@ -2033,7 +2036,7 @@ const ticketTabs: { key: TicketMasterTab; label: string; icon: React.ReactNode }
   { key: 'templates', label: 'Templates', icon: <CheckSquare size={15} /> },
 ]
 
-const TASK_TAB_KEYS: TaskMasterTab[] = ['config', 'categories', 'priorities', 'statuses', 'checklists', 'assignee_visibility']
+const TASK_TAB_KEYS: TaskMasterTab[] = ['config', 'categories', 'tags', 'priorities', 'statuses', 'checklists', 'assignee_visibility']
 const TICKET_TAB_KEYS: TicketMasterTab[] = ['config', 'types', 'categories', 'priorities', 'statuses', 'resolver-groups', 'templates']
 
 function readParam(name: string): string | null {
@@ -2185,6 +2188,7 @@ export default function MastersPage() {
             <>
               {effectiveTaskTab === 'config' && <ConfigTab orgId={orgId} />}
               {effectiveTaskTab === 'categories' && <CategoriesTab orgId={orgId} />}
+              {effectiveTaskTab === 'tags' && <TagsTab orgId={orgId} />}
               {effectiveTaskTab === 'priorities' && <PrioritiesTab orgId={orgId} />}
               {effectiveTaskTab === 'statuses' && <StatusesTab orgId={orgId} />}
               {effectiveTaskTab === 'checklists' && <ChecklistTemplatesTab orgId={orgId} />}

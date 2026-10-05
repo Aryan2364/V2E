@@ -13,6 +13,8 @@ import Tooltip from '@/components/ui/Tooltip'
 import { useAuth } from '@/lib/auth/context'
 import FileDropzone from '@/components/ui/FileDropzone'
 import { AttachmentList, AttachmentChips, PendingFileList } from '@/components/ui/AttachmentList'
+import InlineTaskTags from '@/components/tasks/InlineTaskTags'
+import { useCanEditTask } from '@/lib/tasks/useCanEditTask'
 
 const TERMINAL = new Set(['completed', 'partially_completed', 'incomplete'])
 
@@ -147,6 +149,17 @@ export default function TaskDrawer({
     }
   }
 
+  // Same gate as the detail page: the server's updateTask rule, not a hard-coded role.
+  const canEditTags = useCanEditTask(task)
+  const handleTagsUpdated = useCallback(
+    (updated: Task) => {
+      // Patch in place (no reload, no flicker), then let the canvas pick up the change.
+      setTask((prev) => (prev ? { ...prev, tags: updated.tags } : prev))
+      onChanged()
+    },
+    [onChanged],
+  )
+
   const status = task?.status ?? statuses.find((s) => s.id === task?.status_id)
   const isTerminal = status ? TERMINAL.has(status.type) : false
   const isFutureTask = task ? new Date(task.created_at) > getNow() : false
@@ -215,6 +228,16 @@ export default function TaskDrawer({
                 <div className="col-span-2">
                   <p className="text-[#94A3B8] mb-1.5">Assignees</p>
                   {people.length > 0 ? <AssigneeAvatars people={people} max={8} /> : <p className="text-[#475569]">—</p>}
+                </div>
+                <div className="col-span-2">
+                  <p className="text-[#94A3B8] mb-1.5">Tags</p>
+                  <InlineTaskTags
+                    orgId={orgId}
+                    taskId={task.id}
+                    tags={task.tags}
+                    canEdit={canEditTags}
+                    onUpdated={handleTagsUpdated}
+                  />
                 </div>
               </div>
 

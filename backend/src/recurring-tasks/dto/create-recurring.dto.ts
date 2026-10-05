@@ -14,6 +14,7 @@ import { IsNumber } from 'class-validator';
 import { CompletionMode, TaskQuadrant } from '@prisma/client';
 import { CreateScheduleEntryDto } from './create-schedule-entry.dto';
 import { ReminderSpecDto } from '../../common/reminders/reminder-spec.dto';
+import { MAX_TAGS_PER_TASK } from '../../task-masters/task-tag.constants';
 
 export class RecurringChecklistItemDto {
   @IsString()
@@ -106,4 +107,12 @@ export class CreateRecurringDto {
   @IsOptional()
   @IsString()
   department_id?: string;
+
+  // Task tags copied onto every spawned instance (max MAX_TAGS_PER_TASK). Validated
+  // by assertTagsUsable in the service: own-org ids only, newly added ones active.
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(MAX_TAGS_PER_TASK)
+  tag_ids?: string[];
 }

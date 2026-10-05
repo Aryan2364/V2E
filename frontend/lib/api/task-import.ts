@@ -9,6 +9,8 @@ export interface BulkTaskImportRow {
   description?: string
   priority?: string
   category?: string
+  /** Tag names, pipe- or newline-separated; each must match an existing active tag. */
+  tags?: string
   deadline_date?: string
   deadline_time?: string
   deadline_iso?: string
@@ -39,6 +41,8 @@ export interface BulkTaskImportRow {
 export interface TaskImportOptions {
   priorities: { id: string; label: string }[]
   categories: { id: string; name: string }[]
+  /** Active tags — the valid values for the `tags` column (the Excel "Tags" sheet). */
+  tags: { id: string; name: string }[]
   goals: { id: string; title: string }[]
   checklist_templates: { id: string; name: string }[]
   assignees: {
@@ -70,6 +74,10 @@ export interface TaskImportRowIssue {
 export interface TaskImportResolved {
   priority?: string
   category?: string
+  /** Resolved ids of the row's `tags` cell. An unknown name is a row error instead. */
+  tag_ids?: string[]
+  /** Matched tag names, for the preview. */
+  tags?: string[]
   deadline?: string
   assignees?: string[]
   cc?: string[]

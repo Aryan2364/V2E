@@ -1,4 +1,5 @@
 import {
+  ArrayMaxSize,
   IsArray,
   IsBoolean,
   IsDateString,
@@ -138,4 +139,14 @@ export class UpdateTaskDto {
   @IsArray()
   @IsString({ each: true })
   checklist_template_ids?: string[];
+
+  // The task's full, authoritative tag list (same rule as `assignee_user_ids`): the
+  // backend reconciles the task's tags to match it. Omit the field to leave the tags
+  // unchanged; an empty array clears them all. Tags already on the task may be
+  // inactive (a since-deactivated tag can be kept); a newly added one must be active.
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(10)
+  tag_ids?: string[];
 }

@@ -131,4 +131,12 @@ export class CreateTaskDto {
   @IsOptional()
   @IsString()
   goal_id?: string;
+
+  // Org-wide labels (TASK_TAGS_PLAN.md §4.3). Every id must be an ACTIVE tag of this
+  // org — re-validated in the service by `assertTagsUsable`.
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(10)
+  tag_ids?: string[];
 }
