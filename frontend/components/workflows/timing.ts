@@ -9,6 +9,14 @@
 //   Yearly (every 1)                  → date (day + month), or N days after
 //   Every 2+ weeks / months / years   → cycle position, or N days after
 //   Schedules that repeat differently → N days after only
+//
+// Explicit cycles: the calendar picker stores which week / month / year of the run a day
+// is in — `{ kind: 'month_day', cycle: 2, day: 1 }` = "1st of Month 2" (cycle 1 = the
+// run's own Mon–Sun week / month / year) — for every-1 and every-2+ workflows alike, so
+// the planned dates are exactly what was picked (order still wins: a step never starts
+// before the steps it waits for are done). Rules saved without a cycle (and the legacy
+// cycle_* kinds) keep their old meaning — "the next such day" — and are only turned
+// into explicit ones when someone picks a day. Mirrors the server (engine/timing.ts).
 
 import type { RecurringScheduleType } from '@/lib/types/tasks'
 import type { CalendarRuleKind, DueRule, DueRuleKind, RuleMonthDay, StartRule, StartRuleKind } from '@/lib/types/workflows'
@@ -36,6 +44,8 @@ export type Frequency =
 export interface ScheduleShape {
   schedule_type: RecurringScheduleType
   every: number
+  /** 'YYYY-MM-DD' — every-N schedules keep in step with it (the sample run). */
+  start_date?: string | null
   days?: number[]
   month_days?: number[]
   yearly_dates?: { month: number; day: number }[]
@@ -62,36 +72,80 @@ export function frequencyOf(schedules: ScheduleShape[]): Frequency {
 export const sameFrequency = (a: Frequency, b: Frequency) =>
   a.type === b.type && ('every' in a ? a.every : 0) === ('every' in b ? b.every : 0)
 
-/** The one calendar kind the frequency allows (null = relative kinds only). */
+/**
+ * The calendar kind the frequency offers (null = relative kinds only). Every 2+ uses the
+ * same day kinds, with the cycle (Week / Month / Year N) always set.
+ */
 export function calendarKindFor(f: Frequency): CalendarRuleKind | null {
   switch (f.type) {
     case 'daily':
       return 'time_of_day'
     case 'weekly':
-      return f.every >= 2 ? 'cycle_weekday' : 'weekday'
+      return 'weekday'
     case 'monthly':
-      return f.every >= 2 ? 'cycle_month_day' : 'month_day'
+      return 'month_day'
     case 'yearly':
-      return f.every >= 2 ? 'cycle_year_date' : 'year_date'
+      return 'year_date'
     default:
       return null
   }
 }
 
-const RELATIVE_START: StartRuleKind[] = ['immediate', 'days_after_previous', 'days_after_run_start']
-
-export function allowedStartKinds(f: Frequency): StartRuleKind[] {
-  const cal = calendarKindFor(f)
-  return cal ? [...RELATIVE_START, cal] : RELATIVE_START
+/** The legacy cycle_* kind an every-2+ workflow may still have saved (null otherwise). */
+export function legacyCycleKindFor(f: Frequency): CalendarRuleKind | null {
+  if ((f.type === 'weekly' || f.type === 'monthly' || f.type === 'yearly') && f.every >= 2) {
+    return f.type === 'weekly' ? 'cycle_weekday' : f.type === 'monthly' ? 'cycle_month_day' : 'cycle_year_date'
+  }
+  return null
 }
 
+const RELATIVE_START: StartRuleKind[] = ['immediate', 'days_after_previous', 'days_after_run_start']
+
+const calendarKindsFor = (f: Frequency): CalendarRuleKind[] =>
+  [calendarKindFor(f), legacyCycleKindFor(f)].filter((k): k is CalendarRuleKind => !!k)
+
+/** Every start kind Save accepts for this frequency (legacy cycle_* included). */
+export function allowedStartKinds(f: Frequency): StartRuleKind[] {
+  return [...RELATIVE_START, ...calendarKindsFor(f)]
+}
+
+/** Every due kind Save accepts for this frequency (legacy cycle_* included). */
 export function allowedDueKinds(f: Frequency): DueRuleKind[] {
+  return ['days_after_start', ...calendarKindsFor(f)]
+}
+
+/** The due kinds the builder offers (a legacy cycle_* rule shows as its day kind). */
+export function dueKindsFor(f: Frequency): DueRuleKind[] {
   const cal = calendarKindFor(f)
   return cal ? ['days_after_start', cal] : ['days_after_start']
 }
 
 export const isCalendarKind = (k: StartRuleKind | DueRuleKind): k is CalendarRuleKind =>
   k === 'time_of_day' || k === 'weekday' || k === 'month_day' || k === 'year_date' || k.startsWith('cycle_')
+
+/** The kinds the calendar picks a day for (they may carry an explicit cycle). */
+export const isDayKind = (k: StartRuleKind | DueRuleKind): k is 'weekday' | 'month_day' | 'year_date' =>
+  k === 'weekday' || k === 'month_day' || k === 'year_date'
+
+/** A day rule with an explicit cycle: planned exactly on that day. */
+export const isExplicitRule = (r: StartRule | DueRule | null | undefined): boolean =>
+  !!r && isDayKind(r.kind) && typeof r.cycle === 'number'
+
+/** The day kind a legacy cycle_* kind is shown as ('cycle_month_day' → 'month_day'). */
+export function dayKindOf(k: StartRuleKind | DueRuleKind): StartRuleKind | DueRuleKind {
+  if (k === 'cycle_weekday') return 'weekday'
+  if (k === 'cycle_month_day') return 'month_day'
+  if (k === 'cycle_year_date') return 'year_date'
+  return k
+}
+
+/** How far ahead the calendar goes: 8 weeks, 12 months, 3 years (or the interval, when longer). */
+export const EXPLICIT_CYCLE_LIMIT = { weekly: 8, monthly: 12, yearly: 3 } as const
+
+export function maxCycleOf(f: Frequency): number {
+  if (f.type === 'weekly' || f.type === 'monthly' || f.type === 'yearly') return Math.max(EXPLICIT_CYCLE_LIMIT[f.type], f.every)
+  return 1
+}
 
 function cycleUnit(f: Frequency): 'Week' | 'Month' | 'Year' | null {
   if (f.type === 'weekly') return 'Week'
@@ -170,7 +224,10 @@ export const TRIGGER_KIND_LABEL = 'Days after workflow is triggered'
  * "When previous step is done", "Days after previous step" and the calendar kind.
  */
 export function startKindsFor(f: Frequency, hasPredecessors: boolean): StartRuleKind[] {
-  return allowedStartKinds(f).filter((k) => (hasPredecessors ? k !== 'days_after_run_start' : k !== 'days_after_previous'))
+  const cal = calendarKindFor(f)
+  return [...RELATIVE_START, ...(cal ? [cal] : [])].filter((k) =>
+    hasPredecessors ? k !== 'days_after_run_start' : k !== 'days_after_previous',
+  )
 }
 
 /** Why a later step can't start "Days after workflow is triggered" — Save's words. */
@@ -180,13 +237,16 @@ export function dueKindLabel(kind: DueRuleKind, f: Frequency): string {
   return kind === 'days_after_start' ? 'Days after step starts' : calendarKindLabel(kind, f)
 }
 
-/** "Time of day", "Day of the week", "Day of the month", "Date", "Day in 2-week cycle". */
+/**
+ * "Time of day", "Day of the week", "Day of the month", "Date" — or, when the workflow
+ * repeats every 2+ weeks / months / years, "Day in 2-week cycle" (the server's words).
+ */
 function calendarKindLabel(kind: StartRuleKind | DueRuleKind, f: Frequency): string {
   const unit = cycleUnit(f)
   const every = 'every' in f ? f.every : 1
+  if (kind === 'time_of_day') return 'Time of day'
+  if (unit && every >= 2) return `Day in ${every}-${unit.toLowerCase()} cycle`
   switch (kind) {
-    case 'time_of_day':
-      return 'Time of day'
     case 'weekday':
       return 'Day of the week'
     case 'month_day':
@@ -198,7 +258,7 @@ function calendarKindLabel(kind: StartRuleKind | DueRuleKind, f: Frequency): str
   }
 }
 
-/** Kinds that need the "Week / Month / Year N" selector. */
+/** The legacy every-2+ kinds (cycle = position in the repeat). */
 export const isCycleKind = (k: StartRuleKind | DueRuleKind) => k.startsWith('cycle_')
 
 export function cycleLabel(f: Frequency, n: number): string {
@@ -220,16 +280,29 @@ function scheduleHints(schedules: ScheduleShape[]) {
   }
 }
 
-/** A fresh rule of this kind, with the params filled in (carrying over what still fits). */
-export function startRuleOfKind(kind: StartRuleKind, prev: StartRule, schedules: ScheduleShape[]): StartRule {
-  return ruleOfKind(kind, prev, schedules, DEFAULT_START_TIME) as StartRule
+/**
+ * Where a new day rule should land when nothing is carried over: the day the step may
+ * start in the sample run (a later step: the day the step before it is due), so a fresh
+ * pick is valid as it is. Without it, the run start day in Month / Week / Year 1.
+ */
+export interface DaySeed {
+  cycle: number
+  weekday: number
+  day: number
+  month: number
 }
 
-export function dueRuleOfKind(kind: DueRuleKind, prev: DueRule, schedules: ScheduleShape[], start?: StartRule): DueRule {
+/** A fresh rule of this kind, with the params filled in (carrying over what still fits). */
+export function startRuleOfKind(kind: StartRuleKind, prev: StartRule, schedules: ScheduleShape[], seed?: DaySeed | null): StartRule {
+  return ruleOfKind(kind, prev, schedules, DEFAULT_START_TIME, seed) as StartRule
+}
+
+export function dueRuleOfKind(kind: DueRuleKind, prev: DueRule, schedules: ScheduleShape[], start?: StartRule, seed?: DaySeed | null): DueRule {
   // A calendar due of the same kind as the start defaults to the same day — due that
   // evening, since a due date is always after the start.
-  const seed = start && start.kind === kind ? { ...start, time: DEFAULT_DUE_TIME } : prev
-  return ruleOfKind(kind, seed as DueRule, schedules, DEFAULT_DUE_TIME) as DueRule
+  const same = start && dayKindOf(start.kind) === kind && isExplicitRule(start)
+  const from = same ? { ...start, kind, time: DEFAULT_DUE_TIME } : prev
+  return ruleOfKind(kind, from as DueRule, schedules, DEFAULT_DUE_TIME, same ? null : seed) as DueRule
 }
 
 function ruleOfKind(
@@ -237,10 +310,17 @@ function ruleOfKind(
   prev: StartRule | DueRule,
   schedules: ScheduleShape[],
   defaultTime: string,
+  seed?: DaySeed | null,
 ): StartRule | DueRule {
-  const hints = scheduleHints(schedules)
+  const base = scheduleHints(schedules)
+  const hints = seed
+    ? { weekday: seed.weekday, monthDay: seed.day, yearly: { month: seed.month, day: seed.day } }
+    : base
   const time = prev.time && TIME_RE.test(prev.time) ? prev.time : defaultTime
-  const cycle = typeof prev.cycle === 'number' && prev.cycle >= 1 ? prev.cycle : 1
+  // A day kind carries its explicit cycle; switching to one starts where the step may start.
+  const keep = dayKindOf(prev.kind) === kind && isExplicitRule(prev)
+  const cycle = keep ? (prev.cycle as number) : seed?.cycle ?? 1
+  const prevDay = keep ? prev : ({} as Partial<StartRule>)
   switch (kind) {
     case 'immediate':
       return { kind }
@@ -252,15 +332,21 @@ function ruleOfKind(
     case 'time_of_day':
       return { kind, time }
     case 'weekday':
-      return { kind, weekday: typeof prev.weekday === 'number' ? prev.weekday : hints.weekday, time }
+      return { kind, cycle, weekday: typeof prevDay.weekday === 'number' ? prevDay.weekday : hints.weekday, time }
     case 'cycle_weekday':
       return { kind, cycle, weekday: typeof prev.weekday === 'number' ? prev.weekday : hints.weekday, time }
     case 'month_day':
-      return { kind, day: prev.day ?? hints.monthDay, time }
+      return { kind, cycle, day: prevDay.day ?? hints.monthDay, time }
     case 'cycle_month_day':
       return { kind, cycle, day: prev.day ?? hints.monthDay, time }
     case 'year_date':
-      return { kind, month: prev.month ?? hints.yearly.month, day: typeof prev.day === 'number' ? prev.day : hints.yearly.day, time }
+      return {
+        kind,
+        cycle,
+        month: prevDay.month ?? hints.yearly.month,
+        day: typeof prevDay.day === 'number' ? prevDay.day : hints.yearly.day,
+        time,
+      }
     case 'cycle_year_date':
       return {
         kind,
@@ -295,6 +381,8 @@ function yearDateWord(day: RuleMonthDay | undefined, month: number | undefined):
 
 /** The calendar part of a rule, short: "Thu", "2nd", "last day", "3 Dec", "Week 2, Mon". */
 function calendarShort(r: StartRule | DueRule, f: Frequency): string {
+  // Every 2+: an explicit day says its cycle, as the legacy cycle_* kinds did.
+  if (isExplicitRule(r) && 'every' in f && f.every >= 2) return calendarShort({ ...r, kind: `cycle_${r.kind}` as StartRule['kind'] }, f)
   switch (r.kind) {
     case 'weekday':
       return WEEKDAYS_SHORT[r.weekday ?? 1] ?? '—'
@@ -338,10 +426,25 @@ export interface NextCycleFlags {
 }
 
 /**
+ * An explicit day in words, from its cycle: Month 1 → "5th 9:00 AM"; Month 2 → "5th of
+ * next month, 9:00 AM" (and "Mon next week", "5 Jun next year"); further on, or in an
+ * every-2+ workflow → "Month 3, 5th, 9:00 AM".
+ */
+function explicitWords(r: StartRule | DueRule, f: Frequency, at: string): string {
+  const cycle = r.cycle ?? 1
+  const every = 'every' in f ? f.every : 1
+  if (every >= 2) return `${calendarShort(r, f)}, ${at}`
+  if (cycle === 1) return `${calendarShort(r, f)} ${at}`
+  if (cycle === 2) return `${calendarNext(r, f)}, ${at}`
+  return `${cycleLabel(f, cycle)}, ${calendarShort(r, f)}, ${at}`
+}
+
+/**
  * The timing in a few words for a collapsed card: "Starts Thu 9:00 AM · due Fri 6:00 PM",
  * "Due in 2 days, 6:00 PM", "Starts 1st of next month, 9:00 AM". A step that starts right
- * away says only when it is due. `next` says which calendar dates fall before the previous
- * step's (or, for the due date, before this step's start) and so land in the next cycle.
+ * away says only when it is due. An explicit day says its cycle ("of next month"); for a
+ * legacy rule, `next` says which calendar dates fall before the previous step's (or, for
+ * the due date, before this step's start) and so land in the next cycle.
  */
 export function timingSummary(start: StartRule, due: DueRule, f: Frequency, hasPredecessors = true, next?: NextCycleFlags | null): string {
   const parts: string[] = []
@@ -361,7 +464,8 @@ export function timingSummary(start: StartRule, due: DueRule, f: Frequency, hasP
       parts.push(next?.start ? `starts ${at(start.time)} next day` : `starts ${at(start.time)}`)
       break
     default:
-      parts.push(next?.start ? `starts ${calendarNext(start, f)}, ${at(start.time)}` : `starts ${calendarShort(start, f)} ${at(start.time)}`)
+      if (isExplicitRule(start)) parts.push(`starts ${explicitWords(start, f, at(start.time))}`)
+      else parts.push(next?.start ? `starts ${calendarNext(start, f)}, ${at(start.time)}` : `starts ${calendarShort(start, f)} ${at(start.time)}`)
   }
   const dueAt = fmtTime(due.time || DEFAULT_DUE_TIME)
   switch (due.kind) {
@@ -374,7 +478,8 @@ export function timingSummary(start: StartRule, due: DueRule, f: Frequency, hasP
       parts.push(next?.due ? `due ${dueAt} next day` : `due ${dueAt}`)
       break
     default:
-      parts.push(next?.due ? `due ${calendarNext(due, f)}, ${dueAt}` : `due ${calendarShort(due, f)} ${dueAt}`)
+      if (isExplicitRule(due)) parts.push(`due ${explicitWords(due, f, dueAt)}`)
+      else parts.push(next?.due ? `due ${calendarNext(due, f)}, ${dueAt}` : `due ${calendarShort(due, f)} ${dueAt}`)
   }
   const text = parts.join(' · ')
   return text.charAt(0).toUpperCase() + text.slice(1)
@@ -405,6 +510,9 @@ function paramProblem(r: StartRule | DueRule, f: Frequency, which: 'start' | 'du
       break
   }
   if (!validTime(r.time)) return `enter a ${which} time.`
+  if (isDayKind(r.kind) && r.cycle !== undefined && r.cycle !== null) {
+    if (!(typeof r.cycle === 'number' && Number.isInteger(r.cycle) && r.cycle >= 1)) return `choose a cycle for the ${field}.`
+  }
   if (isCycleKind(r.kind)) {
     const every = 'every' in f ? f.every : 1
     if (!(typeof r.cycle === 'number' && Number.isInteger(r.cycle) && r.cycle >= 1)) return `choose a cycle for the ${field}.`
@@ -444,11 +552,28 @@ export interface TimingProblem {
  * run start in its cycle ("pick a day on or after the 3rd, when the run starts.").
  * Ordered as Save checks them, so `[0]` is the message Save gives.
  */
+/**
+ * Why a rule's kind / cycle doesn't fit this frequency (the server's words), or null: a
+ * kind it doesn't allow; a plain day in an every-2+ workflow (ambiguous without its
+ * cycle); an explicit cycle past the calendar's reach ("choose Month 1 to Month 12 for
+ * the start.").
+ */
+function frequencyProblem(r: StartRule | DueRule, f: Frequency, which: 'start' | 'due'): string | null {
+  const allowed: string[] = which === 'start' ? allowedStartKinds(f) : allowedDueKinds(f)
+  if (!allowed.includes(r.kind)) return frequencyHint(f)
+  const unit = cycleUnit(f)
+  if (!unit || !isDayKind(r.kind)) return null
+  const every = 'every' in f ? f.every : 1
+  if (typeof r.cycle !== 'number') return every >= 2 ? frequencyHint(f) : null
+  const max = maxCycleOf(f)
+  return r.cycle > max ? `choose ${unit} 1 to ${unit} ${max} for the ${which === 'start' ? 'start' : 'due date'}.` : null
+}
+
 export function timingProblems(start: StartRule, due: DueRule, f: Frequency, place?: StepPlace | null): TimingProblem[] {
   const out: TimingProblem[] = []
-  const s = paramProblem(start, f, 'start') ?? (allowedStartKinds(f).includes(start.kind) ? null : frequencyHint(f))
+  const s = paramProblem(start, f, 'start') ?? frequencyProblem(start, f, 'start')
   if (s) out.push({ part: 'start', message: s })
-  const d = paramProblem(due, f, 'due') ?? (allowedDueKinds(f).includes(due.kind) ? null : frequencyHint(f))
+  const d = paramProblem(due, f, 'due') ?? frequencyProblem(due, f, 'due')
   if (d) out.push({ part: 'due', message: d })
   if (place && !place.first && !s && start.kind === 'days_after_run_start') out.push({ part: 'start', message: LATER_STEP_TRIGGER_PROBLEM })
   const runStart = place?.first ? place.runStart : null
@@ -577,10 +702,10 @@ export function beforeRunStartProblem(rule: StartRule | DueRule, rs: RunStart): 
   const at = fmtTime(rs.time)
   const earlierTime = minutesOf(rule.time) < minutesOf(rs.time)
   if (rs.type === 'daily') return rule.kind === 'time_of_day' && earlierTime ? `pick a time at or after ${at}, when the run starts.` : null
-  const cyclic = isCycleKind(rule.kind)
-  if (cyclic && rule.cycle !== 1) return null
+  // Only the run's own cycle holds days before the run (explicit or legacy cycles).
+  if (typeof rule.cycle === 'number' && (isCycleKind(rule.kind) || isDayKind(rule.kind)) && rule.cycle !== 1) return null
   const unit = rs.type === 'weekly' ? 'Week' : rs.type === 'monthly' ? 'Month' : 'Year'
-  const inCycle = cyclic ? ` in ${unit} 1` : ''
+  const inCycle = rs.every >= 2 ? ` in ${unit} 1` : ''
   let cmp: number
   switch (rule.kind) {
     case 'weekday':
@@ -632,14 +757,17 @@ export function cleanRule<R extends StartRule | DueRule>(r: R): R {
       keep('time')
       break
     case 'weekday':
+      keep('cycle')
       keep('weekday')
       keep('time')
       break
     case 'month_day':
+      keep('cycle')
       keep('day')
       keep('time')
       break
     case 'year_date':
+      keep('cycle')
       keep('month')
       keep('day')
       keep('time')
@@ -663,3 +791,105 @@ export function cleanRule<R extends StartRule | DueRule>(r: R): R {
   }
   return out as R
 }
+
+// ─── The sample run (calendar + Save's order check) ──────────────────────────
+
+/** A calendar day (no time, no zone). month 1–12. */
+export interface DayDate {
+  year: number
+  month: number
+  day: number
+}
+
+const serialOf = (d: DayDate) => Math.round(Date.UTC(d.year, d.month - 1, d.day) / 86_400_000)
+const dayOfSerial = (n: number): DayDate => {
+  const x = new Date(n * 86_400_000)
+  return { year: x.getUTCFullYear(), month: x.getUTCMonth() + 1, day: x.getUTCDate() }
+}
+const isoDay = (v: string | null | undefined): DayDate | null => {
+  const m = typeof v === 'string' ? /^(\d{4})-(\d{2})-(\d{2})/.exec(v) : null
+  return m ? { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) } : null
+}
+
+/**
+ * The SAMPLE RUN's start day — the server's `sampleRunDay`, exactly: the next day from
+ * `today` (today only while the run start time hasn't passed; `nowMinutes` = minutes
+ * since midnight) on which the run start's trigger day (the latest one in the cycle)
+ * falls, in step with its schedule's start date and interval. End conditions are
+ * ignored. Falls back to the next such day ignoring the interval, then to `today`.
+ */
+export function sampleRunDay(schedules: ScheduleShape[], rs: RunStart, today: DayDate, nowMinutes: number): DayDate {
+  const hasTrigger = (s: ScheduleShape): boolean => {
+    if (s.schedule_type !== rs.type) return false
+    switch (rs.type) {
+      case 'daily':
+        return true
+      case 'weekly':
+        return (s.days ?? []).includes(rs.weekday)
+      case 'monthly':
+        return (s.month_days ?? []).some((d) => Math.abs(d) === rs.day)
+      case 'yearly':
+        return (s.yearly_dates ?? []).some((y) => y?.month === rs.month && y?.day === rs.day)
+    }
+  }
+  const timed = schedules.filter((s) => hasTrigger(s) && (s.time ?? '00:00') === rs.time)
+  const triggers = timed.length ? timed : schedules.filter(hasTrigger)
+  const onTriggerDay = (d: DayDate): boolean => {
+    switch (rs.type) {
+      case 'daily':
+        return true
+      case 'weekly':
+        return new Date(Date.UTC(d.year, d.month - 1, d.day)).getUTCDay() === rs.weekday
+      case 'monthly':
+        return d.day === rs.day
+      case 'yearly':
+        return d.month === rs.month && d.day === rs.day
+    }
+  }
+  const inStep = (s: ScheduleShape, d: DayDate): boolean => {
+    const start = isoDay(s.start_date)
+    if (!start) return true
+    const daysDiff = serialOf(d) - serialOf(start)
+    if (daysDiff < 0) return false
+    const every = typeof s.every === 'number' && Number.isInteger(s.every) && s.every >= 1 ? s.every : 1
+    switch (rs.type) {
+      case 'daily':
+        return daysDiff % every === 0
+      case 'weekly':
+        return Math.floor(daysDiff / 7) % every === 0
+      case 'monthly':
+        return ((d.year - start.year) * 12 + (d.month - start.month)) % every === 0
+      case 'yearly':
+        return (d.year - start.year) % every === 0
+    }
+  }
+  const first = serialOf(today) + (minutesOf(rs.time) > nowMinutes ? 0 : 1)
+  const LIMIT = 366 * 10 + 31
+  for (let i = 0; i < LIMIT; i++) {
+    const d = dayOfSerial(first + i)
+    if (onTriggerDay(d) && (!triggers.length || triggers.some((s) => inStep(s, d)))) return d
+  }
+  for (let i = 0; i < LIMIT; i++) {
+    const d = dayOfSerial(first + i)
+    if (onTriggerDay(d)) return d
+  }
+  return dayOfSerial(first)
+}
+
+/** "5 Nov" (with the year when it isn't `refYear`) — the order messages' day words. */
+export function dayMonthWords(d: DayDate, refYear: number): string {
+  return `${d.day} ${MONTHS_SHORT[d.month - 1]}${d.year !== refYear ? ` ${d.year}` : ''}`
+}
+
+/** How the order messages name a step: `1 “Collect documents”` (or just `1`). */
+export function predecessorName(label: string, title: string | null | undefined): string {
+  const t = (title ?? '').trim()
+  return t ? `${label} “${t}”` : label
+}
+
+/** Save's words for a start day before the step it waits for is due (completes "Step 2 “X”: …"). */
+export const startBeforePredecessorText = (dayWords: string, predecessor: string) =>
+  `pick a day on or after ${dayWords}, when ${predecessor} is due.`
+
+/** Save's words for a due day before the step's own start day. */
+export const dueBeforeStartText = (dayWords: string) => `pick a due day on or after ${dayWords}, when it starts.`

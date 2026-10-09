@@ -1,12 +1,17 @@
-// Where a step's calendar dates land relative to the step before it — for the "(next
-// month)" labels in the timing pickers and the card summaries. A day that falls before
-// the previous step's dates (or, for a due date, before the step's own start) resolves
-// to the next cycle; the engine plans it there, and the builder says so.
+// The builder's copy of the engine's planning (backend engine/plan.ts), without the
+// holiday shifts, run on the SAMPLE RUN: the next run on the schedules' run start day
+// (`sampleRunDay` — the server plans the very same run for Save's order check, so the
+// calendar's greyed days and Save's messages agree). It drives the timing calendar (every
+// step's planned start → due, what each day holds, which days are too early), the "(next
+// month)" labels of legacy rules, and the card summaries.
 //
-// This is the engine's planning (backend engine/plan.ts) without the holiday shifts, run
-// on one representative run that starts on the schedules' run start day. Dates are in a
-// floating wall-clock frame: a Date whose UTC fields are the org's wall clock, so no time
-// zone is involved. The exact dates of real runs are what the example run shows.
+// Explicit day rules (with `cycle`) land exactly on their day — never before the step
+// may start (order wins). Legacy rules (no cycle; cycle_* kinds) are inferred as before: a
+// day before the previous step's dates resolves to the next cycle.
+//
+// Dates are in a floating wall-clock frame: a Date whose UTC fields are the org's wall
+// clock, so no time zone is involved. The exact dates of real runs (holidays included)
+// are what the example run shows.
 
 import type { DueRule, RuleMonthDay, StartRule } from '@/lib/types/workflows'
 import {
@@ -14,14 +19,23 @@ import {
   DEFAULT_START_RULE,
   allowedDueKinds,
   allowedStartKinds,
+  dayMonthWords,
+  dueBeforeStartText,
   isCalendarKind,
   isCycleKind,
+  isExplicitRule,
   minutesOf,
+  predecessorName,
+  sampleRunDay,
+  startBeforePredecessorText,
   timingProblems,
   weekPosition,
+  type DayDate,
   type Frequency,
   type NextCycleFlags,
   type RunStart,
+  type ScheduleShape,
+  type TimingProblem,
 } from './timing'
 
 const DAY_MS = 86_400_000
@@ -76,10 +90,29 @@ export function referenceRunStart(rs: RunStart | null): Date {
   }
 }
 
-export function planContext(f: Frequency, rs: RunStart | null): PlanContext {
+/**
+ * The plan's context. With `sample` (the schedules being edited and the org clock's
+ * "now"), the run is the SAMPLE RUN — the next run on the run start day, as the server
+ * plans it for Save's order check. Without it, a fixed representative run (Jan 2025),
+ * which is all the "(next month)" labels need. Manual / mixed workflows: a run now.
+ */
+export function planContext(f: Frequency, rs: RunStart | null, sample?: { schedules: ScheduleShape[]; now: Date } | null): PlanContext {
   const every = f.type === 'weekly' || f.type === 'monthly' || f.type === 'yearly' ? Math.max(1, f.every) : 1
-  return { f, runStart: referenceRunStart(rs), every }
+  if (!sample) return { f, runStart: referenceRunStart(rs), every }
+  const n = sample.now
+  const today: DayDate = { year: n.getFullYear(), month: n.getMonth() + 1, day: n.getDate() }
+  const nowMinutes = n.getHours() * 60 + n.getMinutes()
+  if (!rs) return { f, runStart: wall(today.year, today.month, today.day, nowMinutes), every }
+  const d = sampleRunDay(sample.schedules, rs, today, nowMinutes)
+  return { f, runStart: wall(d.year, d.month, d.day, minutesOf(rs.time)), every }
 }
+
+/** A floating date's calendar day. */
+export const dayOf = (d: Date): DayDate => ({ year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() })
+/** Days since 1970 of a floating date (compare days with it). */
+export const dayNumber = (d: Date) => dayIndex(d)
+/** A floating date at midnight of a day number. */
+export const dateOfDayNumber = (n: number) => fromDayIndex(n, 0)
 
 // ─── Resolution (the engine's rules, no holidays) ────────────────────────────
 
@@ -147,6 +180,38 @@ export function calendarOccurrence(rule: Rule, anchor: Date, ctx: PlanContext, s
   return { at: anchor, next: false }
 }
 
+/**
+ * The day an explicit rule names, at its time: the run's own week / month / year plus
+ * `cycle - 1` (plus `extra`) — the engine's `explicitOccurrence`.
+ */
+export function explicitOccurrence(rule: Rule, ctx: PlanContext, extra = 0): Date {
+  const t = minutesOf(rule.time)
+  const run = ctx.runStart
+  const off = Math.max(1, Math.trunc(rule.cycle ?? 1)) - 1 + extra
+  switch (rule.kind) {
+    case 'weekday':
+      return fromDayIndex(7 * (weekIndex(run) + off) - 3 + weekPosition(rule.weekday ?? 1), t)
+    case 'month_day':
+      return atMonth(monthIndex(run) + off, rule.day, t)
+    default:
+      return atYear(run.getUTCFullYear() + off, rule.month, rule.day, t)
+  }
+}
+
+/**
+ * Where an explicit rule lands (the engine's `resolveExplicit`): its own day when that
+ * is on/after the anchor (strictly after, for a due date). Otherwise order wins and it
+ * never jumps a cycle: a start begins with the anchor; a due date is its time on the
+ * start's day, or the next day when that has passed.
+ */
+export function resolveExplicit(rule: Rule, anchor: Date, ctx: PlanContext, strict: boolean): Date {
+  const e = explicitOccurrence(rule, ctx)
+  if (strict ? e.getTime() > anchor.getTime() : e.getTime() >= anchor.getTime()) return e
+  if (!strict) return anchor
+  const sameDay = fromDayIndex(dayIndex(anchor), minutesOf(rule.time))
+  return sameDay.getTime() > anchor.getTime() ? sameDay : new Date(sameDay.getTime() + DAY_MS)
+}
+
 /** When a step starts, given when it may start (`anchor`). */
 export function resolveStart(rule: StartRule, anchor: Date, ctx: PlanContext): Date {
   switch (rule.kind) {
@@ -159,7 +224,7 @@ export function resolveStart(rule: StartRule, anchor: Date, ctx: PlanContext): D
       return t.getTime() >= anchor.getTime() ? t : anchor
     }
     default:
-      return calendarOccurrence(rule, anchor, ctx, false).at
+      return isExplicitRule(rule) ? resolveExplicit(rule, anchor, ctx, false) : calendarOccurrence(rule, anchor, ctx, false).at
   }
 }
 
@@ -170,6 +235,7 @@ export function resolveDue(rule: DueRule, start: Date, ctx: PlanContext): Date {
     const due = fromDayIndex(dayIndex(start) + (rule.days ?? 1), t)
     return due.getTime() > start.getTime() ? due : fromDayIndex(dayIndex(start) + (rule.days ?? 1) + 1, t)
   }
+  if (isExplicitRule(rule)) return resolveExplicit(rule, start, ctx, true)
   return calendarOccurrence(rule, start, ctx, true).at
 }
 
@@ -255,10 +321,11 @@ export function nextCycleWord(kind: string): string {
 export function stepNextCycle(start: StartRule, due: DueRule, anchor: Date, ctx: PlanContext): NextCycleFlags & { plannedStart: Date } {
   const { start: sr, due: dr } = plannableRules(start, due, ctx.f)
   const plannedStart = resolveStart(sr, anchor, ctx)
+  // Explicit days say their own cycle; only legacy (inferred) days get "next" flags.
   return {
     plannedStart,
-    start: isCalendarKind(sr.kind) && sr === start ? calendarOccurrence(sr, anchor, ctx, false).next : false,
-    due: isCalendarKind(dr.kind) && dr === due ? calendarOccurrence(dr, plannedStart, ctx, true).next : false,
+    start: isCalendarKind(sr.kind) && sr === start && !isExplicitRule(sr) ? calendarOccurrence(sr, anchor, ctx, false).next : false,
+    due: isCalendarKind(dr.kind) && dr === due && !isExplicitRule(dr) ? calendarOccurrence(dr, plannedStart, ctx, true).next : false,
   }
 }
 
@@ -271,4 +338,191 @@ export function nextCycleFlagsFor(steps: PlanStep[], ctx: PlanContext): Map<stri
     out.set(s.id, { start, due })
   }
   return out
+}
+
+// ─── Order of explicit days (Save's check, on the sample run) ────────────────
+
+/** A step as the order check reads it. */
+export interface OrderStep extends PlanStep {
+  /** "1", "B2". */
+  label: string
+  title: string
+}
+
+/** The step-before that is due last (the one a step's start waits for), or null. */
+export function latestPredecessor(deps: string[], planned: Map<string, PlannedDates>, selfId?: string | null): { id: string; due: Date } | null {
+  let latest: { id: string; due: Date } | null = null
+  for (const d of deps) {
+    const p = planned.get(d)
+    if (p && d !== selfId && (!latest || p.due.getTime() > latest.due.getTime())) latest = { id: d, due: p.due }
+  }
+  return latest
+}
+
+/**
+ * An explicit day that comes before what it waits for — the server's `orderProblems` +
+ * `sampleOrderMessages`, word for word: a later step's start day before the LATEST
+ * planned due day of the steps it waits for (`pick a day on or after 5 Nov, when 1
+ * “Collect documents” is due.`), or a due day before its own planned start day. The same
+ * day is fine. Legacy (inferred) rules never count. `ctx` must be the sample run;
+ * `nameOf` names a step-before (`predecessorName`). Call only when the step's timing has
+ * no other problem (Save checks this last).
+ */
+export function orderProblemOf(s: PlanStep, planned: Map<string, PlannedDates>, ctx: PlanContext, nameOf: (id: string) => string): TimingProblem | null {
+  const { start, due } = plannableRules(s.start, s.due, ctx.f)
+  const refYear = ctx.runStart.getUTCFullYear()
+  const latest = latestPredecessor(s.deps, planned, s.id)
+  if (latest && start === s.start && isExplicitRule(start) && dayIndex(explicitOccurrence(start, ctx)) < dayIndex(latest.due)) {
+    return { part: 'start', message: startBeforePredecessorText(dayMonthWords(dayOf(latest.due), refYear), nameOf(latest.id)) }
+  }
+  const plannedStart = resolveStart(start, anchorFor(s.deps.filter((d) => d !== s.id), planned, ctx), ctx)
+  if (due === s.due && isExplicitRule(due) && dayIndex(explicitOccurrence(due, ctx)) < dayIndex(plannedStart)) {
+    return { part: 'due', message: dueBeforeStartText(dayMonthWords(dayOf(plannedStart), refYear)) }
+  }
+  return null
+}
+
+/** A step as the order check names it. */
+export interface NamedStep {
+  id: string
+  /** "1", "B2". */
+  label: string
+  title: string
+}
+
+/** `orderProblemOf` for every step (skipping those `skip` says have another problem). */
+export function orderProblemsFor(
+  steps: PlanStep[],
+  names: NamedStep[],
+  planned: Map<string, PlannedDates>,
+  ctx: PlanContext,
+  skip: (id: string) => boolean = () => false,
+): Map<string, TimingProblem> {
+  const byId = new Map(names.map((n) => [n.id, n]))
+  const nameOf = (id: string) => predecessorName(byId.get(id)?.label ?? '?', byId.get(id)?.title)
+  const out = new Map<string, TimingProblem>()
+  for (const s of steps) {
+    if (skip(s.id)) continue
+    const p = orderProblemOf(s, planned, ctx, nameOf)
+    if (p) out.set(s.id, p)
+  }
+  return out
+}
+
+// ─── The calendar: what each day holds ───────────────────────────────────────
+
+/** One step's planned span on the calendar. */
+export interface CalendarSpan {
+  id: string
+  /** "1", "B2". */
+  label: string
+  title: string
+  start: Date
+  due: Date
+  /** Its colour (index into the band palette). */
+  color: number
+  /** This step waits for it (emphasised). */
+  waitsFor: boolean
+}
+
+/**
+ * Every OTHER step's planned span in the sample run, in display order, each with its own
+ * colour; the steps this one waits for (its predecessors incl. "Also waits for") marked.
+ */
+export function calendarSpans(
+  steps: { id: string; label: string; title: string }[],
+  planned: Map<string, PlannedDates>,
+  selfId: string | null,
+  deps: string[],
+): CalendarSpan[] {
+  const waits = new Set(deps)
+  const out: CalendarSpan[] = []
+  steps.forEach((s, i) => {
+    const p = planned.get(s.id)
+    if (!p || s.id === selfId) return
+    out.push({ id: s.id, label: s.label, title: s.title, start: p.start, due: p.due, color: i, waitsFor: waits.has(s.id) })
+  })
+  return out
+}
+
+/** What happens on a day: "1 Collect documents — due 6:00 PM" lines (time order). */
+export interface DayEvent {
+  span: CalendarSpan | null
+  what: 'run' | 'start' | 'due' | 'start_due' | 'ongoing'
+  /** Minutes since midnight (sorting / the time word); null for "ongoing". */
+  minutes: number | null
+}
+
+export function eventsOn(dayNo: number, spans: CalendarSpan[], runStart: Date): DayEvent[] {
+  const out: DayEvent[] = []
+  const mins = (d: Date) => d.getUTCHours() * 60 + d.getUTCMinutes()
+  if (dayIndex(runStart) === dayNo) out.push({ span: null, what: 'run', minutes: mins(runStart) })
+  for (const sp of spans) {
+    const a = dayIndex(sp.start)
+    const b = dayIndex(sp.due)
+    if (dayNo < a || dayNo > b) continue
+    if (a === dayNo && b === dayNo) out.push({ span: sp, what: 'start_due', minutes: mins(sp.start) })
+    else if (a === dayNo) out.push({ span: sp, what: 'start', minutes: mins(sp.start) })
+    else if (b === dayNo) out.push({ span: sp, what: 'due', minutes: mins(sp.due) })
+    else out.push({ span: sp, what: 'ongoing', minutes: null })
+  }
+  return out.sort((x, y) => (x.minutes ?? 24 * 60) - (y.minutes ?? 24 * 60))
+}
+
+/**
+ * The cycle a day is in, counted from the run's own (1 = the run's Mon–Sun week / month
+ * / year) — what an explicit rule picked on that day stores.
+ */
+export function cycleOfDay(kind: 'weekday' | 'month_day' | 'year_date', dayNo: number, ctx: PlanContext): number {
+  const d = fromDayIndex(dayNo, 0)
+  const run = ctx.runStart
+  if (kind === 'weekday') return weekIndex(d) - weekIndex(run) + 1
+  if (kind === 'month_day') return monthIndex(d) - monthIndex(run) + 1
+  return d.getUTCFullYear() - run.getUTCFullYear() + 1
+}
+
+/** The day number (floating) the rule stands on in the sample run — its own day, or for a legacy rule where it is planned. */
+export function ruleDay(rule: Rule, anchor: Date, ctx: PlanContext, strict: boolean): number | null {
+  if (!isCalendarKind(rule.kind) || rule.kind === 'time_of_day') return null
+  if (isExplicitRule(rule)) return dayIndex(explicitOccurrence(rule, ctx))
+  return dayIndex(calendarOccurrence(rule, anchor, ctx, strict).at)
+}
+
+// ─── The calendar's greyed days and soft notes ───────────────────────────────
+
+/**
+ * The first day a step's START may use, and why the days before it are greyed: a first
+ * step — the run start day ("Before the run starts (3rd)", `runStartText`); a later step —
+ * the day the step it waits for (due last) is due ("Before 1 “Collect documents” is due").
+ * That same day stays selectable.
+ */
+export function startMinDay(
+  ctx: PlanContext,
+  pred: { name: string; due: Date } | null,
+  runStartText: string,
+): { minDay: number; reason: string } {
+  if (!pred) return { minDay: dayIndex(ctx.runStart), reason: runStartText }
+  return { minDay: dayIndex(pred.due), reason: `Before ${pred.name} is due` }
+}
+
+/** The first day a DUE date may use: the step's own planned start day ("Before this step starts (5 Nov)"). */
+export function dueMinDay(ctx: PlanContext, plannedStart: Date): { minDay: number; reason: string } {
+  return { minDay: dayIndex(plannedStart), reason: `Before this step starts (${dayMonthWords(dayOf(plannedStart), ctx.runStart.getUTCFullYear())})` }
+}
+
+/**
+ * An explicit start on the very day the step it waits for is due, at an earlier hour —
+ * allowed (it begins once that step is done), worth a soft note.
+ */
+export function startsBeforePredecessorDue(rule: StartRule, ctx: PlanContext, predDue: Date | null): boolean {
+  if (!predDue || !isExplicitRule(rule)) return false
+  const e = explicitOccurrence(rule, ctx)
+  return dayIndex(e) === dayIndex(predDue) && e.getTime() < predDue.getTime()
+}
+
+/** An explicit due on the step's own start day, at or before its start hour — it moves to the next day. */
+export function dueBeforeStartSameDay(rule: DueRule, ctx: PlanContext, plannedStart: Date): boolean {
+  if (!isExplicitRule(rule)) return false
+  const e = explicitOccurrence(rule, ctx)
+  return dayIndex(e) === dayIndex(plannedStart) && e.getTime() <= plannedStart.getTime()
 }

@@ -1,7 +1,10 @@
 import {
   PlanStepInput,
   TimingContext,
+  explicitOccurrence,
   nextCalendarOccurrence,
+  orderProblems,
+  sampleRunContext,
   planOrder,
   planRun,
   resolveDue,
@@ -454,5 +457,153 @@ describe('planRun — holidays', () => {
     )
     // Start moves Sun → Mon 09:00; "due Monday 08:00" strictly after that = the next Monday.
     expect(of(res, 'a')).toEqual([iso(at(2026, 10, 12, 9)), iso(at(2026, 10, 19, 8))])
+  })
+})
+
+describe('explicit cycles (the builder’s calendar): deterministic, order still wins', () => {
+  // Monthly on the 3rd: the run starts Tue 3 Nov 2026 at 09:00.
+  const RUN = at(2026, 11, 3, 9)
+  const c = ctx(RUN)
+
+  it('cycle 1 = the run’s own week / month / year; cycle 2 the next one', () => {
+    expect(iso(explicitOccurrence({ kind: 'month_day', cycle: 1, day: 5, time: '09:00' }, c))).toBe(iso(at(2026, 11, 5, 9)))
+    expect(iso(explicitOccurrence({ kind: 'month_day', cycle: 2, day: 1, time: '09:00' }, c))).toBe(iso(at(2026, 12, 1, 9)))
+    expect(iso(explicitOccurrence({ kind: 'month_day', cycle: 4, day: 31, time: '09:00' }, c))).toBe(iso(at(2027, 2, 28, 9)))
+    expect(iso(explicitOccurrence({ kind: 'month_day', cycle: 2, day: 'last', time: '18:00' }, c))).toBe(iso(at(2026, 12, 31, 18)))
+    // Weeks run Monday–Sunday: the run's week is Mon 2 – Sun 8 Nov.
+    expect(iso(explicitOccurrence({ kind: 'weekday', cycle: 1, weekday: 1, time: '09:00' }, c))).toBe(iso(at(2026, 11, 2, 9)))
+    expect(iso(explicitOccurrence({ kind: 'weekday', cycle: 2, weekday: 0, time: '09:00' }, c))).toBe(iso(at(2026, 11, 15, 9)))
+    expect(iso(explicitOccurrence({ kind: 'year_date', cycle: 2, month: 6, day: 5, time: '09:00' }, c))).toBe(iso(at(2027, 6, 5, 9)))
+    expect(iso(explicitOccurrence({ kind: 'year_date', cycle: 1, month: 2, day: 29, time: '09:00' }, ctx(at(2027, 1, 1, 9))))).toBe(
+      iso(at(2027, 2, 28, 9)),
+    )
+  })
+
+  it('Step 1 3rd → 5th; Step 2 on the 5th (same day) → next month’s 1st', async () => {
+    const res = await planRun(
+      [
+        step('s1', { ...startOn({ kind: 'month_day', cycle: 1, day: 3, time: '09:00' }), ...dueOn({ kind: 'month_day', cycle: 1, day: 5, time: '18:00' }) }),
+        step('s2', {
+          deps: ['s1'],
+          ...startOn({ kind: 'month_day', cycle: 1, day: 5, time: '09:00' }),
+          ...dueOn({ kind: 'month_day', cycle: 2, day: 1, time: '18:00' }),
+        }),
+      ],
+      c,
+    )
+    expect(of(res, 's1')).toEqual([iso(at(2026, 11, 3, 9)), iso(at(2026, 11, 5, 18))])
+    // 9:00 on the 5th is before step 1 is due (6:00 PM): it begins once step 1 is done.
+    expect(of(res, 's2')).toEqual([iso(at(2026, 11, 5, 18)), iso(at(2026, 12, 1, 18))])
+    expect(res.warnings).toEqual([])
+  })
+
+  it('an explicit Month 2 stays in Month 2 even when Month 1 would come after the step before (no inference)', async () => {
+    const res = await planRun(
+      [
+        step('a', dueOn({ kind: 'month_day', cycle: 1, day: 5, time: '18:00' })),
+        step('b', { deps: ['a'], ...startOn({ kind: 'month_day', cycle: 2, day: 10, time: '09:00' }) }),
+        // Legacy (no cycle) is inferred: the next 10th after the 5th → this month.
+        step('c', { deps: ['a'], ...startOn({ kind: 'month_day', day: 10, time: '09:00' }) }),
+      ],
+      c,
+    )
+    expect(of(res, 'b')[0]).toBe(iso(at(2026, 12, 10, 9)))
+    expect(of(res, 'c')[0]).toBe(iso(at(2026, 11, 10, 9)))
+  })
+
+  it('order wins without jumping a cycle: a step before it finishing late (a holiday, a run started by hand) just delays it', async () => {
+    // Started by hand on 25 Nov: "Month 1, 5th" has passed → it starts now; a due already
+    // passed is due at its time on the start day, or the next day.
+    const manual = ctx(at(2026, 11, 25, 12))
+    const res = await planRun(
+      [step('a', { ...startOn({ kind: 'month_day', cycle: 1, day: 5, time: '09:00' }), ...dueOn({ kind: 'month_day', cycle: 1, day: 7, time: '18:00' }) })],
+      manual,
+    )
+    expect(of(res, 'a')).toEqual([iso(at(2026, 11, 25, 12)), iso(at(2026, 11, 25, 18))])
+    const late = await planRun(
+      [step('a', { ...startOn({ kind: 'month_day', cycle: 1, day: 5, time: '09:00' }), ...dueOn({ kind: 'month_day', cycle: 1, day: 6, time: '08:00' }) })],
+      manual,
+    )
+    expect(of(late, 'a')).toEqual([iso(at(2026, 11, 25, 12)), iso(at(2026, 11, 26, 8))])
+
+    // Step 1 is due Sat 5 Dec, a weekly off → the holiday rules move it to Mon 7 Dec. Step 2
+    // ("Month 1, 5th" → "Month 2, 1st") starts when step 1 is done — not a month later.
+    const dec = ctx(at(2026, 12, 3, 9))
+    const offSat = (d: Date) => (weekdayOf(localDateOf(d, IST)) === 6 ? at(2026, 12, 7, 18) : d)
+    const res2 = await planRun(
+      [
+        step('s1', { ...startOn({ kind: 'month_day', cycle: 1, day: 3, time: '09:00' }), ...dueOn({ kind: 'month_day', cycle: 1, day: 5, time: '18:00' }) }),
+        step('s2', {
+          deps: ['s1'],
+          ...startOn({ kind: 'month_day', cycle: 1, day: 5, time: '09:00' }),
+          ...dueOn({ kind: 'month_day', cycle: 2, day: 1, time: '18:00' }),
+        }),
+      ],
+      dec,
+      { adjustDue: offSat },
+    )
+    expect(of(res2, 's2')).toEqual([iso(at(2026, 12, 7, 18)), iso(at(2027, 1, 1, 18))])
+  })
+
+  it('back-compat: legacy rules plan exactly as before (no cycle → next occurrence; cycle_* → next position)', async () => {
+    const legacy = await planRun(
+      [
+        step('a', dueOn({ kind: 'month_day', day: 20, time: '18:00' })),
+        step('b', { deps: ['a'], ...startOn({ kind: 'month_day', day: 20, time: '09:00' }) }), // same day, earlier → next month
+      ],
+      c,
+    )
+    expect(of(legacy, 'b')[0]).toBe(iso(at(2026, 12, 20, 9)))
+    const weeks = await planRun(
+      [
+        step('a', dueOn({ kind: 'cycle_weekday', cycle: 2, weekday: 5, time: '18:00' })),
+        step('b', { deps: ['a'], ...startOn({ kind: 'cycle_weekday', cycle: 1, weekday: 1, time: '09:00' }) }),
+      ],
+      ctx(WED_7_OCT_0900, 2),
+    )
+    // Week 1 Mon after a step due in Week 2 (Fri 16 Oct) → the next cycle's Week 1 (19 Oct), as before.
+    expect(of(weeks, 'b')[0]).toBe(iso(at(2026, 10, 19, 9)))
+  })
+
+  it('works in the org time zone across DST (New York)', () => {
+    const tz = 'America/New_York'
+    const run = at(2026, 10, 30, 9, 0, tz)
+    expect(iso(explicitOccurrence({ kind: 'weekday', cycle: 2, weekday: 1, time: '09:00' }, ctx(run, 1, tz)))).toBe('2026-11-02T14:00:00.000Z')
+  })
+})
+
+describe('orderProblems (Save’s check on the sample run)', () => {
+  const c = sampleRunContext({ year: 2026, month: 11, day: 3 }, '09:00', 1)
+  const s1 = step('s1', { ...startOn({ kind: 'month_day', cycle: 1, day: 3, time: '09:00' }), ...dueOn({ kind: 'month_day', cycle: 1, day: 5, time: '18:00' }) })
+
+  it('the floating frame: wall clock in UTC', () => {
+    expect(iso(c.runStart)).toBe('2026-11-03T09:00:00.000Z')
+    expect(c.tz).toBe('UTC')
+  })
+
+  it('a later step’s day before the day the step it waits for is due is refused; the same day is fine', async () => {
+    const steps = [
+      s1,
+      step('s2', { deps: ['s1'], ...startOn({ kind: 'month_day', cycle: 1, day: 4, time: '09:00' }) }),
+      step('s3', { deps: ['s1'], ...startOn({ kind: 'month_day', cycle: 1, day: 5, time: '09:00' }) }),
+      step('s4', { deps: ['s1'], ...startOn({ kind: 'month_day', cycle: 2, day: 1, time: '09:00' }) }),
+    ]
+    const plan = await planRun(steps, c)
+    expect(orderProblems(steps, plan.steps, c)).toEqual([{ key: 's2', part: 'start', day: { year: 2026, month: 11, day: 5 }, predecessor_key: 's1' }])
+  })
+
+  it('joins: the step due last counts; a due day before its own start is refused; legacy rules never count', async () => {
+    const steps = [
+      s1,
+      step('b', { ...startOn({ kind: 'month_day', cycle: 1, day: 3, time: '09:00' }), ...dueOn({ kind: 'month_day', cycle: 1, day: 12, time: '18:00' }) }),
+      step('j', { deps: ['s1', 'b'], ...startOn({ kind: 'month_day', cycle: 1, day: 10, time: '09:00' }) }),
+      step('d', { deps: ['s1'], ...startOn({ kind: 'month_day', cycle: 1, day: 8, time: '09:00' }), ...dueOn({ kind: 'month_day', cycle: 1, day: 7, time: '18:00' }) }),
+      step('l', { deps: ['s1'], ...startOn({ kind: 'month_day', day: 1, time: '09:00' }) }),
+    ]
+    const plan = await planRun(steps, c)
+    expect(orderProblems(steps, plan.steps, c)).toEqual([
+      { key: 'j', part: 'start', day: { year: 2026, month: 11, day: 12 }, predecessor_key: 'b' },
+      { key: 'd', part: 'due', day: { year: 2026, month: 11, day: 8 }, predecessor_key: null },
+    ])
   })
 })

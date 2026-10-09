@@ -1,4 +1,4 @@
-import { daysInMonth } from './tz'
+import { LocalDate, addLocalDays, compareLocalDates, daysInMonth, parseLocalDate, weekdayOf } from './tz'
 
 /**
  * Step timing rules (workflow step timing spec). Pure.
@@ -12,9 +12,28 @@ import { daysInMonth } from './tz'
  *   Weekly (every 1)             → weekday, or relative
  *   Monthly (every 1)            → month_day (1–31 | 'last'), or relative
  *   Yearly (every 1)             → year_date (month + day), or relative
- *   Every 2+ weeks/months/years  → cycle_weekday / cycle_month_day / cycle_year_date
- *                                  (cycle 1..every), or relative
+ *   Every 2+ weeks/months/years  → weekday / month_day / year_date WITH an explicit
+ *                                  cycle (or the legacy cycle_* kinds), or relative
  *   Several schedules that repeat differently → relative only
+ *
+ * EXPLICIT CYCLES. A weekday / month_day / year_date rule may carry `cycle`: which
+ * week / month / year of the run it falls in, counted from the run's own (cycle 1 = the
+ * Monday–Sunday week, month or year containing the run start; cycle 2 = the next one…),
+ * whatever the schedules' interval. The builder's calendar always writes it — "Month 2,
+ * 5th" is stored as `{ kind: 'month_day', cycle: 2, day: 5 }` — so planning resolves it
+ * deterministically (plan.ts `resolveExplicit`): that day, never before the step may
+ * start (order wins). Limits (`maxCycleOf`): 8 weeks, 12 months, 3 years (or the
+ * schedules' interval, when longer). Going past the next run start is allowed; the
+ * example run then warns that runs overlap.
+ *
+ * BACKWARD COMPATIBILITY. Rules saved before explicit cycles keep their meaning, so no
+ * saved workflow's planned dates move:
+ *  - a weekday / month_day / year_date rule WITHOUT `cycle` is "inferred": the next
+ *    occurrence on/after the moment the step may start (every-1 schedules, as before);
+ *  - the cycle_* kinds (every 2+; `cycle` = position 1..every in the repeat) are
+ *    inferred the same way — the next such position on/after the moment it may start.
+ * Neither is rewritten on load or save; the builder turns a rule into an explicit one
+ * only when someone picks a day for it.
  *
  * Relative kinds — start: immediate, days_after_previous, days_after_run_start; due:
  * days_after_start — are always allowed.
@@ -32,9 +51,9 @@ export type MonthDay = number | 'last'
 
 export type CalendarRule =
   | { kind: 'time_of_day'; time: string }
-  | { kind: 'weekday'; weekday: number; time: string }
-  | { kind: 'month_day'; day: MonthDay; time: string }
-  | { kind: 'year_date'; month: number; day: number; time: string }
+  | { kind: 'weekday'; weekday: number; time: string; cycle?: number }
+  | { kind: 'month_day'; day: MonthDay; time: string; cycle?: number }
+  | { kind: 'year_date'; month: number; day: number; time: string; cycle?: number }
   | { kind: 'cycle_weekday'; cycle: number; weekday: number; time: string }
   | { kind: 'cycle_month_day'; cycle: number; day: MonthDay; time: string }
   | { kind: 'cycle_year_date'; cycle: number; month: number; day: number; time: string }
@@ -76,9 +95,25 @@ export function isCalendarRule(rule: StartRule | DueRule | null | undefined): ru
   return !!rule && isCalendarKind(rule.kind)
 }
 
+/** The legacy every-2+ kinds (`cycle` = position in the repeat, inferred). */
 export function isCycleKind(kind: string): boolean {
   return kind === 'cycle_weekday' || kind === 'cycle_month_day' || kind === 'cycle_year_date'
 }
+
+/** The calendar kinds that may carry an explicit cycle. */
+export function isDayKind(kind: string): kind is 'weekday' | 'month_day' | 'year_date' {
+  return kind === 'weekday' || kind === 'month_day' || kind === 'year_date'
+}
+
+export type ExplicitRule = Extract<CalendarRule, { kind: 'weekday' | 'month_day' | 'year_date' }> & { cycle: number }
+
+/** A day rule with an explicit cycle (resolved deterministically — see the header). */
+export function isExplicitRule(rule: StartRule | DueRule | null | undefined): rule is ExplicitRule {
+  return !!rule && isDayKind(rule.kind) && typeof (rule as { cycle?: unknown }).cycle === 'number'
+}
+
+/** How far ahead an explicit cycle may go: 8 weeks, 12 months, 3 years (or the interval). */
+export const EXPLICIT_CYCLE_LIMIT = { weekly: 8, monthly: 12, yearly: 3 } as const
 
 // ═══ Parsing ═════════════════════════════════════════════════════════════════
 
@@ -122,21 +157,33 @@ function parseCalendar(r: Record<string, unknown>, which: Which): Parsed<Calenda
     isInt(r.cycle, 1, MAX_CYCLE)
       ? { ok: true, rule: r.cycle }
       : { ok: false, problem: `choose a cycle for the ${f}.` }
+  /** An explicit cycle on a day rule: absent (legacy, inferred) or 1..MAX_CYCLE. */
+  const optionalCycle = (): Parsed<{ cycle?: number }> => {
+    if (r.cycle === undefined || r.cycle === null) return { ok: true, rule: {} }
+    const c = cycle()
+    return c.ok ? { ok: true, rule: { cycle: c.rule } } : c
+  }
 
   switch (r.kind) {
     case 'time_of_day':
       return { ok: true, rule: { kind: 'time_of_day', time } }
     case 'weekday': {
+      const c = optionalCycle()
+      if (!c.ok) return c
       const w = weekday()
-      return w.ok ? { ok: true, rule: { kind: 'weekday', weekday: w.rule, time } } : w
+      return w.ok ? { ok: true, rule: { kind: 'weekday', weekday: w.rule, time, ...c.rule } } : w
     }
     case 'month_day': {
+      const c = optionalCycle()
+      if (!c.ok) return c
       const d = monthDay()
-      return d.ok ? { ok: true, rule: { kind: 'month_day', day: d.rule, time } } : d
+      return d.ok ? { ok: true, rule: { kind: 'month_day', day: d.rule, time, ...c.rule } } : d
     }
     case 'year_date': {
+      const c = optionalCycle()
+      if (!c.ok) return c
       const y = yearDate()
-      return y.ok ? { ok: true, rule: { kind: 'year_date', month: y.rule.month, day: y.rule.day, time } } : y
+      return y.ok ? { ok: true, rule: { kind: 'year_date', month: y.rule.month, day: y.rule.day, time, ...c.rule } } : y
     }
     case 'cycle_weekday': {
       const c = cycle()
@@ -272,30 +319,51 @@ export function cycleLengthOf(freq: Frequency): number {
   return freq.kind === 'weekly' || freq.kind === 'monthly' || freq.kind === 'yearly' ? freq.every : 1
 }
 
-/** The calendar kind this frequency allows (null = relative kinds only). */
+/**
+ * The calendar kind this frequency allows (null = relative kinds only). Every 2+ uses
+ * the same day kinds, with the explicit cycle required.
+ */
 export function calendarKindFor(freq: Frequency): CalendarKind | null {
   switch (freq.kind) {
     case 'daily':
       return 'time_of_day'
     case 'weekly':
-      return freq.every >= 2 ? 'cycle_weekday' : 'weekday'
+      return 'weekday'
     case 'monthly':
-      return freq.every >= 2 ? 'cycle_month_day' : 'month_day'
+      return 'month_day'
     case 'yearly':
-      return freq.every >= 2 ? 'cycle_year_date' : 'year_date'
+      return 'year_date'
     default:
       return null
   }
 }
 
+/** The legacy cycle_* kind still accepted for an every-2+ frequency (null otherwise). */
+export function legacyCycleKindFor(freq: Frequency): CalendarKind | null {
+  if ((freq.kind === 'weekly' || freq.kind === 'monthly' || freq.kind === 'yearly') && freq.every >= 2) {
+    return freq.kind === 'weekly' ? 'cycle_weekday' : freq.kind === 'monthly' ? 'cycle_month_day' : 'cycle_year_date'
+  }
+  return null
+}
+
+function calendarKindsFor(freq: Frequency): CalendarKind[] {
+  return [calendarKindFor(freq), legacyCycleKindFor(freq)].filter((k): k is CalendarKind => !!k)
+}
+
 export function allowedStartKinds(freq: Frequency): StartKind[] {
-  const cal = calendarKindFor(freq)
-  return cal ? [...RELATIVE_START_KINDS, cal] : [...RELATIVE_START_KINDS]
+  return [...RELATIVE_START_KINDS, ...calendarKindsFor(freq)]
 }
 
 export function allowedDueKinds(freq: Frequency): DueKind[] {
-  const cal = calendarKindFor(freq)
-  return cal ? [...RELATIVE_DUE_KINDS, cal] : [...RELATIVE_DUE_KINDS]
+  return [...RELATIVE_DUE_KINDS, ...calendarKindsFor(freq)]
+}
+
+/** The furthest explicit cycle this frequency allows (1 when it has no cycles). */
+export function maxCycleOf(freq: Frequency): number {
+  if (freq.kind === 'weekly' || freq.kind === 'monthly' || freq.kind === 'yearly') {
+    return Math.max(EXPLICIT_CYCLE_LIMIT[freq.kind], freq.every)
+  }
+  return 1
 }
 
 const UNIT = { weekly: 'week', monthly: 'month', yearly: 'year', daily: 'day' } as const
@@ -325,13 +393,19 @@ export function frequencyHint(freq: Frequency): string {
   }
 }
 
-function ruleFrequencyProblem(rule: StartRule | DueRule, allowed: readonly string[], freq: Frequency): string | null {
+function ruleFrequencyProblem(rule: StartRule | DueRule, allowed: readonly string[], freq: Frequency, which: Which): string | null {
   if (!allowed.includes(rule.kind)) return frequencyHint(freq)
-  if ('cycle' in rule && (freq.kind === 'weekly' || freq.kind === 'monthly' || freq.kind === 'yearly')) {
-    if (rule.cycle > freq.every) {
-      const u = CYCLE_UNIT[freq.kind]
-      return `the workflow repeats every ${freq.every} ${UNIT[freq.kind]}s. Choose ${u} 1 to ${u} ${freq.every}.`
-    }
+  if (freq.kind !== 'weekly' && freq.kind !== 'monthly' && freq.kind !== 'yearly') return null
+  const u = CYCLE_UNIT[freq.kind]
+  const cycle = (rule as { cycle?: number }).cycle
+  if (isCycleKind(rule.kind) && typeof cycle === 'number' && cycle > freq.every) {
+    return `the workflow repeats every ${freq.every} ${UNIT[freq.kind]}s. Choose ${u} 1 to ${u} ${freq.every}.`
+  }
+  if (isDayKind(rule.kind)) {
+    // Every 2+ needs the cycle: a plain weekday / date would be ambiguous.
+    if (cycle === undefined) return freq.every >= 2 ? frequencyHint(freq) : null
+    const max = maxCycleOf(freq)
+    if (cycle > max) return `choose ${u} 1 to ${u} ${max} for the ${field(which)}.`
   }
   return null
 }
@@ -344,13 +418,13 @@ export function timingProblem(startRaw: unknown, dueRaw: unknown, freq: Frequenc
   if (startRaw !== null && startRaw !== undefined) {
     const s = parseStartRule(startRaw)
     if (!s.ok) return s.problem
-    const why = ruleFrequencyProblem(s.rule, allowedStartKinds(freq), freq)
+    const why = ruleFrequencyProblem(s.rule, allowedStartKinds(freq), freq, 'start')
     if (why) return why
   }
   if (dueRaw !== null && dueRaw !== undefined) {
     const d = parseDueRule(dueRaw)
     if (!d.ok) return d.problem
-    const why = ruleFrequencyProblem(d.rule, allowedDueKinds(freq), freq)
+    const why = ruleFrequencyProblem(d.rule, allowedDueKinds(freq), freq, 'due')
     if (why) return why
   }
   return null
@@ -378,6 +452,8 @@ export interface RunStartScheduleLike {
   month_days?: unknown
   yearly_dates?: unknown
   time?: string | null
+  /** When the schedule starts (a stored UTC-midnight Date, or 'YYYY-MM-DD'): every-N runs keep in step with it. */
+  start_date?: unknown
 }
 
 /** Monday-first position of a weekday (Mon = 0 … Sun = 6). */
@@ -451,6 +527,116 @@ export function formatTime12(hhmm: string): string {
   return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`
 }
 
+// ═══ The sample run (builder calendar + Save's order check) ═══════════════════
+
+/** A schedule's start date as a calendar day (a stored UTC-midnight Date, or 'YYYY-MM-DD…'). */
+function startDayOf(v: unknown): LocalDate | null {
+  if (v instanceof Date) {
+    return Number.isNaN(v.getTime()) ? null : { year: v.getUTCFullYear(), month: v.getUTCMonth() + 1, day: v.getUTCDate() }
+  }
+  return parseLocalDate(v)
+}
+
+const daySerial = (d: LocalDate) => Math.round(Date.UTC(d.year, d.month - 1, d.day) / 86_400_000)
+
+/**
+ * The SAMPLE RUN's start day: the run the builder's calendar shows and Save checks the
+ * order of explicit days against (planned without holidays, so the builder — which
+ * mirrors this exactly — and the server agree). It is the next day, from `today` on
+ * (today only while the run start time hasn't passed — `nowMinutes` is the org clock's
+ * minutes since midnight), on which the run start point's trigger falls: the latest
+ * trigger day of the cycle, in step with its schedule's start date and interval (the
+ * same day arithmetic as the recurrence evaluator). End conditions are ignored — it is
+ * an example. Falls back to the next such day ignoring the interval, then to `today`.
+ */
+export function sampleRunDay(schedules: RunStartScheduleLike[], rs: RunStartPoint, today: LocalDate, nowMinutes: number): LocalDate {
+  const type = rs.kind
+  const hasTrigger = (s: RunStartScheduleLike): boolean => {
+    if (s.schedule_type !== type) return false
+    switch (rs.kind) {
+      case 'daily':
+        return true
+      case 'weekly':
+        return intList(s.days).includes(rs.weekday)
+      case 'monthly':
+        return intList(s.month_days).some((d) => Math.abs(d) === rs.day)
+      case 'yearly':
+        return (Array.isArray(s.yearly_dates) ? s.yearly_dates : []).some(
+          (y) => (y as { month?: unknown })?.month === rs.month && (y as { day?: unknown })?.day === rs.day,
+        )
+    }
+  }
+  const timed = schedules.filter((s) => hasTrigger(s) && (s.time ?? '00:00') === rs.time)
+  const triggers = timed.length ? timed : schedules.filter(hasTrigger)
+  const onTriggerDay = (d: LocalDate): boolean => {
+    switch (rs.kind) {
+      case 'daily':
+        return true
+      case 'weekly':
+        return weekdayOf(d) === rs.weekday
+      case 'monthly':
+        return d.day === rs.day
+      case 'yearly':
+        return d.month === rs.month && d.day === rs.day
+    }
+  }
+  const inStep = (s: RunStartScheduleLike, d: LocalDate): boolean => {
+    const start = startDayOf(s.start_date)
+    if (!start) return true
+    if (compareLocalDates(d, start) < 0) return false
+    const every = typeof s.every === 'number' && Number.isInteger(s.every) && s.every >= 1 ? s.every : 1
+    const daysDiff = daySerial(d) - daySerial(start)
+    switch (rs.kind) {
+      case 'daily':
+        return daysDiff % every === 0
+      case 'weekly':
+        return Math.floor(daysDiff / 7) % every === 0
+      case 'monthly':
+        return ((d.year - start.year) * 12 + (d.month - start.month)) % every === 0
+      case 'yearly':
+        return (d.year - start.year) % every === 0
+    }
+  }
+  const first = minutesOf(rs.time) > nowMinutes ? today : addLocalDays(today, 1)
+  const LIMIT = 366 * 10 + 31
+  for (let i = 0; i < LIMIT; i++) {
+    const d = addLocalDays(first, i)
+    if (onTriggerDay(d) && (!triggers.length || triggers.some((s) => inStep(s, d)))) return d
+  }
+  for (let i = 0; i < LIMIT; i++) {
+    const d = addLocalDays(first, i)
+    if (onTriggerDay(d)) return d
+  }
+  return first
+}
+
+const MONTH_WORD = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** "5 Nov" (with the year when it isn't `refYear`'s) — the order messages' day words. */
+export function dayMonthWords(d: LocalDate, refYear: number): string {
+  return `${d.day} ${MONTH_WORD[d.month - 1]}${d.year !== refYear ? ` ${d.year}` : ''}`
+}
+
+/**
+ * Save's order messages (completing "Step 2 “X”: …"): an explicit start day before the
+ * day the step it waits for is due — `pick a day on or after 5 Nov, when 1 “Collect
+ * documents” is due.` — or an explicit due day before the step's own start day. The
+ * same day is always fine (a step may start later that day).
+ */
+export function startBeforePredecessorText(dayWords: string, predecessor: string): string {
+  return `pick a day on or after ${dayWords}, when ${predecessor} is due.`
+}
+
+export function dueBeforeStartText(dayWords: string): string {
+  return `pick a due day on or after ${dayWords}, when it starts.`
+}
+
+/** How the order messages name a step: `1 “Collect documents”` (or just `1`). */
+export function predecessorName(label: string, title: string | null | undefined): string {
+  const t = (title ?? '').trim()
+  return t ? `${label} “${t}”` : label
+}
+
 /** The run start day in words: "the 3rd", "Wednesday", "1 Apr" (null for daily). */
 export function runStartDayWords(rs: RunStartPoint): string | null {
   switch (rs.kind) {
@@ -467,8 +653,8 @@ export function runStartDayWords(rs: RunStartPoint): string | null {
 
 /**
  * Why a FIRST step's calendar rule falls before the run start in its cycle, or null.
- * Only the run's own cycle counts: a cycle rule (every 2+) in Week / Month / Year 2 or
- * later is always fine. A rule on the run start day itself must not be earlier than the
+ * Only the run's own cycle counts: a rule in Week / Month / Year 2 or later (explicit, or
+ * a legacy cycle_* position) is always fine; "in Month 1" is said for every-2+ workflows. A rule on the run start day itself must not be earlier than the
  * run's start time (it would roll into the next cycle). Completes "Step 1 “X”: …".
  */
 export function beforeRunStartProblem(rule: StartRule | DueRule, rs: RunStartPoint): string | null {
@@ -478,9 +664,11 @@ export function beforeRunStartProblem(rule: StartRule | DueRule, rs: RunStartPoi
   if (rs.kind === 'daily') {
     return rule.kind === 'time_of_day' && earlierTime ? `pick a time at or after ${at}, when the run starts.` : null
   }
-  if ('cycle' in rule && rule.cycle !== 1) return null
+  // Only the run's own cycle holds days before the run (explicit or legacy cycles).
+  const cycle = (rule as { cycle?: number }).cycle
+  if (typeof cycle === 'number' && cycle !== 1) return null
   const unit = rs.kind === 'weekly' ? 'Week' : rs.kind === 'monthly' ? 'Month' : 'Year'
-  const inCycle = 'cycle' in rule ? ` in ${unit} 1` : ''
+  const inCycle = rs.every >= 2 ? ` in ${unit} 1` : ''
   let cmp: number
   switch (rule.kind) {
     case 'weekday':

@@ -43,7 +43,8 @@ import {
   type TrackLayout,
 } from './tracks'
 import { cleanRule, dueRuleOf, frequencyOf, runStartOf, startRuleOf, stepTimingMessage, timingProblems, type Frequency, type RunStart } from './timing'
-import { planContext, planSteps } from './timingPlan'
+import { orderProblemsFor, planContext, planSteps } from './timingPlan'
+import { getNow } from '@/lib/clock'
 import { useUnsavedChangesGuard } from './useUnsavedChangesGuard'
 import { useWorkflowActions } from './useWorkflowActions'
 import { useWorkflowLookups } from './useWorkflowLookups'
@@ -605,23 +606,35 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   const runStart = useMemo<RunStart | null>(() => JSON.parse(runStartKey), [runStartKey])
   /** A first step waits for nothing (the main path's first step, a path from the start of the run). */
   const isFirstStep = useCallback((id: string) => (layout.deps.get(id) ?? []).length === 0, [layout])
-  /** One representative run, planned without holidays — for the "(next month)" marks. */
+  /**
+   * The SAMPLE RUN — the next run on the run start day, planned without holidays (the
+   * server plans the same one for Save's order check): the timing calendar, its greyed
+   * days, and the "(next month)" marks of older rules.
+   */
   const timingPlan = useMemo(() => {
-    const ctx = planContext(frequency, runStart)
-    const planned = planSteps(
-      layout.display.map((s) => ({ id: s.id, deps: layout.deps.get(s.id) ?? [], start: startRuleOf(s), due: dueRuleOf(s) })),
-      ctx,
+    const ctx = planContext(frequency, runStart, { schedules: timingSchedules, now: getNow() })
+    const stepsForPlan = layout.display.map((s) => ({ id: s.id, deps: layout.deps.get(s.id) ?? [], start: startRuleOf(s), due: dueRuleOf(s) }))
+    const planned = planSteps(stepsForPlan, ctx)
+    const names = layout.display.map((s) => ({ id: s.id, label: labels.get(s.id) ?? '?', title: s.title ?? '' }))
+    return { ctx, planned, names, steps: stepsForPlan }
+  }, [layout, frequency, runStart, timingSchedules, labels])
+  /**
+   * Steps whose timing Save would refuse: a kind this frequency does not allow, dates
+   * that are incomplete or before the run starts — then, when those are fine, an explicit
+   * day before the step it waits for is due (or a due day before its own start).
+   */
+  const timingIssues = useMemo(() => {
+    const own = new Map(
+      layout.display.map((s) => [s.id, timingProblems(startRuleOf(s), dueRuleOf(s), frequency, { first: isFirstStep(s.id), runStart })]),
     )
-    return { ctx, planned }
-  }, [layout, frequency, runStart])
-  /** Steps whose timing this frequency does not allow (or whose dates are incomplete). */
-  const timingIssues = useMemo(
-    () =>
-      layout.display
-        .map((s) => ({ step: s, problems: timingProblems(startRuleOf(s), dueRuleOf(s), frequency, { first: isFirstStep(s.id), runStart }) }))
-        .filter((x) => x.problems.length > 0),
-    [layout, frequency, runStart, isFirstStep],
-  )
+    const order = orderProblemsFor(timingPlan.steps, timingPlan.names, timingPlan.planned, timingPlan.ctx, (id) => (own.get(id) ?? []).length > 0)
+    return layout.display
+      .map((s) => {
+        const o = order.get(s.id)
+        return { step: s, problems: own.get(s.id)?.length ? own.get(s.id)! : o ? [o] : [] }
+      })
+      .filter((x) => x.problems.length > 0)
+  }, [layout, frequency, runStart, isFirstStep, timingPlan])
   /** The same problems in the server's words (its example-run warnings repeat them). */
   const timingIssueTexts = useMemo(
     () =>
@@ -942,7 +955,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
           : s.escalation_mode === 'people' && !(s.escalation_user_ids ?? []).length
             ? SAVE_STEP_MSG.escalation
             : null
-      const timing = timingProblems(startRuleOf(s), dueRuleOf(s), frequency, { first: isFirstStep(s.id), runStart })[0]
+      const timing = timingIssues.find((x) => x.step.id === s.id)?.problems[0]
       const msg = why ? `${label}: ${why}` : timing ? stepTimingMessage(label, timing) : null
       if (msg) {
         perStep.set(s.id, msg)

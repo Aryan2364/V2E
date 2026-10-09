@@ -1,233 +1,67 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle } from 'lucide-react'
-import MonthDayPicker from '@/components/ui/MonthDayPicker'
+import { AlertTriangle, Info } from 'lucide-react'
 import StyledSelect from '@/components/ui/StyledSelect'
 import TimeField from '@/components/ui/TimeField'
-import Tooltip from '@/components/ui/Tooltip'
-import type { DueRule, DueRuleKind, RuleMonthDay, StartRule, StartRuleKind } from '@/lib/types/workflows'
-import { InfoTip, WEEKDAYS_LONG, WEEKDAYS_SHORT, fmtTime, ordinal } from './shared'
+import type { DueRule, DueRuleKind, StartRule, StartRuleKind } from '@/lib/types/workflows'
+import { InfoTip, fmtTime } from './shared'
+import TimingCalendar from './TimingCalendar'
 import {
   DEFAULT_DUE_TIME,
   DEFAULT_START_TIME,
+  EXPLICIT_CYCLE_LIMIT,
   MAX_RULE_DAYS,
-  allowedDueKinds,
   allowedStartKinds,
   beforeRunStartText,
-  cycleLabel,
-  dayBeforeRunStart,
+  dayKindOf,
+  dayMonthWords,
   dueKindLabel,
+  dueKindsFor,
   dueRuleOfKind,
   frequencyNote,
-  isCalendarKind,
-  isCycleKind,
+  isExplicitRule,
+  maxCycleOf,
+  predecessorName,
   runStartShort,
   startKindLabel,
   startKindsFor,
   startRuleOfKind,
+  type DaySeed,
   type Frequency,
   type RunStart,
   type ScheduleShape,
   type TimingProblem,
 } from './timing'
-import { calendarOccurrence, nextCycleWord, plannableRules, resolveStart, type PlanContext } from './timingPlan'
-
-/** The longest each month can be (29 Feb counts). */
-const DAYS_IN_MONTH = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+import {
+  calendarOccurrence,
+  calendarSpans,
+  cycleOfDay,
+  dateOfDayNumber,
+  dayNumber,
+  dayOf,
+  dueBeforeStartSameDay,
+  dueMinDay,
+  latestPredecessor,
+  nextCycleWord,
+  plannableRules,
+  resolveStart,
+  ruleDay,
+  startMinDay,
+  startsBeforePredecessorDue,
+  type CalendarSpan,
+  type NamedStep,
+  type PlanContext,
+  type PlannedDates,
+} from './timingPlan'
 
 const LABEL = 'block text-sm font-medium text-[#374151] mb-2'
 const SUB = 'block text-[13px] font-medium text-[#374151] mb-1.5'
 const NOTE = 'mt-1.5 flex flex-wrap items-center gap-1 text-[13px] text-[#334155]'
 const INPUT =
   'px-3 py-2.5 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F8FAFC] disabled:text-[#334155] disabled:cursor-not-allowed'
-const CHIP_BASE =
-  'min-h-[44px] sm:min-h-[36px] rounded-[8px] border text-sm font-medium transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 disabled:cursor-not-allowed'
-const chipCls = (on: boolean) =>
-  `${CHIP_BASE} ${
-    on
-      ? 'bg-[#2563EB] text-white border-[#2563EB] disabled:bg-[#94A3B8] disabled:border-[#94A3B8]'
-      : 'bg-white text-[#334155] border-[#CBD5E1] hover:border-[#2563EB] hover:text-[#1D4ED8] disabled:hover:border-[#CBD5E1] disabled:hover:text-[#334155] disabled:bg-[#F8FAFC]'
-  }`
-/** A day a first step can't use (before the run starts): faded, not pickable. */
-const BLOCKED_CLS = `${CHIP_BASE} bg-[#F1F5F9] text-[#64748B] border-[#E2E8F0] cursor-not-allowed line-through decoration-[#94A3B8]`
 
-// ─── Pickers ─────────────────────────────────────────────────────────────────
-
-/**
- * What a picker option means for this step: `blocked` = before the run starts (a first
- * step can't use it; the reason is its tooltip); `next` = it lands in the next cycle
- * (before the previous step's dates), shown dashed with "(next month)".
- */
-interface OptionState {
-  blocked?: string | null
-  next?: string | null
-}
-
-/** One choice chip; a blocked one stays focusable so its reason can be read (tap too). */
-function Chip({
-  selected,
-  state,
-  label,
-  onPick,
-  disabled,
-  className,
-  children,
-}: {
-  selected: boolean
-  state?: OptionState
-  /** Its name, for the screen reader and the tooltip ("Monday", "1st"). */
-  label: string
-  onPick: () => void
-  disabled?: boolean
-  className: string
-  children: React.ReactNode
-}) {
-  const blocked = !!state?.blocked
-  const next = !blocked && !!state?.next
-  const cls = blocked
-    ? selected
-      ? `${chipCls(true)} !border-[#DC2626] ring-1 ring-[#DC2626]`
-      : BLOCKED_CLS
-    : `${chipCls(selected)} ${next ? 'border-dashed' : ''}`
-  const name = next ? `${label} (${state!.next})` : label
-  const button = (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={selected}
-      aria-disabled={blocked || undefined}
-      aria-label={blocked ? `${label}: ${state!.blocked}` : name}
-      disabled={disabled}
-      onClick={() => {
-        if (!blocked) onPick()
-      }}
-      className={`${cls} ${className}`}
-    >
-      {children}
-    </button>
-  )
-  if (disabled) return button
-  if (blocked) return <Tooltip label={state!.blocked} openOnTap>{button}</Tooltip>
-  if (next) return <Tooltip label={name}>{button}</Tooltip>
-  return button
-}
-
-/** One day of the week, as chips (single choice). */
-function WeekdayChips({
-  value,
-  onChange,
-  disabled,
-  label,
-  stateOf,
-}: {
-  value: number
-  onChange: (d: number) => void
-  disabled?: boolean
-  label: string
-  stateOf?: (d: number) => OptionState
-}) {
-  // Monday first, as the working week reads.
-  const order = [1, 2, 3, 4, 5, 6, 0]
-  return (
-    <div role="radiogroup" aria-label={label} className="grid grid-cols-7 gap-1.5">
-      {order.map((d) => (
-        <Chip
-          key={d}
-          selected={value === d}
-          state={stateOf?.(d)}
-          label={WEEKDAYS_LONG[d]}
-          onPick={() => onChange(d)}
-          disabled={disabled}
-          className="px-0"
-        >
-          {WEEKDAYS_SHORT[d]}
-        </Chip>
-      ))}
-    </div>
-  )
-}
-
-/** One day of the month — 1 to 31, or the last day (single choice). */
-function MonthDayGrid({
-  value,
-  onChange,
-  disabled,
-  label,
-  stateOf,
-}: {
-  value: RuleMonthDay | undefined
-  onChange: (d: RuleMonthDay) => void
-  disabled?: boolean
-  label: string
-  stateOf?: (d: RuleMonthDay) => OptionState
-}) {
-  const small = '!min-h-[36px] sm:!min-h-[32px] text-[13px]'
-  return (
-    <div role="radiogroup" aria-label={label} className="grid grid-cols-7 gap-1">
-      {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-        <Chip
-          key={d}
-          selected={value === d}
-          state={stateOf?.(d)}
-          label={ordinal(d)}
-          onPick={() => onChange(d)}
-          disabled={disabled}
-          className={`${small} tabular-nums px-0`}
-        >
-          {d}
-        </Chip>
-      ))}
-      <Chip
-        selected={value === 'last'}
-        state={stateOf?.('last')}
-        label="Last day"
-        onPick={() => onChange('last')}
-        disabled={disabled}
-        className={`${small} col-span-4 px-2`}
-      >
-        Last day
-      </Chip>
-    </div>
-  )
-}
-
-/** Which week / month / year of the cycle: chips up to 6, a list beyond. */
-function CycleSelector({ f, value, onChange, disabled }: { f: Frequency; value: number; onChange: (n: number) => void; disabled?: boolean }) {
-  const every = 'every' in f ? f.every : 1
-  const options = Array.from({ length: Math.max(1, every) }, (_, i) => i + 1)
-  const invalid = value > every
-  if (every > 6) {
-    return (
-      <StyledSelect
-        value={invalid ? '' : String(value)}
-        onChange={(v) => onChange(Number(v))}
-        options={options.map((n) => ({ value: String(n), label: cycleLabel(f, n) }))}
-        placeholder={`Choose ${cycleLabel(f, 1).split(' ')[0].toLowerCase()}`}
-        disabled={disabled}
-        wrapperClassName="w-full sm:w-[200px]"
-      />
-    )
-  }
-  return (
-    <div role="radiogroup" aria-label="Which cycle" className="flex flex-wrap gap-1.5">
-      {options.map((n) => (
-        <button
-          key={n}
-          type="button"
-          role="radio"
-          aria-checked={value === n}
-          disabled={disabled}
-          onClick={() => onChange(n)}
-          className={`${chipCls(value === n)} px-3`}
-        >
-          {cycleLabel(f, n)}
-        </button>
-      ))}
-    </div>
-  )
-}
+// ─── Small fields ────────────────────────────────────────────────────────────
 
 /** A whole number of days, typed; applied once it is valid, put back on leave if not. */
 function DaysInput({
@@ -283,35 +117,60 @@ function TimeAt({ value, onChange, disabled, label, fallback }: { value?: string
   )
 }
 
+/** A soft note under a pick: worth knowing, never an error. */
+function SoftNote({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mt-1.5 flex items-start gap-1.5 rounded-[8px] border border-[#BFDBFE] bg-[#EFF6FF] px-2.5 py-1.5 text-[13px] text-[#1E3A8A]" role="status">
+      <Info size={14} className="shrink-0 mt-0.5" aria-hidden />
+      <span>{children}</span>
+    </p>
+  )
+}
+
 // ─── One rule ────────────────────────────────────────────────────────────────
 
-/** A calendar rule's day, short, for the "(next month)" note: "1st", "Mon", "1 Mar", "Week 1, Mon". */
-function dayWord(r: StartRule | DueRule, f: Frequency): string {
-  const md = (d: RuleMonthDay | undefined) => (d === 'last' ? 'Last day' : typeof d === 'number' ? ordinal(d) : '—')
-  const yd = () => `${typeof r.day === 'number' ? r.day : '—'} ${MONTHS_SHORT[(r.month ?? 1) - 1] ?? ''}`.trim()
-  const cyc = isCycleKind(r.kind) ? `${cycleLabel(f, r.cycle ?? 1)}, ` : ''
-  switch (r.kind) {
-    case 'time_of_day':
-      return fmtTime(r.time)
-    case 'weekday':
-    case 'cycle_weekday':
-      return `${cyc}${WEEKDAYS_SHORT[r.weekday ?? 1] ?? '—'}`
-    case 'month_day':
-    case 'cycle_month_day':
-      return `${cyc}${md(r.day)}`
-    default:
-      return `${cyc}${yd()}`
-  }
+/** The day kind a calendar pages by: Week strip, Month, or months across Years. */
+const unitOf = (kind: string): 'Week' | 'Month' | 'Year' =>
+  dayKindOf(kind as StartRuleKind) === 'weekday' ? 'Week' : dayKindOf(kind as StartRuleKind) === 'month_day' ? 'Month' : 'Year'
+
+/** Where the calendar stands for one rule (see `StepTiming`). */
+interface CalendarContext {
+  ctx: PlanContext
+  spans: CalendarSpan[]
+  /** What the rule resolves from: when the step may start (start) / its planned start (due). */
+  anchor: Date
+  /** Days before it are greyed, with the reason. */
+  minDay: number | null
+  minReason: string | null
+  /** The same-day note under the pick, or null. */
+  note: React.ReactNode
 }
 
 /**
- * Where this rule's options land for this step: `nextOf` says whether a candidate rule
- * falls in the next cycle; `runStart` (first steps only) greys out the days before the
- * run starts.
+ * Where this rule's options land for this step: `nextOf` (time of day) says whether a
+ * time falls on the next day; `runStart` (first steps) is the run start; `cal` is the
+ * calendar's view of the sample run.
  */
 interface RuleContext {
   nextOf?: (candidate: StartRule | DueRule) => boolean
   runStart: RunStart | null
+  cal: CalendarContext | null
+}
+
+/** A rule picked on a calendar day: the day kind, with its explicit cycle (Week / Month / Year N). */
+function ruleAtDay<R extends StartRule | DueRule>(rule: R, dayNo: number, ctx: PlanContext, lastDay = false): R {
+  const kind = dayKindOf(rule.kind) as 'weekday' | 'month_day' | 'year_date'
+  const d = dateOfDayNumber(dayNo)
+  const cycle = cycleOfDay(kind, dayNo, ctx)
+  const time = rule.time
+  switch (kind) {
+    case 'weekday':
+      return { kind, cycle, weekday: d.getUTCDay(), time } as R
+    case 'month_day':
+      return { kind, cycle, day: lastDay ? 'last' : d.getUTCDate(), time } as R
+    default:
+      return { kind, cycle, month: d.getUTCMonth() + 1, day: d.getUTCDate(), time } as R
+  }
 }
 
 /** The params of a rule (everything but its kind), laid out for its kind. */
@@ -339,28 +198,6 @@ function RuleParams<R extends StartRule | DueRule>({
   const fallback = which === 'start' ? DEFAULT_START_TIME : DEFAULT_DUE_TIME
   const time = <TimeAt value={rule.time} onChange={(t) => set({ time: t })} disabled={disabled} label={`${word} time`} fallback={fallback} />
   const rs = ctx.runStart
-  const nextWord = nextCycleWord(rule.kind)
-  /** The state of the option `patch` would pick. */
-  const stateOf = (patch: Partial<StartRule>): OptionState => {
-    const cand = { ...rule, ...patch } as StartRule | DueRule
-    if (rs && dayBeforeRunStart(rs, { weekday: cand.weekday, day: cand.day, month: cand.month, cycle: cand.cycle })) {
-      return { blocked: beforeRunStartText(rs) }
-    }
-    return { next: ctx.nextOf?.(cand) ? nextWord : null }
-  }
-  const selectedNext = isCalendarKind(rule.kind) && !!ctx.nextOf?.(rule)
-  const previous = which === 'start' ? 'the previous step is due' : 'this step starts'
-  /** "Lands on 1st (next month)" under the picker when the pick falls in the next cycle. */
-  const landing = selectedNext ? (
-    <p className={NOTE}>
-      <span>
-        Lands on <span className="font-semibold text-[#0F172A]">{`${dayWord(rule, f)} (${nextWord})`}</span>
-      </span>
-      <InfoTip label="Next cycle" text={`It’s before ${previous}, so it moves to the ${nextWord}.`} />
-    </p>
-  ) : null
-  const greyedTip = (what: string) =>
-    rs ? <InfoTip label={what} text={`Greyed out: before the run starts (${runStartShort(rs)}).`} /> : null
 
   switch (rule.kind) {
     case 'immediate':
@@ -388,7 +225,10 @@ function RuleParams<R extends StartRule | DueRule>({
         </div>
       )
     }
-    case 'time_of_day':
+    case 'time_of_day': {
+      const nextWord = nextCycleWord(rule.kind)
+      const previous = which === 'start' ? 'the previous step is due' : 'this step starts'
+      const landsNext = !!ctx.nextOf?.(rule)
       return (
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -396,73 +236,60 @@ function RuleParams<R extends StartRule | DueRule>({
             {time}
             {rs?.type === 'daily' && <InfoTip label="Time" text={`Not before the run starts (${runStartShort(rs)}).`} />}
           </div>
-          {landing}
+          {landsNext && (
+            <p className={NOTE}>
+              <span>
+                Lands on <span className="font-semibold text-[#0F172A]">{`${fmtTime(rule.time)} (${nextWord})`}</span>
+              </span>
+              <InfoTip label="Next cycle" text={`It’s before ${previous}, so it moves to the ${nextWord}.`} />
+            </p>
+          )}
         </div>
       )
+    }
     default: {
-      const cycle = isCycleKind(rule.kind)
-      const isWeekday = rule.kind === 'weekday' || rule.kind === 'cycle_weekday'
-      const isMonthDay = rule.kind === 'month_day' || rule.kind === 'cycle_month_day'
-      // Days are greyed out only where the run's own cycle holds days before it.
-      const greys = !!rs && (!cycle || (rule.cycle ?? 1) === 1)
-      // Under the picker: where the pick lands when that's the next cycle, else (when some
-      // options are dashed) what the dashes mean.
-      const options: Partial<StartRule>[] = isWeekday
-        ? [0, 1, 2, 3, 4, 5, 6].map((d) => ({ weekday: d }))
-        : isMonthDay
-          ? [...Array.from({ length: 31 }, (_, i) => ({ day: i + 1 })), { day: 'last' as const }]
-          : Array.from({ length: 12 }, (_, m) => Array.from({ length: DAYS_IN_MONTH[m] }, (_, d) => ({ month: m + 1, day: d + 1 }))).flat()
-      const dashed = !!ctx.nextOf && !selectedNext && options.some((o) => !!stateOf(o).next)
-      const note = landing ?? (dashed ? <p className={NOTE}>{`Dashed ${isWeekday || isMonthDay ? 'days' : 'dates'} land in the ${nextWord}.`}</p> : null)
+      const cal = ctx.cal
+      if (!cal) return <div className="flex flex-wrap items-center gap-2"><span className="text-sm text-[#1E293B]">At</span>{time}</div>
+      const unit = unitOf(rule.kind)
+      const sameUnit = (f.type === 'weekly' && unit === 'Week') || (f.type === 'monthly' && unit === 'Month') || (f.type === 'yearly' && unit === 'Year')
+      const maxCycle = sameUnit ? maxCycleOf(f) : EXPLICIT_CYCLE_LIMIT[unit === 'Week' ? 'weekly' : unit === 'Month' ? 'monthly' : 'yearly']
+      const selected = ruleDay(rule, cal.anchor, cal.ctx, which === 'due')
+      const verb = which === 'start' ? 'starts' : 'due'
       return (
         <div className="flex flex-col gap-3">
-          {cycle && (
-            <div>
-              <span className={SUB}>Which {cycleLabel(f, 1).split(' ')[0].toLowerCase()}</span>
-              <CycleSelector f={f} value={rule.cycle ?? 1} onChange={(n) => set({ cycle: n })} disabled={disabled} />
-            </div>
-          )}
-          {isWeekday && (
-            <div>
-              <span className={SUB}>Day of the week {greys ? greyedTip('Day of the week') : null}</span>
-              <WeekdayChips
-                value={rule.weekday ?? 1}
-                onChange={(d) => set({ weekday: d })}
-                disabled={disabled}
-                label={`${word}: day of the week`}
-                stateOf={(d) => stateOf({ weekday: d })}
+          <div>
+            <span className={SUB}>
+              {unit === 'Week' ? 'Day' : 'Date'}{' '}
+              <InfoTip
+                label={`${word} day`}
+                text={`Sample run — holidays may shift dates. Bands are the other steps; striped ones are steps this waits for.${
+                  unit === 'Month' ? ' Shorter months use their last day instead.' : ''
+                }`}
               />
-              {note}
-            </div>
-          )}
-          {isMonthDay && (
-            <div className="max-w-[340px]">
-              <span className={SUB}>
-                Day of the month{' '}
-                <InfoTip
-                  label="Day of the month"
-                  text={`Shorter months use their last day instead.${greys && rs ? ` Greyed out: before the run starts (${runStartShort(rs)}).` : ''}`}
-                />
-              </span>
-              <MonthDayGrid value={rule.day} onChange={(d) => set({ day: d })} disabled={disabled} label={`${word}: day of the month`} stateOf={(d) => stateOf({ day: d })} />
-              {note}
-            </div>
-          )}
-          {!isWeekday && !isMonthDay && (
-            <div className="max-w-[240px]">
-              <span className={SUB}>Date {greys ? greyedTip('Date') : null}</span>
-              <MonthDayPicker
-                value={{ month: rule.month ?? 1, day: typeof rule.day === 'number' ? rule.day : 1 }}
-                onChange={(v) => set({ month: v.month, day: v.day })}
-                disabled={disabled}
-                dayState={(month, day) => {
-                  const s = stateOf({ month, day })
-                  return { blocked: s.blocked ?? null, note: s.next ? `${day} ${MONTHS_SHORT[month - 1]} (${s.next})` : null }
-                }}
-              />
-              {note}
-            </div>
-          )}
+            </span>
+            <TimingCalendar
+              label={`${word} day`}
+              unit={unit}
+              ctx={cal.ctx}
+              maxCycle={maxCycle}
+              selected={selected}
+              minDay={cal.minDay}
+              minReason={cal.minReason}
+              spans={cal.spans}
+              disabled={disabled}
+              onPick={(dayNo) => onChange(ruleAtDay(rule, dayNo, cal.ctx))}
+              lastDay={
+                unit === 'Month'
+                  ? {
+                      selected: rule.day === 'last',
+                      onPick: (cycle) => onChange({ kind: 'month_day', cycle, day: 'last', time: rule.time } as R),
+                    }
+                  : null
+              }
+              selfText={`This step — ${verb} ${fmtTime(rule.time || fallback)}`}
+            />
+            {cal.note}
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-[#1E293B]">At</span>
             {time}
@@ -485,20 +312,29 @@ function ProblemLine({ message }: { message: string }) {
 // ─── The Timing block ────────────────────────────────────────────────────────
 
 /**
- * Where this step sits in the representative run (see timingPlan.ts): when it may start
- * (the run start, or the latest due of the steps before it).
+ * Where this step sits in the SAMPLE RUN (see timingPlan.ts): when it may start (the run
+ * start, or the latest due of the steps before it), every step's planned dates, their
+ * names, and which steps it waits for.
  */
 export interface StepPlanPosition {
   ctx: PlanContext
   anchor: Date
+  planned: Map<string, PlannedDates>
+  /** Every step, in display order (bands and their names). */
+  names: NamedStep[]
+  /** The steps it waits for (its path and "Also waits for"). */
+  deps: string[]
+  /** Its own id (null for a step being added). */
+  selfId: string | null
 }
 
 /**
  * A step's timing: when it starts (beside "Starts after") and when it is due. Only the
  * kinds the workflow's current frequency allows are offered; a choice the frequency no
  * longer allows is kept as it is and flagged, so nothing changes behind anyone's back.
- * A first step (`runStart` set) can't use days before the run starts — they are greyed
- * out; on later steps, a day before the previous step's dates is marked "(next month)".
+ * Days are picked on a calendar of the sample run (`TimingCalendar`): a first step can't
+ * use days before the run starts, a later step days before the step it waits for is due,
+ * a due date days before the step starts — all greyed out with the reason.
  */
 export default function StepTiming({
   idPrefix,
@@ -528,7 +364,7 @@ export default function StepTiming({
   startsAfter: React.ReactNode
   /** First steps only: where the run starts (days before it are greyed out). */
   runStart?: RunStart | null
-  /** Where the step sits in a run, for the "(next month)" marks. */
+  /** Where the step sits in the sample run (the calendar and its greyed days). */
   position?: StepPlanPosition | null
 }) {
   const startProblem = problems.find((p) => p.part === 'start')
@@ -538,29 +374,82 @@ export default function StepTiming({
     () => (position ? resolveStart(plannableRules(start, due, f).start, position.anchor, position.ctx) : null),
     [position, start, due, f],
   )
+  const spans = useMemo(
+    () => (position ? calendarSpans(position.names, position.planned, position.selfId, position.deps) : []),
+    [position],
+  )
+  // The step it waits for that is due last: its due day is the first day it may use.
+  const pred = useMemo(() => {
+    if (!position) return null
+    const latest = latestPredecessor(position.deps, position.planned, position.selfId)
+    if (!latest) return null
+    const n = position.names.find((x) => x.id === latest.id)
+    return { label: n?.label ?? '?', name: predecessorName(n?.label ?? '?', n?.title), due: latest.due }
+  }, [position])
+
+  const startCal: CalendarContext | null = position
+    ? (() => {
+        const ctx = position.ctx
+        const runText = runStart
+          ? beforeRunStartText(runStart)
+          : `Before the run starts (${dayMonthWords(dayOf(ctx.runStart), ctx.runStart.getUTCFullYear())})`
+        const { minDay, reason } = startMinDay(ctx, pred, runText)
+        // Same day as the step before is due, at an earlier hour: fine — it waits for it.
+        const note =
+          pred && startsBeforePredecessorDue(start, ctx, pred.due) ? (
+            <SoftNote>{`Starts before ${pred.label} is due. It begins once ${pred.label} is done.`}</SoftNote>
+          ) : null
+        return { ctx, spans, anchor: position.anchor, minDay, minReason: reason, note }
+      })()
+    : null
+  const dueCal: CalendarContext | null =
+    position && plannedStart
+      ? (() => {
+          const ctx = position.ctx
+          const { minDay, reason } = dueMinDay(ctx, plannedStart)
+          const note = dueBeforeStartSameDay(due, ctx, plannedStart) ? (
+            <SoftNote>{`Due before it starts that day, so it’s due ${fmtTime(due.time)} the next day.`}</SoftNote>
+          ) : null
+          return { ctx, spans, anchor: plannedStart, minDay, minReason: reason, note }
+        })()
+      : null
+
   const startCtx: RuleContext = {
     runStart,
+    cal: startCal,
     nextOf: position ? (cand) => calendarOccurrence(cand, position.anchor, position.ctx, false).next : undefined,
   }
   const dueCtx: RuleContext = {
     runStart,
+    cal: dueCal,
     nextOf: position && plannedStart ? (cand) => calendarOccurrence(cand, plannedStart, position.ctx, true).next : undefined,
+  }
+
+  /** A new day rule starts where it may: the day it may start (start) / its start day (due). */
+  const seedFor = (kind: string, at: Date | null | undefined): DaySeed | null => {
+    if (!position || !at || (kind !== 'weekday' && kind !== 'month_day' && kind !== 'year_date')) return null
+    const dayNo = dayNumber(at)
+    const d = dateOfDayNumber(dayNo)
+    return { cycle: cycleOfDay(kind, dayNo, position.ctx), weekday: d.getUTCDay(), day: d.getUTCDate(), month: d.getUTCMonth() + 1 }
   }
 
   // First steps: Immediately / Days after workflow is triggered / the calendar kind; later
   // steps: When previous step is done / Days after previous step / the calendar kind. A
   // first step saved with "Days after previous step" keeps it (it counts from the trigger).
+  // A legacy every-2+ rule (cycle_*) shows as its day kind.
   const offered = startKindsFor(f, hasPredecessors)
   const startKinds = !hasPredecessors && start.kind === 'days_after_previous' ? [...offered, start.kind] : offered
+  const startValue = startKinds.includes(dayKindOf(start.kind) as StartRuleKind) ? dayKindOf(start.kind) : start.kind
   const startOptions: { value: string; label: string }[] = startKinds.map((k) => ({ value: k, label: startKindLabel(k, f, hasPredecessors) }))
-  if (!startKinds.includes(start.kind)) {
+  if (!startKinds.includes(startValue as StartRuleKind)) {
     // Kept as chosen, never changed behind anyone's back; Save says what to do.
     const why = start.kind === 'days_after_run_start' && allowedStartKinds(f).includes(start.kind) ? 'no longer available — pick another' : 'not available'
     startOptions.push({ value: start.kind, label: `${startKindLabel(start.kind, f, hasPredecessors)} (${why})` })
   }
-  const dueKinds = allowedDueKinds(f)
+  const dueKinds = dueKindsFor(f)
+  const dueValue = dueKinds.includes(dayKindOf(due.kind) as DueRuleKind) ? dayKindOf(due.kind) : due.kind
   const dueOptions: { value: string; label: string }[] = dueKinds.map((k) => ({ value: k, label: dueKindLabel(k, f) }))
-  if (!dueKinds.includes(due.kind)) dueOptions.push({ value: due.kind, label: `${dueKindLabel(due.kind, f)} (not available)` })
+  if (!dueKinds.includes(dueValue as DueRuleKind)) dueOptions.push({ value: due.kind, label: `${dueKindLabel(due.kind, f)} (not available)` })
 
   return (
     <div className="flex flex-col gap-4">
@@ -585,10 +474,13 @@ export default function StepTiming({
                 }
               />
             </span>
-            <div aria-labelledby={`${idPrefix}-starts-label`} className={startProblem && !startKinds.includes(start.kind) ? 'rounded-[8px] ring-1 ring-[#DC2626]' : ''}>
+            <div aria-labelledby={`${idPrefix}-starts-label`} className={startProblem && !startKinds.includes(startValue as StartRuleKind) ? 'rounded-[8px] ring-1 ring-[#DC2626]' : ''}>
               <StyledSelect
-                value={start.kind}
-                onChange={(v) => onChange({ start_rule: startRuleOfKind(v as StartRuleKind, start, schedules) })}
+                value={startValue}
+                onChange={(v) => {
+                  if (v === startValue) return
+                  onChange({ start_rule: startRuleOfKind(v as StartRuleKind, start, schedules, seedFor(v, position?.anchor)) })
+                }}
                 options={startOptions}
                 disabled={disabled}
               />
@@ -617,13 +509,22 @@ export default function StepTiming({
             <span id={`${idPrefix}-due-label`}>Due</span>{' '}
             <InfoTip
               label="Due"
-              text={due.kind === 'days_after_start' ? 'Days count from this step’s start, skipping holidays and weekly offs.' : 'The next matching date after this step starts.'}
+              text={
+                due.kind === 'days_after_start'
+                  ? 'Days count from this step’s start, skipping holidays and weekly offs.'
+                  : isExplicitRule(due)
+                    ? 'The day picked. Holidays move it to the next working day.'
+                    : 'The next matching date after this step starts.'
+              }
             />
           </span>
-          <div aria-labelledby={`${idPrefix}-due-label`} className={dueProblem && !dueKinds.includes(due.kind) ? 'rounded-[8px] ring-1 ring-[#DC2626]' : ''}>
+          <div aria-labelledby={`${idPrefix}-due-label`} className={dueProblem && !dueKinds.includes(dueValue as DueRuleKind) ? 'rounded-[8px] ring-1 ring-[#DC2626]' : ''}>
             <StyledSelect
-              value={due.kind}
-              onChange={(v) => onChange({ due_rule: dueRuleOfKind(v as DueRuleKind, due, schedules, start) })}
+              value={dueValue}
+              onChange={(v) => {
+                if (v === dueValue) return
+                onChange({ due_rule: dueRuleOfKind(v as DueRuleKind, due, schedules, start, seedFor(v, plannedStart)) })
+              }}
               options={dueOptions}
               disabled={disabled}
             />

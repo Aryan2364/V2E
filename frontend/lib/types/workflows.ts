@@ -121,7 +121,12 @@ interface TimingRuleBase {
   day?: RuleMonthDay
   /** 1–12 (year_date, cycle_year_date). */
   month?: number
-  /** 1..every — which week / month / year of the cycle (cycle_* kinds). */
+  /**
+   * Which week / month / year of the run. weekday / month_day / year_date: explicit —
+   * 1 = the run's own (Mon–Sun) week / month / year, 2 = the next… (the calendar writes
+   * it; a rule saved without it is "the next such day", as before). Legacy cycle_*
+   * kinds: the position 1..every in the repeat.
+   */
   cycle?: number
 }
 

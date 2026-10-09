@@ -1,5 +1,5 @@
 import { computeDueDeadline } from './deadline'
-import { CalendarRule, DueRule, MonthDay, StartRule } from './timing'
+import { CalendarRule, DueRule, ExplicitRule, MonthDay, StartRule, isExplicitRule } from './timing'
 import {
   LocalDate,
   addLocalDays,
@@ -21,10 +21,18 @@ import {
  * an anchor" = the first matching day at `time` that is ≥ the anchor (the same day
  * counts while its time hasn't passed); "strictly after" excludes the anchor itself.
  *
- * Cycles ("Week 2, Mon" in a workflow that repeats every 2 weeks): cycle 1 is the
- * week (Monday–Sunday) / month / year containing the run start; the position repeats
- * every `every` weeks/months/years after that. Day 31 (or "last") in a shorter month
- * is that month's last day; 29 Feb in a non-leap year is 28 Feb.
+ * Explicit cycles (a weekday / month_day / year_date rule with `cycle` — what the
+ * builder's calendar writes): cycle 1 is the week (Monday–Sunday) / month / year
+ * containing the run start, cycle 2 the next one, and so on. The rule resolves to that
+ * exact day (`resolveExplicit`), never before the step may start — order wins: when
+ * the steps before it finish later (the same day at a later hour, a holiday shift, a
+ * run started by hand mid-cycle) it starts when they are done; it never jumps a cycle.
+ *
+ * Legacy rules (no `cycle`, and the cycle_* kinds) are inferred, as they always were:
+ * cycle_* positions ("Week 2, Mon" every 2 weeks) count from the run's week / month /
+ * year and repeat every `every` of them; the next one on/after the anchor wins. Day 31
+ * (or "last") in a shorter month is that month's last day; 29 Feb in a non-leap year is
+ * 28 Feb.
  */
 
 export interface TimingContext {
@@ -138,11 +146,53 @@ export function nextCalendarOccurrence(rule: CalendarRule, anchor: Date, ctx: Ti
 }
 
 /**
+ * The day an explicit rule names, at its time: the run's own week / month / year plus
+ * `cycle - 1` (plus `extra` more).
+ */
+export function explicitOccurrence(rule: ExplicitRule, ctx: TimingContext, extra = 0): Date {
+  const runDay = localDateOf(ctx.runStart, ctx.tz)
+  const off = Math.max(1, Math.trunc(rule.cycle)) - 1 + extra
+  let d: LocalDate
+  switch (rule.kind) {
+    case 'weekday':
+      d = addLocalDays(weekStartOf(runDay), 7 * off + ((rule.weekday + 6) % 7))
+      break
+    case 'month_day': {
+      const { year, month } = fromMonthIndex(runDay.year * 12 + runDay.month - 1 + off)
+      d = monthDate(year, month, rule.day)
+      break
+    }
+    case 'year_date':
+      d = monthDate(runDay.year + off, rule.month, rule.day)
+      break
+  }
+  return at(d, rule.time, ctx.tz)
+}
+
+/**
+ * Where an explicit rule lands given the anchor (the moment the step may start, or —
+ * for a due date — the step's start). Its own day when that is on/after the anchor
+ * (strictly after, for a due date). Otherwise order wins, and it never jumps a whole
+ * cycle (a holiday that moves the step before by a day must not push this one a month):
+ * a start begins with the anchor (once the steps before it are done); a due date is its
+ * time on the start's day, or the next day when that has passed (never due before it
+ * starts — as `computeDueDeadline`).
+ */
+export function resolveExplicit(rule: ExplicitRule, anchor: Date, ctx: TimingContext, strict: boolean): Date {
+  const e = explicitOccurrence(rule, ctx)
+  if (strict ? e.getTime() > anchor.getTime() : e.getTime() >= anchor.getTime()) return e
+  if (!strict) return anchor
+  const sameDay = at(localDateOf(anchor, ctx.tz), rule.time, ctx.tz)
+  return sameDay.getTime() > anchor.getTime() ? sameDay : sameTimeNextDay(sameDay, ctx.tz)
+}
+
+/**
  * Where a start rule lands given the moment the step may start (`anchor`), BEFORE the
  * holiday shift. `immediate` → the anchor itself.
  *  - days_after_previous: anchor's day + N days, at time;
  *  - days_after_run_start: run start's day + N days at time, never before the anchor;
- *  - time_of_day / calendar kinds: the next occurrence on/after the anchor.
+ *  - explicit day rules: that day (`resolveExplicit`);
+ *  - time_of_day / legacy calendar kinds: the next occurrence on/after the anchor.
  */
 export function resolveStart(rule: StartRule, anchor: Date, ctx: TimingContext): Date {
   switch (rule.kind) {
@@ -155,17 +205,19 @@ export function resolveStart(rule: StartRule, anchor: Date, ctx: TimingContext):
       return t.getTime() >= anchor.getTime() ? t : anchor
     }
     default:
-      return nextCalendarOccurrence(rule, anchor, ctx, false)
+      return isExplicitRule(rule) ? resolveExplicit(rule, anchor, ctx, false) : nextCalendarOccurrence(rule, anchor, ctx, false)
   }
 }
 
 /**
- * The raw (pre-holiday) due instant for a step that starts at `start`: a calendar
- * rule's next occurrence strictly after the start; a relative rule's start day + N days
- * at time (`computeDueDeadline`, which never makes a step due before it starts).
+ * The raw (pre-holiday) due instant for a step that starts at `start`: an explicit day
+ * rule's own day (`resolveExplicit`); a legacy calendar rule's next occurrence strictly
+ * after the start; a relative rule's start day + N days at time (`computeDueDeadline`,
+ * which never makes a step due before it starts).
  */
 export function resolveDue(rule: DueRule, start: Date, ctx: TimingContext): Date {
   if (rule.kind === 'days_after_start') return computeDueDeadline(start, rule.days, rule.time, ctx.tz)
+  if (isExplicitRule(rule)) return resolveExplicit(rule, start, ctx, true)
   return nextCalendarOccurrence(rule, start, ctx, true)
 }
 
@@ -281,4 +333,62 @@ export async function planRun(
     planned.set(s.key, { key: s.key, planned_start_at: start, planned_due_at: due })
   }
   return { steps: steps.map((s) => planned.get(s.key)!), warnings }
+}
+
+// ═══ The sample run: order of explicit days ══════════════════════════════════
+
+/**
+ * The sample run's timing context in a FLOATING frame (time zone 'UTC', so instants'
+ * UTC fields are the org's wall clock) — exactly the frame the builder plans in, so
+ * both sides find the same days. `day` from `sampleRunDay`, at the run start time.
+ */
+export function sampleRunContext(day: LocalDate, time: string, every: number): TimingContext {
+  const t = hm(time)
+  return { tz: 'UTC', runStart: new Date(Date.UTC(day.year, day.month - 1, day.day, t.hour, t.minute)), every }
+}
+
+/** An explicit day that comes before what it waits for (see `orderProblems`). */
+export interface OrderProblem {
+  key: string
+  part: 'start' | 'due'
+  /** The day it may not be before: the step-before's due day, or its own start day. */
+  day: LocalDate
+  /** For a start: the step it waits for that is due last. */
+  predecessor_key: string | null
+}
+
+/**
+ * Explicit days that fall before what they wait for in a planned run (the sample run,
+ * planned without holidays): a later step's start day before the LATEST planned due
+ * day of the steps it waits for, or a due day before the step's own planned start day.
+ * The same day is fine — the step starts once the one before is done, later that day.
+ * Legacy (inferred) rules never count: they move to the next cycle by themselves. First
+ * steps' starts are checked by the run-start rule instead.
+ */
+export function orderProblems(steps: PlanStepInput[], planned: PlannedStep[], ctx: TimingContext): OrderProblem[] {
+  const byKey = new Map(planned.map((p) => [p.key, p]))
+  const out: OrderProblem[] = []
+  for (const s of planOrder(steps)) {
+    const me = byKey.get(s.key)
+    if (!me) continue
+    let latest: PlannedStep | null = null
+    for (const d of s.deps) {
+      const p = byKey.get(d)
+      if (p && p.key !== s.key && (!latest || p.planned_due_at.getTime() > latest.planned_due_at.getTime())) latest = p
+    }
+    if (latest && isExplicitRule(s.start_rule)) {
+      const day = localDateOf(explicitOccurrence(s.start_rule, ctx), ctx.tz)
+      const due = localDateOf(latest.planned_due_at, ctx.tz)
+      if (compareLocalDates(day, due) < 0) {
+        out.push({ key: s.key, part: 'start', day: due, predecessor_key: latest.key })
+        continue
+      }
+    }
+    if (isExplicitRule(s.due_rule)) {
+      const day = localDateOf(explicitOccurrence(s.due_rule, ctx), ctx.tz)
+      const start = localDateOf(me.planned_start_at, ctx.tz)
+      if (compareLocalDates(day, start) < 0) out.push({ key: s.key, part: 'due', day: start, predecessor_key: null })
+    }
+  }
+  return out
 }

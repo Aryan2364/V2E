@@ -44,23 +44,33 @@ import {
   scheduleExhausted,
   storedCalendarDate,
 } from './engine/schedule'
-import { formatLocalDate, localDateOf, safeTimeZone } from './engine/tz'
+import { formatLocalDate, localDateOf, safeTimeZone, zonedParts } from './engine/tz'
+import { PlanStepInput, orderProblems, planRun, sampleRunContext } from './engine/plan'
 import {
   Frequency,
   allowedDueKinds,
   allowedStartKinds,
   cycleLengthOf,
+  dayMonthWords,
+  dueBeforeStartText,
   effectiveDueRule,
   effectiveStartRule,
   firstStepTimingProblem,
   frequencyOf,
+  isExplicitRule,
   laterStepTimingProblem,
   looseRule,
   parseDueRule,
   parseStartRule,
+  predecessorName,
+  readDueRule,
+  readStartRule,
   runStartPointOf,
+  sampleRunDay,
+  startBeforePredecessorText,
   timingProblem,
   type RunStartPoint,
+  type RunStartScheduleLike,
 } from './engine/timing'
 import { checklistTemplateIds, readSnapshot, templateItemTitles } from './engine/snapshot'
 import { ChecklistAccessService } from '../task-masters/checklist-access.service'
@@ -398,6 +408,71 @@ function trackError(message: string, trackKey: string) {
 
 /** "Step B2 “Review”" (or "Step B2" while it has no title) — how errors name a step. */
 const stepLabel = stepErrorLabel
+
+/** A step as the sample-run order check reads it. */
+interface OrderCheckStep {
+  key: string
+  /** "1", "B2". */
+  label: string
+  title: string
+  deps: string[]
+  start_rule: unknown
+  due_rule: unknown
+  due_days: number
+  due_time: string
+}
+
+/**
+ * Save's order check on the SAMPLE run — the run the builder's calendar shows, planned
+ * without holidays in the same floating frame, so the builder's greyed days and messages
+ * match these exactly: an explicit start day before the day the step it waits for is due
+ * (`pick a day on or after 5 Nov, when 1 “Collect documents” is due.`), or an explicit
+ * due day before the step's own start day. The same day is fine. Steps whose timing has
+ * another problem are planned with their legacy defaults and not checked. Returns step
+ * key → message (completing "Step 2 “X”: …").
+ */
+export async function sampleOrderMessages(
+  steps: OrderCheckStep[],
+  schedules: RunStartScheduleLike[],
+  frequency: Frequency,
+  runStart: RunStartPoint | null,
+  tz: string,
+  now: Date,
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>()
+  if (!runStart) return out
+  const skip = new Set<string>()
+  const inputs: PlanStepInput[] = steps.map((s) => {
+    const problem =
+      timingProblem(s.start_rule, s.due_rule, frequency) ??
+      (s.deps.length === 0 ? firstStepTimingProblem(s.start_rule, s.due_rule, runStart) : laterStepTimingProblem(s.start_rule))
+    if (problem) skip.add(s.key)
+    return {
+      key: s.key,
+      deps: s.deps,
+      start_rule: !problem && s.start_rule ? readStartRule(s.start_rule) : null,
+      due_rule: !problem && s.due_rule ? readDueRule(s.due_rule) : null,
+      due_days: s.due_days,
+      due_time: s.due_time,
+    }
+  })
+  if (!inputs.some((i) => isExplicitRule(i.start_rule) || isExplicitRule(i.due_rule))) return out
+  const p = zonedParts(now, tz)
+  const day = sampleRunDay(schedules, runStart, { year: p.year, month: p.month, day: p.day }, p.hour * 60 + p.minute)
+  const ctx = sampleRunContext(day, runStart.time, cycleLengthOf(frequency))
+  const plan = await planRun(inputs, ctx)
+  const byKey = new Map(steps.map((s) => [s.key, s]))
+  for (const o of orderProblems(inputs, plan.steps, ctx)) {
+    if (skip.has(o.key) || out.has(o.key)) continue
+    const words = dayMonthWords(o.day, day.year)
+    const pred = o.predecessor_key ? byKey.get(o.predecessor_key) : null
+    out.set(
+      o.key,
+      o.part === 'start' && pred ? startBeforePredecessorText(words, predecessorName(pred.label, pred.title)) : dueBeforeStartText(words),
+    )
+  }
+  return out
+}
 
 /** The tracks of a run and each flow row's track and number, from the frozen snapshots. */
 function runLanes(rows: InstanceStepRow[], deps: Map<string, string[]>) {
@@ -1438,7 +1513,7 @@ export class WorkflowTemplateService {
       if (!proposed.some((x) => x.track_key === MAIN_TRACK)) {
         throw trackError('Main path: add at least one step.', MAIN_TRACK)
       }
-      const problem = await this.definitionProblem(orgId, proposed, frequency, runStart)
+      const problem = await this.definitionProblem(orgId, proposed, frequency, runStart, schedules.map((x) => x.data))
       if (problem) throw stepError(problem.message, problem.step.existing?.id ?? null, problem.step.key)
     }
     // Complete rules are stored in their canonical shape (a draft keeps partial ones).
@@ -1616,9 +1691,11 @@ export class WorkflowTemplateService {
    *  - a step whose timing isn't valid for how the workflow repeats (planned with the
    *    defaults instead), or a first step timed before the run starts (Save's words);
    *  - a step timed "N days after start" that lands before a step it starts after is due;
+   *  - an explicit day (the builder's calendar) before the day the step it waits for is
+   *    due, or a due day before its own start — Save's words (`sampleOrderMessages`);
    *  - runs that overlap: a run's last planned date after the next scheduled run starts.
-   * A calendar day before the previous step's dates is not a warning: it is planned in
-   * the next cycle, and the builder labels it so ("1st (next month)").
+   * A legacy (inferred) calendar day before the previous step's dates is not a warning:
+   * it is planned in the next cycle, and the builder labels it so ("1st (next month)").
    */
   private async timeline(
     orgId: string,
@@ -1658,6 +1735,12 @@ export class WorkflowTemplateService {
         holiday_user_id: s.holiday_user_id,
       }
     })
+
+    // Explicit days before the step they wait for is due: Save refuses them; a draft
+    // (and this example) only warns — in Save's own words.
+    for (const [key, msg] of await sampleOrderMessages(steps, schedules, frequency, runStart, tz, now)) {
+      warnings.push(`${label.get(key)}: ${msg}`)
+    }
 
     // One occurrence more than is shown: the run after the last one, for the overlap check.
     const upcoming = this.upcomingOccurrences(schedules, now, tz, TIMELINE_RUNS + 1)
@@ -2199,7 +2282,31 @@ export class WorkflowTemplateService {
     steps: ProposedStep[],
     frequency: Frequency = { kind: 'manual' },
     runStart: RunStartPoint | null = null,
+    schedules: RunStartScheduleLike[] = [],
   ): Promise<{ message: string; step: ProposedStep } | null> {
+    // Explicit days before the step they wait for is due (the sample run's dates).
+    const order = runStart
+      ? await (async () => {
+          const { tz, now } = await this.scheduleContext(orgId)
+          return sampleOrderMessages(
+            steps.map((s) => ({
+              key: s.id,
+              label: s.label,
+              title: s.state.title,
+              deps: s.deps,
+              start_rule: s.state.start_rule,
+              due_rule: s.state.due_rule,
+              due_days: s.state.due_days,
+              due_time: s.state.due_time,
+            })),
+            schedules,
+            frequency,
+            runStart,
+            safeTimeZone(tz),
+            now,
+          )
+        })()
+      : new Map<string, string>()
     const userIds = steps.flatMap((s) => [...s.state.assignee_user_ids, ...s.state.escalation_user_ids])
     const priorityIds = unique(steps.map((s) => s.state.priority_id).filter((x): x is string => !!x))
     const categoryIds = unique(steps.map((s) => s.state.category_id).filter((x): x is string => !!x))
@@ -2240,6 +2347,8 @@ export class WorkflowTemplateService {
           ? firstStepTimingProblem(s.state.start_rule, s.state.due_rule, runStart)
           : laterStepTimingProblem(s.state.start_rule)
       if (placed) return fail(placed)
+      const early = order.get(s.id)
+      if (early) return fail(early)
     }
     if (!steps.some((s) => s.deps.length === 0)) {
       return {

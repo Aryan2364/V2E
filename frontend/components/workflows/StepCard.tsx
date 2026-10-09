@@ -30,13 +30,16 @@ import {
   type RunStart,
   type ScheduleShape,
 } from './timing'
-import { anchorFor, stepNextCycle, type PlanContext, type PlannedDates } from './timingPlan'
+import { anchorFor, orderProblemOf, stepNextCycle, type NamedStep, type PlanContext, type PlannedDates } from './timingPlan'
+import { predecessorName } from './timing'
 
-/** The representative run's plan (timingPlan.ts), for the "(next month)" marks. */
+/** The sample run's plan (timingPlan.ts): the timing calendar, its greyed days and Save's order check. */
 export interface StepPlanInput {
   ctx: PlanContext
   /** Every step's planned dates in that run. */
   planned: Map<string, PlannedDates>
+  /** Every step in display order: its number and title (the calendar's bands, the order messages). */
+  names: NamedStep[]
 }
 
 export const INPUT_CLS =
@@ -676,18 +679,30 @@ export default function StepCard(props: EditProps | CreateProps) {
     })
   // A first step (waits for nothing) is timed on or after the run start, in its cycle.
   const firstRunStart = waits ? null : props.runStart ?? null
-  const problems = useMemo(
-    () => timingProblems(draft.start_rule, draft.due_rule, frequency, { first: !waits, runStart: props.runStart ?? null }),
-    [draft.start_rule, draft.due_rule, frequency, waits, props.runStart],
-  )
-  // Where it sits in a run: when it may start (the run start, or the latest due of the
-  // steps it waits for) — so days before that read "(next month)".
+  // Where it sits in the sample run: when it may start (the run start, or the latest due of
+  // the steps it waits for), every step's dates, and what it waits for — the calendar.
   const plan = props.plan ?? null
   const depsKey = Array.from(new Set([...(props.baseDeps ?? []), ...mergeValues])).join(',')
-  const position = useMemo(
-    () => (plan ? { ctx: plan.ctx, anchor: anchorFor(depsKey ? depsKey.split(',') : [], plan.planned, plan.ctx) } : null),
-    [plan, depsKey],
-  )
+  const selfId = step?.id ?? null
+  const position = useMemo(() => {
+    if (!plan) return null
+    const deps = depsKey ? depsKey.split(',') : []
+    return { ctx: plan.ctx, anchor: anchorFor(deps, plan.planned, plan.ctx), planned: plan.planned, names: plan.names, deps, selfId }
+  }, [plan, depsKey, selfId])
+  // Save's checks, in its order: the timing itself, then (when that is fine) an explicit
+  // day before the step it waits for is due, or a due day before its own start.
+  const problems = useMemo(() => {
+    const own = timingProblems(draft.start_rule, draft.due_rule, frequency, { first: !waits, runStart: props.runStart ?? null })
+    if (own.length || !position) return own
+    const byId = new Map(position.names.map((n) => [n.id, n]))
+    const order = orderProblemOf(
+      { id: selfId ?? '__new__', deps: position.deps, start: draft.start_rule, due: draft.due_rule },
+      position.planned,
+      position.ctx,
+      (id) => predecessorName(byId.get(id)?.label ?? '?', byId.get(id)?.title),
+    )
+    return order ? [order] : own
+  }, [draft.start_rule, draft.due_rule, frequency, waits, props.runStart, position, selfId])
   const nextFlags = useMemo(
     () => (position ? stepNextCycle(draft.start_rule, draft.due_rule, position.anchor, position.ctx) : null),
     [position, draft.start_rule, draft.due_rule],

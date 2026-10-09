@@ -3,6 +3,14 @@ import {
   allowedStartKinds,
   calendarKindFor,
   cycleLengthOf,
+  dayMonthWords,
+  dueBeforeStartText,
+  isExplicitRule,
+  legacyCycleKindFor,
+  maxCycleOf,
+  predecessorName,
+  sampleRunDay,
+  startBeforePredecessorText,
   effectiveDueRule,
   effectiveStartRule,
   firstStepTimingProblem,
@@ -125,11 +133,23 @@ describe('frequencyOf and the allowed kinds (the approved table)', () => {
     expect(calendarKindFor({ kind: 'daily', every: 1 })).toBe('time_of_day')
     expect(calendarKindFor({ kind: 'daily', every: 3 })).toBe('time_of_day')
     expect(calendarKindFor({ kind: 'weekly', every: 1 })).toBe('weekday')
-    expect(calendarKindFor({ kind: 'weekly', every: 2 })).toBe('cycle_weekday')
+    // Every 2+ uses the same day kinds (with an explicit cycle); cycle_* stay valid (legacy).
+    expect(calendarKindFor({ kind: 'weekly', every: 2 })).toBe('weekday')
     expect(calendarKindFor({ kind: 'monthly', every: 1 })).toBe('month_day')
-    expect(calendarKindFor({ kind: 'monthly', every: 3 })).toBe('cycle_month_day')
+    expect(calendarKindFor({ kind: 'monthly', every: 3 })).toBe('month_day')
     expect(calendarKindFor({ kind: 'yearly', every: 1 })).toBe('year_date')
-    expect(calendarKindFor({ kind: 'yearly', every: 2 })).toBe('cycle_year_date')
+    expect(calendarKindFor({ kind: 'yearly', every: 2 })).toBe('year_date')
+    expect(legacyCycleKindFor({ kind: 'weekly', every: 2 })).toBe('cycle_weekday')
+    expect(legacyCycleKindFor({ kind: 'monthly', every: 3 })).toBe('cycle_month_day')
+    expect(legacyCycleKindFor({ kind: 'yearly', every: 2 })).toBe('cycle_year_date')
+    expect(legacyCycleKindFor({ kind: 'monthly', every: 1 })).toBeNull()
+    expect(allowedStartKinds({ kind: 'monthly', every: 2 })).toEqual(['immediate', 'days_after_previous', 'days_after_run_start', 'month_day', 'cycle_month_day'])
+    expect(allowedDueKinds({ kind: 'monthly', every: 1 })).toEqual(['days_after_start', 'month_day'])
+    expect(maxCycleOf({ kind: 'weekly', every: 1 })).toBe(8)
+    expect(maxCycleOf({ kind: 'monthly', every: 2 })).toBe(12)
+    expect(maxCycleOf({ kind: 'yearly', every: 1 })).toBe(3)
+    expect(maxCycleOf({ kind: 'weekly', every: 10 })).toBe(10)
+    expect(maxCycleOf({ kind: 'daily', every: 1 })).toBe(1)
     expect(cycleLengthOf({ kind: 'weekly', every: 2 })).toBe(2)
     expect(cycleLengthOf({ kind: 'daily', every: 2 })).toBe(1)
     expect(cycleLengthOf({ kind: 'manual' })).toBe(1)
@@ -203,6 +223,94 @@ describe('timingProblem (Save)', () => {
       'choose a day of the month for the due date.',
     )
     expect(timingProblem(monthDay, { kind: 'month_day', day: 10, time: '18:00' }, { kind: 'monthly', every: 1 })).toBeNull()
+  })
+})
+
+describe('explicit cycles (the builder’s calendar)', () => {
+  it('a day rule may carry an explicit cycle; without one it is legacy (inferred)', () => {
+    expect(parseStartRule({ kind: 'month_day', cycle: 2, day: 5, time: '09:00' })).toEqual({
+      ok: true,
+      rule: { kind: 'month_day', cycle: 2, day: 5, time: '09:00' },
+    })
+    expect(parseDueRule({ kind: 'weekday', cycle: 3, weekday: 1, time: '18:00' }).ok).toBe(true)
+    expect(parseStartRule({ kind: 'year_date', cycle: 2, month: 6, day: 5, time: '09:00' }).ok).toBe(true)
+    expect(parseStartRule({ kind: 'month_day', cycle: 0, day: 5, time: '09:00' })).toEqual({ ok: false, problem: 'choose a cycle for the start.' })
+    expect(parseStartRule({ kind: 'month_day', cycle: null, day: 5, time: '09:00' })).toEqual({
+      ok: true,
+      rule: { kind: 'month_day', day: 5, time: '09:00' },
+    })
+    expect(isExplicitRule({ kind: 'month_day', cycle: 1, day: 5, time: '09:00' })).toBe(true)
+    expect(isExplicitRule({ kind: 'month_day', day: 5, time: '09:00' })).toBe(false)
+    expect(isExplicitRule({ kind: 'cycle_month_day', cycle: 1, day: 5, time: '09:00' })).toBe(false)
+    expect(looseRule({ kind: 'weekday', cycle: 2, weekday: 1, time: '09:00' })).toEqual({ kind: 'weekday', cycle: 2, weekday: 1, time: '09:00' })
+  })
+
+  it('the cycle must be within the limits: 8 weeks, 12 months, 3 years (or the interval)', () => {
+    const m = (cycle: number) => ({ kind: 'month_day', cycle, day: 5, time: '09:00' })
+    expect(timingProblem(m(12), null, { kind: 'monthly', every: 1 })).toBeNull()
+    expect(timingProblem(m(13), null, { kind: 'monthly', every: 1 })).toBe('choose Month 1 to Month 12 for the start.')
+    expect(timingProblem(null, { kind: 'weekday', cycle: 9, weekday: 1, time: '18:00' }, { kind: 'weekly', every: 1 })).toBe(
+      'choose Week 1 to Week 8 for the due date.',
+    )
+    expect(timingProblem({ kind: 'year_date', cycle: 4, month: 1, day: 1, time: '09:00' }, null, { kind: 'yearly', every: 1 })).toBe(
+      'choose Year 1 to Year 3 for the start.',
+    )
+    expect(timingProblem({ kind: 'weekday', cycle: 10, weekday: 1, time: '09:00' }, null, { kind: 'weekly', every: 10 })).toBeNull()
+  })
+
+  it('every 2+: an explicit day rule is fine (Month 3 = the next run’s month); legacy cycle_* still valid', () => {
+    expect(timingProblem({ kind: 'month_day', cycle: 3, day: 5, time: '09:00' }, null, { kind: 'monthly', every: 2 })).toBeNull()
+    expect(timingProblem({ kind: 'cycle_month_day', cycle: 2, day: 5, time: '09:00' }, null, { kind: 'monthly', every: 2 })).toBeNull()
+  })
+
+  it('first steps: Month 1 days before the run start are refused; Month 2 is fine; the words are unchanged', () => {
+    const rs: RunStartPoint = { kind: 'monthly', every: 1, day: 3, time: '09:00' }
+    expect(firstStepTimingProblem({ kind: 'month_day', cycle: 1, day: 1, time: '09:00' }, null, rs)).toBe(
+      'pick a day on or after the 3rd, when the run starts.',
+    )
+    expect(firstStepTimingProblem({ kind: 'month_day', cycle: 2, day: 1, time: '09:00' }, null, rs)).toBeNull()
+    expect(firstStepTimingProblem({ kind: 'month_day', cycle: 1, day: 3, time: '08:00' }, null, rs)).toBe(
+      'pick a time at or after 9:00 AM on the 3rd, when the run starts.',
+    )
+    const every2: RunStartPoint = { kind: 'weekly', every: 2, weekday: 3, time: '09:00' }
+    expect(firstStepTimingProblem({ kind: 'weekday', cycle: 1, weekday: 1, time: '09:00' }, null, every2)).toBe(
+      'pick a day on or after Wednesday in Week 1, when the run starts.',
+    )
+  })
+
+  it('the order messages', () => {
+    expect(startBeforePredecessorText(dayMonthWords({ year: 2026, month: 11, day: 5 }, 2026), predecessorName('1', 'Collect documents'))).toBe(
+      'pick a day on or after 5 Nov, when 1 “Collect documents” is due.',
+    )
+    expect(dueBeforeStartText(dayMonthWords({ year: 2027, month: 6, day: 5 }, 2026))).toBe('pick a due day on or after 5 Jun 2027, when it starts.')
+    expect(predecessorName('B1', '  ')).toBe('B1')
+  })
+})
+
+describe('sampleRunDay: the run the builder’s calendar shows', () => {
+  const monthly = (over: Record<string, unknown> = {}) => ({ schedule_type: 'monthly', every: 1, month_days: [3], time: '09:00', start_date: '2026-01-01', ...over })
+  const rs = (s: ReturnType<typeof monthly>[]) => runStartPointOf(s, frequencyOf(s))!
+
+  it('the next trigger day from today (today only before the run start time)', () => {
+    const s = [monthly()]
+    expect(sampleRunDay(s, rs(s), { year: 2026, month: 10, day: 9 }, 600)).toEqual({ year: 2026, month: 11, day: 3 })
+    expect(sampleRunDay(s, rs(s), { year: 2026, month: 11, day: 3 }, 8 * 60)).toEqual({ year: 2026, month: 11, day: 3 })
+    expect(sampleRunDay(s, rs(s), { year: 2026, month: 11, day: 3 }, 9 * 60)).toEqual({ year: 2026, month: 12, day: 3 })
+  })
+
+  it('several trigger days → the latest; every N keeps in step with the start date; a future start waits', () => {
+    const two = [monthly({ month_days: [3, 20] })]
+    expect(sampleRunDay(two, rs(two), { year: 2026, month: 10, day: 9 }, 0)).toEqual({ year: 2026, month: 10, day: 20 })
+    const every2 = [monthly({ every: 2, start_date: '2026-01-01' })] // Jan, Mar, May, Jul, Sep, Nov…
+    expect(sampleRunDay(every2, rs(every2), { year: 2026, month: 10, day: 9 }, 0)).toEqual({ year: 2026, month: 11, day: 3 })
+    const later = [monthly({ start_date: new Date(Date.UTC(2027, 1, 10)) })]
+    expect(sampleRunDay(later, rs(later), { year: 2026, month: 10, day: 9 }, 0)).toEqual({ year: 2027, month: 3, day: 3 })
+    const weekly = [{ schedule_type: 'weekly', every: 1, days: [3], time: '09:00', start_date: '2026-01-01' }]
+    expect(sampleRunDay(weekly, runStartPointOf(weekly, frequencyOf(weekly))!, { year: 2026, month: 10, day: 9 }, 0)).toEqual({
+      year: 2026,
+      month: 10,
+      day: 14,
+    })
   })
 })
 

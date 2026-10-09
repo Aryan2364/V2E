@@ -1461,6 +1461,81 @@ describe('WorkflowTemplateService — step timing on save', () => {
     expect(out.warnings).toContain('Step 1 “Collect”: pick a day on or after the 3rd, when the run starts.')
   })
 
+  it('explicit days (the calendar): Save refuses a later step before the day the step it waits for is due; the same day is fine; drafts warn', async () => {
+    // NOW = Thu 8 Oct 2026: the sample run is the next 3rd — Tue 3 Nov.
+    const on3rd = { ...monthly, month_days: [3] }
+    const collect = dstep('n1', {
+      title: 'Collect documents',
+      start_rule: { kind: 'month_day', cycle: 1, day: 3, time: '09:00' },
+      due_rule: { kind: 'month_day', cycle: 1, day: 5, time: '18:00' },
+    })
+    const review = (start: Record<string, unknown>, due?: Record<string, unknown>) =>
+      dstep('n2', { title: 'Review', depends_on: ['n1'], start_rule: start, ...(due ? { due_rule: due } : {}) })
+    const early = await saveErr(defHarness(), {
+      mode: 'save',
+      starts: { manual: { enabled: false }, schedules: [on3rd] },
+      steps: [collect, review({ kind: 'month_day', cycle: 1, day: 4, time: '09:00' })],
+    })
+    expect(early).toBeInstanceOf(BadRequestException)
+    expect(early.message).toBe('Step 2 “Review”: pick a day on or after 5 Nov, when 1 “Collect documents” is due.')
+    expect(early.getResponse()).toMatchObject({ code: 'step_invalid', step_key: 'n2' })
+
+    // A due day before the step's own start day.
+    const dueEarly = await saveErr(defHarness(), {
+      mode: 'save',
+      starts: { manual: { enabled: false }, schedules: [on3rd] },
+      steps: [collect, review({ kind: 'month_day', cycle: 1, day: 8, time: '09:00' }, { kind: 'month_day', cycle: 1, day: 6, time: '18:00' })],
+    })
+    expect(dueEarly.message).toBe('Step 2 “Review”: pick a due day on or after 8 Nov, when it starts.')
+
+    // The same day (earlier time: it begins once step 1 is done) and next month are fine.
+    const h = defHarness()
+    await h.service.createDefinition(
+      ORG,
+      def({
+        mode: 'save',
+        starts: { manual: { enabled: false }, schedules: [on3rd] },
+        steps: [collect, review({ kind: 'month_day', cycle: 1, day: 5, time: '09:00' }, { kind: 'month_day', cycle: 2, day: 1, time: '18:00' })],
+      }) as never,
+      me(),
+    )
+    expect(h.prisma.$transaction).toHaveBeenCalledTimes(1)
+
+    // A draft keeps it and warns in Save's words.
+    const d = defHarness()
+    const out: any = await d.service.createDefinition(
+      ORG,
+      def({ starts: { manual: { enabled: false }, schedules: [on3rd] }, steps: [collect, review({ kind: 'month_day', cycle: 1, day: 4, time: '09:00' })] }) as never,
+      me(),
+    )
+    expect(out.warnings).toContain('Step 2 “Review”: pick a day on or after 5 Nov, when 1 “Collect documents” is due.')
+  })
+
+  it('explicit cycles past the limits are refused; legacy rules without a cycle keep their inferred meaning on Save', async () => {
+    const on3rd = { ...monthly, month_days: [3] }
+    const far = await saveErr(defHarness(), {
+      mode: 'save',
+      starts: { manual: { enabled: false }, schedules: [on3rd] },
+      steps: [dstep('n1', { title: 'Collect', due_rule: { kind: 'month_day', cycle: 13, day: 5, time: '18:00' } })],
+    })
+    expect(far.message).toBe('Step 1 “Collect”: choose Month 1 to Month 12 for the due date.')
+    // A legacy later step on the 4th (before step 1's due on the 5th) is not refused: it rolls to the next month.
+    const h = defHarness()
+    await h.service.createDefinition(
+      ORG,
+      def({
+        mode: 'save',
+        starts: { manual: { enabled: false }, schedules: [on3rd] },
+        steps: [
+          dstep('n1', { title: 'Collect', due_rule: { kind: 'month_day', day: 5, time: '18:00' } }),
+          dstep('n2', { title: 'Review', depends_on: ['n1'], start_rule: { kind: 'month_day', day: 4, time: '09:00' } }),
+        ],
+      }) as never,
+      me(),
+    )
+    expect(h.prisma.$transaction).toHaveBeenCalledTimes(1)
+  })
+
   it('“Days after workflow is triggered” is for first steps only: Save refuses it on a later step; drafts keep it', async () => {
     const trigger = { kind: 'days_after_run_start', days: 2, time: '09:00' }
     const err = await saveErr(defHarness(), {
