@@ -34,6 +34,14 @@ const PROFILE_INCLUDE = {
   reporting_to: { select: USER_SELECT },
 };
 
+/**
+ * Marks the one delete refusal the admin is allowed to overrule: dangling
+ * reporting lines and headships. The confirm dialog keys off this code to offer
+ * "delete anyway" — every other refusal (self, primary admin, real records) has
+ * no override and must stay a plain message.
+ */
+export const DELETE_BLOCKED_BY_DEPENDENTS = 'DELETE_BLOCKED_BY_DEPENDENTS';
+
 @Injectable()
 export class EmployeesService {
   constructor(
@@ -424,7 +432,27 @@ export class EmployeesService {
    *     latter enforced by the DB foreign keys, which roll the delete back).
    * Self and the primary administrator are protected.
    */
-  async remove(id: string, orgId: string, actingUserId: string) {
+  /**
+   * "Sales", "Sales and Ops", "Sales, Ops and 3 more" — a blocking message is only
+   * actionable if it says WHICH records are in the way, but it shouldn't run to a
+   * paragraph either, so long lists are trimmed.
+   */
+  private nameList(names: (string | null | undefined)[], max = 3): string {
+    const clean = names.filter((n): n is string => !!n && n.trim().length > 0);
+    if (clean.length === 0) return 'unnamed';
+    const shown = clean.slice(0, max);
+    const rest = clean.length - shown.length;
+    if (rest > 0) return `${shown.join(', ')} and ${rest} more`;
+    if (shown.length === 1) return shown[0];
+    return `${shown.slice(0, -1).join(', ')} and ${shown[shown.length - 1]}`;
+  }
+
+  async remove(
+    id: string,
+    orgId: string,
+    actingUserId: string,
+    detachDependents = false,
+  ) {
     const profile = await this.prisma.employeeProfile.findFirst({
       where: { id, organization_id: orgId },
       include: { user: { select: { id: true, name: true } } },
@@ -449,33 +477,83 @@ export class EmployeesService {
       );
     }
 
-    // People report to this person — deleting would orphan them.
-    const reportCount = await this.prisma.employeeProfile.count({
-      where: { organization_id: orgId, reporting_to_user_id: profile.user_id },
-    });
-    if (reportCount > 0) {
-      throw new BadRequestException(
-        `${reportCount} ${reportCount === 1 ? 'person reports' : 'people report'} to this employee. ` +
-          'Reassign them first, or deactivate this person instead to keep the structure intact.',
-      );
-    }
+    // Two things would be left dangling by the delete: people who report to this
+    // person, and departments they head. Neither is a data-integrity problem — a
+    // manager-less employee and a headless department are both legal states — so
+    // this is the admin's call, not ours. We refuse the FIRST attempt and hand back
+    // exactly what's in the way (named, with ids), so the confirm dialog can offer
+    // to clear them; `detachDependents` is the admin saying yes to that.
+    const [reports, headed] = await Promise.all([
+      this.prisma.employeeProfile.findMany({
+        where: { organization_id: orgId, reporting_to_user_id: profile.user_id },
+        select: { id: true, user: { select: { name: true } } },
+        orderBy: { created_at: 'asc' },
+      }),
+      this.prisma.department.findMany({
+        where: { organization_id: orgId, head_user_id: profile.user_id },
+        select: { id: true, name: true },
+        orderBy: { name: 'asc' },
+      }),
+    ]);
 
-    // This person heads one or more departments.
-    const headCount = await this.prisma.department.count({
-      where: { organization_id: orgId, head_user_id: profile.user_id },
-    });
-    if (headCount > 0) {
-      throw new BadRequestException(
-        `This person heads ${headCount} department${headCount === 1 ? '' : 's'}. ` +
-          'Assign a new head first, or deactivate this person instead.',
-      );
+    if (!detachDependents && (reports.length > 0 || headed.length > 0)) {
+      const parts: string[] = [];
+      if (reports.length > 0) {
+        parts.push(
+          `${reports.length} ${reports.length === 1 ? 'person reports' : 'people report'} to them ` +
+            `(${this.nameList(reports.map((r) => r.user?.name))})`,
+        );
+      }
+      if (headed.length > 0) {
+        parts.push(
+          `they head ${headed.length} department${headed.length === 1 ? '' : 's'} ` +
+            `(${this.nameList(headed.map((d) => d.name))})`,
+        );
+      }
+      throw new BadRequestException({
+        statusCode: 400,
+        error: 'Bad Request',
+        code: DELETE_BLOCKED_BY_DEPENDENTS,
+        message:
+          `Can't delete yet — ${parts.join(', and ')}. ` +
+          'Reassign them first, or confirm to clear these links and delete anyway.',
+        blockers: {
+          reports: reports.map((r) => ({ id: r.id, name: r.user?.name ?? 'Unnamed' })),
+          departments: headed.map((d) => ({ id: d.id, name: d.name })),
+        },
+      });
     }
 
     try {
       await this.prisma.$transaction(async (tx) => {
-        // Deleting the profile trips a foreign key if any dependent record
-        // (learning/policy assignments, etc.) still points at it — that rolls
-        // the whole transaction back and we translate it to a friendly message.
+        // Override: the admin accepted manager-less reports and headless
+        // departments. Clear those links inside the same transaction, so a delete
+        // that later fails on a foreign key rolls the unlinking back too.
+        if (detachDependents) {
+          if (reports.length > 0) {
+            await tx.employeeProfile.updateMany({
+              where: { organization_id: orgId, reporting_to_user_id: profile.user_id },
+              data: { reporting_to_user_id: null },
+            });
+          }
+          if (headed.length > 0) {
+            await tx.department.updateMany({
+              where: { organization_id: orgId, head_user_id: profile.user_id },
+              data: { head_user_id: null },
+            });
+          }
+        }
+
+        // Things ASSIGNED TO this person — learning paths, company policies — are
+        // part of their profile, not company history, so they go with it. Records
+        // they actually produced (tasks, meetings, goals) are a different matter:
+        // those stay foreign-key protected below and still block the delete.
+        await tx.learningPathAssignment.deleteMany({ where: { employee_profile_id: id } });
+        await tx.companyPolicyAssignment.deleteMany({ where: { employee_profile_id: id } });
+
+        // Deleting the profile still trips a foreign key if any OTHER dependent
+        // record points at it — that rolls the whole transaction back and we
+        // translate it to a friendly message.
         await tx.employeeProfile.delete({ where: { id } });
         await tx.organizationMember.deleteMany({
           where: { organization_id: orgId, user_id: profile.user_id },
@@ -492,7 +570,16 @@ export class EmployeesService {
         }
       });
     } catch (e: any) {
-      if (e?.code === 'P2003') {
+      // A foreign-key refusal reaches us in more than one shape: Prisma's own
+      // P2003, and — since the pg driver adapter — a raw DriverAdapterError whose
+      // message carries the constraint. Matching only P2003 let the second kind
+      // escape as a bare 500 instead of the plain-language reason.
+      const msg = String(e?.message ?? '');
+      const isForeignKeyRefusal =
+        e?.code === 'P2003' ||
+        e?.code === '23503' ||
+        /foreign key constraint|violates RESTRICT/i.test(msg);
+      if (isForeignKeyRefusal) {
         throw new BadRequestException(
           'This person has records on the system (tasks, meetings, goals, and the like). ' +
             'Deactivate them instead to keep that history.',

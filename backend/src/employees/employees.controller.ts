@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { EmployeeStatus, PermissionAction } from '@prisma/client';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -170,12 +170,18 @@ export class EmployeesController {
   @RequireAdmin()
   @ApiOperation({
     summary: 'Delete an employee (blocked if they have reports/history — deactivate instead)',
+    description:
+      'Refused when the person still has reports or heads a department; the 400 carries ' +
+      'those blockers so the UI can offer to clear them. Repeat with ?detach=true to ' +
+      'confirm: the reporting lines and headships are cleared and the delete proceeds.',
   })
+  @ApiQuery({ name: 'detach', required: false, type: Boolean })
   remove(
     @Param('orgId') orgId: string,
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
+    @Query('detach') detach?: string,
   ) {
-    return this.employeesService.remove(id, orgId, userId);
+    return this.employeesService.remove(id, orgId, userId, detach === 'true');
   }
 }

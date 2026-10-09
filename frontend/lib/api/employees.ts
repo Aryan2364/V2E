@@ -285,8 +285,37 @@ export async function updateEmployeeStatus(
  * it returns a 400 with a plain-language reason (reassign reports, deactivate
  * instead, etc.) when the person still has structure or history attached.
  */
-export async function deleteEmployee(orgId: string, id: string): Promise<void> {
-  await apiClient.delete(`/api/v1/org/${orgId}/employees/${id}`);
+/** A reporting line or headship that a delete would leave dangling. */
+export interface DeleteBlocker {
+  id: string;
+  name: string;
+}
+
+export interface DeleteBlockedError {
+  code: 'DELETE_BLOCKED_BY_DEPENDENTS';
+  message: string;
+  blockers: { reports: DeleteBlocker[]; departments: DeleteBlocker[] };
+}
+
+/** Narrows an axios error to the one refusal the admin can overrule. */
+export function asDeleteBlocked(err: unknown): DeleteBlockedError | null {
+  const data = (err as { response?: { data?: DeleteBlockedError } })?.response?.data;
+  return data?.code === 'DELETE_BLOCKED_BY_DEPENDENTS' ? data : null;
+}
+
+/**
+ * `detach` is the admin explicitly accepting what the first attempt refused:
+ * the reports lose their manager and the departments lose their head, then the
+ * person is deleted. Never send it unprompted — it's the answer to the blockers.
+ */
+export async function deleteEmployee(
+  orgId: string,
+  id: string,
+  opts?: { detach?: boolean },
+): Promise<void> {
+  await apiClient.delete(`/api/v1/org/${orgId}/employees/${id}`, {
+    params: opts?.detach ? { detach: 'true' } : undefined,
+  });
 }
 
 // ─── Self-service ────────────────────────────────────────────────────────────────

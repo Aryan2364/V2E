@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth/context'
 import { usePermissions } from '@/lib/auth/use-permissions'
-import { getEmployee, getEmployees, updateEmployee, updateEmployeeStatus, deleteEmployee, checkAccount } from '@/lib/api/employees'
+import { getEmployee, getEmployees, updateEmployee, updateEmployeeStatus, deleteEmployee, checkAccount, asDeleteBlocked, type DeleteBlockedError } from '@/lib/api/employees'
 import { updateUser } from '@/lib/api/users'
 import { listSystemRoles, type SystemRoleLite } from '@/lib/api/permissions'
 import { getRoles } from '@/lib/api/roles'
@@ -194,6 +194,10 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
   const [showPassword, setShowPassword] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  // Set when the server refuses the delete over dangling reporting lines /
+  // headships. It's the admin's call, so we show exactly what's in the way and
+  // offer to clear it — rather than sending them off to fix it elsewhere.
+  const [deleteBlocked, setDeleteBlocked] = useState<DeleteBlockedError | null>(null)
   // A password reset changes this person's ONE global login — used everywhere they
   // work. We warn before saving, sized to how many orgs they belong to.
   const [showPwWarning, setShowPwWarning] = useState(false)
@@ -322,17 +326,23 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
     }
   }
 
-  async function handleDelete() {
+  async function handleDelete(detach = false) {
     setError('')
     setDeleting(true)
     try {
-      await deleteEmployee(orgId, employee.id)
+      await deleteEmployee(orgId, employee.id, { detach })
       onDeleted()
     } catch (err: any) {
-      // The server returns a plain-language reason (reassign reports, deactivate
-      // instead, etc.) — surface it and let the user pick another path.
-      setError(err?.response?.data?.message ?? 'Failed to delete employee.')
-      setConfirmDelete(false)
+      const blocked = asDeleteBlocked(err)
+      if (blocked) {
+        // Overrulable: keep the confirm open and show the override instead.
+        setDeleteBlocked(blocked)
+      } else {
+        // Everything else (self, primary admin, real records) is final — surface
+        // the server's plain-language reason and let the user pick another path.
+        setError(err?.response?.data?.message ?? 'Failed to delete employee.')
+        setConfirmDelete(false)
+      }
     } finally {
       setDeleting(false)
     }
@@ -580,28 +590,79 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
         <div className="flex flex-col gap-3 px-6 py-4 border-t border-[#E2E8F0] shrink-0">
           {confirmDelete ? (
             <div className="rounded-[8px] border border-[#FECACA] bg-[#FEF2F2] p-3">
-              <p className="text-sm text-[#991B1B] mb-2.5">
-                Delete <span className="font-semibold">{employee.user?.name}</span> permanently?
-                This removes them from the organization and can’t be undone. If they have any
-                history, use <span className="font-semibold">Inactive</span> instead.
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] rounded-[8px] transition-colors disabled:opacity-60"
-                >
-                  {deleting && <Loader2 size={14} className="animate-spin" />}
-                  Delete employee
-                </button>
-                <button
-                  onClick={() => setConfirmDelete(false)}
-                  disabled={deleting}
-                  className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F8FAFC] transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
+              {deleteBlocked ? (
+                <>
+                  <p className="text-sm text-[#991B1B] mb-2.5">
+                    Deleting <span className="font-semibold">{employee.user?.name}</span> would
+                    leave these behind. You can clear them and delete anyway — both are allowed
+                    states, and you can set them again later.
+                  </p>
+                  <div className="flex flex-col gap-2 mb-3">
+                    {deleteBlocked.blockers.reports.length > 0 && (
+                      <div className="rounded-[6px] bg-white border border-[#FECACA] px-3 py-2">
+                        <p className="text-xs font-semibold text-[#991B1B] uppercase tracking-wide mb-1">
+                          Left without a manager
+                        </p>
+                        <p className="text-sm text-[#7F1D1D]">
+                          {deleteBlocked.blockers.reports.map((r) => r.name).join(', ')}
+                        </p>
+                      </div>
+                    )}
+                    {deleteBlocked.blockers.departments.length > 0 && (
+                      <div className="rounded-[6px] bg-white border border-[#FECACA] px-3 py-2">
+                        <p className="text-xs font-semibold text-[#991B1B] uppercase tracking-wide mb-1">
+                          Left without a head
+                        </p>
+                        <p className="text-sm text-[#7F1D1D]">
+                          {deleteBlocked.blockers.departments.map((d) => d.name).join(', ')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDelete(true)}
+                      disabled={deleting}
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] rounded-[8px] transition-colors disabled:opacity-60"
+                    >
+                      {deleting && <Loader2 size={14} className="animate-spin" />}
+                      Clear links and delete
+                    </button>
+                    <button
+                      onClick={() => { setConfirmDelete(false); setDeleteBlocked(null) }}
+                      disabled={deleting}
+                      className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F8FAFC] transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-[#991B1B] mb-2.5">
+                    Delete <span className="font-semibold">{employee.user?.name}</span> permanently?
+                    This removes them from the organization and can’t be undone. If they have any
+                    history, use <span className="font-semibold">Inactive</span> instead.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDelete()}
+                      disabled={deleting}
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] rounded-[8px] transition-colors disabled:opacity-60"
+                    >
+                      {deleting && <Loader2 size={14} className="animate-spin" />}
+                      Delete employee
+                    </button>
+                    <button
+                      onClick={() => setConfirmDelete(false)}
+                      disabled={deleting}
+                      className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F8FAFC] transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="flex items-center justify-between">
@@ -681,7 +742,13 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 export default function EmployeeDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const pathname = usePathname()
   const employeeId = params?.employeeId as string
+  // This page is mounted under two prefixes (/dashboard/employees/:id and
+  // /settings/organization/employees/:id — the latter re-exports it), so the
+  // list to return to is simply this URL minus the id. Hard-coding one prefix
+  // would throw the user into the other section.
+  const employeesListHref = pathname?.replace(/\/[^/]+$/, '') || '/settings/organization/employees'
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
   const { isAdmin } = usePermissions()
@@ -719,7 +786,7 @@ export default function EmployeeDetailPage() {
     if (typeof window !== 'undefined' && window.history.length > 1) {
       router.back()
     } else {
-      router.push('/settings/organization/employees')
+      router.push(employeesListHref)
     }
   }
 
@@ -888,8 +955,14 @@ export default function EmployeeDetailPage() {
             setShowEdit(false)
           }}
           onDeleted={() => {
-            setShowEdit(false)
-            router.push('/settings/organization/employees')
+            // Leave the modal mounted and let the navigation unmount it. Closing it
+            // here would unmount the component that started the navigation, which
+            // can cancel it and strand the user on the page of a record that no
+            // longer exists. `replace`, not `push`: this URL is now dead, so it must
+            // not stay in history for Back to land on. `refresh` drops the cached
+            // list so the deleted person is gone from it.
+            router.replace(employeesListHref)
+            router.refresh()
           }}
         />
       )}
