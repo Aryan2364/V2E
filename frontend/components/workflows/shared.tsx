@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import React, { Fragment } from 'react'
-import { AlertTriangle, CheckCircle2, Clock, Info, Loader2, Lock, PlayCircle, Plus, RefreshCw, SearchX, Undo2, XCircle, type LucideIcon } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Clock, Info, Loader2, Lock, PlayCircle, Plus, RefreshCw, SearchX, Undo2, UserCheck, Users, XCircle, type LucideIcon } from 'lucide-react'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { getNow } from '@/lib/clock'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
@@ -473,6 +473,30 @@ export function namesSummary(people: { name: string }[], max = 2): string {
   if (!people.length) return '—'
   const shown = people.slice(0, max).map((p) => p.name).join(', ')
   return people.length > max ? `${shown} +${people.length - max}` : shown
+}
+
+/** Who completes a step with several assignees, in a summary line's words. */
+export function completionWords(mode: string | null | undefined): string {
+  return mode === 'all_must_complete' ? 'all must complete' : 'anyone completes'
+}
+
+/**
+ * Read-only: who has to complete a step (or its task) — shown only with 2+ assignees,
+ * since with one person there is nothing to choose.
+ */
+export function CompletionChip({ mode, count }: { mode: string | null | undefined; count: number }) {
+  if (count < 2) return null
+  const all = mode === 'all_must_complete'
+  const Icon = all ? Users : UserCheck
+  return (
+    <span
+      className={`${BADGE} bg-[#F8FAFC] text-[#334155] border-[#CBD5E1]`}
+      title={all ? 'Done when everyone completes their part.' : 'Done when one person completes it.'}
+    >
+      <Icon size={12} aria-hidden className="shrink-0 text-[#475569]" />
+      {all ? 'All must complete' : 'Anyone can complete'}
+    </span>
+  )
 }
 
 // ─── States ──────────────────────────────────────────────────────────────────

@@ -13,15 +13,13 @@ import Tooltip from '@/components/ui/Tooltip'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import { workflowErrorMessage } from '@/lib/api/workflows'
 import type { CompletionMode, SelectedAssignee } from '@/lib/types/tasks'
-import type { ChecklistItem, DueRule, EscalationMode, IfLate, StartRule, StepInput, WorkflowStep } from '@/lib/types/workflows'
+import type { ChecklistItem, EscalationMode, IfLate, StepInput, WorkflowStep } from '@/lib/types/workflows'
 import ActionMenu from './ActionMenu'
 import type { WorkflowLookups } from './useWorkflowLookups'
-import { BTN, ErrorBanner, InfoTip, Reveal } from './shared'
+import { BTN, ErrorBanner, InfoTip, Reveal, completionWords } from './shared'
 import StepTiming from './StepTiming'
+import { commitDraft, draftTouched, normItems, same, toInput, type CommitNewStep, type StepDraft } from './stepDraft'
 import {
-  DEFAULT_DUE_RULE,
-  DEFAULT_START_RULE,
-  cleanRule,
   dueRuleOf,
   startRuleOf,
   timingProblems,
@@ -52,41 +50,9 @@ const HELP = 'text-[13px] text-[#475569]'
 export const STEP_TITLE_MAX = 50
 const MAX_ESCALATION = 5
 
-// ─── Draft model ─────────────────────────────────────────────────────────────
+// ─── Draft model (stepDraft.ts) ──────────────────────────────────────────────
 
-export interface StepDraft {
-  title: string
-  description: string
-  /** Assignees and CCs together, as the task form's picker holds them. */
-  assignees: SelectedAssignee[]
-  completion_mode: CompletionMode
-  /** When it starts and when it is due (relative due rules are mirrored to due_days / due_time). */
-  start_rule: StartRule
-  due_rule: DueRule
-  /** "Also waits for": steps on other paths (tracks). */
-  merge_step_ids: string[]
-  if_late: IfLate
-  escalation_mode: EscalationMode
-  escalation_user_ids: string[]
-  priority_id: string
-  category_id: string
-  tag_ids: string[]
-  checklist_items: ChecklistItem[]
-  proof_required: boolean
-  proof_allowed_extensions: string[]
-}
-
-type DraftKey = keyof StepDraft
-
-function normItems(items: ChecklistItem[] | null | undefined): ChecklistItem[] {
-  return (Array.isArray(items) ? items : [])
-    .filter((c) => c && typeof c.title === 'string' && c.title.trim())
-    .map((c) => ({
-      title: c.title,
-      ...(c.group_title ? { group_title: c.group_title } : {}),
-      ...(c.template_id ? { template_id: c.template_id } : {}),
-    }))
-}
+export { blankStepDraft, type CommitNewStep, type CommitReason, type StepDraft } from './stepDraft'
 
 let groupSeq = 0
 const nextGroupKey = () => `sg${(groupSeq += 1)}`
@@ -160,76 +126,6 @@ function fromStep(s: WorkflowStep, nameOf: (id: string) => string | undefined): 
   }
 }
 
-export function blankStepDraft(me?: { user_id: string; name: string }): StepDraft {
-  return {
-    title: '',
-    description: '',
-    assignees: me ? [{ user_id: me.user_id, name: me.name, is_cc: false }] : [],
-    completion_mode: 'any_can_complete',
-    start_rule: DEFAULT_START_RULE,
-    due_rule: DEFAULT_DUE_RULE,
-    merge_step_ids: [],
-    if_late: 'wait',
-    escalation_mode: 'manager',
-    escalation_user_ids: [],
-    priority_id: '',
-    category_id: '',
-    tag_ids: [],
-    checklist_items: [],
-    proof_required: false,
-    proof_allowed_extensions: [],
-  }
-}
-
-/** Draft fields → API fields. */
-function toInput(patch: Partial<StepDraft>): StepInput {
-  const out: StepInput = {}
-  for (const [k, v] of Object.entries(patch) as [DraftKey, StepDraft[DraftKey]][]) {
-    switch (k) {
-      case 'title':
-        out.title = (v as string).trim()
-        break
-      case 'description':
-        out.description = (v as string).trim() || null
-        break
-      case 'assignees': {
-        const list = v as SelectedAssignee[]
-        out.assignee_user_ids = list.filter((a) => !a.is_cc).map((a) => a.user_id)
-        out.cc_user_ids = list.filter((a) => a.is_cc).map((a) => a.user_id)
-        break
-      }
-      case 'start_rule':
-        out.start_rule = cleanRule(v as StartRule)
-        break
-      case 'due_rule': {
-        const r = cleanRule(v as DueRule)
-        out.due_rule = r
-        // Older readers still use due_days / due_time for a relative due.
-        if (r.kind === 'days_after_start') {
-          out.due_days = typeof r.days === 'number' ? r.days : 1
-          out.due_time = r.time || '18:00'
-        }
-        break
-      }
-      case 'priority_id':
-      case 'category_id':
-        out[k] = (v as string) || null
-        break
-      case 'checklist_items':
-        out.checklist_items = normItems(v as ChecklistItem[])
-        break
-      case 'escalation_user_ids':
-        out.escalation_user_ids = (v as string[]).filter(Boolean)
-        break
-      default:
-        ;(out as Record<string, unknown>)[k] = v
-    }
-  }
-  return out
-}
-
-const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
-
 // ─── Small pieces ────────────────────────────────────────────────────────────
 
 const IF_LATE: ChoiceOption<IfLate>[] = [
@@ -240,6 +136,11 @@ const IF_LATE: ChoiceOption<IfLate>[] = [
 const ESCALATION: ChoiceOption<EscalationMode>[] = [
   { value: 'manager', label: 'Reporting manager', tip: 'If someone has no manager, the editors are alerted.' },
   { value: 'people', label: 'Specific people', tip: 'Level 1 is alerted first, the next level 1 hour later.' },
+]
+
+const COMPLETION: ChoiceOption<CompletionMode>[] = [
+  { value: 'any_can_complete', label: 'Anyone', tip: 'Done when one person completes it.' },
+  { value: 'all_must_complete', label: 'Everyone', tip: 'Done when everyone completes their part.' },
 ]
 
 interface ChoiceOption<V extends string> {
@@ -461,14 +362,9 @@ interface CreateProps extends CommonProps {
    * elsewhere adds this one first instead of throwing it away.
    */
   commitRef?: React.MutableRefObject<CommitNewStep | null>
+  /** Told whenever the form goes from untouched to filled in (and back) — unsaved work. */
+  onTouchedChange?: (touched: boolean) => void
 }
-
-/**
- * Add an open new-step form's step without its button: the step to add, 'blank' when no
- * title has been typed (nothing worth keeping), or 'invalid' when it cannot be added as it
- * is (the form then shows why).
- */
-export type CommitNewStep = () => StepInput | 'blank' | 'invalid'
 
 /**
  * One step — a task the system creates. The same form adds a step and edits it. In edit
@@ -500,8 +396,7 @@ export default function StepCard(props: EditProps | CreateProps) {
     (draft.category_id ? 1 : 0) +
     (draft.tag_ids.length ? 1 : 0) +
     (draft.checklist_items.length ? 1 : 0) +
-    (draft.proof_required ? 1 : 0) +
-    (draft.assignees.filter((a) => !a.is_cc).length > 1 && draft.completion_mode === 'all_must_complete' ? 1 : 0)
+    (draft.proof_required ? 1 : 0)
   const [moreOpen, setMoreOpen] = useState(false)
 
   // Checklist builder works on groups; the step stores a flat list.
@@ -628,13 +523,22 @@ export default function StepCard(props: EditProps | CreateProps) {
   }
 
   // "Add what is filled in, now" for the builder — always from the latest draft.
+  // A new-step form someone has filled in is unsaved work: saving the workflow keeps it,
+  // and leaving asks first (the builder counts it in "Unsaved changes").
+  const initialRef = useRef(draft)
+  const touched = props.mode === 'create' && draftTouched(draft, initialRef.current)
+  const onTouchedChange = props.mode === 'create' ? (props as CreateProps).onTouchedChange : undefined
+  useEffect(() => {
+    onTouchedChange?.(touched)
+  }, [touched, onTouchedChange])
+  useEffect(() => () => onTouchedChange?.(false), [onTouchedChange])
+
   const commitRef = props.mode === 'create' ? (props as CreateProps).commitRef : undefined
   useEffect(() => {
     if (!commitRef) return
-    const commit: CommitNewStep = () => {
+    const commit: CommitNewStep = (reason = 'add') => {
       if (creating) return 'invalid'
-      if (!draft.title.trim()) return 'blank'
-      return checkedInput(draft, false) ?? 'invalid'
+      return commitDraft(draft, initialRef.current, reason, (d) => checkedInput(d, false))
     }
     commitRef.current = commit
     return () => {
@@ -714,6 +618,8 @@ export default function StepCard(props: EditProps | CreateProps) {
       ? `${mainAssignees.slice(0, 2).map((a) => a.name).join(', ')} +${mainAssignees.length - 2}`
       : mainAssignees.map((a) => a.name).join(', ')
     : 'No one assigned'
+  // With several people, say who has to complete it: "Mehul, Priya · anyone completes".
+  const completionText = mainAssignees.length > 1 ? ` · ${completionWords(draft.completion_mode)}` : ''
 
   const expanded = isEdit ? (props as EditProps).expanded : true
   const issue = isEdit ? (props as EditProps).issue : null
@@ -768,6 +674,19 @@ export default function StepCard(props: EditProps | CreateProps) {
           <fieldset disabled={disabled || creating} className="min-w-0 border-0 p-0 m-0">
             <AssigneeSelector orgId={orgId} value={draft.assignees} onChange={setAssignees} disabled={disabled || creating} currentUser={currentUser} />
           </fieldset>
+          {/* Who completes it — asked as soon as there is more than one person on it. */}
+          <Reveal open={mainAssignees.length > 1}>
+            <div className="pt-3 lg:max-w-[calc(50%-12px)]">
+              <span className={SUB_LABEL}>Who completes it</span>
+              <ChoiceCards
+                name="Who completes it"
+                value={draft.completion_mode}
+                options={COMPLETION}
+                onChange={(v) => change({ completion_mode: v })}
+                disabled={disabled || creating}
+              />
+            </div>
+          </Reveal>
         </div>
 
         {/* Timing: where it sits, "Also waits for", when it starts, and when it is due */}
@@ -954,22 +873,6 @@ export default function StepCard(props: EditProps | CreateProps) {
               <TagPicker orgId={orgId} value={draft.tag_ids} onChange={(ids) => change({ tag_ids: ids })} disabled={disabled || creating} knownTags={step?.tags} />
             </div>
 
-            {mainAssignees.length > 1 && (
-              <div className="lg:col-span-12">
-                <span className={SUB_LABEL}>Who completes it</span>
-                <ChoiceCards
-                  name="Who completes it"
-                  value={draft.completion_mode}
-                  options={[
-                    { value: 'any_can_complete', label: 'Anyone', tip: 'Done when one person completes it.' },
-                    { value: 'all_must_complete', label: 'Everyone', tip: 'Done when everyone completes their part.' },
-                  ]}
-                  onChange={(v) => change({ completion_mode: v })}
-                  disabled={disabled || creating}
-                />
-              </div>
-            )}
-
             <div className="lg:col-span-12">
               <fieldset disabled={disabled || creating} className="min-w-0 border-0 p-0 m-0">
                 <ProofRequirementField
@@ -1053,7 +956,8 @@ export default function StepCard(props: EditProps | CreateProps) {
             {edit && (
               <p className={`text-[13px] truncate ${hasProblem ? 'text-[#B91C1C]' : 'text-[#475569]'}`}>
                 {hasProblem && <AlertTriangle size={12} className="inline -mt-0.5 mr-1" aria-hidden />}
-                {assigneeText} · {timingSummary(draft.start_rule, draft.due_rule, frequency, waits, nextFlags)}
+                {assigneeText}
+                {completionText} · {timingSummary(draft.start_rule, draft.due_rule, frequency, waits, nextFlags)}
                 {alsoText ? ` · ${alsoText}` : ''}
               </p>
             )}

@@ -19,6 +19,7 @@ import { useWorkflowLookups } from './useWorkflowLookups'
 import {
   Avatar,
   BTN,
+  CompletionChip,
   EmptyState,
   ErrorState,
   GatedButton,
@@ -437,6 +438,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
                         const merges = layout.merges.get(s.id) ?? []
                         const also = merges.map((m) => layout.labels.get(m)).filter(Boolean)
                         // What it comes after is the lane's own order (or the lane header): only extra waits are said.
+                        const names = assigneeNames(s, memberName)
                         const meta = [also.length ? `Also waits for ${also.join(', ')}` : null, s.if_late === 'move_on' ? 'If late: continue' : 'If late: wait'].filter(Boolean).join(' · ')
                         return (
                           <li key={s.id} className="py-3 flex items-start gap-3">
@@ -444,9 +446,12 @@ export default function WorkflowOverview({ id }: { id: string }) {
                               {layout.labels.get(s.id)}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className="text-[15px] font-semibold text-[#0F172A] break-words">{s.title || 'Untitled step'}</p>
+                              <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                <span className="text-[15px] font-semibold text-[#0F172A] break-words min-w-0">{s.title || 'Untitled step'}</span>
+                                <CompletionChip mode={s.completion_mode} count={names.length} />
+                              </p>
                               <p className="text-[13px] text-[#334155]">
-                                {namesSummary(assigneeNames(s, memberName).map((name) => ({ name })), 3)} · {timingSummary(startRuleOf(s), dueRuleOf(s), frequency, deps.length > 0, nextFlags.get(s.id))}
+                                {namesSummary(names.map((name) => ({ name })), 3)} · {timingSummary(startRuleOf(s), dueRuleOf(s), frequency, deps.length > 0, nextFlags.get(s.id))}
                               </p>
                               <p className="text-[13px] text-[#475569]">{meta}</p>
                             </div>

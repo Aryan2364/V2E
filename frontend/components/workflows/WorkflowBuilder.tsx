@@ -496,7 +496,12 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   // ── The working copy and what was last saved ──
   const [work, setWork] = useState<Working>(() => blankWorking(user?.id))
   const [baseline, setBaseline] = useState<string>(() => signature(blankWorking(user?.id)))
-  const dirty = signature(work) !== baseline
+  /** The open new-step form, if any (where it was opened). */
+  const [adding, setAdding] = useState<AddingAt | null>(null)
+  /** That form has been filled in — unsaved work too, though not in the working copy yet. */
+  const [formTouched, setFormTouched] = useState(false)
+  const formPending = !!adding && (formTouched || !!adding.newTrack?.name.trim())
+  const dirty = signature(work) !== baseline || formPending
   // "Save and leave" runs the header's own save: a new workflow or a draft saves as a
   // draft (incomplete work is kept, not refused); a Live or Paused one saves its changes,
   // checked in full. The function is read when the dialog's button is pressed.
@@ -521,7 +526,6 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   // ── UI state ──
   const [nameError, setNameError] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
-  const [adding, setAdding] = useState<AddingAt | null>(null)
   const addSeq = useRef(0)
   /** The open new-step form's "add what is filled in" (registered by the form itself). */
   const commitRef = useRef<CommitNewStep | null>(null)
@@ -987,8 +991,48 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     requestAnimationFrame(() => document.getElementById('starts-section')?.scrollIntoView({ block: 'start', behavior: 'smooth' }))
   }
 
-  /** Saves the working copy; true once it is saved (the header buttons and "Save and leave" share it). */
+  /**
+   * A save that waits for an open new-step form's step to land in the working copy: it
+   * runs on the next render, which sees that step (and its numbers, timing and checks).
+   */
+  const deferredSave = useRef<{ mode: 'draft' | 'save'; resolve: (saved: boolean) => void } | null>(null)
+  /** A save is letting the form's field finish before adding the form (a second click waits). */
+  const settlingRef = useRef(false)
+
+  /**
+   * Saves the working copy; true once it is saved. Every save — Save draft, Save, Save
+   * changes, the narrow menu's Save draft and "Save (draft) and leave" — comes here, and
+   * an open new-step form that has been filled in is added first, in the same click, so it
+   * is never left behind: as it is for a draft (no title = "Untitled step"), and checked in
+   * full with everything else for Save, which names the step if something is missing.
+   */
   async function save(mode: 'draft' | 'save'): Promise<boolean> {
+    if (saving || deferredSave.current || settlingRef.current) return false
+    if (adding) {
+      // Let a field in the form being typed in finish first (as saveNow does).
+      settlingRef.current = true
+      ;(document.activeElement as HTMLElement | null)?.blur?.()
+      await new Promise((r) => setTimeout(r, 0))
+      settlingRef.current = false
+      const pending = commitRef.current?.(live ? 'save' : mode) ?? 'blank'
+      if (pending === 'invalid') {
+        // The form is still adding itself (its own "Add step" is running): show it.
+        holdRef.current?.()
+        holdRef.current = holdThenReveal(null, FORM_ID, undefined, 0)
+        return false
+      }
+      if (pending !== 'blank') {
+        insertStep(pending, adding)
+        setAdding(null)
+        return new Promise<boolean>((resolve) => {
+          deferredSave.current = { mode, resolve }
+        })
+      }
+    }
+    return saveNow(mode)
+  }
+
+  async function saveNow(mode: 'draft' | 'save'): Promise<boolean> {
     if (saving) return false
     setSaveError(null)
     setConflict(false)
@@ -1083,6 +1127,14 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   }
 
   saveRef.current = save
+
+  // Run a save that waited for the open form's step (see `save`): this render has it.
+  useEffect(() => {
+    const d = deferredSave.current
+    if (!d) return
+    deferredSave.current = null
+    void saveNow(d.mode).then(d.resolve, () => d.resolve(false))
+  })
 
   async function setPaused(pause: boolean) {
     if (!workflow) return
@@ -1239,6 +1291,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         onCancel={() => setAdding(null)}
         focusKey={adding.seq}
         commitRef={commitRef}
+        onTouchedChange={setFormTouched}
       />
       </div>
     )

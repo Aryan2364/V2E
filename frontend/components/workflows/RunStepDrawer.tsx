@@ -12,7 +12,7 @@ import type { Task, TaskAttachment, TaskChecklistItem, TaskComment } from '@/lib
 import type { InstanceNote, WorkflowInstanceStep } from '@/lib/types/workflows'
 import { NoteItem } from './InstanceNotes'
 import Sheet from './Sheet'
-import { Avatar, BTN, ErrorBanner, GatedButton, Skeleton, StepStatusBadge, fmtDateTime, fmtDayDateTime, taskHref } from './shared'
+import { Avatar, BTN, CompletionChip, ErrorBanner, GatedButton, Skeleton, StepStatusBadge, fmtDateTime, fmtDayDateTime, taskHref } from './shared'
 
 type Load<T> = { status: 'idle' | 'loading' | 'ready' | 'failed' | 'hidden'; data: T; error?: string }
 
@@ -278,6 +278,12 @@ export default function RunStepDrawer({
                   <Avatar name={p.name} /> {p.name}
                 </span>
               ))}
+              {/* Who has to complete it — from the step's live task (2+ people only). */}
+              {task.status === 'ready' && task.data?.completion_mode && (
+                <span className="self-start">
+                  <CompletionChip mode={task.data.completion_mode} count={people.length} />
+                </span>
+              )}
             </span>
           ) : waiting ? (
             'Assigned when it starts'

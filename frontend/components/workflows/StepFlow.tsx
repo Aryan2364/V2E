@@ -4,7 +4,7 @@ import React, { useMemo } from 'react'
 import { AlertTriangle, Clock, Users } from 'lucide-react'
 import type { WorkflowStep } from '@/lib/types/workflows'
 import FlowDiagram, { type FlowDiagramNode, type FlowLane } from './FlowDiagram'
-import { namesSummary } from './shared'
+import { CompletionChip, namesSummary } from './shared'
 import { MAIN_TRACK, layoutTracks, savedMerges, stepName, trackLabel, type TrackDraft, type TrackLayout } from './tracks'
 import { dueRuleOf, runStartOf, startRuleOf, timingProblems, timingSummary, type Frequency, type ScheduleShape } from './timing'
 import { nextCycleFlagsFor, planContext } from './timingPlan'
@@ -104,6 +104,11 @@ export default function StepFlow({
                 <Users size={12} className="shrink-0 text-[#475569]" />
                 <span className="truncate">{names.length ? namesSummary(names.map((name) => ({ name })), 2) : 'No one assigned'}</span>
               </span>
+              {names.length > 1 && (
+                <span className="self-start">
+                  <CompletionChip mode={s.completion_mode} count={names.length} />
+                </span>
+              )}
               <span className="flex items-center gap-1.5 text-[12px] text-[#334155]">
                 <Clock size={12} className="shrink-0 text-[#475569]" />
                 {timingSummary(startRuleOf(s), dueRuleOf(s), frequency ?? MANUAL, deps.length > 0, next?.get(s.id))}
