@@ -70,6 +70,14 @@ export class LeaveController {
 
   // ─── Approvals ──────────────────────────────────────────────────────────────────
 
+  // Self-scoped: answers only about the caller (no :id, no other user's data), so the
+  // Work sidebar can show "Leave Approvals" to the people who actually approve leave.
+  @Get('approvals/eligibility')
+  @ApiOperation({ summary: 'Whether the caller approves leave for anyone under the org policy' })
+  approvalEligibility(@Param('orgId') orgId: string, @Request() req: any) {
+    return this.service.approvalEligibility(orgId, req.user.id);
+  }
+
   @Get('approvals')
   @ApiOperation({ summary: 'Pending requests the caller may approve' })
   approvals(@Param('orgId') orgId: string, @Request() req: any) {

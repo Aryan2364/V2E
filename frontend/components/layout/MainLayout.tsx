@@ -13,7 +13,12 @@ const ROUTE_MODULES: { prefix: string; module: string; label: string }[] = [
   { prefix: '/dashboard/tasks/workflows', module: 'workflows', label: 'Workflows' },
   { prefix: '/dashboard/projects', module: 'projects', label: 'Projects' },
   { prefix: '/dashboard/tasks', module: 'tasks', label: 'Tasks' },
-  { prefix: '/dashboard/ecs', module: 'ecs', label: 'ESS' },
+  // Leave & Policies (module key `ecs`) has no section of its own any more: its pages
+  // live inside Work and Communication, so they are mapped here explicitly (the
+  // longer prefix beats /dashboard/tasks and /communication). My Leave is a tab on
+  // the always-available profile page and gates itself.
+  { prefix: '/dashboard/tasks/leave-approvals', module: 'ecs', label: 'Leave & Policies' },
+  { prefix: '/communication/company-policy', module: 'ecs', label: 'Leave & Policies' },
   // Governance is gated per line item inside its own layout (governance/layout.tsx),
   // not at the module level — so it's intentionally absent here.
   { prefix: '/dashboard/performance', module: 'performance', label: 'Performance' },

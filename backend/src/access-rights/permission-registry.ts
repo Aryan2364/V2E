@@ -309,7 +309,7 @@ export const PERMISSION_REGISTRY: PermissionModule[] = [
   },
   {
     key: 'ecs',
-    label: 'ESS',
+    label: 'Leave & Policies',
     entitlementControlled: true,
     subModules: [
       {

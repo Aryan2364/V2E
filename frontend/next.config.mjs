@@ -39,6 +39,16 @@ const nextConfig = {
       // Anything else under Foundation (incl. its index) lands on the Settings entry point.
       { source: '/foundation/:path*', destination: '/settings', permanent: false },
       { source: '/foundation', destination: '/settings', permanent: false },
+
+      // ESS (Employee Self Service) was dissolved: My Leave is a tab of My Profile,
+      // Leave Approvals is in Work, Company Policy is in Communication. Old bookmarks
+      // and notification links (stored with /dashboard/ecs/... paths) still land.
+      { source: '/dashboard/ecs/leave', destination: '/dashboard/profile?tab=leave', permanent: false },
+      { source: '/dashboard/ecs/approvals', destination: '/dashboard/tasks/leave-approvals', permanent: false },
+      { source: '/dashboard/ecs/profile', destination: '/dashboard/profile', permanent: false },
+      { source: '/dashboard/ecs/company-policy/:path*', destination: '/communication/company-policy/:path*', permanent: false },
+      { source: '/dashboard/ecs/company-policy', destination: '/communication/company-policy', permanent: false },
+      { source: '/dashboard/ecs', destination: '/communication/company-policy', permanent: false },
     ];
   },
 };

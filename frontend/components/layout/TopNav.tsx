@@ -22,7 +22,6 @@ const NAV_ITEMS: { label: string; href: string; module?: string }[] = [
   { label: 'Process Hierarchy', href: '/dashboard/process-hierarchy', module: 'process_hierarchy' },
   { label: 'Communication', href: '/communication', module: 'communication' },
   { label: 'Work', href: '/dashboard/tasks', module: 'work' },
-  { label: 'ESS', href: '/dashboard/ecs', module: 'ecs' },
   { label: 'Governance', href: '/dashboard/governance', module: 'governance' },
   { label: 'Performance', href: '/dashboard/performance', module: 'performance' },
 ]

@@ -35,6 +35,10 @@ export const leaveApi = {
   // ─── Approvals ──────────────────────────────────────────────────────────────
   approvals: async (orgId: string): Promise<Leave[]> => unwrap(await apiClient.get(`${base(orgId)}/approvals`)),
 
+  /** Does the caller approve leave for anyone (admin, a manager with reports, or a named approver)? */
+  approvalEligibility: async (orgId: string): Promise<{ can_approve: boolean }> =>
+    unwrap(await apiClient.get(`${base(orgId)}/approvals/eligibility`)),
+
   decide: async (
     orgId: string,
     id: string,

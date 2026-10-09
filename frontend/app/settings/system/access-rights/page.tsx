@@ -116,7 +116,7 @@ const SECTION_ORDER: { key: SectionKey; label: string }[] = [
   { key: 'learning', label: 'Learning' },
   { key: 'communication', label: 'Communication' },
   { key: 'work', label: 'Work' },
-  { key: 'ecs', label: 'ESS' },
+  { key: 'ecs', label: 'Leave & Policies' },
   { key: 'governance', label: 'Governance' },
   { key: 'performance', label: 'Performance' },
   { key: 'settings', label: 'Settings' },

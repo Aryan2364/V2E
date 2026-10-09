@@ -146,7 +146,7 @@ export default function LeaveRulesPage() {
       <div className="flex items-start gap-2 rounded-[12px] border border-[#BFDBFE] bg-[#EFF6FF] p-4 text-sm text-[#1E293B]">
         <Info size={16} className="text-[#2563EB] shrink-0 mt-0.5" />
         <p>
-          These rules govern how employees apply for leave from <span className="font-medium">Employee Self-Service → My Leave</span>.
+          These rules govern how employees apply for leave from <span className="font-medium">My Profile → Leave</span>, and approvers decide requests under <span className="font-medium">Work → Leave Approvals</span>.
           Leave makes a person show as <span className="font-medium">on leave</span> on the chosen dates regardless of approval — approval is for governance.
           On-leave employees still appear in the assignee picker; only <span className="font-medium">inactive</span> employees are hidden.
         </p>

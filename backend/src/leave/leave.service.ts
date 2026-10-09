@@ -227,6 +227,29 @@ export class LeaveService {
     return eligible.map((l) => ({ ...l, applicant_name: nameOf.get(l.user_id) ?? 'Unknown' }));
   }
 
+  /**
+   * Does the caller approve leave for anyone? Mirrors listApprovals/decide: an org
+   * admin decides every request; otherwise the org policy names who approves — the
+   * applicant's manager (so: anyone with at least one direct report in this org)
+   * and/or the named approver list. Answers only about the caller.
+   */
+  async approvalEligibility(orgId: string, actorUserId: string): Promise<{ can_approve: boolean }> {
+    if (await this.isAdmin(orgId, actorUserId)) return { can_approve: true };
+    const cfg = await this.getConfig(orgId);
+    if (cfg.approvalMode === 'self_mark') return { can_approve: false };
+    const viaApprover =
+      (cfg.approvalMode === 'approvers' || cfg.approvalMode === 'manager_or_approvers') &&
+      cfg.approverUserIds.includes(actorUserId);
+    if (viaApprover) return { can_approve: true };
+    if (cfg.approvalMode === 'manager' || cfg.approvalMode === 'manager_or_approvers') {
+      const reports = await this.prisma.employeeProfile.count({
+        where: { organization_id: orgId, reporting_to_user_id: actorUserId },
+      });
+      return { can_approve: reports > 0 };
+    }
+    return { can_approve: false };
+  }
+
   async adminList(orgId: string, actorUserId: string) {
     if (!(await this.isAdmin(orgId, actorUserId))) {
       throw new ForbiddenException('Admin only');
@@ -330,7 +353,7 @@ export class LeaveService {
       recipients: [updated.user_id],
       title: dto.decision === 'approved' ? 'Leave approved' : 'Leave rejected',
       body: `Your leave ${this.range(updated)} was ${dto.decision}${dto.note ? ` — ${dto.note.trim()}` : ''}.`,
-      link: '/dashboard/ecs/leave',
+      link: '/dashboard/profile?tab=leave',
       entity: { type: 'leave', id: updated.id },
     });
 
@@ -368,7 +391,7 @@ export class LeaveService {
       recipients,
       title: 'Leave taken despite rejection',
       body: `${applicant?.name ?? 'An employee'} is taking leave ${this.range(updated)} after it was rejected.`,
-      link: '/dashboard/ecs/approvals',
+      link: '/dashboard/tasks/leave-approvals',
       entity: { type: 'leave', id: updated.id },
     });
 
@@ -430,7 +453,7 @@ export class LeaveService {
       recipients: approvers,
       title: 'Leave request',
       body: `${applicant?.name ?? 'An employee'} requested leave ${this.range(leave)}${leave.reason ? ` — ${leave.reason}` : ''}.`,
-      link: '/dashboard/ecs/approvals',
+      link: '/dashboard/tasks/leave-approvals',
       entity: { type: 'leave', id: leave.id },
       dedupe: true,
     });

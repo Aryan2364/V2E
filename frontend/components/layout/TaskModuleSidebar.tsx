@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth/context'
 import { usePermissions } from '@/lib/auth/use-permissions'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { getMyOrgs } from '@/lib/api/auth'
+import { leaveApi } from '@/lib/api/leave'
 import {
   LayoutDashboard,
   CheckSquare,
@@ -25,6 +26,7 @@ import {
   ChevronRight,
   Eye,
   ArrowRightLeft,
+  CalendarCheck,
 } from 'lucide-react'
 import Tooltip from '@/components/ui/Tooltip'
 
@@ -37,6 +39,8 @@ interface NavItem {
   taskConfigGated?: boolean
   /** Only relevant to people who belong to 2+ firms (a group of companies). */
   multiOrgOnly?: boolean
+  /** Only for people the org's leave policy makes an approver (server-decided). */
+  leaveApproverOnly?: boolean
   disabled?: boolean
 }
 
@@ -53,7 +57,7 @@ const TASK_CONFIG_LEAVES = [
 
 interface NavGroup {
   label?: string
-  module: 'tasks' | 'projects' | 'workflows' | 'tickets' | 'delegation'
+  module: 'tasks' | 'projects' | 'workflows' | 'tickets' | 'delegation' | 'ecs'
   items: NavItem[]
 }
 
@@ -111,6 +115,15 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    // Leave lives in the `ecs` module (Leave & Policies). Approvals sit in Work
+    // because deciding a request is work an approver does.
+    label: 'Leave',
+    module: 'ecs',
+    items: [
+      { label: 'Leave Approvals', href: '/dashboard/tasks/leave-approvals', Icon: CalendarCheck, leaveApproverOnly: true },
+    ],
+  },
+  {
     label: 'Config',
     module: 'tasks',
     items: [
@@ -120,6 +133,10 @@ const NAV_GROUPS: NavGroup[] = [
 ]
 
 const COLLAPSE_KEY = 'task-sidebar-collapsed'
+
+// Per-org cache of "does this person approve leave?" so moving between Work pages
+// (and the Projects layout, which shares this sidebar) doesn't refetch it.
+const leaveApproverCache = new Map<string, boolean>()
 
 /**
  * Dark "Task Management" sidebar shared by the Tasks AND Projects layouts so
@@ -149,6 +166,31 @@ export default function TaskModuleSidebar() {
       setMultiOrg(false)
     }
   }, [user?.id, user?.isSuperAdmin, user?.organizationId])
+
+  // Leave approvers are decided by the org's leave policy (manager / named approvers /
+  // admin), not by a permission leaf — so the server answers it. Unknown → hidden
+  // (fail closed), same as an entitlement that hasn't loaded.
+  const orgId = user?.organizationId ?? ''
+  const ecsOn = !!entitlements && entitlements.ecs !== 'off'
+  const [leaveApprover, setLeaveApprover] = useState<boolean | undefined>(
+    orgId ? leaveApproverCache.get(orgId) : undefined,
+  )
+  useEffect(() => {
+    if (!orgId || !ecsOn) return
+    if (leaveApproverCache.has(orgId)) {
+      setLeaveApprover(leaveApproverCache.get(orgId))
+      return
+    }
+    let cancelled = false
+    leaveApi
+      .approvalEligibility(orgId)
+      .then((r) => {
+        leaveApproverCache.set(orgId, r.can_approve)
+        if (!cancelled) setLeaveApprover(r.can_approve)
+      })
+      .catch(() => { if (!cancelled) setLeaveApprover(false) })
+    return () => { cancelled = true }
+  }, [orgId, ecsOn])
 
   const isAdminOrHR = !!user?.is_admin
   const canSeeMasters =
@@ -227,6 +269,7 @@ export default function TaskModuleSidebar() {
           const visibleItems = group.items.filter((item) => {
             if (item.taskConfigGated) return canSeeMasters
             if (item.multiOrgOnly && !multiOrg) return false
+            if (item.leaveApproverOnly) return leaveApprover === true
             return !(item.adminOnly && !isAdminOrHR)
           })
           if (visibleItems.length === 0) return null

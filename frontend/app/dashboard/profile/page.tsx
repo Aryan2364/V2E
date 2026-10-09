@@ -1,8 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Loader2, Save, Eye, EyeOff, ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
+import { useEntitlements } from '@/lib/auth/use-entitlements'
+import MyLeavePanel from '@/components/leave/MyLeavePanel'
 import { useToast } from '@/components/ui/Toast'
 import DatePicker from '@/components/ui/DatePicker'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
@@ -115,10 +118,80 @@ function ReportingChain({ me, allEmployees }: { me: EmployeeProfile; allEmployee
   )
 }
 
+type ProfileTab = 'profile' | 'leave'
+
+const TABS: { key: ProfileTab; label: string }[] = [
+  { key: 'profile', label: 'Profile' },
+  { key: 'leave', label: 'Leave' },
+]
+
+// Section tabs (kit §33): the active tab lives in the URL (?tab=leave) so it can be
+// linked to — leave notifications deep-link here — and switching replaces history.
+function ProfileTabs({ active, onChange }: { active: ProfileTab; onChange: (t: ProfileTab) => void }) {
+  return (
+    <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 bg-[#F8FAFC]">
+      <div role="tablist" aria-label="My profile sections" className="flex gap-6 border-b border-[#E2E8F0]">
+        {TABS.map((t) => {
+          const on = t.key === active
+          return (
+            <button
+              key={t.key}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              onClick={() => onChange(t.key)}
+              className={[
+                '-mb-px h-11 sm:h-10 border-b-2 text-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-t-[4px]',
+                on
+                  ? 'border-[#2563EB] text-[#2563EB] font-semibold'
+                  : 'border-transparent text-[#475569] font-medium hover:text-[#0F172A]',
+              ].join(' ')}
+            >
+              {t.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function MyProfilePage() {
+  // useSearchParams needs a Suspense boundary in the App Router.
+  return (
+    <Suspense fallback={<PageSpinner />}>
+      <MyProfileContent />
+    </Suspense>
+  )
+}
+
+function PageSpinner() {
+  return (
+    <div className="flex items-center justify-center h-48">
+      <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
+
+function MyProfileContent() {
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
   const { addToast } = useToast()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  // Leave belongs to the `ecs` module — offered only when the org has it. It needs
+  // no employee profile: leave is keyed on the org member, not the HR record.
+  const { loading: entLoading, state: entState } = useEntitlements()
+  const leaveState = entState('ecs')
+  const leaveAvailable = !entLoading && leaveState !== 'off'
+  const wantsLeave = searchParams.get('tab') === 'leave'
+  const tab: ProfileTab = wantsLeave && leaveAvailable ? 'leave' : 'profile'
+
+  function selectTab(t: ProfileTab) {
+    router.replace(t === 'leave' ? `${pathname}?tab=leave` : pathname, { scroll: false })
+  }
 
   const [profile, setProfile] = useState<EmployeeProfile | null>(null)
   const [allEmployees, setAllEmployees] = useState<EmployeeProfile[]>([])
@@ -195,13 +268,9 @@ export default function MyProfilePage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
+  // Hold the spinner while a ?tab=leave link waits on the entitlement answer, so the
+  // page doesn't paint the Profile tab and then jump to Leave.
+  if (loading || (wantsLeave && entLoading)) return <PageSpinner />
 
   const name = profile?.user?.name ?? user?.name ?? ''
   const email = profile?.user?.email ?? user?.email ?? ''
@@ -236,6 +305,12 @@ export default function MyProfilePage() {
         </div>
       </div>
 
+      {leaveAvailable && <ProfileTabs active={tab} onChange={selectTab} />}
+
+      {tab === 'leave' ? (
+        <MyLeavePanel readOnly={leaveState === 'preview'} />
+      ) : (
+      <>
       {/* Work details — read only (managed by the administrator) */}
       {profile && (
         <Section title="Work details" subtitle="Managed by your administrator">
@@ -395,6 +470,8 @@ export default function MyProfilePage() {
           {savingPassword ? 'Updating…' : 'Update password'}
         </button>
       </Section>
+      </>
+      )}
     </div>
   )
 }
