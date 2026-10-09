@@ -350,12 +350,18 @@ export class NotificationsService {
     const master = await this.getMaster(orgId);
     const followupMs = master.overdue_followup_days * 24 * 60 * 60 * 1000;
 
+    // Workflow steps paused by a send-back aren't late — their clock is stopped.
+    const paused = await this.prisma.workflowInstanceStep.findMany({
+      where: { organization_id: orgId, status: 'sent_back', task_id: { not: null } },
+      select: { task_id: true },
+    });
     const overdue = await this.prisma.task.findMany({
       where: {
         organization_id: orgId,
         is_deleted: false,
         deadline: { lt: now },
         status: { type: { notIn: TERMINAL_TYPES } },
+        ...(paused.length ? { id: { notIn: paused.map((p) => p.task_id as string) } } : {}),
       },
       select: {
         id: true,

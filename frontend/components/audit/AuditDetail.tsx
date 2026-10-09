@@ -14,6 +14,7 @@ const TRIGGER_LABELS: Record<string, string> = {
   sla_breach: 'SLA breach',
   auto_overdue: 'Deadline passed',
   workflow_overdue: 'Workflow step overdue',
+  workflow_schedule: 'Scheduled workflow start',
   date_trigger: 'Scheduled date trigger',
   recurring_spawn: 'Recurring schedule',
   demand_spawn: 'Recurring log demand',

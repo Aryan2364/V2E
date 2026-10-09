@@ -1,6 +1,7 @@
 // Shared recurrence helper — decides whether a recurrence schedule entry fires on a
-// given day. Used by the recurring-task spawn engine and the Work Log demanded-log
-// spawner so the date math lives in exactly one place.
+// given day. Used by the recurring-task spawn engine, the Work Log demanded-log
+// spawner, meeting rhythms and workflow schedules so the date math lives in exactly
+// one place (`entryOccursOn`).
 //
 // Uses day-from-start-date modulo arithmetic (not RRULE). All end conditions are
 // checked before the schedule itself.
@@ -10,7 +11,7 @@ export interface RecurrenceEntry {
   schedule_type: string; // 'daily' | 'weekly' | 'monthly' | 'yearly'
   every: number;
   days: unknown; // number[]   (weekly: 0-6)
-  month_days: unknown; // number[]   (monthly: 1-31)
+  month_days: unknown; // number[]   (monthly: 1-31; -N = day N, or the month's last day when shorter)
   yearly_dates: unknown; // { month: number; day: number }[]
   end_condition: string; // 'never' | 'on_date' | 'after_n'
   end_date: Date | null;
@@ -18,36 +19,59 @@ export interface RecurrenceEntry {
   occurrence_count: number;
 }
 
-export function shouldEntryFireToday(entry: RecurrenceEntry, now: Date = new Date()): boolean {
-  const today = new Date(now);
-  today.setHours(0, 0, 0, 0);
+/** A zone-less calendar date. month is 1–12. */
+export interface CalendarDate {
+  year: number;
+  month: number;
+  day: number;
+}
 
-  const startDate = new Date(entry.start_date);
-  startDate.setHours(0, 0, 0, 0);
+const DAY_MS = 86_400_000;
 
-  if (today < startDate) return false;
+function serial(d: CalendarDate): number {
+  return Date.UTC(d.year, d.month - 1, d.day);
+}
 
-  if (entry.end_condition === 'on_date' && entry.end_date) {
-    const endDate = new Date(entry.end_date);
-    endDate.setHours(0, 0, 0, 0);
-    if (today > endDate) return false;
+function daysInMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function compare(a: CalendarDate, b: CalendarDate): number {
+  return serial(a) - serial(b);
+}
+
+/**
+ * Does `entry` fire on calendar day `today`? `start` / `end` are the entry's start and
+ * end dates as calendar days in the SAME frame as `today` (the caller decides the
+ * frame: server-local for tasks, the org's time zone for workflows). `end` is only
+ * read when the entry ends on a date.
+ */
+export function entryOccursOn(
+  entry: RecurrenceEntry,
+  today: CalendarDate,
+  start: CalendarDate,
+  end: CalendarDate | null,
+): boolean {
+  if (compare(today, start) < 0) return false;
+
+  if (entry.end_condition === 'on_date' && end) {
+    if (compare(today, end) > 0) return false;
   }
-  if (entry.end_condition === 'after_n' && entry.end_after !== null) {
+  if (entry.end_condition === 'after_n' && entry.end_after !== null && entry.end_after !== undefined) {
     if (entry.occurrence_count >= entry.end_after) return false;
   }
 
-  const daysDiff = Math.floor((today.getTime() - startDate.getTime()) / 86_400_000);
-  const todayDow = today.getDay();
-  const todayDate = today.getDate();
-  const todayMonth = today.getMonth() + 1;
+  const daysDiff = Math.round((serial(today) - serial(start)) / DAY_MS);
+  const todayDow = new Date(serial(today)).getUTCDay();
+  const every = entry.every > 0 ? entry.every : 1;
 
   switch (entry.schedule_type) {
     case 'daily':
-      return daysDiff % entry.every === 0;
+      return daysDiff % every === 0;
 
     case 'weekly': {
       const weeksDiff = Math.floor(daysDiff / 7);
-      if (weeksDiff % entry.every !== 0) return false;
+      if (weeksDiff % every !== 0) return false;
       const days = entry.days as number[];
       return Array.isArray(days) && days.includes(todayDow);
     }
@@ -55,40 +79,47 @@ export function shouldEntryFireToday(entry: RecurrenceEntry, now: Date = new Dat
     case 'monthly': {
       const monthDays = entry.month_days as number[];
       if (!Array.isArray(monthDays)) return false;
-
-      // Check if today is the last day of the month
-      const nextDay = new Date(today);
-      nextDay.setDate(today.getDate() + 1);
-      const isLastDay = nextDay.getMonth() !== today.getMonth();
-
-      // A selected day matches today if it is exactly today's date,
-      // or if today is the last day of the month and the selected day is greater than today's date.
+      const isLastDay = today.day === daysInMonth(today.year, today.month);
+      // A selected day matches today if it is exactly today's date, or (negative =
+      // "fall back to the last day") today is the month's last day and the selected
+      // day is past it.
       const hasMatch = monthDays.some((d) => {
         if (d < 0) {
           const targetDay = Math.abs(d);
-          return todayDate === targetDay || (isLastDay && targetDay > todayDate);
-        } else {
-          return todayDate === d;
+          return today.day === targetDay || (isLastDay && targetDay > today.day);
         }
+        return today.day === d;
       });
       if (!hasMatch) return false;
-
-      const monthsDiff =
-        (today.getFullYear() - startDate.getFullYear()) * 12 +
-        (today.getMonth() - startDate.getMonth());
-      return monthsDiff % entry.every === 0;
+      const monthsDiff = (today.year - start.year) * 12 + (today.month - start.month);
+      return monthsDiff % every === 0;
     }
 
     case 'yearly': {
       const yearlyDates = entry.yearly_dates as { month: number; day: number }[];
       if (!Array.isArray(yearlyDates)) return false;
-      const matches = yearlyDates.some((d) => d.month === todayMonth && d.day === todayDate);
+      const matches = yearlyDates.some((d) => d.month === today.month && d.day === today.day);
       if (!matches) return false;
-      const yearsDiff = today.getFullYear() - startDate.getFullYear();
-      return yearsDiff % entry.every === 0;
+      return (today.year - start.year) % every === 0;
     }
 
     default:
       return false;
   }
+}
+
+/** The server-local calendar day of an instant (the recurring-task frame). */
+function localCalendarDate(d: Date): CalendarDate {
+  const x = new Date(d);
+  return { year: x.getFullYear(), month: x.getMonth() + 1, day: x.getDate() };
+}
+
+/** Does `entry` fire on the server-local calendar day of `now`? */
+export function shouldEntryFireToday(entry: RecurrenceEntry, now: Date = new Date()): boolean {
+  return entryOccursOn(
+    entry,
+    localCalendarDate(now),
+    localCalendarDate(entry.start_date),
+    entry.end_date ? localCalendarDate(entry.end_date) : null,
+  );
 }

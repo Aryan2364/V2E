@@ -3,6 +3,25 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+/**
+ * Whether the focus that just landed came from the keyboard moving it (Tab / Shift+Tab).
+ * Focus that a script puts back — a dialog or menu returning focus to the control that
+ * opened it — or that a click causes is not a request to read a label, so it never opens
+ * a tooltip. Installed once for the whole app, on first use.
+ */
+let tabNavigation = false
+let navListening = false
+function listenForTabNavigation() {
+  if (navListening || typeof document === 'undefined') return
+  navListening = true
+  document.addEventListener('keydown', (e) => { tabNavigation = e.key === 'Tab' }, true)
+  document.addEventListener('pointerdown', () => { tabNavigation = false }, true)
+  // One Tab moves focus once. This bubble-phase listener runs after React's own focus
+  // handling (React listens on its root — the document at most), so the tooltip has read
+  // the flag before it is cleared.
+  window.addEventListener('focusin', () => { tabNavigation = false })
+}
+
 interface TooltipProps {
   /** Tooltip content. When empty/false, the child renders with no tooltip behaviour. */
   label: React.ReactNode
@@ -31,6 +50,9 @@ interface TooltipProps {
 export default function Tooltip({ label, children, placement = 'top', openOnTap = false }: TooltipProps) {
   const [pos, setPos] = useState<{ x: number; y: number; place: 'top' | 'bottom' } | null>(null)
   const elRef = useRef<HTMLElement | null>(null)
+  const enabled = !(label === null || label === undefined || label === false || label === '')
+
+  useEffect(listenForTabNavigation, [])
 
   const show = useCallback(() => {
     const el = elRef.current
@@ -46,6 +68,12 @@ export default function Tooltip({ label, children, placement = 'top', openOnTap 
   }, [placement])
 
   const hide = useCallback(() => setPos(null), [])
+
+  // Turned off while open (e.g. a menu trigger whose menu is showing): close it, so it
+  // cannot come back at a stale position when the label returns.
+  useEffect(() => {
+    if (!enabled) setPos(null)
+  }, [enabled])
 
   // A tapped-open bubble has no hover to end it: close on a press elsewhere, Escape or scroll.
   const isOpen = pos !== null
@@ -76,22 +104,33 @@ export default function Tooltip({ label, children, placement = 'top', openOnTap 
     [children],
   )
 
-  if (label === null || label === undefined || label === false || label === '') return children
-
+  // Same element tree whether or not the tooltip is on, so turning it off and on (a menu
+  // opening and closing) never remounts the trigger and never drops its focus.
   const childProps = children.props as Record<string, ((e: unknown) => void) | undefined>
-  const trigger = React.cloneElement(children as React.ReactElement<Record<string, unknown>>, {
-    ref: setRef,
-    onMouseEnter: (e: unknown) => { show(); childProps.onMouseEnter?.(e) },
-    onMouseLeave: (e: unknown) => { hide(); childProps.onMouseLeave?.(e) },
-    onFocus: (e: unknown) => { show(); childProps.onFocus?.(e) },
-    onBlur: (e: unknown) => { hide(); childProps.onBlur?.(e) },
-    ...(openOnTap ? { onClick: (e: unknown) => { show(); childProps.onClick?.(e) } } : {}),
-  } as Record<string, unknown>)
+  const trigger = enabled
+    ? React.cloneElement(children as React.ReactElement<Record<string, unknown>>, {
+        ref: setRef,
+        onMouseEnter: (e: unknown) => { show(); childProps.onMouseEnter?.(e) },
+        onMouseLeave: (e: unknown) => { hide(); childProps.onMouseLeave?.(e) },
+        // Only focus moved by Tab opens it — not focus a dialog or menu hands back.
+        onFocus: (e: unknown) => { if (tabNavigation) show(); childProps.onFocus?.(e) },
+        onBlur: (e: unknown) => { hide(); childProps.onBlur?.(e) },
+        // Pressing the control acts on it: the label has done its job. A tap-to-read
+        // tooltip (openOnTap) opens instead.
+        onClick: (e: unknown) => { if (openOnTap) show(); else hide(); childProps.onClick?.(e) },
+        onKeyDown: (e: unknown) => {
+          const k = (e as { key?: string }).key
+          if (!openOnTap && (k === 'Enter' || k === ' ')) hide()
+          childProps.onKeyDown?.(e)
+        },
+      } as Record<string, unknown>)
+    : children
 
   return (
     <>
       {trigger}
-      {pos &&
+      {enabled &&
+        pos &&
         typeof document !== 'undefined' &&
         createPortal(
           <div

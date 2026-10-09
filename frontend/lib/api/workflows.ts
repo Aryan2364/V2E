@@ -1,181 +1,237 @@
+import axios from 'axios'
 import apiClient from './client'
 import type {
   WorkflowTemplate,
-  WorkflowStep,
-  WorkflowTrigger,
-  WorkflowAccess,
+  SavedWorkflow,
+  WorkflowDefinitionInput,
   WorkflowInstance,
-  WorkflowMaster,
-  WorkflowNotification,
+  WorkflowMeta,
+  OrgMemberOption,
+  WorkflowRunEvent,
+  RunDocuments,
+  RunFile,
+  SendBackTarget,
+  TimelinePreview,
+  WorkflowStepContext,
 } from '@/lib/types/workflows'
 
 const base = (orgId: string) => `/api/v1/org/${orgId}/workflows`
 
-function unwrap<T>(res: { data: { data: T } | T }): T {
-  const d = res.data as { data?: T }
-  return d.data !== undefined ? (d.data as T) : (res.data as T)
+function unwrap<T>(res: { data: unknown }): T {
+  const d = res.data as { data?: T } | null
+  return d && typeof d === 'object' && 'data' in d && d.data !== undefined ? (d.data as T) : (res.data as T)
 }
 
+/**
+ * The server's human-readable message for a failed workflows call, or a plain fallback.
+ * Nest sends `message` as a string, or an array of validation messages.
+ */
+export function workflowErrorMessage(e: unknown, fallback = 'Something went wrong. Try again.'): string {
+  if (axios.isAxiosError(e)) {
+    if (!e.response) return 'We could not reach the server. Check your connection and try again.'
+    const data = e.response.data as { message?: unknown } | undefined
+    const msg = data?.message
+    if (typeof msg === 'string' && msg.trim()) return msg
+    if (Array.isArray(msg) && msg.length && typeof msg[0] === 'string') return msg.join(' ')
+    if (e.response.status === 403) return 'You are not allowed to do this.'
+    if (e.response.status === 404) return 'This item no longer exists, or you cannot see it.'
+  }
+  return fallback
+}
+
+/**
+ * What a refused save points at: a step (`step_key` — the key it was sent with — and its
+ * `step_id` once saved) or "How it starts" (`code: 'starts_invalid'`, `schedule_index`).
+ */
+export function workflowErrorTarget(e: unknown): {
+  code: string | null
+  stepKey: string | null
+  stepId: string | null
+  scheduleIndex: number | null
+} {
+  const none = { code: null, stepKey: null, stepId: null, scheduleIndex: null }
+  if (!axios.isAxiosError(e)) return none
+  const raw = e.response?.data as Record<string, unknown> | undefined
+  const data = (raw && typeof raw.data === 'object' && raw.data ? (raw.data as Record<string, unknown>) : raw) ?? {}
+  const str = (v: unknown) => (typeof v === 'string' && v ? v : null)
+  return {
+    code: str(data.code) ?? str(raw?.code),
+    stepKey: str(data.step_key) ?? str(raw?.step_key),
+    stepId: str(data.step_id) ?? str(raw?.step_id),
+    scheduleIndex: typeof data.schedule_index === 'number' ? data.schedule_index : typeof raw?.schedule_index === 'number' ? (raw.schedule_index as number) : null,
+  }
+}
+
+/** HTTP status of a failed call, if any. */
+export function workflowErrorStatus(e: unknown): number | undefined {
+  return axios.isAxiosError(e) ? e.response?.status : undefined
+}
+
+/** Every request gets a deadline so nothing spins for ever. */
+const T = { timeout: 30000 }
+
 export const workflowsApi = {
-  // ── Masters ──────────────────────────────────────────────────────────────────
+  // ── Meta / masters ──────────────────────────────────────────────────────────
 
-  getMaster: async (orgId: string): Promise<WorkflowMaster> => {
-    const res = await apiClient.get(`${base(orgId)}/masters`)
-    return unwrap<WorkflowMaster>(res)
+  getMeta: async (orgId: string): Promise<WorkflowMeta> =>
+    unwrap<WorkflowMeta>(await apiClient.get(`${base(orgId)}/meta`, T)),
+
+  /** Active org members — open to every member (users/members). */
+  listMembers: async (orgId: string): Promise<OrgMemberOption[]> => {
+    const rows = unwrap<{ user_id: string; user: { id: string; name: string; email?: string | null } }[]>(
+      await apiClient.get(`/api/v1/org/${orgId}/users/members`, T),
+    )
+    return (rows ?? [])
+      .filter((r) => r?.user?.name)
+      .map((r) => ({ user_id: r.user_id ?? r.user.id, name: r.user.name, email: r.user.email ?? null }))
+      .sort((a, b) => a.name.localeCompare(b.name))
   },
 
-  updateMaster: async (orgId: string, dto: Partial<{ workflow_creation_roles: string[]; default_overdue_action: string }>): Promise<WorkflowMaster> => {
-    const res = await apiClient.patch(`${base(orgId)}/masters`, dto)
-    return unwrap<WorkflowMaster>(res)
+  // ── Templates ───────────────────────────────────────────────────────────────
+
+  listWorkflows: async (orgId: string, opts: { includeArchived?: boolean } = {}): Promise<WorkflowTemplate[]> =>
+    unwrap<WorkflowTemplate[]>(
+      await apiClient.get(base(orgId), { ...T, params: opts.includeArchived ? { include_archived: 'true' } : undefined }),
+    ),
+
+  getWorkflow: async (orgId: string, id: string): Promise<WorkflowTemplate> =>
+    unwrap<WorkflowTemplate>(await apiClient.get(`${base(orgId)}/${id}`, T)),
+
+  /** Create a workflow from its whole definition ('draft' = Save draft, 'save' = Save → Live). */
+  createDefinition: async (orgId: string, dto: WorkflowDefinitionInput): Promise<SavedWorkflow> =>
+    unwrap<SavedWorkflow>(await apiClient.post(`${base(orgId)}/definition`, dto, T)),
+
+  /** Save the whole workflow in one request (one transaction on the server). */
+  saveDefinition: async (orgId: string, id: string, dto: WorkflowDefinitionInput): Promise<SavedWorkflow> =>
+    unwrap<SavedWorkflow>(await apiClient.put(`${base(orgId)}/${id}/definition`, dto, T)),
+
+  /**
+   * The example run(s) the timing works out to, for the definition being edited (nothing
+   * is saved): the next 3 scheduled runs, or one run starting now for a manual-only one.
+   */
+  previewTimeline: async (orgId: string, dto: WorkflowDefinitionInput, signal?: AbortSignal): Promise<TimelinePreview> => {
+    const data = unwrap<Partial<TimelinePreview> | null>(await apiClient.post(`${base(orgId)}/preview-timeline`, dto, { ...T, signal }))
+    return { runs: Array.isArray(data?.runs) ? data!.runs : [], warnings: Array.isArray(data?.warnings) ? data!.warnings : [] }
   },
 
-  // ── Templates ────────────────────────────────────────────────────────────────
+  /** Live → Paused: nothing new starts (schedules skip); runs under way carry on. */
+  pauseWorkflow: async (orgId: string, id: string): Promise<WorkflowTemplate> =>
+    unwrap<WorkflowTemplate>(await apiClient.post(`${base(orgId)}/${id}/pause`, undefined, T)),
 
-  listWorkflows: async (orgId: string): Promise<WorkflowTemplate[]> => {
-    const res = await apiClient.get(`${base(orgId)}`)
-    return unwrap<WorkflowTemplate[]>(res)
-  },
+  /** Paused → Live. What it missed while paused is not caught up. */
+  resumeWorkflow: async (orgId: string, id: string): Promise<WorkflowTemplate> =>
+    unwrap<WorkflowTemplate>(await apiClient.post(`${base(orgId)}/${id}/resume`, undefined, T)),
 
-  getWorkflow: async (orgId: string, id: string): Promise<WorkflowTemplate> => {
-    const res = await apiClient.get(`${base(orgId)}/${id}`)
-    return unwrap<WorkflowTemplate>(res)
-  },
-
-  createWorkflow: async (orgId: string, dto: {
-    name: string
-    description?: string
-    workflow_nature?: string
-    recurring_type?: string
-    show_workflow_on_task_card?: boolean
-  }): Promise<WorkflowTemplate> => {
-    const res = await apiClient.post(`${base(orgId)}`, dto)
-    return unwrap<WorkflowTemplate>(res)
-  },
-
-  updateWorkflow: async (orgId: string, id: string, dto: Partial<WorkflowTemplate>): Promise<WorkflowTemplate> => {
-    const res = await apiClient.patch(`${base(orgId)}/${id}`, dto)
-    return unwrap<WorkflowTemplate>(res)
-  },
-
-  publishWorkflow: async (orgId: string, id: string): Promise<WorkflowTemplate> => {
-    const res = await apiClient.post(`${base(orgId)}/${id}/publish`)
-    return unwrap<WorkflowTemplate>(res)
-  },
-
+  /** DELETE /:id archives the workflow. */
   archiveWorkflow: async (orgId: string, id: string): Promise<void> => {
-    await apiClient.delete(`${base(orgId)}/${id}`)
+    await apiClient.delete(`${base(orgId)}/${id}`, T)
   },
 
-  // ── Steps ────────────────────────────────────────────────────────────────────
+  /** Archived → Draft. */
+  restoreWorkflow: async (orgId: string, id: string): Promise<WorkflowTemplate> =>
+    unwrap<WorkflowTemplate>(await apiClient.post(`${base(orgId)}/${id}/restore`, undefined, T)),
 
-  addStep: async (orgId: string, templateId: string, dto: Partial<WorkflowStep>): Promise<WorkflowStep> => {
-    const res = await apiClient.post(`${base(orgId)}/${templateId}/steps`, dto)
-    return unwrap<WorkflowStep>(res)
+  // ── Instances (runs) ────────────────────────────────────────────────────────
+
+  /** Starts a run now. The name is optional; the server defaults it. */
+  triggerInstance: async (orgId: string, templateId: string, name?: string): Promise<{ id: string }> =>
+    unwrap<{ id: string }>(
+      await apiClient.post(`${base(orgId)}/${templateId}/instances/trigger`, name?.trim() ? { name: name.trim() } : {}, T),
+    ),
+
+  listInstances: async (orgId: string, templateId: string): Promise<WorkflowInstance[]> =>
+    unwrap<WorkflowInstance[]>(await apiClient.get(`${base(orgId)}/${templateId}/instances`, T)),
+
+  getInstance: async (orgId: string, templateId: string, instanceId: string): Promise<WorkflowInstance> =>
+    unwrap<WorkflowInstance>(await apiClient.get(`${base(orgId)}/${templateId}/instances/${instanceId}`, T)),
+
+  cancelInstance: async (orgId: string, templateId: string, instanceId: string): Promise<unknown> =>
+    unwrap<unknown>(await apiClient.post(`${base(orgId)}/${templateId}/instances/${instanceId}/cancel`, undefined, T)),
+
+  retryInstance: async (orgId: string, templateId: string, instanceId: string): Promise<unknown> =>
+    unwrap<unknown>(await apiClient.post(`${base(orgId)}/${templateId}/instances/${instanceId}/retry`, undefined, T)),
+
+  /** Skips one run row (default: the single current row). */
+  skipStep: async (orgId: string, templateId: string, instanceId: string, rowId?: string): Promise<unknown> =>
+    unwrap<unknown>(
+      await apiClient.post(`${base(orgId)}/${templateId}/instances/${instanceId}/skip-step`, rowId ? { row_id: rowId } : {}, T),
+    ),
+
+  /** Starts a waiting step (pending until its start time) right away. */
+  startStepNow: async (orgId: string, templateId: string, instanceId: string, rowId: string): Promise<WorkflowInstance | null> =>
+    unwrap<WorkflowInstance | null>(
+      await apiClient.post(`${base(orgId)}/${templateId}/instances/${instanceId}/steps/${rowId}/start-now`, undefined, T),
+    ) ?? null,
+
+  /** Earlier completed steps this row may be sent back to — direct predecessor first. */
+  getSendBackTargets: async (orgId: string, templateId: string, instanceId: string, rowId: string): Promise<SendBackTarget[]> =>
+    unwrap<SendBackTarget[]>(
+      await apiClient.get(`${base(orgId)}/${templateId}/instances/${instanceId}/steps/${rowId}/send-back-targets`, T),
+    ),
+
+  sendBack: async (
+    orgId: string,
+    templateId: string,
+    instanceId: string,
+    rowId: string,
+    dto: { to_row_id: string; reason: string },
+  ): Promise<WorkflowInstance> =>
+    unwrap<WorkflowInstance>(
+      await apiClient.post(`${base(orgId)}/${templateId}/instances/${instanceId}/steps/${rowId}/send-back`, dto, T),
+    ),
+
+  /** The run's history, newest first. */
+  listEvents: async (orgId: string, templateId: string, instanceId: string): Promise<WorkflowRunEvent[]> =>
+    unwrap<WorkflowRunEvent[]>(await apiClient.get(`${base(orgId)}/${templateId}/instances/${instanceId}/events`, T)),
+
+  /** Every step's files (grouped by step) plus files added to the run itself. */
+  getDocuments: async (orgId: string, templateId: string, instanceId: string): Promise<RunDocuments> =>
+    unwrap<RunDocuments>(await apiClient.get(`${base(orgId)}/${templateId}/instances/${instanceId}/documents`, T)),
+
+  uploadRunFile: async (
+    orgId: string,
+    templateId: string,
+    instanceId: string,
+    file: File,
+    onProgress?: (pct: number) => void,
+  ): Promise<RunFile> => {
+    const form = new FormData()
+    form.append('file', file)
+    return unwrap<RunFile>(
+      await apiClient.post(`${base(orgId)}/${templateId}/instances/${instanceId}/files`, form, {
+        timeout: 120000,
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (e) => {
+          if (onProgress && e.total) onProgress(Math.round((e.loaded / e.total) * 100))
+        },
+      }),
+    )
   },
 
-  updateStep: async (orgId: string, templateId: string, stepId: string, dto: Partial<WorkflowStep>): Promise<WorkflowStep> => {
-    const res = await apiClient.patch(`${base(orgId)}/${templateId}/steps/${stepId}`, dto)
-    return unwrap<WorkflowStep>(res)
+  /** Resolves a short-lived signed URL, then opens it. */
+  downloadRunFile: async (orgId: string, templateId: string, instanceId: string, fileId: string): Promise<void> => {
+    const { url } = unwrap<{ url: string; file_name?: string }>(
+      await apiClient.get(`${base(orgId)}/${templateId}/instances/${instanceId}/files/${fileId}/download`, T),
+    )
+    if (typeof window !== 'undefined' && url) window.open(url, '_blank', 'noopener')
   },
 
-  deleteStep: async (orgId: string, templateId: string, stepId: string): Promise<void> => {
-    await apiClient.delete(`${base(orgId)}/${templateId}/steps/${stepId}`)
+  deleteRunFile: async (orgId: string, templateId: string, instanceId: string, fileId: string): Promise<void> => {
+    await apiClient.delete(`${base(orgId)}/${templateId}/instances/${instanceId}/files/${fileId}`, T)
   },
 
-  reorderSteps: async (orgId: string, templateId: string, items: { id: string; order_index: number }[]): Promise<WorkflowStep[]> => {
-    const res = await apiClient.post(`${base(orgId)}/${templateId}/steps/reorder`, { items })
-    return unwrap<WorkflowStep[]>(res)
-  },
+  /** For a task created by a workflow step: its workflow, run and step. */
+  getStepContext: async (orgId: string, taskId: string): Promise<WorkflowStepContext | null> =>
+    unwrap<WorkflowStepContext | null>(await apiClient.get(`${base(orgId)}/step-context/${taskId}`, T)) ?? null,
 
-  swapSteps: async (orgId: string, templateId: string, stepId1: string, stepId2: string): Promise<WorkflowStep[]> => {
-    const res = await apiClient.post(`${base(orgId)}/${templateId}/steps/swap`, { stepId1, stepId2 })
-    return unwrap<WorkflowStep[]>(res)
-  },
+  // ── My workflows ────────────────────────────────────────────────────────────
 
-  // ── Triggers ─────────────────────────────────────────────────────────────────
+  getOwnedWorkflows: async (orgId: string): Promise<WorkflowTemplate[]> =>
+    unwrap<WorkflowTemplate[]>(await apiClient.get(`${base(orgId)}/my/owned`, T)),
 
-  listTriggers: async (orgId: string, templateId: string): Promise<WorkflowTrigger[]> => {
-    const res = await apiClient.get(`${base(orgId)}/${templateId}/triggers`)
-    return unwrap<WorkflowTrigger[]>(res)
-  },
+  getOwnedInstances: async (orgId: string): Promise<WorkflowInstance[]> =>
+    unwrap<WorkflowInstance[]>(await apiClient.get(`${base(orgId)}/my/owned/instances`, T)),
 
-  addTrigger: async (orgId: string, templateId: string, dto: { type: string; config: Record<string, unknown>; is_active?: boolean }): Promise<WorkflowTrigger> => {
-    const res = await apiClient.post(`${base(orgId)}/${templateId}/triggers`, dto)
-    return unwrap<WorkflowTrigger>(res)
-  },
-
-  updateTrigger: async (orgId: string, templateId: string, triggerId: string, dto: Partial<WorkflowTrigger>): Promise<WorkflowTrigger> => {
-    const res = await apiClient.patch(`${base(orgId)}/${templateId}/triggers/${triggerId}`, dto)
-    return unwrap<WorkflowTrigger>(res)
-  },
-
-  deleteTrigger: async (orgId: string, templateId: string, triggerId: string): Promise<void> => {
-    await apiClient.delete(`${base(orgId)}/${templateId}/triggers/${triggerId}`)
-  },
-
-  // ── Access ───────────────────────────────────────────────────────────────────
-
-  listAccess: async (orgId: string, templateId: string): Promise<WorkflowAccess[]> => {
-    const res = await apiClient.get(`${base(orgId)}/${templateId}/access`)
-    return unwrap<WorkflowAccess[]>(res)
-  },
-
-  grantAccess: async (orgId: string, templateId: string, dto: { user_id: string; access_type: string }): Promise<WorkflowAccess> => {
-    const res = await apiClient.post(`${base(orgId)}/${templateId}/access`, dto)
-    return unwrap<WorkflowAccess>(res)
-  },
-
-  revokeAccess: async (orgId: string, templateId: string, userId: string): Promise<void> => {
-    await apiClient.delete(`${base(orgId)}/${templateId}/access/${userId}`)
-  },
-
-  // ── Instances ────────────────────────────────────────────────────────────────
-
-  triggerInstance: async (orgId: string, templateId: string, name: string): Promise<{ id: string }> => {
-    const res = await apiClient.post(`${base(orgId)}/${templateId}/instances/trigger`, { name })
-    return unwrap<{ id: string }>(res)
-  },
-
-  listInstances: async (orgId: string, templateId: string): Promise<WorkflowInstance[]> => {
-    const res = await apiClient.get(`${base(orgId)}/${templateId}/instances`)
-    return unwrap<WorkflowInstance[]>(res)
-  },
-
-  getInstance: async (orgId: string, templateId: string, instanceId: string): Promise<WorkflowInstance> => {
-    const res = await apiClient.get(`${base(orgId)}/${templateId}/instances/${instanceId}`)
-    return unwrap<WorkflowInstance>(res)
-  },
-
-  getInstanceTasks: async (orgId: string, instanceId: string): Promise<import('@/lib/types/tasks').Task[]> => {
-    const res = await apiClient.get(`${base(orgId)}/any/instances/${instanceId}/tasks`)
-    return unwrap<import('@/lib/types/tasks').Task[]>(res)
-  },
-
-  cancelInstance: async (orgId: string, instanceId: string): Promise<WorkflowInstance> => {
-    const res = await apiClient.post(`${base(orgId)}/any/instances/${instanceId}/cancel`)
-    return unwrap<WorkflowInstance>(res)
-  },
-
-  // ── My workflows ─────────────────────────────────────────────────────────────
-
-  getOwnedWorkflows: async (orgId: string): Promise<WorkflowTemplate[]> => {
-    const res = await apiClient.get(`${base(orgId)}/my/owned`)
-    return unwrap<WorkflowTemplate[]>(res)
-  },
-
-  getOwnedInstances: async (orgId: string): Promise<WorkflowInstance[]> => {
-    const res = await apiClient.get(`${base(orgId)}/my/owned/instances`)
-    return unwrap<WorkflowInstance[]>(res)
-  },
-
-  // ── Notifications ─────────────────────────────────────────────────────────────
-
-  getNotifications: async (orgId: string): Promise<WorkflowNotification[]> => {
-    const res = await apiClient.get(`${base(orgId)}/notifications`)
-    return unwrap<WorkflowNotification[]>(res)
-  },
-
-  markNotificationRead: async (orgId: string, id: string): Promise<void> => {
-    await apiClient.patch(`${base(orgId)}/notifications/${id}/read`)
-  },
+  getAssignedInstances: async (orgId: string): Promise<WorkflowInstance[]> =>
+    unwrap<WorkflowInstance[]>(await apiClient.get(`${base(orgId)}/my/assigned/instances`, T)),
 }

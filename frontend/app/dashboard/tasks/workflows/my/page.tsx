@@ -1,197 +1,226 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { GitBranch, AlertTriangle, CheckCircle2, Clock, RefreshCw } from 'lucide-react'
+import React, { Suspense, useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { History, Plus, UserCheck, Workflow as WorkflowIcon } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
-import { workflowsApi } from '@/lib/api/workflows'
-import type { WorkflowTemplate, WorkflowInstance, WorkflowInstanceStatus } from '@/lib/types/workflows'
-import WorkflowCard from '@/components/workflows/WorkflowCard'
-import ManualTriggerModal from '@/components/workflows/ManualTriggerModal'
+import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
+import type { WorkflowInstance, WorkflowTemplate } from '@/lib/types/workflows'
+import WorkflowCard, { WorkflowCardSkeleton } from '@/components/workflows/WorkflowCard'
+import InstanceList from '@/components/workflows/InstanceList'
+import { useWorkflowActions } from '@/components/workflows/useWorkflowActions'
+import { BTN, EmptyState, ErrorState, GatedButton, REASONS, WORKFLOWS_BASE, useWorkflowsWritable } from '@/components/workflows/shared'
 
-const INSTANCE_STATUS_STYLES: Record<WorkflowInstanceStatus, string> = {
-  running: 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]',
-  completed: 'bg-[#DCFCE7] text-[#16A34A] border-[#BBF7D0]',
-  stuck: 'bg-[#FEE2E2] text-[#DC2626] border-[#FECACA]',
-  cancelled: 'bg-[#F8FAFC] text-[#94A3B8] border-[#E2E8F0]',
-}
+type View = 'owned' | 'runs' | 'assigned'
+const VIEWS: { value: View; label: string }[] = [
+  { value: 'owned', label: 'Workflows I own' },
+  { value: 'runs', label: 'Runs of my workflows' },
+  { value: 'assigned', label: 'Runs I work on' },
+]
 
-const INSTANCE_STATUS_ICONS: Record<WorkflowInstanceStatus, React.ReactNode> = {
-  running: <Clock size={11} />,
-  completed: <CheckCircle2 size={11} />,
-  stuck: <AlertTriangle size={11} />,
-  cancelled: <GitBranch size={11} />,
-}
+type Load<T> = { status: 'loading' | 'ready' | 'failed'; data: T[]; error: string }
+const initial = <T,>(): Load<T> => ({ status: 'loading', data: [], error: '' })
+const byStart = (a: WorkflowInstance, b: WorkflowInstance) => (b.started_at ?? '').localeCompare(a.started_at ?? '')
 
-function InstanceRow({ instance, templateId, onNavigate }: { instance: WorkflowInstance; templateId: string; onNavigate: () => void }) {
-  const stepCount = instance.steps?.length ?? 0
-  const completedCount = instance.steps?.filter((s) => s.status === 'completed').length ?? 0
-  const progress = stepCount > 0 ? Math.round((completedCount / stepCount) * 100) : 0
+function MyWorkflows() {
+  const { user } = useAuth()
+  const orgId = user?.organizationId ?? ''
+  const router = useRouter()
+  const pathname = usePathname()
+  const params = useSearchParams()
+  const writable = useWorkflowsWritable()
+
+  const viewParam = params.get('view') as View | null
+  const view: View = VIEWS.some((v) => v.value === viewParam) ? (viewParam as View) : 'owned'
+  const setView = (v: View) => {
+    const q = new URLSearchParams(params.toString())
+    if (v === 'owned') q.delete('view')
+    else q.set('view', v)
+    router.replace(`${pathname}${q.toString() ? `?${q}` : ''}`, { scroll: false })
+  }
+
+  const [owned, setOwned] = useState<Load<WorkflowTemplate>>(initial)
+  const [runs, setRuns] = useState<Load<WorkflowInstance>>(initial)
+  const [assigned, setAssigned] = useState<Load<WorkflowInstance>>(initial)
+
+  const loadOwned = useCallback(async () => {
+    if (!orgId) return
+    setOwned((s) => ({ ...s, status: s.status === 'ready' ? 'ready' : 'loading' }))
+    try {
+      const d = await workflowsApi.getOwnedWorkflows(orgId)
+      setOwned({ status: 'ready', data: (d ?? []).filter((w) => w.status !== 'archived'), error: '' })
+    } catch (e) {
+      setOwned({ status: 'failed', data: [], error: workflowErrorMessage(e, 'Check your connection and try again.') })
+    }
+  }, [orgId])
+
+  const loadRuns = useCallback(async () => {
+    if (!orgId) return
+    setRuns((s) => ({ ...s, status: 'loading' }))
+    try {
+      const d = await workflowsApi.getOwnedInstances(orgId)
+      setRuns({ status: 'ready', data: [...(d ?? [])].sort(byStart), error: '' })
+    } catch (e) {
+      setRuns({ status: 'failed', data: [], error: workflowErrorMessage(e, 'Check your connection and try again.') })
+    }
+  }, [orgId])
+
+  const loadAssigned = useCallback(async () => {
+    if (!orgId) return
+    setAssigned((s) => ({ ...s, status: 'loading' }))
+    try {
+      const d = await workflowsApi.getAssignedInstances(orgId)
+      setAssigned({ status: 'ready', data: [...(d ?? [])].sort(byStart), error: '' })
+    } catch (e) {
+      setAssigned({ status: 'failed', data: [], error: workflowErrorMessage(e, 'Check your connection and try again.') })
+    }
+  }, [orgId])
+
+  useEffect(() => {
+    loadOwned()
+    loadRuns()
+    loadAssigned()
+  }, [loadOwned, loadRuns, loadAssigned])
+
+  const actions = useWorkflowActions(orgId, ({ id, kind }) => {
+    if (kind === 'archived') setOwned((s) => ({ ...s, data: s.data.filter((w) => w.id !== id) }))
+    else loadOwned()
+  })
+
+  const counts: Record<View, number> = {
+    owned: owned.data.length,
+    runs: runs.data.filter((r) => r.status === 'running' || r.status === 'stuck').length,
+    assigned: assigned.data.length,
+  }
+  const ready: Record<View, boolean> = { owned: owned.status === 'ready', runs: runs.status === 'ready', assigned: assigned.status === 'ready' }
+
+  const newButton =
+    writable === true ? (
+      <Link href={`${WORKFLOWS_BASE}/new`} className={BTN.primary}>
+        <Plus size={16} /> New workflow
+      </Link>
+    ) : (
+      <GatedButton allowed={writable} reason={REASONS.preview} variant="primary" icon={Plus}>
+        New workflow
+      </GatedButton>
+    )
 
   return (
-    <button
-      type="button"
-      onClick={onNavigate}
-      className="w-full flex items-center gap-4 p-3.5 rounded-[10px] border border-[#E2E8F0] hover:border-[#2563EB] hover:bg-[#F8FAFF] transition-all text-left"
-    >
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-[#0F172A] truncate">{instance.name}</p>
-        <p className="text-xs text-[#475569] mt-0.5">
-          Started {new Date(instance.started_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-        </p>
+    <div className="flex flex-col gap-5">
+      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 bg-[#F8FAFC] border-b border-[#E2E8F0]">
+        <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
+            <h1 className="text-[22px] sm:text-[28px] font-bold text-[#0F172A] leading-tight">My workflows</h1>
+            <p className="text-[13px] text-[#475569] mt-0.5">Workflows you own, their runs, and runs where a step is yours.</p>
+          </div>
+          {newButton}
+        </div>
+        <div role="tablist" aria-label="My workflows" className="mt-3 flex items-center gap-1 overflow-x-auto -mb-px">
+          {VIEWS.map((v) => {
+            const active = view === v.value
+            const n = counts[v.value]
+            return (
+              <button
+                key={v.value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setView(v.value)}
+                className={`inline-flex items-center gap-2 px-3 min-h-[44px] text-sm font-medium border-b-2 whitespace-nowrap transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-t-[6px] ${
+                  active ? 'border-[#2563EB] text-[#1D4ED8]' : 'border-transparent text-[#475569] hover:text-[#0F172A]'
+                }`}
+              >
+                {v.label}
+                {ready[v.value] && (
+                  <span className="min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-semibold flex items-center justify-center bg-[#2563EB] text-white">
+                    {n > 99 ? '99+' : n}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Progress bar */}
-      {stepCount > 0 && (
-        <div className="shrink-0 w-28">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-medium text-[#475569]">{completedCount}/{stepCount} steps</span>
-            <span className="text-[10px] font-semibold text-[#0F172A]">{progress}%</span>
+      {view === 'owned' &&
+        (owned.status === 'loading' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+            {[0, 1, 2].map((i) => (
+              <WorkflowCardSkeleton key={i} />
+            ))}
           </div>
-          <div className="h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#2563EB] rounded-full transition-all"
-              style={{ width: `${progress}%` }}
-            />
+        ) : owned.status === 'failed' ? (
+          <ErrorState title="Your workflows could not be loaded" message={owned.error} onRetry={loadOwned} />
+        ) : owned.data.length === 0 ? (
+          <EmptyState
+            icon={WorkflowIcon}
+            title="You don't own any workflows"
+            text="Workflows you create, or are made an owner of, appear here. Archived ones are on the Workflows page."
+            action={
+              <Link href={WORKFLOWS_BASE} className={BTN.secondary}>
+                Go to all workflows
+              </Link>
+            }
+          />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
+            {owned.data.map((w) => (
+              <WorkflowCard
+                key={w.id}
+                workflow={w}
+                writable={writable}
+                onStart={actions.start}
+                onArchive={actions.archive}
+                onRestore={actions.restore}
+                onPause={actions.pause}
+                onResume={actions.resume}
+              />
+            ))}
           </div>
-        </div>
-      )}
+        ))}
 
-      <span className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full border ${INSTANCE_STATUS_STYLES[instance.status]}`}>
-        {INSTANCE_STATUS_ICONS[instance.status]}
-        {instance.status}
-      </span>
-    </button>
+      {view === 'runs' &&
+        (runs.status === 'failed' ? (
+          <ErrorState title="Runs could not be loaded" message={runs.error} onRetry={loadRuns} />
+        ) : (
+          <InstanceList
+            showWorkflow
+            instances={runs.data}
+            loading={runs.status === 'loading'}
+            emptyState={
+              <div className="bg-white border border-[#E2E8F0] rounded-[12px]">
+                <EmptyState icon={History} title="No runs yet" text="When a workflow you own is started, by hand or by a trigger, its runs appear here." />
+              </div>
+            }
+          />
+        ))}
+
+      {view === 'assigned' &&
+        (assigned.status === 'failed' ? (
+          <ErrorState title="Runs could not be loaded" message={assigned.error} onRetry={loadAssigned} />
+        ) : (
+          <InstanceList
+            showWorkflow
+            instances={assigned.data}
+            loading={assigned.status === 'loading'}
+            emptyState={
+              <div className="bg-white border border-[#E2E8F0] rounded-[12px]">
+                <EmptyState icon={UserCheck} title="No steps are waiting on you" text="Runs in progress where you are assigned a step appear here. Your step's task is also in My tasks." />
+              </div>
+            }
+          />
+        ))}
+
+      {actions.dialogs}
+    </div>
   )
 }
 
 export default function MyWorkflowsPage() {
-  const { user } = useAuth()
-  const router = useRouter()
-  const orgId = user?.organizationId ?? ''
-
-  const [ownedWorkflows, setOwnedWorkflows] = useState<WorkflowTemplate[]>([])
-  const [runningInstances, setRunningInstances] = useState<WorkflowInstance[]>([])
-  const [loading, setLoading] = useState(true)
-  const [triggerTarget, setTriggerTarget] = useState<WorkflowTemplate | null>(null)
-
-  const load = useCallback(async () => {
-    if (!orgId) return
-    setLoading(true)
-    try {
-      const [wf, inst] = await Promise.all([
-        workflowsApi.getOwnedWorkflows(orgId),
-        workflowsApi.getOwnedInstances(orgId),
-      ])
-      setOwnedWorkflows(wf)
-      setRunningInstances(inst)
-    } catch {
-      setOwnedWorkflows([])
-      setRunningInstances([])
-    } finally {
-      setLoading(false)
-    }
-  }, [orgId])
-
-  useEffect(() => { load() }, [load])
-
-  async function handleTrigger(name: string) {
-    if (!triggerTarget) return
-    const { id } = await workflowsApi.triggerInstance(orgId, triggerTarget.id, name)
-    router.push(`/dashboard/tasks/workflows/${triggerTarget.id}/instances/${id}`)
-  }
-
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-6">
-        <div className="h-8 w-48 bg-[#F1F5F9] rounded animate-pulse" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {[1, 2].map((i) => (
-            <div key={i} className="h-36 bg-[#F1F5F9] rounded-[12px] animate-pulse" />
-          ))}
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[28px] font-bold text-[#0F172A]">My Workflows</h1>
-          <p className="text-sm text-[#475569] mt-0.5">Workflows you own and their running instances</p>
-        </div>
-        <button
-          type="button"
-          onClick={load}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-[7px] text-sm font-medium text-[#475569] bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#F1F5F9] transition-colors"
-        >
-          <RefreshCw size={14} /> Refresh
-        </button>
-      </div>
-
-      {/* Running instances */}
-      {runningInstances.length > 0 && (
-        <section>
-          <h2 className="text-[15px] font-semibold text-[#0F172A] mb-3 flex items-center gap-2">
-            <Clock size={16} className="text-[#2563EB]" />
-            Running Instances
-            <span className="text-[12px] font-medium text-[#64748B] bg-[#F1F5F9] px-2 py-0.5 rounded-full">
-              {runningInstances.length}
-            </span>
-          </h2>
-          <div className="flex flex-col gap-2">
-            {runningInstances.map((inst) => (
-              <InstanceRow
-                key={inst.id}
-                instance={inst}
-                templateId={inst.workflow_template_id}
-                onNavigate={() => router.push(`/dashboard/tasks/workflows/${inst.workflow_template_id}/instances/${inst.id}`)}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Owned workflows */}
-      <section>
-        <h2 className="text-[15px] font-semibold text-[#0F172A] mb-3 flex items-center gap-2">
-          <GitBranch size={16} className="text-[#2563EB]" />
-          My Workflows
-          <span className="text-[12px] font-medium text-[#64748B] bg-[#F1F5F9] px-2 py-0.5 rounded-full">
-            {ownedWorkflows.length}
-          </span>
-        </h2>
-
-        {ownedWorkflows.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-[#E2E8F0] rounded-[12px]">
-            <GitBranch size={28} className="text-[#CBD5E1] mb-3" />
-            <p className="text-sm font-medium text-[#0F172A]">No owned workflows</p>
-            <p className="text-xs text-[#475569] mt-1">You will appear here as an owner when workflows are created with you.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ownedWorkflows.map((w) => (
-              <WorkflowCard
-                key={w.id}
-                workflow={w}
-                canEdit
-                onEdit={() => router.push(`/dashboard/tasks/workflows/${w.id}`)}
-                onTrigger={() => setTriggerTarget(w)}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {triggerTarget && (
-        <ManualTriggerModal
-          workflow={triggerTarget}
-          onConfirm={handleTrigger}
-          onClose={() => setTriggerTarget(null)}
-        />
-      )}
-    </div>
+    <Suspense fallback={null}>
+      <MyWorkflows />
+    </Suspense>
   )
 }

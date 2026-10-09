@@ -626,7 +626,7 @@ export class TasksController {
     @Param('id') id: string,
     @Body() dto: CreateCommentDto,
   ) {
-    return this.service.addComment(orgId, req.user.id, id, dto);
+    return this.service.addComment(orgId, req.user.id, id, dto, principalFromUser(req.user));
   }
 
   @Delete(':id/comments/:commentId')
@@ -645,12 +645,14 @@ export class TasksController {
   @ApiOperation({ summary: 'Upload a document attachment to a task' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_ATTACHMENT_BYTES } }))
-  uploadTaskAttachment(
+  async uploadTaskAttachment(
     @Param('orgId') orgId: string,
     @Request() req: any,
     @Param('id') id: string,
     @UploadedFile() file: UploadedFileType,
   ) {
+    // Only someone who may read the task may add files to it (same gate as proof upload).
+    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.attachments.upload(orgId, req.user.id, id, file);
   }
 
@@ -658,13 +660,14 @@ export class TasksController {
   @ApiOperation({ summary: 'Upload a document attachment to a task comment' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_ATTACHMENT_BYTES } }))
-  uploadCommentAttachment(
+  async uploadCommentAttachment(
     @Param('orgId') orgId: string,
     @Request() req: any,
     @Param('id') id: string,
     @Param('commentId') commentId: string,
     @UploadedFile() file: UploadedFileType,
   ) {
+    await this.service.assertCanViewTask(orgId, principalFromUser(req.user), id);
     return this.attachments.upload(orgId, req.user.id, id, file, commentId);
   }
 

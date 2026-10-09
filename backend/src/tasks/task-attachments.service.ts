@@ -150,12 +150,18 @@ export class TaskAttachmentsService {
     await this.assertTask(orgId, taskId);
     await this.assertNotFutureTask(orgId, taskId);
 
+    // Task-level access (may this person read the task at all?) is gated by the HTTP
+    // route via TasksService.assertCanViewTask before this runs. Here: a comment file
+    // may only be added to the uploader's OWN live comment on this task.
     if (commentId) {
       const comment = await this.prisma.taskComment.findFirst({
         where: { id: commentId, organization_id: orgId, task_id: taskId, is_deleted: false },
-        select: { id: true },
+        select: { id: true, user_id: true },
       });
       if (!comment) throw new NotFoundException(`Comment ${commentId} not found`);
+      if (comment.user_id !== userId) {
+        throw new ForbiddenException('You can only attach files to your own comments.');
+      }
     }
 
     const f = file as UploadedFile;

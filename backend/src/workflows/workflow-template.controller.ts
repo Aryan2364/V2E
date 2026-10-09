@@ -1,188 +1,288 @@
 import {
-  Controller, Get, Post, Patch, Delete, Param, Body, Req, UseGuards, Query,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { OrgScopeGuard } from '../common/guards/org-scope.guard'
 import { RequireAdmin } from '../common/decorators/require-admin.decorator'
+import { principalFromUser } from '../access-rights/permissions.service'
 import { WorkflowTemplateService } from './workflow-template.service'
-import { WorkflowEngineService } from './workflow-engine.service'
-import { CreateTemplateDto } from './dto/create-template.dto'
-import { UpdateTemplateDto } from './dto/update-template.dto'
-import { CreateStepDto } from './dto/create-step.dto'
-import { UpdateStepDto } from './dto/update-step.dto'
-import { CreateTriggerDto } from './dto/create-trigger.dto'
-import { ReorderStepsDto, SwapStepsDto } from './dto/reorder-steps.dto'
+import { PreviewTimelineDto, SaveDefinitionDto } from './dto/definition.dto'
 import { TriggerInstanceDto } from './dto/trigger-instance.dto'
+import { UpdateMasterDto } from './dto/update-master.dto'
+import { SendBackDto, SkipStepDto } from './dto/run-actions.dto'
+import { MAX_ATTACHMENT_BYTES, type UploadedFile as UploadedFileType } from '../tasks/task-attachments.service'
 
+/**
+ * Workflows API (contract §8). Three layers on every route (AUTHORIZATION.md):
+ * JwtAuthGuard (identity) → OrgScopeGuard (org + `workflows` entitlement; preview
+ * is read-only) → the service's per-template capability gate, with every
+ * sub-resource scoped to its parent template + org.
+ *
+ * Route order matters: static segments (`masters`, `meta`, `definition`, `my/...`,
+ * `step-context/...`) are declared before `:id` so they never get captured as an id.
+ *
+ * A workflow is edited as a whole: the builder saves its entire definition (details,
+ * how it starts, steps, people) in one request — `POST /definition` to create,
+ * `PUT /:id/definition` to save.
+ */
 @Controller('api/v1/org/:orgId/workflows')
 @UseGuards(JwtAuthGuard, RolesGuard, OrgScopeGuard)
 export class WorkflowTemplateController {
-  constructor(
-    private readonly templateService: WorkflowTemplateService,
-    private readonly engineService: WorkflowEngineService,
-  ) {}
+  constructor(private readonly service: WorkflowTemplateService) {}
 
-  // ── Masters ──────────────────────────────────────────────────────────────────
+  // ── Masters (admin only) ─────────────────────────────────────────────────────
 
   @Get('masters')
+  @RequireAdmin()
   getMaster(@Param('orgId') orgId: string) {
-    return this.templateService.getMaster(orgId)
+    return this.service.getMaster(orgId)
   }
 
   @Patch('masters')
   @RequireAdmin()
-  updateMaster(@Param('orgId') orgId: string, @Body() dto: Partial<{ workflow_creation_roles: string[]; default_overdue_action: string }>) {
-    return this.templateService.updateMaster(orgId, dto)
+  updateMaster(@Param('orgId') orgId: string, @Body() dto: UpdateMasterDto) {
+    return this.service.updateMaster(orgId, dto)
+  }
+
+  // ── Meta ─────────────────────────────────────────────────────────────────────
+
+  @Get('meta')
+  getMeta(@Param('orgId') orgId: string, @Req() req: any) {
+    return this.service.getMeta(orgId, principalFromUser(req.user))
   }
 
   // ── My workflows ─────────────────────────────────────────────────────────────
 
   @Get('my/owned')
   getOwnedWorkflows(@Param('orgId') orgId: string, @Req() req: any) {
-    return this.templateService.getOwnedWorkflows(orgId, req.user.id)
+    return this.service.getOwnedWorkflows(orgId, principalFromUser(req.user))
   }
 
   @Get('my/owned/instances')
   getOwnedInstances(@Param('orgId') orgId: string, @Req() req: any) {
-    return this.templateService.getOwnedInstances(orgId, req.user.id)
+    return this.service.getOwnedInstances(orgId, principalFromUser(req.user))
   }
 
-  // ── Notifications ─────────────────────────────────────────────────────────────
-
-  @Get('notifications')
-  getNotifications(@Param('orgId') orgId: string, @Req() req: any) {
-    return this.engineService.getNotifications(orgId, req.user.id)
+  @Get('my/assigned/instances')
+  getAssignedInstances(@Param('orgId') orgId: string, @Req() req: any) {
+    return this.service.getAssignedInstances(orgId, principalFromUser(req.user))
   }
 
-  @Patch('notifications/:id/read')
-  markNotificationRead(@Param('orgId') orgId: string, @Req() req: any, @Param('id') id: string) {
-    return this.engineService.markNotificationRead(orgId, req.user.id, id)
+  // ── Task → workflow context (task detail banner + Send back) ─────────────────
+
+  /** Gated by the TASK view rule. `null` when the task isn't a workflow step task. */
+  @Get('step-context/:taskId')
+  getStepContext(
+    @Param('orgId') orgId: string,
+    @Param('taskId', new ParseUUIDPipe({ errorHttpStatusCode: 404 })) taskId: string,
+    @Req() req: any,
+  ) {
+    return this.service.getStepContext(orgId, taskId, principalFromUser(req.user))
   }
 
   // ── Templates ────────────────────────────────────────────────────────────────
 
   @Get()
-  listTemplates(@Param('orgId') orgId: string, @Req() req: any) {
-    return this.templateService.listTemplates(orgId, req.user.id)
+  listTemplates(
+    @Param('orgId') orgId: string,
+    @Query('include_archived') includeArchived: string | undefined,
+    @Req() req: any,
+  ) {
+    return this.service.listTemplates(orgId, includeArchived === 'true', principalFromUser(req.user))
   }
 
-  @Post()
-  createTemplate(@Param('orgId') orgId: string, @Req() req: any, @Body() dto: CreateTemplateDto) {
-    return this.templateService.createTemplate(orgId, req.user.id, dto)
+  /** Create a workflow from its whole definition (`mode`: 'draft' = Save draft, 'save' = Save → Live). */
+  @Post('definition')
+  createDefinition(@Param('orgId') orgId: string, @Body() dto: SaveDefinitionDto, @Req() req: any) {
+    return this.service.createDefinition(orgId, dto, principalFromUser(req.user))
+  }
+
+  /**
+   * The builder's example timeline for an in-memory definition (nothing is stored):
+   * `{ runs: [{ starts_at, steps: [{ key, title, planned_start_at, planned_due_at }] }],
+   * warnings }`. Module access is enough (OrgScopeGuard) — no workflow row is read.
+   */
+  @Post('preview-timeline')
+  previewTimeline(@Param('orgId') orgId: string, @Body() dto: PreviewTimelineDto, @Req() req: any) {
+    return this.service.previewTimeline(orgId, dto, principalFromUser(req.user))
   }
 
   @Get(':id')
-  getTemplate(@Param('orgId') orgId: string, @Param('id') id: string) {
-    return this.templateService.getTemplate(orgId, id)
+  getTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
+    return this.service.getTemplate(orgId, id, principalFromUser(req.user))
   }
 
-  @Patch(':id')
-  updateTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any, @Body() dto: UpdateTemplateDto) {
-    return this.templateService.updateTemplate(orgId, id, req.user.id, dto)
+  /**
+   * Save the whole definition in one transaction. Live/Paused workflows are always
+   * fully validated; a draft saved with `mode: 'save'` goes Live. 409 when someone
+   * else saved after `expected_updated_at`.
+   */
+  @Put(':id/definition')
+  updateDefinition(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: SaveDefinitionDto, @Req() req: any) {
+    return this.service.updateDefinition(orgId, id, dto, principalFromUser(req.user))
   }
 
-  @Post(':id/publish')
-  publishTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
-    return this.templateService.publishTemplate(orgId, id, req.user.id)
+  /** Live → Paused: no new runs, schedules skip; running runs continue. */
+  @Post(':id/pause')
+  pauseTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
+    return this.service.pauseTemplate(orgId, id, principalFromUser(req.user))
   }
 
+  /** Paused → Live. Occurrences missed while paused are not caught up. */
+  @Post(':id/resume')
+  resumeTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
+    return this.service.resumeTemplate(orgId, id, principalFromUser(req.user))
+  }
+
+  /** Archive (never a hard delete). */
   @Delete(':id')
   archiveTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
-    return this.templateService.archiveTemplate(orgId, id, req.user.id)
+    return this.service.archiveTemplate(orgId, id, principalFromUser(req.user))
   }
 
-  // ── Steps ────────────────────────────────────────────────────────────────────
-
-  @Post(':id/steps')
-  addStep(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any, @Body() dto: CreateStepDto) {
-    return this.templateService.addStep(orgId, id, req.user.id, dto)
-  }
-
-  @Patch(':id/steps/:stepId')
-  updateStep(@Param('orgId') orgId: string, @Param('id') id: string, @Param('stepId') stepId: string, @Req() req: any, @Body() dto: UpdateStepDto) {
-    return this.templateService.updateStep(orgId, id, stepId, req.user.id, dto)
-  }
-
-  @Delete(':id/steps/:stepId')
-  deleteStep(@Param('orgId') orgId: string, @Param('id') id: string, @Param('stepId') stepId: string, @Req() req: any) {
-    return this.templateService.deleteStep(orgId, id, stepId, req.user.id)
-  }
-
-  @Post(':id/steps/reorder')
-  reorderSteps(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any, @Body() dto: ReorderStepsDto) {
-    return this.templateService.reorderSteps(orgId, id, req.user.id, dto.items)
-  }
-
-  @Post(':id/steps/swap')
-  swapSteps(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any, @Body() dto: SwapStepsDto) {
-    return this.templateService.swapSteps(orgId, id, req.user.id, dto.stepId1, dto.stepId2)
-  }
-
-  // ── Triggers ─────────────────────────────────────────────────────────────────
-
-  @Get(':id/triggers')
-  listTriggers(@Param('orgId') orgId: string, @Param('id') id: string) {
-    return this.templateService.listTriggers(orgId, id)
-  }
-
-  @Post(':id/triggers')
-  addTrigger(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any, @Body() dto: CreateTriggerDto) {
-    return this.templateService.addTrigger(orgId, id, req.user.id, dto)
-  }
-
-  @Patch(':id/triggers/:triggerId')
-  updateTrigger(@Param('orgId') orgId: string, @Param('id') id: string, @Param('triggerId') triggerId: string, @Req() req: any, @Body() dto: Partial<CreateTriggerDto>) {
-    return this.templateService.updateTrigger(orgId, id, triggerId, req.user.id, dto)
-  }
-
-  @Delete(':id/triggers/:triggerId')
-  deleteTrigger(@Param('orgId') orgId: string, @Param('id') id: string, @Param('triggerId') triggerId: string, @Req() req: any) {
-    return this.templateService.deleteTrigger(orgId, id, triggerId, req.user.id)
-  }
-
-  // ── Access ───────────────────────────────────────────────────────────────────
-
-  @Get(':id/access')
-  listAccess(@Param('orgId') orgId: string, @Param('id') id: string) {
-    return this.templateService.listAccess(orgId, id)
-  }
-
-  @Post(':id/access')
-  grantAccess(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any, @Body() dto: { user_id: string; access_type: string }) {
-    return this.templateService.grantAccess(orgId, id, req.user.id, dto)
-  }
-
-  @Delete(':id/access/:userId')
-  revokeAccess(@Param('orgId') orgId: string, @Param('id') id: string, @Param('userId') targetUserId: string, @Req() req: any) {
-    return this.templateService.revokeAccess(orgId, id, req.user.id, targetUserId)
+  /** Archived → Draft. */
+  @Post(':id/restore')
+  restoreTemplate(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
+    return this.service.restoreTemplate(orgId, id, principalFromUser(req.user))
   }
 
   // ── Instances ────────────────────────────────────────────────────────────────
 
   @Post(':id/instances/trigger')
-  async triggerInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any, @Body() dto: TriggerInstanceDto) {
-    await this.templateService.assertCanTrigger(orgId, id, req.user.id)
-    return this.engineService.createInstance(id, 'manual_trigger', { name: dto.name }, req.user.id)
+  triggerInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: TriggerInstanceDto, @Req() req: any) {
+    return this.service.triggerInstance(orgId, id, dto?.name, principalFromUser(req.user))
   }
 
   @Get(':id/instances')
-  listInstances(@Param('orgId') orgId: string, @Param('id') id: string) {
-    return this.templateService.listInstances(orgId, id)
+  listInstances(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any) {
+    return this.service.listInstances(orgId, id, principalFromUser(req.user))
   }
 
   @Get(':id/instances/:iid')
-  getInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string) {
-    return this.templateService.getInstance(orgId, id, iid)
+  getInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+    return this.service.getInstance(orgId, id, iid, principalFromUser(req.user))
   }
 
   @Get(':id/instances/:iid/tasks')
-  getInstanceTasks(@Param('orgId') orgId: string, @Param('iid') iid: string) {
-    return this.templateService.getInstanceTasks(orgId, iid)
+  getInstanceTasks(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+    return this.service.getInstanceTasks(orgId, id, iid, principalFromUser(req.user))
   }
 
   @Post(':id/instances/:iid/cancel')
-  cancelInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Req() req: any, @Param('iid') iid: string) {
-    return this.templateService.cancelInstance(orgId, id, req.user.id, iid)
+  cancelInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+    return this.service.cancelInstance(orgId, id, iid, principalFromUser(req.user))
+  }
+
+  @Post(':id/instances/:iid/retry')
+  retryInstance(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+    return this.service.retryInstance(orgId, id, iid, principalFromUser(req.user))
+  }
+
+  /** Skip `row_id`, or the single current step when omitted (can_edit). */
+  @Post(':id/instances/:iid/skip-step')
+  skipStep(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @Body() dto: SkipStepDto,
+    @Req() req: any,
+  ) {
+    return this.service.skipStep(orgId, id, iid, dto?.row_id, principalFromUser(req.user))
+  }
+
+  @Get(':id/instances/:iid/steps/:rowId/send-back-targets')
+  getSendBackTargets(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @Param('rowId') rowId: string,
+    @Req() req: any,
+  ) {
+    return this.service.getSendBackTargets(orgId, id, iid, rowId, principalFromUser(req.user))
+  }
+
+  @Post(':id/instances/:iid/steps/:rowId/send-back')
+  sendBack(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @Param('rowId') rowId: string,
+    @Body() dto: SendBackDto,
+    @Req() req: any,
+  ) {
+    return this.service.sendBack(orgId, id, iid, rowId, dto, principalFromUser(req.user))
+  }
+
+  /** "Start now": a waiting step starts immediately (can_edit). */
+  @Post(':id/instances/:iid/steps/:rowId/start-now')
+  startStepNow(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @Param('rowId') rowId: string,
+    @Req() req: any,
+  ) {
+    return this.service.startStepNow(orgId, id, iid, rowId, principalFromUser(req.user))
+  }
+
+  @Get(':id/instances/:iid/events')
+  listEvents(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+    return this.service.listEvents(orgId, id, iid, principalFromUser(req.user))
+  }
+
+  // ── Run documents (participants) ─────────────────────────────────────────────
+
+  @Get(':id/instances/:iid/documents')
+  getDocuments(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+    return this.service.getDocuments(orgId, id, iid, principalFromUser(req.user))
+  }
+
+  @Post(':id/instances/:iid/files')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_ATTACHMENT_BYTES } }))
+  uploadRunFile(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @UploadedFile() file: UploadedFileType,
+    @Req() req: any,
+  ) {
+    return this.service.uploadRunFile(orgId, id, iid, file, principalFromUser(req.user))
+  }
+
+  @Get(':id/instances/:iid/files/:fileId/download')
+  downloadRunFile(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @Param('fileId') fileId: string,
+    @Req() req: any,
+  ) {
+    return this.service.downloadRunFile(orgId, id, iid, fileId, principalFromUser(req.user))
+  }
+
+  @Delete(':id/instances/:iid/files/:fileId')
+  deleteRunFile(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @Param('fileId') fileId: string,
+    @Req() req: any,
+  ) {
+    return this.service.deleteRunFile(orgId, id, iid, fileId, principalFromUser(req.user))
   }
 }

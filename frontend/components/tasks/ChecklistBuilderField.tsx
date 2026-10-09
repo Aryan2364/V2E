@@ -1,9 +1,19 @@
 'use client'
 
 import React from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Link2, Plus, Trash2 } from 'lucide-react'
 import StyledSelect from '@/components/ui/StyledSelect'
-import type { ChecklistTemplate } from '@/lib/types/tasks'
+
+/**
+ * The least a template needs to be offered here. A task's ChecklistTemplate fits, and so
+ * does the lighter list the workflows /meta endpoint serves (no order_index there: the
+ * items arrive in order).
+ */
+export interface ChecklistTemplateOption {
+  id: string
+  name: string
+  items?: { title: string; order_index?: number }[]
+}
 
 export interface ChecklistEntry {
   title: string
@@ -84,9 +94,28 @@ export function groupsFromChecklistItems(
 interface Props {
   groups: ChecklistGroup[]
   onChange: (groups: ChecklistGroup[]) => void
-  templates: ChecklistTemplate[]
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  templates: ChecklistTemplateOption[]
+  /** Card variant only: whether the body is expanded. */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  /**
+   * 'card' (default): the collapsible card used by the task modals, its body scrolling
+   * inside the modal. 'inline': always open with no toggle, and the body grows with its
+   * content — for a form that already sits on a scrolling page (a workflow step).
+   */
+  variant?: 'card' | 'inline'
+  /**
+   * Template groups stay linked to their template (a workflow step): their items and
+   * name follow the template and cannot be edited here, and a template already on the
+   * list is not offered again. Off by default — a task copies the items and lets you edit.
+   */
+  linkedTemplates?: boolean
+  /** Extra line shown under a group's header (e.g. whether its template is still live). */
+  groupNote?: (group: ChecklistGroup) => React.ReactNode
+  /** Show the checklists without any add, edit or remove control. */
+  readOnly?: boolean
+  /** The line explaining the choices while there is no checklist yet. */
+  intro?: string
 }
 
 /**
@@ -94,14 +123,34 @@ interface Props {
  * the Edit Recurring modal. Supports multiple groups — applied from a template
  * or built by hand — each independently editable.
  */
-export default function ChecklistBuilderField({ groups, onChange, templates, open, onOpenChange }: Props) {
+export default function ChecklistBuilderField({
+  groups,
+  onChange,
+  templates,
+  open: openProp = false,
+  onOpenChange,
+  variant = 'card',
+  linkedTemplates = false,
+  groupNote,
+  readOnly = false,
+  intro = 'Apply a template, build your own, or combine both. You can add several checklists to one task.',
+}: Props) {
+  const inline = variant === 'inline'
+  const open = inline || openProp
+  // A linked template is listed once; copied templates may be applied again.
+  const usedTemplateIds = new Set(groups.filter((g) => g.source === 'template' && g.templateId).map((g) => g.templateId))
+  const templateOptions = (linkedTemplates ? templates.filter((t) => !usedTemplateIds.has(t.id)) : templates).map((t) => ({
+    value: t.id,
+    label: t.name,
+  }))
+
   // Add a checklist sourced from a template — its items are copied in and stay
   // fully editable. Applying a template never wipes other checklists; it adds one.
   function addTemplateGroup(templateId: string) {
     if (!templateId) return
     const tpl = templates.find((t) => t.id === templateId)
     if (!tpl) return
-    const sorted = [...(tpl.items ?? [])].sort((a, b) => a.order_index - b.order_index)
+    const sorted = [...(tpl.items ?? [])].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
     onChange([
       ...groups,
       {
@@ -152,49 +201,61 @@ export default function ChecklistBuilderField({ groups, onChange, templates, ope
     onChange(groups.map((g) => (g.key === key ? { ...g, items: g.items.filter((_, i) => i !== idx) } : g)))
   }
 
+  const countBadge = groups.length > 0 && (
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">
+      {groups.length}
+    </span>
+  )
+
   return (
     <div>
       <div className="rounded-[12px] border border-[#E2E8F0] bg-white overflow-visible">
-        {/* Card header — click anywhere to toggle; + button on the right */}
-        <button
-          type="button"
-          onClick={() => onOpenChange(!open)}
-          aria-expanded={open}
-          className="w-full flex items-center gap-2 px-3 py-3 text-left rounded-t-[12px] hover:bg-[#F8FAFC] transition-colors"
-        >
-          <label className="text-sm font-medium text-[#374151] cursor-pointer">Checklist</label>
-          <span className="text-xs font-normal text-[#475569]">Optional</span>
-          {groups.length > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">
-              {groups.length}
-            </span>
-          )}
-          <span
-            className={[
-              'ml-auto flex items-center justify-center w-6 h-6 rounded-[6px] text-[#2563EB] transition-transform',
-              open ? 'rotate-45' : '',
-            ].join(' ')}
-            aria-hidden
+        {inline ? (
+          // Inline header — always open, so nothing to toggle.
+          <div className="flex items-center gap-2 px-3 py-3">
+            <span className="text-sm font-medium text-[#374151]">Checklist</span>
+            <span className="text-xs font-normal text-[#475569]">Optional</span>
+            {countBadge}
+          </div>
+        ) : (
+          /* Card header — click anywhere to toggle; + button on the right */
+          <button
+            type="button"
+            onClick={() => onOpenChange?.(!open)}
+            aria-expanded={open}
+            className="w-full flex items-center gap-2 px-3 py-3 text-left rounded-t-[12px] hover:bg-[#F8FAFC] transition-colors"
           >
-            <Plus size={18} />
-          </span>
-        </button>
+            <label className="text-sm font-medium text-[#374151] cursor-pointer">Checklist</label>
+            <span className="text-xs font-normal text-[#475569]">Optional</span>
+            {countBadge}
+            <span
+              className={[
+                'ml-auto flex items-center justify-center w-6 h-6 rounded-[6px] text-[#2563EB] transition-transform',
+                open ? 'rotate-45' : '',
+              ].join(' ')}
+              aria-hidden
+            >
+              <Plus size={18} />
+            </span>
+          </button>
+        )}
 
         {!open ? null : groups.length === 0 ? (
+          readOnly ? (
+            <p className="px-4 pb-4 text-sm text-[#475569]">No checklist.</p>
+          ) : (
           <>
             {/* Body — explain the choice, then the two ways to add one */}
             <div className="px-4 pb-4 pt-0">
-              <p className="text-xs text-[#475569] mb-3">
-                Apply a template, build your own, or combine both. You can add several checklists to one task.
-              </p>
+              <p className="text-xs text-[#475569] mb-3">{intro}</p>
               <div className="flex flex-col sm:flex-row gap-2">
-                {templates.length > 0 && (
+                {templateOptions.length > 0 && (
                   <StyledSelect
                     value=""
                     onChange={addTemplateGroup}
                     placeholder="Apply a template…"
                     wrapperClassName="sm:flex-1"
-                    options={templates.map((t) => ({ value: t.id, label: t.name }))}
+                    options={templateOptions}
                   />
                 )}
                 <button
@@ -208,18 +269,22 @@ export default function ChecklistBuilderField({ groups, onChange, templates, ope
               </div>
             </div>
           </>
+          )
         ) : (
           <>
             {/* Scrollable body — multiple checklists live here and scroll internally
                 so the card never stretches the modal, no matter how many you add. */}
-            <div className="max-h-[300px] overflow-y-auto p-3 space-y-3">
+            <div className={inline ? 'p-3 pt-0 space-y-3' : 'max-h-[300px] overflow-y-auto p-3 space-y-3'}>
               {groups.map((g) => {
                 const multi = groups.length >= 2
+                // A linked template's name and items follow the template itself.
+                const locked = readOnly || (linkedTemplates && g.source === 'template')
+                const note = groupNote?.(g)
                 return (
                   <div key={g.key} className="rounded-[10px] border border-[#E2E8F0] bg-[#F8FAFC] p-3">
                     {/* Group header: editable name (only meaningful with 2+ groups) + template tag + remove */}
                     <div className="flex items-center gap-2 mb-2">
-                      {multi ? (
+                      {multi && !locked ? (
                         <input
                           type="text"
                           value={g.title}
@@ -231,36 +296,45 @@ export default function ChecklistBuilderField({ groups, onChange, templates, ope
                         <span className="flex-1 text-sm font-semibold text-[#0F172A]">{g.title.trim() || 'Checklist'}</span>
                       )}
                       {g.source === 'template' && (
-                        <span className="shrink-0 text-[11px] font-medium text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] rounded-full px-2 py-0.5">
-                          Template
+                        <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-medium text-[#1D4ED8] bg-[#EFF6FF] border border-[#BFDBFE] rounded-full px-2 py-0.5">
+                          {linkedTemplates && <Link2 size={11} aria-hidden />}
+                          {linkedTemplates ? 'Linked template' : 'Template'}
                         </span>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => removeGroup(g.key)}
-                        className="shrink-0 text-[#94A3B8] hover:text-[#DC2626] transition-colors"
-                        aria-label="Remove checklist"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      {!readOnly && (
+                        <button
+                          type="button"
+                          onClick={() => removeGroup(g.key)}
+                          className="shrink-0 text-[#94A3B8] hover:text-[#DC2626] transition-colors"
+                          aria-label={`Remove checklist “${g.title.trim() || 'Checklist'}”`}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
+                    {note && <div className="mb-2">{note}</div>}
 
                     {/* Items */}
                     {g.items.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-2 mb-1.5">
                         <div className="w-4 h-4 rounded border border-[#CBD5E1] shrink-0" />
-                        <span className="flex-1 text-sm text-[#0F172A]">{item.title}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeItemFromGroup(g.key, idx)}
-                          className="text-[#94A3B8] hover:text-[#DC2626] transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <span className="flex-1 min-w-0 break-words text-sm text-[#0F172A]">{item.title}</span>
+                        {!locked && (
+                          <button
+                            type="button"
+                            onClick={() => removeItemFromGroup(g.key, idx)}
+                            className="text-[#94A3B8] hover:text-[#DC2626] transition-colors"
+                            aria-label={`Remove “${item.title}”`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     ))}
+                    {g.items.length === 0 && locked && <p className="text-[13px] text-[#475569]">This template has no items.</p>}
 
                     {/* Add item to this group */}
+                    {!locked && (
                     <div className="flex gap-2 mt-2">
                       <input
                         type="text"
@@ -279,20 +353,22 @@ export default function ChecklistBuilderField({ groups, onChange, templates, ope
                         Add
                       </button>
                     </div>
+                    )}
                   </div>
                 )
               })}
             </div>
 
             {/* Sticky footer — stays put while the checklists above scroll */}
-            <div className="flex flex-col sm:flex-row gap-2 border-t border-[#E2E8F0] bg-[#F8FAFC] p-3">
-              {templates.length > 0 && (
+            {!readOnly && (
+            <div className={`flex flex-col sm:flex-row gap-2 border-t border-[#E2E8F0] bg-[#F8FAFC] p-3 ${inline ? 'rounded-b-[12px]' : ''}`}>
+              {templateOptions.length > 0 && (
                 <StyledSelect
                   value=""
                   onChange={addTemplateGroup}
                   placeholder="Add from a template…"
                   wrapperClassName="sm:flex-1"
-                  options={templates.map((t) => ({ value: t.id, label: t.name }))}
+                  options={templateOptions}
                 />
               )}
               <button
@@ -304,6 +380,7 @@ export default function ChecklistBuilderField({ groups, onChange, templates, ope
                 Add checklist
               </button>
             </div>
+            )}
           </>
         )}
       </div>

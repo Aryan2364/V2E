@@ -73,7 +73,9 @@ export class ReplayService {
         // Rhythms replay day-of (horizon 0): each simulated day materialises only its
         // own occurrence, mirroring how recurring tasks replay one day at a time.
         await this.scheduler.spawnMeetingRhythmsForOrg(orgId, dayInstant, 0);
-        await this.workflow.processDateTriggersForOrg(orgId, dayInstant);
+        await this.workflow.processSchedulesForOrg(orgId, dayInstant);
+        // Waiting workflow steps start on their own simulated day (not all at the end).
+        await this.workflow.processWaitingStepsForOrg(orgId, dayInstant);
         cursor.setDate(cursor.getDate() + 1);
         daysReplayed++;
       }

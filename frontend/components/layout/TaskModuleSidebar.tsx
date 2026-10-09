@@ -132,6 +132,8 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ]
 
+const ALL_HREFS = NAV_GROUPS.flatMap((g) => g.items.map((i) => i.href))
+
 const COLLAPSE_KEY = 'task-sidebar-collapsed'
 
 // Per-org cache of "does this person approve leave?" so moving between Work pages
@@ -222,7 +224,11 @@ export default function TaskModuleSidebar() {
           !['/dashboard/projects/my', '/dashboard/projects/managing', '/dashboard/projects/templates']
             .some((p) => pathname.startsWith(p)))
     }
-    return pathname.startsWith(href)
+    // Most specific entry wins: on /workflows/my only "My Workflows" lights up, not
+    // "Workflows" as well.
+    const matches = (h: string) => pathname === h || pathname.startsWith(h + '/')
+    if (!matches(href)) return false
+    return !ALL_HREFS.some((h) => h.length > href.length && h.startsWith(href + '/') && matches(h))
   }
 
   return (

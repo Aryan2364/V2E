@@ -1306,11 +1306,11 @@ model Task {
   created_at                DateTime          @default(now())
   updated_at                DateTime          @updatedAt
 
-  category      TaskCategory?     @relation(fields: [category_id], references: [id])
-  priority      TaskPriority?     @relation(fields: [priority_id], references: [id])
-  status        TaskStatus        @relation(fields: [status_id], references: [id])
-  goal          Goal?             @relation(fields: [goal_id], references: [id])
-  import_batch  TaskImportBatch?  @relation(fields: [import_batch_id], references: [id], onDelete: SetNull)
+  category           TaskCategory?          @relation(fields: [category_id], references: [id])
+  priority           TaskPriority?          @relation(fields: [priority_id], references: [id])
+  status             TaskStatus             @relation(fields: [status_id], references: [id])
+  goal               Goal?                  @relation(fields: [goal_id], references: [id])
+  import_batch       TaskImportBatch?       @relation(fields: [import_batch_id], references: [id], onDelete: SetNull)
   assignees          TaskAssignee[]
   checklist          TaskChecklist[]
   reminders          TaskReminder[]
@@ -1400,7 +1400,7 @@ model TaskAssignee {
 // how the live `deadline` drifted away from it. Append-only — never updated or
 // deleted (a task delete cascades, since the task itself is then gone).
 model TaskDeadlineRevision {
-  id                 String   @id @default(uuid())
+  id                 String    @id @default(uuid())
   organization_id    String
   task_id            String
   from_deadline      DateTime? // null when a deadline was added to a task that had none
@@ -1408,9 +1408,9 @@ model TaskDeadlineRevision {
   // Optional: the reports grade against the original date, so the loophole is already
   // closed and a mandatory justification box would only add friction. Captured and
   // shown when the reviser bothers to explain.
-  reason             String?  @db.Text
+  reason             String?   @db.Text
   changed_by_user_id String
-  changed_at         DateTime @default(now())
+  changed_at         DateTime  @default(now())
 
   task Task @relation(fields: [task_id], references: [id], onDelete: Cascade)
 
@@ -1807,10 +1807,14 @@ model TaskAssigneeFrequency {
 
 // ─── Workflow Engine ───────────────────────────────────────────────────────────
 
+// draft = saved, not live (can't be started, schedules never fire); active = Live;
+// paused = Live but stopped (no new runs, schedules skip; running runs continue);
+// archived = put away (Restore → draft).
 enum WorkflowTemplateStatus {
   draft
   active
   archived
+  paused
 }
 
 enum WorkflowNature {
@@ -1856,6 +1860,11 @@ enum WorkflowStepStatus {
   overdue
   skipped
   branched
+  // v2: the step sent the run back to an earlier step and is paused until it returns.
+  sent_back
+  // v2: the step is late and its "if late" rule is "move on" — dependents were
+  // released, its task stays open (the row completes when the task does).
+  moved_on
 }
 
 enum WorkflowDefaultOverdue {
@@ -1883,12 +1892,18 @@ model WorkflowTemplate {
   created_by_user_id         String
   status                     WorkflowTemplateStatus @default(draft)
   show_workflow_on_task_card Boolean                @default(true)
+  // Derived from the schedules on every save (never edited directly).
   workflow_nature            WorkflowNature         @default(one_time)
   recurring_type             WorkflowRecurringType?
+  // "How it starts → Manually". Off = no Start button; only its schedule starts it.
+  manual_start_enabled       Boolean                @default(true)
   created_at                 DateTime               @default(now())
   updated_at                 DateTime               @updatedAt
 
   steps       WorkflowStep[]
+  schedules   WorkflowScheduleEntry[]
+  // Legacy (table kept, no longer read or written): date/task triggers became
+  // WorkflowScheduleEntry rows or were removed by 20261009120000_workflow_explicit_save.
   triggers    WorkflowTrigger[]
   access      WorkflowAccess[]
   instances   WorkflowInstance[]
@@ -1898,42 +1913,111 @@ model WorkflowTemplate {
 }
 
 model WorkflowStep {
-  id                    String                @id @default(uuid())
-  organization_id       String
-  workflow_template_id  String
-  order_index           Int                   @default(0)
-  title                 String
-  description           String?               @db.Text
-  assignee_type         WorkflowAssigneeType  @default(fixed_person)
-  assignee_user_id      String?
-  assignee_role         String?
-  assigner_user_id      String
-  deadline_config       Json
-  proof_required        Boolean               @default(false)
-  priority_id           String?
-  category_id           String?
-  checklist_items       Json                  @default("[]")
-  if_overdue_action     WorkflowOverdueAction @default(block_next)
-  branch_step_id        String?
-  is_branch_step        Boolean               @default(false)
-  parent_branch_step_id String?
-  created_at            DateTime              @default(now())
-  updated_at            DateTime              @updatedAt
+  id                       String                @id @default(uuid())
+  organization_id          String
+  workflow_template_id     String
+  order_index              Int                   @default(0)
+  title                    String
+  description              String?               @db.Text
+  assignee_type            WorkflowAssigneeType  @default(fixed_person)
+  assignee_user_id         String?
+  assignee_role            String?
+  assigner_user_id         String
+  deadline_config          Json
+  proof_required           Boolean               @default(false)
+  priority_id              String?
+  category_id              String?
+  checklist_items          Json                  @default("[]")
+  if_overdue_action        WorkflowOverdueAction @default(block_next)
+  branch_step_id           String?
+  is_branch_step           Boolean               @default(false)
+  parent_branch_step_id    String?
+  // ── v2 ("a step is a task the system creates") ─────────────────────────────────
+  // The columns above that v2 no longer reads (assignee_type/assignee_user_id/
+  // assignee_role, deadline_config, if_overdue_action, branch_step_id, is_branch_step,
+  // parent_branch_step_id) stay for back-compat with old rows only.
+  // Non-CC assignees (user ids). ≥1 required to turn the workflow On.
+  assignee_user_ids        Json                  @default("[]")
+  cc_user_ids              Json                  @default("[]")
+  completion_mode          CompletionMode        @default(any_can_complete)
+  tag_ids                  Json                  @default("[]")
+  // Allowed proof file extensions (lowercase, no dot). Empty = anything (mirrors Task).
+  proof_allowed_extensions String[]              @default([])
+  // Deadline = the step's START date + due_days, at due_time ("HH:mm", org tz),
+  // then holiday-adjusted.
+  due_days                 Int                   @default(1)
+  due_time                 String                @default("18:00")
+  // 'manager' (the assignees' managers; workflow owners when none) | 'people'.
+  escalation_mode          String                @default("manager")
+  // Used when escalation_mode = 'people': 1–5 users, in order = escalation levels.
+  escalation_user_ids      Json                  @default("[]")
+  // 'wait' (dependents wait for it) | 'move_on' (dependents start; the task stays open).
+  if_late                  String                @default("wait")
+  // Ids of steps of the same template this step starts after (ALL must be done).
+  // Empty = starts when the run starts. order_index is display order only.
+  depends_on_step_ids      Json                  @default("[]")
+  // Step timing (engine/timing.ts). `{ kind, ...params, time: 'HH:mm' }`; the kinds
+  // allowed depend on how the workflow repeats (its schedules). NULL = legacy: start
+  // as soon as the steps before it are done; due = due_days/due_time (kept mirrored
+  // for a relative due rule).
+  start_rule               Json?
+  due_rule                 Json?
+  created_at               DateTime              @default(now())
+  updated_at               DateTime              @updatedAt
 
   template WorkflowTemplate @relation(fields: [workflow_template_id], references: [id], onDelete: Cascade)
 
   @@map("workflow_steps")
 }
 
+// "How it starts → On a schedule". The SAME shape as RecurringScheduleEntry (the
+// recurring-task schedule) and evaluated by the same code (common/recurrence); a
+// workflow occurrence is that day at `time` in the org's time zone. Fired by the
+// engine's 15-minute tick (+ replay for simulated-clock orgs) while the workflow is
+// Live (active) only.
+model WorkflowScheduleEntry {
+  id                   String                @id @default(uuid())
+  organization_id      String
+  workflow_template_id String
+  schedule_type        RecurringScheduleType
+  every                Int                   @default(1)
+  days                 Json                  @default("[]")
+  month_days           Json                  @default("[]")
+  yearly_dates         Json                  @default("[]")
+  time                 String                @default("09:00")
+  start_date           DateTime
+  end_condition        RecurringEndCondition @default(never)
+  end_date             DateTime?
+  end_after            Int?
+  occurrence_count     Int                   @default(0)
+  is_active            Boolean               @default(true)
+  order_index          Int                   @default(0)
+  // The occurrence instant last fired (claimed atomically before a run starts, so
+  // overlapping ticks never double-fire). Set to "now" when the workflow goes live or
+  // is resumed, so missed occurrences are never caught up.
+  last_fired_at        DateTime?
+  created_at           DateTime              @default(now())
+  updated_at           DateTime              @updatedAt
+
+  template WorkflowTemplate @relation(fields: [workflow_template_id], references: [id], onDelete: Cascade)
+
+  @@index([workflow_template_id])
+  @@index([organization_id])
+  @@map("workflow_schedule_entries")
+}
+
 model WorkflowTrigger {
-  id                   String   @id @default(uuid())
+  id                   String    @id @default(uuid())
   organization_id      String
   workflow_template_id String
   type                 String
   config               Json
-  is_active            Boolean  @default(true)
-  created_at           DateTime @default(now())
-  updated_at           DateTime @updatedAt
+  is_active            Boolean   @default(true)
+  // Date triggers: the occurrence instant last fired (engine claims it atomically
+  // before starting an instance, so overlapping cron ticks never double-fire).
+  last_fired_at        DateTime?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
 
   template WorkflowTemplate @relation(fields: [workflow_template_id], references: [id], onDelete: Cascade)
 
@@ -1966,13 +2050,23 @@ model WorkflowInstance {
   completed_at         DateTime?
   current_step_id      String?
   metadata             Json?
+  // Task-based triggers: which trigger fired and for which task. Unique together so
+  // one trigger starts at most one instance per task (NULLs never collide).
+  trigger_id           String?
+  source_task_id       String?
+  // Last engine error (stuck reason) — shown in the UI, cleared on recovery.
+  last_error           String?                @db.Text
   created_at           DateTime               @default(now())
   updated_at           DateTime               @updatedAt
 
-  template      WorkflowTemplate       @relation(fields: [workflow_template_id], references: [id])
+  template      WorkflowTemplate             @relation(fields: [workflow_template_id], references: [id])
   steps         WorkflowInstanceStep[]
   notifications WorkflowNotification[]
+  events        WorkflowInstanceEvent[]
+  attachments   WorkflowInstanceAttachment[]
 
+  @@unique([trigger_id, source_task_id])
+  @@index([organization_id, status])
   @@map("workflow_instances")
 }
 
@@ -1982,18 +2076,92 @@ model WorkflowInstanceStep {
   workflow_instance_id String
   workflow_step_id     String
   task_id              String?
-  assigned_to_user_id  String
+  // Resolved when the step ACTIVATES (round robin never advances for steps that
+  // never run) — null while the step is still pending.
+  assigned_to_user_id  String?
   status               WorkflowStepStatus @default(pending)
   scheduled_at         DateTime?
   task_created_at      DateTime?
   completed_at         DateTime?
   branch_taken         Boolean            @default(false)
+  // Main-sequence position copied from the template step at instance creation.
+  // The engine orders by this, never by created_at.
+  order_index          Int                @default(0)
+  // Frozen copy of the template step at instance creation (see engine/snapshot.ts).
+  // The engine reads this, never the live template step.
+  step_snapshot        Json?
+  // Last engine error for this step (shown in the UI, cleared on success).
+  last_error           String?            @db.Text
+  // ── Send back (v2) ──
+  // How many times this step sent the run back.
+  sent_back_count      Int                @default(0)
+  // On the SENDER's row while it is paused (status sent_back): the row it waits on.
+  waiting_on_row_id    String?
+  // On the TARGET row while it is reopened: the sender to return to when it completes.
+  returned_to_row_id   String?
+  // ── Step timing ──
+  // Planned when the run is created (engine/plan.ts), in dependency order: the
+  // example dates every row shows ("planned start → due"). A calendar due rule's
+  // deadline IS planned_due_at.
+  planned_start_at     DateTime?
+  planned_due_at       DateTime?
+  // Set while a pending row whose steps-before are done waits for its start time
+  // ("waiting"); the 15-minute tick (and replay) activates it at start_at.
+  start_at             DateTime?
   created_at           DateTime           @default(now())
   updated_at           DateTime           @updatedAt
 
   instance WorkflowInstance @relation(fields: [workflow_instance_id], references: [id], onDelete: Cascade)
 
+  @@index([workflow_instance_id, order_index])
+  @@index([organization_id, status])
+  @@index([task_id])
+  @@index([organization_id, status, start_at])
   @@map("workflow_instance_steps")
+}
+
+// Run history: one row per state change of a run (written by the engine in the same
+// transaction as the change; file events by the API).
+model WorkflowInstanceEvent {
+  id                   String   @id @default(uuid())
+  organization_id      String
+  workflow_instance_id String
+  instance_step_id     String?
+  // run_started | step_waiting | step_started | step_completed | step_late | step_moved_on |
+  // step_escalated | sent_back | returned | step_skipped | run_completed |
+  // run_cancelled | run_stuck | retried | file_added | file_removed
+  type                 String
+  actor_user_id        String?
+  message              String   @db.Text
+  metadata             Json?
+  created_at           DateTime @default(now())
+
+  instance WorkflowInstance @relation(fields: [workflow_instance_id], references: [id], onDelete: Cascade)
+
+  @@index([workflow_instance_id, created_at])
+  @@index([organization_id])
+  @@map("workflow_instance_events")
+}
+
+// Run-level documents (uploaded on the run page). Same R2 storage conventions as
+// RecurringTemplateAttachment; soft-deleted via deleted_at.
+model WorkflowInstanceAttachment {
+  id                   String    @id @default(uuid())
+  organization_id      String
+  workflow_instance_id String
+  uploaded_by_user_id  String
+  file_name            String
+  mime_type            String
+  size_bytes           Int
+  storage_key          String // master object key within the R2 bucket
+  created_at           DateTime  @default(now())
+  deleted_at           DateTime?
+
+  instance WorkflowInstance @relation(fields: [workflow_instance_id], references: [id], onDelete: Cascade)
+
+  @@index([workflow_instance_id])
+  @@index([organization_id])
+  @@map("workflow_instance_attachments")
 }
 
 model WorkflowRoundRobinTracker {

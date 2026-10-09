@@ -1,177 +1,184 @@
 'use client'
 
-import React, { useState } from 'react'
-import { GitBranch, Play, Edit2, MoreVertical, Archive, Users, Calendar, Zap, CheckCircle2 } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Archive, ArchiveRestore, CalendarClock, Eye, ListChecks, Pause, Pencil, Play, History, Users, Workflow as WorkflowIcon } from 'lucide-react'
 import Tooltip from '@/components/ui/Tooltip'
 import type { WorkflowTemplate } from '@/lib/types/workflows'
-
-const avatarColors = [
-  'bg-[#2563EB]', 'bg-[#7C3AED]', 'bg-[#059669]', 'bg-[#D97706]', 'bg-[#DC2626]', 'bg-[#0891B2]',
-]
-function avatarColor(str: string): string {
-  let h = 0; for (let i = 0; i < str.length; i++) h += str.charCodeAt(i)
-  return avatarColors[h % avatarColors.length]
-}
-function initials(name: string): string {
-  return name.split(' ').map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  active: 'bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]',
-  draft: 'bg-[#FEF9C3] text-[#CA8A04] border border-[#FDE68A]',
-  archived: 'bg-[#FEE2E2] text-[#DC2626] border border-[#FECACA]',
-}
-
-const TRIGGER_ICONS: Record<string, string> = {
-  date_trigger: '📅',
-  manual_trigger: '👆',
-  task_completed_trigger: '✅',
-  task_overdue_trigger: '⚠️',
-}
+import ActionMenu, { type ActionMenuItem } from './ActionMenu'
+import {
+  REASONS,
+  TemplateStatusBadge,
+  editHref,
+  fmtDate,
+  fmtDateTime,
+  gate,
+  namesSummary,
+  plural,
+  recurrenceLabel,
+  runsHref,
+  startGate,
+  startsSummary,
+  workflowHref,
+} from './shared'
 
 interface Props {
   workflow: WorkflowTemplate
-  onTrigger?: (workflow: WorkflowTemplate) => void
-  onEdit?: (workflow: WorkflowTemplate) => void
-  onArchive?: (workflow: WorkflowTemplate) => void
-  canEdit?: boolean
+  writable: boolean | undefined
+  onStart: (w: WorkflowTemplate) => void
+  onArchive: (w: WorkflowTemplate) => void
+  onRestore: (w: WorkflowTemplate) => void
+  onPause?: (w: WorkflowTemplate) => void
+  onResume?: (w: WorkflowTemplate) => void
 }
 
-export default function WorkflowCard({ workflow, onTrigger, onEdit, onArchive, canEdit }: Props) {
-  const [menuOpen, setMenuOpen] = useState(false)
+/**
+ * A workflow as a record card: the whole card opens the workflow page. The three-dot menu holds the other actions, each gated on the
+ * server's capabilities and the org's write switch.
+ */
+export default function WorkflowCard({ workflow: w, writable, onStart, onArchive, onRestore, onPause, onResume }: Props) {
+  const router = useRouter()
+  const caps = w.capabilities
+  const edit = gate(caps?.can_edit, writable, REASONS.edit)
+  const start = startGate(w, writable)
+
+  const items: ActionMenuItem[] = [
+    { key: 'open', label: 'Open workflow', icon: Eye, onSelect: () => router.push(workflowHref(w.id)) },
+    {
+      key: 'edit',
+      label: 'Edit workflow',
+      icon: Pencil,
+      allowed: edit.allowed,
+      reason: edit.reason,
+      onSelect: () => router.push(editHref(w.id)),
+      hidden: w.status === 'archived',
+    },
+    {
+      key: 'start',
+      label: 'Start workflow',
+      icon: Play,
+      allowed: start.allowed,
+      reason: start.reason,
+      onSelect: () => onStart(w),
+      hidden: start.hidden,
+    },
+    {
+      key: 'pause',
+      label: 'Pause workflow',
+      icon: Pause,
+      allowed: edit.allowed,
+      reason: edit.reason,
+      onSelect: () => onPause?.(w),
+      hidden: w.status !== 'active' || !onPause,
+    },
+    {
+      key: 'resume',
+      label: 'Resume workflow',
+      icon: Play,
+      allowed: edit.allowed,
+      reason: edit.reason,
+      onSelect: () => onResume?.(w),
+      hidden: w.status !== 'paused' || !onResume,
+    },
+    { key: 'runs', label: 'View runs', icon: History, onSelect: () => router.push(runsHref(w.id)) },
+    {
+      key: 'archive',
+      label: 'Archive workflow',
+      icon: Archive,
+      danger: true,
+      allowed: edit.allowed,
+      reason: edit.reason,
+      onSelect: () => onArchive(w),
+      hidden: w.status === 'archived',
+    },
+    {
+      key: 'restore',
+      label: 'Restore workflow',
+      icon: ArchiveRestore,
+      allowed: edit.allowed,
+      reason: edit.reason,
+      onSelect: () => onRestore(w),
+      hidden: w.status !== 'archived',
+    },
+  ]
+
+  const running = w._count?.running_instances ?? 0
+  const steps = w._count?.steps ?? w.steps?.length ?? 0
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 flex flex-col gap-4 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-shadow">
-      {/* Header */}
+    <div className="group relative h-full bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:border-[#93C5FD] hover:shadow-[0_4px_14px_rgba(15,23,42,0.08)] transition-[box-shadow,border-color] duration-150 p-5 flex flex-col gap-3 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-[#2563EB]">
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-[10px] bg-[#EFF6FF] flex items-center justify-center shrink-0">
-          <GitBranch size={18} className="text-[#2563EB]" />
+          <WorkflowIcon size={18} className="text-[#2563EB]" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-[15px] font-semibold text-[#0F172A] truncate">{workflow.name}</h3>
-            <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${STATUS_STYLES[workflow.status] ?? STATUS_STYLES.draft}`}>
-              {workflow.status}
-            </span>
-            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#F1F5F9] text-[#475569]">
-              {workflow.workflow_nature === 'recurring' ? 'Recurring' : 'One-time'}
-            </span>
-          </div>
-          {workflow.description && (
-            <p className="text-sm text-[#475569] mt-0.5 line-clamp-2">{workflow.description}</p>
-          )}
-        </div>
-        {/* Menu */}
-        {canEdit && (
-          <div className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
-              className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+          <h3 className="text-[16px] font-semibold text-[#0F172A] leading-snug">
+            {/* Stretched link: the whole card opens the workflow; the menu sits above it. */}
+            <Link
+              href={workflowHref(w.id)}
+              className="line-clamp-2 break-words focus:outline-none after:absolute after:inset-0 after:rounded-[12px] after:content-['']"
             >
-              <MoreVertical size={16} />
-            </button>
-            {menuOpen && (
-              <div className="absolute right-0 top-8 z-20 bg-white border border-[#E2E8F0] rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.12)] w-40 py-1">
-                <button
-                  type="button"
-                  onClick={() => { setMenuOpen(false); onEdit?.(workflow) }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#0F172A] hover:bg-[#F8FAFC]"
-                >
-                  <Edit2 size={14} className="text-[#475569]" /> Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMenuOpen(false); onArchive?.(workflow) }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#DC2626] hover:bg-[#FFF5F5]"
-                >
-                  <Archive size={14} /> Archive
-                </button>
-              </div>
-            )}
+              {w.name}
+            </Link>
+          </h3>
+          <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
+            <TemplateStatusBadge status={w.status} />
           </div>
+        </div>
+        <div className="relative z-10 -mr-2 -mt-1">
+          <ActionMenu items={items} label={`Actions for ${w.name}`} />
+        </div>
+      </div>
+
+      <p className="text-[14px] text-[#475569] line-clamp-2 min-h-[42px] break-words">
+        {w.description || <span className="text-[#64748B]">No description</span>}
+      </p>
+
+      <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-[13px] text-[#334155]">
+        <span className="inline-flex items-center gap-1.5">
+          <ListChecks size={14} className="text-[#475569]" />
+          {plural(steps, 'step')}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <History size={14} className="text-[#475569]" />
+          {running > 0 ? `${running} running` : plural(w._count?.instances ?? 0, 'run')}
+        </span>
+        {(w.schedules ?? []).length > 0 && (
+          <Tooltip label={`Starts: ${startsSummary(w)}`}>
+            <span tabIndex={0} className="relative z-10 inline-flex items-center gap-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]">
+              <CalendarClock size={14} className="text-[#475569]" />
+              {/* The schedule, said once: how it repeats, then when it next runs. */}
+              {recurrenceLabel(w) ?? 'On a schedule'}
+              {w.next_run_at ? ` · next ${fmtDateTime(w.next_run_at)}` : w.status === 'paused' ? ' · paused' : ''}
+            </span>
+          </Tooltip>
         )}
       </div>
 
-      {/* Stats row */}
-      <div className="flex items-center gap-4 flex-wrap">
-        {/* Steps */}
-        <div className="flex items-center gap-1.5 text-sm text-[#475569]">
-          <CheckCircle2 size={14} className="text-[#94A3B8]" />
-          <span>{workflow.steps?.length ?? 0} steps</span>
-        </div>
-
-        {/* Instances */}
-        {workflow._count && (
-          <div className="flex items-center gap-1.5 text-sm text-[#475569]">
-            <GitBranch size={14} className="text-[#94A3B8]" />
-            <span>{workflow._count.instances} instances</span>
-          </div>
-        )}
-
-        {/* Triggers */}
-        {workflow.triggers && workflow.triggers.length > 0 && (
-          <div className="flex items-center gap-1">
-            {workflow.triggers.map((t) => (
-              <Tooltip key={t.id} label={t.type.replace(/_/g, ' ')}>
-              <span
-                className="text-[13px] px-1.5 py-0.5 rounded-[4px] bg-[#F1F5F9] text-[#475569]"
-              >
-                {TRIGGER_ICONS[t.type] ?? '🔧'}
-              </span>
-              </Tooltip>
-            ))}
-          </div>
-        )}
+      <div className="mt-auto pt-3 border-t border-[#F1F5F9] flex items-center justify-between gap-3 text-[13px] text-[#475569]">
+        <span className="inline-flex items-center gap-1.5 min-w-0">
+          <Users size={14} className="shrink-0" />
+          <span className="truncate">{namesSummary(w.owners ?? [])}</span>
+        </span>
+        <span className="shrink-0">Updated {fmtDate(w.updated_at)}</span>
       </div>
+    </div>
+  )
+}
 
-      {/* Owners */}
-      {workflow.owner_user_ids.length > 0 && (
-        <div className="flex items-center gap-2">
-          <Users size={13} className="text-[#94A3B8]" />
-          <div className="flex -space-x-1.5">
-            {workflow.owner_user_ids.slice(0, 4).map((uid) => (
-              <div
-                key={uid}
-                className={`w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-white text-[9px] font-bold ${avatarColor(uid)}`}
-              >
-                {initials(uid)}
-              </div>
-            ))}
-            {workflow.owner_user_ids.length > 4 && (
-              <div className="w-6 h-6 rounded-full border-2 border-white bg-[#F1F5F9] flex items-center justify-center text-[#475569] text-[9px] font-semibold">
-                +{workflow.owner_user_ids.length - 4}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Action buttons */}
-      <div className="flex items-center gap-2 pt-1 border-t border-[#F1F5F9]">
-        {canEdit && (
-          <button
-            type="button"
-            onClick={() => onEdit?.(workflow)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-sm font-medium text-[#475569] bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#F1F5F9] transition-colors"
-          >
-            <Edit2 size={13} /> Edit
-          </button>
-        )}
-        {workflow.status === 'active' && (
-          <button
-            type="button"
-            onClick={() => onTrigger?.(workflow)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
-          >
-            <Play size={13} /> Trigger
-          </button>
-        )}
-        <div className="ml-auto flex items-center gap-1 text-xs text-[#94A3B8]">
-          <Calendar size={11} />
-          {new Date(workflow.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+export function WorkflowCardSkeleton() {
+  return (
+    <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-5 flex flex-col gap-3 animate-pulse motion-reduce:animate-none h-[228px]">
+      <div className="flex gap-3">
+        <div className="w-10 h-10 rounded-[10px] bg-[#F1F5F9]" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-[#F1F5F9] rounded w-2/3" />
+          <div className="h-4 bg-[#F1F5F9] rounded w-1/3" />
         </div>
       </div>
+      <div className="h-3 bg-[#F1F5F9] rounded w-full" />
+      <div className="h-3 bg-[#F1F5F9] rounded w-4/5" />
+      <div className="mt-auto h-4 bg-[#F1F5F9] rounded w-1/2" />
     </div>
   )
 }

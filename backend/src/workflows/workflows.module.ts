@@ -1,28 +1,21 @@
-import { Module, OnModuleInit } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { PrismaModule } from '../prisma/prisma.module'
 import { HolidaysModule } from '../holidays/holidays.module'
-import { TriggerRegistryService } from './trigger-registry/trigger-registry.service'
-import { ManualTriggerHandler } from './trigger-registry/handlers/manual-trigger.handler'
-import { DateTriggerHandler } from './trigger-registry/handlers/date-trigger.handler'
-import { TaskCompletedTriggerHandler } from './trigger-registry/handlers/task-completed-trigger.handler'
-import { TaskOverdueTriggerHandler } from './trigger-registry/handlers/task-overdue-trigger.handler'
+import { TaskMastersModule } from '../task-masters/task-masters.module'
 import { WorkflowTemplateService } from './workflow-template.service'
 import { WorkflowTemplateController } from './workflow-template.controller'
 import { WorkflowEngineService } from './workflow-engine.service'
+import { WorkflowFilesService } from './workflow-files.service'
 
+/**
+ * Workflows. How a workflow starts is data on the template: "Manually" (a flag + the
+ * people who may start it) and "On a schedule" (WorkflowScheduleEntry rows, fired by
+ * WorkflowEngineService.processSchedules every 15 minutes + replay).
+ */
 @Module({
-  imports: [PrismaModule, HolidaysModule],
+  imports: [PrismaModule, HolidaysModule, TaskMastersModule],
   controllers: [WorkflowTemplateController],
-  providers: [TriggerRegistryService, WorkflowTemplateService, WorkflowEngineService],
-  exports: [WorkflowEngineService, TriggerRegistryService],
+  providers: [WorkflowTemplateService, WorkflowEngineService, WorkflowFilesService],
+  exports: [WorkflowEngineService],
 })
-export class WorkflowsModule implements OnModuleInit {
-  constructor(private readonly triggerRegistry: TriggerRegistryService) {}
-
-  onModuleInit() {
-    this.triggerRegistry.register(new ManualTriggerHandler())
-    this.triggerRegistry.register(new DateTriggerHandler())
-    this.triggerRegistry.register(new TaskCompletedTriggerHandler())
-    this.triggerRegistry.register(new TaskOverdueTriggerHandler())
-  }
-}
+export class WorkflowsModule {}

@@ -108,13 +108,19 @@ function AssigneeChip({
   assignee,
   onToggleCC,
   onRemove,
+  allowCC = true,
 }: {
   assignee: SelectedAssignee
   onToggleCC: () => void
   onRemove: () => void
+  /** false → a plain person chip: no Assignee/CC badge. */
+  allowCC?: boolean
 }) {
   return (
-    <div className="inline-flex items-center gap-1.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] pl-1.5 pr-1 py-1 max-w-[180px]">
+    <div
+      title={assignee.name}
+      className="inline-flex items-center gap-1.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] pl-1.5 pr-1 py-1 max-w-[180px]"
+    >
       <div
         className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 ${avatarColor(assignee.name)}`}
       >
@@ -122,7 +128,7 @@ function AssigneeChip({
       </div>
       <span className="text-xs font-medium text-[#0F172A] truncate hidden sm:inline">{assignee.name.split(' ')[0]}</span>
       <span className="text-xs font-medium text-[#0F172A] truncate sm:hidden">{assignee.name.split(' ')[0]}</span>
-      <Tooltip label={assignee.is_cc ? 'Click to make Assignee' : 'Click to make CC'}>
+      {allowCC && <Tooltip label={assignee.is_cc ? 'Click to make Assignee' : 'Click to make CC'}>
         <button
           type="button"
           onClick={onToggleCC}
@@ -134,7 +140,7 @@ function AssigneeChip({
         >
           {assignee.is_cc ? 'CC' : 'Assignee'}
         </button>
-      </Tooltip>
+      </Tooltip>}
       <button
         type="button"
         onClick={onRemove}
@@ -155,9 +161,36 @@ interface Props {
   onChange: (assignees: SelectedAssignee[]) => void
   disabled?: boolean
   currentUser?: { user_id: string; name: string }
+  /**
+   * false → a plain people list (e.g. "Who can start it", workflow owners): no
+   * Assignee/CC badge on the chips, and nobody is ever marked CC. Default true.
+   */
+  allowCC?: boolean
+  /** Picker dialog heading. Default "Assignees & CC". */
+  title?: string
+  /** Trigger button text. Default "Add". */
+  addLabel?: string
+  /** Muted text shown in the box while nobody is selected. Default: none. */
+  placeholder?: string
+  /** The "add myself" shortcut's text. Default "Assign to me". */
+  selfLabel?: string
+  /** Red border, for a required list that failed validation. */
+  invalid?: boolean
 }
 
-export default function AssigneeSelector({ orgId, value, onChange, disabled, currentUser }: Props) {
+export default function AssigneeSelector({
+  orgId,
+  value,
+  onChange,
+  disabled,
+  currentUser,
+  allowCC = true,
+  title = 'Assignees & CC',
+  addLabel = 'Add',
+  placeholder,
+  selfLabel = 'Assign to me',
+  invalid,
+}: Props) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortMode>('frequency')
@@ -249,15 +282,23 @@ export default function AssigneeSelector({ orgId, value, onChange, disabled, cur
   return (
     <div ref={containerRef} className="relative">
       {/* Selected chips + trigger */}
-      <div className="flex flex-wrap gap-1.5 items-center min-h-[42px] p-1.5 border border-[#CBD5E1] rounded-[8px] bg-white focus-within:border-[#2563EB] transition-colors">
+      <div
+        className={`flex flex-wrap gap-1.5 items-center min-h-[42px] p-1.5 border rounded-[8px] bg-white transition-colors ${
+          invalid ? 'border-[#FCA5A5] focus-within:border-[#DC2626]' : 'border-[#CBD5E1] focus-within:border-[#2563EB]'
+        }`}
+      >
         {value.map((a) => (
           <AssigneeChip
             key={a.user_id}
             assignee={a}
+            allowCC={allowCC}
             onToggleCC={() => toggleCC(a.user_id)}
             onRemove={() => removeAssignee(a.user_id)}
           />
         ))}
+        {value.length === 0 && placeholder && (
+          <span className="px-1.5 text-sm text-[#64748B]">{placeholder}</span>
+        )}
         <button
           type="button"
           disabled={disabled}
@@ -265,7 +306,7 @@ export default function AssigneeSelector({ orgId, value, onChange, disabled, cur
           className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-xs font-medium text-[#2563EB] hover:bg-[#EFF6FF] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus size={12} />
-          Add
+          {addLabel}
         </button>
       </div>
 
@@ -279,7 +320,7 @@ export default function AssigneeSelector({ orgId, value, onChange, disabled, cur
           <div className="w-[440px] max-w-full max-h-[80vh] rounded-[12px] bg-white border border-[#E2E8F0] shadow-[0_12px_40px_rgba(0,0,0,0.20)] flex flex-col overflow-hidden">
             {/* Title row */}
             <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5 border-b border-[#F1F5F9] shrink-0">
-              <h3 className="text-sm font-semibold text-[#0F172A]">Assignees &amp; CC</h3>
+              <h3 className="text-sm font-semibold text-[#0F172A]">{title}</h3>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -330,6 +371,7 @@ export default function AssigneeSelector({ orgId, value, onChange, disabled, cur
                   <AssigneeChip
                     key={a.user_id}
                     assignee={a}
+                    allowCC={allowCC}
                     onToggleCC={() => toggleCC(a.user_id)}
                     onRemove={() => removeAssignee(a.user_id)}
                   />
@@ -349,7 +391,7 @@ export default function AssigneeSelector({ orgId, value, onChange, disabled, cur
                   className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium text-[#2563EB] hover:bg-[#EFF6FF] border-b border-[#F1F5F9] transition-colors"
                 >
                   <UserPlus size={13} />
-                  Assign to me
+                  {selfLabel}
                 </button>
               )}
 
@@ -363,7 +405,7 @@ export default function AssigneeSelector({ orgId, value, onChange, disabled, cur
                     <Search size={16} className="text-[#94A3B8]" />
                   </div>
                   <p className="text-sm font-medium text-[#0F172A]">
-                    {search ? 'No users found' : 'No eligible assignees'}
+                    {search ? 'No users found' : allowCC ? 'No eligible assignees' : 'No one to choose from'}
                   </p>
                   <p className="text-xs text-[#475569] mt-1">
                     {search ? 'Try a different search term.' : 'Check visibility settings in Task Masters.'}
@@ -399,7 +441,13 @@ export default function AssigneeSelector({ orgId, value, onChange, disabled, cur
             {/* Footer: selected count + confirm (tick) */}
             <div className="px-4 py-2.5 border-t border-[#F1F5F9] bg-[#F8FAFC] shrink-0 flex items-center justify-between gap-3">
               <p className="text-xs text-[#475569] min-w-0 truncate">
-                {value.length > 0 ? (
+                {!allowCC ? (
+                  value.length > 0 ? (
+                    <><span className="font-semibold text-[#0F172A]">{value.length}</span> selected</>
+                  ) : (
+                    <span className="text-[#64748B]">Select people, then confirm</span>
+                  )
+                ) : value.length > 0 ? (
                   <>
                     <span className="font-semibold text-[#0F172A]">{value.filter((a) => !a.is_cc).length}</span> assignee{value.filter((a) => !a.is_cc).length !== 1 ? 's' : ''},&nbsp;
                     <span className="font-semibold text-[#0F172A]">{value.filter((a) => a.is_cc).length}</span> CC

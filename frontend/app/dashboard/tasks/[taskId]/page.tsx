@@ -15,6 +15,7 @@ import EditTaskModal from '@/components/tasks/EditTaskModal'
 import InlineTaskTags from '@/components/tasks/InlineTaskTags'
 import { useCanEditTask } from '@/lib/tasks/useCanEditTask'
 import TaskChecklistCard from '@/components/tasks/TaskChecklistCard'
+import WorkflowTaskBanner from '@/components/workflows/WorkflowTaskBanner'
 import ProofOfCompletionCard from '@/components/tasks/ProofOfCompletionCard'
 import StyledSelect from '@/components/ui/StyledSelect'
 import Tooltip from '@/components/ui/Tooltip'
@@ -1065,6 +1066,17 @@ export default function TaskDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Workflow step: which workflow and run this task belongs to, and Send back */}
+      {task.workflow_instance_step_id && (
+        <WorkflowTaskBanner
+          orgId={orgId}
+          taskId={taskId}
+          workflowInstanceStepId={task.workflow_instance_step_id}
+          fallback={task.workflow_step ?? null}
+          onChanged={loadTask}
+        />
+      )}
 
       {/* CC banner */}
       {currentUserIsCC && (

@@ -26,6 +26,7 @@ import { SubjectEligibilityService } from '../access-rights/subject-eligibility.
 import { ScopeService } from '../access-rights/scope.service';
 import { AccessVisibilityService } from '../access-rights/access-visibility.service';
 import { Principal } from '../access-rights/permissions.service';
+import { instanceIdForRow, isRunParticipant } from '../workflows/run-access';
 import { ChecklistAccessService } from '../task-masters/checklist-access.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -190,17 +191,42 @@ export class TasksService {
    * are directly on it (creator, assignee, or CC) OR the task falls within their read
    * scope (team / department / org) over one of its core participants. Fails closed —
    * knowing a task's id must never be enough to read it or its comments/attachments.
+   *
+   * With `ctx` (the task's id + workflow link) two more kinds of people are on it:
+   *   - its ACTIVE escalation contacts (TaskEscalation.is_active) — they're asked to
+   *     act on it, so the Escalated page must be able to open it;
+   *   - for a workflow step task, the participants of that workflow run
+   *     (`isRunParticipant`: owners/creator/editors/starter of the run, or anyone on
+   *     any task of the run). This admits VIEW (and comment) only — completion keeps
+   *     its own gates (non-CC assignee / assigner rights).
    */
   private async assertParticipantView(
     orgId: string,
     principal: Principal,
     createdByUserId: string,
     assignees: { user_id: string; is_cc: boolean }[],
+    ctx?: { taskId: string; workflowInstanceStepId?: string | null },
   ): Promise<void> {
     const onTask =
       createdByUserId === principal.userId ||
       assignees.some((a) => a.user_id === principal.userId);
     if (onTask) return;
+    if (ctx) {
+      const escalation = await this.prisma.taskEscalation.findFirst({
+        where: {
+          task_id: ctx.taskId,
+          organization_id: orgId,
+          escalate_to_user_id: principal.userId,
+          is_active: true,
+        },
+        select: { id: true },
+      });
+      if (escalation) return;
+      if (ctx.workflowInstanceStepId) {
+        const instanceId = await instanceIdForRow(this.prisma, orgId, ctx.workflowInstanceStepId);
+        if (instanceId && (await isRunParticipant(this.prisma, orgId, instanceId, principal.userId))) return;
+      }
+    }
     const coreParticipants = [
       createdByUserId,
       ...assignees.filter((a) => !a.is_cc).map((a) => a.user_id),
@@ -224,13 +250,17 @@ export class TasksService {
       where: { id: taskId, organization_id: orgId, is_deleted: false },
       select: {
         created_by_user_id: true,
+        workflow_instance_step_id: true,
         // Live roster: being taken off a task ends the access it granted. Someone
         // removed can still reach it only if their data scope covers it.
         assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
       },
     });
     if (!task) throw new NotFoundException(`Task ${taskId} not found`);
-    await this.assertParticipantView(orgId, principal, task.created_by_user_id, task.assignees);
+    await this.assertParticipantView(orgId, principal, task.created_by_user_id, task.assignees, {
+      taskId,
+      workflowInstanceStepId: task.workflow_instance_step_id,
+    });
   }
 
   private async getOrgConfig(orgId: string) {
@@ -556,8 +586,12 @@ export class TasksService {
       entity: { type: 'task', id: taskId },
     });
 
-    if (outcome === 'completed' && task.workflow_instance_step_id) {
-      await this.workflowEngine.handleStepCompleted(task.workflow_instance_step_id);
+    // Workflow: completion advances the task's step; an unfinished close parks its
+    // run as stuck. Never throws.
+    if (outcome === 'completed') {
+      await this.workflowEngine.onTaskCompleted(orgId, taskId);
+    } else if (task.workflow_instance_step_id) {
+      await this.workflowEngine.onTaskClosedIncomplete(orgId, taskId);
     }
     const projectTask = await this.prisma.projectTask.findFirst({ where: { task_id: taskId } });
     if (projectTask) {
@@ -700,6 +734,11 @@ export class TasksService {
       });
     }
     await this.rollUpTaskOpenStatus(orgId, taskId);
+
+    // Workflow: a closed step task is open again → roll its run back (never throws).
+    if (isTerminal((task as any).status?.type) && task.workflow_instance_step_id) {
+      await this.workflowEngine.onTaskReopened(orgId, taskId, actorId);
+    }
 
     await this.logActivity(orgId, taskId, actorId, 'reopened', {
       part: true,
@@ -1626,6 +1665,8 @@ export class TasksService {
         // freeze/keep the compliance baseline like any single edit.
         deadline: true,
         original_deadline: true,
+        // Needed by the deadline branch: a workflow step follows its task's deadline.
+        workflow_instance_step_id: true,
         status: { select: { type: true } },
         assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
         // Needed by the tag branch to diff and to log names.
@@ -1795,6 +1836,10 @@ export class TasksService {
         // fire after the deadline they were meant to pre-empt (or never fire).
         for (const id of ids) {
           await this.recomputeRemindersForDeadline(orgId, id, newDeadline).catch(() => null);
+          // Workflow: a step's deadline follows its task's (never throws).
+          if (byId.get(id)!.workflow_instance_step_id) {
+            await this.workflowEngine.syncStepFromTask(orgId, id);
+          }
         }
 
         await Promise.all(ids.map((id) => this.logActivity(orgId, id, principal.userId, 'edited', { bulk: true, field: 'deadline' }).catch(() => null)));
@@ -2146,7 +2191,10 @@ export class TasksService {
     // Authorization (external callers only — internal post-mutation reads pass no
     // principal). Reuses the already-fetched participants to avoid a second query.
     if (principal) {
-      await this.assertParticipantView(orgId, principal, task.created_by_user_id, task.assignees);
+      await this.assertParticipantView(orgId, principal, task.created_by_user_id, task.assignees, {
+        taskId,
+        workflowInstanceStepId: task.workflow_instance_step_id,
+      });
 
       // Opening the task marks it read for this user — clears its unread-comment badge.
       // Use the org clock so it lines up with comment timestamps on a test org.
@@ -2530,6 +2578,11 @@ export class TasksService {
       });
 
       await this.recomputeRemindersForDeadline(orgId, taskId, deadlineRevision.to);
+
+      // Workflow: the step's deadline follows its task's (never throws).
+      if (old.workflow_instance_step_id) {
+        await this.workflowEngine.syncStepFromTask(orgId, taskId);
+      }
 
       // Moving someone's deadline without telling them is how a task gets missed.
       // Everyone on it — workers and CCs — plus the creator, minus whoever did it.
@@ -3050,6 +3103,11 @@ export class TasksService {
       `“${task.title}”\nYou’ll no longer get updates on this task.`,
     );
 
+    // Workflow: keep the step's assignee in sync with who now holds its task.
+    if (task.workflow_instance_step_id) {
+      await this.workflowEngine.syncStepFromTask(orgId, task.id);
+    }
+
     return { added, removed, flipped };
   }
 
@@ -3089,6 +3147,11 @@ export class TasksService {
     });
 
     await this.logActivity(orgId, taskId, userId, 'deleted', { reason });
+
+    // Workflow: the run can't continue on a deleted step task → stuck (never throws).
+    if (task.workflow_instance_step_id) {
+      await this.workflowEngine.onTaskDeleted(orgId, taskId);
+    }
 
     return { message: 'Task deleted successfully' };
   }
@@ -3276,10 +3339,10 @@ export class TasksService {
       entity: { type: 'task', id: taskId },
     });
 
-    // Advance workflow if this task belongs to a workflow step
-    if (task.workflow_instance_step_id) {
-      await this.workflowEngine.handleStepCompleted(task.workflow_instance_step_id);
-    }
+    // Workflow: advance this task's step (a no-op for an ordinary task). The engine
+    // never throws — a workflow failure parks the run as stuck, it never fails the
+    // completion that already happened.
+    await this.workflowEngine.onTaskCompleted(orgId, taskId);
 
     // Recalculate project progress if task is linked to a project
     const projectTask = await this.prisma.projectTask.findFirst({ where: { task_id: taskId } });
@@ -3364,6 +3427,11 @@ export class TasksService {
     await this.rollUpTaskOpenStatus(orgId, taskId);
 
     await this.logActivity(orgId, taskId, userId, 'reopened', reason ? { reason } : undefined);
+
+    // Workflow: a reopened step task rolls its run back to this step (never throws).
+    if (task.workflow_instance_step_id) {
+      await this.workflowEngine.onTaskReopened(orgId, taskId, userId);
+    }
 
     // Notify assignees + creator (excluding whoever reopened it)
     const reopenerName = await this.notifications.userName(userId);
@@ -3473,8 +3541,14 @@ export class TasksService {
       entity: { type: 'task', id: taskId },
     });
 
-    // Keep project rollups honest (a closed-not-done task is no longer pending). We do
-    // NOT advance a workflow step on an incomplete task — that only follows completion.
+    // We do NOT advance a workflow step on an incomplete task — that only follows
+    // completion. The run is parked as stuck so its owners decide (reopen, retry with
+    // a fresh task, or skip the step). Never throws.
+    if (task.workflow_instance_step_id) {
+      await this.workflowEngine.onTaskClosedIncomplete(orgId, taskId);
+    }
+
+    // Keep project rollups honest (a closed-not-done task is no longer pending).
     const projectTask = await this.prisma.projectTask.findFirst({ where: { task_id: taskId } });
     if (projectTask) {
       await this.projectProgressService.recalculateProjectProgress(projectTask.project_id);
@@ -3686,8 +3760,22 @@ export class TasksService {
     });
   }
 
-  async addComment(orgId: string, userId: string, taskId: string, dto: CreateCommentDto) {
+  /**
+   * Post a comment. The HTTP route passes the caller's principal so the comment is
+   * gated by `assertCanViewTask` (anyone who may read the task — including workflow
+   * run participants and escalation contacts — may discuss it; nobody else).
+   */
+  async addComment(orgId: string, userId: string, taskId: string, dto: CreateCommentDto, principal?: Principal) {
     const task = await this.findTaskOrFail(orgId, taskId, true);
+    await this.assertCanViewTask(orgId, principal, taskId);
+    // A reply must answer a live comment of THIS task (never another task's thread).
+    if (dto.reply_to_comment_id) {
+      const parent = await this.prisma.taskComment.findFirst({
+        where: { id: dto.reply_to_comment_id, task_id: taskId, organization_id: orgId, is_deleted: false },
+        select: { id: true },
+      });
+      if (!parent) throw new NotFoundException('The comment you are replying to was not found on this task.');
+    }
     // Stamp with the org's clock (respects a test org's simulated time) rather than
     // the DB's real-time default, so comments read in the timeline the user is in.
     const now = await this.clock.now(orgId);

@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Prisma } from '@prisma/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
@@ -15,6 +16,7 @@ import { resolveRemindAt, expandReminderRows, type ReminderSpec } from '../commo
 import { isTerminal, TERMINAL_TYPES } from '../tasks/status-phase';
 import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
 import { GoalsService } from '../goals/goals.service';
+import { WorkflowEngineService } from '../workflows/workflow-engine.service';
 
 // Rolling look-ahead for meeting rhythms: the nightly cron keeps the next 60 days
 // of occurrences materialised. (Tasks spawn day-of; rhythms need advance visibility.)
@@ -32,7 +34,18 @@ export class SchedulerService {
     private readonly leave: LeaveService,
     private readonly r2: R2Service,
     private readonly goals: GoalsService,
+    // Resolved lazily (strict: false) so SchedulerModule needn't import WorkflowsModule
+    // — the overdue sweep only needs it to fire `task_overdue_trigger`s.
+    @Optional() private readonly moduleRef?: ModuleRef,
   ) {}
+
+  private workflowEngine(): WorkflowEngineService | null {
+    try {
+      return this.moduleRef?.get(WorkflowEngineService, { strict: false }) ?? null;
+    } catch {
+      return null;
+    }
+  }
 
   /**
    * Link a freshly spawned instance to the template's tags that are still active in
@@ -880,41 +893,56 @@ export class SchedulerService {
     let escalated = 0;
     for (const task of overdueTasks) {
       if (isTerminal(task.status?.type)) continue;
-      const untriggered = task.escalations.find((e) => e.escalated_at === null);
-      if (!untriggered) continue;
+      // Fire the lowest level that still has unfired rows — ALL of its rows at once
+      // (a level may hold several contacts, e.g. a workflow step escalating to every
+      // assignee's manager at level 1). Paused rows (is_active=false, e.g. a workflow
+      // step waiting on a send back) are excluded by the query.
+      const unfired = task.escalations.filter((e) => e.escalated_at === null);
+      if (!unfired.length) continue;
+      const level = Math.min(...unfired.map((e) => e.level));
+      const due = unfired.filter((e) => e.level === level);
 
-      if (untriggered.level > 1) {
-        const prev = task.escalations.find((e) => e.level === untriggered.level - 1);
-        if (!prev?.escalated_at) continue;
-        const hoursSincePrev = (now.getTime() - prev.escalated_at.getTime()) / 3_600_000;
-        if (hoursSincePrev < 1) continue;
+      // A later level waits one hour after the most recent escalation of the levels
+      // before it (all of which have fired — `level` is the lowest unfired one).
+      const earlier = task.escalations.filter((e) => e.level < level && e.escalated_at);
+      if (earlier.length) {
+        const last = Math.max(...earlier.map((e) => e.escalated_at!.getTime()));
+        if ((now.getTime() - last) / 3_600_000 < 1) continue;
       }
 
       try {
-        await this.prisma.taskEscalation.update({
-          where: { id: untriggered.id },
+        // Guarded: an overlapping tick never fires the same row twice.
+        const res = await this.prisma.taskEscalation.updateMany({
+          where: { id: { in: due.map((e) => e.id) }, escalated_at: null },
           data: { escalated_at: now },
         });
-        await this.prisma.taskActivityLog.create({
-          data: {
-            organization_id: task.organization_id,
-            task_id: task.id,
-            performed_by_user_id: 'system',
-            action: 'escalated',
-            metadata: { level: untriggered.level, escalated_to: untriggered.escalate_to_user_id } as never,
-          },
-        });
+        if (res.count === 0) continue;
+        const contacts = [...new Set(due.map((e) => e.escalate_to_user_id))];
+        for (const contact of contacts) {
+          await this.prisma.taskActivityLog.create({
+            data: {
+              organization_id: task.organization_id,
+              task_id: task.id,
+              performed_by_user_id: 'system',
+              action: 'escalated',
+              metadata: { level, escalated_to: contact } as never,
+            },
+          });
+        }
         await this.notifications.emit({
           orgId,
           module: 'tasks',
           event_type: 'task_escalated',
-          recipients: [untriggered.escalate_to_user_id, ...task.assignees.map((a) => a.user_id)],
-          title: `Task escalated (level ${untriggered.level})`,
+          recipients: [...contacts, ...task.assignees.map((a) => a.user_id)],
+          title: `Task escalated (level ${level})`,
           body: `"${task.title}" is overdue and has been escalated.`,
           link: `/dashboard/tasks/${task.id}`,
           entity: { type: 'task', id: task.id },
         });
-        escalated++;
+        escalated += res.count;
+        if (task.workflow_instance_step_id) {
+          await this.workflowEngine()?.onTaskEscalated(orgId, task.id, level, contacts);
+        }
       } catch (err) {
         this.logger.error(`Failed to escalate task ${task.id}: ${err}`);
       }
@@ -1040,6 +1068,13 @@ export class SchedulerService {
   }
 
   private async detectTaskOverdueForOrgImpl(orgId: string, now: Date): Promise<number> {
+    // A workflow step that was sent back is paused waiting for information; its
+    // clock is stopped (the deadline is extended when the run returns to it), so
+    // it must not be flagged overdue meanwhile.
+    const paused = await this.prisma.workflowInstanceStep.findMany({
+      where: { organization_id: orgId, status: 'sent_back', task_id: { not: null } },
+      select: { task_id: true },
+    });
     const tasks = await this.prisma.task.findMany({
       where: {
         organization_id: orgId,
@@ -1047,6 +1082,7 @@ export class SchedulerService {
         is_overdue: false,
         deadline: { lt: now },
         status: { type: { notIn: TERMINAL_TYPES } },
+        ...(paused.length ? { id: { notIn: paused.map((p) => p.task_id as string) } } : {}),
       },
       select: { id: true },
     });

@@ -26,7 +26,12 @@ describe('ChatGateway handshake auth (SECURITY_AUDIT C5)', () => {
   let jwt: JwtService;
   let middleware: (socket: any, next: (err?: Error) => void) => Promise<void>;
 
-  const prisma = { user: { findUnique: jest.fn() } };
+  // The handshake also checks the token's firm is still active (deactivated firms
+  // lose their sockets) — an active org here, so only the user lookup decides.
+  const prisma = {
+    user: { findUnique: jest.fn() },
+    organization: { findUnique: jest.fn().mockResolvedValue({ status: 'active' }) },
+  };
   const messaging = {
     getConversation: jest.fn(),
     sendMessage: jest.fn(),

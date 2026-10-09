@@ -40,6 +40,7 @@ export const AUDIT_DENYLIST = new Set<string>([
   // Legacy per-module feeds — federated into audit_logs, not re-audited
   'TaskActivityLog',
   'TicketActivityLog',
+  'WorkflowInstanceEvent', // the run's own history feed
   'ProjectActivityLog',
   'AssigneeVisibilityAuditLog',
   // Reactions / read-receipts / chat — high churn, low audit value
