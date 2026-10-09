@@ -13,7 +13,11 @@ import type {
   SendBackTarget,
   TimelinePreview,
   WorkflowStepContext,
-  InstanceNote,
+  DiscussionPage,
+  DiscussionMessage,
+  DiscussionFile,
+  PostDiscussionMessage,
+  PersonRef,
 } from '@/lib/types/workflows'
 
 const base = (orgId: string) => `/api/v1/org/${orgId}/workflows`
@@ -241,26 +245,66 @@ export const workflowsApi = {
     await apiClient.delete(`${base(orgId)}/${templateId}/instances/${instanceId}/files/${fileId}`, T)
   },
 
-  // ── Instance notes ──────────────────────────────────────────────────────────
+  // ── Instance discussion ─────────────────────────────────────────────────────
 
-  /** Newest first. */
-  listNotes: async (orgId: string, templateId: string, instanceId: string): Promise<InstanceNote[]> => {
-    const rows = unwrap<InstanceNote[] | null>(await apiClient.get(`${base(orgId)}/${templateId}/instances/${instanceId}/notes`, T))
+  /** One page, newest last; `before` = the oldest message already shown. */
+  getDiscussion: async (
+    orgId: string,
+    templateId: string,
+    instanceId: string,
+    opts: { before?: string | null; limit?: number } = {},
+  ): Promise<DiscussionPage> => {
+    const params: Record<string, string> = {}
+    if (opts.before) params.before = opts.before
+    if (opts.limit) params.limit = String(opts.limit)
+    const page = unwrap<DiscussionPage | null>(
+      await apiClient.get(`${base(orgId)}/${templateId}/instances/${instanceId}/discussion`, { ...T, params }),
+    )
+    return {
+      messages: Array.isArray(page?.messages) ? page!.messages : [],
+      has_more: !!page?.has_more,
+      next_before: page?.next_before ?? null,
+      total_count: page?.total_count ?? 0,
+      unread_count: page?.unread_count ?? 0,
+      last_read_at: page?.last_read_at ?? null,
+      steps: Array.isArray(page?.steps) ? page!.steps : [],
+    }
+  },
+
+  postDiscussion: async (orgId: string, templateId: string, instanceId: string, dto: PostDiscussionMessage): Promise<DiscussionMessage> =>
+    unwrap<DiscussionMessage>(await apiClient.post(`${base(orgId)}/${templateId}/instances/${instanceId}/discussion`, dto, T)),
+
+  deleteDiscussionMessage: async (orgId: string, templateId: string, instanceId: string, messageId: string): Promise<void> => {
+    await apiClient.delete(`${base(orgId)}/${templateId}/instances/${instanceId}/discussion/${messageId}`, T)
+  },
+
+  markDiscussionRead: async (orgId: string, templateId: string, instanceId: string): Promise<void> => {
+    await apiClient.post(`${base(orgId)}/${templateId}/instances/${instanceId}/discussion/read`, undefined, T)
+  },
+
+  /** People who can be @mentioned: everyone who can see the instance. */
+  getDiscussionPeople: async (orgId: string, templateId: string, instanceId: string): Promise<PersonRef[]> => {
+    const rows = unwrap<PersonRef[] | null>(await apiClient.get(`${base(orgId)}/${templateId}/instances/${instanceId}/discussion/people`, T))
     return Array.isArray(rows) ? rows : []
   },
 
-  /** `for_row_id`: a step of this instance that is not done yet (shown on its task when it starts). */
-  addNote: async (orgId: string, templateId: string, instanceId: string, dto: { body: string; for_row_id?: string | null }): Promise<InstanceNote> =>
-    unwrap<InstanceNote>(
-      await apiClient.post(
-        `${base(orgId)}/${templateId}/instances/${instanceId}/notes`,
-        { body: dto.body, ...(dto.for_row_id ? { for_row_id: dto.for_row_id } : {}) },
-        T,
-      ),
-    ),
+  uploadDiscussionFile: async (orgId: string, templateId: string, instanceId: string, messageId: string, file: File): Promise<DiscussionFile> => {
+    const form = new FormData()
+    form.append('file', file)
+    return unwrap<DiscussionFile>(
+      await apiClient.post(`${base(orgId)}/${templateId}/instances/${instanceId}/discussion/${messageId}/files`, form, {
+        timeout: 120000,
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
+    )
+  },
 
-  deleteNote: async (orgId: string, templateId: string, instanceId: string, noteId: string): Promise<void> => {
-    await apiClient.delete(`${base(orgId)}/${templateId}/instances/${instanceId}/notes/${noteId}`, T)
+  /** Resolves a short-lived signed URL, then opens it. */
+  downloadDiscussionFile: async (orgId: string, templateId: string, instanceId: string, fileId: string): Promise<void> => {
+    const { url } = unwrap<{ url: string; file_name?: string }>(
+      await apiClient.get(`${base(orgId)}/${templateId}/instances/${instanceId}/discussion/files/${fileId}/download`, T),
+    )
+    if (typeof window !== 'undefined' && url) window.open(url, '_blank', 'noopener')
   },
 
   /** For a task created by a workflow step: its workflow, instance and step. */

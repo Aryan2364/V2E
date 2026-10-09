@@ -14,7 +14,7 @@ import { ProgressBar, instanceProgress } from './InstanceList'
 import RunDocumentsDrawer from './RunDocumentsDrawer'
 import RunHistory from './RunHistory'
 import RunStepDrawer from './RunStepDrawer'
-import InstanceNotes, { useInstanceNotes } from './InstanceNotes'
+import InstanceDiscussion from './InstanceDiscussion'
 import { instanceTitle } from './instanceLabel'
 import SendBackDialog, { type SendBackSubject } from './SendBackDialog'
 import SendBackNote, { ReasonQuote } from './SendBackNote'
@@ -150,9 +150,6 @@ export default function RunView({ templateId, instanceId }: { templateId: string
     load()
   }, [load])
 
-  // Notes: listed on the page; a step's own notes also show in its panel.
-  const notes = useInstanceNotes(orgId, templateId, instanceId, status === 'ready')
-  const myId = user?.id
 
   // The Documents button shows how many files the instance has, before it is opened.
   const canSeeDocs = run?.capabilities?.can_view_documents !== false
@@ -425,12 +422,12 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             }
           : null
 
-  // Everyone who sees the instance may add a note; the server says so per instance.
-  const noteGate = gate(caps.can_add_note ?? true, writable, REASONS.note)
-  // Delete: the server's answer per note, else its author or someone who manages the instance.
-  const notesState = {
-    ...notes.state,
-    data: notes.state.data.map((n) => ({ ...n, can_delete: n.can_delete ?? (n.author?.id === myId || caps.can_manage === true) })),
+  // Everyone who sees the instance may write in its discussion; the server says so per instance.
+  const messageGate = gate(caps.can_post_message ?? caps.can_add_note ?? true, writable, REASONS.message)
+  const openDiscussion = () => {
+    setOpenRowId(null)
+    // After the panel has closed, bring the discussion into view.
+    setTimeout(() => document.getElementById('instance-discussion')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 320)
   }
 
   const canDocs = run.capabilities?.can_view_documents !== false
@@ -543,42 +540,53 @@ export default function RunView({ templateId, instanceId }: { templateId: string
       {run.last_error && <ErrorBanner message={run.last_error} />}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
-        <section aria-labelledby="run-steps" className="xl:col-span-2 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 min-w-0">
-          <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
-            <div className="min-w-0">
-              <h2 id="run-steps" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
-                Steps <InfoTip label="Steps" text="Select a step to see its checklist, proof and comments." />
-              </h2>
+        <div className="xl:col-span-2 flex flex-col gap-5 min-w-0">
+          <section aria-labelledby="run-steps" className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 min-w-0">
+            <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
+              <div className="min-w-0">
+                <h2 id="run-steps" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+                  Steps <InfoTip label="Steps" text="Select a step to see its checklist, proof and notes." />
+                </h2>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap text-[12px] text-[#334155]" aria-hidden>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-[4px] border border-[#86EFAC] bg-white" /> Done
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-[4px] border-2 border-[#2563EB] bg-[#EFF6FF]" /> In progress
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-[4px] border border-dashed border-[#94A3B8] bg-[#F8FAFC]" /> Not started
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-3 flex-wrap text-[12px] text-[#334155]" aria-hidden>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-[4px] border border-[#86EFAC] bg-white" /> Done
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-[4px] border-2 border-[#2563EB] bg-[#EFF6FF]" /> In progress
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-[4px] border border-dashed border-[#94A3B8] bg-[#F8FAFC]" /> Not started
-              </span>
-            </div>
-          </div>
-          {rows.length === 0 ? <p className="text-sm text-[#475569]">This instance has no steps.</p> : <FlowDiagram nodes={nodes} lanes={flowLanes} edgeTone={edgeTone} />}
-          {followUps.length > 0 && (
-            <div className="mt-5 pt-4 border-t border-[#F1F5F9]">
-              <h3 className="flex items-center gap-1 text-sm font-semibold text-[#0F172A] mb-2">
-                Follow-ups <InfoTip label="Follow-ups" text="Started because a step was late." />
-              </h3>
-              <ul className="flex flex-col gap-1.5">
-                {followUps.map((f) => (
-                  <li key={f.id} className="flex items-center justify-between gap-2 text-sm text-[#1E293B]">
-                    <span className="truncate">{f.title}</span>
-                    <span className="text-[12px] text-[#475569] shrink-0">{STEP_STATUS[f.status]?.label}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </section>
+            {rows.length === 0 ? <p className="text-sm text-[#475569]">This instance has no steps.</p> : <FlowDiagram nodes={nodes} lanes={flowLanes} edgeTone={edgeTone} />}
+            {followUps.length > 0 && (
+              <div className="mt-5 pt-4 border-t border-[#F1F5F9]">
+                <h3 className="flex items-center gap-1 text-sm font-semibold text-[#0F172A] mb-2">
+                  Follow-ups <InfoTip label="Follow-ups" text="Started because a step was late." />
+                </h3>
+                <ul className="flex flex-col gap-1.5">
+                  {followUps.map((f) => (
+                    <li key={f.id} className="flex items-center justify-between gap-2 text-sm text-[#1E293B]">
+                      <span className="truncate">{f.title}</span>
+                      <span className="text-[12px] text-[#475569] shrink-0">{STEP_STATUS[f.status]?.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+
+          <InstanceDiscussion
+            orgId={orgId}
+            templateId={templateId}
+            instanceId={run.id}
+            canWrite={messageGate.allowed}
+            writeReason={messageGate.reason}
+            onChanged={() => load(true)}
+          />
+        </div>
 
         <div className="flex flex-col gap-5 min-w-0">
           <section aria-labelledby="run-progress" className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-3">
@@ -660,23 +668,6 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             )}
           </section>
 
-          <InstanceNotes
-            notes={notesState}
-            rows={rows}
-            labels={labels}
-            canAdd={noteGate.allowed}
-            addReason={noteGate.reason}
-            onAdd={async (body, forRowId) => {
-              await notes.add(body, forRowId)
-              setHistoryKey((k) => k + 1)
-            }}
-            onDelete={async (id) => {
-              await notes.remove(id)
-              setHistoryKey((k) => k + 1)
-            }}
-            onRetry={notes.load}
-          />
-
           <RunHistory orgId={orgId} templateId={templateId} instanceId={instanceId} refreshKey={historyKey} stepLabels={labels} />
         </div>
       </div>
@@ -711,7 +702,8 @@ export default function RunView({ templateId, instanceId }: { templateId: string
         startNowReason={REASONS.preview}
         startingNow={!!openRow && startingRowId === openRow.id}
         onStartNow={(r) => startNow(r)}
-        notes={openRow ? notesState.data.filter((n) => n.for_row_id === openRow.id) : []}
+        notes={openRow?.notes ?? []}
+        onOpenDiscussion={openDiscussion}
       />
 
       <RunDocumentsDrawer

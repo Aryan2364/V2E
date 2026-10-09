@@ -2,15 +2,14 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { CalendarClock, CheckCircle2, Circle, Download, ExternalLink, FileText, FileWarning, ListChecks, MessageSquare, Play, Send, SkipForward, StickyNote, Undo2 } from 'lucide-react'
-import { AttachmentChips } from '@/components/ui/AttachmentList'
+import { CalendarClock, CheckCircle2, Circle, Download, ExternalLink, FileText, FileWarning, ListChecks, MessageSquare, Play, SkipForward, Undo2 } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 import { workflowErrorMessage, workflowErrorStatus } from '@/lib/api/workflows'
 import { formatBytes } from '@/lib/attachments'
-import type { Task, TaskAttachment, TaskChecklistItem, TaskComment } from '@/lib/types/tasks'
+import type { Task, TaskAttachment, TaskChecklistItem } from '@/lib/types/tasks'
 import type { InstanceNote, WorkflowInstanceStep } from '@/lib/types/workflows'
-import { NoteItem } from './InstanceNotes'
+import StepNotes from './StepNotes'
 import SendBackNote from './SendBackNote'
 import Sheet from './Sheet'
 import { Avatar, BTN, CompletionChip, ErrorBanner, GatedButton, Skeleton, StepStatusBadge, fmtDateTime, fmtDayDateTime, taskHref } from './shared'
@@ -42,7 +41,8 @@ function groupItems<T extends { group_title?: string | null }>(items: T[]): { he
 
 /**
  * One instance step in a side panel: who has it, when it is due, notes left for it, its
- * checklist, proof and comments — everyone in the instance sees these, and may comment. Send back and Skip
+ * checklist and proof — everyone in the instance sees these (comments are the instance's
+ * one discussion, on the page). Send back and Skip
  * hand over to the page, which closes this panel and opens their dialog (never a dialog
  * on top of a panel).
  */
@@ -64,6 +64,7 @@ export default function RunStepDrawer({
   startingNow = false,
   onStartNow,
   notes = [],
+  onOpenDiscussion,
 }: {
   orgId: string
   row: WorkflowInstanceStep | null
@@ -76,14 +77,16 @@ export default function RunStepDrawer({
   canSkip: boolean | undefined
   skipReason: string
   onSkip: (row: WorkflowInstanceStep) => void
-  /** A comment was added (the run's counts may change). */
+  /** Something on the step changed (the run's counts may change). */
   onChanged?: () => void
+  /** "Go to the discussion": close the panel and show the instance discussion. */
+  onOpenDiscussion?: () => void
   /** A waiting step may be started now: undefined = not offered (not waiting, or not listed). */
   canStartNow?: boolean | undefined
   startNowReason?: string
   startingNow?: boolean
   onStartNow?: (row: WorkflowInstanceStep) => void
-  /** Instance notes left for this step (newest first). */
+  /** Messages left for this step ("For <step>"), newest first. */
   notes?: InstanceNote[]
 }) {
   const { addToast } = useToast()
@@ -93,22 +96,7 @@ export default function RunStepDrawer({
   const row = rowProp ?? lastRow.current
   const taskId = row && !row.task_deleted ? row.task_id ?? row.task?.id ?? null : null
   const [task, setTask] = useState<Load<Task | null>>({ status: 'idle', data: null })
-  const [comments, setComments] = useState<Load<TaskComment[]>>({ status: 'idle', data: [] })
   const [proofs, setProofs] = useState<Load<TaskAttachment[]>>({ status: 'idle', data: [] })
-  const [draft, setDraft] = useState('')
-  const [posting, setPosting] = useState(false)
-  const [postError, setPostError] = useState<string | null>(null)
-
-  const loadComments = useCallback(async () => {
-    if (!taskId) return
-    setComments((c) => ({ ...c, status: c.status === 'ready' ? 'ready' : 'loading' }))
-    try {
-      const list = await tasksApi.getComments(orgId, taskId)
-      setComments({ status: 'ready', data: Array.isArray(list) ? list : [] })
-    } catch (e) {
-      setComments({ status: workflowErrorStatus(e) === 403 ? 'hidden' : 'failed', data: [], error: workflowErrorMessage(e, 'Comments could not be loaded.') })
-    }
-  }, [orgId, taskId])
 
   const loadAll = useCallback(async () => {
     if (!taskId) return
@@ -122,36 +110,15 @@ export default function RunStepDrawer({
       .listProofs(orgId, taskId)
       .then((p) => setProofs({ status: 'ready', data: Array.isArray(p) ? p : [] }))
       .catch((e) => setProofs({ status: workflowErrorStatus(e) === 403 ? 'hidden' : 'failed', data: [], error: workflowErrorMessage(e, 'Proof could not be loaded.') }))
-    loadComments()
-  }, [orgId, taskId, loadComments])
+  }, [orgId, taskId])
 
   useEffect(() => {
-    setDraft('')
-    setPostError(null)
     if (taskId) loadAll()
     else {
       setTask({ status: 'idle', data: null })
-      setComments({ status: 'idle', data: [] })
       setProofs({ status: 'idle', data: [] })
     }
   }, [taskId, loadAll])
-
-  async function post() {
-    const body = draft.trim()
-    if (!taskId || !body || posting) return
-    setPosting(true)
-    setPostError(null)
-    try {
-      await tasksApi.addComment(orgId, taskId, body)
-      setDraft('')
-      await loadComments()
-      onChanged?.()
-    } catch (e) {
-      setPostError(workflowErrorMessage(e, 'Your comment was not posted. Try again.'))
-    } finally {
-      setPosting(false)
-    }
-  }
 
   const download = async (fn: () => Promise<void>) => {
     try {
@@ -236,7 +203,7 @@ export default function RunStepDrawer({
         <div className="flex items-start gap-2.5 rounded-[10px] border border-[#DDD6FE] bg-[#F5F3FF] px-3.5 py-2.5 text-sm text-[#4C1D95]">
           <Undo2 size={16} className="shrink-0 mt-0.5" />
           <span>
-            Sent back from <span className="font-semibold">{title(row.returned_to_row_id)}</span>. The reason is in the comments. When done, the instance returns there.
+            Sent back from <span className="font-semibold">{title(row.returned_to_row_id)}</span>. The reason is in the discussion. When done, the instance returns there.
           </span>
         </div>
       )}
@@ -259,18 +226,7 @@ export default function RunStepDrawer({
         <ErrorBanner message="This step’s task was deleted. An editor or admin must retry or skip it." />
       )}
 
-      {notes.length > 0 && (
-        <section aria-labelledby="step-notes" className="flex flex-col gap-2">
-          <h3 id="step-notes" className="flex items-center gap-1.5 text-sm font-semibold text-[#0F172A]">
-            <StickyNote size={15} /> Notes for this step
-          </h3>
-          <ul className="flex flex-col gap-2">
-            {notes.map((n) => (
-              <NoteItem key={n.id} note={n} showStep={false} />
-            ))}
-          </ul>
-        </section>
-      )}
+      <StepNotes notes={notes} headingId="step-notes" />
 
       <dl>
         <Fact label="Assigned to">
@@ -408,73 +364,17 @@ export default function RunStepDrawer({
         </section>
       )}
 
-      {/* Comments */}
+      {/* Comments: one discussion for the whole instance, on the page under the steps. */}
       {taskId && (
-        <section className="flex flex-col gap-3">
+        <section className="flex flex-col gap-2">
           <h3 className="flex items-center gap-1.5 text-sm font-semibold text-[#0F172A]">
             <MessageSquare size={15} /> Comments
           </h3>
-          {comments.status === 'loading' || comments.status === 'idle' ? (
-            <div className="flex flex-col gap-2">
-              <Skeleton className="h-12" />
-              <Skeleton className="h-12" />
-            </div>
-          ) : comments.status === 'hidden' ? (
-            <p className="text-sm text-[#475569]">You don’t have access to these comments.</p>
-          ) : comments.status === 'failed' ? (
-            <div className="flex items-center gap-2 text-sm text-[#B91C1C]">
-              <span>{comments.error}</span>
-              <button type="button" onClick={loadComments} className="font-semibold underline">
-                Try again
-              </button>
-            </div>
-          ) : comments.data.filter((c) => !c.is_deleted).length === 0 ? (
-            <p className="text-sm text-[#475569]">No comments yet.</p>
-          ) : (
-            <ul className="flex flex-col gap-3">
-              {comments.data
-                .filter((c) => !c.is_deleted)
-                .map((c) => (
-                  <li key={c.id} className="flex flex-col gap-2">
-                    <CommentBubble c={c} onDownload={(a) => download(() => tasksApi.downloadAttachment(orgId, taskId, a.id))} />
-                    {(c.replies ?? [])
-                      .filter((r) => !r.is_deleted)
-                      .map((r) => (
-                        <div key={r.id} className="pl-8">
-                          <CommentBubble c={r} onDownload={(a) => download(() => tasksApi.downloadAttachment(orgId, taskId, a.id))} />
-                        </div>
-                      ))}
-                  </li>
-                ))}
-            </ul>
-          )}
-
-          {comments.status !== 'hidden' && (
-            <div className="flex flex-col gap-2">
-              <label htmlFor="run-step-comment" className="sr-only">
-                Add a comment
-              </label>
-              <textarea
-                id="run-step-comment"
-                value={draft}
-                rows={2}
-                maxLength={5000}
-                disabled={posting}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    post()
-                  }
-                }}
-                placeholder="Add a comment"
-                className="w-full px-3 py-2.5 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-y"
-              />
-              {postError && <ErrorBanner message={postError} onClose={() => setPostError(null)} />}
-              <button type="button" onClick={post} disabled={!draft.trim() || posting} className={`${BTN.secondary} self-end`}>
-                <Send size={16} /> {posting ? 'Posting…' : 'Comment'}
-              </button>
-            </div>
+          <p className="text-sm text-[#475569]">All steps share one discussion on this instance’s page.</p>
+          {onOpenDiscussion && (
+            <button type="button" onClick={onOpenDiscussion} className={`${BTN.quiet} self-start`}>
+              <MessageSquare size={16} /> Go to the discussion
+            </button>
           )}
         </section>
       )}
@@ -493,18 +393,3 @@ export default function RunStepDrawer({
   )
 }
 
-function CommentBubble({ c, onDownload }: { c: TaskComment; onDownload: (a: TaskAttachment) => void }) {
-  return (
-    <div className="flex items-start gap-2.5">
-      <Avatar name={c.user_name || '?'} size="md" />
-      <div className="min-w-0 flex-1 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-2">
-        <p className="text-[13px]">
-          <span className="font-semibold text-[#0F172A]">{c.user_name || 'Someone'}</span>
-          <span className="text-[#475569]"> · {fmtDateTime(c.created_at)}</span>
-        </p>
-        <p className="text-sm text-[#1E293B] whitespace-pre-wrap break-words">{c.body}</p>
-        {c.attachments && c.attachments.length > 0 && <AttachmentChips attachments={c.attachments} onDownload={onDownload} />}
-      </div>
-    </div>
-  )
-}

@@ -51,7 +51,7 @@ const TABLES_TO_TRUNCATE = [
   // Workflow Tables
   'workflow_instance_steps',
   'workflow_notifications',
-  'workflow_instance_notes',
+  'workflow_discussion_reads',
   'workflow_instances',
   'workflow_access',
   'workflow_steps',

@@ -41,7 +41,7 @@ export const REASONS = {
   runActions: 'Only editors and admins can manage instances.',
   sendBack: 'Only this step’s assignees, editors and admins can send it back.',
   upload: 'Only people in this instance can add files.',
-  note: 'Only people who can see this instance can add notes.',
+  message: 'Only people who can see this instance can write in its discussion.',
 } as const
 
 /**

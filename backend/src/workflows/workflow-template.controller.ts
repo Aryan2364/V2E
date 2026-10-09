@@ -25,7 +25,8 @@ import { PreviewTimelineDto, SaveDefinitionDto } from './dto/definition.dto'
 import { TriggerInstanceDto } from './dto/trigger-instance.dto'
 import { UpdateMasterDto } from './dto/update-master.dto'
 import { SendBackDto, SkipStepDto } from './dto/run-actions.dto'
-import { ChangeCreatorDto, CreateInstanceNoteDto } from './dto/instance-notes.dto'
+import { ChangeCreatorDto } from './dto/instance-notes.dto'
+import { DiscussionQueryDto, PostDiscussionMessageDto } from './dto/discussion.dto'
 import { MAX_ATTACHMENT_BYTES, type UploadedFile as UploadedFileType } from '../tasks/task-attachments.service'
 
 /**
@@ -253,34 +254,80 @@ export class WorkflowTemplateController {
     return this.service.listEvents(orgId, id, iid, principalFromUser(req.user))
   }
 
-  // ── Instance notes (everyone who can see the instance) ───────────────────────
+  // ── Instance discussion (everyone who can see the instance) ─────────────────
+  // One thread per instance: messages written on any of its step tasks plus messages
+  // written on the instance page. Static segments before `:messageId`.
 
-  @Get(':id/instances/:iid/notes')
-  listNotes(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
-    return this.service.listNotes(orgId, id, iid, principalFromUser(req.user))
-  }
-
-  @Post(':id/instances/:iid/notes')
-  addNote(
+  /** One page, newest last (`?before=<messageId>&limit=`), with the caller's unread count. */
+  @Get(':id/instances/:iid/discussion')
+  getDiscussion(
     @Param('orgId') orgId: string,
     @Param('id') id: string,
     @Param('iid') iid: string,
-    @Body() dto: CreateInstanceNoteDto,
+    @Query() q: DiscussionQueryDto,
     @Req() req: any,
   ) {
-    return this.service.addNote(orgId, id, iid, dto, principalFromUser(req.user))
+    return this.service.getDiscussion(orgId, id, iid, q, principalFromUser(req.user))
+  }
+
+  /** Who can be @mentioned: the people who can see this instance. */
+  @Get(':id/instances/:iid/discussion/people')
+  getDiscussionPeople(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+    return this.service.getDiscussionPeople(orgId, id, iid, principalFromUser(req.user))
+  }
+
+  @Post(':id/instances/:iid/discussion')
+  postDiscussion(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @Body() dto: PostDiscussionMessageDto,
+    @Req() req: any,
+  ) {
+    return this.service.postDiscussion(orgId, id, iid, dto, principalFromUser(req.user))
+  }
+
+  /** The caller has read the discussion up to now. */
+  @Post(':id/instances/:iid/discussion/read')
+  markDiscussionRead(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+    return this.service.markDiscussionRead(orgId, id, iid, principalFromUser(req.user))
+  }
+
+  @Get(':id/instances/:iid/discussion/files/:fileId/download')
+  downloadDiscussionFile(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @Param('fileId') fileId: string,
+    @Req() req: any,
+  ) {
+    return this.service.downloadDiscussionFile(orgId, id, iid, fileId, principalFromUser(req.user))
+  }
+
+  /** A file on the caller's own message. */
+  @Post(':id/instances/:iid/discussion/:messageId/files')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_ATTACHMENT_BYTES } }))
+  uploadDiscussionFile(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @Param('messageId') messageId: string,
+    @UploadedFile() file: UploadedFileType,
+    @Req() req: any,
+  ) {
+    return this.service.uploadDiscussionFile(orgId, id, iid, messageId, file, principalFromUser(req.user))
   }
 
   /** Its author, editors and admins. */
-  @Delete(':id/instances/:iid/notes/:noteId')
-  deleteNote(
+  @Delete(':id/instances/:iid/discussion/:messageId')
+  deleteDiscussionMessage(
     @Param('orgId') orgId: string,
     @Param('id') id: string,
     @Param('iid') iid: string,
-    @Param('noteId') noteId: string,
+    @Param('messageId') messageId: string,
     @Req() req: any,
   ) {
-    return this.service.deleteNote(orgId, id, iid, noteId, principalFromUser(req.user))
+    return this.service.deleteDiscussionMessage(orgId, id, iid, messageId, principalFromUser(req.user))
   }
 
   // ── Instance documents (everyone who can see it; adding: not viewers) ─────────

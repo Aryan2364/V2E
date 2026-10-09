@@ -4,6 +4,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import {
   ChecklistItemState,
@@ -28,6 +29,7 @@ import { AccessVisibilityService } from '../access-rights/access-visibility.serv
 import { Principal } from '../access-rights/permissions.service';
 import { instanceIdForRow, isRunParticipant } from '../workflows/run-access';
 import { taskWorkflowInfo } from '../workflows/task-workflow-info';
+import { WorkflowDiscussionService } from '../workflows/workflow-discussion.service';
 import { ChecklistAccessService } from '../task-masters/checklist-access.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -147,6 +149,9 @@ export class TasksService {
     private readonly visibility: AccessVisibilityService,
     private readonly analytics: TasksAnalyticsService,
     private readonly r2: R2Service,
+    // Workflow step tasks: their comments are messages of the instance discussion
+    // (instance id stamped on each, notifications by the discussion rules).
+    @Optional() private readonly discussion?: WorkflowDiscussionService,
   ) {
     this.scope.registerWiredList(TasksService.TASK_LEAF);
     this.visibility.registerCounter(TasksService.TASK_LEAF, (orgId, userId) =>
@@ -2112,6 +2117,7 @@ export class TasksService {
     ]);
     const lastViewed = new Map(views.map((v) => [v.task_id, v.last_viewed_at.getTime()]));
     for (const c of comments) {
+      if (!c.task_id) continue;
       const seenAt = lastViewed.get(c.task_id) ?? 0; // never opened → everything is unread
       if (c.created_at.getTime() > seenAt) {
         result.set(c.task_id, (result.get(c.task_id) ?? 0) + 1);
@@ -3780,7 +3786,7 @@ export class TasksService {
       include: {
         attachments: attachmentSelect,
         replies: {
-          where: { is_deleted: false },
+          where: { is_deleted: false, task_id: taskId },
           orderBy: { created_at: 'asc' },
           include: { attachments: attachmentSelect },
         },
@@ -3829,31 +3835,6 @@ export class TasksService {
     return rows.map((r) => r.user_id);
   }
 
-  /**
-   * People on the other side of an open workflow send-back for this task: if this is
-   * the step that was sent back TO, the sender step's people; if this is the paused
-   * sender step, the people on the step it is waiting on. Empty for anything else.
-   */
-  private async sendBackCounterparts(orgId: string, taskId: string): Promise<string[]> {
-    const row = await this.prisma.workflowInstanceStep.findFirst({
-      where: { task_id: taskId, organization_id: orgId },
-      select: { returned_to_row_id: true, waiting_on_row_id: true, status: true, workflow_instance_id: true },
-    });
-    if (!row) return [];
-    const otherRowId = row.returned_to_row_id ?? (row.status === 'sent_back' ? row.waiting_on_row_id : null);
-    if (!otherRowId) return [];
-    const other = await this.prisma.workflowInstanceStep.findFirst({
-      where: { id: otherRowId, organization_id: orgId, workflow_instance_id: row.workflow_instance_id },
-      select: { task_id: true },
-    });
-    if (!other?.task_id) return [];
-    const people = await this.prisma.taskAssignee.findMany({
-      where: { task_id: other.task_id, organization_id: orgId, ...ACTIVE_ASSIGNEE },
-      select: { user_id: true },
-    });
-    return people.map((p) => p.user_id);
-  }
-
   async addComment(orgId: string, userId: string, taskId: string, dto: CreateCommentDto, principal?: Principal) {
     const task = await this.findTaskOrFail(orgId, taskId, true);
     await this.assertCanViewTask(orgId, principal, taskId);
@@ -3867,6 +3848,11 @@ export class TasksService {
       if (!parent) throw new NotFoundException('The comment you are replying to was not found on this task.');
       replyToAuthorId = parent.user_id;
     }
+    // A workflow step task's comments are messages of its instance's ONE discussion.
+    const instanceId =
+      task.workflow_instance_step_id && this.discussion
+        ? await this.discussion.instanceIdForTask(orgId, taskId).catch(() => null)
+        : null;
     // Stamp with the org's clock (respects a test org's simulated time) rather than
     // the DB's real-time default, so comments read in the timeline the user is in.
     const now = await this.clock.now(orgId);
@@ -3874,6 +3860,7 @@ export class TasksService {
       data: {
         organization_id: orgId,
         task_id: taskId,
+        workflow_instance_id: instanceId,
         user_id: userId,
         body: dto.body,
         reply_to_comment_id: dto.reply_to_comment_id,
@@ -3888,18 +3875,22 @@ export class TasksService {
       .findUnique({ where: { id: userId }, select: { id: true, name: true, email: true } })
       .catch(() => null);
 
+    // Workflow step task: the discussion's rules decide who hears (step people, people
+    // already in the discussion, the replied-to author, send-back counterparts).
+    if (instanceId && this.discussion) {
+      await this.discussion.notifyNewMessage(orgId, comment.id, { replyToAuthorId });
+      return { ...comment, user_name: user?.name ?? null, user_email: user?.email ?? null, user: user ?? null };
+    }
+
     // Notify everyone in the conversation except the commenter: the task's people
-    // (assignees + CC + creator), anyone who has already commented here, the author
-    // of the comment being replied to, and — on a workflow step that was sent back —
-    // the people on the step that sent it back, so both sides of a send-back hear
-    // each other. Lead with WHO commented; show the comment, then the task.
+    // (assignees + CC + creator), anyone who has already commented here and the author
+    // of the comment being replied to. Lead with WHO commented; show the comment, then the task.
     // A file-only comment (no text yet) reads as an attachment rather than a blank line.
     const trimmed = (dto.body ?? '').trim();
     const snippet = trimmed.length > 100 ? `${trimmed.slice(0, 100)}…` : trimmed;
     const payload = snippet ? `“${snippet}”` : 'Shared an attachment';
     // Extra recipients are best-effort: a failed lookup must never fail the comment.
     const priorCommenters = await this.priorCommenterIds(orgId, taskId).catch(() => [] as string[]);
-    const sendBackPeople = await this.sendBackCounterparts(orgId, taskId).catch(() => [] as string[]);
     await this.notifications.emit({
       orgId,
       module: 'tasks',
@@ -3910,7 +3901,6 @@ export class TasksService {
           ...(task.assignees ?? []).map((a: any) => a.user_id),
           ...priorCommenters,
           ...(replyToAuthorId ? [replyToAuthorId] : []),
-          ...sendBackPeople,
         ]),
       ).filter((uid) => !!uid && uid !== userId),
       title: `${user?.name ?? 'Someone'} commented`,
@@ -3926,7 +3916,9 @@ export class TasksService {
     const comment = await this.prisma.taskComment.findFirst({
       where: { id: commentId, organization_id: orgId },
     });
-    if (!comment) throw new NotFoundException(`Comment ${commentId} not found`);
+    // Messages written on a workflow instance page (no task) are removed through the
+    // instance discussion, never here.
+    if (!comment || !comment.task_id) throw new NotFoundException(`Comment ${commentId} not found`);
     await this.findTaskOrFail(orgId, comment.task_id, true);
     if (comment.user_id !== userId) throw new ForbiddenException('Cannot delete another user\'s comment');
 

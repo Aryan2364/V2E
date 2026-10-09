@@ -99,7 +99,6 @@ function makeDb() {
   const escalations: Row[] = []
   const comments: Row[] = []
   const schedules: Row[] = []
-  const notes: Row[] = []
   const managers: Record<string, string | null> = {}
   const inactive = new Set<string>()
   let seq = 0
@@ -171,7 +170,6 @@ function makeDb() {
       instance: (row) => instances.find((i) => i.id === row.workflow_instance_id),
     }),
     workflowInstanceEvent: table(events, 'evt'),
-    workflowInstanceNote: table(notes, 'note'),
     workflowTemplate: { findFirst: jest.fn() },
     workflowStep: { findFirst: jest.fn().mockResolvedValue(null) },
     workflowScheduleEntry: table(schedules, 'sched', { template: (row) => row.template }),
@@ -839,7 +837,15 @@ describe('WorkflowEngineService (v2 — DAG runs)', () => {
       // now (Thu 10:00 IST) + 1 day at 18:00
       expect(bTask.deadline.toISOString()).toBe('2026-10-09T12:30:00.000Z')
       expect(db.comments).toHaveLength(1)
-      expect(db.comments[0]).toMatchObject({ task_id: b.task_id, user_id: 'u-c', body: 'Sent back from “Step C”: Missing the signed copy' })
+      // The reason joins the instance discussion on the reopened task, marked as a send-back.
+      expect(db.comments[0]).toMatchObject({
+        task_id: b.task_id,
+        workflow_instance_id: b.workflow_instance_id,
+        sent_back_from_row_id: c.id,
+        sent_back_to_row_id: b.id,
+        user_id: 'u-c',
+        body: 'Missing the signed copy',
+      })
       // The paused sender doesn't escalate while it waits.
       expect(db.escalations.find((e) => e.id === 'esc-c')!.is_active).toBe(false)
       expect(db.eventsOf('sent_back')[0]).toMatchObject({ actor_user_id: 'u-c', instance_step_id: c.id })
@@ -1701,48 +1707,22 @@ describe('WorkflowEngineService — instances: numbers, names, heads-ups, notes,
     expect(recipientsOf(db, 'workflow_step_late').sort()).toEqual(['u-creator', 'u-editor', 'u-worker'])
   })
 
-  it('a note for a started step: history entry + its assignees told now (not the author)', async () => {
-    const db = makeDb()
-    db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
-    const inst = await start(db, { name: 'ACME' })
-    const rowA = db.rowsOf(inst)[0]
-    db.notifications.emit.mockClear()
-    const { id } = await db.engine.addNote(ORG, inst.id, 'u-runner', 'Budget is 5L', rowA.id, '1')
-    expect(id).toBeTruthy()
-    const ev = db.eventsOf('note_added')[0]
-    expect(ev).toMatchObject({ type: 'note_added', actor_user_id: 'u-runner', instance_step_id: rowA.id })
-    expect(ev.message).toBe('u-runner added a note for 1 “T a”.')
-    const told = emitted(db, 'workflow_note_added')
-    expect(told).toHaveLength(1)
-    expect(told[0].recipients).toEqual(['u-worker'])
-    expect(told[0].body).toContain('Budget is 5L')
-  })
-
-  it('a note for a later step is told in its assignment notification when it starts', async () => {
+  it('a message for a later step is told in its assignment notification when it starts', async () => {
     const db = makeDb()
     db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
     const inst = await start(db, { name: 'ACME' })
     const [rowA, rowB] = db.rowsOf(inst)
-    // u-worker (on step 1 “T a”) leaves a note for step 2 before it starts: nobody is told yet.
-    await db.engine.addNote(ORG, inst.id, 'u-worker', 'Use the new rate card', rowB.id, '2')
-    expect(emitted(db, 'workflow_note_added')).toHaveLength(0)
+    // u-worker (on step 1 “T a”) left a message for step 2 before it starts (the discussion
+    // stores it as a tagged comment of the instance; a deleted one never counts).
+    db.comments.push(
+      { id: 'cmt-tag', organization_id: ORG, task_id: rowA.task_id, workflow_instance_id: inst.id, user_id: 'u-worker',
+        body: 'Use the new rate card', for_instance_step_id: rowB.id, is_deleted: false, created_at: new Date(1) },
+      { id: 'cmt-gone', organization_id: ORG, task_id: null, workflow_instance_id: inst.id, user_id: 'u-runner',
+        body: 'old', for_instance_step_id: rowB.id, is_deleted: true, created_at: new Date(2) },
+    )
     db.notifications.emit.mockClear()
     await db.completeTask(db.rowsOf(inst).find((r) => r.id === rowA.id)!)
     const assigned = emitted(db, 'workflow_step_assigned').find((p: any) => p.recipients.includes('u-later'))
     expect(assigned.body).toBe('“Issue PO” in “Vendor onboarding” (ACME). 1 note from 1 “T a”.')
-  })
-
-  it('a note for a done step, or a step of another instance, is refused; another org is a 404', async () => {
-    const db = makeDb()
-    db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
-    const inst = await start(db, { name: 'ACME' })
-    const rowA = db.steps.find((r) => r.workflow_instance_id === inst.id && r.order_index === 0)!
-    rowA.status = 'completed'
-    for (const rowId of [rowA.id, 'row-of-another-instance']) {
-      await expect(db.engine.addNote(ORG, inst.id, 'u-runner', 'x', rowId)).rejects.toThrow(
-        'Choose a step of this instance that isn’t done or skipped.',
-      )
-    }
-    await expect(db.engine.addNote('org-other', inst.id, 'u-runner', 'x', null)).rejects.toBeInstanceOf(NotFoundException)
   })
 })

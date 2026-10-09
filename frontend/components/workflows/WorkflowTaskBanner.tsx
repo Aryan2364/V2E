@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, StickyNote, Undo2, Workflow as WorkflowIcon } from 'lucide-react'
+import { ArrowRight, Undo2, Workflow as WorkflowIcon } from 'lucide-react'
 import { workflowsApi } from '@/lib/api/workflows'
 import type { WorkflowStepContext } from '@/lib/types/workflows'
 import SendBackDialog, { type SendBackSubject } from './SendBackDialog'
-import { NoteItem } from './InstanceNotes'
+import StepNotes from './StepNotes'
 import SendBackNote from './SendBackNote'
 import { instanceTitle } from './instanceLabel'
 import { BTN, runHref } from './shared'
@@ -22,6 +22,7 @@ export default function WorkflowTaskBanner({
   workflowInstanceStepId,
   fallback,
   onChanged,
+  onContext,
 }: {
   orgId: string
   taskId: string
@@ -29,19 +30,26 @@ export default function WorkflowTaskBanner({
   /** What the task itself says about its workflow, shown if the details can't be loaded. */
   fallback?: { step_order?: number; template_name?: string; instance_name?: string } | null
   onChanged?: () => void
+  /** The loaded step context (null when it isn't a workflow step task or failed) — the page's Comments use it. */
+  onContext?: (ctx: WorkflowStepContext | null) => void
 }) {
   const [ctx, setCtx] = useState<WorkflowStepContext | null>(null)
   const [failed, setFailed] = useState(false)
   const [subject, setSubject] = useState<SendBackSubject | null>(null)
+  const onContextRef = useRef(onContext)
+  onContextRef.current = onContext
 
   const load = useCallback(async () => {
     if (!orgId || !taskId || !workflowInstanceStepId) return
     try {
       const c = await workflowsApi.getStepContext(orgId, taskId)
-      setCtx(c && typeof c === 'object' && 'instance_id' in c ? c : null)
+      const next = c && typeof c === 'object' && 'instance_id' in c ? c : null
+      setCtx(next)
       setFailed(!c)
+      onContextRef.current?.(next)
     } catch {
       setFailed(true)
+      onContextRef.current?.(null)
     }
   }, [orgId, taskId, workflowInstanceStepId])
 
@@ -61,7 +69,6 @@ export default function WorkflowTaskBanner({
       : 'Workflow step'
   const workflowName = ctx?.template_name ?? fallback?.template_name ?? 'Workflow'
   const instanceName = ctx?.instance_name ?? fallback?.instance_name
-  const notes = (ctx?.notes ?? []).slice().sort((a, b) => b.created_at.localeCompare(a.created_at))
 
   return (
     <div className="flex flex-col gap-3 rounded-[10px] border border-[#BFDBFE] bg-[#EFF6FF] px-4 py-3 shrink-0">
@@ -113,18 +120,7 @@ export default function WorkflowTaskBanner({
         </div>
       </div>
 
-      {notes.length > 0 && (
-        <section aria-labelledby="task-step-notes" className="flex flex-col gap-2 border-t border-[#BFDBFE] pt-3">
-          <h3 id="task-step-notes" className="flex items-center gap-1.5 text-sm font-semibold text-[#0F172A]">
-            <StickyNote size={15} className="text-[#92400E]" /> Notes for this step
-          </h3>
-          <ul className="flex flex-col gap-2">
-            {notes.map((n) => (
-              <NoteItem key={n.id} note={n} showStep={false} />
-            ))}
-          </ul>
-        </section>
-      )}
+      <StepNotes notes={ctx?.notes ?? []} headingId="task-step-notes" className="border-t border-[#BFDBFE] pt-3" />
 
       {ctx && (
         <SendBackDialog

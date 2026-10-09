@@ -169,6 +169,7 @@ export default function RunDocumentsDrawer({
                       <FileRow
                         key={f.id}
                         name={f.file_name}
+                        tag={f.in_comment ? 'In the discussion' : undefined}
                         meta={`${formatBytes(f.size_bytes)}${f.uploaded_by ? ` · ${f.uploaded_by.name}` : ''} · ${fmtDateTime(f.created_at)}`}
                         onDownload={() => download(() => workflowsApi.downloadRunFile(orgId, templateId, instanceId, f.id))}
                         onRemove={
@@ -192,7 +193,7 @@ export default function RunDocumentsDrawer({
             <section className="flex flex-col gap-3 pt-2 border-t border-[#F1F5F9]">
               <div>
                 <h3 className="flex items-center gap-1 text-[15px] font-semibold text-[#0F172A]">
-                  Step files <InfoTip label="Step files" text="Attachments, comment files and proof from each step’s task." />
+                  Step files <InfoTip label="Step files" text="Attachments, discussion files and proof, by the step they were added on." />
                 </h3>
               </div>
               {stepGroups.length === 0 ? (
@@ -213,7 +214,7 @@ export default function RunDocumentsDrawer({
                         <FileRow
                           key={f.id}
                           name={f.file_name}
-                          tag={f.is_proof ? 'Proof' : f.in_comment ? 'In a comment' : undefined}
+                          tag={f.is_proof ? 'Proof' : f.in_comment ? 'In the discussion' : undefined}
                           meta={`${formatBytes(f.size_bytes)}${f.uploaded_by ? ` · ${f.uploaded_by.name}` : ''} · ${fmtDateTime(f.created_at)}`}
                           onDownload={
                             g.task_id

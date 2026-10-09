@@ -6,6 +6,7 @@ import { WorkflowTemplateService } from './workflow-template.service'
 import { WorkflowTemplateController } from './workflow-template.controller'
 import { WorkflowEngineService } from './workflow-engine.service'
 import { WorkflowFilesService } from './workflow-files.service'
+import { WorkflowDiscussionService } from './workflow-discussion.service'
 
 /**
  * Workflows. How a workflow starts is data on the template: "Manually" (a flag + the
@@ -15,7 +16,7 @@ import { WorkflowFilesService } from './workflow-files.service'
 @Module({
   imports: [PrismaModule, HolidaysModule, TaskMastersModule],
   controllers: [WorkflowTemplateController],
-  providers: [WorkflowTemplateService, WorkflowEngineService, WorkflowFilesService],
-  exports: [WorkflowEngineService],
+  providers: [WorkflowTemplateService, WorkflowEngineService, WorkflowFilesService, WorkflowDiscussionService],
+  exports: [WorkflowEngineService, WorkflowDiscussionService],
 })
 export class WorkflowsModule {}

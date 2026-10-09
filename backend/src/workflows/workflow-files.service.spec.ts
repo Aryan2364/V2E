@@ -70,6 +70,7 @@ describe('WorkflowFilesService — run files (R2 conventions)', () => {
       organization_id: ORG,
       workflow_instance_id: RUN,
       deleted_at: null,
+      OR: [{ comment_id: null }, { comment: { is_deleted: false } }],
     })
 
     prisma.workflowInstanceAttachment.findFirst.mockResolvedValue({ id: 'f-1', storage_key: 'k', file_name: 'offer.pdf' })
@@ -82,6 +83,27 @@ describe('WorkflowFilesService — run files (R2 conventions)', () => {
       deleted_at: null,
     })
     expect(r2.deleteObject).toHaveBeenCalledWith('k')
+  })
+})
+
+describe('WorkflowFilesService — files of instance discussion messages', () => {
+  it('a file on an instance-page message is linked to it, with no separate history entry', async () => {
+    const { svc, prisma, engine } = build()
+    const out = await svc.upload(ORG, 'u-1', RUN, file, { commentId: 'm-1' })
+    expect(prisma.workflowInstanceAttachment.create.mock.calls[0][0].data).toMatchObject({ comment_id: 'm-1', workflow_instance_id: RUN })
+    expect(out.in_comment).toBe(true)
+    expect(engine.recordEvent).not.toHaveBeenCalled()
+  })
+
+  it('instance files leave out the files of removed messages', async () => {
+    const { svc, prisma } = build()
+    await svc.listRunFiles(ORG, RUN)
+    expect(prisma.workflowInstanceAttachment.findMany.mock.calls[0][0].where).toEqual({
+      organization_id: ORG,
+      workflow_instance_id: RUN,
+      deleted_at: null,
+      OR: [{ comment_id: null }, { comment: { is_deleted: false } }],
+    })
   })
 })
 

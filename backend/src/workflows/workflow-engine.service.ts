@@ -705,17 +705,19 @@ export class WorkflowEngineService {
   }
 
   /**
-   * "1 note from B1 “Budget check”." for the live notes left for `rowId` (null when
-   * none). A note's source is the step its author works on in this instance (their
-   * latest step there as a non-CC assignee), else the author's name.
+   * "1 note from B1 “Budget check”." for the live discussion messages left for `rowId`
+   * ("For <step>"; null when none). A message's source is the step its author works on
+   * in this instance (their latest step there as a non-CC assignee), else the author's name.
    */
   async notesSummary(db: Tx, inst: Pick<InstanceCtx, 'id' | 'organization_id'>, rowId: string): Promise<string | null> {
     const orgId = inst.organization_id
-    const notes = await db.workflowInstanceNote.findMany({
-      where: { organization_id: orgId, workflow_instance_id: inst.id, for_instance_step_id: rowId, deleted_at: null },
-      select: { author_user_id: true },
-      orderBy: { created_at: 'asc' },
-    })
+    const notes = (
+      await db.taskComment.findMany({
+        where: { organization_id: orgId, workflow_instance_id: inst.id, for_instance_step_id: rowId, is_deleted: false },
+        select: { user_id: true },
+        orderBy: { created_at: 'asc' },
+      })
+    ).map((n) => ({ author_user_id: n.user_id }))
     if (!notes.length) return null
     const authors = Array.from(new Set(notes.map((n) => n.author_user_id)))
     const rows = await db.workflowInstanceStep.findMany({
@@ -1613,8 +1615,19 @@ export class WorkflowEngineService {
       const body = `Sent back from “${fromTitle}”: ${why}`
       await reopenTaskForWorkflow(tx, { orgId, taskId: to.task_id!, actorUserId, newDeadline: deadline, now, reason: body })
       await tx.workflowInstanceStep.update({ where: { id: to.id }, data: { scheduled_at: deadline } })
+      // The reason joins the instance discussion, on the reopened step's task, marked as a
+      // send-back ("↩ Sent back to “…”") — its text is the reason alone.
       const comment = await tx.taskComment.create({
-        data: { organization_id: orgId, task_id: to.task_id!, user_id: actorUserId, body, created_at: now },
+        data: {
+          organization_id: orgId,
+          task_id: to.task_id!,
+          workflow_instance_id: inst.id,
+          sent_back_from_row_id: from.id,
+          sent_back_to_row_id: to.id,
+          user_id: actorUserId,
+          body: why,
+          created_at: now,
+        },
         select: { id: true },
       })
       await tx.taskActivityLog.create({
@@ -1656,80 +1669,6 @@ export class WorkflowEngineService {
       )
     }, TX_OPTIONS)
     await this.runEffects(effects)
-  }
-
-  // ═══ Instance notes ══════════════════════════════════════════════════════════
-
-  /**
-   * Post a note on an instance (the API has checked who may and that `forRowId` is a
-   * row of this instance). One transaction under the instance lock: the note, re-checking
-   * the step isn't completed or skipped, and a `note_added` history entry. A step that
-   * has already started has its assignees told now; a later step's assignees hear about
-   * it in their assignment notification when it starts.
-   */
-  async addNote(
-    orgId: string,
-    instanceId: string,
-    authorUserId: string,
-    body: string,
-    forRowId: string | null,
-    forLabel: string | null = null,
-  ): Promise<{ id: string }> {
-    const inst = await this.loadInstanceCtx(this.prisma, orgId, instanceId)
-    if (!inst) throw new NotFoundException('Instance not found')
-    const now = await this.clock.now(orgId)
-    const effects: Effect[] = []
-    const id = await this.prisma.$transaction(async (tx) => {
-      await this.lockInstance(tx, inst.id)
-      const row = forRowId
-        ? await tx.workflowInstanceStep.findFirst({
-            where: { id: forRowId, workflow_instance_id: inst.id, organization_id: orgId },
-          })
-        : null
-      if (forRowId && (!row || isBranchRow(row) || row.status === 'completed' || row.status === 'skipped')) {
-        throw new BadRequestException({
-          message: 'Choose a step of this instance that isn’t done or skipped.',
-          code: 'note_step_invalid',
-          field: 'for_row_id',
-        })
-      }
-      const note = await tx.workflowInstanceNote.create({
-        data: {
-          organization_id: orgId,
-          workflow_instance_id: inst.id,
-          author_user_id: authorUserId,
-          body,
-          for_instance_step_id: row?.id ?? null,
-          created_at: now,
-        },
-        select: { id: true },
-      })
-      const author = await this.userName(tx, authorUserId)
-      const title = row ? this.titleOf(row) : null
-      const stepName = row ? `${forLabel ? `${forLabel} ` : ''}“${title}”` : null
-      await this.event(tx, {
-        orgId,
-        instanceId: inst.id,
-        rowId: row?.id ?? null,
-        type: 'note_added',
-        actorUserId: authorUserId,
-        message: stepName ? `${author} added a note for ${stepName}.` : `${author} added a note.`,
-        metadata: { note_id: note.id, for_row_id: row?.id ?? null },
-        at: now,
-      })
-      if (row && row.task_id && isOpen(row.status)) {
-        const workers = (await this.taskWorkers(tx, orgId, row.task_id)).filter((u) => u !== authorUserId)
-        const excerpt = body.length > 200 ? `${body.slice(0, 199)}…` : body
-        effects.push(
-          this.notify(orgId, workers, 'workflow_note_added', 'New note for your step',
-            `${author} left a note for “${title}” in “${inst.name}”: ${excerpt}`,
-            `/dashboard/tasks/${row.task_id}`, inst.id),
-        )
-      }
-      return note.id
-    }, TX_OPTIONS)
-    await this.runEffects(effects)
-    return { id }
   }
 
   // ═══ Cancel / retry / skip ═══════════════════════════════════════════════════

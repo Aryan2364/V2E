@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { WorkflowTemplateService, overlapWarning } from './workflow-template.service'
+import { WorkflowDiscussionService } from './workflow-discussion.service'
 import { planRun } from './engine/plan'
 import { Principal } from '../access-rights/permissions.service'
 
@@ -102,11 +103,24 @@ function build(prismaOverrides: Record<string, unknown> = {}) {
       groupBy: jest.fn().mockResolvedValue([]),
       count: jest.fn().mockResolvedValue(0),
     },
-    workflowInstanceNote: {
+    taskComment: {
       findMany: jest.fn().mockResolvedValue([]),
       findFirst: jest.fn().mockResolvedValue(null),
+      count: jest.fn().mockResolvedValue(0),
+      create: jest.fn().mockResolvedValue({ id: 'm-new' }),
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
+    workflowDiscussionRead: {
+      findFirst: jest.fn().mockResolvedValue(null),
+      upsert: jest.fn().mockResolvedValue({}),
+    },
+    workflowInstanceAttachment: {
+      findMany: jest.fn().mockResolvedValue([]),
+      findFirst: jest.fn().mockResolvedValue(null),
+      updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+    },
+    taskEscalation: { findMany: jest.fn().mockResolvedValue([]) },
+    taskActivityLog: { create: jest.fn().mockResolvedValue({}) },
     workflowInstanceStep: { findFirst: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
     workflowInstanceEvent: { findMany: jest.fn().mockResolvedValue([]) },
     organizationMember: {
@@ -122,7 +136,7 @@ function build(prismaOverrides: Record<string, unknown> = {}) {
     taskCategory: { findMany: jest.fn().mockResolvedValue([]) },
     user: { findMany: jest.fn().mockResolvedValue([]), findUnique: jest.fn().mockResolvedValue(null) },
     task: { findFirst: jest.fn().mockResolvedValue(null), findMany: jest.fn().mockResolvedValue([]) },
-    taskAssignee: { findFirst: jest.fn().mockResolvedValue(null) },
+    taskAssignee: { findFirst: jest.fn().mockResolvedValue(null), findMany: jest.fn().mockResolvedValue([]) },
     taskChecklist: { findMany: jest.fn().mockResolvedValue([]) },
     taskAttachment: { findMany: jest.fn().mockResolvedValue([]) },
     organization: { findUnique: jest.fn().mockResolvedValue({ timezone: 'Asia/Kolkata' }) },
@@ -131,7 +145,7 @@ function build(prismaOverrides: Record<string, unknown> = {}) {
   }
   const engine: any = {
     createInstance: jest.fn(),
-    addNote: jest.fn().mockResolvedValue({ id: 'note-new' }),
+    recordEvent: jest.fn().mockResolvedValue(undefined),
     cancelInstance: jest.fn(),
     sendBack: jest.fn().mockResolvedValue(undefined),
     skipStep: jest.fn().mockResolvedValue(undefined),
@@ -155,8 +169,11 @@ function build(prismaOverrides: Record<string, unknown> = {}) {
   }
   const tasksGate = { assertCanViewTask: jest.fn().mockResolvedValue(undefined) }
   const moduleRef: any = { get: jest.fn(() => tasksGate) }
-  const service = new WorkflowTemplateService(prisma, engine, clock, checklistAccess, files, moduleRef)
-  return { service, prisma, engine, checklistAccess, files, tasksGate, moduleRef }
+  const notifications: any = { emit: jest.fn().mockResolvedValue(1), userName: jest.fn().mockResolvedValue('Asha') }
+  const r2: any = { deleteObject: jest.fn().mockResolvedValue(undefined), getSignedDownloadUrl: jest.fn().mockResolvedValue('https://signed') }
+  const discussion = new WorkflowDiscussionService(prisma, clock, notifications, engine, r2, files, moduleRef)
+  const service = new WorkflowTemplateService(prisma, engine, clock, checklistAccess, files, discussion, moduleRef)
+  return { service, prisma, engine, checklistAccess, files, tasksGate, moduleRef, notifications, discussion }
 }
 
 /**
@@ -1447,22 +1464,24 @@ describe('WorkflowTemplateService — step context (task detail banner)', () => 
       started_by: { id: 'u-owner', name: 'Unknown user' },
       notes: [],
     })
-    // Notes are read for THIS step only, org-scoped, live ones.
-    expect(h.prisma.workflowInstanceNote.findMany.mock.calls[0][0].where).toEqual({
+    // "Notes for this step" = messages tagged for THIS step only, org-scoped, live ones.
+    expect(h.prisma.taskComment.findMany.mock.calls[0][0].where).toEqual({
       organization_id: ORG,
       workflow_instance_id: { in: [RUN] },
-      deleted_at: null,
+      is_deleted: false,
       for_instance_step_id: 'r-b',
     })
+    // The task's Comments section becomes the instance discussion (she can see the instance).
+    expect(out).toMatchObject({ can_view_discussion: true, discussion: { count: 0, unread_count: 0 } })
   })
 
   it('carries the notes left for the step (newest first), with who may remove them', async () => {
     const h = runHarness({ tpl: template({ status: 'active' }) })
     h.prisma.task.findFirst.mockResolvedValue({ id: 't-b', workflow_instance_step_id: 'r-b' })
     h.prisma.workflowInstanceStep.findFirst.mockResolvedValue({ workflow_instance_id: RUN })
-    h.prisma.workflowInstanceNote.findMany.mockResolvedValue([
-      { id: 'n-2', workflow_instance_id: RUN, author_user_id: U2, body: 'Budget is 5L', for_instance_step_id: 'r-b', created_at: NOW },
-      { id: 'n-1', workflow_instance_id: RUN, author_user_id: 'u-me', body: 'Use vendor list', for_instance_step_id: 'r-b', created_at: NOW },
+    h.prisma.taskComment.findMany.mockResolvedValue([
+      { id: 'n-2', workflow_instance_id: RUN, user_id: U2, body: 'Budget is 5L', for_instance_step_id: 'r-b', created_at: NOW },
+      { id: 'n-1', workflow_instance_id: RUN, user_id: 'u-me', body: 'Use vendor list', for_instance_step_id: 'r-b', created_at: NOW },
     ])
     h.prisma.user.findMany.mockResolvedValue([{ id: U2, name: 'Mehul' }])
     const out: any = await h.service.getStepContext(ORG, 't-b', me())
@@ -1805,7 +1824,7 @@ describe('WorkflowTemplateService — a pure step assignee (works in an instance
     expect(out.capabilities).toMatchObject({ can_view_documents: true, can_add_note: true, can_upload: true })
     await expect(h.service.listEvents(ORG, TPL, RUN, me())).resolves.toEqual([])
     await expect(h.service.getDocuments(ORG, TPL, RUN, me())).resolves.toEqual({ step_files: [], run_files: [] })
-    await expect(h.service.listNotes(ORG, TPL, RUN, me())).resolves.toEqual([])
+    await expect(h.service.getDiscussion(ORG, TPL, RUN, {}, me())).resolves.toMatchObject({ messages: [], has_more: false })
     // Her own instances list = just this one.
     h.prisma.task.findMany.mockResolvedValue([{ workflow_instance_step_id: 'r-b' }])
     h.prisma.workflowInstanceStep.findMany.mockResolvedValue([{ workflow_instance_id: RUN }])
@@ -1829,7 +1848,8 @@ describe('WorkflowTemplateService — a pure step assignee (works in an instance
       () => other.service.getInstance(ORG, TPL, RUN, me()),
       () => other.service.listEvents(ORG, TPL, RUN, me()),
       () => other.service.getDocuments(ORG, TPL, RUN, me()),
-      () => other.service.listNotes(ORG, TPL, RUN, me()),
+      () => other.service.getDiscussion(ORG, TPL, RUN, {}, me()),
+      () => other.service.postDiscussion(ORG, TPL, RUN, { body: 'hi' }, me()),
       () => other.service.getInstanceTasks(ORG, TPL, RUN, me()),
     ]) {
       await expect(call()).rejects.toThrow("You don't have access to this instance.")
@@ -1849,99 +1869,162 @@ describe('WorkflowTemplateService — a pure step assignee (works in an instance
   })
 })
 
-describe('WorkflowTemplateService — instance notes', () => {
-  const noteRow = (over: Record<string, unknown> = {}) => ({
-    id: 'n-1',
-    workflow_instance_id: RUN,
-    author_user_id: 'u-me',
+describe('WorkflowTemplateService — instance discussion (gates + wiring)', () => {
+  /** A stored message (TaskComment row) of RUN. */
+  const msg = (over: Record<string, unknown> = {}) => ({
+    id: 'm-1',
+    task_id: null,
+    user_id: 'u-me',
     body: 'Check the budget',
+    reply_to_comment_id: null,
     for_instance_step_id: null,
+    mentioned_user_ids: [],
+    sent_back_from_row_id: null,
+    sent_back_to_row_id: null,
+    is_deleted: false,
     created_at: NOW,
     ...over,
   })
 
-  it('anyone who can see the instance lists and posts notes; strangers get 403', async () => {
+  it('everyone who can see the instance reads and writes; a stranger gets 403 on every route and nothing is written', async () => {
+    // A viewer of the workflow (no task) may write.
     const viewer = runHarness({ tpl: template({ status: 'active' }, ['view']) })
-    viewer.prisma.workflowInstanceNote.findMany.mockResolvedValue([noteRow({ id: 'note-new', author_user_id: 'u-viewer' })])
-    const posted: any = await viewer.service.addNote(ORG, TPL, RUN, { body: '  Check the budget ' }, me({ userId: 'u-viewer' }))
-    expect(viewer.engine.addNote).toHaveBeenCalledWith(ORG, RUN, 'u-viewer', 'Check the budget', null, null)
-    expect(posted).toMatchObject({ id: 'note-new', for_row_id: null, for_step: null, can_delete: true })
-
-    const list = await viewer.service.listNotes(ORG, TPL, RUN, me({ userId: 'u-viewer' }))
-    expect(list).toHaveLength(1)
-    expect(viewer.prisma.workflowInstanceNote.findMany.mock.calls.at(-1)[0].where).toEqual({
+    viewer.prisma.taskComment.findFirst.mockResolvedValue(msg({ id: 'm-new', user_id: 'u-viewer' }))
+    const posted: any = await viewer.service.postDiscussion(ORG, TPL, RUN, { body: '  Check the budget ' }, me({ userId: 'u-viewer' }))
+    expect(viewer.prisma.taskComment.create.mock.calls[0][0].data).toMatchObject({
       organization_id: ORG,
-      workflow_instance_id: { in: [RUN] },
-      deleted_at: null,
+      workflow_instance_id: RUN,
+      task_id: null,
+      user_id: 'u-viewer',
+      body: 'Check the budget',
+      for_instance_step_id: null,
     })
+    expect(posted).toMatchObject({ id: 'm-new', author: { id: 'u-viewer' }, can_delete: true, for_step: null })
+    const page: any = await viewer.service.getDiscussion(ORG, TPL, RUN, {}, me({ userId: 'u-viewer' }))
+    expect(page).toMatchObject({ has_more: false, total_count: 0, unread_count: 0 })
+    // The page query is scoped to THIS instance + org.
+    const where = viewer.prisma.taskComment.findMany.mock.calls.at(-1)[0].where
+    expect(where.AND[0]).toEqual({ organization_id: ORG, workflow_instance_id: RUN, reply_to_comment_id: null })
 
     const stranger = runHarness({})
-    await expect(stranger.service.listNotes(ORG, TPL, RUN, me({ userId: 'u-stranger' }))).rejects.toBeInstanceOf(ForbiddenException)
-    await expect(
-      stranger.service.addNote(ORG, TPL, RUN, { body: 'hi' }, me({ userId: 'u-stranger' })),
-    ).rejects.toBeInstanceOf(ForbiddenException)
-    expect(stranger.engine.addNote).not.toHaveBeenCalled()
+    const u = me({ userId: 'u-stranger' })
+    for (const call of [
+      () => stranger.service.getDiscussion(ORG, TPL, RUN, {}, u),
+      () => stranger.service.postDiscussion(ORG, TPL, RUN, { body: 'hi' }, u),
+      () => stranger.service.deleteDiscussionMessage(ORG, TPL, RUN, 'm-1', u),
+      () => stranger.service.markDiscussionRead(ORG, TPL, RUN, u),
+      () => stranger.service.getDiscussionPeople(ORG, TPL, RUN, u),
+      () => stranger.service.uploadDiscussionFile(ORG, TPL, RUN, 'm-1', undefined, u),
+      () => stranger.service.downloadDiscussionFile(ORG, TPL, RUN, 'f-1', u),
+    ]) {
+      await expect(call()).rejects.toBeInstanceOf(ForbiddenException)
+    }
+    expect(stranger.prisma.taskComment.create).not.toHaveBeenCalled()
+    expect(stranger.prisma.taskComment.updateMany).not.toHaveBeenCalled()
+    expect(stranger.prisma.workflowDiscussionRead.upsert).not.toHaveBeenCalled()
   })
 
-  it('a note for a later step: a step of THIS instance that is not done or skipped', async () => {
+  it('an instance of another workflow / org is a 404', async () => {
     const h = runHarness({})
-    h.prisma.workflowInstanceNote.findMany.mockResolvedValue([noteRow({ id: 'note-new', for_instance_step_id: 'r-b' })])
-    const out: any = await h.service.addNote(ORG, TPL, RUN, { body: 'For you', for_row_id: 'r-b' }, me())
-    expect(h.engine.addNote).toHaveBeenCalledWith(ORG, RUN, 'u-me', 'For you', 'r-b', '2')
-    expect(out.for_step).toEqual({ row_id: 'r-b', number_label: '2', title: 'Title r-b', status: 'active' })
+    h.prisma.workflowInstance.findFirst.mockResolvedValue(null)
+    await expect(h.service.getDiscussion(ORG, 'tpl-other', RUN, {}, me())).rejects.toBeInstanceOf(NotFoundException)
+    expect(h.prisma.workflowInstance.findFirst.mock.calls[0][0].where).toEqual({
+      id: RUN,
+      workflow_template_id: 'tpl-other',
+      organization_id: ORG,
+    })
+  })
 
+  it('"For a later step": a step of THIS instance that is not done or skipped; body rules', async () => {
+    const h = runHarness({})
+    h.prisma.taskComment.findFirst.mockResolvedValue(msg({ id: 'm-new', for_instance_step_id: 'r-b' }))
+    const out: any = await h.service.postDiscussion(ORG, TPL, RUN, { body: 'For you', for_row_id: 'r-b' }, me())
+    expect(out.for_step).toEqual({ row_id: 'r-b', title: 'Title r-b', status: 'active' })
+    // A history entry names the step by its title (no number).
+    expect(h.engine.recordEvent).toHaveBeenCalledWith(ORG, RUN, 'note_added', 'Asha left a message for “Title r-b”.', {
+      rowId: 'r-b',
+      actorUserId: 'u-me',
+      metadata: { note_id: 'm-new', comment_id: 'm-new', for_row_id: 'r-b' },
+    })
     for (const bad of ['r-a', 'r-elsewhere']) {
-      await expect(h.service.addNote(ORG, TPL, RUN, { body: 'x', for_row_id: bad }, me())).rejects.toThrow(
+      await expect(h.service.postDiscussion(ORG, TPL, RUN, { body: 'x', for_row_id: bad }, me())).rejects.toThrow(
         'Choose a step of this instance that isn’t done or skipped.',
       )
     }
-    await expect(h.service.addNote(ORG, TPL, RUN, { body: '   ' }, me())).rejects.toThrow('Write a note.')
-    await expect(h.service.addNote(ORG, TPL, RUN, { body: 'x'.repeat(2001) }, me())).rejects.toThrow(
-      'Keep the note to 2000 characters or fewer.',
+    await expect(h.service.postDiscussion(ORG, TPL, RUN, { body: '   ' }, me())).rejects.toThrow('Write a message.')
+    await expect(h.service.postDiscussion(ORG, TPL, RUN, { body: 'x'.repeat(2001) }, me())).rejects.toThrow(
+      'Keep the message to 2000 characters or fewer.',
     )
-    expect(h.engine.addNote).toHaveBeenCalledTimes(1)
+    expect(h.prisma.taskComment.create).toHaveBeenCalledTimes(1)
   })
 
-  it('a note is removed by its author or an editor/admin; scoped to the instance + org; soft delete', async () => {
+  it('a message posted from a step task page must name a task of THIS instance', async () => {
     const h = runHarness({})
-    h.prisma.workflowInstanceNote.findFirst.mockResolvedValue({ id: 'n-1', author_user_id: U2 })
-    await expect(h.service.deleteNote(ORG, TPL, RUN, 'n-1', me())).rejects.toThrow(
-      'Only the person who wrote this note, editors and admins can remove it.',
-    )
-    expect(h.prisma.workflowInstanceNote.findFirst.mock.calls[0][0].where).toEqual({
-      id: 'n-1',
-      workflow_instance_id: RUN,
-      organization_id: ORG,
-      deleted_at: null,
-    })
-    expect(h.prisma.workflowInstanceNote.updateMany).not.toHaveBeenCalled()
+    await expect(
+      h.service.postDiscussion(ORG, TPL, RUN, { body: 'x', task_id: 't-of-another-instance' }, me()),
+    ).rejects.toThrow('That task isn’t part of this instance.')
+    expect(h.prisma.taskComment.create).not.toHaveBeenCalled()
+  })
 
+  it('a message is removed by its author or an editor/admin; scoped to the instance + org; soft delete', async () => {
+    const h = runHarness({})
+    h.prisma.taskComment.findFirst.mockResolvedValue({ id: 'm-1', user_id: U2, task_id: 't-a' })
+    await expect(h.service.deleteDiscussionMessage(ORG, TPL, RUN, 'm-1', me())).rejects.toThrow(
+      'Only the person who wrote this message, editors and admins can remove it.',
+    )
+    expect(h.prisma.taskComment.findFirst.mock.calls.at(-1)[0].where).toEqual({
+      id: 'm-1',
+      organization_id: ORG,
+      workflow_instance_id: RUN,
+      is_deleted: false,
+    })
+    expect(h.prisma.taskComment.updateMany).not.toHaveBeenCalled()
     // The author (U2 works in the instance).
-    await expect(h.service.deleteNote(ORG, TPL, RUN, 'n-1', me({ userId: U2 }))).resolves.toEqual({ id: 'n-1', deleted: true })
-    expect(h.prisma.workflowInstanceNote.updateMany).toHaveBeenCalledWith({
-      where: { id: 'n-1', workflow_instance_id: RUN, organization_id: ORG, deleted_at: null },
-      data: { deleted_at: NOW },
+    await expect(h.service.deleteDiscussionMessage(ORG, TPL, RUN, 'm-1', me({ userId: U2 }))).resolves.toEqual({ id: 'm-1', deleted: true })
+    expect(h.prisma.taskComment.updateMany).toHaveBeenCalledWith({
+      where: { id: 'm-1', organization_id: ORG, workflow_instance_id: RUN, is_deleted: false },
+      data: { is_deleted: true, deleted_at: NOW },
     })
     // An editor.
     const ed = runHarness({ tpl: template({ status: 'active' }, ['edit']) })
-    ed.prisma.workflowInstanceNote.findFirst.mockResolvedValue({ id: 'n-1', author_user_id: U2 })
-    await expect(ed.service.deleteNote(ORG, TPL, RUN, 'n-1', me())).resolves.toEqual({ id: 'n-1', deleted: true })
-    // A note of another instance / org → 404.
+    ed.prisma.taskComment.findFirst.mockResolvedValue({ id: 'm-1', user_id: U2, task_id: null })
+    await expect(ed.service.deleteDiscussionMessage(ORG, TPL, RUN, 'm-1', me())).resolves.toEqual({ id: 'm-1', deleted: true })
+    // A message of another instance / org → 404.
     const miss = runHarness({})
-    miss.prisma.workflowInstanceNote.findFirst.mockResolvedValue(null)
-    await expect(miss.service.deleteNote(ORG, TPL, RUN, 'n-x', me())).rejects.toBeInstanceOf(NotFoundException)
+    miss.prisma.taskComment.findFirst.mockResolvedValue(null)
+    await expect(miss.service.deleteDiscussionMessage(ORG, TPL, RUN, 'm-x', me())).rejects.toBeInstanceOf(NotFoundException)
   })
 
-  it('the instance page shows each step its notes', async () => {
+  it('mark-read writes only the caller’s own marker for this instance', async () => {
     const h = runHarness({})
-    h.prisma.workflowInstanceNote.findMany.mockResolvedValue([
-      noteRow({ id: 'n-b', for_instance_step_id: 'r-b' }),
-      noteRow({ id: 'n-all' }),
+    await expect(h.service.markDiscussionRead(ORG, TPL, RUN, me())).resolves.toEqual({ last_read_at: NOW, unread_count: 0 })
+    expect(h.prisma.workflowDiscussionRead.upsert).toHaveBeenCalledWith({
+      where: { workflow_instance_id_user_id: { workflow_instance_id: RUN, user_id: 'u-me' } },
+      create: { organization_id: ORG, workflow_instance_id: RUN, user_id: 'u-me', last_read_at: NOW },
+      update: { last_read_at: NOW },
+    })
+  })
+
+  it('the instance page shows each step its tagged messages and the caller’s unread count', async () => {
+    const h = runHarness({})
+    h.prisma.taskComment.findMany.mockResolvedValue([
+      { id: 'n-b', workflow_instance_id: RUN, user_id: 'u-me', body: 'x', for_instance_step_id: 'r-b', created_at: NOW },
     ])
+    h.prisma.taskComment.count.mockResolvedValueOnce(5).mockResolvedValueOnce(2)
     const out: any = await h.service.getInstance(ORG, TPL, RUN, me())
     const by = (id: string) => out.steps.find((st: any) => st.id === id)
     expect(by('r-b').notes.map((n: any) => n.id)).toEqual(['n-b'])
     expect(by('r-c').notes).toEqual([])
+    expect(out.discussion).toEqual({ count: 5, unread_count: 2 })
+    expect(out.capabilities).toMatchObject({ can_post_message: true })
+    // Tagged messages are read for this instance only, org-scoped, live ones.
+    const tagged = h.prisma.taskComment.findMany.mock.calls.find((c: any) => c[0].where.for_instance_step_id)
+    expect(tagged[0].where).toEqual({
+      organization_id: ORG,
+      workflow_instance_id: { in: [RUN] },
+      is_deleted: false,
+      for_instance_step_id: { not: null },
+    })
   })
 })
 

@@ -29,6 +29,8 @@ export interface RunFileOut {
   size_bytes: number
   uploaded_by: FileUserRef
   created_at: Date
+  /** Attached to a discussion message written on the instance page. */
+  in_comment: boolean
 }
 
 /** One run row with its task, for the documents aggregate. */
@@ -85,7 +87,17 @@ export class WorkflowFilesService {
 
   // ── Run files ─────────────────────────────────────────────────────────────────
 
-  async upload(orgId: string, userId: string, instanceId: string, file: UploadedFile | undefined): Promise<RunFileOut> {
+  /**
+   * Add an instance file. `opts.commentId` = attached to a discussion message written on
+   * the instance page (the message is the record, so no separate history entry).
+   */
+  async upload(
+    orgId: string,
+    userId: string,
+    instanceId: string,
+    file: UploadedFile | undefined,
+    opts: { commentId?: string | null } = {},
+  ): Promise<RunFileOut> {
     validateAttachmentFile(file)
     const f = file as UploadedFile
     const key = `org/${orgId}/workflows/${instanceId}/${randomUUID()}.${extensionOf(f.originalname)}`
@@ -102,13 +114,14 @@ export class WorkflowFilesService {
           size_bytes: f.size,
           storage_key: key,
           uploaded_by_user_id: userId,
+          comment_id: opts.commentId ?? null,
         },
       })
     } catch (err) {
       await this.r2.deleteObject(key) // best-effort; never throws
       throw err
     }
-    await this.logEvent(orgId, instanceId, userId, 'file_added', `added “${f.originalname}”`, {
+    if (!opts.commentId) await this.logEvent(orgId, instanceId, userId, 'file_added', `added “${f.originalname}”`, {
       file_id: row.id,
       file_name: f.originalname,
     })
@@ -118,16 +131,28 @@ export class WorkflowFilesService {
 
   async listRunFiles(orgId: string, instanceId: string): Promise<RunFileOut[]> {
     const rows = await this.prisma.workflowInstanceAttachment.findMany({
-      where: { organization_id: orgId, workflow_instance_id: instanceId, deleted_at: null },
+      where: {
+        organization_id: orgId,
+        workflow_instance_id: instanceId,
+        deleted_at: null,
+        // Files of a removed message go with it.
+        OR: [{ comment_id: null }, { comment: { is_deleted: false } }],
+      },
       orderBy: { created_at: 'desc' },
     })
     return this.toRunFiles(rows)
   }
 
-  /** The live run file (scoped to org + run), or 404. */
+  /** The live run file (scoped to org + run; not of a removed message), or 404. */
   async findRunFile(orgId: string, instanceId: string, fileId: string) {
     const att = await this.prisma.workflowInstanceAttachment.findFirst({
-      where: { id: fileId, organization_id: orgId, workflow_instance_id: instanceId, deleted_at: null },
+      where: {
+        id: fileId,
+        organization_id: orgId,
+        workflow_instance_id: instanceId,
+        deleted_at: null,
+        OR: [{ comment_id: null }, { comment: { is_deleted: false } }],
+      },
     })
     if (!att) throw new NotFoundException('File not found')
     return att
@@ -234,6 +259,7 @@ export class WorkflowFilesService {
       size_bytes: number
       uploaded_by_user_id: string
       created_at: Date
+      comment_id?: string | null
     }[],
   ): Promise<RunFileOut[]> {
     const names = await this.userNames(rows.map((r) => r.uploaded_by_user_id))
@@ -244,6 +270,7 @@ export class WorkflowFilesService {
       size_bytes: r.size_bytes,
       uploaded_by: { id: r.uploaded_by_user_id, name: names.get(r.uploaded_by_user_id) ?? 'Unknown user' },
       created_at: r.created_at,
+      in_comment: !!r.comment_id,
     }))
   }
 

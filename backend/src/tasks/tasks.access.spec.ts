@@ -111,7 +111,7 @@ function makePrisma(w: World) {
   return prisma;
 }
 
-function makeService(prisma: any) {
+function makeService(prisma: any, discussion?: any) {
   const scope = {
     registerWiredList: jest.fn(),
     listWhere: jest.fn(async () => ({})),
@@ -135,6 +135,7 @@ function makeService(prisma: any) {
     { registerCounter: jest.fn(), whereForUser: jest.fn() } as any,
     {} as any, // analytics
     {} as any, // r2
+    discussion,
   );
   return { service, scope, notifications };
 }
@@ -238,6 +239,36 @@ describe('TasksService — addComment is gated by the view rule', () => {
     const { service } = makeService(prisma);
     await service.addComment(ORG, 'u-next-step', 'task-1', { body: 'Looks good' } as any, principal('u-next-step'));
     expect(prisma.taskComment.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('a workflow step task comment joins the instance discussion: instance id stamped, discussion rules notify', async () => {
+    const w = makeWorld({
+      task: { id: 'task-1', created_by_user_id: 'u-creator', workflow_instance_step_id: 'row-1', assignees: [{ user_id: 'u-worker', is_cc: false }] },
+    });
+    const prisma = makePrisma(w);
+    const discussion = {
+      instanceIdForTask: jest.fn(async () => 'run-1'),
+      notifyNewMessage: jest.fn(async () => undefined),
+    };
+    const { service, notifications } = makeService(prisma, discussion);
+    await service.addComment(ORG, 'u-worker', 'task-1', { body: 'Done' } as any, principal('u-worker'));
+    expect(discussion.instanceIdForTask).toHaveBeenCalledWith(ORG, 'task-1');
+    expect(prisma.taskComment.create.mock.calls[0][0].data).toMatchObject({ task_id: 'task-1', workflow_instance_id: 'run-1', body: 'Done' });
+    expect(discussion.notifyNewMessage).toHaveBeenCalledWith(ORG, 'c-1', { replyToAuthorId: null });
+    // The task-only notification is not sent on top.
+    expect(notifications.emit).not.toHaveBeenCalled();
+  });
+
+  it('an ordinary task comment stays a task comment (no instance, task notification)', async () => {
+    const w = makeWorld();
+    const prisma = makePrisma(w);
+    const discussion = { instanceIdForTask: jest.fn(), notifyNewMessage: jest.fn() };
+    const { service, notifications } = makeService(prisma, discussion);
+    prisma.taskComment.findMany = jest.fn(async () => []);
+    await service.addComment(ORG, 'u-worker', 'task-1', { body: 'Done' } as any, principal('u-worker'));
+    expect(discussion.instanceIdForTask).not.toHaveBeenCalled();
+    expect(prisma.taskComment.create.mock.calls[0][0].data.workflow_instance_id).toBeNull();
+    expect(notifications.emit).toHaveBeenCalledWith(expect.objectContaining({ event_type: 'task_comment', recipients: ['u-creator'] }));
   });
 
   it('a reply must answer a comment of the same task', async () => {

@@ -42,7 +42,9 @@ export const NOTIF_EVENTS = {
     'workflow_sent_back', // a later step sent the instance back to your step with a reason (or it returned to yours)
     'workflow_step_late', // a step of an instance you edit / work in is past its deadline
     'workflow_step_upcoming', // an instance started; your later step is planned on a later day (one heads-up)
-    'workflow_note_added', // someone left a note for your step after it had started
+    'workflow_note_added', // someone left a message for your step ("For <step>") after it had started
+    'workflow_discussion', // a new message in an instance discussion you are part of (your step, you wrote there, or a reply to you)
+    'workflow_mention', // someone @mentioned you in an instance discussion
   ],
   tickets: ['ticket_raised', 'ticket_status_changed', 'ticket_sla_breached', 'ticket_comment', 'ticket_escalated'],
   meetings: [

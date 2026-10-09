@@ -106,7 +106,8 @@ import {
 } from './run-access'
 import { instanceLabel } from './instance-label'
 import { INSTANCE_NAME_MAX, instanceNameTaken } from './workflow-engine.service'
-import { CreateInstanceNoteDto, NOTE_BODY_MAX } from './dto/instance-notes.dto'
+import { DiscussionQueryDto, PostDiscussionMessageDto } from './dto/discussion.dto'
+import { DiscussionViewer, TaggedMessageRow, WorkflowDiscussionService, discussionCtx } from './workflow-discussion.service'
 import {
   MAIN_TRACK,
   TrackProblem,
@@ -152,7 +153,9 @@ export interface InstanceCapabilities {
   can_upload: boolean
   /** May open the documents drawer: everyone who can see the instance. */
   can_view_documents: boolean
-  /** May post an instance note: everyone who can see the instance. */
+  /** May write in the instance discussion: everyone who can see the instance. */
+  can_post_message: boolean
+  /** Older name of `can_post_message`. */
   can_add_note: boolean
   /** Rows the caller may send back from (in progress, with a completed upstream step). */
   can_send_back_from: string[]
@@ -280,14 +283,8 @@ export interface NoteOut {
   can_delete: boolean
 }
 
-type NoteRow = {
-  id: string
-  workflow_instance_id: string
-  author_user_id: string
-  body: string
-  for_instance_step_id: string | null
-  created_at: Date
-}
+/** A tagged discussion message ("For <step>") as "Notes for this step" reads it. */
+type NoteRow = TaggedMessageRow
 
 /** The editable state of a step (v2 columns), resolved from a row and/or a DTO. */
 export interface StepState {
@@ -351,12 +348,8 @@ const MSG_RUN_FILES = 'Only editors, admins and people working in this instance 
 const MSG_SEND_BACK = "Only this step's assignees, editors and admins can send it back."
 const MSG_REMOVE_FILE = 'Only the person who added this file, editors and admins can remove it.'
 const MSG_CHANGE_CREATOR = 'Only admins can change who created a workflow.'
-const MSG_NOTE_NOT_FOUND = 'Note not found'
-const MSG_REMOVE_NOTE = 'Only the person who wrote this note, editors and admins can remove it.'
-const MSG_NOTE_STEP = 'Choose a step of this instance that isn’t done or skipped.'
 const MSG_NAME_REQUIRED = 'Enter a name for this instance.'
 const MSG_NAME_TOO_LONG = `Keep the name to ${INSTANCE_NAME_MAX} characters or fewer.`
-const NOTE_LIST_LIMIT = 500
 
 const IN_FLIGHT: WorkflowInstanceStatus[] = ['running', 'stuck']
 const DEFAULT_TZ = 'Asia/Kolkata'
@@ -588,6 +581,7 @@ export class WorkflowTemplateService {
     private readonly clock: ClockService,
     private readonly checklistAccess: ChecklistAccessService,
     private readonly files: WorkflowFilesService,
+    private readonly discussion: WorkflowDiscussionService,
     // Resolves TasksService lazily (TasksModule imports WorkflowsModule, so it can't
     // be injected directly without a module cycle) — see `assertCanViewTask`.
     @Optional() private readonly moduleRef?: ModuleRef,
@@ -1421,6 +1415,7 @@ export class WorkflowTemplateService {
           can_skip_row_ids: skippable,
           can_upload: tcaps.can_edit || worksInIt,
           can_view_documents: true,
+          can_post_message: true,
           can_add_note: true,
           can_send_back_from: canSendBackFrom,
           can_start_now_row_ids: startNow,
@@ -2695,8 +2690,12 @@ export class WorkflowTemplateService {
 
   private async instanceDetail(orgId: string, templateId: string, instanceId: string, p: Principal) {
     const { inst } = await this.loadInstance(orgId, templateId, instanceId, p)
-    const [out] = await this.formatInstances(orgId, [inst], p, { notes: true })
-    return out
+    const [[out], counts] = await Promise.all([
+      this.formatInstances(orgId, [inst], p, { notes: true }),
+      this.discussion.counts(orgId, inst.id, p.userId),
+    ])
+    /** The discussion header: live messages and the caller's unread ones. */
+    return { ...out, discussion: { count: counts.count, unread_count: counts.unread_count } }
   }
 
   /**
@@ -3093,10 +3092,11 @@ export class WorkflowTemplateService {
     const canOpenRun = caps.can_view || (await isRunParticipant(this.prisma, orgId, inst.id, p.userId))
     const index = main.findIndex((s) => s.id === row.id)
     const labels = this.rowLabels(inst)
-    const [{ tz, now }, notes, sendBacks] = await Promise.all([
+    const [{ tz, now }, notes, sendBacks, counts] = await Promise.all([
       this.scheduleContext(orgId),
       this.loadNotes(orgId, [inst.id], row.id),
       this.openSendBackEvents(orgId, inst.steps),
+      canOpenRun ? this.discussion.counts(orgId, inst.id, p.userId) : Promise.resolve(null),
     ])
     const names = await this.userNames([
       inst.triggered_by_user_id,
@@ -3133,36 +3133,24 @@ export class WorkflowTemplateService {
       can_open_run: canOpenRun,
       /** This step's open send-back (asked for more info / waiting for info), or null. */
       send_back: this.sendBackOf(row, new Map(inst.steps.map((r) => [r.id, r])), sendBacks, labels, names),
-      /** Notes left for this step, newest first. */
+      /** Messages left for this step ("For <step>"), newest first — "Notes for this step". */
       notes: notes.map((n) => this.noteOut(n, names, caps.can_edit, p, forStep)),
+      /**
+       * The task's Comments section shows the instance discussion when the caller can see
+       * the instance (else the task's own comments). Counts for its header.
+       */
+      can_view_discussion: canOpenRun,
+      discussion: counts ? { count: counts.count, unread_count: counts.unread_count } : null,
     }
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // Instance notes
+  // Instance discussion (one thread per instance — WorkflowDiscussionService)
   // ════════════════════════════════════════════════════════════════════════════
 
-  /** Live notes of these instances (optionally only those for one step), newest first. Org-scoped. */
+  /** Live tagged messages ("For <step>") of these instances, newest first. Org-scoped. */
   private async loadNotes(orgId: string, instanceIds: string[], forRowId?: string): Promise<NoteRow[]> {
-    if (!instanceIds.length) return []
-    return this.prisma.workflowInstanceNote.findMany({
-      where: {
-        organization_id: orgId,
-        workflow_instance_id: { in: instanceIds },
-        deleted_at: null,
-        ...(forRowId ? { for_instance_step_id: forRowId } : {}),
-      },
-      select: {
-        id: true,
-        workflow_instance_id: true,
-        author_user_id: true,
-        body: true,
-        for_instance_step_id: true,
-        created_at: true,
-      },
-      orderBy: [{ created_at: 'desc' }, { id: 'desc' }],
-      take: NOTE_LIST_LIMIT,
-    })
+    return this.discussion.taggedMessages(orgId, instanceIds, forRowId)
   }
 
   private noteOut(
@@ -3183,82 +3171,66 @@ export class WorkflowTemplateService {
     }
   }
 
-  /** `GET /:id/instances/:iid/notes` — everyone who can see the instance; newest first. */
-  async listNotes(orgId: string, templateId: string, instanceId: string, p: Principal): Promise<NoteOut[]> {
-    const { inst, caps } = await this.loadInstance(orgId, templateId, instanceId, p)
-    return this.formatNotes(orgId, inst, caps.can_edit, p)
-  }
-
-  private async formatNotes(orgId: string, inst: InstanceRow, canEdit: boolean, p: Principal): Promise<NoteOut[]> {
-    const notes = await this.loadNotes(orgId, [inst.id])
-    const names = await this.userNames(notes.map((n) => n.author_user_id))
-    const labels = this.rowLabels(inst)
-    const rows = new Map(inst.steps.map((s) => [s.id, s]))
-    return notes.map((n) => {
-      const r = n.for_instance_step_id ? rows.get(n.for_instance_step_id) : undefined
-      return this.noteOut(
-        n,
-        names,
-        canEdit,
-        p,
-        r ? { row_id: r.id, number_label: labels.get(r.id) ?? null, title: this.stepTitle(r), status: r.status as string } : null,
-      )
-    })
-  }
-
   /**
-   * `POST /:id/instances/:iid/notes` — everyone who can see the instance may post.
-   * `for_row_id` (optional) must be a step of THIS instance that isn't completed or
-   * skipped (400 otherwise). Writes a `note_added` history entry; the step's assignees
-   * are told now if it has started, else when it starts (its assignment notification).
-   * Returns the new note.
+   * The gated instance as a discussion context + the caller as a discussion viewer.
+   * Everyone who can see the instance (`loadInstance`: workflow viewers/editors/admins,
+   * the person who ran it, everyone working in it) may read and write.
    */
-  async addNote(orgId: string, templateId: string, instanceId: string, dto: CreateInstanceNoteDto, p: Principal): Promise<NoteOut> {
+  private async discussionAccess(orgId: string, templateId: string, instanceId: string, p: Principal) {
     const { inst, caps } = await this.loadInstance(orgId, templateId, instanceId, p)
-    const body = typeof dto?.body === 'string' ? dto.body.trim() : ''
-    if (!body) throw new BadRequestException({ message: 'Write a note.', code: 'note_body_required', field: 'body' })
-    if (body.length > NOTE_BODY_MAX) {
-      throw new BadRequestException({
-        message: `Keep the note to ${NOTE_BODY_MAX} characters or fewer.`,
-        code: 'note_body_too_long',
-        field: 'body',
-      })
+    return {
+      ctx: discussionCtx(orgId, inst),
+      viewer: { userId: p.userId, isAdmin: this.isAdmin(p), canEdit: caps.can_edit } satisfies DiscussionViewer,
     }
-    const forRowId = dto.for_row_id || null
-    if (forRowId) {
-      const row = inst.steps.find((s) => s.id === forRowId)
-      if (!row || isLegacyBranchRow(row) || ['completed', 'skipped'].includes(row.status)) {
-        throw new BadRequestException({ message: MSG_NOTE_STEP, code: 'note_step_invalid', field: 'for_row_id' })
-      }
-    }
-    const label = forRowId ? this.rowLabels(inst).get(forRowId) ?? null : null
-    const note = await this.engine.addNote(orgId, inst.id, p.userId, body, forRowId, label)
-    const fresh = await this.prisma.workflowInstance.findFirst({
-      where: { id: inst.id, organization_id: orgId },
-      include: instanceInclude(p.userId),
-    })
-    const list = await this.formatNotes(orgId, fresh ?? inst, caps.can_edit, p)
-    const out = list.find((n) => n.id === note.id)
-    if (!out) throw new NotFoundException(MSG_NOTE_NOT_FOUND)
-    return out
   }
 
-  /** `DELETE /:id/instances/:iid/notes/:noteId` — its author, editors and admins. Soft delete. */
-  async deleteNote(orgId: string, templateId: string, instanceId: string, noteId: string, p: Principal) {
-    const { caps } = await this.loadInstance(orgId, templateId, instanceId, p)
-    const note = await this.prisma.workflowInstanceNote.findFirst({
-      where: { id: noteId, workflow_instance_id: instanceId, organization_id: orgId, deleted_at: null },
-      select: { id: true, author_user_id: true },
-    })
-    if (!note) throw new NotFoundException(MSG_NOTE_NOT_FOUND)
-    if (note.author_user_id !== p.userId && !caps.can_edit) throw new ForbiddenException(MSG_REMOVE_NOTE)
-    const now = await this.clock.now(orgId)
-    const res = await this.prisma.workflowInstanceNote.updateMany({
-      where: { id: noteId, workflow_instance_id: instanceId, organization_id: orgId, deleted_at: null },
-      data: { deleted_at: now },
-    })
-    if (res.count === 0) throw new NotFoundException(MSG_NOTE_NOT_FOUND)
-    return { id: noteId, deleted: true }
+  /** `GET /:id/instances/:iid/discussion` — one page of the thread, newest last. */
+  async getDiscussion(orgId: string, templateId: string, instanceId: string, q: DiscussionQueryDto, p: Principal) {
+    const { ctx, viewer } = await this.discussionAccess(orgId, templateId, instanceId, p)
+    return this.discussion.thread(ctx, viewer, { before: q?.before ?? null, limit: q?.limit ?? null })
+  }
+
+  /** `POST /:id/instances/:iid/discussion` — anyone who can see the instance. */
+  async postDiscussion(orgId: string, templateId: string, instanceId: string, dto: PostDiscussionMessageDto, p: Principal) {
+    const { ctx, viewer } = await this.discussionAccess(orgId, templateId, instanceId, p)
+    return this.discussion.post(ctx, viewer, dto ?? {})
+  }
+
+  /** `DELETE /:id/instances/:iid/discussion/:messageId` — its author, editors and admins. */
+  async deleteDiscussionMessage(orgId: string, templateId: string, instanceId: string, messageId: string, p: Principal) {
+    const { ctx, viewer } = await this.discussionAccess(orgId, templateId, instanceId, p)
+    return this.discussion.remove(ctx, viewer, messageId)
+  }
+
+  /** `POST /:id/instances/:iid/discussion/read` — the caller's own read marker. */
+  async markDiscussionRead(orgId: string, templateId: string, instanceId: string, p: Principal) {
+    const { ctx } = await this.discussionAccess(orgId, templateId, instanceId, p)
+    return this.discussion.markRead(ctx, p.userId)
+  }
+
+  /** `GET /:id/instances/:iid/discussion/people` — who can be @mentioned (people who can see it). */
+  async getDiscussionPeople(orgId: string, templateId: string, instanceId: string, p: Principal) {
+    const { ctx } = await this.discussionAccess(orgId, templateId, instanceId, p)
+    return this.discussion.people(ctx)
+  }
+
+  /** `POST /:id/instances/:iid/discussion/:messageId/files` — on the caller's own message. */
+  async uploadDiscussionFile(
+    orgId: string,
+    templateId: string,
+    instanceId: string,
+    messageId: string,
+    file: UploadedFile | undefined,
+    p: Principal,
+  ) {
+    const { ctx } = await this.discussionAccess(orgId, templateId, instanceId, p)
+    return this.discussion.uploadFile(ctx, p.userId, messageId, file)
+  }
+
+  /** `GET /:id/instances/:iid/discussion/files/:fileId/download` — a file on a message of this instance. */
+  async downloadDiscussionFile(orgId: string, templateId: string, instanceId: string, fileId: string, p: Principal) {
+    const { ctx, viewer } = await this.discussionAccess(orgId, templateId, instanceId, p)
+    return this.discussion.downloadFile(ctx, viewer, fileId)
   }
 
   // ════════════════════════════════════════════════════════════════════════════

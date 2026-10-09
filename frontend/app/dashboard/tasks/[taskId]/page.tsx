@@ -16,6 +16,9 @@ import InlineTaskTags from '@/components/tasks/InlineTaskTags'
 import { useCanEditTask } from '@/lib/tasks/useCanEditTask'
 import TaskChecklistCard from '@/components/tasks/TaskChecklistCard'
 import WorkflowTaskBanner from '@/components/workflows/WorkflowTaskBanner'
+import InstanceDiscussion from '@/components/workflows/InstanceDiscussion'
+import { REASONS, gate, useWorkflowsWritable } from '@/components/workflows/shared'
+import type { WorkflowStepContext } from '@/lib/types/workflows'
 import WorkflowTaskBadge, { taskWorkflow } from '@/components/tasks/WorkflowTaskBadge'
 import ProofOfCompletionCard from '@/components/tasks/ProofOfCompletionCard'
 import StyledSelect from '@/components/ui/StyledSelect'
@@ -342,6 +345,9 @@ export default function TaskDetailPage() {
   const [priorities, setPriorities] = useState<TaskPriority[]>([])
   const [statuses, setStatuses] = useState<TaskStatus[]>([])
   const [comments, setComments] = useState<TaskComment[]>([])
+  // Workflow step task: its step context (from the banner). undefined = still loading.
+  const [stepCtx, setStepCtx] = useState<WorkflowStepContext | null | undefined>(undefined)
+  const workflowsWritable = useWorkflowsWritable()
   // Every attachment on the task — creation-time/task-level files AND files shared in
   // comments — shown together in the sidebar Attachments card.
   const [allAttachments, setAllAttachments] = useState<TaskAttachment[]>([])
@@ -859,6 +865,10 @@ export default function TaskDetailPage() {
   const currentUserIsCC = task.assignees?.some((a) => a.user_id === user?.id && a.is_cc) ?? false
   const isCreator = task.created_by_user_id === user?.id
   const isFutureTask = task ? new Date(task.created_at) > getNow() : false
+  // Everyone who can see the instance may write in its discussion (not on a simulated-future task).
+  const discussionGate = isFutureTask
+    ? { allowed: false as boolean | undefined, reason: 'Comments are locked on tasks created in a simulated future.' }
+    : gate(true, workflowsWritable, REASONS.message)
   const canEdit = (isCreator || user?.is_admin) && !isFutureTask
 
   // Completion model drives how status + completion behave (see the two modes below).
@@ -1076,6 +1086,7 @@ export default function TaskDetailPage() {
           workflowInstanceStepId={task.workflow_instance_step_id}
           fallback={task.workflow_step ?? null}
           onChanged={loadTask}
+          onContext={setStepCtx}
         />
       )}
 
@@ -1270,136 +1281,170 @@ export default function TaskDetailPage() {
               />
             )}
 
-            {/* Comments */}
-            <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
-              <h3 className="flex items-center gap-2 text-[15px] font-semibold text-[#0F172A] mb-4">
-                Comments
-                {comments.length > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">
-                    {comments.length}
-                  </span>
-                )}
-              </h3>
-              <div className="space-y-4 mb-6">
-                {comments.length === 0 ? (
-                  <p className="text-sm text-[#475569]">No comments yet. Be the first to comment.</p>
-                ) : (
-                  comments.map((c) => (
-                    <CommentItem
-                      key={c.id}
-                      comment={c}
-                      orgId={orgId}
-                      taskId={taskId}
-                      currentUserId={user?.id ?? ''}
-                      onDeleted={async () => {
-                        setComments((prev) => prev.filter((x) => x.id !== c.id))
-                        // A deleted comment takes its files with it — refresh the attachments
-                        // list, and (if a file was a proof) the proof card + scoreboard, so
-                        // nothing stale keeps counting.
-                        await refreshAllAttachments()
-                        if (task.proof_required) {
-                          const fresh = await tasksApi.getTask(orgId, taskId).catch(() => null)
-                          if (fresh) setTask(fresh)
-                          setProofReloadToken((t) => t + 1)
+            {/* Comments — a workflow step task shows its instance's ONE discussion (every step +
+                the instance page) when the viewer can see the instance; otherwise the task's own. */}
+            {task.workflow_instance_step_id && stepCtx === undefined ? (
+              <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6 flex flex-col gap-3" aria-busy>
+                <div className="h-5 w-32 rounded bg-[#F1F5F9] animate-pulse" />
+                <div className="h-14 rounded bg-[#F1F5F9] animate-pulse" />
+              </div>
+            ) : task.workflow_instance_step_id && stepCtx?.can_view_discussion ? (
+              <InstanceDiscussion
+                orgId={orgId}
+                templateId={stepCtx.template_id}
+                instanceId={stepCtx.instance_id}
+                taskId={taskId}
+                title="Comments"
+                sectionId="task-discussion"
+                compact
+                canWrite={discussionGate.allowed}
+                writeReason={discussionGate.reason}
+                proof={{
+                  canSubmit: !!task.proof_required && isAssignee && !isTaskTerminal,
+                  allowedExtensions: task.proof_allowed_extensions ?? [],
+                  onMark: async (attachmentId) => {
+                    await tasksApi.markCommentAttachmentAsProof(orgId, taskId, attachmentId)
+                    await loadTask()
+                    setProofReloadToken((t) => t + 1)
+                  },
+                }}
+                onChanged={async () => {
+                  // A message's files show in the Attachments card (and a removed one takes its files).
+                  await refreshAllAttachments()
+                  if (task.proof_required) setProofReloadToken((t) => t + 1)
+                }}
+              />
+            ) : (
+              <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+                <h3 className="flex items-center gap-2 text-[15px] font-semibold text-[#0F172A] mb-4">
+                  Comments
+                  {comments.length > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">
+                      {comments.length}
+                    </span>
+                  )}
+                </h3>
+                <div className="space-y-4 mb-6">
+                  {comments.length === 0 ? (
+                    <p className="text-sm text-[#475569]">No comments yet. Be the first to comment.</p>
+                  ) : (
+                    comments.map((c) => (
+                      <CommentItem
+                        key={c.id}
+                        comment={c}
+                        orgId={orgId}
+                        taskId={taskId}
+                        currentUserId={user?.id ?? ''}
+                        onDeleted={async () => {
+                          setComments((prev) => prev.filter((x) => x.id !== c.id))
+                          // A deleted comment takes its files with it — refresh the attachments
+                          // list, and (if a file was a proof) the proof card + scoreboard, so
+                          // nothing stale keeps counting.
+                          await refreshAllAttachments()
+                          if (task.proof_required) {
+                            const fresh = await tasksApi.getTask(orgId, taskId).catch(() => null)
+                            if (fresh) setTask(fresh)
+                            setProofReloadToken((t) => t + 1)
+                          }
+                        }}
+                        canSubmitProof={!!task.proof_required && isAssignee && !isTaskTerminal}
+                        proofAllowedExtensions={task.proof_allowed_extensions ?? []}
+                        onMarkProof={handleMarkCommentAsProof}
+                        markingProofId={actionLoading?.startsWith('mark-proof-') ? actionLoading.replace('mark-proof-', '') : null}
+                      />
+                    ))
+                  )}
+                </div>
+                {/* Comment composer — WhatsApp-style: a single write box that holds
+                    the attach (pin) button, the text field, and — once files are
+                    picked — their chips, so attachments feel part of the comment. */}
+                <div className="rounded-[12px] border border-[#CBD5E1] bg-white focus-within:border-2 focus-within:border-[#2563EB] transition-colors">
+                  {/* Selected-file chips — live inside the write box */}
+                  {commentFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 px-3 pt-3">
+                      {commentFiles.map((f, i) => (
+                        <span
+                          key={`${f.name}-${i}`}
+                          className="inline-flex items-center gap-1.5 max-w-[220px] bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] text-xs font-medium pl-2 pr-1 py-1 rounded-[6px]"
+                        >
+                          <FileText size={12} className="shrink-0" />
+                          <span className="truncate">{f.name}</span>
+                          <span className="text-[#64748B] shrink-0">{formatBytes(f.size)}</span>
+                          <Tooltip label="Remove file">
+                            <button
+                              type="button"
+                              onClick={() => setCommentFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                              disabled={sendingComment}
+                              className="shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[#2563EB] hover:bg-[#BFDBFE] hover:text-[#1D4ED8] disabled:opacity-50 transition-colors"
+                              aria-label={`Remove ${f.name}`}
+                            >
+                              <X size={11} />
+                            </button>
+                          </Tooltip>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {/* Input row: textarea • attach • send */}
+                  <div className="flex items-end gap-2 p-2">
+                    <input
+                      ref={commentFileInputRef}
+                      type="file"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const picked = Array.from(e.target.files ?? [])
+                        if (picked.length > 0) setCommentFiles((prev) => [...prev, ...picked])
+                        e.target.value = '' // reset so the same file can be re-picked
+                      }}
+                    />
+                    <textarea
+                      ref={commentTextareaRef}
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value.slice(0, 1000))}
+                      maxLength={1000}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          handleSendComment()
                         }
                       }}
-                      canSubmitProof={!!task.proof_required && isAssignee && !isTaskTerminal}
-                      proofAllowedExtensions={task.proof_allowed_extensions ?? []}
-                      onMarkProof={handleMarkCommentAsProof}
-                      markingProofId={actionLoading?.startsWith('mark-proof-') ? actionLoading.replace('mark-proof-', '') : null}
-                    />
-                  ))
-                )}
-              </div>
-              {/* Comment composer — WhatsApp-style: a single write box that holds
-                  the attach (pin) button, the text field, and — once files are
-                  picked — their chips, so attachments feel part of the comment. */}
-              <div className="rounded-[12px] border border-[#CBD5E1] bg-white focus-within:border-2 focus-within:border-[#2563EB] transition-colors">
-                {/* Selected-file chips — live inside the write box */}
-                {commentFiles.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 px-3 pt-3">
-                    {commentFiles.map((f, i) => (
-                      <span
-                        key={`${f.name}-${i}`}
-                        className="inline-flex items-center gap-1.5 max-w-[220px] bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] text-xs font-medium pl-2 pr-1 py-1 rounded-[6px]"
-                      >
-                        <FileText size={12} className="shrink-0" />
-                        <span className="truncate">{f.name}</span>
-                        <span className="text-[#64748B] shrink-0">{formatBytes(f.size)}</span>
-                        <Tooltip label="Remove file">
-                          <button
-                            type="button"
-                            onClick={() => setCommentFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                            disabled={sendingComment}
-                            className="shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[#2563EB] hover:bg-[#BFDBFE] hover:text-[#1D4ED8] disabled:opacity-50 transition-colors"
-                            aria-label={`Remove ${f.name}`}
-                          >
-                            <X size={11} />
-                          </button>
-                        </Tooltip>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {/* Input row: textarea • attach • send */}
-                <div className="flex items-end gap-2 p-2">
-                  <input
-                    ref={commentFileInputRef}
-                    type="file"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => {
-                      const picked = Array.from(e.target.files ?? [])
-                      if (picked.length > 0) setCommentFiles((prev) => [...prev, ...picked])
-                      e.target.value = '' // reset so the same file can be re-picked
-                    }}
-                  />
-                  <textarea
-                    ref={commentTextareaRef}
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value.slice(0, 1000))}
-                    maxLength={1000}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault()
-                        handleSendComment()
-                      }
-                    }}
-                    disabled={sendingComment || isFutureTask}
-                    placeholder={isFutureTask ? "Comments are locked on future tasks..." : "Add a comment... (Enter to send, Shift+Enter for new line)"}
-                    rows={1}
-                    className="flex-1 min-w-0 border-0 bg-transparent px-1 py-[6px] text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-none resize-none max-h-[120px] overflow-y-auto"
-                  />
-                  {/* Attach files — sits right before Send */}
-                  <Tooltip label="Attach files">
-                    <button
-                      type="button"
-                      onClick={() => commentFileInputRef.current?.click()}
                       disabled={sendingComment || isFutureTask}
-                      className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-[#475569] hover:bg-[#F1F5F9] hover:text-[#2563EB] disabled:text-[#CBD5E1] disabled:cursor-not-allowed transition-colors"
-                      aria-label="Attach files"
-                    >
-                      <Paperclip size={16} className="-rotate-45" />
-                    </button>
-                  </Tooltip>
-                  <Tooltip label="Send">
-                    <button
-                      onClick={handleSendComment}
-                      disabled={sendingComment || isFutureTask || (!commentText.trim() && commentFiles.length === 0)}
-                      aria-label="Send"
-                      className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#64748B] disabled:cursor-not-allowed transition-colors"
-                    >
-                      <Send size={15} />
-                    </button>
-                  </Tooltip>
+                      placeholder={isFutureTask ? "Comments are locked on future tasks..." : "Add a comment... (Enter to send, Shift+Enter for new line)"}
+                      rows={1}
+                      className="flex-1 min-w-0 border-0 bg-transparent px-1 py-[6px] text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-none resize-none max-h-[120px] overflow-y-auto"
+                    />
+                    {/* Attach files — sits right before Send */}
+                    <Tooltip label="Attach files">
+                      <button
+                        type="button"
+                        onClick={() => commentFileInputRef.current?.click()}
+                        disabled={sendingComment || isFutureTask}
+                        className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-[#475569] hover:bg-[#F1F5F9] hover:text-[#2563EB] disabled:text-[#CBD5E1] disabled:cursor-not-allowed transition-colors"
+                        aria-label="Attach files"
+                      >
+                        <Paperclip size={16} className="-rotate-45" />
+                      </button>
+                    </Tooltip>
+                    <Tooltip label="Send">
+                      <button
+                        onClick={handleSendComment}
+                        disabled={sendingComment || isFutureTask || (!commentText.trim() && commentFiles.length === 0)}
+                        aria-label="Send"
+                        className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#64748B] disabled:cursor-not-allowed transition-colors"
+                      >
+                        <Send size={15} />
+                      </button>
+                    </Tooltip>
+                  </div>
                 </div>
+                {commentError && (
+                  <p className="mt-2 text-xs text-[#DC2626] bg-[#FEE2E2] border border-[#FECACA] rounded-[8px] px-3 py-2">
+                    {commentError}
+                  </p>
+                )}
               </div>
-              {commentError && (
-                <p className="mt-2 text-xs text-[#DC2626] bg-[#FEE2E2] border border-[#FECACA] rounded-[8px] px-3 py-2">
-                  {commentError}
-                </p>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Right panel — 40%; scrolls on its own within the viewport on lg+ */}

@@ -1608,26 +1608,43 @@ model TaskActivityLog {
   @@map("task_activity_logs")
 }
 
+// A comment on a task — or, for a workflow instance, a message in the instance's ONE
+// discussion. Messages written on a workflow step task keep `task_id` (the step they
+// were written on) and also carry `workflow_instance_id`; messages written on the
+// instance page have no task (`task_id` NULL). The instance thread is every live row
+// with that `workflow_instance_id`, in time order. `for_instance_step_id` tags a message
+// "For <later step>" (shown on that step's task when it starts — the former instance
+// notes); `sent_back_*_row_id` mark the reason a send-back posted; `mentioned_user_ids`
+// are the people @mentioned (validated against who can see the instance).
 model TaskComment {
-  id                  String    @id @default(uuid())
-  organization_id     String
-  task_id             String
-  user_id             String
-  body                String    @db.Text
-  attachment_urls     Json?
-  reply_to_comment_id String?
-  is_deleted          Boolean   @default(false)
-  deleted_at          DateTime?
-  created_at          DateTime  @default(now())
-  updated_at          DateTime  @updatedAt
+  id                    String    @id @default(uuid())
+  organization_id       String
+  task_id               String?
+  user_id               String
+  body                  String    @db.Text
+  attachment_urls       Json?
+  reply_to_comment_id   String?
+  workflow_instance_id  String?
+  for_instance_step_id  String?
+  mentioned_user_ids    String[]  @default([])
+  sent_back_from_row_id String?
+  sent_back_to_row_id   String?
+  is_deleted            Boolean   @default(false)
+  deleted_at            DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
 
-  task             Task             @relation(fields: [task_id], references: [id], onDelete: Cascade)
-  reply_to_comment TaskComment?     @relation("CommentReplies", fields: [reply_to_comment_id], references: [id])
-  replies          TaskComment[]    @relation("CommentReplies")
+  task             Task?                        @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  instance         WorkflowInstance?            @relation(fields: [workflow_instance_id], references: [id], onDelete: Cascade)
+  reply_to_comment TaskComment?                 @relation("CommentReplies", fields: [reply_to_comment_id], references: [id])
+  replies          TaskComment[]                @relation("CommentReplies")
   attachments      TaskAttachment[]
+  instance_files   WorkflowInstanceAttachment[]
 
   @@index([task_id])
   @@index([organization_id])
+  @@index([workflow_instance_id, created_at])
+  @@index([for_instance_step_id])
   @@map("task_comments")
 }
 
@@ -2082,12 +2099,13 @@ model WorkflowInstance {
   created_at           DateTime               @default(now())
   updated_at           DateTime               @updatedAt
 
-  template      WorkflowTemplate             @relation(fields: [workflow_template_id], references: [id])
-  steps         WorkflowInstanceStep[]
-  notifications WorkflowNotification[]
-  events        WorkflowInstanceEvent[]
-  attachments   WorkflowInstanceAttachment[]
-  notes         WorkflowInstanceNote[]
+  template         WorkflowTemplate             @relation(fields: [workflow_template_id], references: [id])
+  steps            WorkflowInstanceStep[]
+  notifications    WorkflowNotification[]
+  events           WorkflowInstanceEvent[]
+  attachments      WorkflowInstanceAttachment[]
+  messages         TaskComment[]
+  discussion_reads WorkflowDiscussionRead[]
 
   @@unique([trigger_id, source_task_id])
   @@unique([workflow_template_id, instance_number])
@@ -2180,35 +2198,36 @@ model WorkflowInstanceAttachment {
   mime_type            String
   size_bytes           Int
   storage_key          String // master object key within the R2 bucket
+  // Set when the file was attached to a discussion message written on the instance page
+  // (no step task); such files go with their message when it is deleted.
+  comment_id           String?
   created_at           DateTime  @default(now())
   deleted_at           DateTime?
 
   instance WorkflowInstance @relation(fields: [workflow_instance_id], references: [id], onDelete: Cascade)
+  comment  TaskComment?     @relation(fields: [comment_id], references: [id], onDelete: SetNull)
 
   @@index([workflow_instance_id])
   @@index([organization_id])
+  @@index([comment_id])
   @@map("workflow_instance_attachments")
 }
 
-// Instance notes: posted by anyone who can see the instance, optionally for a later
-// step (`for_instance_step_id`, a row of the same instance) — shown at the top of that
-// step's task and told to its assignees. Soft-deleted via deleted_at.
-model WorkflowInstanceNote {
-  id                   String    @id @default(uuid())
+// Per-person "read up to" marker of an instance's discussion: messages by others after
+// `last_read_at` are unread for that person.
+model WorkflowDiscussionRead {
+  id                   String   @id @default(uuid())
   organization_id      String
   workflow_instance_id String
-  author_user_id       String
-  body                 String    @db.Text
-  for_instance_step_id String?
-  created_at           DateTime  @default(now())
-  deleted_at           DateTime?
+  user_id              String
+  last_read_at         DateTime
+  updated_at           DateTime @updatedAt
 
   instance WorkflowInstance @relation(fields: [workflow_instance_id], references: [id], onDelete: Cascade)
 
-  @@index([workflow_instance_id, created_at])
-  @@index([for_instance_step_id])
-  @@index([organization_id])
-  @@map("workflow_instance_notes")
+  @@unique([workflow_instance_id, user_id])
+  @@index([organization_id, user_id])
+  @@map("workflow_discussion_reads")
 }
 
 model WorkflowRoundRobinTracker {

@@ -375,6 +375,9 @@ export interface InstanceCapabilities {
   /** Waiting rows (pending with a start time) the caller may start now. */
   can_start_now_row_ids?: string[]
   /** May post instance notes (everyone who can see the instance). */
+  /** May write in the instance discussion (everyone who can see the instance). */
+  can_post_message?: boolean
+  /** Older name of `can_post_message`. */
   can_add_note?: boolean
   /** Editors and admins: may delete anyone's note. */
   can_manage?: boolean
@@ -455,6 +458,8 @@ export interface WorkflowInstanceStep {
   waiting?: boolean
   start_rule?: StartRule | null
   due_rule?: DueRule | null
+  /** Instance page: messages left for this step ("For <step>"), newest first. */
+  notes?: InstanceNote[]
 }
 
 export interface WorkflowInstance {
@@ -481,9 +486,11 @@ export interface WorkflowInstance {
   tracks?: RunTrack[]
   /** Detail always; list may omit. */
   steps?: WorkflowInstanceStep[]
+  /** Detail: the discussion's live messages and the viewer's unread ones. */
+  discussion?: DiscussionSummary | null
 }
 
-/** A note on an instance, optionally for a later step (shown on that step's task). */
+/** A message of the instance discussion tagged for a later step ("Notes for this step"). */
 export interface InstanceNote {
   id: string
   body: string
@@ -526,6 +533,8 @@ export interface RunFile {
   size_bytes: number
   uploaded_by: PersonRef | null
   created_at: string
+  /** Attached to a discussion message written on the instance page. */
+  in_comment?: boolean
 }
 
 export interface RunDocuments {
@@ -557,10 +566,82 @@ export interface WorkflowStepContext {
   started_at?: string
   /** Null when a schedule started it. */
   started_by?: PersonRef | null
-  /** Notes left for this step (newest first). */
+  /** Messages left for this step ("For <step>"), newest first. */
   notes?: InstanceNote[]
   /** This step's open send-back (asked for more info / waiting for info), or null. */
   send_back?: StepSendBack | null
+  /** The viewer can see the instance: the task's Comments section is the instance discussion. */
+  can_view_discussion?: boolean
+  discussion?: DiscussionSummary | null
+}
+
+// ─── Instance discussion ──────────────────────────────────────────────────────
+
+export interface DiscussionSummary {
+  /** Live messages. */
+  count: number
+  /** Messages by others the viewer has not read. */
+  unread_count: number
+}
+
+export interface DiscussionFile {
+  id: string
+  file_name: string
+  mime_type: string
+  size_bytes: number
+  created_at: string
+  uploaded_by_user_id: string
+  is_proof: boolean
+  /** The step task it lives on (null = an instance file). */
+  task_id: string | null
+}
+
+/** A message of the instance discussion (labelled by person; step titles only for send-backs and tags). */
+export interface DiscussionMessage {
+  id: string
+  body: string
+  author: PersonRef | null
+  created_at: string
+  /** The step task it was written on (null = the instance page). Never shown as a label. */
+  task_id: string | null
+  reply_to_id: string | null
+  /** "For “Issue PO”". */
+  for_step: { row_id: string; title: string; status: string } | null
+  /** "↩ Sent back to “Collect documents”". */
+  send_back: { from_row_id: string | null; from_title: string | null; to_row_id: string; to_title: string } | null
+  mentions: PersonRef[]
+  attachments: DiscussionFile[]
+  can_delete: boolean
+  /** A removed message kept because it has replies. */
+  deleted: boolean
+  replies: DiscussionMessage[]
+}
+
+export interface DiscussionStep {
+  row_id: string
+  title: string
+  status: WorkflowStepStatus | string
+  task_id: string | null
+}
+
+export interface DiscussionPage {
+  messages: DiscussionMessage[]
+  has_more: boolean
+  next_before: string | null
+  total_count: number
+  unread_count: number
+  /** The viewer's read marker before this read. */
+  last_read_at: string | null
+  steps: DiscussionStep[]
+}
+
+export interface PostDiscussionMessage {
+  body: string
+  reply_to_id?: string | null
+  for_row_id?: string | null
+  mention_user_ids?: string[]
+  task_id?: string | null
+  with_files?: boolean
 }
 
 /**
