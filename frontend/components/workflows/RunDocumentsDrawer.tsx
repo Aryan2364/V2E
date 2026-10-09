@@ -13,7 +13,7 @@ import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
 import { formatBytes } from '@/lib/attachments'
 import type { RunDocuments, RunFile, RunStepFile } from '@/lib/types/workflows'
 import Sheet from './Sheet'
-import { BTN, EmptyState, ErrorState, REASONS, Skeleton, fmtDateTime, taskHref } from './shared'
+import { BTN, EmptyState, ErrorState, InfoTip, REASONS, Skeleton, fmtDateTime, taskHref } from './shared'
 
 interface Uploading {
   key: string
@@ -132,8 +132,9 @@ export default function RunDocumentsDrawer({
             {/* Run files */}
             <section className="flex flex-col gap-3">
               <div>
-                <h3 className="text-[15px] font-semibold text-[#0F172A]">Files for this run</h3>
-                <p className="text-[13px] text-[#475569]">Anything the whole run needs — shared with everyone involved.</p>
+                <h3 className="flex items-center gap-1 text-[15px] font-semibold text-[#0F172A]">
+                  Run files <InfoTip label="Run files" text="Shared with everyone in this run." />
+                </h3>
               </div>
               {canUpload !== undefined && (
                 <PermissionTooltip allowed={canUpload} reason={REASONS.upload} className="flex w-full flex-col">
@@ -183,18 +184,19 @@ export default function RunDocumentsDrawer({
                   })}
                 </ul>
               ) : (
-                <p className="text-sm text-[#475569]">No files added to the run yet.</p>
+                <p className="text-sm text-[#475569]">No run files yet.</p>
               )}
             </section>
 
             {/* Step files */}
             <section className="flex flex-col gap-3 pt-2 border-t border-[#F1F5F9]">
               <div>
-                <h3 className="text-[15px] font-semibold text-[#0F172A]">From the steps</h3>
-                <p className="text-[13px] text-[#475569]">Attachments, files shared in comments and proof, step by step.</p>
+                <h3 className="flex items-center gap-1 text-[15px] font-semibold text-[#0F172A]">
+                  Step files <InfoTip label="Step files" text="Attachments, comment files and proof from each step’s task." />
+                </h3>
               </div>
               {stepGroups.length === 0 ? (
-                <EmptyState icon={FileText} title="No files from the steps yet" text="Files added to a step’s task — attachments, comment files and proof — appear here." />
+                <EmptyState icon={FileText} title="No step files yet" text="Files added to step tasks appear here." />
               ) : (
                 stepGroups.map((g) => (
                   <div key={g.row_id} className="flex flex-col gap-1.5">
@@ -237,7 +239,7 @@ export default function RunDocumentsDrawer({
       <ConfirmDialog
         open={!!deleteTarget}
         title={`Remove “${deleteTarget?.file_name ?? ''}”?`}
-        message="It is removed from this run for everyone. This cannot be undone."
+        message="It is removed for everyone. This cannot be undone."
         confirmLabel="Remove file"
         danger
         loading={deleting}

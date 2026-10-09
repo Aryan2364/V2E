@@ -1,5 +1,6 @@
 /**
- * Pure graph helpers for workflows v2 ("Starts after" = depends_on).
+ * Pure graph helpers for workflows v2 (depends_on — derived from the tracks on save,
+ * see tracks.ts).
  *
  * Template side: steps reference other steps of the same template by id
  * (`WorkflowStep.depends_on_step_ids`). Run side: each instance row's dependencies

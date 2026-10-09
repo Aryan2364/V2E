@@ -378,8 +378,14 @@ describe('WorkflowEngineService (v2 — DAG runs)', () => {
       const inst = db.instances.find((i) => i.id === id)!
       const rows = db.rowsOf(inst)
       expect(rows).toHaveLength(3) // legacy escalation steps are not part of the flow
-      expect(rows.map((r) => r.status)).toEqual(['active', 'active', 'pending'])
-      expect(rows[2].step_snapshot.depends_on_step_ids).toEqual(['a', 'b'])
+      // Rows in display order: a template without stored tracks is laid out from its
+      // graph — a and c on the main track, b (no dependencies) its own track B.
+      expect(rows.map((r) => [r.workflow_step_id, r.status, r.order_index, r.step_snapshot.number_label, r.step_snapshot.track_key])).toEqual([
+        ['a', 'active', 0, '1', 'main'],
+        ['c', 'pending', 1, '2', 'main'],
+        ['b', 'active', 2, 'B1', 'B'],
+      ])
+      expect(rows[1].step_snapshot.depends_on_step_ids).toEqual(['a', 'b'])
       expect(db.prisma.$transaction).toHaveBeenCalledTimes(1)
       expect(db.eventsOf('run_started')).toHaveLength(1)
       expect(db.eventsOf('step_started')).toHaveLength(2)
@@ -388,12 +394,47 @@ describe('WorkflowEngineService (v2 — DAG runs)', () => {
       expect(toWorker.map(([p]: any) => p.event_type)).toEqual(['workflow_step_assigned', 'workflow_step_assigned'])
     })
 
+    it('tracks: rows follow the tracks; snapshots carry the track, its name and the step number', async () => {
+      const db = makeDb()
+      // Main: 1 → 2 → 3 (3 also waits for B2); track B "Finance" splits after 1: B1 → B2.
+      db.prisma.workflowTemplate.findFirst.mockResolvedValue(
+        template(
+          [
+            tStep('m3', 2, { track_key: 'main', merge_step_ids: ['b2'], depends_on_step_ids: ['m2', 'b2'] }),
+            tStep('b1', 0, { track_key: 'B', depends_on_step_ids: ['m1'] }),
+            tStep('m1', 0, { track_key: 'main' }),
+            tStep('b2', 1, { track_key: 'B', depends_on_step_ids: ['b1'] }),
+            tStep('m2', 1, { track_key: 'main', depends_on_step_ids: ['m1'] }),
+          ],
+          {
+            tracks: [
+              { key: 'main', name: null, split_from_step_id: null },
+              { key: 'B', name: 'Finance', split_from_step_id: 'm1' },
+            ],
+          },
+        ),
+      )
+      const { id } = await db.engine.createInstance(ORG, 'tpl-1', 'manual', {}, 'u-owner')
+      const rows = db.rowsOf(db.instances.find((i) => i.id === id)!)
+      expect(
+        rows.map((r) => [r.workflow_step_id, r.order_index, r.status, r.step_snapshot.number_label, r.step_snapshot.track_name]),
+      ).toEqual([
+        ['m1', 0, 'active', '1', null],
+        ['m2', 1, 'pending', '2', null],
+        ['m3', 2, 'pending', '3', null],
+        ['b1', 3, 'pending', 'B1', 'Finance'],
+        ['b2', 4, 'pending', 'B2', 'Finance'],
+      ])
+      // The engine still runs on depends_on (as saved, derived from the tracks).
+      expect(rows[2].step_snapshot.depends_on_step_ids).toEqual(['m2', 'b2'])
+    })
+
     it('refuses a graph where no step can start first', async () => {
       const db = makeDb()
       db.prisma.workflowTemplate.findFirst.mockResolvedValue(
         template([tStep('a', 0, { depends_on_step_ids: ['b'] }), tStep('b', 1, { depends_on_step_ids: ['a'] })]),
       )
-      await expect(db.engine.createInstance(ORG, 'tpl-1', 'manual', {})).rejects.toThrow(/No step of this workflow can start first/)
+      await expect(db.engine.createInstance(ORG, 'tpl-1', 'manual', {})).rejects.toThrow(/No step can start first/)
     })
 
     it('step task = the full task: assignees + CCs, mode, tags, proof, grouped checklist, deadline, reminder, created log', async () => {
@@ -659,7 +700,7 @@ describe('WorkflowEngineService (v2 — DAG runs)', () => {
         ['u-assigner', false],
         ['u-cc', true],
       ])
-      expect(rows[1].last_error).toMatch(/assigned to u-assigner instead/)
+      expect(rows[1].last_error).toMatch(/so it was assigned to u-assigner/)
       expect(recipientsOf(db, 'workflow_stuck')).toContain('u-owner')
     })
   })
@@ -873,7 +914,7 @@ describe('WorkflowEngineService (v2 — DAG runs)', () => {
       db.addTask(rows[1])
       const instId = rows[0].workflow_instance_id
 
-      await expect(db.engine.skipStep(ORG, instId, 'u-owner')).rejects.toThrow(/choose which one/)
+      await expect(db.engine.skipStep(ORG, instId, 'u-owner')).rejects.toThrow(/Choose which one/)
       await db.engine.skipStep(ORG, instId, 'u-owner', rows[0].id)
 
       expect(rows[0].status).toBe('skipped')
@@ -937,7 +978,7 @@ describe('WorkflowEngineService (v2 — DAG runs)', () => {
       db.addTask(rows[0])
       await db.engine.onTaskDeleted(ORG, rows[0].task_id)
       expect(inst.status).toBe('stuck')
-      expect(inst.last_error).toMatch(/^Task was deleted/)
+      expect(inst.last_error).toMatch(/^The task for .* was deleted/)
       expect(rows[0].last_error).toBe('Task was deleted')
     })
 
@@ -1216,7 +1257,7 @@ describe('WorkflowEngineService — step timing', () => {
     expect(b.start_at ?? null).toBeNull()
     expect(b).toMatchObject({ planned_start_at: SAT_1800, planned_due_at: new Date('2026-10-11T12:30:00Z') })
     expect(db.tasks).toHaveLength(0)
-    expect(db.eventsOf('step_waiting')[0].message).toBe('“T a” is ready and starts Fri 9 Oct, 9:00 AM.')
+    expect(db.eventsOf('step_waiting')[0].message).toBe('“T a” will start Fri 9 Oct, 9:00 AM.')
     const started = db.notifications.emit.mock.calls.find(([p]: any) => p.event_type === 'workflow_triggered')![0]
     expect(started.body).toContain('First step: “T a” (starts Fri 9 Oct, 9:00 AM).')
   })
@@ -1359,7 +1400,7 @@ describe('WorkflowEngineService — step timing', () => {
     const { inst, rows } = dagRun(db, [[], [0]])
     rows[0].status = 'completed'
     rows[1].start_at = new Date(NOW.getTime() + HOUR)
-    await expect(db.engine.retryInstance(ORG, inst.id, 'u-owner')).rejects.toThrow(/moving normally/)
+    await expect(db.engine.retryInstance(ORG, inst.id, 'u-owner')).rejects.toThrow(/not stuck/)
     rows[1].start_at = new Date(NOW.getTime() - HOUR)
     await db.engine.processWaitingStepsForOrg(ORG, NOW)
     expect(rows[1]).toMatchObject({ status: 'active', task_created_at: new Date(NOW.getTime() - HOUR) })
@@ -1381,7 +1422,7 @@ describe('WorkflowEngineService — step timing', () => {
       expect(rows[0]).toMatchObject({ status: 'active', task_created_at: NOW })
       expect(db.tasksFor(rows[0])[0].deadline).toEqual(FRI_1800) // relative due: 1 day after NOW at 18:00
       const ev = db.eventsOf('step_started')[0]
-      expect(ev.message).toBe('“T a” was started early by u-owner — assigned to u-worker.')
+      expect(ev.message).toBe('“T a” started early by u-owner. Assigned to u-worker.')
       expect(ev).toMatchObject({ actor_user_id: 'u-owner', metadata: { started_early: true } })
       expect(rows[1].status).toBe('pending')
     })
@@ -1390,12 +1431,12 @@ describe('WorkflowEngineService — step timing', () => {
       const db = makeDb()
       const { inst, rows } = await waitingRun(db)
       await expect(db.engine.startStepNow(ORG, inst.id, rows[1].id, 'u-owner')).rejects.toThrow(
-        '“T b” isn’t waiting for its start time, so there is nothing to start early.',
+        '“T b” isn’t waiting to start.',
       )
       await expect(db.engine.startStepNow(ORG, inst.id, 'row-elsewhere', 'u-owner')).rejects.toBeInstanceOf(NotFoundException)
       await expect(db.engine.startStepNow('org-other', inst.id, rows[0].id, 'u-owner')).rejects.toBeInstanceOf(NotFoundException)
       inst.status = 'cancelled'
-      await expect(db.engine.startStepNow(ORG, inst.id, rows[0].id, 'u-owner')).rejects.toThrow(/only a running run/)
+      await expect(db.engine.startStepNow(ORG, inst.id, rows[0].id, 'u-owner')).rejects.toThrow(/so steps can’t be started/)
       expect(db.tasks).toHaveLength(0)
     })
   })

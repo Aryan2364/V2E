@@ -24,6 +24,8 @@ import {
   ValidateNested,
 } from 'class-validator'
 
+import { MAX_TRACKS, TRACK_KEY_RE, TRACK_NAME_MAX } from '../tracks'
+
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value)
 const present = (_: unknown, v: unknown) => v !== undefined
 
@@ -72,7 +74,7 @@ export class ChecklistItemDto {
    * its current items (group_title = template name).
    */
   @IsOptional()
-  @IsUUID('all', { message: 'Pick a valid checklist template.' })
+  @IsUUID('all', { message: 'Choose a valid checklist template.' })
   template_id?: string | null
 
   /** Ignored — items are stored in array order. Accepted for older clients. */
@@ -84,8 +86,8 @@ export class ChecklistItemDto {
 
 /**
  * One step of the definition. `key` identifies the step INSIDE this request (an
- * existing step's id, or any client key for a step not saved yet) so `depends_on`
- * can point at steps that don't exist yet. `id` = the existing step being kept
+ * existing step's id, or any client key for a step not saved yet) so "Also wait for"
+ * and tracks can point at steps that don't exist yet. `id` = the existing step being kept
  * (omitted for a new one). Every field is the step's whole new state; omitted fields
  * keep the stored value (new steps: the defaults). The title may be blank in a draft.
  */
@@ -113,14 +115,14 @@ export class DefinitionStepDto {
   @IsArray()
   @ArrayMaxSize(MAX_STEP_ASSIGNEES, { message: `A step can be assigned to at most ${MAX_STEP_ASSIGNEES} people.` })
   @ArrayUnique({ message: 'Each person can be assigned only once.' })
-  @IsUUID('all', { each: true, message: 'Pick valid people to assign this step to.' })
+  @IsUUID('all', { each: true, message: 'Choose valid assignees.' })
   assignee_user_ids?: string[]
 
   @ValidateIf(present)
   @IsArray()
   @ArrayMaxSize(MAX_STEP_CCS, { message: `A step can CC at most ${MAX_STEP_CCS} people.` })
   @ArrayUnique({ message: 'Each person can be CC’d only once.' })
-  @IsUUID('all', { each: true, message: 'Pick valid people to CC.' })
+  @IsUUID('all', { each: true, message: 'Choose valid people to CC.' })
   cc_user_ids?: string[]
 
   @ValidateIf(present)
@@ -128,17 +130,17 @@ export class DefinitionStepDto {
   completion_mode?: CompletionMode
 
   @IsOptional()
-  @IsUUID('all', { message: 'Pick a valid priority.' })
+  @IsUUID('all', { message: 'Choose a valid priority.' })
   priority_id?: string | null
 
   @IsOptional()
-  @IsUUID('all', { message: 'Pick a valid category.' })
+  @IsUUID('all', { message: 'Choose a valid category.' })
   category_id?: string | null
 
   @ValidateIf(present)
   @IsArray()
   @ArrayMaxSize(MAX_STEP_TAGS, { message: `A step can have at most ${MAX_STEP_TAGS} tags.` })
-  @IsUUID('all', { each: true, message: 'Pick valid tags.' })
+  @IsUUID('all', { each: true, message: 'Choose valid tags.' })
   tag_ids?: string[]
 
   @ValidateIf(present)
@@ -161,13 +163,13 @@ export class DefinitionStepDto {
   proof_allowed_extensions?: string[]
 
   @ValidateIf(present)
-  @IsInt({ message: 'Days must be a whole number from 0 to 365.' })
-  @Min(0, { message: 'Days must be a whole number from 0 to 365.' })
-  @Max(365, { message: 'Days must be a whole number from 0 to 365.' })
+  @IsInt({ message: 'Days must be 0 to 365.' })
+  @Min(0, { message: 'Days must be 0 to 365.' })
+  @Max(365, { message: 'Days must be 0 to 365.' })
   due_days?: number
 
   @ValidateIf(present)
-  @Matches(DUE_TIME_RE, { message: 'The due time must be a 24-hour time like 18:00.' })
+  @Matches(DUE_TIME_RE, { message: 'Enter a valid due time.' })
   due_time?: string
 
   /**
@@ -198,22 +200,62 @@ export class DefinitionStepDto {
   /** Used when `escalation_mode` is 'people': 1–5 people, in order (= escalation levels). */
   @ValidateIf(present)
   @IsArray()
-  @ArrayMaxSize(MAX_ESCALATION_CONTACTS, { message: `Pick at most ${MAX_ESCALATION_CONTACTS} people to escalate to.` })
+  @ArrayMaxSize(MAX_ESCALATION_CONTACTS, { message: `Choose at most ${MAX_ESCALATION_CONTACTS} people to escalate to.` })
   @ArrayUnique({ message: 'Each escalation contact can appear only once.' })
-  @IsUUID('all', { each: true, message: 'Pick valid people to escalate to.' })
+  @IsUUID('all', { each: true, message: 'Choose valid people to escalate to.' })
   escalation_user_ids?: string[]
 
   @ValidateIf(present)
   @IsIn(IF_LATE_VALUES as unknown as string[], { message: "If late must be 'wait' or 'move_on'." })
   if_late?: IfLate
 
-  /** KEYS of the steps (in this request) this step starts after. [] = starts with the run. */
+  /**
+   * The track the step is in ('main' — the default — or 'B', 'C', …; listed in
+   * `tracks`). Its position in the track = its order among that track's steps in
+   * `steps`. Its "starts after" is derived from this on save (never sent).
+   */
+  @IsOptional()
+  @IsString()
+  @Matches(TRACK_KEY_RE, { message: 'One of the steps is on a path that is not valid. Reload and try again.' })
+  track_key?: string
+
+  /** "Also wait for": KEYS of steps in OTHER tracks this step also waits for (a merge). */
+  @IsOptional()
   @IsArray()
   @ArrayMaxSize(MAX_STEP_DEPENDENCIES)
-  @ArrayUnique({ message: 'Each step can be listed only once in "Starts after".' })
+  @ArrayUnique({ message: '“Also waits for” can list each step only once.' })
   @IsString({ each: true })
   @MaxLength(64, { each: true })
-  depends_on: string[]
+  merge_step_keys?: string[]
+}
+
+/**
+ * One track of the definition. `key` = 'main' or a letter key ('B', 'C', … — the
+ * builder assigns the next free one to a new track; it stays stable once saved). The
+ * array order is the display order (main always first). A track with no steps is
+ * dropped on save.
+ */
+export class DefinitionTrackDto {
+  @IsString()
+  @Matches(TRACK_KEY_RE, { message: 'One of the paths is not valid. Reload and try again.' })
+  key: string
+
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @Transform(trim)
+  @IsString()
+  @MaxLength(TRACK_NAME_MAX, { message: `A path name can be at most ${TRACK_NAME_MAX} characters.` })
+  name?: string | null
+
+  /**
+   * KEY of the step (in another track) this track starts after — "Split here".
+   * null = it starts when the workflow starts. Ignored for main.
+   */
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(64)
+  split_from_step_key?: string | null
 }
 
 export class YearlyDateDto {
@@ -272,10 +314,10 @@ export class DefinitionScheduleDto {
   yearly_dates?: YearlyDateDto[]
 
   @IsString()
-  @Matches(DUE_TIME_RE, { message: 'The schedule time must be a 24-hour time like 09:00.' })
+  @Matches(DUE_TIME_RE, { message: 'Enter a valid schedule time.' })
   time: string
 
-  @IsISO8601({ strict: true }, { message: 'Pick the date the schedule starts from.' })
+  @IsISO8601({ strict: true }, { message: 'Choose a start date for the schedule.' })
   start_date: string
 
   @IsOptional()
@@ -284,7 +326,7 @@ export class DefinitionScheduleDto {
 
   @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== '')
-  @IsISO8601({ strict: true }, { message: 'Pick a valid end date.' })
+  @IsISO8601({ strict: true }, { message: 'Choose a valid end date.' })
   end_date?: string | null
 
   @IsOptional()
@@ -306,9 +348,9 @@ export class DefinitionManualDto {
    */
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(500, { message: 'At most 500 people can start a workflow by hand.' })
+  @ArrayMaxSize(500, { message: 'At most 500 people can start a workflow.' })
   @ArrayUnique({ message: 'Each person can be listed only once.' })
-  @IsUUID('all', { each: true, message: 'Pick valid people who can start it.' })
+  @IsUUID('all', { each: true, message: 'Choose valid people under “Who can start it”.' })
   starter_user_ids?: string[]
 }
 
@@ -358,7 +400,7 @@ export class DefinitionPeopleDto {
 export class SaveDefinitionDto {
   @Transform(trim)
   @IsString()
-  @IsNotEmpty({ message: 'Give the workflow a name.' })
+  @IsNotEmpty({ message: 'Enter a workflow name.' })
   @MaxLength(200, { message: 'A workflow name can be at most 200 characters.' })
   name: string
 
@@ -380,6 +422,14 @@ export class SaveDefinitionDto {
   @Type(() => DefinitionStepDto)
   steps: DefinitionStepDto[]
 
+  /** The tracks (main first). Omitted = only the main track. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_TRACKS, { message: `A workflow can have at most ${MAX_TRACKS} paths.` })
+  @ValidateNested({ each: true })
+  @Type(() => DefinitionTrackDto)
+  tracks?: DefinitionTrackDto[]
+
   /** Omitted = unchanged. */
   @IsOptional()
   @ValidateNested()
@@ -387,7 +437,7 @@ export class SaveDefinitionDto {
   people?: DefinitionPeopleDto
 
   @IsOptional()
-  @IsISO8601({}, { message: 'Reload the workflow and try again.' })
+  @IsISO8601({}, { message: 'Reload and try again.' })
   expected_updated_at?: string
 }
 
@@ -405,4 +455,12 @@ export class PreviewTimelineDto {
   @ValidateNested({ each: true })
   @Type(() => DefinitionStepDto)
   steps: DefinitionStepDto[]
+
+  /** The tracks (main first). Omitted = only the main track. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_TRACKS, { message: `A workflow can have at most ${MAX_TRACKS} paths.` })
+  @ValidateNested({ each: true })
+  @Type(() => DefinitionTrackDto)
+  tracks?: DefinitionTrackDto[]
 }

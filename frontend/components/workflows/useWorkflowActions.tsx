@@ -33,7 +33,7 @@ export function useWorkflowActions(orgId: string, onChanged: (change: { id: stri
     async (w: Target) => {
       try {
         const updated = await workflowsApi.restoreWorkflow(orgId, w.id)
-        addToast(`“${w.name}” restored as a draft. Save it to make it live again.`, 'success')
+        addToast(`“${w.name}” restored as a draft`, 'success')
         onChanged({ id: w.id, kind: 'restored', workflow: updated && typeof updated === 'object' && 'id' in updated ? updated : undefined })
       } catch (e) {
         addToast(workflowErrorMessage(e, 'The workflow could not be restored. Try again.'), 'error')
@@ -48,9 +48,7 @@ export function useWorkflowActions(orgId: string, onChanged: (change: { id: stri
       try {
         const updated = pause ? await workflowsApi.pauseWorkflow(orgId, w.id) : await workflowsApi.resumeWorkflow(orgId, w.id)
         addToast(
-          pause
-            ? `“${w.name}” paused. Nothing new starts and its schedules skip; runs under way carry on.`
-            : `“${w.name}” resumed. It can be started again, and its schedules run from now on.`,
+          pause ? `“${w.name}” paused. Runs in progress continue.` : `“${w.name}” resumed`,
           'success',
         )
         onChanged({ id: w.id, kind: pause ? 'paused' : 'resumed', workflow: updated && typeof updated === 'object' && 'id' in updated ? updated : undefined })
@@ -83,7 +81,7 @@ export function useWorkflowActions(orgId: string, onChanged: (change: { id: stri
       <ConfirmDialog
         open={!!archiveTarget}
         title={`Archive “${archiveTarget?.name ?? ''}”?`}
-        message="It stops starting new runs and nobody can start it by hand. Runs under way carry on. You can restore it later."
+        message="No new runs will start. Runs in progress continue. You can restore it later."
         confirmLabel="Archive workflow"
         danger
         loading={archiving}

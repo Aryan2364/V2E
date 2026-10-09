@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AlertTriangle, ChevronDown, ChevronUp, Link2, ListPlus, Plus, SlidersHorizontal, Trash2, X } from 'lucide-react'
+import { AlertTriangle, ChevronDown, ChevronUp, GitBranch, GitMerge, Link2, ListPlus, Plus, SlidersHorizontal, Trash2, X } from 'lucide-react'
 import AssigneeSelector from '@/components/tasks/AssigneeSelector'
 import ChecklistBuilderField, { type ChecklistGroup } from '@/components/tasks/ChecklistBuilderField'
 import ProofRequirementField from '@/components/tasks/ProofRequirementField'
@@ -14,9 +14,9 @@ import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import { workflowErrorMessage } from '@/lib/api/workflows'
 import type { CompletionMode, SelectedAssignee } from '@/lib/types/tasks'
 import type { ChecklistItem, DueRule, EscalationMode, IfLate, StartRule, StepInput, WorkflowStep } from '@/lib/types/workflows'
-import { descendantsOf } from './flow'
+import ActionMenu from './ActionMenu'
 import type { WorkflowLookups } from './useWorkflowLookups'
-import { BTN, ErrorBanner, Reveal } from './shared'
+import { BTN, ErrorBanner, InfoTip, Reveal } from './shared'
 import StepTiming from './StepTiming'
 import {
   DEFAULT_DUE_RULE,
@@ -51,7 +51,8 @@ export interface StepDraft {
   /** When it starts and when it is due (relative due rules are mirrored to due_days / due_time). */
   start_rule: StartRule
   due_rule: DueRule
-  depends_on_step_ids: string[]
+  /** "Also waits for": steps on other paths (tracks). */
+  merge_step_ids: string[]
   if_late: IfLate
   escalation_mode: EscalationMode
   escalation_user_ids: string[]
@@ -134,7 +135,7 @@ function fromStep(s: WorkflowStep, nameOf: (id: string) => string | undefined): 
     completion_mode: s.completion_mode ?? 'any_can_complete',
     start_rule: startRuleOf(s),
     due_rule: dueRuleOf(s),
-    depends_on_step_ids: s.depends_on_step_ids ?? [],
+    merge_step_ids: s.merge_step_ids ?? [],
     if_late: s.if_late === 'move_on' ? 'move_on' : 'wait',
     escalation_mode: s.escalation_mode === 'people' ? 'people' : 'manager',
     escalation_user_ids: s.escalation_user_ids ?? [],
@@ -147,7 +148,7 @@ function fromStep(s: WorkflowStep, nameOf: (id: string) => string | undefined): 
   }
 }
 
-export function blankStepDraft(dependsOn: string[], me?: { user_id: string; name: string }): StepDraft {
+export function blankStepDraft(me?: { user_id: string; name: string }): StepDraft {
   return {
     title: '',
     description: '',
@@ -155,7 +156,7 @@ export function blankStepDraft(dependsOn: string[], me?: { user_id: string; name
     completion_mode: 'any_can_complete',
     start_rule: DEFAULT_START_RULE,
     due_rule: DEFAULT_DUE_RULE,
-    depends_on_step_ids: dependsOn,
+    merge_step_ids: [],
     if_late: 'wait',
     escalation_mode: 'manager',
     escalation_user_ids: [],
@@ -219,17 +220,28 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 
 // ─── Small pieces ────────────────────────────────────────────────────────────
 
-const IF_LATE: { value: IfLate; label: string; help: string }[] = [
-  { value: 'wait', label: 'Wait', help: 'The steps after it don’t start until it is done.' },
-  { value: 'move_on', label: 'Move on', help: 'The steps after it start anyway. This task stays open until it is done.' },
+const IF_LATE: ChoiceOption<IfLate>[] = [
+  { value: 'wait', label: 'Wait', tip: 'Next steps start only after this one is done.' },
+  { value: 'move_on', label: 'Continue', tip: 'Next steps start anyway. This task stays open.' },
 ]
 
-const ESCALATION: { value: EscalationMode; label: string; help: string }[] = [
-  { value: 'manager', label: 'The assignees’ manager', help: 'Each assignee’s reporting manager. Anyone without one is covered by the workflow’s owners.' },
-  { value: 'people', label: 'Specific people', help: 'Told one level at a time — level 1 first, the next an hour later if it is still open.' },
+const ESCALATION: ChoiceOption<EscalationMode>[] = [
+  { value: 'manager', label: 'Reporting manager', tip: 'If someone has no manager, the owners are alerted.' },
+  { value: 'people', label: 'Specific people', tip: 'Level 1 is alerted first, the next level 1 hour later.' },
 ]
 
-/** Two or three plain choices as one radio group of cards. */
+interface ChoiceOption<V extends string> {
+  value: V
+  label: string
+  /** The option's explanation, behind its ⓘ. */
+  tip?: string
+}
+
+/**
+ * Two or three plain choices as one radio group of cards. Each card is its radio button;
+ * its ⓘ sits beside it in the card (never inside the button), so it can be read without
+ * choosing the option.
+ */
 function ChoiceCards<V extends string>({
   name,
   value,
@@ -239,7 +251,7 @@ function ChoiceCards<V extends string>({
 }: {
   name: string
   value: V
-  options: { value: V; label: string; help: string }[]
+  options: ChoiceOption<V>[]
   onChange: (v: V) => void
   disabled?: boolean
 }) {
@@ -248,18 +260,22 @@ function ChoiceCards<V extends string>({
       {options.map((o) => {
         const on = value === o.value
         return (
-          <button
+          <div
             key={o.value}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            disabled={disabled}
-            onClick={() => !on && onChange(o.value)}
-            className={`text-left rounded-[10px] border px-3 py-2.5 min-h-[44px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed ${
+            className={`relative flex items-center rounded-[10px] border transition-colors ${
               on ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#CBD5E1] bg-white hover:bg-[#F8FAFC]'
             }`}
           >
-            <span className="flex items-center gap-2">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={on}
+              disabled={disabled}
+              onClick={() => !on && onChange(o.value)}
+              className={`flex-1 min-w-0 flex items-center gap-2 text-left rounded-[10px] pl-3 py-2.5 min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed ${
+                o.tip ? 'pr-1' : 'pr-3'
+              }`}
+            >
               <span
                 aria-hidden
                 className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${on ? 'border-[#2563EB]' : 'border-[#94A3B8]'}`}
@@ -267,9 +283,9 @@ function ChoiceCards<V extends string>({
                 {on && <span className="w-2 h-2 rounded-full bg-[#2563EB]" />}
               </span>
               <span className={`text-sm font-semibold ${on ? 'text-[#1D4ED8]' : 'text-[#0F172A]'}`}>{o.label}</span>
-            </span>
-            <span className="block mt-1 pl-6 text-[13px] text-[#475569]">{o.help}</span>
-          </button>
+            </button>
+            {o.tip && <InfoTip label={o.label} text={o.tip} className="mr-2.5" />}
+          </div>
         )
       })}
     </div>
@@ -315,16 +331,32 @@ function IconAction({
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
+/** A step another one may also wait for. */
+export interface MergeOption {
+  value: string
+  /** "B2 “Finance sign-off”". */
+  label: string
+}
+
 interface CommonProps {
   orgId: string
-  /** Position shown in the badge (1-based). */
-  number: number
+  /** The step's number shown in the badge ("1", "B2"). */
+  label: string
   editable: boolean | undefined
   reason: string
   lookups: WorkflowLookups
-  /** Every step of the workflow (for "Starts after"). */
-  allSteps: WorkflowStep[]
-  numbers: Map<string, number>
+  /**
+   * What the step comes after, only where that is not obvious: the first step of a
+   * parallel path ("Step 1 “Raise request”", or "Start of run"). Null hides the row (the
+   * main path's first step, and any step after the previous one in its own path).
+   */
+  placement: string | null
+  /** Whether it waits for a step (the one before it in its track, or the step its track splits from). */
+  hasPredecessors: boolean
+  /** Steps in other tracks it may also wait for (none that would make a loop). */
+  mergeOptions: MergeOption[]
+  /** Every step's number ("1", "B2") — for the summary line. */
+  labels: Map<string, string>
   currentUser?: { user_id: string; name: string }
   /** How the workflow repeats, from the schedules being edited (decides the timing choices). */
   frequency: Frequency
@@ -346,6 +378,8 @@ interface EditProps extends CommonProps {
   canMoveDown?: boolean
   moving?: boolean
   onAddBelow?: () => void
+  /** "Add parallel path": start a new track after this step. */
+  onSplit?: () => void
   /** A problem to show on this card (e.g. why the workflow could not be saved). */
   issue?: string | null
 }
@@ -357,9 +391,21 @@ interface CreateProps extends CommonProps {
   onCancel: () => void
   /** Badge text instead of the number (a step being inserted between others). */
   badgeLabel?: string
-  /** Each new value focuses the title and brings the form into view. */
+  /** Each new value focuses the title (the builder brings the form into view). */
   focusKey?: string | number
+  /**
+   * Filled in by the form: "add what is filled in, now" — so asking for another form
+   * elsewhere adds this one first instead of throwing it away.
+   */
+  commitRef?: React.MutableRefObject<CommitNewStep | null>
 }
+
+/**
+ * Add an open new-step form's step without its button: the step to add, 'blank' when no
+ * title has been typed (nothing worth keeping), or 'invalid' when it cannot be added as it
+ * is (the form then shows why).
+ */
+export type CommitNewStep = () => StepInput | 'blank' | 'invalid'
 
 /**
  * One step — a task the system creates. The same form adds a step and edits it. In edit
@@ -367,7 +413,7 @@ interface CreateProps extends CommonProps {
  * the workflow is saved. The essentials show first; the rest sit under "More options".
  */
 export default function StepCard(props: EditProps | CreateProps) {
-  const { orgId, number, editable, reason, lookups, allSteps, numbers, currentUser, frequency, schedules } = props
+  const { orgId, label, editable, reason, lookups, placement, hasPredecessors, mergeOptions, labels, currentUser, frequency, schedules } = props
   const isEdit = props.mode === 'edit'
   const step = isEdit ? (props as EditProps).step : null
   const idPrefix = `step-${step?.id ?? 'new'}`
@@ -404,19 +450,12 @@ export default function StepCard(props: EditProps | CreateProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.checklist_items])
 
-  // A form that has just opened (or moved): focus its title, bring it into view once the
-  // cards above have finished folding — only as far as needed.
+  // A form that has just opened: focus its title without moving the page — the builder
+  // holds the clicked spot while the other cards fold, then scrolls only as far as needed.
   const focusKey = props.mode === 'create' ? (props as CreateProps).focusKey : undefined
   useEffect(() => {
     if (focusKey === undefined) return
     document.getElementById(`${idPrefix}-title`)?.focus({ preventScroll: true })
-    const t = setTimeout(() => {
-      const el = rootRef.current
-      if (!el) return
-      const fits = el.getBoundingClientRect().height <= window.innerHeight - 220
-      el.scrollIntoView({ block: fits ? 'nearest' : 'start', behavior: 'smooth' })
-    }, 180)
-    return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusKey])
 
@@ -495,7 +534,7 @@ export default function StepCard(props: EditProps | CreateProps) {
       return (
         <p className="flex items-start gap-1.5 text-[13px] text-[#92400E]">
           <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-          <span>This template is no longer available — runs use the saved copy.</span>
+          <span>Template no longer available. Runs use the saved copy.</span>
         </p>
       )
     }
@@ -503,30 +542,51 @@ export default function StepCard(props: EditProps | CreateProps) {
       <p className="flex items-start gap-1.5 text-[13px] text-[#475569]">
         <Link2 size={14} className="shrink-0 mt-0.5 text-[#1D4ED8]" />
         <span>
-          Linked — each new run uses this template’s latest items.
-          {st?.accessible === false ? ' You cannot add this template yourself, so it cannot be added back once removed.' : ''}
+          Linked. New runs use its latest items.
+          {st?.accessible === false ? ' You can’t add this template, so it can’t be re-added once removed.' : ''}
         </span>
       </p>
     )
   }
 
   // ── Create ──
-  async function submitCreate() {
-    if (props.mode !== 'create') return
-    const d = draft
+  /** The step to add from this draft, or null after showing why it cannot be added. */
+  function checkedInput(d: StepDraft, focusTitle: boolean): StepInput | null {
     if (!d.title.trim()) {
       setTitleError('Enter a step title.')
-      document.getElementById(`${idPrefix}-title`)?.focus()
-      return
+      if (focusTitle) document.getElementById(`${idPrefix}-title`)?.focus()
+      return null
     }
     if (d.escalation_mode === 'people' && !d.escalation_user_ids.filter(Boolean).length) {
-      setCreateError('Choose at least one person to escalate to, or pick “The assignees’ manager”.')
-      return
+      setCreateError('Add someone to escalate to, or choose “Reporting manager”.')
+      return null
     }
+    return toInput({ ...d, escalation_user_ids: d.escalation_mode === 'people' ? d.escalation_user_ids : [] })
+  }
+
+  // "Add what is filled in, now" for the builder — always from the latest draft.
+  const commitRef = props.mode === 'create' ? (props as CreateProps).commitRef : undefined
+  useEffect(() => {
+    if (!commitRef) return
+    const commit: CommitNewStep = () => {
+      if (creating) return 'invalid'
+      if (!draft.title.trim()) return 'blank'
+      return checkedInput(draft, false) ?? 'invalid'
+    }
+    commitRef.current = commit
+    return () => {
+      if (commitRef.current === commit) commitRef.current = null
+    }
+  })
+
+  async function submitCreate() {
+    if (props.mode !== 'create') return
+    const input = checkedInput(draft, true)
+    if (!input) return
     setCreating(true)
     setCreateError(null)
     try {
-      await props.onCreate(toInput({ ...d, escalation_user_ids: d.escalation_mode === 'people' ? d.escalation_user_ids : [] }))
+      await props.onCreate(input)
     } catch (e) {
       setCreateError(workflowErrorMessage(e, 'The step could not be added. Try again.'))
       setCreating(false)
@@ -534,13 +594,16 @@ export default function StepCard(props: EditProps | CreateProps) {
   }
 
   // ── Options ──
-  const selfId = step?.id ?? '__new__'
-  const graph = useMemo(() => allSteps.map((s) => ({ id: s.id, deps: s.depends_on_step_ids ?? [] })), [allSteps])
-  const blocked = useMemo(() => (step ? descendantsOf(step.id, graph) : new Set<string>()), [step, graph])
-  const startsAfterOptions = allSteps
-    .filter((s) => s.id !== selfId && !blocked.has(s.id))
-    .sort((a, b) => (numbers.get(a.id) ?? 0) - (numbers.get(b.id) ?? 0))
-    .map((s) => ({ value: s.id, label: `${numbers.get(s.id) ?? '?'}. ${s.title || 'Untitled step'}` }))
+  // "Also waits for": a step already picked stays listed even when it is no longer
+  // offered (saving says why); new picks come from the offered steps.
+  const mergeValues = draft.merge_step_ids.filter((id) => labels.has(id) || mergeOptions.some((o) => o.value === id))
+  const mergeSelectOptions: MergeOption[] = [
+    ...mergeOptions,
+    ...mergeValues.filter((id) => !mergeOptions.some((o) => o.value === id)).map((id) => ({ value: id, label: labels.get(id) ?? '?' })),
+  ]
+  const [mergeOpen, setMergeOpen] = useState(false)
+  const showMerge = mergeOpen || mergeValues.length > 0
+  const waits = hasPredecessors || mergeValues.length > 0
   const mainAssignees = draft.assignees.filter((a) => !a.is_cc)
   // Escalation contacts: department + role shown (and grouped) so two people with the
   // same name can be told apart; the step's own assignees are left out — escalating to
@@ -553,9 +616,7 @@ export default function StepCard(props: EditProps | CreateProps) {
     })
   const problems = useMemo(() => timingProblems(draft.start_rule, draft.due_rule, frequency), [draft.start_rule, draft.due_rule, frequency])
 
-  const startsAfterText = draft.depends_on_step_ids.length
-    ? `starts after ${draft.depends_on_step_ids.map((id) => numbers.get(id)).filter(Boolean).map((n) => `#${n}`).join(', ') || 'removed steps'}`
-    : 'starts first'
+  const alsoText = mergeValues.length ? `also waits for ${mergeValues.map((id) => labels.get(id) ?? '?').join(', ')}` : ''
   const assigneeText = mainAssignees.length
     ? mainAssignees.length > 2
       ? `${mainAssignees.slice(0, 2).map((a) => a.name).join(', ')} +${mainAssignees.length - 2}`
@@ -609,17 +670,15 @@ export default function StepCard(props: EditProps | CreateProps) {
         {/* Assigned to */}
         <div className="lg:col-span-12">
           <span className={LABEL_CLS}>
-            Assigned to <span className="text-[#DC2626]">*</span>
+            Assigned to <span className="text-[#DC2626]">*</span>{' '}
+            <InfoTip label="Assigned to" text="Click a badge to switch assignee and CC. CCs only follow along." />
           </span>
           <fieldset disabled={disabled || creating} className="min-w-0 border-0 p-0 m-0">
             <AssigneeSelector orgId={orgId} value={draft.assignees} onChange={setAssignees} disabled={disabled || creating} currentUser={currentUser} />
           </fieldset>
-          <p className={`mt-1.5 ${HELP}`}>
-            Add people, and click a badge to switch between assignee and CC. Only assignees complete the step; CCs follow along.
-          </p>
         </div>
 
-        {/* Timing: Starts after + when it starts, and when it is due */}
+        {/* Timing: where it sits, "Also waits for", when it starts, and when it is due */}
         <div className="lg:col-span-12">
           <StepTiming
             idPrefix={idPrefix}
@@ -627,55 +686,68 @@ export default function StepCard(props: EditProps | CreateProps) {
             due={draft.due_rule}
             frequency={frequency}
             schedules={schedules}
-            hasPredecessors={draft.depends_on_step_ids.length > 0}
+            hasPredecessors={waits}
             disabled={disabled || creating}
             onChange={(patch) => change(patch)}
             problems={problems}
             startsAfter={
-              <div>
-                <span className={LABEL_CLS}>Starts after</span>
-                <MultiSelect
-                  value={draft.depends_on_step_ids.filter((id) => allSteps.some((s) => s.id === id))}
-                  onChange={(ids) => change({ depends_on_step_ids: ids })}
-                  options={startsAfterOptions}
-                  disabled={disabled || creating || startsAfterOptions.length === 0}
-                  placeholder={
-                    startsAfterOptions.length
-                      ? 'Starts when the workflow starts'
-                      : allSteps.length > 1
-                        ? 'Starts when the workflow starts — every other step comes after this one'
-                        : 'No other steps yet'
-                  }
-                  searchPlaceholder="Search steps"
-                  emptyText="No steps match"
-                />
-                <p className={`mt-1.5 ${HELP}`}>
-                  {draft.depends_on_step_ids.length === 0
-                    ? 'Starts when the workflow starts.'
-                    : draft.depends_on_step_ids.length === 1
-                      ? 'Starts when that step is done.'
-                      : `Starts when all ${draft.depends_on_step_ids.length} of these steps are done.`}
-                </p>
+              placement || showMerge || (mergeOptions.length > 0 && !disabled) ? (
+              <div className="flex flex-col gap-3">
+                {placement && (
+                  <div>
+                    <span className={LABEL_CLS}>After</span>
+                    <p className="text-sm text-[#1E293B]">{placement}</p>
+                  </div>
+                )}
+                {showMerge ? (
+                  <Reveal open appear={mergeValues.length === 0}>
+                    <div>
+                      <span className={LABEL_CLS}>
+                        <span id={`${idPrefix}-merge-label`}>Also waits for</span>{' '}
+                        <InfoTip label="Also waits for" text="This step also waits for steps on other paths." />
+                      </span>
+                      <div aria-labelledby={`${idPrefix}-merge-label`}>
+                        <MultiSelect
+                          value={mergeValues}
+                          onChange={(ids) => change({ merge_step_ids: ids })}
+                          options={mergeSelectOptions}
+                          disabled={disabled || creating || mergeSelectOptions.length === 0}
+                          placeholder={mergeSelectOptions.length ? 'Choose steps' : 'No steps on other paths'}
+                          searchPlaceholder="Search steps"
+                          emptyText="No steps match"
+                        />
+                      </div>
+                    </div>
+                  </Reveal>
+                ) : mergeOptions.length > 0 && !disabled ? (
+                  <button type="button" onClick={() => setMergeOpen(true)} disabled={creating} className={`${BTN.quiet} self-start -ml-2`}>
+                    <GitMerge size={16} /> Also waits for
+                  </button>
+                ) : null}
               </div>
+              ) : null
             }
           />
         </div>
 
         {/* If late */}
         <div className="lg:col-span-6">
-          <span className={LABEL_CLS}>If late</span>
+          <span className={LABEL_CLS}>
+            If late <InfoTip label="If late" text="Owners and escalation contacts are alerted either way." />
+          </span>
           <ChoiceCards name="If late" value={draft.if_late} options={IF_LATE} onChange={(v) => change({ if_late: v })} disabled={disabled || creating} />
-          <p className={`mt-1.5 ${HELP}`}>Either way, the workflow’s owners and the people below are told it is late.</p>
         </div>
 
         {/* Escalate to */}
         <div className="lg:col-span-6 flex flex-col gap-2">
-          <span className={LABEL_CLS + ' !mb-0'}>Escalate to</span>
+          <span className={LABEL_CLS + ' !mb-0'}>
+            Escalate to <InfoTip label="Escalate to" text="Alerted when this step is late." />
+          </span>
           <ChoiceCards name="Escalate to" value={draft.escalation_mode} options={ESCALATION} onChange={setEscalationMode} disabled={disabled || creating} />
           {draft.escalation_mode === 'manager' && step?.escalation_contacts && step.escalation_contacts.length > 0 && (
             <p className={HELP}>
-              Right now: <span className="text-[#0F172A] font-medium">{step.escalation_contacts.map((p) => p.name).join(', ')}</span>
-              {step.escalation_resolved_from === 'owners_fallback' ? ' (the owners — no assignee has a manager set)' : ''}
+              Currently: <span className="text-[#0F172A] font-medium">{step.escalation_contacts.map((p) => p.name).join(', ')}</span>
+              {step.escalation_resolved_from === 'owners_fallback' ? ' (owners, no manager set)' : ''}
             </p>
           )}
           {draft.escalation_mode === 'people' && (
@@ -734,7 +806,6 @@ export default function StepCard(props: EditProps | CreateProps) {
           )}
           <ChevronDown size={16} className={`transition-transform duration-200 ${moreOpen ? 'rotate-180' : ''}`} />
         </button>
-        <span className={`ml-2 ${HELP}`}>Description, priority, category, tags, checklist, proof{mainAssignees.length > 1 ? ', who completes it' : ''}</span>
 
         <Reveal open={moreOpen} id={`${idPrefix}-more`}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 gap-y-6 pt-4">
@@ -749,7 +820,7 @@ export default function StepCard(props: EditProps | CreateProps) {
                 value={draft.description}
                 disabled={disabled || creating}
                 onChange={(e) => typeText({ description: e.target.value })}
-                placeholder="What the assignee needs to do — this becomes the task description"
+                placeholder="What needs to be done"
                 className={`${INPUT_CLS} resize-y`}
               />
             </div>
@@ -761,7 +832,7 @@ export default function StepCard(props: EditProps | CreateProps) {
                   value={draft.priority_id}
                   onChange={(v) => change({ priority_id: v })}
                   options={[
-                    { value: '', label: 'Organisation default' },
+                    { value: '', label: 'Default' },
                     ...lookups.priorities.filter((p) => p.is_active !== false || p.id === draft.priority_id).map((p) => ({ value: p.id, label: p.label, color: p.color })),
                   ]}
                   disabled={disabled || creating}
@@ -793,8 +864,8 @@ export default function StepCard(props: EditProps | CreateProps) {
                   name="Who completes it"
                   value={draft.completion_mode}
                   options={[
-                    { value: 'any_can_complete', label: 'Any assignee', help: 'The step is done when one of them completes it.' },
-                    { value: 'all_must_complete', label: 'All assignees', help: `The step is done when all ${mainAssignees.length} have completed their part.` },
+                    { value: 'any_can_complete', label: 'Anyone', tip: 'Done when one person completes it.' },
+                    { value: 'all_must_complete', label: 'Everyone', tip: 'Done when everyone completes their part.' },
                   ]}
                   onChange={(v) => change({ completion_mode: v })}
                   disabled={disabled || creating}
@@ -822,7 +893,7 @@ export default function StepCard(props: EditProps | CreateProps) {
                 onChange={changeGroups}
                 templates={lookups.checklistTemplates}
                 groupNote={templateNote}
-                intro="Add a checklist template, write your own items, or both. The step's task gets this checklist."
+                intro="Use a template, your own items, or both."
               />
             </div>
           </div>
@@ -863,7 +934,7 @@ export default function StepCard(props: EditProps | CreateProps) {
           onClick={edit ? edit.onToggle : undefined}
         >
           <span className="min-w-[28px] h-7 px-1.5 rounded-full text-[12px] font-semibold flex items-center justify-center shrink-0 bg-[#2563EB] text-white">
-            {props.mode === 'create' ? createBadge ?? number : number}
+            {props.mode === 'create' ? createBadge ?? label : label}
           </span>
           <div className="flex-1 min-w-0">
             {edit ? (
@@ -885,7 +956,8 @@ export default function StepCard(props: EditProps | CreateProps) {
             {edit && (
               <p className={`text-[13px] truncate ${hasProblem ? 'text-[#B91C1C]' : 'text-[#475569]'}`}>
                 {hasProblem && <AlertTriangle size={12} className="inline -mt-0.5 mr-1" aria-hidden />}
-                {assigneeText} · {timingSummary(draft.start_rule, draft.due_rule, frequency, draft.depends_on_step_ids.length > 0)} · {startsAfterText}
+                {assigneeText} · {timingSummary(draft.start_rule, draft.due_rule, frequency, waits)}
+                {alsoText ? ` · ${alsoText}` : ''}
               </p>
             )}
           </div>
@@ -893,8 +965,18 @@ export default function StepCard(props: EditProps | CreateProps) {
             <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
               <IconAction label="Move up" icon={ChevronUp} onClick={edit.onMoveUp ?? (() => undefined)} allowed={editable} reason={reason} disabled={!edit.canMoveUp || edit.moving} />
               <IconAction label="Move down" icon={ChevronDown} onClick={edit.onMoveDown ?? (() => undefined)} allowed={editable} reason={reason} disabled={!edit.canMoveDown || edit.moving} />
-              {edit.onAddBelow && <IconAction label="Add step below" icon={ListPlus} onClick={edit.onAddBelow} allowed={editable} reason={reason} />}
-              <IconAction label="Delete step" icon={Trash2} onClick={() => step && edit.onDelete(step)} allowed={editable} reason={reason} danger />
+              <ActionMenu
+                label={`More actions for step ${label}`}
+                items={[
+                  ...(edit.onAddBelow
+                    ? [{ key: 'below', label: 'Add step below', icon: ListPlus, allowed: editable, reason, onSelect: edit.onAddBelow }]
+                    : []),
+                  ...(edit.onSplit
+                    ? [{ key: 'split', label: 'Add parallel path', icon: GitBranch, tip: 'Starts a separate path that runs at the same time.', allowed: editable, reason, onSelect: edit.onSplit }]
+                    : []),
+                  { key: 'delete', label: 'Delete step', icon: Trash2, danger: true, allowed: editable, reason, onSelect: () => step && edit.onDelete(step) },
+                ]}
+              />
             </div>
           )}
         </div>

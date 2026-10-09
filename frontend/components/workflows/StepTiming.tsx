@@ -1,12 +1,12 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { AlertTriangle, CalendarClock } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import MonthDayPicker from '@/components/ui/MonthDayPicker'
 import StyledSelect from '@/components/ui/StyledSelect'
 import TimeField from '@/components/ui/TimeField'
 import type { DueRule, DueRuleKind, RuleMonthDay, StartRule, StartRuleKind } from '@/lib/types/workflows'
-import { WEEKDAYS_LONG, WEEKDAYS_SHORT } from './shared'
+import { InfoTip, WEEKDAYS_LONG, WEEKDAYS_SHORT } from './shared'
 import {
   DEFAULT_DUE_TIME,
   DEFAULT_START_TIME,
@@ -14,8 +14,6 @@ import {
   allowedDueKinds,
   allowedStartKinds,
   cycleLabel,
-  describeDueRule,
-  describeStart,
   dueKindLabel,
   dueRuleOfKind,
   frequencyNote,
@@ -29,7 +27,6 @@ import {
 
 const LABEL = 'block text-sm font-medium text-[#374151] mb-2'
 const SUB = 'block text-[13px] font-medium text-[#374151] mb-1.5'
-const HELP = 'text-[13px] text-[#475569]'
 const INPUT =
   'px-3 py-2.5 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F8FAFC] disabled:text-[#334155] disabled:cursor-not-allowed'
 const CHIP_BASE =
@@ -109,14 +106,14 @@ function CycleSelector({ f, value, onChange, disabled }: { f: Frequency; value: 
         value={invalid ? '' : String(value)}
         onChange={(v) => onChange(Number(v))}
         options={options.map((n) => ({ value: String(n), label: cycleLabel(f, n) }))}
-        placeholder={`Pick ${cycleLabel(f, 1).split(' ')[0].toLowerCase()}`}
+        placeholder={`Choose ${cycleLabel(f, 1).split(' ')[0].toLowerCase()}`}
         disabled={disabled}
         wrapperClassName="w-full sm:w-[200px]"
       />
     )
   }
   return (
-    <div role="radiogroup" aria-label="Which part of the cycle" className="flex flex-wrap gap-1.5">
+    <div role="radiogroup" aria-label="Which cycle" className="flex flex-wrap gap-1.5">
       {options.map((n) => (
         <button
           key={n}
@@ -221,14 +218,7 @@ function RuleParams<R extends StartRule | DueRule>({
     case 'days_after_start': {
       const min = rule.kind === 'days_after_previous' ? 1 : 0
       const n = rule.days ?? min
-      const tail =
-        rule.kind === 'days_after_previous'
-          ? hasPredecessors
-            ? 'after the steps before it are done, at'
-            : 'after the run starts, at'
-          : rule.kind === 'days_after_run_start'
-            ? 'after the run starts, at'
-            : 'after it starts, at'
+      const tail = rule.kind === 'days_after_previous' && hasPredecessors ? 'after previous step, at' : 'after start, at'
       return (
         <div className="flex flex-wrap items-center gap-2">
           <DaysInput value={rule.days} min={min} onChange={(d) => set({ days: d })} disabled={disabled} label={`${word}: number of days`} invalid={invalid} />
@@ -266,7 +256,9 @@ function RuleParams<R extends StartRule | DueRule>({
           )}
           {isMonthDay && (
             <div className="max-w-[340px]">
-              <span className={SUB}>Day of the month</span>
+              <span className={SUB}>
+                Day of the month <InfoTip label="Day of the month" text="Shorter months use their last day instead." />
+              </span>
               <MonthDayGrid value={rule.day} onChange={(d) => set({ day: d })} disabled={disabled} label={`${word}: day of the month`} />
             </div>
           )}
@@ -337,25 +329,28 @@ export default function StepTiming({
   const startKinds = allowedStartKinds(f).filter((k) => k !== 'days_after_previous' || hasPredecessors || start.kind === k)
   const startOptions: { value: string; label: string }[] = startKinds.map((k) => ({ value: k, label: startKindLabel(k, f, hasPredecessors) }))
   if (!startKinds.includes(start.kind)) {
-    startOptions.push({ value: start.kind, label: `${startKindLabel(start.kind, f, hasPredecessors)} — not available now` })
+    startOptions.push({ value: start.kind, label: `${startKindLabel(start.kind, f, hasPredecessors)} (not available)` })
   }
   const dueKinds = allowedDueKinds(f)
   const dueOptions: { value: string; label: string }[] = dueKinds.map((k) => ({ value: k, label: dueKindLabel(k, f) }))
-  if (!dueKinds.includes(due.kind)) dueOptions.push({ value: due.kind, label: `${dueKindLabel(due.kind, f)} — not available now` })
+  if (!dueKinds.includes(due.kind)) dueOptions.push({ value: due.kind, label: `${dueKindLabel(due.kind, f)} (not available)` })
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-start gap-2 rounded-[10px] border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2.5">
-        <CalendarClock size={16} className="shrink-0 mt-0.5 text-[#2563EB]" aria-hidden />
-        <p className="text-[13px] text-[#334155]">{frequencyNote(f)}</p>
-      </div>
+      <h3 className="flex items-center gap-1 text-sm font-semibold text-[#0F172A]">
+        Timing <InfoTip label="Timing" text={frequencyNote(f)} />
+      </h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-6">
         {/* Starts */}
         <div className="flex flex-col gap-4 min-w-0">
           {startsAfter}
           <div>
-            <span id={`${idPrefix}-starts-label`} className={LABEL}>
-              Starts
+            <span className={LABEL}>
+              <span id={`${idPrefix}-starts-label`}>Starts</span>{' '}
+              <InfoTip
+                label="Starts"
+                text={hasPredecessors ? 'Waits for previous steps. Holidays shift it to the next working day.' : 'Holidays shift it to the next working day.'}
+              />
             </span>
             <div aria-labelledby={`${idPrefix}-starts-label`} className={startProblem && !startKinds.includes(start.kind) ? 'rounded-[8px] ring-1 ring-[#DC2626]' : ''}>
               <StyledSelect
@@ -370,17 +365,18 @@ export default function StepTiming({
                 <RuleParams rule={start} f={f} which="start" hasPredecessors={hasPredecessors} disabled={disabled} invalid={!!startProblem} onChange={(r) => onChange({ start_rule: r })} />
               </div>
             )}
-            {startProblem ? <ProblemLine message={startProblem.message} /> : <p className={`mt-1.5 ${HELP}`}>{describeStart(start, f, hasPredecessors)}</p>}
-            {start.kind !== 'immediate' && !startProblem && (
-              <p className={`mt-1 ${HELP}`}>A start on a holiday or weekly off moves to the next working day. It never starts before the steps before it are done.</p>
-            )}
+            {startProblem && <ProblemLine message={startProblem.message} />}
           </div>
         </div>
 
         {/* Due */}
         <div className="min-w-0">
-          <span id={`${idPrefix}-due-label`} className={LABEL}>
-            Due
+          <span className={LABEL}>
+            <span id={`${idPrefix}-due-label`}>Due</span>{' '}
+            <InfoTip
+              label="Due"
+              text={due.kind === 'days_after_start' ? 'Days count from this step’s start, skipping holidays and weekly offs.' : 'The next matching date after this step starts.'}
+            />
           </span>
           <div aria-labelledby={`${idPrefix}-due-label`} className={dueProblem && !dueKinds.includes(due.kind) ? 'rounded-[8px] ring-1 ring-[#DC2626]' : ''}>
             <StyledSelect
@@ -393,7 +389,7 @@ export default function StepTiming({
           <div className="mt-3">
             <RuleParams rule={due} f={f} which="due" hasPredecessors={hasPredecessors} disabled={disabled} invalid={!!dueProblem} onChange={(r) => onChange({ due_rule: r })} />
           </div>
-          {dueProblem ? <ProblemLine message={dueProblem.message} /> : <p className={`mt-1.5 ${HELP}`}>{describeDueRule(due, f)}</p>}
+          {dueProblem && <ProblemLine message={dueProblem.message} />}
         </div>
       </div>
     </div>

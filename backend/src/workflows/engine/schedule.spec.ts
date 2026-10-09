@@ -106,17 +106,17 @@ describe('workflow schedules (recurring-task format)', () => {
   it('says what a schedule is missing before it can run', () => {
     const base = { schedule_type: 'daily', time: '09:00', start_date: '2026-10-01', end_condition: 'never' }
     expect(scheduleEntryProblem(base)).toBeNull()
-    expect(scheduleEntryProblem({ ...base, schedule_type: 'weekly', days: [] })).toBe('Pick at least one day of the week.')
-    expect(scheduleEntryProblem({ ...base, schedule_type: 'monthly' })).toBe('Pick at least one day of the month.')
-    expect(scheduleEntryProblem({ ...base, schedule_type: 'yearly', yearly_dates: [] })).toBe('Pick at least one date in the year.')
+    expect(scheduleEntryProblem({ ...base, schedule_type: 'weekly', days: [] })).toBe('choose at least one day of the week.')
+    expect(scheduleEntryProblem({ ...base, schedule_type: 'monthly' })).toBe('choose at least one day of the month.')
+    expect(scheduleEntryProblem({ ...base, schedule_type: 'yearly', yearly_dates: [] })).toBe('choose at least one date.')
     expect(scheduleEntryProblem({ ...base, end_condition: 'on_date' })).toBe(
-      'Pick the date it ends on, or choose another way for it to end.',
+      'choose an end date.',
     )
     expect(scheduleEntryProblem({ ...base, end_condition: 'on_date', end_date: '2026-09-01' })).toBe(
-      'The end date can’t be before the start date.',
+      'the end date can’t be before the start date.',
     )
     expect(scheduleEntryProblem({ ...base, end_condition: 'after_n', end_after: 0 })).toBe(
-      'Say after how many runs it ends (1 or more).',
+      'enter how many runs it ends after (1 or more).',
     )
   })
 })

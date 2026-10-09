@@ -41,15 +41,17 @@ export function workflowErrorMessage(e: unknown, fallback = 'Something went wron
 
 /**
  * What a refused save points at: a step (`step_key` — the key it was sent with — and its
- * `step_id` once saved) or "How it starts" (`code: 'starts_invalid'`, `schedule_index`).
+ * `step_id` once saved), a track (`code: 'track_invalid'`, `track_key`) or "How it
+ * starts" (`code: 'starts_invalid'`, `schedule_index`).
  */
 export function workflowErrorTarget(e: unknown): {
   code: string | null
   stepKey: string | null
   stepId: string | null
+  trackKey: string | null
   scheduleIndex: number | null
 } {
-  const none = { code: null, stepKey: null, stepId: null, scheduleIndex: null }
+  const none = { code: null, stepKey: null, stepId: null, trackKey: null, scheduleIndex: null }
   if (!axios.isAxiosError(e)) return none
   const raw = e.response?.data as Record<string, unknown> | undefined
   const data = (raw && typeof raw.data === 'object' && raw.data ? (raw.data as Record<string, unknown>) : raw) ?? {}
@@ -58,6 +60,7 @@ export function workflowErrorTarget(e: unknown): {
     code: str(data.code) ?? str(raw?.code),
     stepKey: str(data.step_key) ?? str(raw?.step_key),
     stepId: str(data.step_id) ?? str(raw?.step_id),
+    trackKey: str(data.track_key) ?? str(raw?.track_key),
     scheduleIndex: typeof data.schedule_index === 'number' ? data.schedule_index : typeof raw?.schedule_index === 'number' ? (raw.schedule_index as number) : null,
   }
 }

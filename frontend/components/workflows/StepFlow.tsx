@@ -3,20 +3,12 @@
 import React, { useMemo } from 'react'
 import { AlertTriangle, Clock, Users } from 'lucide-react'
 import type { WorkflowStep } from '@/lib/types/workflows'
-import FlowDiagram, { type FlowDiagramNode } from './FlowDiagram'
+import FlowDiagram, { type FlowDiagramNode, type FlowLane } from './FlowDiagram'
 import { namesSummary } from './shared'
+import { MAIN_TRACK, layoutTracks, stepName, trackLabel, type TrackDraft, type TrackLayout } from './tracks'
 import { dueRuleOf, startRuleOf, timingProblems, timingSummary, type Frequency } from './timing'
 
 const MANUAL: Frequency = { type: 'manual' }
-
-/** Steps in display order, numbered from 1. */
-export function orderSteps(steps: WorkflowStep[]): WorkflowStep[] {
-  return steps.slice().sort((a, b) => a.order_index - b.order_index || a.created_at.localeCompare(b.created_at))
-}
-
-export function stepNumbers(steps: WorkflowStep[]): Map<string, number> {
-  return new Map(orderSteps(steps).map((s, i) => [s.id, i + 1]))
-}
 
 /** Names of a step's assignees, from the server's resolved list or the member list. */
 export function assigneeNames(step: Pick<WorkflowStep, 'assignee_user_ids' | 'assignees'>, memberName?: (id: string) => string | undefined): string[] {
@@ -24,37 +16,65 @@ export function assigneeNames(step: Pick<WorkflowStep, 'assignee_user_ids' | 'as
   return (step.assignee_user_ids ?? []).map((id) => memberName?.(id) ?? 'Someone no longer active')
 }
 
+/** The lanes of a track layout: label + where the track starts. */
+export function flowLanes(layout: TrackLayout): FlowLane[] {
+  return layout.tracks.map((t) => {
+    const g = layout.groups.get(t.key) ?? []
+    const first = g[0]
+    const split = first ? layout.deps.get(first.id)?.[0] : undefined
+    const splitOk = t.key !== MAIN_TRACK && !!t.split_from && split === t.split_from
+    return {
+      key: t.key,
+      label: trackLabel(t),
+      hint:
+        t.key === MAIN_TRACK
+          ? undefined
+          : splitOk
+            ? `After ${layout.labels.get(t.split_from!) ?? '?'}`
+            : 'After start of run',
+    }
+  })
+}
+
 /**
- * The workflow's steps as a flow: steps on the same level run side by side, arrows show
- * what each step starts after. Read-only; `onOpen` makes each box a button.
+ * The workflow's steps as a flow, one lane per track: arrows show what each step waits
+ * for (the step before it, the step its track splits from, and steps in other tracks it
+ * also waits for). Read-only; `onOpen` makes each box a button. `steps` order decides
+ * each step's position in its track.
  */
 export default function StepFlow({
   steps,
+  tracks,
   onOpen,
   memberName,
   compact = false,
   frequency,
 }: {
   steps: WorkflowStep[]
+  tracks: TrackDraft[]
   onOpen?: (step: WorkflowStep) => void
   memberName?: (id: string) => string | undefined
   compact?: boolean
   /** How the workflow repeats (for the words of cycle timing). */
   frequency?: Frequency
 }) {
-  const nums = useMemo(() => stepNumbers(steps), [steps])
+  const layout = useMemo(() => layoutTracks(tracks, steps), [tracks, steps])
+  const lanes = useMemo(() => flowLanes(layout), [layout])
   const nodes: FlowDiagramNode[] = useMemo(
     () =>
-      orderSteps(steps).map((s) => {
-        const n = nums.get(s.id) ?? 0
+      layout.display.map((s) => {
+        const n = layout.labels.get(s.id) ?? '?'
         const names = assigneeNames(s, memberName)
+        const deps = layout.deps.get(s.id) ?? []
         const timingOff = !!frequency && timingProblems(startRuleOf(s), dueRuleOf(s), frequency).length > 0
         const missing = !s.title?.trim() || names.length === 0 || timingOff
         return {
           id: s.id,
-          deps: s.depends_on_step_ids ?? [],
-          order: s.order_index,
-          label: `Step ${n}: ${s.title || 'Untitled step'}`,
+          deps,
+          order: layout.order.get(s.id) ?? 0,
+          lane: layout.trackOf.get(s.id),
+          alsoWaitsFor: (layout.merges.get(s.id) ?? []).map((m) => layout.labels.get(m) ?? '?'),
+          label: `${stepName(n, null)}: ${s.title || 'Untitled step'}`,
           tone: missing ? 'attention' : 'default',
           onClick: onOpen ? () => onOpen(s) : undefined,
           content: (
@@ -67,24 +87,24 @@ export default function StepFlow({
               </div>
               <span className="flex items-center gap-1.5 text-[12px] text-[#334155] min-w-0">
                 <Users size={12} className="shrink-0 text-[#475569]" />
-                <span className="truncate">{names.length ? namesSummary(names.map((name) => ({ name })), 2) : 'No one assigned yet'}</span>
+                <span className="truncate">{names.length ? namesSummary(names.map((name) => ({ name })), 2) : 'No one assigned'}</span>
               </span>
               <span className="flex items-center gap-1.5 text-[12px] text-[#334155]">
                 <Clock size={12} className="shrink-0 text-[#475569]" />
-                {timingSummary(startRuleOf(s), dueRuleOf(s), frequency ?? MANUAL, (s.depends_on_step_ids ?? []).length > 0)}
-                {s.if_late === 'move_on' && <span className="text-[#475569]">· moves on if late</span>}
+                {timingSummary(startRuleOf(s), dueRuleOf(s), frequency ?? MANUAL, deps.length > 0)}
+                {s.if_late === 'move_on' && <span className="text-[#475569]">· continues if late</span>}
               </span>
               {missing && (
                 <span className="flex items-center gap-1.5 text-[12px] font-medium text-[#B91C1C]">
                   <AlertTriangle size={12} className="shrink-0" />
-                  {!s.title?.trim() ? 'Needs a title' : names.length === 0 ? 'Needs an assignee' : 'Timing needs a change'}
+                  {!s.title?.trim() ? 'Needs a title' : names.length === 0 ? 'Needs an assignee' : 'Fix timing'}
                 </span>
               )}
             </div>
           ),
         }
       }),
-    [steps, nums, onOpen, memberName, frequency],
+    [layout, onOpen, memberName, frequency],
   )
-  return <FlowDiagram nodes={nodes} compact={compact} />
+  return <FlowDiagram nodes={nodes} lanes={lanes} compact={compact} />
 }

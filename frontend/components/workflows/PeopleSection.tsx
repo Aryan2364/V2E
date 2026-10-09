@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import type { PersonRef } from '@/lib/types/workflows'
 import type { WorkflowLookups } from './useWorkflowLookups'
 import PeoplePicker, { personNames } from './PeoplePicker'
+import { InfoTip } from './shared'
 
 export interface PeopleValue {
   ownerIds: string[]
@@ -12,17 +13,9 @@ export interface PeopleValue {
 
 type Key = keyof PeopleValue
 
-const ROWS: { key: Key; label: string; help: string }[] = [
-  {
-    key: 'ownerIds',
-    label: 'Owners',
-    help: 'Can do everything, are told when a step is late or a run needs attention, and decide who else is involved. At least one.',
-  },
-  {
-    key: 'editorIds',
-    label: 'Can change it',
-    help: 'Change its steps and how it starts, pause or resume it, and manage its runs.',
-  },
+const ROWS: { key: Key; label: string; tip: string }[] = [
+  { key: 'ownerIds', label: 'Owners', tip: 'Full control. Alerted when something is late or stuck.' },
+  { key: 'editorIds', label: 'Editors', tip: 'Can edit steps, pause, and manage runs.' },
 ]
 
 /**
@@ -69,10 +62,9 @@ export default function PeopleSection({
       className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-5"
     >
       <div className="min-w-0">
-        <h2 id="people-heading" className="text-[18px] font-semibold text-[#0F172A]">
-          People
+        <h2 id="people-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+          People <InfoTip label="People" text="Everyone in your organisation can view live workflows." />
         </h2>
-        <p className="text-[13px] text-[#475569]">Everyone in your organisation can view this workflow while it is live.</p>
       </div>
 
       {allowed === false && (
@@ -84,7 +76,7 @@ export default function PeopleSection({
           <div key={r.key} className="min-w-0">
             <span className="block text-sm font-medium text-[#374151] mb-2">
               {r.label}
-              {r.key === 'ownerIds' && <span className="text-[#DC2626]"> *</span>}
+              {r.key === 'ownerIds' && <span className="text-[#DC2626]"> *</span>} <InfoTip label={r.label} text={r.tip} />
             </span>
             <PeoplePicker
               orgId={orgId}
@@ -98,11 +90,7 @@ export default function PeopleSection({
               placeholder={r.key === 'editorIds' ? 'No one yet' : undefined}
               currentUser={currentUser}
             />
-            {r.key === 'ownerIds' && ownerError ? (
-              <p className="mt-1.5 text-[13px] text-[#B91C1C]">{ownerError}</p>
-            ) : (
-              <p className="mt-1.5 text-[13px] text-[#475569]">{r.help}</p>
-            )}
+            {r.key === 'ownerIds' && ownerError && <p className="mt-1.5 text-[13px] text-[#B91C1C]">{ownerError}</p>}
           </div>
         ))}
       </div>

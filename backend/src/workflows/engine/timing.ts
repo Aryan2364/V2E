@@ -105,23 +105,23 @@ function parseCalendar(r: Record<string, unknown>, which: Which): Parsed<Calenda
   }
   const time = r.time
   if (typeof time !== 'string' || !TIME_RE.test(time)) {
-    return { ok: false, problem: `the ${f} needs a 24-hour time like 09:00.` }
+    return { ok: false, problem: `enter a ${which === 'start' ? 'start' : 'due'} time.` }
   }
   const weekday = (): Parsed<number> =>
-    isInt(r.weekday, 0, 6) ? { ok: true, rule: r.weekday } : { ok: false, problem: `pick a day of the week for the ${f}.` }
+    isInt(r.weekday, 0, 6) ? { ok: true, rule: r.weekday } : { ok: false, problem: `choose a day of the week for the ${f}.` }
   const monthDay = (): Parsed<MonthDay> =>
     r.day === 'last' || isInt(r.day, 1, 31)
       ? { ok: true, rule: r.day as MonthDay }
-      : { ok: false, problem: `pick a day of the month (1–31 or “Last day”) for the ${f}.` }
+      : { ok: false, problem: `choose a day of the month for the ${f}.` }
   const yearDate = (): Parsed<{ month: number; day: number }> => {
-    if (!isInt(r.month, 1, 12)) return { ok: false, problem: `pick a month for the ${f}.` }
-    if (!isInt(r.day, 1, maxDayOf(r.month))) return { ok: false, problem: `pick a real date for the ${f}.` }
+    if (!isInt(r.month, 1, 12)) return { ok: false, problem: `choose a month for the ${f}.` }
+    if (!isInt(r.day, 1, maxDayOf(r.month))) return { ok: false, problem: `choose a valid date for the ${f}.` }
     return { ok: true, rule: { month: r.month, day: r.day } }
   }
   const cycle = (): Parsed<number> =>
     isInt(r.cycle, 1, MAX_CYCLE)
       ? { ok: true, rule: r.cycle }
-      : { ok: false, problem: `pick which part of the repeat cycle the ${f} falls in.` }
+      : { ok: false, problem: `choose a cycle for the ${f}.` }
 
   switch (r.kind) {
     case 'time_of_day':
@@ -177,12 +177,12 @@ export function parseStartRule(raw: unknown): Parsed<StartRule> {
           ok: false,
           problem:
             raw.kind === 'days_after_previous'
-              ? `“days after the steps before it are done” must be a whole number from 1 to ${MAX_RULE_DAYS}.`
-              : `“days after the run starts” must be a whole number from 0 to ${MAX_RULE_DAYS}.`,
+              ? `start days must be 1 to ${MAX_RULE_DAYS}.`
+              : `start days must be 0 to ${MAX_RULE_DAYS}.`,
         }
       }
       if (typeof raw.time !== 'string' || !TIME_RE.test(raw.time)) {
-        return { ok: false, problem: 'the start needs a 24-hour time like 09:00.' }
+        return { ok: false, problem: 'enter a start time.' }
       }
       return { ok: true, rule: { kind: raw.kind, days: raw.days, time: raw.time } }
     }
@@ -196,10 +196,10 @@ export function parseDueRule(raw: unknown): Parsed<DueRule> {
   if (!isObj(raw)) return { ok: false, problem: 'choose when it is due.' }
   if (raw.kind === 'days_after_start') {
     if (!isInt(raw.days, 0, MAX_RULE_DAYS)) {
-      return { ok: false, problem: `“days after it starts” must be a whole number from 0 to ${MAX_RULE_DAYS}.` }
+      return { ok: false, problem: `due days must be 0 to ${MAX_RULE_DAYS}.` }
     }
     if (typeof raw.time !== 'string' || !TIME_RE.test(raw.time)) {
-      return { ok: false, problem: 'the due date needs a 24-hour time like 18:00.' }
+      return { ok: false, problem: 'enter a due time.' }
     }
     return { ok: true, rule: { kind: 'days_after_start', days: raw.days, time: raw.time } }
   }
@@ -301,27 +301,27 @@ export function allowedDueKinds(freq: Frequency): DueKind[] {
 const UNIT = { weekly: 'week', monthly: 'month', yearly: 'year', daily: 'day' } as const
 const CYCLE_UNIT = { weekly: 'Week', monthly: 'Month', yearly: 'Year' } as const
 
-/** "this workflow repeats monthly — pick a day of the month or “days after”." */
+/** "the workflow repeats monthly. Choose “Day of the month” or a “Days after” option." */
 export function frequencyHint(freq: Frequency): string {
   switch (freq.kind) {
     case 'manual':
-      return 'this workflow only starts by hand — pick “days after” instead of a calendar date.'
+      return 'the workflow starts manually. Choose a “Days after” option.'
     case 'mixed':
-      return 'this workflow’s schedules repeat in different ways — pick “days after” instead of a calendar date.'
+      return 'the schedules repeat differently. Choose a “Days after” option.'
     case 'daily':
-      return `this workflow repeats ${freq.every >= 2 ? `every ${freq.every} days` : 'daily'} — pick a time of day or “days after”.`
+      return `the workflow repeats ${freq.every >= 2 ? `every ${freq.every} days` : 'daily'}. Choose “Time of day” or a “Days after” option.`
     case 'weekly':
       return freq.every >= 2
-        ? `this workflow repeats every ${freq.every} weeks — pick a week and day (like “Week 2, Mon”) or “days after”.`
-        : 'this workflow repeats weekly — pick a day of the week or “days after”.'
+        ? `the workflow repeats every ${freq.every} weeks. Choose “Day in ${freq.every}-week cycle” or a “Days after” option.`
+        : 'the workflow repeats weekly. Choose “Day of the week” or a “Days after” option.'
     case 'monthly':
       return freq.every >= 2
-        ? `this workflow repeats every ${freq.every} months — pick a month and day (like “Month 2, 5th”) or “days after”.`
-        : 'this workflow repeats monthly — pick a day of the month or “days after”.'
+        ? `the workflow repeats every ${freq.every} months. Choose “Day in ${freq.every}-month cycle” or a “Days after” option.`
+        : 'the workflow repeats monthly. Choose “Day of the month” or a “Days after” option.'
     case 'yearly':
       return freq.every >= 2
-        ? `this workflow repeats every ${freq.every} years — pick a year and date (like “Year 2, 5 Jun”) or “days after”.`
-        : 'this workflow repeats yearly — pick a date or “days after”.'
+        ? `the workflow repeats every ${freq.every} years. Choose “Day in ${freq.every}-year cycle” or a “Days after” option.`
+        : 'the workflow repeats yearly. Choose “Date” or a “Days after” option.'
   }
 }
 
@@ -330,7 +330,7 @@ function ruleFrequencyProblem(rule: StartRule | DueRule, allowed: readonly strin
   if ('cycle' in rule && (freq.kind === 'weekly' || freq.kind === 'monthly' || freq.kind === 'yearly')) {
     if (rule.cycle > freq.every) {
       const u = CYCLE_UNIT[freq.kind]
-      return `this workflow repeats every ${freq.every} ${UNIT[freq.kind]}s — pick ${u} 1 to ${u} ${freq.every}.`
+      return `the workflow repeats every ${freq.every} ${UNIT[freq.kind]}s. Choose ${u} 1 to ${u} ${freq.every}.`
     }
   }
   return null

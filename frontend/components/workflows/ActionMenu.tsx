@@ -16,6 +16,8 @@ export interface ActionMenuItem {
   allowed?: boolean | undefined
   reason?: string
   hidden?: boolean
+  /** A short explanation shown on hover while the item is allowed. */
+  tip?: string
 }
 
 const MENU_W = 208
@@ -142,7 +144,7 @@ export default function ActionMenu({ items, label = 'More actions' }: { items: A
               )
               return (
                 <PermissionTooltip key={item.key} allowed={allowed} reason={item.reason ?? ''} className="flex w-full">
-                  {btn}
+                  {allowed === true && item.tip ? <Tooltip label={item.tip}>{btn}</Tooltip> : btn}
                 </PermissionTooltip>
               )
             })}

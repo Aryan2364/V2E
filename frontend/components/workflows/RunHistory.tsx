@@ -50,11 +50,14 @@ export default function RunHistory({
   templateId,
   instanceId,
   refreshKey,
+  stepLabels,
 }: {
   orgId: string
   templateId: string
   instanceId: string
   refreshKey: number
+  /** Run row id → its number ("1", "B2"), to tag what each entry is about. */
+  stepLabels?: Map<string, string>
 }) {
   const [events, setEvents] = useState<WorkflowRunEvent[]>([])
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
@@ -99,7 +102,7 @@ export default function RunHistory({
           </button>
         </div>
       ) : events.length === 0 ? (
-        <p className="text-sm text-[#475569]">Nothing has happened yet.</p>
+        <p className="text-sm text-[#475569]">No activity yet.</p>
       ) : (
         <>
           <ol className="flex flex-col">
@@ -110,6 +113,7 @@ export default function RunHistory({
               // Some messages leave out who did it ("added “x.pdf”"): put the name in front.
               const named = !!e.actor && /^[a-z]/.test(e.message)
               const text = named ? `${e.actor!.name} ${e.message}` : e.message
+              const stepLabel = e.instance_step_id ? stepLabels?.get(e.instance_step_id) : undefined
               return (
                 <li key={e.id} className="relative flex gap-3 pb-4 last:pb-0">
                   {i < Math.min(limit, events.length) - 1 && <span aria-hidden className="absolute left-[13px] top-7 bottom-0 w-px bg-[#E2E8F0]" />}
@@ -122,6 +126,11 @@ export default function RunHistory({
                       <p className="mt-1 text-[13px] text-[#334155] rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] px-2.5 py-1.5 whitespace-pre-wrap break-words">“{reason}”</p>
                     )}
                     <p className="text-[12px] text-[#475569]">
+                      {stepLabel && (
+                        <span className="inline-flex items-center mr-1.5 rounded-full border border-[#CBD5E1] bg-white px-1.5 text-[11px] font-semibold text-[#334155]">
+                          Step {stepLabel}
+                        </span>
+                      )}
                       {e.actor && !named && !e.message.includes(e.actor.name) ? `${e.actor.name} · ` : ''}
                       {fmtDateTime(e.created_at)}
                     </p>

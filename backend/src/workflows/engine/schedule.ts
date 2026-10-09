@@ -140,25 +140,25 @@ export function scheduleEntryProblem(e: {
   end_after?: number | null
 }): string | null {
   if (!['daily', 'weekly', 'monthly', 'yearly'].includes(e.schedule_type)) {
-    return 'Choose how often it repeats: daily, weekly, monthly or yearly.'
+    return 'choose how often it repeats.'
   }
   if (e.every !== undefined && e.every !== null && (!Number.isInteger(e.every) || e.every < 1)) {
-    return '“Every” must be a whole number of 1 or more.'
+    return '“Every” must be 1 or more.'
   }
   const list = (v: unknown) => (Array.isArray(v) ? v : [])
-  if (e.schedule_type === 'weekly' && list(e.days).length === 0) return 'Pick at least one day of the week.'
-  if (e.schedule_type === 'monthly' && list(e.month_days).length === 0) return 'Pick at least one day of the month.'
-  if (e.schedule_type === 'yearly' && list(e.yearly_dates).length === 0) return 'Pick at least one date in the year.'
-  if (!e.time || !HHMM.test(e.time)) return 'Set the time it starts, like 09:00.'
+  if (e.schedule_type === 'weekly' && list(e.days).length === 0) return 'choose at least one day of the week.'
+  if (e.schedule_type === 'monthly' && list(e.month_days).length === 0) return 'choose at least one day of the month.'
+  if (e.schedule_type === 'yearly' && list(e.yearly_dates).length === 0) return 'choose at least one date.'
+  if (!e.time || !HHMM.test(e.time)) return 'enter a start time.'
   const start = e.start_date instanceof Date ? storedCalendarDate(e.start_date) : parseLocalDate(e.start_date)
-  if (!start) return 'Pick the date it starts from.'
+  if (!start) return 'choose a start date.'
   if (e.end_condition === 'on_date') {
     const end = e.end_date instanceof Date ? storedCalendarDate(e.end_date) : parseLocalDate(e.end_date)
-    if (!end) return 'Pick the date it ends on, or choose another way for it to end.'
-    if (compareLocalDates(end, start) < 0) return 'The end date can’t be before the start date.'
+    if (!end) return 'choose an end date.'
+    if (compareLocalDates(end, start) < 0) return 'the end date can’t be before the start date.'
   }
   if (e.end_condition === 'after_n' && (!Number.isInteger(e.end_after) || (e.end_after as number) < 1)) {
-    return 'Say after how many runs it ends (1 or more).'
+    return 'enter how many runs it ends after (1 or more).'
   }
   return null
 }

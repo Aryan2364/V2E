@@ -1897,6 +1897,10 @@ model WorkflowTemplate {
   recurring_type             WorkflowRecurringType?
   // "How it starts → Manually". Off = no Start button; only its schedule starts it.
   manual_start_enabled       Boolean                @default(true)
+  // Steps live in tracks (src/workflows/tracks.ts): `[{ key: 'main'|'B'|'C'…, name,
+  // split_from_step_id }]`, main first; array order = display order. A track other
+  // than main starts after its split step (null = when the workflow starts).
+  tracks                     Json                   @default("[]")
   created_at                 DateTime               @default(now())
   updated_at                 DateTime               @updatedAt
 
@@ -1916,7 +1920,12 @@ model WorkflowStep {
   id                       String                @id @default(uuid())
   organization_id          String
   workflow_template_id     String
+  // Position within its track (`track_key`): step N+1 waits for step N of the track.
   order_index              Int                   @default(0)
+  // The track the step is in ('main', 'B', …; WorkflowTemplate.tracks).
+  track_key                String                @default("main")
+  // "Also wait for": ids of steps in OTHER tracks this step also waits for (a merge).
+  merge_step_ids           Json                  @default("[]")
   title                    String
   description              String?               @db.Text
   assignee_type            WorkflowAssigneeType  @default(fixed_person)
@@ -1954,7 +1963,9 @@ model WorkflowStep {
   // 'wait' (dependents wait for it) | 'move_on' (dependents start; the task stays open).
   if_late                  String                @default("wait")
   // Ids of steps of the same template this step starts after (ALL must be done).
-  // Empty = starts when the run starts. order_index is display order only.
+  // Empty = starts when the run starts. DERIVED from the tracks on every save (the
+  // previous step in its track, or its track's split step, plus merge_step_ids); the
+  // engine, snapshots and planning read only this.
   depends_on_step_ids      Json                  @default("[]")
   // Step timing (engine/timing.ts). `{ kind, ...params, time: 'HH:mm' }`; the kinds
   // allowed depend on how the workflow repeats (its schedules). NULL = legacy: start

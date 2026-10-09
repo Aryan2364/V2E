@@ -15,8 +15,8 @@ import { BTN, EmptyState, ErrorState, GatedButton, REASONS, WORKFLOWS_BASE, useW
 type View = 'owned' | 'runs' | 'assigned'
 const VIEWS: { value: View; label: string }[] = [
   { value: 'owned', label: 'Workflows I own' },
-  { value: 'runs', label: 'Runs of my workflows' },
-  { value: 'assigned', label: 'Runs I work on' },
+  { value: 'runs', label: 'My workflow runs' },
+  { value: 'assigned', label: 'Assigned to me' },
 ]
 
 type Load<T> = { status: 'loading' | 'ready' | 'failed'; data: T[]; error: string }
@@ -112,7 +112,6 @@ function MyWorkflows() {
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <h1 className="text-[22px] sm:text-[28px] font-bold text-[#0F172A] leading-tight">My workflows</h1>
-            <p className="text-[13px] text-[#475569] mt-0.5">Workflows you own, their runs, and runs where a step is yours.</p>
           </div>
           {newButton}
         </div>
@@ -155,8 +154,8 @@ function MyWorkflows() {
         ) : owned.data.length === 0 ? (
           <EmptyState
             icon={WorkflowIcon}
-            title="You don't own any workflows"
-            text="Workflows you create, or are made an owner of, appear here. Archived ones are on the Workflows page."
+            title="No workflows yet"
+            text="Workflows you own appear here."
             action={
               <Link href={WORKFLOWS_BASE} className={BTN.secondary}>
                 Go to all workflows
@@ -190,7 +189,7 @@ function MyWorkflows() {
             loading={runs.status === 'loading'}
             emptyState={
               <div className="bg-white border border-[#E2E8F0] rounded-[12px]">
-                <EmptyState icon={History} title="No runs yet" text="When a workflow you own is started, by hand or by a trigger, its runs appear here." />
+                <EmptyState icon={History} title="No runs yet" text="Runs of workflows you own appear here." />
               </div>
             }
           />
@@ -206,7 +205,7 @@ function MyWorkflows() {
             loading={assigned.status === 'loading'}
             emptyState={
               <div className="bg-white border border-[#E2E8F0] rounded-[12px]">
-                <EmptyState icon={UserCheck} title="No steps are waiting on you" text="Runs in progress where you are assigned a step appear here. Your step's task is also in My tasks." />
+                <EmptyState icon={UserCheck} title="No runs yet" text="Runs where you have a step appear here." />
               </div>
             }
           />

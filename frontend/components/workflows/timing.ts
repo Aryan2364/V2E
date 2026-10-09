@@ -12,7 +12,7 @@
 
 import type { RecurringScheduleType } from '@/lib/types/tasks'
 import type { CalendarRuleKind, DueRule, DueRuleKind, RuleMonthDay, StartRule, StartRuleKind } from '@/lib/types/workflows'
-import { MONTHS_LONG, WEEKDAYS_LONG, WEEKDAYS_SHORT, fmtTime, ordinal, plural } from './shared'
+import { WEEKDAYS_SHORT, fmtTime, ordinal, plural } from './shared'
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -98,101 +98,86 @@ function cycleUnit(f: Frequency): 'Week' | 'Month' | 'Year' | null {
   return null
 }
 
-/** The short note above a step's timing: what this frequency lets steps use. */
+/** The ⓘ note on a step's "Timing": what this frequency lets steps use, in one line. */
 export function frequencyNote(f: Frequency): string {
   switch (f.type) {
     case 'manual':
-      return 'This workflow is only started by hand, so steps are timed in days — after the run starts or after the steps before them.'
+      return 'Manual workflows use days, not dates.'
     case 'mixed':
-      return 'This workflow’s schedules repeat in different ways, so steps are timed in days — after the run starts or after the steps before them.'
+      return 'The schedules repeat differently, so steps use days, not dates.'
     case 'daily':
-      return `This workflow repeats ${f.every >= 2 ? `every ${f.every} days` : 'daily'}, so steps can also start or be due at a time of day.`
+      return f.every >= 2 ? `Repeats every ${f.every} days, so steps can also use a time of day.` : 'Daily workflows can also use a time of day.'
     case 'weekly':
-      return f.every >= 2
-        ? `This workflow repeats every ${f.every} weeks, so steps can use a day in the ${f.every}-week cycle. Week 1 is the week the run starts.`
-        : 'This workflow repeats weekly, so steps can use days of the week.'
+      return f.every >= 2 ? `Repeats every ${f.every} weeks. Week 1 is when the run starts.` : 'Weekly workflows can also use a day of the week.'
     case 'monthly':
-      return f.every >= 2
-        ? `This workflow repeats every ${f.every} months, so steps can use a day in the ${f.every}-month cycle. Month 1 is the month the run starts.`
-        : 'This workflow repeats monthly, so steps can use days of the month.'
+      return f.every >= 2 ? `Repeats every ${f.every} months. Month 1 is when the run starts.` : 'Monthly workflows can also use a day of the month.'
     case 'yearly':
-      return f.every >= 2
-        ? `This workflow repeats every ${f.every} years, so steps can use a date in the ${f.every}-year cycle. Year 1 is the year the run starts.`
-        : 'This workflow repeats yearly, so steps can use dates.'
+      return f.every >= 2 ? `Repeats every ${f.every} years. Year 1 is when the run starts.` : 'Yearly workflows can also use a date.'
   }
 }
 
 /**
  * Why a kind does not fit this frequency — the server's own words, so the step shows the
- * message Save would give: "this workflow repeats monthly — pick a day of the month or
- * “days after”."
+ * message Save would give: "the workflow repeats monthly. Choose “Day of the month” or a
+ * “Days after” option."
  */
 export function frequencyHint(f: Frequency): string {
   switch (f.type) {
     case 'manual':
-      return 'this workflow only starts by hand — pick “days after” instead of a calendar date.'
+      return 'the workflow starts manually. Choose a “Days after” option.'
     case 'mixed':
-      return 'this workflow’s schedules repeat in different ways — pick “days after” instead of a calendar date.'
+      return 'the schedules repeat differently. Choose a “Days after” option.'
     case 'daily':
-      return `this workflow repeats ${f.every >= 2 ? `every ${f.every} days` : 'daily'} — pick a time of day or “days after”.`
+      return `the workflow repeats ${f.every >= 2 ? `every ${f.every} days` : 'daily'}. Choose “Time of day” or a “Days after” option.`
     case 'weekly':
       return f.every >= 2
-        ? `this workflow repeats every ${f.every} weeks — pick a week and day (like “Week 2, Mon”) or “days after”.`
-        : 'this workflow repeats weekly — pick a day of the week or “days after”.'
+        ? `the workflow repeats every ${f.every} weeks. Choose “Day in ${f.every}-week cycle” or a “Days after” option.`
+        : 'the workflow repeats weekly. Choose “Day of the week” or a “Days after” option.'
     case 'monthly':
       return f.every >= 2
-        ? `this workflow repeats every ${f.every} months — pick a month and day (like “Month 2, 5th”) or “days after”.`
-        : 'this workflow repeats monthly — pick a day of the month or “days after”.'
+        ? `the workflow repeats every ${f.every} months. Choose “Day in ${f.every}-month cycle” or a “Days after” option.`
+        : 'the workflow repeats monthly. Choose “Day of the month” or a “Days after” option.'
     case 'yearly':
       return f.every >= 2
-        ? `this workflow repeats every ${f.every} years — pick a year and date (like “Year 2, 5 Jun”) or “days after”.`
-        : 'this workflow repeats yearly — pick a date or “days after”.'
+        ? `the workflow repeats every ${f.every} years. Choose “Day in ${f.every}-year cycle” or a “Days after” option.`
+        : 'the workflow repeats yearly. Choose “Date” or a “Days after” option.'
   }
 }
 
 // ─── Labels ──────────────────────────────────────────────────────────────────
 
 export function startKindLabel(kind: StartRuleKind, f: Frequency, hasPredecessors: boolean): string {
-  const unit = cycleUnit(f)
-  const every = 'every' in f ? f.every : 1
   switch (kind) {
     case 'immediate':
-      return hasPredecessors ? 'As soon as the steps before it are done' : 'As soon as the run starts'
+      return hasPredecessors ? 'When previous step is done' : 'Immediately'
     case 'days_after_previous':
-      return hasPredecessors ? 'Some days after the steps before it are done' : 'Some days after the run starts'
+      return hasPredecessors ? 'Days after previous step' : 'Days after start'
     case 'days_after_run_start':
-      return 'A number of days into the run'
-    case 'time_of_day':
-      return 'At a time of day'
-    case 'weekday':
-      return 'On a day of the week'
-    case 'month_day':
-      return 'On a day of the month'
-    case 'year_date':
-      return 'On a date'
-    case 'cycle_weekday':
-    case 'cycle_month_day':
-    case 'cycle_year_date':
-      return unit ? `On a day in the ${every}-${unit.toLowerCase()} cycle` : 'On a day in the cycle'
+      return 'Days after start'
+    default:
+      return calendarKindLabel(kind, f)
   }
 }
 
 export function dueKindLabel(kind: DueRuleKind, f: Frequency): string {
+  return kind === 'days_after_start' ? 'Days after start' : calendarKindLabel(kind, f)
+}
+
+/** "Time of day", "Day of the week", "Day of the month", "Date", "Day in 2-week cycle". */
+function calendarKindLabel(kind: StartRuleKind | DueRuleKind, f: Frequency): string {
   const unit = cycleUnit(f)
   const every = 'every' in f ? f.every : 1
   switch (kind) {
-    case 'days_after_start':
-      return 'A number of days after it starts'
     case 'time_of_day':
-      return 'At a time of day'
+      return 'Time of day'
     case 'weekday':
-      return 'On a day of the week'
+      return 'Day of the week'
     case 'month_day':
-      return 'On a day of the month'
+      return 'Day of the month'
     case 'year_date':
-      return 'On a date'
+      return 'Date'
     default:
-      return unit ? `On a day in the ${every}-${unit.toLowerCase()} cycle` : 'On a day in the cycle'
+      return unit ? `Day in ${every}-${unit.toLowerCase()} cycle` : 'Day in cycle'
   }
 }
 
@@ -308,8 +293,8 @@ function calendarShort(r: StartRule | DueRule, f: Frequency): string {
 }
 
 /**
- * The timing in a few words for a collapsed card: "starts Thu 9:00 AM · due Fri 6:00 PM",
- * "due in 2 days". A step that starts right away says only when it is due.
+ * The timing in a few words for a collapsed card: "Starts Thu 9:00 AM · due Fri 6:00 PM",
+ * "Due in 2 days, 6:00 PM". A step that starts right away says only when it is due.
  */
 export function timingSummary(start: StartRule, due: DueRule, f: Frequency, hasPredecessors = true): string {
   const parts: string[] = []
@@ -318,11 +303,11 @@ export function timingSummary(start: StartRule, due: DueRule, f: Frequency, hasP
     case 'immediate':
       break
     case 'days_after_previous':
-      parts.push(`starts ${plural(start.days ?? 1, 'day')} after ${hasPredecessors ? 'the steps before it' : 'the run starts'}, ${at(start.time)}`)
+      parts.push(`starts ${plural(start.days ?? 1, 'day')} after ${hasPredecessors ? 'previous step' : 'run start'}, ${at(start.time)}`)
       break
     case 'days_after_run_start':
       parts.push(
-        (start.days ?? 0) === 0 ? `starts the day the run starts, ${at(start.time)}` : `starts ${plural(start.days ?? 0, 'day')} into the run, ${at(start.time)}`,
+        (start.days ?? 0) === 0 ? `starts the day the run starts, ${at(start.time)}` : `starts ${plural(start.days ?? 0, 'day')} after run start, ${at(start.time)}`,
       )
       break
     case 'time_of_day':
@@ -335,7 +320,7 @@ export function timingSummary(start: StartRule, due: DueRule, f: Frequency, hasP
   switch (due.kind) {
     case 'days_after_start': {
       const d = due.days ?? 1
-      parts.push(d === 0 ? `due the day it starts, ${dueAt}` : `due ${plural(d, 'day')} after it starts, ${dueAt}`)
+      parts.push(d === 0 ? `due same day, ${dueAt}` : `due in ${plural(d, 'day')}, ${dueAt}`)
       break
     }
     case 'time_of_day':
@@ -346,57 +331,6 @@ export function timingSummary(start: StartRule, due: DueRule, f: Frequency, hasP
   }
   const text = parts.join(' · ')
   return text.charAt(0).toUpperCase() + text.slice(1)
-}
-
-/** A sentence for under the Starts control. */
-export function describeStart(r: StartRule, f: Frequency, hasPredecessors: boolean): string {
-  const at = fmtTime(r.time || DEFAULT_START_TIME)
-  const after = hasPredecessors ? 'once the steps before it are done' : 'once the run starts'
-  switch (r.kind) {
-    case 'immediate':
-      return hasPredecessors ? 'Starts the moment the steps before it are done.' : 'Starts the moment the run starts.'
-    case 'days_after_previous':
-      return `Starts ${plural(r.days ?? 1, 'day')} after ${hasPredecessors ? 'the steps before it are done' : 'the run starts'}, at ${at}.`
-    case 'days_after_run_start':
-      return (r.days ?? 0) === 0
-        ? `Starts on the day the run starts, at ${at}${hasPredecessors ? ' — but never before the steps before it are done' : ''}.`
-        : `Starts ${plural(r.days ?? 0, 'day')} after the run starts, at ${at}${hasPredecessors ? ' — but never before the steps before it are done' : ''}.`
-    case 'time_of_day':
-      return `Starts at ${at} ${after} — the next day if ${at} has already passed.`
-    case 'weekday':
-      return `Starts on the next ${WEEKDAYS_LONG[r.weekday ?? 1]} at ${at}, ${after}.`
-    case 'month_day':
-      return r.day === 'last'
-        ? `Starts on the last day of the month at ${at}, ${after}.`
-        : `Starts on the ${ordinal(Number(r.day) || 1)} at ${at}, ${after}.${Number(r.day) > 28 ? ' In a shorter month, the last day.' : ''}`
-    case 'year_date':
-      return `Starts on ${r.day} ${MONTHS_LONG[(r.month ?? 1) - 1]} at ${at}, ${after}.`
-    default:
-      return `Starts in ${calendarShort(r, f)} at ${at}, ${after}.`
-  }
-}
-
-/** A sentence for under the Due control. */
-export function describeDueRule(r: DueRule, f: Frequency): string {
-  const at = fmtTime(r.time || DEFAULT_DUE_TIME)
-  switch (r.kind) {
-    case 'days_after_start': {
-      const d = r.days ?? 1
-      return `${d === 0 ? `Due the day it starts, at ${at}` : `Due ${plural(d, 'day')} after it starts, at ${at}`}. Holidays and weekly offs are skipped.`
-    }
-    case 'time_of_day':
-      return `Due at the next ${at} after it starts.`
-    case 'weekday':
-      return `Due on the next ${WEEKDAYS_LONG[r.weekday ?? 1]} at ${at} after it starts.`
-    case 'month_day':
-      return r.day === 'last'
-        ? `Due on the next last day of a month at ${at} after it starts.`
-        : `Due on the next ${ordinal(Number(r.day) || 1)} at ${at} after it starts.`
-    case 'year_date':
-      return `Due on the next ${r.day} ${MONTHS_LONG[(r.month ?? 1) - 1]} at ${at} after it starts.`
-    default:
-      return `Due in ${calendarShort(r, f)} at ${at}, after it starts.`
-  }
 }
 
 // ─── Checks ──────────────────────────────────────────────────────────────────
@@ -414,35 +348,35 @@ function paramProblem(r: StartRule | DueRule, f: Frequency, which: 'start' | 'du
     case 'immediate':
       return null
     case 'days_after_previous':
-      if (!validDays(r.days, 1)) return `“days after the steps before it are done” must be a whole number from 1 to ${MAX_RULE_DAYS}.`
+      if (!validDays(r.days, 1)) return `start days must be 1 to ${MAX_RULE_DAYS}.`
       break
     case 'days_after_run_start':
-      if (!validDays(r.days, 0)) return `“days after the run starts” must be a whole number from 0 to ${MAX_RULE_DAYS}.`
+      if (!validDays(r.days, 0)) return `start days must be 0 to ${MAX_RULE_DAYS}.`
       break
     case 'days_after_start':
-      if (!validDays(r.days, 0)) return `“days after it starts” must be a whole number from 0 to ${MAX_RULE_DAYS}.`
+      if (!validDays(r.days, 0)) return `due days must be 0 to ${MAX_RULE_DAYS}.`
       break
   }
-  if (!validTime(r.time)) return `the ${field} needs a 24-hour time like ${which === 'start' ? '09:00' : '18:00'}.`
+  if (!validTime(r.time)) return `enter a ${which} time.`
   if (isCycleKind(r.kind)) {
     const every = 'every' in f ? f.every : 1
-    if (!(typeof r.cycle === 'number' && Number.isInteger(r.cycle) && r.cycle >= 1)) return `pick which part of the repeat cycle the ${field} falls in.`
+    if (!(typeof r.cycle === 'number' && Number.isInteger(r.cycle) && r.cycle >= 1)) return `choose a cycle for the ${field}.`
     const unit = cycleUnit(f)
-    if (unit && r.cycle > every) return `this workflow repeats every ${every} ${unit.toLowerCase()}s — pick ${unit} 1 to ${unit} ${every}.`
+    if (unit && r.cycle > every) return `the workflow repeats every ${every} ${unit.toLowerCase()}s. Choose ${unit} 1 to ${unit} ${every}.`
   }
   switch (r.kind) {
     case 'weekday':
     case 'cycle_weekday':
-      if (!(typeof r.weekday === 'number' && r.weekday >= 0 && r.weekday <= 6)) return `pick a day of the week for the ${field}.`
+      if (!(typeof r.weekday === 'number' && r.weekday >= 0 && r.weekday <= 6)) return `choose a day of the week for the ${field}.`
       break
     case 'month_day':
     case 'cycle_month_day':
-      if (!validMonthDay(r.day)) return `pick a day of the month (1–31 or “Last day”) for the ${field}.`
+      if (!validMonthDay(r.day)) return `choose a day of the month for the ${field}.`
       break
     case 'year_date':
     case 'cycle_year_date':
-      if (!(typeof r.month === 'number' && r.month >= 1 && r.month <= 12)) return `pick a month for the ${field}.`
-      if (!(typeof r.day === 'number' && Number.isInteger(r.day) && r.day >= 1 && r.day <= DAYS_IN_MONTH[r.month - 1])) return `pick a real date for the ${field}.`
+      if (!(typeof r.month === 'number' && r.month >= 1 && r.month <= 12)) return `choose a month for the ${field}.`
+      if (!(typeof r.day === 'number' && Number.isInteger(r.day) && r.day >= 1 && r.day <= DAYS_IN_MONTH[r.month - 1])) return `choose a valid date for the ${field}.`
       break
   }
   return null
@@ -457,7 +391,7 @@ export interface TimingProblem {
 
 /**
  * What is wrong with a step's timing for this frequency, in the server's words
- * ("this workflow repeats monthly — pick a day of the month or “days after”").
+ * ("the workflow repeats monthly. Choose “Day of the month” or a “Days after” option.").
  */
 export function timingProblems(start: StartRule, due: DueRule, f: Frequency): TimingProblem[] {
   const out: TimingProblem[] = []
@@ -468,7 +402,7 @@ export function timingProblems(start: StartRule, due: DueRule, f: Frequency): Ti
   return out
 }
 
-/** "Step 2 “Review”: this workflow repeats monthly — …" */
+/** "Step 2 “Review”: the workflow repeats monthly. …" */
 export function stepTimingMessage(stepLabel: string, problem: TimingProblem): string {
   return `${stepLabel}: ${problem.message}`
 }

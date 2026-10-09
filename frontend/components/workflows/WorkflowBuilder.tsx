@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, Archive, ArchiveRestore, ChevronDown, Eye, GitBranch, Info, ListChecks, Pause, Play, Plus, RefreshCw, Save } from 'lucide-react'
+import { AlertTriangle, Archive, ArchiveRestore, ChevronDown, Eye, GitBranch, Info, ListChecks, Pause, Play, Plus, RefreshCw, Save, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/Toast'
@@ -21,9 +21,25 @@ import ActionMenu, { type ActionMenuItem } from './ActionMenu'
 import ExampleRun, { warningText } from './ExampleRun'
 import PeopleSection, { type PeopleValue } from './PeopleSection'
 import StartsSection, { type ScheduleDraft, type StartsValue, scheduleToDraft } from './StartsSection'
-import StepCard, { INPUT_CLS, LABEL_CLS, blankStepDraft } from './StepCard'
-import StepFlow, { orderSteps, stepNumbers } from './StepFlow'
-import { findCycle, spliceOutStep } from './flow'
+import StepCard, { INPUT_CLS, LABEL_CLS, blankStepDraft, type CommitNewStep, type MergeOption } from './StepCard'
+import StepFlow from './StepFlow'
+import {
+  MAIN_TRACK,
+  TRACK_NAME_MAX,
+  dependentsOf,
+  findLoop,
+  layoutTracks,
+  nextTrackKey,
+  numberLabel,
+  orderByTracks,
+  stepName,
+  trackBaseLabel,
+  trackLabel,
+  trackOfStep,
+  tracksFromServer,
+  type TrackDraft,
+  type TrackLayout,
+} from './tracks'
 import { cleanRule, dueRuleOf, frequencyOf, startRuleOf, stepTimingMessage, timingProblems, type Frequency } from './timing'
 import { useUnsavedChangesGuard } from './useUnsavedChangesGuard'
 import { useWorkflowActions } from './useWorkflowActions'
@@ -35,6 +51,7 @@ import {
   ErrorBanner,
   ErrorState,
   GatedButton,
+  InfoTip,
   NotFoundState,
   REASONS,
   Reveal,
@@ -55,9 +72,166 @@ const LONG_LIST = 4
 const NAME_MAX = 200
 const NEW_KEY = 'new-'
 
+/** Where the new-step form is open: at the end of a track, or right below a step. */
 interface AddingAt {
+  track: string
   after: string | null
+  /** A track being started by "Add parallel path" — added once its first step is. */
+  newTrack?: TrackDraft
   seq: number
+}
+
+/** Ids of the new-step form's wrapper and of each track's "Add step" bar. */
+const FORM_ID = 'new-step-form'
+const addBarId = (track: string) => `add-step-${track}`
+/** Room the sticky page header takes above the steps (matches `scroll-mt-40`). */
+const HEADER_ROOM = 160
+
+/** The element that scrolls `el` vertically: the dashboard's <main>, or else the page. */
+function scrollParent(el: HTMLElement): HTMLElement {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const oy = getComputedStyle(p).overflowY
+    if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight + 1) return p
+  }
+  return (document.scrollingElement as HTMLElement | null) ?? document.documentElement
+}
+
+/** The visible band of a scroller, in viewport coordinates. */
+function viewBand(sc: HTMLElement): { top: number; bottom: number } {
+  if (sc === document.scrollingElement || sc === document.documentElement) return { top: 0, bottom: window.innerHeight }
+  const r = sc.getBoundingClientRect()
+  return { top: Math.max(0, r.top), bottom: Math.min(window.innerHeight, r.bottom) }
+}
+
+/** Where an element sits now, to keep something at that spot while the layout changes. */
+interface Anchor {
+  /** Id of the element to hold in place. */
+  id: string
+  /** Its viewport top to hold. */
+  top: number
+}
+
+/**
+ * Keep the page still around an add: hold one element at a fixed spot on screen (the
+ * clicked control's spot) while the layout settles — cards folding above it, track
+ * columns widening — by moving the scroller under it, never by letting the page jump.
+ * Then bring `revealId` into view only as far as needed (a form taller than the screen:
+ * its top, where the title is), smoothly, and keep holding that while slower changes land
+ * above it (the example run refreshes a moment later). Anything the person does —
+ * scrolling, a key, a click — ends the hold at once. Returns a cancel function.
+ */
+function holdThenReveal(anchor: Anchor | null, revealId: string | null, after?: () => void, settleMs = 420, holdMs = 4000): () => void {
+  let anchorId = anchor?.id ?? null
+  /** Viewport top to keep the anchored element at. */
+  let desired = anchor?.top ?? 0
+  let sc: HTMLElement | null = null
+  let ro: ResizeObserver | null = null
+  let raf = 0
+  let done = false
+  /** A smooth reveal under way, heading for this scrollTop. */
+  let smoothTo: number | null = null
+  const timers: number[] = []
+
+  const maxTop = (s: HTMLElement) => Math.max(0, s.scrollHeight - s.clientHeight)
+  const adjust = () => {
+    if (done || !anchorId || !sc) return
+    const el = document.getElementById(anchorId)
+    if (!el) return
+    // Where the scroller must be for the element to sit at `desired` (scroll-invariant).
+    const target = Math.min(Math.max(0, sc.scrollTop + el.getBoundingClientRect().top - desired), maxTop(sc))
+    // The smooth reveal has arrived (or was clamped): hold in place from here on.
+    if (smoothTo !== null && Math.abs(sc.scrollTop - smoothTo) < 1) smoothTo = null
+    if (smoothTo !== null) {
+      // Still on its way: re-aim it if the layout moved the destination.
+      if (Math.abs(target - smoothTo) > 1) {
+        smoothTo = target
+        sc.scrollTo({ top: target, behavior: 'smooth' })
+      }
+      return
+    }
+    if (Math.abs(target - sc.scrollTop) > 0.5) sc.scrollTop = target
+  }
+  const stop = () => {
+    done = true
+    cancelAnimationFrame(raf)
+    timers.forEach((t) => clearTimeout(t))
+    ro?.disconnect()
+    window.removeEventListener('wheel', takeOver, true)
+    window.removeEventListener('touchstart', takeOver, true)
+    window.removeEventListener('pointerdown', takeOver, true)
+    window.removeEventListener('keydown', takeOver, true)
+  }
+  // The person takes over at once: nothing is held or scrolled for them after that.
+  function takeOver() {
+    stop()
+  }
+  const attach = (el: HTMLElement) => {
+    if (sc) return
+    sc = scrollParent(el)
+    window.addEventListener('wheel', takeOver, { capture: true, passive: true })
+    window.addEventListener('touchstart', takeOver, { capture: true, passive: true })
+    window.addEventListener('pointerdown', takeOver, true)
+    window.addEventListener('keydown', takeOver, true)
+    if (typeof ResizeObserver !== 'undefined') {
+      // Layout changes are corrected before they are painted, not a frame later.
+      ro = new ResizeObserver(adjust)
+      const content = sc === document.scrollingElement || sc === document.documentElement ? document.body : sc.firstElementChild
+      if (content) ro.observe(content)
+      const tracks = document.getElementById('tracks')
+      if (tracks) ro.observe(tracks)
+    }
+  }
+
+  const first = anchorId ? document.getElementById(anchorId) : null
+  if (first) attach(first)
+  const loop = () => {
+    if (!sc && anchorId) {
+      const el = document.getElementById(anchorId)
+      if (el) attach(el)
+    }
+    adjust()
+    if (!done) raf = requestAnimationFrame(loop)
+  }
+  raf = requestAnimationFrame(loop)
+
+  timers.push(
+    window.setTimeout(() => {
+      cancelAnimationFrame(raf)
+      if (done) return
+      const el = revealId ? document.getElementById(revealId) : null
+      if (el) {
+        attach(el)
+        const s = sc as HTMLElement
+        const band = viewBand(s)
+        const r = el.getBoundingClientRect()
+        const top = band.top + HEADER_ROOM
+        const bottom = band.bottom - 24
+        // Only as far as needed: too tall to fit → its top; above → its top; below → its bottom.
+        const nextTop = r.height > bottom - top || r.top < top ? top : r.bottom > bottom ? bottom - r.height : r.top
+        anchorId = el.id
+        desired = nextTop
+        const target = Math.min(Math.max(0, s.scrollTop + r.top - nextTop), maxTop(s))
+        if (Math.abs(target - s.scrollTop) > 1) {
+          smoothTo = target
+          s.scrollTo({ top: target, behavior: 'smooth' })
+        }
+        revealSideways(el)
+      }
+      after?.()
+    }, settleMs),
+    window.setTimeout(stop, Math.max(holdMs, settleMs + 1)),
+  )
+  return stop
+}
+
+/** Track columns side by side scroll sideways when they do not fit: show this one. */
+function revealSideways(el: HTMLElement) {
+  const box = document.getElementById('tracks')
+  if (!box || box.scrollWidth <= box.clientWidth + 1 || !box.contains(el)) return
+  const b = box.getBoundingClientRect()
+  const r = el.getBoundingClientRect()
+  if (r.left < b.left) box.scrollTo({ left: box.scrollLeft - (b.left - r.left) - 16, behavior: 'smooth' })
+  else if (r.right > b.right) box.scrollTo({ left: box.scrollLeft + Math.min(r.right - b.right + 16, r.left - b.left), behavior: 'smooth' })
 }
 
 /** Everything the builder edits — the whole workflow, saved in one request. */
@@ -66,7 +240,12 @@ interface Working {
   description: string
   starts: StartsValue
   people: PeopleValue
-  /** Display order. Steps not saved yet have a client key ("new-…") as their id. */
+  /** Main first, then the others in display order. */
+  tracks: TrackDraft[]
+  /**
+   * A step's position in its track = its order among that track's steps here. Steps
+   * not saved yet have a client key ("new-…") as their id.
+   */
   steps: WorkflowStep[]
 }
 
@@ -76,6 +255,7 @@ const newKey = () => `${NEW_KEY}${Date.now().toString(36)}-${(keySeq += 1)}`
 
 function workingFrom(w: WorkflowTemplate): Working {
   const schedules = (w.schedules ?? []).map(scheduleToDraft)
+  const tracks = tracksFromServer(w.tracks)
   return {
     name: w.name ?? '',
     description: w.description ?? '',
@@ -89,7 +269,8 @@ function workingFrom(w: WorkflowTemplate): Working {
       ownerIds: w.people?.owners ? w.people.owners.map((p) => p.id) : w.owner_user_ids ?? [],
       editorIds: (w.people?.editors ?? []).map((p) => p.id),
     },
-    steps: orderSteps(w.steps ?? []),
+    tracks,
+    steps: orderByTracks(tracks, w.steps ?? []),
   }
 }
 
@@ -100,6 +281,7 @@ function blankWorking(me: string | undefined): Working {
     description: '',
     starts: { manual: true, starterIds: me ? [me] : [], scheduleOn: false, schedules: [] },
     people: { ownerIds: me ? [me] : [], editorIds: [] },
+    tracks: [{ key: MAIN_TRACK, name: '', split_from: null }],
     steps: [],
   }
 }
@@ -114,10 +296,12 @@ function checklistInput(items: ChecklistItem[] | null | undefined): ChecklistIte
     }))
 }
 
-function stepInput(s: WorkflowStep): DefinitionStepInput {
+function stepInput(s: WorkflowStep, layout: TrackLayout): DefinitionStepInput {
   return {
     key: s.id,
     ...(isNewKey(s.id) ? {} : { id: s.id }),
+    track_key: layout.trackOf.get(s.id) ?? MAIN_TRACK,
+    merge_step_keys: layout.merges.get(s.id) ?? [],
     title: (s.title ?? '').trim(),
     description: s.description?.trim() || null,
     assignee_user_ids: s.assignee_user_ids ?? [],
@@ -134,7 +318,6 @@ function stepInput(s: WorkflowStep): DefinitionStepInput {
     escalation_mode: s.escalation_mode === 'people' ? 'people' : 'manager',
     escalation_user_ids: s.escalation_user_ids ?? [],
     if_late: s.if_late === 'move_on' ? 'move_on' : 'wait',
-    depends_on: s.depends_on_step_ids ?? [],
     // Legacy steps (no rules yet) stay as they are until their timing is changed.
     ...(s.start_rule ? { start_rule: cleanRule(s.start_rule) } : {}),
     ...(s.due_rule ? { due_rule: cleanRule(s.due_rule) } : {}),
@@ -159,6 +342,9 @@ function scheduleInput(d: ScheduleDraft): DefinitionScheduleInput {
 
 /** The definition this working copy would save (people only when the caller may change them). */
 function definitionOf(work: Working, mode: 'draft' | 'save', withPeople: boolean): WorkflowDefinitionInput {
+  const layout = layoutTracks(work.tracks, work.steps)
+  // A track with no steps is not saved (the server drops it too).
+  const used = new Set(work.steps.map((s) => layout.trackOf.get(s.id) ?? MAIN_TRACK))
   return {
     name: work.name.trim(),
     description: work.description.trim() || null,
@@ -167,7 +353,10 @@ function definitionOf(work: Working, mode: 'draft' | 'save', withPeople: boolean
       manual: { enabled: work.starts.manual, starter_user_ids: work.starts.starterIds },
       schedules: work.starts.scheduleOn ? work.starts.schedules.map(scheduleInput) : [],
     },
-    steps: work.steps.map(stepInput),
+    steps: work.steps.map((s) => stepInput(s, layout)),
+    tracks: work.tracks
+      .filter((t) => t.key === MAIN_TRACK || used.has(t.key))
+      .map((t) => ({ key: t.key, name: t.name.trim() || null, split_from_step_key: t.key === MAIN_TRACK ? null : t.split_from })),
     ...(withPeople ? { people: { owner_user_ids: work.people.ownerIds, editor_user_ids: work.people.editorIds } } : {}),
   }
 }
@@ -184,15 +373,19 @@ function signature(work: Working): string {
 }
 
 const SAVE_STEP_MSG = {
-  title: 'Give the step a title.',
-  assignee: 'Assign it to at least one person.',
-  escalation: "Pick at least one person to escalate to, or escalate to the assignee's manager.",
+  title: 'enter a title.',
+  assignee: 'add at least one assignee.',
+  escalation: 'add someone to escalate to, or choose “Reporting manager”.',
 }
+
+const RESTORE_FIRST = 'Restore this workflow to edit it.'
 
 /**
  * The one-page workflow builder, for a new workflow and an existing one. It edits a
- * working copy of the whole workflow — details, how it starts, steps (incl. "Starts
- * after" between steps not saved yet) and people — and saves it in ONE request:
+ * working copy of the whole workflow — details, how it starts, steps in their tracks
+ * (side by side on a wide screen, stacked on a phone; "Split here" starts a track, "Also
+ * wait for…" makes a step wait for steps in other tracks) and people — and saves it in
+ * ONE request:
  *
  *  - a new workflow or a draft: Save draft (anything filled in) or Save (everything
  *    checked; it goes Live);
@@ -246,6 +439,11 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [adding, setAdding] = useState<AddingAt | null>(null)
   const addSeq = useRef(0)
+  /** The open new-step form's "add what is filled in" (registered by the form itself). */
+  const commitRef = useRef<CommitNewStep | null>(null)
+  /** Cancels a hold-in-place that is still running (holdThenReveal). */
+  const holdRef = useRef<(() => void) | null>(null)
+  useEffect(() => () => holdRef.current?.(), [])
   const [deleteTarget, setDeleteTarget] = useState<WorkflowStep | null>(null)
   const [flowOpen, setFlowOpen] = useState(true)
   const [saving, setSaving] = useState<'draft' | 'save' | null>(null)
@@ -253,6 +451,8 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   const [saveError, setSaveError] = useState<string | null>(null)
   const [conflict, setConflict] = useState(false)
   const [issues, setIssues] = useState<Map<string, string>>(new Map())
+  /** A problem with a track (its split point), shown on the track's header. */
+  const [trackIssue, setTrackIssue] = useState<{ key: string; message: string } | null>(null)
   const [startsError, setStartsError] = useState<{ message: string; index: number | null } | null>(null)
 
   const widRef = useRef<string | null>(initialId)
@@ -305,12 +505,13 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   const live = workflow?.status === 'active' || workflow?.status === 'paused'
   const rawEdit = workflow ? gate(caps?.can_edit, writable, REASONS.edit) : gate(true, writable, REASONS.preview)
   const edit =
-    archived && rawEdit.allowed === true ? { allowed: false as const, reason: 'Restore this workflow before changing it.' } : rawEdit
+    archived && rawEdit.allowed === true ? { allowed: false as const, reason: RESTORE_FIRST } : rawEdit
   const peopleGate = workflow ? gate(caps?.can_manage_access, writable, REASONS.manageAccess) : edit
   const canSendPeople = !workflow || caps?.can_manage_access === true
 
   const steps = work.steps
-  const numbers = useMemo(() => stepNumbers(steps), [steps])
+  const layout = useMemo(() => layoutTracks(work.tracks, steps), [work.tracks, steps])
+  const labels = layout.labels
   // How it repeats — from the schedules being edited — decides which timing steps may use.
   const timingSchedules = useMemo(() => (work.starts.scheduleOn ? work.starts.schedules : []), [work.starts.scheduleOn, work.starts.schedules])
   const freqKey = JSON.stringify(frequencyOf(timingSchedules))
@@ -319,30 +520,27 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   /** Steps whose timing this frequency does not allow (or whose dates are incomplete). */
   const timingIssues = useMemo(
     () =>
-      steps
+      layout.display
         .map((s) => ({ step: s, problems: timingProblems(startRuleOf(s), dueRuleOf(s), frequency) }))
         .filter((x) => x.problems.length > 0),
-    [steps, frequency],
+    [layout, frequency],
   )
   /** The same problems in the server's words (its example-run warnings repeat them). */
   const timingIssueTexts = useMemo(
     () =>
       new Set(
         timingIssues.flatMap(({ step, problems }) => {
-          const i = steps.indexOf(step)
-          const t = step.title?.trim()
-          const label = t ? `Step ${i + 1} “${t}”` : `Step ${i + 1}`
+          const label = stepName(labels.get(step.id), step.title)
           return problems.map((p) => stepTimingMessage(label, p))
         }),
       ),
-    [timingIssues, steps],
+    [timingIssues, labels],
   )
   const memberName = useCallback((uid: string) => lookups.members.find((m) => m.user_id === uid)?.name, [lookups.members])
   const me = user ? { user_id: user.id, name: user.name } : undefined
 
   // ── Editing the working copy ──
-  const setSteps = (fn: (list: WorkflowStep[]) => WorkflowStep[]) =>
-    setWork((w) => ({ ...w, steps: fn(w.steps).map((s, i) => (s.order_index === i ? s : { ...s, order_index: i })) }))
+  const setSteps = (fn: (list: WorkflowStep[]) => WorkflowStep[]) => setWork((w) => ({ ...w, steps: fn(w.steps) }))
 
   const clearIssue = (stepId: string) =>
     setIssues((m) => {
@@ -371,27 +569,84 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  /** Open the new-step form: other cards fold away, the form opens where the step will go. */
-  const openAdd = (after: string | null = null) => {
-    setExpanded(new Set())
-    addSeq.current += 1
-    setAdding({ after, seq: addSeq.current })
+  /**
+   * A new-step form already open (in another track, or further down) is not thrown away
+   * when another one is asked for: what is filled in is added first, in the same click.
+   * A form with no title yet is simply closed. Returns false when the open form cannot be
+   * added as it is — it stays open and says why.
+   */
+  const settleOpenForm = (): { ok: boolean; addedTrack?: string } => {
+    if (!adding) return { ok: true }
+    const result = commitRef.current?.() ?? 'blank'
+    if (result === 'invalid') {
+      holdRef.current?.()
+      holdRef.current = holdThenReveal(null, FORM_ID, undefined, 0)
+      return { ok: false }
+    }
+    if (result === 'blank') return { ok: true }
+    insertStep(result, adding)
+    return { ok: true, addedTrack: adding.newTrack?.key }
   }
 
   /**
-   * Add a step to the working copy. "Add step below" a step puts the new one right after
-   * it: it starts after that step, and the steps that started after it now start after
-   * the new one.
+   * Open the new-step form where the step will go: other cards fold away, its title takes
+   * focus, and the clicked control's spot is held on screen while they fold (`anchor`) —
+   * the page never jumps — then only the form is scrolled into view, as far as needed.
    */
-  async function onCreate(input: StepInput) {
+  const openAdd = (track: string = MAIN_TRACK, after: string | null = null, newTrack?: TrackDraft, anchor: Anchor | null = null, settled = false) => {
+    if (!settled && !settleOpenForm().ok) return
+    setExpanded(new Set())
+    addSeq.current += 1
+    setAdding({ track, after, newTrack, seq: addSeq.current })
+    holdRef.current?.()
+    holdRef.current = holdThenReveal(anchor, FORM_ID)
+  }
+
+  /** Hold a step card's top where it is now (the form opens right below it). */
+  const cardAnchor = (stepId: string): Anchor | null => {
+    const el = document.getElementById(`step-card-${stepId}`)
+    return el ? { id: el.id, top: el.getBoundingClientRect().top } : null
+  }
+
+  /** "Add parallel path": a new track that starts after this step; its first step's form opens. */
+  const splitAt = (step: WorkflowStep) => {
+    const anchor = cardAnchor(step.id)
+    const settled = settleOpenForm()
+    if (!settled.ok) return
+    const taken = work.tracks.map((t) => t.key)
+    if (settled.addedTrack && !taken.includes(settled.addedTrack)) taken.push(settled.addedTrack)
+    const key = nextTrackKey(taken)
+    openAdd(key, null, { key, name: '', split_from: step.id }, anchor, true)
+  }
+
+  const setTrack = (key: string, patch: Partial<TrackDraft>) => {
+    setWork((w) => ({ ...w, tracks: w.tracks.map((t) => (t.key === key ? { ...t, ...patch } : t)) }))
+    setTrackIssue((x) => (x?.key === key ? null : x))
+  }
+
+  /** Remove an empty track (never main). */
+  const removeTrack = (key: string) => {
+    if (key === MAIN_TRACK || steps.some((s) => trackOfStep(s) === key)) return
+    setWork((w) => ({ ...w, tracks: w.tracks.filter((t) => t.key !== key) }))
+    setTrackIssue((x) => (x?.key === key ? null : x))
+  }
+
+  /**
+   * Add a step to the working copy, in the track the form is open in: right below the
+   * step it was opened from ("Add step below" — the step after it in the track now
+   * follows the new one), or at the end of the track.
+   */
+  function insertStep(input: StepInput, at: AddingAt): { key: string; atEnd: boolean } {
     const key = newKey()
     const now = new Date().toISOString()
-    const after = adding?.after && steps.some((s) => s.id === adding.after) ? adding.after : null
+    const after = at.after && steps.some((s) => s.id === at.after) ? at.after : null
     const created: WorkflowStep = {
       id: key,
       organization_id: orgId,
       workflow_template_id: workflow?.id ?? '',
-      order_index: steps.length,
+      order_index: 0,
+      track_key: at.track,
+      merge_step_ids: input.merge_step_ids ?? [],
       title: input.title ?? '',
       description: input.description ?? null,
       assignee_user_ids: input.assignee_user_ids ?? [],
@@ -408,30 +663,51 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       escalation_mode: input.escalation_mode ?? 'manager',
       escalation_user_ids: input.escalation_user_ids ?? [],
       if_late: input.if_late ?? 'wait',
-      depends_on_step_ids: input.depends_on_step_ids ?? [],
+      depends_on_step_ids: [],
       start_rule: input.start_rule ?? null,
       due_rule: input.due_rule ?? null,
       assigner_user_id: null,
       created_at: now,
       updated_at: now,
     }
-    setSteps((list) => {
-      if (!after) return [...list, created]
-      const at = list.findIndex((s) => s.id === after)
-      const startsAfterTarget = created.depends_on_step_ids.length === 1 && created.depends_on_step_ids[0] === after
-      const relinked = startsAfterTarget
-        ? list.map((s) =>
-            (s.depends_on_step_ids ?? []).includes(after)
-              ? { ...s, depends_on_step_ids: s.depends_on_step_ids.map((d) => (d === after ? key : d)) }
-              : s,
-          )
-        : list
-      return [...relinked.slice(0, at + 1), created, ...relinked.slice(at + 1)]
+    const newTrack = at.newTrack
+    setWork((w) => {
+      const tracks = newTrack && !w.tracks.some((t) => t.key === newTrack.key) ? [...w.tracks, newTrack] : w.tracks
+      const i = after ? w.steps.findIndex((s) => s.id === after) : -1
+      const list = i >= 0 ? [...w.steps.slice(0, i + 1), created, ...w.steps.slice(i + 1)] : [...w.steps, created]
+      return { ...w, tracks, steps: list }
     })
-    setAdding(null)
-    setExpanded(new Set([key]))
     setSaveError(null)
-    requestAnimationFrame(() => document.getElementById(`step-card-${key}`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
+    return { key, atEnd: !after }
+  }
+
+  /**
+   * The form's own "Add step": the step is added and shows folded — a compact card, so it
+   * is plain that it was added and is no longer a form — with the track's "+ Add step" bar
+   * right where the button was clicked (held there while the form folds away), ready for
+   * the next step. A step inserted between others holds its own card in the form's place.
+   */
+  async function onCreate(input: StepInput) {
+    if (!adding) return
+    const formEl = document.getElementById(FORM_ID)
+    const fr = formEl?.getBoundingClientRect()
+    const band = formEl ? viewBand(scrollParent(formEl)) : null
+    const { key, atEnd } = insertStep(input, adding)
+    const track = adding.track
+    setAdding(null)
+    let anchor: Anchor | null = null
+    if (fr && band) {
+      const clamp = (v: number, lo: number, hi: number) => Math.max(Math.min(v, hi), Math.min(lo, hi))
+      anchor = atEnd
+        ? // Room above the bar for the folded card; never below the bottom edge.
+          { id: addBarId(track), top: clamp(fr.bottom - 48, band.top + HEADER_ROOM + 84, band.bottom - 48 - 24) }
+        : { id: `step-card-${key}`, top: clamp(fr.top, band.top + HEADER_ROOM, band.bottom - 96) }
+    }
+    holdRef.current?.()
+    holdRef.current = holdThenReveal(anchor, `step-card-${key}`, () => {
+      // The next step is one keypress away too.
+      if (atEnd) document.getElementById(addBarId(track))?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus({ preventScroll: true })
+    })
   }
 
   const toggle = (stepId: string) =>
@@ -445,43 +721,114 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   const focusStep = (stepId: string) => {
     setAdding(null)
     setExpanded((s) => new Set(s).add(stepId))
-    setTimeout(() => document.getElementById(`step-card-${stepId}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 60)
+    setTimeout(() => document.getElementById(`step-card-${stepId}`)?.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'smooth' }), 60)
   }
 
+  const focusTrack = (key: string) => {
+    setAdding(null)
+    setTimeout(() => document.getElementById(`track-col-${key}`)?.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'smooth' }), 60)
+  }
+
+  /** Move a step up or down within its own track. */
   function move(stepId: string, dir: -1 | 1) {
     setSteps((list) => {
       const i = list.findIndex((s) => s.id === stepId)
-      const j = i + dir
-      if (i < 0 || j < 0 || j >= list.length) return list
+      if (i < 0) return list
+      const track = trackOfStep(list[i])
+      let j = i + dir
+      while (j >= 0 && j < list.length && trackOfStep(list[j]) !== track) j += dir
+      if (j < 0 || j >= list.length) return list
       const next = [...list]
       ;[next[i], next[j]] = [next[j], next[i]]
       return next
     })
   }
 
+  /** What deleting a step changes, in words (shown in the confirmation). */
+  function deleteEffects(step: WorkflowStep): string[] {
+    const track = layout.trackOf.get(step.id) ?? MAIN_TRACK
+    const group = layout.groups.get(track) ?? []
+    const i = group.findIndex((s) => s.id === step.id)
+    const prevId = i > 0 ? group[i - 1].id : (work.tracks.find((t) => t.key === track)?.split_from ?? null)
+    const prev = prevId ? steps.find((s) => s.id === prevId) : undefined
+    const after = prev ? stepName(labels.get(prev.id), prev.title) : 'the beginning'
+    const out: string[] = []
+    const next = group[i + 1]
+    if (next) out.push(`${stepName(labels.get(next.id), next.title)} will follow ${after} instead.`)
+    const splits = work.tracks.filter((t) => t.key !== MAIN_TRACK && t.split_from === step.id && (layout.groups.get(t.key) ?? []).length > 0)
+    for (const t of splits) out.push(`${trackLabel(t)} will start ${prev ? `after ${after}` : 'at the beginning'} instead.`)
+    const waiting = steps.filter((s) => (layout.merges.get(s.id) ?? []).includes(step.id))
+    if (waiting.length) {
+      out.push(`${waiting.map((s) => stepName(labels.get(s.id), s.title)).join(', ')} will no longer wait for it.`)
+    }
+    return out
+  }
+
+  /**
+   * Delete a step: the step after it in its track now follows the step before it; tracks
+   * that split from it now split from the step before it (or start with the workflow);
+   * "Also wait for" entries pointing at it go.
+   */
   function confirmDelete() {
     if (!deleteTarget) return
     const id = deleteTarget.id
-    setSteps((list) => {
-      const deps = spliceOutStep(
-        list.map((s) => ({ id: s.id, deps: s.depends_on_step_ids ?? [] })),
-        id,
-      )
-      return list.filter((s) => s.id !== id).map((s) => ({ ...s, depends_on_step_ids: deps.get(s.id) ?? s.depends_on_step_ids }))
+    setWork((w) => {
+      const lay = layoutTracks(w.tracks, w.steps)
+      const track = lay.trackOf.get(id) ?? MAIN_TRACK
+      const group = lay.groups.get(track) ?? []
+      const i = group.findIndex((s) => s.id === id)
+      const own = w.tracks.find((t) => t.key === track)
+      const prev = i > 0 ? group[i - 1].id : track === MAIN_TRACK ? null : own?.split_from ?? null
+      return {
+        ...w,
+        tracks: w.tracks.map((t) => (t.split_from === id ? { ...t, split_from: prev } : t)),
+        steps: w.steps
+          .filter((s) => s.id !== id)
+          .map((s) => ((s.merge_step_ids ?? []).includes(id) ? { ...s, merge_step_ids: (s.merge_step_ids ?? []).filter((m) => m !== id) } : s)),
+      }
     })
     clearIssue(id)
     setDeleteTarget(null)
   }
 
+  /** "B2 “Finance sign-off”" choices for "Also waits for": steps in other tracks that don't make a loop. */
+  const mergeOptionsFor = (track: string, blocked: Set<string>, selfId: string | null): MergeOption[] =>
+    layout.display
+      .filter((s) => s.id !== selfId && (layout.trackOf.get(s.id) ?? MAIN_TRACK) !== track && !blocked.has(s.id))
+      .map((s) => ({ value: s.id, label: `${labels.get(s.id) ?? '?'} “${s.title?.trim() || 'Untitled step'}”` }))
+
+  /**
+   * What a step comes after, said only where it is not obvious: the first step of a
+   * parallel path (its split step, or "Start of run"). Null for the main path's first
+   * step and for any step that follows the previous one in its own path.
+   */
+  const placementText = (prevId: string | null, track: string, first: boolean): string | null => {
+    if (!first || track === MAIN_TRACK) return null
+    const prev = prevId ? steps.find((s) => s.id === prevId) : undefined
+    return prev ? stepName(labels.get(prev.id), prev.title) : 'Start of run'
+  }
+
   // ── Saving ──
+  /** A loop in the flow (a step moved above one it waits for through another track). */
+  function loopProblem(): { message: string; stepId: string; perStep: Map<string, string> } | null {
+    const loop = findLoop(layout.deps, layout.display.map((s) => s.id))
+    if (!loop) return null
+    const names = loop.map((sid) => labels.get(sid) ?? '?')
+    const msg = `Steps ${names.join(', ')} wait for each other in a loop. Change “Also waits for” or the step order.`
+    return { message: msg, stepId: loop[0], perStep: new Map(loop.map((sid) => [sid, msg])) }
+  }
+
   /** Step problems the server would refuse on Save, found here first so they show at once. */
   function localStepProblems(): { message: string; stepId: string | null; perStep: Map<string, string> } | null {
-    if (steps.length === 0) return { message: 'Add at least one step before saving.', stepId: null, perStep: new Map() }
+    if (steps.length === 0) return { message: 'Add at least one step.', stepId: null, perStep: new Map() }
+    if (!(layout.groups.get(MAIN_TRACK) ?? []).length) {
+      return { message: 'Main path: add at least one step.', stepId: null, perStep: new Map() }
+    }
     const perStep = new Map<string, string>()
     let first: { message: string; stepId: string } | null = null
-    steps.forEach((s, i) => {
+    layout.display.forEach((s) => {
       const t = s.title?.trim()
-      const label = t ? `Step ${i + 1} “${t}”` : `Step ${i + 1}`
+      const label = stepName(labels.get(s.id), s.title)
       const why = !t
         ? SAVE_STEP_MSG.title
         : !(s.assignee_user_ids ?? []).length
@@ -496,17 +843,8 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         if (!first) first = { message: msg, stepId: s.id }
       }
     })
-    const loop = findCycle(steps.map((s) => ({ id: s.id, deps: s.depends_on_step_ids ?? [] })))
-    if (loop && !first) {
-      const msg = `Steps ${loop.map((sid) => numbers.get(sid)).join(', ')} start after each other in a loop. Change one “Starts after”.`
-      loop.forEach((sid) => perStep.set(sid, msg))
-      first = { message: msg, stepId: loop[0] }
-    }
-    if (!first && !steps.some((s) => !(s.depends_on_step_ids ?? []).length)) {
-      first = { message: 'At least one step must start when the workflow starts (nothing in “Starts after”).', stepId: steps[0].id }
-      perStep.set(steps[0].id, first.message)
-    }
-    return first ? { ...(first as { message: string; stepId: string }), perStep } : null
+    if (!first) return loopProblem()
+    return { ...(first as { message: string; stepId: string }), perStep }
   }
 
   function showStepProblem(message: string, stepId: string | null, perStep?: Map<string, string>) {
@@ -514,6 +852,12 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     setIssues(perStep ?? (stepId ? new Map([[stepId, message]]) : new Map()))
     if (stepId) focusStep(stepId)
     else requestAnimationFrame(() => document.getElementById('steps-heading')?.scrollIntoView({ block: 'start', behavior: 'smooth' }))
+  }
+
+  function showTrackProblem(message: string, key: string) {
+    setSaveError(message)
+    setTrackIssue({ key, message })
+    focusTrack(key)
   }
 
   function showStartsProblem(message: string, index: number | null) {
@@ -529,28 +873,37 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     setConflict(false)
     setStartsError(null)
     setIssues(new Map())
+    setTrackIssue(null)
     // Let a field being typed in finish (e.g. a days box that reverts on leave).
     ;(document.activeElement as HTMLElement | null)?.blur?.()
     await new Promise((r) => setTimeout(r, 0))
 
     if (!work.name.trim()) {
-      setNameError('Enter a name for the workflow.')
+      setNameError('Enter a workflow name.')
       document.getElementById('wf-name')?.focus()
       return false
     }
     const full = mode === 'save' || live
     if (full) {
       if (work.starts.manual && work.starts.starterIds.length === 0) {
-        showStartsProblem('Pick who can start this workflow by hand.', null)
+        showStartsProblem('Choose who can start it.', null)
         return false
       }
       if (!work.starts.manual && !(work.starts.scheduleOn && work.starts.schedules.length)) {
-        showStartsProblem('Choose how this workflow starts.', null)
+        showStartsProblem('Choose how it starts.', null)
         return false
       }
       const problem = localStepProblems()
       if (problem) {
-        showStepProblem(problem.message, problem.stepId, problem.perStep)
+        if (problem.stepId === null && problem.message.startsWith('Main path:')) showTrackProblem(problem.message, MAIN_TRACK)
+        else showStepProblem(problem.message, problem.stepId, problem.perStep)
+        return false
+      }
+    } else {
+      // A draft is checked for its structure only: no loops.
+      const loop = loopProblem()
+      if (loop) {
+        showStepProblem(loop.message, loop.stepId, loop.perStep)
         return false
       }
     }
@@ -572,19 +925,18 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         saved.status === 'draft'
           ? 'Draft saved'
           : workflow?.status === 'draft' || created
-            ? 'Workflow saved. It is live now.'
+            ? 'Workflow saved and live'
             : 'Changes saved',
         'success',
       )
-      const savedNumbers = stepNumbers(saved.steps ?? [])
       const nameOf = (key: string) => {
         const id = saved.step_keys?.[key] ?? key
         const st = (saved.steps ?? []).find((x) => x.id === id)
-        return `Step ${savedNumbers.get(id) ?? '?'}${st?.title?.trim() ? ` “${st.title.trim()}”` : ''}`
+        return stepName(st?.number_label, st?.title)
       }
       const warnings = (saved.warnings ?? []).map((x) => warningText(x, nameOf)).filter(Boolean)
       if (warnings.length) {
-        addToast(warnings.length === 1 ? `Worth a look: ${warnings[0]}` : `${warnings.length} things worth a look — see the example run under Steps.`, 'warning')
+        addToast(warnings.length === 1 ? `Check timing: ${warnings[0]}` : `${warnings.length} timing warnings. See the example run.`, 'warning')
       }
       return true
     } catch (e) {
@@ -596,6 +948,8 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       } else if (target.stepKey || target.code === 'step_invalid') {
         const hit = target.stepKey && steps.some((s) => s.id === target.stepKey) ? target.stepKey : null
         showStepProblem(msg, hit)
+      } else if (target.code === 'track_invalid' && target.trackKey) {
+        showTrackProblem(msg, target.trackKey)
       } else if (target.code === 'starts_invalid') {
         showStartsProblem(msg, target.scheduleIndex)
       } else {
@@ -617,9 +971,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       // Only the status (and version) change — edits on screen stay as they are.
       setWorkflow((w) => (w ? { ...w, ...updated, steps: w.steps } : updated))
       addToast(
-        pause
-          ? 'Workflow paused. Nothing new starts and its schedules skip; runs under way carry on.'
-          : 'Workflow resumed. It can be started again, and its schedules run from now on.',
+        pause ? 'Workflow paused. Runs in progress continue.' : 'Workflow resumed',
         'success',
       )
     } catch (e) {
@@ -699,22 +1051,22 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     w && caps?.can_edit === false ? (
       <div className="flex items-start gap-2.5 rounded-[10px] border border-[#CBD5E1] bg-white px-3.5 py-2.5 text-sm text-[#334155]">
         <Eye size={16} className="shrink-0 mt-0.5 text-[#475569]" />
-        <span>You can view this workflow. {REASONS.edit}</span>
+        <span>View only. {REASONS.edit}</span>
       </div>
     ) : archived ? (
       <div className="flex items-start gap-2.5 rounded-[10px] border border-[#CBD5E1] bg-white px-3.5 py-2.5 text-sm text-[#334155]">
         <Archive size={16} className="shrink-0 mt-0.5 text-[#475569]" />
-        <span>This workflow is archived, so it cannot be started or changed. Restore it to work on it again — it comes back as a draft.</span>
+        <span>This workflow is archived. Restore it to edit it again as a draft.</span>
       </div>
     ) : w?.status === 'paused' ? (
       <div className="flex items-start gap-2.5 rounded-[10px] border border-[#FDE68A] bg-[#FEFCE8] px-3.5 py-2.5 text-sm text-[#713F12]">
         <Pause size={16} className="shrink-0 mt-0.5" />
-        <span>This workflow is paused: nothing new starts and its schedules skip. Runs under way carry on. Resume it to start runs again.</span>
+        <span>This workflow is paused. Runs in progress continue. Resume it to start new runs.</span>
       </div>
     ) : w?.status === 'active' && edit.allowed === true ? (
       <div className="flex items-start gap-2.5 rounded-[10px] border border-[#BFDBFE] bg-[#EFF6FF] px-3.5 py-2.5 text-sm text-[#1E3A8A]">
         <Info size={16} className="shrink-0 mt-0.5" />
-        <span>This workflow is live. Saved changes apply to runs started from then on; runs under way keep the steps they started with.</span>
+        <span>This workflow is live. Changes apply to new runs only.</span>
       </div>
     ) : null
 
@@ -722,8 +1074,165 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   // dates, so typing them doesn't ask for a new example.
   const exampleDefinition = steps.length ? { ...definitionOf(work, 'draft', false), name: 'Example run', description: null } : null
 
-  const insertAt = adding?.after && steps.some((s) => s.id === adding.after) ? adding.after : null
-  const addingAtEnd = !!adding && !insertAt
+  // ── Tracks: side by side from 1024px (scrolling sideways inside the section when
+  // they don't fit), stacked below. A track being started by "Add parallel path" shows as its
+  // own column until its first step is added.
+  const pendingTrack = adding?.newTrack && !work.tracks.some((t) => t.key === adding.newTrack!.key) ? adding.newTrack : null
+  const columns: TrackDraft[] = pendingTrack ? [...work.tracks, pendingTrack] : work.tracks
+  const multiTrack = columns.length > 1
+
+  /** The new-step form, for the track and spot it was opened at. */
+  const renderForm = (t: TrackDraft, group: WorkflowStep[]) => {
+    if (!adding || adding.track !== t.key) return null
+    const at = adding.after ? group.findIndex((s) => s.id === adding.after) : -1
+    const prevId = at >= 0 ? group[at].id : group.length ? group[group.length - 1].id : t.key === MAIN_TRACK ? null : t.split_from
+    const next = at >= 0 ? group[at + 1] : undefined
+    // Inserted before `next`: `next` (and whatever waits for it) will wait for the new step.
+    const blocked = next ? new Set([next.id, ...Array.from(dependentsOf(next.id, layout.deps))]) : new Set<string>()
+    return (
+      // A fresh form (and fresh draft) each time one is opened — never a reused one.
+      <div key={`new-step-${t.key}-${adding.seq}`} id={FORM_ID} className="scroll-mt-40 scroll-mb-6 scroll-mx-4">
+      <StepCard
+        mode="create"
+        orgId={orgId}
+        label={numberLabel(t.key, at >= 0 ? at + 1 : group.length)}
+        badgeLabel={next ? 'New' : undefined}
+        placement={placementText(prevId, t.key, at < 0 && group.length === 0 && t.key !== MAIN_TRACK)}
+        hasPredecessors={!!prevId && steps.some((s) => s.id === prevId)}
+        mergeOptions={mergeOptionsFor(t.key, blocked, null)}
+        labels={labels}
+        initial={blankStepDraft(me && (lookups.members.some((m) => m.user_id === me.user_id) || lookups.status === 'loading') ? me : undefined)}
+        editable={edit.allowed}
+        reason={edit.reason}
+        lookups={lookups}
+        currentUser={me}
+        frequency={frequency}
+        schedules={timingSchedules}
+        onCreate={onCreate}
+        onCancel={() => setAdding(null)}
+        focusKey={adding.seq}
+        commitRef={commitRef}
+      />
+      </div>
+    )
+  }
+
+  const renderTrack = (t: TrackDraft) => {
+    const group = layout.groups.get(t.key) ?? []
+    const pending = pendingTrack?.key === t.key
+    const formHere = !!adding && adding.track === t.key
+    const formAtEnd = formHere && !(adding?.after && group.some((s) => s.id === adding.after))
+    const wide = formHere || group.some((s) => expanded.has(s.id))
+    const split = t.key !== MAIN_TRACK && t.split_from ? steps.find((s) => s.id === t.split_from) : undefined
+    const issue = trackIssue?.key === t.key ? trackIssue.message : null
+    const nodes: React.ReactNode[] = []
+    group.forEach((s, i) => {
+      const prevId = i > 0 ? group[i - 1].id : t.key === MAIN_TRACK ? null : t.split_from
+      nodes.push(
+        <div key={s.id} id={`step-card-${s.id}`} className="scroll-mt-40 scroll-mb-6 scroll-mx-4">
+          <StepCard
+            mode="edit"
+            orgId={orgId}
+            step={s}
+            label={labels.get(s.id) ?? '?'}
+            placement={placementText(prevId && steps.some((x) => x.id === prevId) ? prevId : null, t.key, i === 0 && t.key !== MAIN_TRACK)}
+            hasPredecessors={i > 0 || (t.key !== MAIN_TRACK && !!split)}
+            mergeOptions={mergeOptionsFor(t.key, dependentsOf(s.id, layout.deps), s.id)}
+            labels={labels}
+            editable={edit.allowed}
+            reason={edit.reason}
+            lookups={lookups}
+            currentUser={me}
+            frequency={frequency}
+            schedules={timingSchedules}
+            expanded={expanded.has(s.id)}
+            onToggle={() => toggle(s.id)}
+            onUpdate={onUpdate}
+            onDelete={(st) => setDeleteTarget(st)}
+            canMoveUp={i > 0}
+            canMoveDown={i < group.length - 1}
+            onMoveUp={() => move(s.id, -1)}
+            onMoveDown={() => move(s.id, 1)}
+            onAddBelow={() => openAdd(t.key, s.id, undefined, cardAnchor(s.id))}
+            onSplit={() => splitAt(s)}
+            issue={issues.get(s.id) ?? null}
+          />
+        </div>,
+      )
+      if (formHere && adding?.after === s.id) nodes.push(renderForm(t, group))
+    })
+    if (formAtEnd) nodes.push(renderForm(t, group))
+
+    // The main path needs no "where it starts"; a parallel path says what it comes after.
+    const headerHint = [
+      t.key === MAIN_TRACK ? null : split ? `After ${stepName(labels.get(split.id), split.title)}` : 'After start of run',
+      group.length === 0 && !pending ? 'Add a step to keep it' : null,
+    ]
+      .filter(Boolean)
+      .join('. ')
+    const header = multiTrack ? (
+      <div
+        className={`flex flex-col gap-1.5 rounded-[12px] border px-3.5 py-2.5 ${
+          issue ? 'border-[#FCA5A5] bg-[#FEF2F2]' : 'border-[#E2E8F0] bg-white'
+        }`}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="inline-flex items-center gap-1.5 shrink-0 text-[14px] font-semibold text-[#0F172A]">
+            <GitBranch size={15} className="text-[#2563EB]" aria-hidden />
+            {trackBaseLabel(t.key)}
+          </span>
+          {t.key !== MAIN_TRACK && (
+            <input
+              aria-label={`Name of ${trackBaseLabel(t.key)}`}
+              value={t.name}
+              maxLength={TRACK_NAME_MAX}
+              disabled={detailsDisabled || pending}
+              onChange={(e) => setTrack(t.key, { name: e.target.value })}
+              placeholder={pending ? 'Add a step first' : 'Name (optional)'}
+              className={`${INPUT_CLS} !py-1.5 min-w-0 flex-1`}
+            />
+          )}
+          {t.key !== MAIN_TRACK && group.length === 0 && !pending && (
+            <GatedButton allowed={edit.allowed} reason={edit.reason} icon={X} variant="quiet" className="!min-h-[40px] sm:!min-h-[34px] !px-2.5 shrink-0" onClick={() => removeTrack(t.key)}>
+              Remove path
+            </GatedButton>
+          )}
+        </div>
+        {headerHint && <p className="text-[13px] text-[#475569]">{headerHint}</p>}
+        {issue && <p className="text-[13px] font-medium text-[#B91C1C]">{issue}</p>}
+      </div>
+    ) : null
+
+    return (
+      <div
+        key={t.key}
+        id={`track-col-${t.key}`}
+        className={`flex flex-col gap-3 min-w-0 scroll-mt-40 ${
+          multiTrack
+            ? `lg:transition-[flex-grow,min-width] lg:duration-300 lg:ease-in-out ${
+                wide ? 'lg:flex-[2.4_1_0%] lg:min-w-[min(680px,calc(100%-2rem))]' : 'lg:flex-[1_1_0%] lg:min-w-[340px]'
+              }`
+            : ''
+        }`}
+      >
+        {header}
+        {nodes}
+        {!formAtEnd && (group.length > 0 || t.key !== MAIN_TRACK) && (
+          <div id={addBarId(t.key)} className="scroll-mt-40 scroll-mb-6">
+            <AddStepBar
+              allowed={edit.allowed}
+              reason={edit.reason}
+              // The form opens in the bar's place, held right where the bar was.
+              onClick={(e) => openAdd(t.key, null, undefined, { id: FORM_ID, top: e.currentTarget.getBoundingClientRect().top })}
+            >
+              {multiTrack ? `Add step to ${trackLabel(t)}` : 'Add step'}
+            </AddStepBar>
+          </div>
+        )}
+      </div>
+    )
+  }
+
 
   /** The one primary action, at every width. */
   const primaryButton = archived ? (
@@ -852,15 +1361,11 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
                 setWork((cur) => ({ ...cur, name: v }))
                 if (v.trim()) setNameError(null)
               }}
-              onBlur={() => !work.name.trim() && w && setNameError('Enter a name for the workflow.')}
+              onBlur={() => !work.name.trim() && w && setNameError('Enter a workflow name.')}
               placeholder="e.g. New joiner onboarding"
               className={`${INPUT_CLS} ${nameError ? '!border-[#DC2626] focus:!ring-[#DC2626]' : ''}`}
             />
-            {nameError ? (
-              <p className="mt-1.5 text-[13px] text-[#B91C1C]">{nameError}</p>
-            ) : !w ? (
-              <p className="mt-1.5 text-[13px] text-[#475569]">Nothing is saved until you choose Save draft or Save.</p>
-            ) : null}
+            {nameError && <p className="mt-1.5 text-[13px] text-[#B91C1C]">{nameError}</p>}
           </div>
           <div className="lg:col-span-12">
             <label htmlFor="wf-desc" className={LABEL_CLS}>
@@ -876,7 +1381,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
                 const v = e.target.value
                 setWork((cur) => ({ ...cur, description: v }))
               }}
-              placeholder="What this workflow is for and when it should be used"
+              placeholder="What this workflow is for"
               className={`${INPUT_CLS} resize-y`}
             />
           </div>
@@ -885,7 +1390,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
 
       {lookups.failed.length > 0 && (
         <div className="flex items-center gap-2 text-[13px] text-[#92400E]">
-          <span>Some lists could not be loaded ({lookups.failed.join(', ')}), so some choices may be missing.</span>
+          <span>Some lists didn’t load ({lookups.failed.join(', ')}). Choices may be missing.</span>
           <button type="button" onClick={lookups.reload} className="font-semibold underline">
             Try again
           </button>
@@ -915,15 +1420,12 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       <section aria-labelledby="steps-heading" className="flex flex-col gap-3 scroll-mt-40">
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <h2 id="steps-heading" className="text-[18px] font-semibold text-[#0F172A] scroll-mt-40">
-              Steps <span className="text-[14px] font-normal text-[#475569]">· {plural(steps.length, 'step')}</span>
+            <h2 id="steps-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A] scroll-mt-40">
+              Steps <InfoTip label="Steps" text="Each step becomes a task. Parallel paths run at the same time." />
             </h2>
-            <p className="text-[13px] text-[#475569]">
-              Each step is a task the workflow creates when its turn comes. Use “Starts after” to run steps side by side or wait for several.
-            </p>
           </div>
           {steps.length >= LONG_LIST && (
-            <GatedButton allowed={edit.allowed} reason={edit.reason} icon={Plus} variant="secondary" onClick={() => openAdd()}>
+            <GatedButton allowed={edit.allowed} reason={edit.reason} icon={Plus} variant="secondary" onClick={() => openAdd(MAIN_TRACK)}>
               Add step
             </GatedButton>
           )}
@@ -940,12 +1442,11 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             >
               <GitBranch size={16} className="text-[#2563EB]" />
               <span className="text-[15px] font-semibold text-[#0F172A]">Flow</span>
-              <span className="text-[13px] text-[#475569] truncate">How the steps follow each other. Select a step to edit it.</span>
               <ChevronDown size={16} className={`ml-auto shrink-0 text-[#475569] transition-transform duration-200 ${flowOpen ? 'rotate-180' : ''}`} />
             </button>
             <Reveal open={flowOpen} id="flow-preview">
               <div className="px-4 pb-4 pt-1 border-t border-[#F1F5F9]">
-                <StepFlow steps={steps} memberName={memberName} onOpen={(s) => focusStep(s.id)} frequency={frequency} compact />
+                <StepFlow steps={steps} tracks={work.tracks} memberName={memberName} onOpen={(s) => focusStep(s.id)} frequency={frequency} compact />
               </div>
             </Reveal>
           </div>
@@ -956,15 +1457,13 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             <span className="flex items-start gap-2">
               <AlertTriangle size={16} className="shrink-0 mt-0.5" />
               <span>
-                {timingIssues.length === 1 ? 'One step’s timing needs' : `${timingIssues.length} steps’ timing needs`} a change before the workflow can be
-                saved — usually because how it repeats has changed.
+                {timingIssues.length === 1 ? '1 step needs' : `${timingIssues.length} steps need`} a timing change before saving.
               </span>
             </span>
             <span className="flex flex-wrap gap-x-3 gap-y-1 pl-6">
               {timingIssues.map(({ step: s }) => (
                 <button key={s.id} type="button" onClick={() => focusStep(s.id)} className="font-semibold underline text-left">
-                  Step {numbers.get(s.id)}
-                  {s.title?.trim() ? ` “${s.title.trim()}”` : ''}
+                  {stepName(labels.get(s.id), s.title)}
                 </button>
               ))}
             </span>
@@ -976,7 +1475,8 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             orgId={orgId}
             definition={exampleDefinition}
             manualOnly={frequency.type === 'manual'}
-            order={numbers}
+            order={layout.order}
+            labels={labels}
             shownElsewhere={timingIssueTexts}
             onOpenStep={(key) => {
               if (steps.some((s) => s.id === key)) focusStep(key)
@@ -985,15 +1485,23 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         )}
 
         {steps.length === 0 && !adding && (
-          <div className="bg-white border border-dashed border-[#CBD5E1] rounded-[12px]">
+          <div id="steps-empty" className="bg-white border border-dashed border-[#CBD5E1] rounded-[12px]">
             <EmptyState
               icon={ListChecks}
               title="No steps yet"
-              text={edit.allowed === true ? 'Add the first step: what needs doing, who does it, and when it is due.' : 'This workflow has no steps yet.'}
+              text={edit.allowed === true ? 'Add a step to get started.' : 'This workflow has no steps.'}
               action={
                 edit.allowed === true ? (
-                  <button type="button" onClick={() => openAdd()} className={BTN.secondary}>
-                    <Plus size={16} /> Add the first step
+                  <button
+                    type="button"
+                    // The form takes the empty box's place, starting where the box did.
+                    onClick={() => {
+                      const box = document.getElementById('steps-empty')
+                      openAdd(MAIN_TRACK, null, undefined, box ? { id: FORM_ID, top: box.getBoundingClientRect().top } : null)
+                    }}
+                    className={BTN.secondary}
+                  >
+                    <Plus size={16} /> Add first step
                   </button>
                 ) : undefined
               }
@@ -1001,71 +1509,17 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
           </div>
         )}
 
-        {(() => {
-          const form = adding ? (
-            <StepCard
-              key="new-step"
-              mode="create"
-              orgId={orgId}
-              number={insertAt ? (numbers.get(insertAt) ?? 0) + 1 : steps.length + 1}
-              badgeLabel={insertAt && steps[steps.length - 1]?.id !== insertAt ? 'New' : undefined}
-              initial={blankStepDraft(
-                insertAt ? [insertAt] : steps.length ? [steps[steps.length - 1].id] : [],
-                me && (lookups.members.some((m) => m.user_id === me.user_id) || lookups.status === 'loading') ? me : undefined,
-              )}
-              editable={edit.allowed}
-              reason={edit.reason}
-              lookups={lookups}
-              allSteps={steps}
-              numbers={numbers}
-              currentUser={me}
-              frequency={frequency}
-              schedules={timingSchedules}
-              onCreate={onCreate}
-              onCancel={() => setAdding(null)}
-              focusKey={adding.seq}
-            />
-          ) : null
-          const nodes: React.ReactNode[] = []
-          steps.forEach((s, i) => {
-            nodes.push(
-              <div key={s.id} id={`step-card-${s.id}`} className="scroll-mt-40 scroll-mb-6">
-                <StepCard
-                  mode="edit"
-                  orgId={orgId}
-                  step={s}
-                  number={i + 1}
-                  editable={edit.allowed}
-                  reason={edit.reason}
-                  lookups={lookups}
-                  allSteps={steps}
-                  numbers={numbers}
-                  currentUser={me}
-                  frequency={frequency}
-                  schedules={timingSchedules}
-                  expanded={expanded.has(s.id)}
-                  onToggle={() => toggle(s.id)}
-                  onUpdate={onUpdate}
-                  onDelete={(st) => setDeleteTarget(st)}
-                  canMoveUp={i > 0}
-                  canMoveDown={i < steps.length - 1}
-                  onMoveUp={() => move(s.id, -1)}
-                  onMoveDown={() => move(s.id, 1)}
-                  onAddBelow={() => openAdd(s.id)}
-                  issue={issues.get(s.id) ?? null}
-                />
-              </div>,
-            )
-            if (insertAt === s.id && form) nodes.push(form)
-          })
-          if (addingAtEnd && form) nodes.push(form)
-          return nodes
-        })()}
-
-        {steps.length > 0 && !addingAtEnd && (
-          <AddStepBar allowed={edit.allowed} reason={edit.reason} onClick={() => openAdd()}>
-            Add step
-          </AddStepBar>
+        {(steps.length > 0 || adding) && (
+          <div
+            id="tracks"
+            className={
+              multiTrack
+                ? 'flex flex-col lg:flex-row lg:items-start gap-5 lg:gap-4 lg:overflow-x-auto lg:-mx-1 lg:px-1 lg:pb-2'
+                : 'flex flex-col gap-3'
+            }
+          >
+            {columns.map((t) => renderTrack(t))}
+          </div>
         )}
       </section>
 
@@ -1076,7 +1530,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         value={work.people}
         onChange={(people) => setWork((cur) => ({ ...cur, people }))}
         allowed={archived && peopleGate.allowed === true ? false : peopleGate.allowed}
-        reason={archived ? 'Restore this workflow before changing it.' : peopleGate.reason}
+        reason={archived ? RESTORE_FIRST : peopleGate.reason}
         lookups={lookups}
         known={[...(w?.people?.owners ?? w?.owners ?? []), ...(w?.people?.editors ?? [])]}
       />
@@ -1086,14 +1540,12 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title={`Delete “${deleteTarget?.title || 'Untitled step'}”?`}
+        title={`Delete ${stepName(deleteTarget ? labels.get(deleteTarget.id) : null, deleteTarget?.title || 'Untitled step')}?`}
         message={
           deleteTarget
-            ? `${
-                steps.some((s) => (s.depends_on_step_ids ?? []).includes(deleteTarget.id))
-                  ? 'The steps that started after it will start after the steps before it instead. '
-                  : ''
-              }${isNewKey(deleteTarget.id) ? '' : 'It is removed when you save. Runs already under way are not changed.'}`
+            ? [...deleteEffects(deleteTarget), isNewKey(deleteTarget.id) ? '' : 'Removed when you save. Runs in progress are not affected.']
+                .filter(Boolean)
+                .join(' ')
             : ''
         }
         confirmLabel="Delete step"

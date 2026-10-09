@@ -161,14 +161,7 @@ export function useUnsavedChangesGuard(
 
   const canSave = !!save
   const title = words === 'create' ? 'Leave this workflow?' : 'Leave without saving?'
-  const message =
-    words === 'create'
-      ? canSave
-        ? 'What you have filled in will be lost unless you save it.'
-        : 'What you have filled in will be lost.'
-      : canSave
-        ? 'Your changes to this workflow will be lost unless you save them.'
-        : 'Your changes to this workflow will be lost.'
+  const message = words === 'create' ? 'What you have entered will be lost.' : 'Your changes will be lost.'
 
   const dialog =
     pending && typeof document !== 'undefined'
@@ -202,7 +195,7 @@ export function useUnsavedChangesGuard(
                   disabled={savingToLeave}
                   className="min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-sm font-semibold text-[#475569] hover:text-[#0F172A] rounded-[8px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:opacity-60"
                 >
-                  {words === 'create' ? 'Keep filling' : 'Stay'}
+                  Stay
                 </button>
                 <button
                   type="button"

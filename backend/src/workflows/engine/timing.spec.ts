@@ -51,29 +51,29 @@ describe('parseStartRule / parseDueRule', () => {
       return p.ok ? null : p.problem
     }
     expect(bad(null)).toBe('choose when it starts.')
-    expect(bad({ kind: 'weekday', weekday: 7, time: '09:00' })).toBe('pick a day of the week for the start.')
-    expect(bad({ kind: 'weekday', weekday: 1.5, time: '09:00' })).toBe('pick a day of the week for the start.')
-    expect(bad({ kind: 'weekday', weekday: 1, time: '9:00' })).toBe('the start needs a 24-hour time like 09:00.')
-    expect(bad({ kind: 'weekday', weekday: 1, time: '24:00' })).toBe('the start needs a 24-hour time like 09:00.')
-    expect(bad({ kind: 'month_day', day: 0, time: '09:00' })).toBe('pick a day of the month (1–31 or “Last day”) for the start.')
-    expect(bad({ kind: 'month_day', day: 32, time: '09:00' })).toBe('pick a day of the month (1–31 or “Last day”) for the start.')
-    expect(bad({ kind: 'month_day', day: 'first', time: '09:00' })).toBe('pick a day of the month (1–31 or “Last day”) for the start.')
-    expect(bad({ kind: 'year_date', month: 13, day: 1, time: '09:00' })).toBe('pick a month for the start.')
-    expect(bad({ kind: 'year_date', month: 2, day: 30, time: '09:00' })).toBe('pick a real date for the start.')
-    expect(bad({ kind: 'year_date', month: 4, day: 31, time: '09:00' })).toBe('pick a real date for the start.')
+    expect(bad({ kind: 'weekday', weekday: 7, time: '09:00' })).toBe('choose a day of the week for the start.')
+    expect(bad({ kind: 'weekday', weekday: 1.5, time: '09:00' })).toBe('choose a day of the week for the start.')
+    expect(bad({ kind: 'weekday', weekday: 1, time: '9:00' })).toBe('enter a start time.')
+    expect(bad({ kind: 'weekday', weekday: 1, time: '24:00' })).toBe('enter a start time.')
+    expect(bad({ kind: 'month_day', day: 0, time: '09:00' })).toBe('choose a day of the month for the start.')
+    expect(bad({ kind: 'month_day', day: 32, time: '09:00' })).toBe('choose a day of the month for the start.')
+    expect(bad({ kind: 'month_day', day: 'first', time: '09:00' })).toBe('choose a day of the month for the start.')
+    expect(bad({ kind: 'year_date', month: 13, day: 1, time: '09:00' })).toBe('choose a month for the start.')
+    expect(bad({ kind: 'year_date', month: 2, day: 30, time: '09:00' })).toBe('choose a valid date for the start.')
+    expect(bad({ kind: 'year_date', month: 4, day: 31, time: '09:00' })).toBe('choose a valid date for the start.')
     expect(bad({ kind: 'cycle_weekday', cycle: 0, weekday: 1, time: '09:00' })).toBe(
-      'pick which part of the repeat cycle the start falls in.',
+      'choose a cycle for the start.',
     )
     expect(bad({ kind: 'days_after_previous', days: 0, time: '09:00' })).toBe(
-      '“days after the steps before it are done” must be a whole number from 1 to 365.',
+      'start days must be 1 to 365.',
     )
     expect(bad({ kind: 'days_after_run_start', days: 366, time: '09:00' })).toBe(
-      '“days after the run starts” must be a whole number from 0 to 365.',
+      'start days must be 0 to 365.',
     )
-    expect(bad({ kind: 'days_after_run_start', days: 1 })).toBe('the start needs a 24-hour time like 09:00.')
+    expect(bad({ kind: 'days_after_run_start', days: 1 })).toBe('enter a start time.')
     const due = parseDueRule({ kind: 'days_after_start', days: -1, time: '18:00' })
-    expect(due).toEqual({ ok: false, problem: '“days after it starts” must be a whole number from 0 to 365.' })
-    expect(parseDueRule({ kind: 'month_day', day: 3 })).toEqual({ ok: false, problem: 'the due date needs a 24-hour time like 09:00.' })
+    expect(due).toEqual({ ok: false, problem: 'due days must be 0 to 365.' })
+    expect(parseDueRule({ kind: 'month_day', day: 3 })).toEqual({ ok: false, problem: 'enter a due time.' })
   })
 
   it('read* returns null for legacy / garbled rules (the engine then runs the legacy behaviour)', () => {
@@ -152,51 +152,51 @@ describe('timingProblem (Save)', () => {
 
   it('names what to pick for the frequency', () => {
     expect(timingProblem(weekday, null, { kind: 'monthly', every: 1 })).toBe(
-      'this workflow repeats monthly — pick a day of the month or “days after”.',
+      'the workflow repeats monthly. Choose “Day of the month” or a “Days after” option.',
     )
     expect(timingProblem(monthDay, null, { kind: 'weekly', every: 1 })).toBe(
-      'this workflow repeats weekly — pick a day of the week or “days after”.',
+      'the workflow repeats weekly. Choose “Day of the week” or a “Days after” option.',
     )
     expect(timingProblem(null, weekday, { kind: 'daily', every: 1 })).toBe(
-      'this workflow repeats daily — pick a time of day or “days after”.',
+      'the workflow repeats daily. Choose “Time of day” or a “Days after” option.',
     )
     expect(timingProblem(weekday, null, { kind: 'manual' })).toBe(
-      'this workflow only starts by hand — pick “days after” instead of a calendar date.',
+      'the workflow starts manually. Choose a “Days after” option.',
     )
     expect(timingProblem(weekday, null, { kind: 'mixed' })).toBe(
-      'this workflow’s schedules repeat in different ways — pick “days after” instead of a calendar date.',
+      'the schedules repeat differently. Choose a “Days after” option.',
     )
     expect(timingProblem({ kind: 'year_date', month: 6, day: 5, time: '09:00' }, null, { kind: 'monthly', every: 1 })).toBe(
-      'this workflow repeats monthly — pick a day of the month or “days after”.',
+      'the workflow repeats monthly. Choose “Day of the month” or a “Days after” option.',
     )
-    expect(timingProblem(monthDay, null, { kind: 'yearly', every: 1 })).toBe('this workflow repeats yearly — pick a date or “days after”.')
+    expect(timingProblem(monthDay, null, { kind: 'yearly', every: 1 })).toBe('the workflow repeats yearly. Choose “Date” or a “Days after” option.')
   })
 
   it('every 2+: a plain weekday/date is ambiguous; the cycle must be within the interval', () => {
     expect(timingProblem(weekday, null, { kind: 'weekly', every: 2 })).toBe(
-      'this workflow repeats every 2 weeks — pick a week and day (like “Week 2, Mon”) or “days after”.',
+      'the workflow repeats every 2 weeks. Choose “Day in 2-week cycle” or a “Days after” option.',
     )
     expect(timingProblem(monthDay, null, { kind: 'monthly', every: 3 })).toBe(
-      'this workflow repeats every 3 months — pick a month and day (like “Month 2, 5th”) or “days after”.',
+      'the workflow repeats every 3 months. Choose “Day in 3-month cycle” or a “Days after” option.',
     )
     expect(timingProblem({ kind: 'year_date', month: 6, day: 5, time: '09:00' }, null, { kind: 'yearly', every: 2 })).toBe(
-      'this workflow repeats every 2 years — pick a year and date (like “Year 2, 5 Jun”) or “days after”.',
+      'the workflow repeats every 2 years. Choose “Day in 2-year cycle” or a “Days after” option.',
     )
     expect(timingProblem({ kind: 'cycle_weekday', cycle: 3, weekday: 1, time: '09:00' }, null, { kind: 'weekly', every: 2 })).toBe(
-      'this workflow repeats every 2 weeks — pick Week 1 to Week 2.',
+      'the workflow repeats every 2 weeks. Choose Week 1 to Week 2.',
     )
     expect(timingProblem({ kind: 'cycle_weekday', cycle: 2, weekday: 1, time: '09:00' }, null, { kind: 'weekly', every: 2 })).toBeNull()
     expect(timingProblem({ kind: 'cycle_weekday', cycle: 1, weekday: 1, time: '09:00' }, null, { kind: 'weekly', every: 1 })).toBe(
-      'this workflow repeats weekly — pick a day of the week or “days after”.',
+      'the workflow repeats weekly. Choose “Day of the week” or a “Days after” option.',
     )
   })
 
   it('param problems come before frequency problems; the due rule is checked too', () => {
     expect(timingProblem({ kind: 'weekday', weekday: 9, time: '09:00' }, null, { kind: 'monthly', every: 1 })).toBe(
-      'pick a day of the week for the start.',
+      'choose a day of the week for the start.',
     )
     expect(timingProblem(null, { kind: 'month_day', day: 40, time: '18:00' }, { kind: 'monthly', every: 1 })).toBe(
-      'pick a day of the month (1–31 or “Last day”) for the due date.',
+      'choose a day of the month for the due date.',
     )
     expect(timingProblem(monthDay, { kind: 'month_day', day: 10, time: '18:00' }, { kind: 'monthly', every: 1 })).toBeNull()
   })

@@ -49,12 +49,12 @@ export default function WorkflowTaskBanner({
   if (!ctx && !(failed && fallback?.template_name)) return null
 
   const stepLabel = ctx
-    ? ctx.step_number
-      ? `Step ${ctx.step_number}${ctx.total_steps ? ` of ${ctx.total_steps}` : ''} · ${ctx.step_title}`
+    ? ctx.step_label || ctx.step_number
+      ? `Step ${ctx.step_label || ctx.step_number}${ctx.total_steps ? ` of ${ctx.total_steps}` : ''} · ${ctx.step_title}`
       : ctx.step_title
     : fallback?.step_order
       ? `Step ${fallback.step_order}`
-      : 'A workflow step'
+      : 'Workflow step'
   const workflowName = ctx?.template_name ?? fallback?.template_name ?? 'Workflow'
   const runName = ctx?.instance_name ?? fallback?.instance_name
 
@@ -73,7 +73,7 @@ export default function WorkflowTaskBanner({
         {ctx?.can_send_back && (
           <button
             type="button"
-            onClick={() => setSubject({ templateId: ctx.template_id, instanceId: ctx.instance_id, rowId: ctx.row_id, stepTitle: ctx.step_title })}
+            onClick={() => setSubject({ templateId: ctx.template_id, instanceId: ctx.instance_id, rowId: ctx.row_id, stepTitle: ctx.step_title, stepLabel: ctx.step_label ?? null })}
             className={BTN.secondary}
           >
             <Undo2 size={16} /> Send back

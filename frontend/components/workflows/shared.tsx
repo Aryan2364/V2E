@@ -2,10 +2,11 @@
 
 import Link from 'next/link'
 import React, { Fragment } from 'react'
-import { AlertTriangle, CheckCircle2, Clock, Loader2, PlayCircle, Plus, RefreshCw, SearchX, Undo2, XCircle, type LucideIcon } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Clock, Info, Loader2, PlayCircle, Plus, RefreshCw, SearchX, Undo2, XCircle, type LucideIcon } from 'lucide-react'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { getNow } from '@/lib/clock'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
+import Tooltip from '@/components/ui/Tooltip'
 import type {
   RunDisplayStatus,
   WorkflowInstance,
@@ -26,15 +27,15 @@ export const taskHref = (taskId: string) => `/dashboard/tasks/${taskId}`
 // ─── Reasons (kit §26.2: who may do it, by what they may do) ──────────────────
 
 export const REASONS = {
-  preview: 'Workflows is in preview mode for your organization, so changes are turned off.',
-  edit: "Only this workflow's owners and the people who can change it can do this.",
-  start: 'Only the people chosen under “Manually” can start this workflow.',
-  startPaused: 'This workflow is paused. Resume it to start it.',
-  startDraft: 'This workflow is a draft. Save it to make it live before starting it.',
-  manageAccess: "Only this workflow's owners and the person who created it can change who is involved.",
-  runActions: "Only this workflow's owners and the people who can change it can manage its runs.",
-  sendBack: "Only this step's assignees, and the people who can change the workflow, can send it back.",
-  upload: 'Only people involved in this run can add files to it.',
+  preview: 'Workflows is in preview mode, so changes are turned off.',
+  edit: 'Only owners, editors and admins can do this.',
+  start: 'Only the people listed under “Who can start it” can start this workflow.',
+  startPaused: 'This workflow is paused. Resume it first.',
+  startDraft: 'This workflow is a draft. Save it to make it live first.',
+  manageAccess: 'Only owners, the creator and admins can change who is involved.',
+  runActions: 'Only owners, editors and admins can manage runs.',
+  sendBack: 'Only this step’s assignees, owners and editors can send it back.',
+  upload: 'Only people in this run can add files.',
 } as const
 
 /**
@@ -209,7 +210,7 @@ export const STEP_STATUS: Record<WorkflowStepStatus, { cls: string; label: strin
   skipped: { cls: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]', label: 'Skipped' },
   branched: { cls: 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]', label: 'Follow-up started' },
   sent_back: { cls: 'bg-[#F5F3FF] text-[#5B21B6] border-[#DDD6FE]', label: 'Waiting for info' },
-  moved_on: { cls: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]', label: 'Late, moved on' },
+  moved_on: { cls: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]', label: 'Overdue, continued' },
 }
 
 /** `waiting` = pending with a start time: the steps before it are done, its time has not come. */
@@ -312,6 +313,37 @@ export function GatedButton({
 }
 
 /**
+ * The small ⓘ beside a label or option: the explanation lives behind it, not on the page.
+ * A real button (focusable, 44px touch area) that opens a one-sentence tooltip on hover,
+ * keyboard focus and tap; screen readers get the same sentence as its description.
+ */
+export function InfoTip({ label, text, className = '' }: { label: string; text: string; className?: string }) {
+  const id = React.useId()
+  return (
+    <>
+      <Tooltip label={text} openOnTap>
+        <button
+          type="button"
+          aria-label={`More info about ${label}`}
+          aria-describedby={id}
+          // Never toggles the card or label it sits in.
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+          className={`relative inline-flex items-center justify-center w-6 h-6 -my-1 align-middle shrink-0 rounded-full text-[#475569] hover:text-[#1D4ED8] hover:bg-[#EFF6FF] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] after:absolute after:-inset-2.5 after:content-[''] ${className}`}
+        >
+          <Info size={14} aria-hidden />
+        </button>
+      </Tooltip>
+      <span id={id} className="sr-only">
+        {text}
+      </span>
+    </>
+  )
+}
+
+/**
  * The full-width "+ Add step" bar at the end of a list of steps — where the next step
  * will appear, so nobody has to scroll back up past every card to add one.
  */
@@ -323,7 +355,7 @@ export function AddStepBar({
 }: {
   allowed: boolean | undefined
   reason: string
-  onClick: () => void
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
   children: React.ReactNode
 }) {
   return (
@@ -491,7 +523,7 @@ export function NotFoundState({ what, backHref, backLabel }: { what: string; bac
         <SearchX size={22} className="text-[#475569]" />
       </div>
       <h2 className="text-[18px] font-semibold text-[#0F172A] mb-1">{what} not found</h2>
-      <p className="text-sm text-[#475569] max-w-md">The link may be old, it may have been removed, or you may not have access to it.</p>
+      <p className="text-sm text-[#475569] max-w-md">It may have been removed, or you may not have access.</p>
       <Link href={backHref} className={`${BTN.primary} mt-5`}>
         {backLabel}
       </Link>

@@ -158,7 +158,11 @@ export default function RunStepDrawer({
 
   if (!row) return null
 
-  const title = (id: string | null | undefined) => rows.find((r) => r.id === id)?.title ?? 'an earlier step'
+  const title = (id: string | null | undefined) => {
+    const r = rows.find((x) => x.id === id)
+    if (!r) return 'an earlier step'
+    return `${r.number_label ? `${r.number_label} ` : ''}“${r.title || 'Untitled step'}”`
+  }
   const people = row.assignees?.length ? row.assignees : row.assigned_to ? [row.assigned_to] : []
   const deadline = row.task?.deadline ?? row.scheduled_at
   const overdue = row.task?.is_overdue || row.status === 'overdue' || row.status === 'moved_on'
@@ -217,7 +221,7 @@ export default function RunStepDrawer({
         <div className="flex items-start gap-2.5 rounded-[10px] border border-[#DDD6FE] bg-[#F5F3FF] px-3.5 py-2.5 text-sm text-[#4C1D95]">
           <Undo2 size={16} className="shrink-0 mt-0.5" />
           <span>
-            Waiting for info from <span className="font-semibold">“{title(row.waiting_on_row_id)}”</span>. This step picks up again once that step is done.
+            Waiting for info from <span className="font-semibold">{title(row.waiting_on_row_id)}</span>. Resumes when that step is done.
           </span>
         </div>
       )}
@@ -225,28 +229,27 @@ export default function RunStepDrawer({
         <div className="flex items-start gap-2.5 rounded-[10px] border border-[#DDD6FE] bg-[#F5F3FF] px-3.5 py-2.5 text-sm text-[#4C1D95]">
           <Undo2 size={16} className="shrink-0 mt-0.5" />
           <span>
-            Sent back from <span className="font-semibold">“{title(row.returned_to_row_id)}”</span>. When this is done, the run goes straight back there. The reason is in the comments.
+            Sent back from <span className="font-semibold">{title(row.returned_to_row_id)}</span>. The reason is in the comments. When done, the run returns there.
           </span>
         </div>
       )}
       {row.status === 'moved_on' && (
         <div className="flex items-start gap-2.5 rounded-[10px] border border-[#FECACA] bg-[#FEF2F2] px-3.5 py-2.5 text-sm text-[#991B1B]">
           <FileWarning size={16} className="shrink-0 mt-0.5" />
-          <span>This step is late, so the steps after it started anyway. Its task stays open until it is done.</span>
+          <span>This step is late. Next steps started anyway; this task stays open.</span>
         </div>
       )}
       {waiting && (
         <div className="flex items-start gap-2.5 rounded-[10px] border border-[#BFDBFE] bg-[#EFF6FF] px-3.5 py-2.5 text-sm text-[#1E3A8A]">
           <CalendarClock size={16} className="shrink-0 mt-0.5" />
           <span>
-            The steps before it are done. It starts by itself on <span className="font-semibold">{fmtDayDateTime(row.start_at)}</span>
-            {canStartNow !== undefined ? ', or you can start it now.' : '.'}
+            Starts on <span className="font-semibold">{fmtDayDateTime(row.start_at)}</span>.{canStartNow !== undefined ? ' You can also start it now.' : ''}
           </span>
         </div>
       )}
       {row.last_error && <ErrorBanner message={row.last_error} />}
       {row.task_deleted && (
-        <ErrorBanner message="This step’s task was deleted. The run cannot move on from here until someone who can manage its runs retries or skips it." />
+        <ErrorBanner message="This step’s task was deleted. An owner, editor or admin must retry or skip it." />
       )}
 
       <dl>
@@ -260,9 +263,9 @@ export default function RunStepDrawer({
               ))}
             </span>
           ) : waiting ? (
-            'Its task is created when it starts'
+            'Assigned when it starts'
           ) : row.status === 'pending' ? (
-            'Its task is created when the steps it starts after are done'
+            'Assigned when previous steps are done'
           ) : (
             '—'
           )}
@@ -344,14 +347,14 @@ export default function RunStepDrawer({
       {taskId && (row.proof_required || proofs.data.length > 0) && (
         <section>
           <h3 className="flex items-center gap-1.5 text-sm font-semibold text-[#0F172A] mb-2">
-            <FileText size={15} /> Proof of completion
+            <FileText size={15} /> Proof
           </h3>
           {proofs.status === 'loading' ? (
             <Skeleton className="h-10" />
           ) : proofs.status === 'failed' ? (
             <p className="text-sm text-[#B91C1C]">{proofs.error}</p>
           ) : proofs.data.length === 0 ? (
-            <p className="text-sm text-[#475569]">{row.proof_required ? 'Proof is needed to complete this step. None added yet.' : 'No proof added.'}</p>
+            <p className="text-sm text-[#475569]">{row.proof_required ? 'Proof required. None added yet.' : 'No proof added.'}</p>
           ) : (
             <ul className="flex flex-col gap-1.5">
               {proofs.data.map((f) => (
@@ -391,7 +394,7 @@ export default function RunStepDrawer({
               <Skeleton className="h-12" />
             </div>
           ) : comments.status === 'hidden' ? (
-            <p className="text-sm text-[#475569]">You can’t see this task’s comments. Open the task if you have access to it.</p>
+            <p className="text-sm text-[#475569]">You don’t have access to these comments.</p>
           ) : comments.status === 'failed' ? (
             <div className="flex items-center gap-2 text-sm text-[#B91C1C]">
               <span>{comments.error}</span>
@@ -438,7 +441,7 @@ export default function RunStepDrawer({
                     post()
                   }
                 }}
-                placeholder="Add a comment — Enter sends, Shift+Enter for a new line"
+                placeholder="Add a comment"
                 className="w-full px-3 py-2.5 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-y"
               />
               {postError && <ErrorBanner message={postError} onClose={() => setPostError(null)} />}
@@ -453,12 +456,12 @@ export default function RunStepDrawer({
       {!taskId && !row.task_deleted && !waiting && (
         <p className="text-sm text-[#475569]">
           {row.status === 'pending'
-              ? 'This step has not started yet. Its task is created when the steps it starts after are done.'
+              ? 'Not started yet.'
               : 'This step has no task.'}
         </p>
       )}
       {task.status === 'hidden' && (
-        <p className="text-[13px] text-[#475569]">Some of this step’s details are only visible to the people on its task.</p>
+        <p className="text-[13px] text-[#475569]">Some details are visible only to people on this task.</p>
       )}
     </Sheet>
   )

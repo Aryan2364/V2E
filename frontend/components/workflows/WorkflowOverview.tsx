@@ -9,7 +9,8 @@ import { workflowsApi, workflowErrorMessage, workflowErrorStatus } from '@/lib/a
 import type { InvolvedPerson, RunDisplayStatus, WorkflowInstance, WorkflowTemplate } from '@/lib/types/workflows'
 import ActionMenu, { type ActionMenuItem } from './ActionMenu'
 import InstanceList from './InstanceList'
-import StepFlow, { assigneeNames, orderSteps, stepNumbers } from './StepFlow'
+import StepFlow, { assigneeNames, flowLanes } from './StepFlow'
+import { layoutTracks, orderByTracks, tracksFromServer } from './tracks'
 import { dueRuleOf, frequencyOf, startRuleOf, timingSummary } from './timing'
 import { useWorkflowActions } from './useWorkflowActions'
 import { useWorkflowLookups } from './useWorkflowLookups'
@@ -19,6 +20,7 @@ import {
   EmptyState,
   ErrorState,
   GatedButton,
+  InfoTip,
   NotFoundState,
   REASONS,
   RUN_STATUS,
@@ -52,13 +54,13 @@ const RUN_FILTERS: { value: RunFilter; label: string }[] = [
 
 const ROLE_LABEL: Record<string, string> = {
   owner: 'Owner',
-  editor: 'Can change it',
-  starter: 'Can start it',
-  assignee: 'Does steps',
-  cc: 'Kept informed',
+  editor: 'Editor',
+  starter: 'Can start',
+  assignee: 'Assignee',
+  cc: 'CC',
   escalation: 'Escalation contact',
   escalation_contact: 'Escalation contact',
-  creator: 'Created it',
+  creator: 'Creator',
 }
 const ROLE_ORDER = ['owner', 'creator', 'editor', 'starter', 'assignee', 'cc', 'escalation', 'escalation_contact']
 
@@ -157,8 +159,10 @@ export default function WorkflowOverview({ id }: { id: string }) {
     else load(true)
   })
 
-  const steps = useMemo(() => orderSteps(workflow?.steps ?? []), [workflow?.steps])
-  const numbers = useMemo(() => stepNumbers(steps), [steps])
+  const tracks = useMemo(() => tracksFromServer(workflow?.tracks), [workflow?.tracks])
+  const steps = useMemo(() => orderByTracks(tracks, workflow?.steps ?? []), [tracks, workflow?.steps])
+  const layout = useMemo(() => layoutTracks(tracks, steps), [tracks, steps])
+  const lanes = useMemo(() => flowLanes(layout), [layout])
   const counts = useMemo(() => {
     const c = Object.fromEntries(RUN_FILTERS.map((f) => [f.value, 0])) as Record<RunFilter, number>
     runs.forEach((r) => {
@@ -187,7 +191,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
   const w = workflow
   const caps = w.capabilities
   const archived = w.status === 'archived'
-  const edit = archived ? { allowed: false as const, reason: 'Restore this workflow before changing it.' } : gate(caps?.can_edit, writable, REASONS.edit)
+  const edit = archived ? { allowed: false as const, reason: 'Restore this workflow to edit it.' } : gate(caps?.can_edit, writable, REASONS.edit)
   const rawEdit = gate(caps?.can_edit, writable, REASONS.edit)
   const start = startGate(w, writable)
   const involved = involvedPeople(w, memberName).sort(
@@ -219,7 +223,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
         </span>
       </div>
       <p className="mt-1.5 text-[13px] text-[#334155] break-words">
-        <span className="font-medium text-[#0F172A]">Starts:</span> {startsSummary(w, noStarters ? 'no one is chosen to start it yet' : undefined)}
+        <span className="font-medium text-[#0F172A]">Starts:</span> {startsSummary(w, noStarters ? 'no one can start it yet' : undefined)}
         {w.next_run_at ? (
           <>
             {' '}
@@ -281,10 +285,9 @@ export default function WorkflowOverview({ id }: { id: string }) {
         <section aria-labelledby="steps-heading" className="xl:col-span-2 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-4 min-w-0">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="min-w-0">
-              <h2 id="steps-heading" className="text-[18px] font-semibold text-[#0F172A]">
-                Steps
+              <h2 id="steps-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+                Steps <InfoTip label="Steps" text="Each step becomes a task. Parallel paths run at the same time." />
               </h2>
-              <p className="text-[13px] text-[#475569]">Each step is a task the workflow creates when the steps it starts after are done.</p>
             </div>
             {steps.length > 0 && (
               <div role="tablist" aria-label="Show steps as" className="inline-flex rounded-[8px] border border-[#CBD5E1] bg-white p-0.5">
@@ -315,7 +318,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
             <EmptyState
               icon={GitBranch}
               title="No steps yet"
-              text={edit.allowed === true ? 'Open the builder to add its steps.' : 'This workflow has no steps yet.'}
+              text={edit.allowed === true ? 'Add steps to get started.' : 'This workflow has no steps.'}
               action={
                 edit.allowed === true ? (
                   <Link href={editHref(w.id)} className={BTN.secondary}>
@@ -325,30 +328,47 @@ export default function WorkflowOverview({ id }: { id: string }) {
               }
             />
           ) : view === 'flow' ? (
-            <StepFlow steps={steps} memberName={memberName} frequency={frequency} />
+            <StepFlow steps={steps} tracks={tracks} memberName={memberName} frequency={frequency} />
           ) : (
-            <ol className="flex flex-col divide-y divide-[#F1F5F9]">
-              {steps.map((s) => {
-                const after = (s.depends_on_step_ids ?? []).map((d) => numbers.get(d)).filter(Boolean)
+            <div className="flex flex-col gap-4">
+              {lanes.map((lane) => {
+                const list = layout.groups.get(lane.key) ?? []
+                if (!list.length) return null
                 return (
-                  <li key={s.id} className="py-3 flex items-start gap-3">
-                    <span className="mt-0.5 min-w-[26px] h-[26px] px-1 rounded-full bg-[#2563EB] text-white text-[12px] font-semibold flex items-center justify-center shrink-0">
-                      {numbers.get(s.id)}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[15px] font-semibold text-[#0F172A] break-words">{s.title || 'Untitled step'}</p>
-                      <p className="text-[13px] text-[#334155]">
-                        {namesSummary(assigneeNames(s, memberName).map((name) => ({ name })), 3)} · {timingSummary(startRuleOf(s), dueRuleOf(s), frequency, (s.depends_on_step_ids ?? []).length > 0)}
+                  <div key={lane.key} className="flex flex-col">
+                    {lanes.length > 1 && (
+                      <p className="flex items-baseline gap-2 pb-1.5 border-b border-[#E2E8F0]">
+                        <span className="text-[14px] font-semibold text-[#0F172A]">{lane.label}</span>
+                        {lane.hint && <span className="text-[13px] text-[#475569]">{lane.hint}</span>}
                       </p>
-                      <p className="text-[13px] text-[#475569]">
-                        {after.length ? `Starts after step${after.length > 1 ? 's' : ''} ${after.join(', ')}` : 'Starts when the workflow starts'} ·{' '}
-                        {s.if_late === 'move_on' ? 'If late, the next steps start anyway' : 'If late, the next steps wait'}
-                      </p>
-                    </div>
-                  </li>
+                    )}
+                    <ol className="flex flex-col divide-y divide-[#F1F5F9]">
+                      {list.map((s) => {
+                        const deps = layout.deps.get(s.id) ?? []
+                        const merges = layout.merges.get(s.id) ?? []
+                        const also = merges.map((m) => layout.labels.get(m)).filter(Boolean)
+                        // What it comes after is the lane's own order (or the lane header): only extra waits are said.
+                        const meta = [also.length ? `Also waits for ${also.join(', ')}` : null, s.if_late === 'move_on' ? 'If late: continue' : 'If late: wait'].filter(Boolean).join(' · ')
+                        return (
+                          <li key={s.id} className="py-3 flex items-start gap-3">
+                            <span className="mt-0.5 min-w-[26px] h-[26px] px-1 rounded-full bg-[#2563EB] text-white text-[12px] font-semibold flex items-center justify-center shrink-0">
+                              {layout.labels.get(s.id)}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[15px] font-semibold text-[#0F172A] break-words">{s.title || 'Untitled step'}</p>
+                              <p className="text-[13px] text-[#334155]">
+                                {namesSummary(assigneeNames(s, memberName).map((name) => ({ name })), 3)} · {timingSummary(startRuleOf(s), dueRuleOf(s), frequency, deps.length > 0)}
+                              </p>
+                              <p className="text-[13px] text-[#475569]">{meta}</p>
+                            </div>
+                          </li>
+                        )
+                      })}
+                    </ol>
+                  </div>
                 )
               })}
-            </ol>
+            </div>
           )}
         </section>
 
@@ -357,8 +377,8 @@ export default function WorkflowOverview({ id }: { id: string }) {
           <section aria-labelledby="people-heading" className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-3">
             <div className="flex items-center gap-2">
               <Users size={16} className="text-[#475569]" />
-              <h2 id="people-heading" className="text-[18px] font-semibold text-[#0F172A]">
-                People involved
+              <h2 id="people-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+                People involved <InfoTip label="People involved" text="Everyone in your organisation can view live workflows." />
               </h2>
             </div>
             {involved.length === 0 ? (
@@ -382,7 +402,6 @@ export default function WorkflowOverview({ id }: { id: string }) {
                 ))}
               </ul>
             )}
-            <p className="text-[12px] text-[#475569]">Everyone in your organisation can view this workflow while it is live.</p>
           </section>
         </div>
       </div>
@@ -439,7 +458,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
                   <EmptyState
                     icon={History}
                     title={`No runs are “${RUN_STATUS[filter as RunDisplayStatus].label.toLowerCase()}”`}
-                    text="Choose another filter to see the others."
+                    text="Try another filter."
                     action={
                       <button type="button" onClick={() => setFilter('all')} className={BTN.secondary}>
                         Show all runs
@@ -452,10 +471,12 @@ export default function WorkflowOverview({ id }: { id: string }) {
                     title="No runs yet"
                     text={
                       w.status === 'active'
-                        ? 'Runs appear here when someone starts this workflow or its schedule starts it.'
+                        ? 'Runs appear here once the workflow starts.'
                         : w.status === 'paused'
-                          ? 'This workflow is paused. Resume it to start runs again.'
-                          : 'Save this workflow to make it live. Then it can be started and its schedule runs.'
+                          ? 'Resume the workflow to start new runs.'
+                          : w.status === 'archived'
+                            ? 'This workflow has no runs.'
+                            : 'Save the workflow to make it live.'
                     }
                   />
                 )}

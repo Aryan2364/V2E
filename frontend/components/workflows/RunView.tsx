@@ -8,7 +8,8 @@ import { useToast } from '@/components/ui/Toast'
 import { workflowsApi, workflowErrorMessage, workflowErrorStatus } from '@/lib/api/workflows'
 import type { WorkflowInstance, WorkflowInstanceStep } from '@/lib/types/workflows'
 import ActionMenu, { type ActionMenuItem } from './ActionMenu'
-import FlowDiagram, { type EdgeTone, type FlowDiagramNode, type FlowTone } from './FlowDiagram'
+import FlowDiagram, { type EdgeTone, type FlowDiagramNode, type FlowLane, type FlowTone } from './FlowDiagram'
+import { runLayout } from './tracks'
 import { ProgressBar, instanceProgress } from './InstanceList'
 import RunDocumentsDrawer from './RunDocumentsDrawer'
 import RunHistory from './RunHistory'
@@ -19,6 +20,7 @@ import {
   ErrorBanner,
   ErrorState,
   GatedButton,
+  InfoTip,
   NotFoundState,
   REASONS,
   RunStatusBadge,
@@ -40,11 +42,11 @@ import {
 type RunAction = { kind: 'cancel' } | { kind: 'retry' } | { kind: 'skip'; row: WorkflowInstanceStep }
 
 const TRIGGER_LABEL: Record<string, string> = {
-  manual: 'Started by hand',
-  manual_trigger: 'Started by hand',
-  schedule: 'Started by its schedule',
+  manual: 'Started manually',
+  manual_trigger: 'Started manually',
+  schedule: 'Started by schedule',
   // Older runs (start types that no longer exist).
-  date_trigger: 'Started by its schedule',
+  date_trigger: 'Started by schedule',
   task_completed_trigger: 'Started when a task was completed',
   task_overdue_trigger: 'Started when a task became overdue',
 }
@@ -167,7 +169,28 @@ export default function RunView({ templateId, instanceId }: { templateId: string
   const followUps = useMemo(() => (run?.steps ?? []).filter((r) => r.is_branch), [run?.steps])
   const deps = useMemo(() => rowDeps(rows), [rows])
   const byId = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows])
-  const numberOf = useMemo(() => new Map(rows.map((r, i) => [r.id, i + 1])), [rows])
+  // Lanes (tracks) and each step's number ("1", "B2") as frozen when the run started.
+  const { lanes, laneOf, labels } = useMemo(() => runLayout(rows, run?.tracks), [rows, run?.tracks])
+  const flowLanes: FlowLane[] = useMemo(
+    () =>
+      lanes.map((l) => {
+        const first = rows.find((r) => laneOf.get(r.id) === l.key)
+        const from = first ? (deps.get(first.id) ?? [])[0] : undefined
+        return {
+          key: l.key,
+          label: l.label,
+          hint: l.key === 'main' ? undefined : from && laneOf.get(from) !== l.key ? `After ${labels.get(from) ?? '?'}` : 'After start of run',
+        }
+      }),
+    [lanes, rows, laneOf, labels, deps],
+  )
+  const nameOf = useCallback(
+    (id: string | null | undefined) => {
+      const r = id ? byId.get(id) : undefined
+      return r ? `${labels.get(r.id) ?? ''} “${r.title || 'Untitled step'}”`.trim() : null
+    },
+    [byId, labels],
+  )
   const openRow = openRowId ? byId.get(openRowId) ?? null : null
 
   const caps = run?.capabilities ?? { can_cancel: false, can_retry: false, can_skip: false }
@@ -191,7 +214,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
     try {
       const updated = await workflowsApi.startStepNow(orgId, templateId, run.id, row.id)
       if (updated?.steps) setRun(updated)
-      addToast(`“${row.title || 'Step'}” started now. Its task has been created.`, 'success')
+      addToast(`“${row.title || 'Step'}” started`, 'success')
       await load(true)
     } catch (e) {
       addToast(workflowErrorMessage(e, 'The step could not be started. Try again.'), 'error')
@@ -213,15 +236,22 @@ export default function RunView({ templateId, instanceId }: { templateId: string
   const nodes: FlowDiagramNode[] = useMemo(
     () =>
       rows.map((r) => {
-        const n = numberOf.get(r.id) ?? 0
+        const n = labels.get(r.id) ?? '?'
+        const ds = deps.get(r.id) ?? []
+        const lane = laneOf.get(r.id)
+        const firstInLane = rows.find((x) => laneOf.get(x.id) === lane)?.id === r.id
+        // Steps in other lanes it also waits for (the first step of a lane waits for its split step — not a merge).
+        const also = ds.filter((d, i) => laneOf.get(d) !== lane && !(firstInLane && i === 0)).map((d) => labels.get(d) ?? '?')
         const people = r.assignees?.length ? r.assignees : r.assigned_to ? [r.assigned_to] : []
         const deadline = r.task?.deadline ?? r.scheduled_at
         const t = r.task
         const label = STEP_STATUS[r.status]?.label ?? 'Not started'
         return {
           id: r.id,
-          deps: deps.get(r.id) ?? [],
+          deps: ds,
           order: r.order_index,
+          lane,
+          alsoWaitsFor: also,
           label: `Step ${n}: ${r.title || 'Untitled step'}, ${label}. Open details`,
           tone: TONE[r.status] ?? 'default',
           selected: openRowId === r.id,
@@ -252,11 +282,11 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                 }`}
               >
                 {r.status === 'sent_back'
-                  ? `Waiting for info from “${byId.get(r.waiting_on_row_id ?? '')?.title ?? 'an earlier step'}”`
+                  ? `Waiting for info from ${nameOf(r.waiting_on_row_id) ?? 'an earlier step'}`
                   : isWaitingRow(r)
-                    ? 'Waiting for its start time'
+                    ? 'Waiting to start'
                     : label}
-                {r.returned_to_row_id ? ' · sent back to here' : ''}
+                {r.returned_to_row_id ? ' · sent back here' : ''}
               </span>
               {people.length > 0 && (
                 <span className="flex items-center gap-1.5 text-[12px] text-[#334155] min-w-0">
@@ -306,7 +336,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
           ),
         }
       }),
-    [rows, deps, byId, numberOf, openRowId],
+    [rows, deps, labels, laneOf, nameOf, openRowId],
   )
 
   const edgeTone = useCallback(
@@ -328,11 +358,11 @@ export default function RunView({ templateId, instanceId }: { templateId: string
       if (action.kind === 'cancel') await workflowsApi.cancelInstance(orgId, templateId, run.id)
       if (action.kind === 'retry') await workflowsApi.retryInstance(orgId, templateId, run.id)
       if (action.kind === 'skip') await workflowsApi.skipStep(orgId, templateId, run.id, action.row.id)
-      addToast(action.kind === 'cancel' ? 'Run cancelled' : action.kind === 'retry' ? 'Run started again from where it stopped' : 'Step skipped', 'success')
+      addToast(action.kind === 'cancel' ? 'Run cancelled' : action.kind === 'retry' ? 'Run retried' : 'Step skipped', 'success')
       setAction(null)
       await load(true)
     } catch (e) {
-      setActionError(workflowErrorMessage(e, 'That did not work. Try again.'))
+      setActionError(workflowErrorMessage(e, 'Something went wrong. Try again.'))
     } finally {
       setActing(false)
     }
@@ -350,7 +380,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
       </div>
     )
   }
-  if (status === 'notfound') return <NotFoundState what="Run" backHref={workflowHref(templateId)} backLabel="Go to the workflow" />
+  if (status === 'notfound') return <NotFoundState what="Run" backHref={workflowHref(templateId)} backLabel="Go to workflow" />
   if (status === 'failed' || !run) return <ErrorState title="This run could not be loaded" message={loadError} onRetry={() => load()} />
 
   const p = instanceProgress(run)
@@ -360,21 +390,21 @@ export default function RunView({ templateId, instanceId }: { templateId: string
     action?.kind === 'cancel'
       ? {
           title: 'Cancel this run?',
-          message: `“${run.name}” stops here. Its open tasks are withdrawn and their assignees are told. Steps not yet started will not start. This cannot be undone.`,
+          message: `Open tasks in “${run.name}” are withdrawn and remaining steps won’t start. This cannot be undone.`,
           confirm: 'Cancel run',
           danger: true,
         }
       : action?.kind === 'retry'
         ? {
-            title: 'Start this run again?',
-            message: 'The run picks up from where it stopped: missing tasks are created again and it goes back to running.',
-            confirm: 'Start again',
+            title: 'Retry this run?',
+            message: 'It continues from where it stopped.',
+            confirm: 'Retry run',
             danger: false,
           }
         : action?.kind === 'skip'
           ? {
-              title: `Skip “${action.row.title}”?`,
-              message: 'The step is marked skipped and its open task is withdrawn. The steps that start after it start now if nothing else holds them.',
+              title: `Skip ${nameOf(action.row.id) ?? `“${action.row.title}”`}?`,
+              message: 'Its open task is withdrawn and the next steps can start.',
               confirm: 'Skip step',
               danger: true,
             }
@@ -401,10 +431,10 @@ export default function RunView({ templateId, instanceId }: { templateId: string
   }
   const retryButton = (
     <GatedButton allowed={retryGate.allowed} reason={retryGate.reason} icon={RotateCcw} variant="primary" onClick={openRetry}>
-      Start again
+      Retry
     </GatedButton>
   )
-  // Phone: one visible action (Start again when stuck, else Documents); the rest here.
+  // Phone: one visible action (Retry when stuck, else Documents); the rest here.
   const runMenu: ActionMenuItem[] = [
     {
       key: 'docs',
@@ -481,10 +511,9 @@ export default function RunView({ templateId, instanceId }: { templateId: string
         <section aria-labelledby="run-steps" className="xl:col-span-2 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 min-w-0">
           <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
             <div className="min-w-0">
-              <h2 id="run-steps" className="text-[18px] font-semibold text-[#0F172A]">
-                Steps
+              <h2 id="run-steps" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+                Steps <InfoTip label="Steps" text="Select a step to see its checklist, proof and comments." />
               </h2>
-              <p className="text-[13px] text-[#475569]">Select a step to see its checklist, proof and comments.</p>
             </div>
             <div className="flex items-center gap-3 flex-wrap text-[12px] text-[#334155]" aria-hidden>
               <span className="inline-flex items-center gap-1.5">
@@ -498,10 +527,12 @@ export default function RunView({ templateId, instanceId }: { templateId: string
               </span>
             </div>
           </div>
-          {rows.length === 0 ? <p className="text-sm text-[#475569]">This run has no steps.</p> : <FlowDiagram nodes={nodes} edgeTone={edgeTone} />}
+          {rows.length === 0 ? <p className="text-sm text-[#475569]">This run has no steps.</p> : <FlowDiagram nodes={nodes} lanes={flowLanes} edgeTone={edgeTone} />}
           {followUps.length > 0 && (
             <div className="mt-5 pt-4 border-t border-[#F1F5F9]">
-              <h3 className="text-sm font-semibold text-[#0F172A] mb-2">Follow-ups started because a step was late</h3>
+              <h3 className="flex items-center gap-1 text-sm font-semibold text-[#0F172A] mb-2">
+                Follow-ups <InfoTip label="Follow-ups" text="Started because a step was late." />
+              </h3>
               <ul className="flex flex-col gap-1.5">
                 {followUps.map((f) => (
                   <li key={f.id} className="flex items-center justify-between gap-2 text-sm text-[#1E293B]">
@@ -522,7 +553,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             <ProgressBar completed={p.completed} total={p.total} run={run} />
             {live && currentRows.length > 0 && (
               <div>
-                <p className="text-[13px] text-[#475569] mb-1.5">{currentRows.length === 1 ? 'Now on' : `Now on ${currentRows.length} steps`}</p>
+                <p className="text-[13px] text-[#475569] mb-1.5">{currentRows.length === 1 ? 'In progress' : `${currentRows.length} in progress`}</p>
                 <ul className="flex flex-col gap-1.5">
                   {currentRows.map((r) => (
                     <li key={r.id}>
@@ -531,7 +562,9 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                         onClick={() => setOpenRowId(r.id)}
                         className="w-full text-left rounded-[8px] border border-[#E2E8F0] px-3 py-2 hover:bg-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
                       >
-                        <span className="block text-sm font-medium text-[#0F172A] truncate">{r.title}</span>
+                        <span className="block text-sm font-medium text-[#0F172A] truncate">
+                          <span className="text-[#1D4ED8] font-semibold">{labels.get(r.id)}</span> {r.title}
+                        </span>
                         <span className="block text-[12px] text-[#475569] truncate">
                           {STEP_STATUS[r.status]?.label}
                           {(r.assignees?.length || r.assigned_to) && ` · ${namesSummary(r.assignees?.length ? r.assignees : [r.assigned_to!], 2)}`}
@@ -544,7 +577,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             )}
             {live && waitingRows.length > 0 && (
               <div>
-                <p className="text-[13px] text-[#475569] mb-1.5">{waitingRows.length === 1 ? 'Waiting to start' : `${waitingRows.length} steps waiting to start`}</p>
+                <p className="text-[13px] text-[#475569] mb-1.5">{waitingRows.length === 1 ? 'Waiting to start' : `${waitingRows.length} waiting to start`}</p>
                 <ul className="flex flex-col gap-1.5">
                   {waitingRows.map((r) => {
                     const allowed = startNowAllowed(r)
@@ -555,7 +588,9 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                           onClick={() => setOpenRowId(r.id)}
                           className="min-w-0 flex-1 text-left rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
                         >
-                          <span className="block text-sm font-medium text-[#0F172A] truncate">{r.title}</span>
+                          <span className="block text-sm font-medium text-[#0F172A] truncate">
+                            <span className="text-[#1D4ED8] font-semibold">{labels.get(r.id)}</span> {r.title}
+                          </span>
                           <span className="block text-[12px] text-[#334155]">Starts {fmtDayDateTime(r.start_at)}</span>
                         </button>
                         {allowed !== undefined || caps.can_start_now_row_ids?.includes(r.id) ? (
@@ -580,12 +615,12 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             )}
             {run.status === 'stuck' && (
               <p className="text-[13px] text-[#475569]">
-                This run stopped and needs someone to look at it. Open the step that has a problem to see why, then start the run again or skip that step.
+                This run is stuck. Open the step with a problem, then retry the run or skip the step.
               </p>
             )}
           </section>
 
-          <RunHistory orgId={orgId} templateId={templateId} instanceId={instanceId} refreshKey={historyKey} />
+          <RunHistory orgId={orgId} templateId={templateId} instanceId={instanceId} refreshKey={historyKey} stepLabels={labels} />
         </div>
       </div>
 
@@ -593,13 +628,13 @@ export default function RunView({ templateId, instanceId }: { templateId: string
         orgId={orgId}
         row={openRow}
         rows={rows}
-        label={openRow ? `Step ${numberOf.get(openRow.id)} of ${rows.length}` : ''}
+        label={openRow ? `Step ${labels.get(openRow.id) ?? '?'} of ${rows.length}` : ''}
         onClose={() => setOpenRowId(null)}
         canSendBack={openRow ? sendBackAllowed(openRow) : undefined}
         sendBackReason={writable === false ? REASONS.preview : REASONS.sendBack}
         onSendBack={(r) => {
           setOpenRowId(null)
-          setSendBack({ templateId, instanceId: run.id, rowId: r.id, stepTitle: r.title })
+          setSendBack({ templateId, instanceId: run.id, rowId: r.id, stepTitle: r.title, stepLabel: labels.get(r.id) ?? null })
         }}
         canSkip={
           openRow && skipGate.allowed === true && Array.isArray(caps.can_skip_row_ids) ? caps.can_skip_row_ids.includes(openRow.id) : skipGate.allowed
@@ -647,7 +682,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
         title={actionCopy?.title ?? ''}
         message={actionCopy?.message ?? ''}
         confirmLabel={actionCopy?.confirm ?? ''}
-        cancelLabel="Keep as is"
+        cancelLabel="Go back"
         danger={actionCopy?.danger ?? false}
         loading={acting}
         error={actionError}

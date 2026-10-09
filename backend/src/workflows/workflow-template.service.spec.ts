@@ -195,7 +195,6 @@ const dstep = (key: string, over: Record<string, unknown> = {}) => ({
   key,
   title: `Step ${key}`,
   assignee_user_ids: [U1],
-  depends_on: [] as string[],
   ...over,
 })
 
@@ -267,7 +266,7 @@ describe('WorkflowTemplateService — gates', () => {
   it('archived workflows reject saves', async () => {
     const h = defHarness([], template({ status: 'archived' }, ['edit']))
     await expect(h.service.updateDefinition(ORG, TPL, def() as never, me())).rejects.toThrow(
-      'This workflow is archived. Restore it before making changes.',
+      'This workflow is archived. Restore it to make changes.',
     )
   })
 
@@ -291,7 +290,7 @@ describe('WorkflowTemplateService — starting by hand', () => {
   it('only the people chosen under “Manually” can start; an owner who is not one gets 403', async () => {
     const owner = startHarness(template({ status: 'active' }))
     await expect(owner.service.triggerInstance(ORG, TPL, undefined, me({ userId: 'u-owner' }))).rejects.toThrow(
-      new ForbiddenException('Only the people chosen under “Manually” can start this workflow.'),
+      new ForbiddenException('Only the people listed under “Who can start it” can start this workflow.'),
     )
     const admin = startHarness(template({ status: 'active' }))
     await expect(admin.service.triggerInstance(ORG, TPL, undefined, me({ isAdmin: true }))).rejects.toBeInstanceOf(
@@ -311,7 +310,7 @@ describe('WorkflowTemplateService — starting by hand', () => {
     )
     const draft = startHarness(template({ status: 'draft' }, ['trigger']))
     await expect(draft.service.triggerInstance(ORG, TPL, undefined, me())).rejects.toThrow(
-      'This workflow is a draft. Save it to make it live before starting it.',
+      'This workflow is a draft. Save it to make it live.',
     )
     expect(paused.engine.createInstance).not.toHaveBeenCalled()
     expect(draft.engine.createInstance).not.toHaveBeenCalled()
@@ -320,13 +319,13 @@ describe('WorkflowTemplateService — starting by hand', () => {
   it('a schedule-only workflow has no start by hand', async () => {
     const h = startHarness(template({ status: 'active', manual_start_enabled: false }, ['trigger']))
     await expect(h.service.triggerInstance(ORG, TPL, undefined, me())).rejects.toThrow(
-      new BadRequestException('This workflow can only be started by its schedule.'),
+      new BadRequestException('This workflow starts only on its schedule.'),
     )
     expect(h.engine.createInstance).not.toHaveBeenCalled()
   })
 })
 
-describe('WorkflowTemplateService — definition: steps and “Starts after”', () => {
+describe('WorkflowTemplateService — definition: steps and tracks', () => {
   it('Save draft saves an incomplete new workflow as a draft; its starters default to its owners', async () => {
     const h = defHarness()
     await h.service.createDefinition(
@@ -363,14 +362,14 @@ describe('WorkflowTemplateService — definition: steps and “Starts after”',
       )
       .catch((e: unknown) => e)
     expect(err).toBeInstanceOf(BadRequestException)
-    expect(err.message).toBe('Step 2 “Review”: Assign it to at least one person.')
+    expect(err.message).toBe('Step 2 “Review”: add at least one assignee.')
     expect(err.getResponse()).toMatchObject({ code: 'step_invalid', step_key: 'n2', step_id: null })
     expect(h.prisma.$transaction).not.toHaveBeenCalled()
 
     const blank: any = await h.service
       .createDefinition(ORG, def({ mode: 'save', steps: [dstep('n1', { title: '  ' })] }) as never, me())
       .catch((e: unknown) => e)
-    expect(blank.message).toBe('Step 1: Give the step a title.')
+    expect(blank.message).toBe('Step 1: enter a title.')
 
     const esc: any = await h.service
       .createDefinition(
@@ -380,39 +379,79 @@ describe('WorkflowTemplateService — definition: steps and “Starts after”',
       )
       .catch((e: unknown) => e)
     expect(esc.message).toBe(
-      'Step 1 “Collect”: Pick at least one person to escalate to, or escalate to the assignee\'s manager.',
+      'Step 1 “Collect”: add someone to escalate to, or choose “Reporting manager”.',
     )
 
     const noRoot: any = await h.service
       .createDefinition(ORG, def({ mode: 'save', steps: [] }) as never, me())
       .catch((e: unknown) => e)
-    expect(noRoot.message).toBe('Add at least one step before saving.')
+    expect(noRoot.message).toBe('Add at least one step.')
   })
 
-  it('client keys: "Starts after" between steps not saved yet maps to the ids created in the same transaction', async () => {
+  it('tracks: client keys map to the ids created in the same transaction; depends_on is derived', async () => {
     const h = defHarness([stepRow('a', { title: 'Existing' })])
     const out: any = await h.service.updateDefinition(
       ORG,
       TPL,
       def({
         mode: 'save',
+        // Main: a → n1. Track B "Finance" splits after a: n2, which also waits for n1.
+        tracks: [
+          { key: 'main', name: null, split_from_step_key: null },
+          { key: 'B', name: 'Finance', split_from_step_key: 'a' },
+        ],
         steps: [
+          dstep('n2', { title: 'Approve', track_key: 'B', merge_step_keys: ['n1'] }),
           dstep('a', { id: 'a', title: 'Existing' }),
-          dstep('n1', { title: 'Review', depends_on: ['a'] }),
-          dstep('n2', { title: 'Approve', depends_on: ['n1', 'a'] }),
+          dstep('n1', { title: 'Review' }),
         ],
       }) as never,
       me(),
     )
     const created = h.prisma.workflowStep.create.mock.calls.map((c: any[]) => c[0].data)
     expect(created).toHaveLength(2)
-    const [review, approve] = created
+    const review = created.find((d: any) => d.title === 'Review')
+    const approve = created.find((d: any) => d.title === 'Approve')
     expect(review.id).toMatch(/^[0-9a-f-]{36}$/)
-    expect(review.depends_on_step_ids).toEqual(['a'])
-    expect(approve.depends_on_step_ids).toEqual([review.id, 'a'])
-    expect(review).toMatchObject({ order_index: 1, assigner_user_id: 'u-me', is_branch_step: false })
+    expect(review).toMatchObject({ track_key: 'main', order_index: 1, merge_step_ids: [], depends_on_step_ids: ['a'] })
+    expect(approve).toMatchObject({ track_key: 'B', order_index: 0, merge_step_ids: [review.id], depends_on_step_ids: ['a', review.id] })
+    expect(review).toMatchObject({ assigner_user_id: 'u-me', is_branch_step: false })
+    expect(h.prisma.workflowStep.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'a', workflow_template_id: TPL, organization_id: ORG },
+        data: expect.objectContaining({ track_key: 'main', order_index: 0, depends_on_step_ids: [] }),
+      }),
+    )
+    expect(h.prisma.workflowTemplate.updateMany.mock.calls[0][0].data.tracks).toEqual([
+      { key: 'main', name: null, split_from_step_id: null },
+      { key: 'B', name: 'Finance', split_from_step_id: 'a' },
+    ])
     expect(out.step_keys).toEqual({ a: 'a', n1: review.id, n2: approve.id })
     expect(h.prisma.$transaction).toHaveBeenCalledTimes(1)
+  })
+
+  it('tracks: an empty track is dropped; Save needs a step on the main track', async () => {
+    const h = defHarness()
+    await h.service.createDefinition(
+      ORG,
+      def({ tracks: [{ key: 'main' }, { key: 'C', split_from_step_key: null }], steps: [dstep('n1', { title: 'Collect' })] }) as never,
+      me(),
+    )
+    expect(h.prisma.workflowTemplate.create.mock.calls[0][0].data.tracks).toEqual([{ key: 'main', name: null, split_from_step_id: null }])
+
+    const noMain: any = await h.service
+      .createDefinition(
+        ORG,
+        def({
+          mode: 'save',
+          tracks: [{ key: 'main' }, { key: 'B', split_from_step_key: null }],
+          steps: [dstep('n1', { title: 'Collect', track_key: 'B' })],
+        }) as never,
+        me(),
+      )
+      .catch((e: unknown) => e)
+    expect(noMain.message).toBe('Main path: add at least one step.')
+    expect(noMain.getResponse()).toMatchObject({ code: 'track_invalid', track_key: 'main' })
   })
 
   it('keeps listed steps (in the new display order), creates new ones and deletes the rest — in one transaction', async () => {
@@ -436,34 +475,65 @@ describe('WorkflowTemplateService — definition: steps and “Starts after”',
     expect(h.prisma.$transaction).toHaveBeenCalledTimes(1)
   })
 
-  it('refuses a step id that is not this workflow’s, a loop (even in a draft), and an unknown “Starts after”', async () => {
+  it('refuses a step id that is not this workflow’s, a loop (even in a draft), bad merges and split points', async () => {
     const h = defHarness([stepRow('a')])
     await expect(
       h.service.updateDefinition(ORG, TPL, def({ steps: [dstep('x', { id: U3 })] }) as never, me()),
-    ).rejects.toThrow('One of the steps no longer exists. Reload the workflow and try again.')
+    ).rejects.toThrow('One of the steps no longer exists. Reload and try again.')
 
+    // Track B splits after step 2; step 1 also waiting for B1 would close a loop.
     const loop: any = await h.service
       .updateDefinition(
         ORG,
         TPL,
         def({
+          tracks: [{ key: 'main' }, { key: 'B', split_from_step_key: 'n2' }],
           steps: [
-            dstep('n1', { title: 'Collect', depends_on: ['n2'] }),
-            dstep('n2', { title: 'Review', depends_on: ['n1'] }),
+            dstep('n1', { title: 'Collect', merge_step_keys: ['b1'] }),
+            dstep('n2', { title: 'Review' }),
+            dstep('b1', { title: 'Check', track_key: 'B' }),
           ],
         }) as never,
         me(),
       )
       .catch((e: unknown) => e)
-    expect(loop.message).toBe('“Collect” can’t start after “Review” — that would make a loop.')
-    expect(loop.getResponse().step_key).toBe('n1')
+    expect(loop.message).toBe(
+      'Step 1 “Collect” can’t also wait for Step B1 “Check”. That would make a loop.',
+    )
+    expect(loop.getResponse()).toMatchObject({ code: 'step_invalid', step_key: 'n1' })
 
-    await expect(
-      h.service.updateDefinition(ORG, TPL, def({ steps: [dstep('n1', { title: 'Collect', depends_on: ['zz'] })] }) as never, me()),
-    ).rejects.toThrow('Step 1 “Collect”: “Starts after” lists a step that is not in this workflow. Pick again.')
-    await expect(
-      h.service.updateDefinition(ORG, TPL, def({ steps: [dstep('n1', { title: 'Collect', depends_on: ['n1'] })] }) as never, me()),
-    ).rejects.toThrow('Step 1 “Collect” can’t start after itself.')
+    const twoTracks = (merges: string[]) =>
+      def({
+        tracks: [{ key: 'main' }, { key: 'B', split_from_step_key: 'n1' }],
+        steps: [
+          dstep('n1', { title: 'Collect', merge_step_keys: merges }),
+          dstep('n2', { title: 'Review' }),
+          dstep('b1', { title: 'Check', track_key: 'B' }),
+        ],
+      })
+    await expect(h.service.updateDefinition(ORG, TPL, twoTracks(['zz']) as never, me())).rejects.toThrow(
+      'Step 1 “Collect”: “Also waits for” lists a step that no longer exists.',
+    )
+    await expect(h.service.updateDefinition(ORG, TPL, twoTracks(['n1']) as never, me())).rejects.toThrow(
+      'Step 1 “Collect” can’t wait for itself.',
+    )
+    await expect(h.service.updateDefinition(ORG, TPL, twoTracks(['n2']) as never, me())).rejects.toThrow(
+      'Step 1 “Collect”: “Also waits for” can only list steps on other paths.',
+    )
+
+    const badSplit: any = await h.service
+      .updateDefinition(
+        ORG,
+        TPL,
+        def({
+          tracks: [{ key: 'main' }, { key: 'B', name: 'Finance', split_from_step_key: 'gone' }],
+          steps: [dstep('n1'), dstep('b1', { track_key: 'B' })],
+        }) as never,
+        me(),
+      )
+      .catch((e: unknown) => e)
+    expect(badSplit.message).toBe('Path B “Finance” starts after a step that no longer exists. Reload and try again.')
+    expect(badSplit.getResponse()).toMatchObject({ code: 'track_invalid', track_key: 'B' })
     expect(h.prisma.$transaction).not.toHaveBeenCalled()
   })
 
@@ -490,7 +560,7 @@ describe('WorkflowTemplateService — definition: steps and “Starts after”',
     const h = defHarness([stepRow('a')])
     await expect(
       h.service.updateDefinition(ORG, TPL, def({ steps: [dstep('a', { id: 'a', proof_allowed_extensions: ['.PDF', 'exe'] })] }) as never, me()),
-    ).rejects.toThrow(".exe can't be uploaded as a file, so it can't be required as proof.")
+    ).rejects.toThrow(".exe can’t be uploaded, so it can’t be required as proof.")
   })
 
   it('a step whose task creator left is handed to the person saving', async () => {
@@ -557,7 +627,7 @@ describe('WorkflowTemplateService — definition: Save, Live and how it starts',
       const h = defHarness([stepRow('a')], template({ status }, ['edit']))
       await expect(
         h.service.updateDefinition(ORG, TPL, def({ steps: [dstep('a', { id: 'a', assignee_user_ids: [] })] }) as never, me()),
-      ).rejects.toThrow('Step 1 “Step a”: Assign it to at least one person.')
+      ).rejects.toThrow('Step 1 “Step a”: add at least one assignee.')
       await h.service.updateDefinition(ORG, TPL, def({ steps: [dstep('a', { id: 'a' })] }) as never, me())
       expect(h.prisma.workflowTemplate.updateMany.mock.calls.at(-1)[0].data.status).toBe(status)
       // Not going live again → schedule markers untouched.
@@ -570,7 +640,7 @@ describe('WorkflowTemplateService — definition: Save, Live and how it starts',
     const save = (starts: unknown, mode = 'save') =>
       h.service.updateDefinition(ORG, TPL, def({ mode, starts, steps: [dstep('a', { id: 'a' })] }) as never, me())
     const err: any = await save({ manual: { enabled: true, starter_user_ids: [] }, schedules: [] }).catch((e: unknown) => e)
-    expect(err.message).toBe('Pick who can start this workflow by hand.')
+    expect(err.message).toBe('Choose who can start this workflow.')
     expect(err.getResponse()).toMatchObject({ code: 'starts_invalid' })
     await expect(save({ manual: { enabled: false, starter_user_ids: [U1] }, schedules: [] })).rejects.toThrow(
       'Choose how this workflow starts.',
@@ -580,7 +650,7 @@ describe('WorkflowTemplateService — definition: Save, Live and how it starts',
       (where.user_id.in as string[]).filter((id) => id !== U2).map((user_id) => ({ user_id })),
     )
     h.prisma.workflowAccess.findMany.mockResolvedValue([{ user_id: U2, access_type: 'trigger' }])
-    await expect(save({ manual: { enabled: true }, schedules: [] })).rejects.toThrow('Pick who can start this workflow by hand.')
+    await expect(save({ manual: { enabled: true }, schedules: [] })).rejects.toThrow('Choose who can start this workflow.')
     // A draft may be saved with neither.
     await expect(save({ manual: { enabled: false }, schedules: [] }, 'draft')).resolves.toBeDefined()
     await expect(save({ manual: { enabled: true, starter_user_ids: [] }, schedules: [] }, 'draft')).resolves.toBeDefined()
@@ -605,7 +675,7 @@ describe('WorkflowTemplateService — definition: Save, Live and how it starts',
         me(),
       )
     const err: any = await save([sched({ schedule_type: 'weekly', days: [] })]).catch((e: unknown) => e)
-    expect(err.message).toBe('Schedule 1: Pick at least one day of the week.')
+    expect(err.message).toBe('Schedule 1: choose at least one day of the week.')
     expect(err.getResponse()).toMatchObject({ code: 'starts_invalid', schedule_index: 0 })
     await save([sched()])
     expect(h.prisma.workflowTemplate.updateMany.mock.calls.at(-1)[0].data).toMatchObject({
@@ -645,7 +715,7 @@ describe('WorkflowTemplateService — definition: Save, Live and how it starts',
         def({ starts: { manual: { enabled: true }, schedules: [{ id: U3, schedule_type: 'daily', time: '09:00', start_date: '2026-10-01' }] } }) as never,
         me(),
       ),
-    ).rejects.toThrow('One of the schedules no longer exists. Reload the workflow and try again.')
+    ).rejects.toThrow('One of the schedules no longer exists. Reload and try again.')
 
     await h.service.updateDefinition(
       ORG,
@@ -777,7 +847,7 @@ describe('WorkflowTemplateService — definition: people and who can start it', 
         def({ people: { owner_user_ids: ['u-owner'], editor_user_ids: [U2, U3] }, steps: [dstep('a', { id: 'a' })] }) as never,
         me(),
       ),
-    ).rejects.toThrow(new ForbiddenException("Only this workflow's owners, its creator, or admins can change who is involved."))
+    ).rejects.toThrow(new ForbiddenException("Only owners, the creator and admins can change who is involved."))
   })
 
   it('people omitted = unchanged; starters omitted on an existing workflow = unchanged', async () => {
@@ -932,6 +1002,31 @@ describe('WorkflowTemplateService — run view, status and capabilities', () => 
     )
   })
 
+  it('labels steps from the snapshot (track, its name, number) when the run carries them', async () => {
+    const withTrack = (r: ReturnType<typeof row>, track_key: string, number_label: string, track_name: string | null = null) => ({
+      ...r,
+      step_snapshot: { ...r.step_snapshot, track_key, number_label, track_name },
+    })
+    const h = runHarness({
+      rows: [
+        withTrack(row('r-a', 's-a', 'completed', [], 0, 't-a'), 'main', '1'),
+        withTrack(row('r-c', 's-c', 'active', ['s-a'], 1, 't-c'), 'B', 'B1', 'Finance'),
+        withTrack(row('r-b', 's-b', 'active', ['s-a'], 2, 't-b'), 'C', 'C1'),
+      ] as never,
+    })
+    const out: any = await h.service.getInstance(ORG, TPL, RUN, me())
+    expect(out.steps.map((s: any) => [s.id, s.number_label])).toEqual([
+      ['r-a', '1'],
+      ['r-c', 'B1'],
+      ['r-b', 'C1'],
+    ])
+    expect(out.tracks).toEqual([
+      { key: 'main', label: 'Main path' },
+      { key: 'B', label: 'Finance' },
+      { key: 'C', label: 'Path C' },
+    ])
+  })
+
   it('returns the DAG, task summaries and who may send back from where', async () => {
     const h = runHarness({})
     h.prisma.taskChecklist.findMany.mockResolvedValue([
@@ -941,6 +1036,16 @@ describe('WorkflowTemplateService — run view, status and capabilities', () => 
     const out: any = await h.service.getInstance(ORG, TPL, RUN, me())
     const b = out.steps.find((s: any) => s.id === 'r-b')
     expect(b.depends_on_row_ids).toEqual(['r-a'])
+    // A run started before tracks: labelled from its graph (c starts with the run → track B).
+    expect(out.steps.map((s: any) => [s.id, s.number_label, s.track_key])).toEqual([
+      ['r-a', '1', 'main'],
+      ['r-b', '2', 'main'],
+      ['r-c', 'B1', 'B'],
+    ])
+    expect(out.tracks).toEqual([
+      { key: 'main', label: 'Main path' },
+      { key: 'B', label: 'Path B' },
+    ])
     expect(b.assignees).toEqual([{ id: 'u-me', name: 'Unknown user' }])
     expect(b.task).toMatchObject({ id: 't-b', checklist_total: 2, checklist_done: 1, comment_count: 2, proof_count: 0 })
     expect(b.due_days).toBe(2)
@@ -976,7 +1081,7 @@ describe('WorkflowTemplateService — send back', () => {
   it('targets are completed upstream steps only, nearest first', async () => {
     const h = runHarness({})
     expect(await h.service.getSendBackTargets(ORG, TPL, RUN, 'r-b', me())).toEqual([
-      { row_id: 'r-a', title: 'Title r-a', is_direct: true },
+      { row_id: 'r-a', title: 'Title r-a', number_label: '1', is_direct: true },
     ])
     expect(await h.service.getSendBackTargets(ORG, TPL, RUN, 'r-c', me())).toEqual([])
   })
@@ -985,7 +1090,7 @@ describe('WorkflowTemplateService — send back', () => {
     const h = runHarness({})
     await expect(
       h.service.sendBack(ORG, TPL, RUN, 'r-c', { to_row_id: 'r-a', reason: 'Because' }, me({ userId: U2 })),
-    ).rejects.toThrow('You can only send this back to an earlier step that is already done.')
+    ).rejects.toThrow('You can only send it back to an earlier step that is done.')
 
     await expect(
       h.service.sendBack(ORG, TPL, RUN, 'r-b', { to_row_id: 'r-a', reason: 'Because' }, me({ userId: U2 })),
@@ -1210,7 +1315,7 @@ describe('WorkflowTemplateService — step timing on save', () => {
       steps: [dstep('n1', { title: 'Collect' }), dstep('n2', { title: 'Review', depends_on: ['n1'], start_rule: weekday })],
     })
     expect(err).toBeInstanceOf(BadRequestException)
-    expect(err.message).toBe('Step 2 “Review”: this workflow repeats monthly — pick a day of the month or “days after”.')
+    expect(err.message).toBe('Step 2 “Review”: the workflow repeats monthly. Choose “Day of the month” or a “Days after” option.')
     expect(err.getResponse()).toMatchObject({ code: 'step_invalid', step_key: 'n2' })
     expect(h.prisma.$transaction).not.toHaveBeenCalled()
 
@@ -1218,21 +1323,21 @@ describe('WorkflowTemplateService — step timing on save', () => {
       mode: 'save',
       steps: [dstep('n1', { title: 'Collect', due_rule: { kind: 'month_day', day: 5, time: '18:00' } })],
     })
-    expect(manual.message).toBe('Step 1 “Collect”: this workflow only starts by hand — pick “days after” instead of a calendar date.')
+    expect(manual.message).toBe('Step 1 “Collect”: the workflow starts manually. Choose a “Days after” option.')
 
     const cycle = await saveErr(defHarness(), {
       mode: 'save',
       starts: { manual: { enabled: true, starter_user_ids: [U1] }, schedules: [weekly2] },
       steps: [dstep('n1', { title: 'Collect', start_rule: { kind: 'cycle_weekday', cycle: 3, weekday: 1, time: '09:00' } })],
     })
-    expect(cycle.message).toBe('Step 1 “Collect”: this workflow repeats every 2 weeks — pick Week 1 to Week 2.')
+    expect(cycle.message).toBe('Step 1 “Collect”: the workflow repeats every 2 weeks. Choose Week 1 to Week 2.')
 
     const params = await saveErr(defHarness(), {
       mode: 'save',
       steps: [dstep('n1', { title: 'Collect', start_rule: { kind: 'days_after_previous', days: 0, time: '09:00' } })],
     })
     expect(params.message).toBe(
-      'Step 1 “Collect”: “days after the steps before it are done” must be a whole number from 1 to 365.',
+      'Step 1 “Collect”: start days must be 1 to 365.',
     )
   })
 
@@ -1271,7 +1376,7 @@ describe('WorkflowTemplateService — step timing on save', () => {
     )
     expect(h.prisma.workflowStep.create.mock.calls[0][0].data.start_rule).toEqual(weekday)
     expect(out.warnings).toEqual([
-      'Step 1 “Collect”: this workflow only starts by hand — pick “days after” instead of a calendar date.',
+      'Step 1 “Collect”: the workflow starts manually. Choose a “Days after” option.',
     ])
   })
 
@@ -1310,7 +1415,7 @@ describe('WorkflowTemplateService — step timing on save', () => {
         me(),
       )
       .catch((e: unknown) => e)
-    expect(err.message).toBe('Step 1 “Collect”: this workflow repeats monthly — pick a day of the month or “days after”.')
+    expect(err.message).toBe('Step 1 “Collect”: the workflow repeats monthly. Choose “Day of the month” or a “Days after” option.')
     expect(err.getResponse()).toMatchObject({ step_id: 'a', step_key: 'a' })
   })
 
@@ -1447,8 +1552,8 @@ describe('WorkflowTemplateService — example timeline (preview)', () => {
     )
     expect(out.runs).toHaveLength(3)
     expect(out.warnings).toEqual([
-      'Step 3 “File”: this workflow repeats monthly — pick a day of the month or “days after”.',
-      'Step 2 “Review” is timed to start before “Collect” is due. It can only start after that, so it starts later than its timing says.',
+      'Step 3 “File”: the workflow repeats monthly. Choose “Day of the month” or a “Days after” option.',
+      'Step 2 “Review” starts before Step 1 “Collect” is due, so it is planned later.',
     ])
     // Review moves to the 5th of the month after Collect is due.
     expect(out.runs[0].steps[1].planned_start_at).toEqual(new Date('2026-12-05T03:30:00Z'))

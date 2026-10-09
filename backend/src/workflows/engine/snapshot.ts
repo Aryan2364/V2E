@@ -61,9 +61,18 @@ export interface StepSnapshot {
    * with the run. NULL = legacy snapshot (the run is a straight sequence).
    */
   depends_on_step_ids: string[] | null
+  /** Display position in the run (tracks in order, each in its own order). */
   order_index: number
   /** The template step this was copied from. */
   workflow_step_id?: string
+  /**
+   * The step's track when the run started ('main', 'B', …), the track's name, and the
+   * step's number ("1", "B2"). Absent on runs started before tracks (their labels are
+   * derived from the run graph instead).
+   */
+  track_key?: string
+  track_name?: string | null
+  number_label?: string
   /**
    * Step timing (engine/timing.ts). NULL = legacy: start as soon as the steps before
    * it are done; due = `due_days` after the start at `due_time`.
@@ -156,7 +165,16 @@ function dueTime(v: unknown): string {
   return typeof v === 'string' && TIME_RE.test(v) ? v : DEFAULT_DUE_TIME
 }
 
-export function buildStepSnapshot(step: TemplateStepLike): StepSnapshot {
+/** Where the step sits in the workflow's tracks when the run starts. */
+export interface SnapshotTrackInfo {
+  track_key: string
+  track_name: string | null
+  number_label: string
+  /** Display position in the run. */
+  order_index: number
+}
+
+export function buildStepSnapshot(step: TemplateStepLike, track?: SnapshotTrackInfo): StepSnapshot {
   const assignees = idList(step.assignee_user_ids)
   return {
     version: 2,
@@ -179,8 +197,9 @@ export function buildStepSnapshot(step: TemplateStepLike): StepSnapshot {
     escalation_user_ids: idList(step.escalation_user_ids).slice(0, 5),
     if_late: step.if_late === 'move_on' ? 'move_on' : 'wait',
     depends_on_step_ids: idList(step.depends_on_step_ids).filter((id) => id !== step.id),
-    order_index: step.order_index,
+    order_index: track ? track.order_index : step.order_index,
     workflow_step_id: step.id,
+    ...(track ? { track_key: track.track_key, track_name: track.track_name, number_label: track.number_label } : {}),
     start_rule: readStartRule(step.start_rule),
     due_rule: readDueRule(step.due_rule),
   }
@@ -235,6 +254,9 @@ export function readSnapshot(raw: unknown): StepSnapshot | null {
         : 'wait',
     depends_on_step_ids: legacy || !Array.isArray(s.depends_on_step_ids) ? null : idList(s.depends_on_step_ids),
     order_index: typeof s.order_index === 'number' ? s.order_index : 0,
+    track_key: typeof s.track_key === 'string' && s.track_key ? s.track_key : undefined,
+    track_name: typeof s.track_name === 'string' && s.track_name ? s.track_name : null,
+    number_label: typeof s.number_label === 'string' && s.number_label ? s.number_label : undefined,
     start_rule: legacy ? null : readStartRule(s.start_rule),
     due_rule: legacy ? null : readDueRule(s.due_rule),
     timing_every:

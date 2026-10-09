@@ -76,13 +76,21 @@ import { UpdateMasterDto } from './dto/update-master.dto'
 import { SendBackDto } from './dto/run-actions.dto'
 import {
   byDisplayOrder,
-  findLoop,
   isLegacyBranchRow,
   rowDependencyMap,
   sendBackTargets,
   stringIds,
 } from './step-graph'
 import { isRunParticipant, participantInstanceIds } from './run-access'
+import {
+  MAIN_TRACK,
+  TrackProblem,
+  planTracks,
+  resolveStoredTracks,
+  runTracks,
+  stepErrorLabel,
+  trackLabel,
+} from './tracks'
 import { WorkflowFilesService } from './workflow-files.service'
 
 // ── Public shapes (workflows v2 spec §C) ──────────────────────────────────────
@@ -124,6 +132,8 @@ export interface TimelineRun {
 interface TimelineStep {
   key: string
   title: string
+  /** "1", "B2" — how warnings name it. */
+  label: string
   deps: string[]
   start_rule: unknown
   due_rule: unknown
@@ -220,36 +230,38 @@ interface ProposedStep {
   id: string
   existing: WorkflowStep | null
   state: StepState
-  /** Final ids of the steps it starts after. */
-  deps: string[]
+  /** Its track ('main', 'B', …). */
+  track_key: string
+  /** Position within its track (stored as order_index). */
   order_index: number
+  /** "1", "B2". */
+  label: string
+  /** Final ids of the steps in other tracks it also waits for ("Also wait for"). */
+  merges: string[]
+  /** Final ids of the steps it starts after — DERIVED from the tracks. */
+  deps: string[]
 }
 
 // ── Messages (403s say who may do it) ─────────────────────────────────────────
 
 const MSG_NOT_FOUND = 'Workflow not found'
-const MSG_RUN_NOT_FOUND = 'Workflow run not found'
-const MSG_VIEW = "You don't have access to this workflow. Ask one of its owners to share it with you."
-const MSG_EDIT =
-  "Only this workflow's owners, its creator, admins, or people who can change it can do this."
-const MSG_TRIGGER = 'Only the people chosen under “Manually” can start this workflow.'
+const MSG_RUN_NOT_FOUND = 'Run not found'
+const MSG_VIEW = "You don't have access to this workflow. Ask an owner to share it."
+const MSG_EDIT = 'Only owners, editors and admins can do this.'
+const MSG_TRIGGER = 'Only the people listed under “Who can start it” can start this workflow.'
 const MSG_PAUSED = 'This workflow is paused. Resume it to start it.'
-const MSG_DRAFT_START = 'This workflow is a draft. Save it to make it live before starting it.'
-const MSG_ARCHIVED_START = 'This workflow is archived. Restore it and save it before starting it.'
-const MSG_SCHEDULE_ONLY = 'This workflow can only be started by its schedule.'
-const MSG_CONFLICT =
-  'Someone else saved changes to this workflow after you opened it. Reload to see them, then make your changes again.'
-const MSG_PICK_STARTERS = 'Pick who can start this workflow by hand.'
+const MSG_DRAFT_START = 'This workflow is a draft. Save it to make it live.'
+const MSG_ARCHIVED_START = 'This workflow is archived. Restore and save it first.'
+const MSG_SCHEDULE_ONLY = 'This workflow starts only on its schedule.'
+const MSG_CONFLICT = 'Someone else saved this workflow after you opened it. Reload to see their changes.'
+const MSG_PICK_STARTERS = 'Choose who can start this workflow.'
 const MSG_NO_START = 'Choose how this workflow starts.'
-const MSG_MANAGE = "Only this workflow's owners, its creator, or admins can change who is involved."
-const MSG_ARCHIVED = 'This workflow is archived. Restore it before making changes.'
-const MSG_INSTANCE_VIEW =
-  "You don't have access to this workflow run. Only people who can view the workflow or who are involved in the run can open it."
+const MSG_MANAGE = 'Only owners, the creator and admins can change who is involved.'
+const MSG_ARCHIVED = 'This workflow is archived. Restore it to make changes.'
+const MSG_INSTANCE_VIEW = "You don't have access to this run."
 const MSG_RUN_FILES = 'Only people involved in this run can see or add its documents.'
-const MSG_SEND_BACK =
-  "Only this step's assignees, or people who can change this workflow, can send it back."
-const MSG_REMOVE_FILE =
-  'Only the person who added this file, or people who can change this workflow, can remove it.'
+const MSG_SEND_BACK = "Only this step's assignees, owners and editors can send it back."
+const MSG_REMOVE_FILE = 'Only the person who added this file, owners and editors can remove it.'
 
 const IN_FLIGHT: WorkflowInstanceStatus[] = ['running', 'stuck']
 const DEFAULT_TZ = 'Asia/Kolkata'
@@ -347,10 +359,32 @@ function startsError(message: string, scheduleIndex: number | null = null) {
 
 const sameSet = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x))
 
-/** "Step 2 “Review”" (or "Step 2" while it has no title) — how errors name a step. */
-function stepLabel(index: number, title: string): string {
-  const t = title.trim()
-  return t ? `Step ${index + 1} “${t}”` : `Step ${index + 1}`
+/** A 400 about a track (`track_key` names it) — e.g. a split point that no longer exists. */
+function trackError(message: string, trackKey: string) {
+  return new BadRequestException({ message, code: 'track_invalid', track_key: trackKey })
+}
+
+/** "Step B2 “Review”" (or "Step B2" while it has no title) — how errors name a step. */
+const stepLabel = stepErrorLabel
+
+/** The tracks of a run and each flow row's track and number, from the frozen snapshots. */
+function runLanes(rows: InstanceStepRow[], deps: Map<string, string[]>) {
+  return runTracks(
+    rows
+      .filter((s) => !isLegacyBranchRow(s))
+      .map((s) => {
+        const sn = readSnapshot(s.step_snapshot)
+        return {
+          id: s.id,
+          order_index: s.order_index,
+          created_at: s.created_at,
+          track_key: sn?.track_key ?? null,
+          track_name: sn?.track_name ?? null,
+          number_label: sn?.number_label ?? null,
+        }
+      }),
+    deps,
+  )
 }
 
 /**
@@ -628,8 +662,10 @@ export class WorkflowTemplateService {
    * step escalates to RIGHT NOW: the listed people ('people'); else the assignees'
    * current managers ('manager'); else the workflow's owners ('owners_fallback').
    */
-  private async formatSteps(orgId: string, steps: WorkflowStep[], p: Principal, ownerIds: string[]) {
-    const main = steps.filter((s) => !s.is_branch_step).sort(byDisplayOrder)
+  private async formatSteps(orgId: string, steps: WorkflowStep[], p: Principal, ownerIds: string[], rawTracks: unknown = []) {
+    const tracks = resolveStoredTracks(rawTracks, steps.filter((s) => !s.is_branch_step))
+    // Display order: the tracks in order, each in its own order.
+    const main = tracks.display
     const states = new Map(main.map((s) => [s.id, this.stateOf(s)]))
     const managerAssignees = unique(
       main
@@ -701,7 +737,13 @@ export class WorkflowTemplateService {
       return {
         id: s.id,
         workflow_template_id: s.workflow_template_id,
-        order_index: s.order_index,
+        /** Position within its track. */
+        order_index: tracks.position.get(s.id) ?? s.order_index,
+        track_key: tracks.trackOf.get(s.id) ?? MAIN_TRACK,
+        /** "1", "B2". */
+        number_label: tracks.labels.get(s.id) ?? '?',
+        /** "Also wait for": steps in other tracks it waits for too. */
+        merge_step_ids: tracks.merges.get(s.id) ?? [],
         title: st.title,
         description: st.description,
         assignee_user_ids: st.assignee_user_ids,
@@ -720,7 +762,8 @@ export class WorkflowTemplateService {
         escalation_user_ids: st.escalation_user_ids,
         if_late: st.if_late,
         ...this.timingOf(st),
-        depends_on_step_ids: idsFromJson(s.depends_on_step_ids),
+        /** Derived from the tracks (read-only): the steps it starts after. */
+        depends_on_step_ids: tracks.deps.get(s.id) ?? idsFromJson(s.depends_on_step_ids),
         assigner_user_id: s.assigner_user_id,
         created_at: s.created_at,
         updated_at: s.updated_at,
@@ -731,6 +774,22 @@ export class WorkflowTemplateService {
         checklist_template_status: templateStatus(s),
       }
     })
+  }
+
+  /**
+   * The workflow's tracks for the builder and the workflow page: main first, then the
+   * others in display order, each with its label ("Main track", its name, "Track B")
+   * and the step it starts after (null = when the workflow starts).
+   */
+  private formatTracks(rawTracks: unknown, steps: WorkflowStep[]) {
+    const r = resolveStoredTracks(rawTracks, steps.filter((s) => !s.is_branch_step))
+    return r.tracks.map((t) => ({
+      key: t.key,
+      name: t.name,
+      label: trackLabel(t),
+      split_from_step_id: t.split_from_step_id,
+      step_count: r.display.filter((s) => r.trackOf.get(s.id) === t.key).length,
+    }))
   }
 
   private async formatTemplates(orgId: string, rows: TemplateRow[], p: Principal) {
@@ -854,9 +913,9 @@ export class WorkflowTemplateService {
     if (!row) throw new NotFoundException(MSG_NOT_FOUND)
     const [base] = await this.formatTemplates(orgId, [row], p)
     const ownerIds = idsFromJson(row.owner_user_ids)
-    const formatted = await this.formatSteps(orgId, steps, p, ownerIds)
+    const formatted = await this.formatSteps(orgId, steps, p, ownerIds, row.tracks)
     const people = await this.buildPeople(ownerIds, grants, formatted, row.manual_start_enabled !== false)
-    return { ...base, steps: formatted, people }
+    return { ...base, tracks: this.formatTracks(row.tracks, steps), steps: formatted, people }
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -986,6 +1045,9 @@ export class WorkflowTemplateService {
       const tcaps = this.capabilitiesFor(inst.template, p)
       const deps = rowDependencyMap(inst.steps)
       const inFlight = IN_FLIGHT.includes(inst.status)
+      // Track and number of each step ("B2") as frozen when the run started; runs
+      // started before tracks are laid out from their graph the same way.
+      const lanes = runLanes(inst.steps, deps)
 
       const steps = [...inst.steps].sort(byDisplayOrder).map((s) => {
         // The frozen snapshot (legacy shapes normalised by the engine's reader); a row
@@ -1001,6 +1063,9 @@ export class WorkflowTemplateService {
           order_index: s.order_index,
           /** A legacy escalation row of the old engine (not part of the step flow). */
           is_branch: isLegacyBranchRow(s),
+          track_key: lanes.trackOf.get(s.id) ?? null,
+          /** "1", "B2" — the step's number in this run. */
+          number_label: lanes.labels.get(s.id) ?? null,
           title: snap?.title ?? live?.title ?? 'Deleted step',
           description: snap ? snap.description : live?.description ?? null,
           depends_on_row_ids: deps.get(s.id) ?? [],
@@ -1117,6 +1182,8 @@ export class WorkflowTemplateService {
           can_send_back_from: canSendBackFrom,
           can_start_now_row_ids: startNow,
         } satisfies InstanceCapabilities,
+        /** The run's tracks (lanes), main first. */
+        tracks: lanes.tracks,
         steps: [...main, ...steps.filter((s) => s.is_branch)],
         progress: {
           total: main.length,
@@ -1180,15 +1247,20 @@ export class WorkflowTemplateService {
 
   /**
    * Save the whole workflow — details, how it starts (manual + who may start it,
-   * schedules), steps (with "Starts after" between steps that may not exist yet) and
-   * people — in ONE transaction.
+   * schedules), steps in their tracks (split points and "Also wait for" may name steps
+   * that don't exist yet) and people — in ONE transaction. Every step's
+   * `depends_on_step_ids` is derived here from the tracks (tracks.ts); the engine reads
+   * only that.
    *
-   * Validation: always the structure (a known step for every "Starts after", no loops,
-   * people/masters/tags/checklists usable). Everything else — every step runnable, a
+   * Validation: always the structure (known tracks, split points and "Also wait for"
+   * steps in other tracks, no loops, people/masters/tags/checklists usable); empty
+   * tracks other than main are dropped. Everything else — every step runnable, a
    * way to start, complete schedules, someone who can start it by hand — only on Save
    * (`mode: 'save'`) or when the workflow is Live/Paused (a live workflow can never be
-   * saved broken). A draft saved with `mode: 'save'` becomes Live. Errors name the
-   * step (`step_key` / `step_id`) or the schedule (`schedule_index`).
+   * saved broken) — including a step on the main track. A draft saved with
+   * `mode: 'save'` becomes Live. Errors name the step (`step_key` / `step_id`, by its
+   * number: "Step B2 “Sign-off”"), the track (`code: 'track_invalid'`, `track_key`) or
+   * the schedule (`schedule_index`).
    *
    * Steps: listed `id`s are kept (and must be this workflow's), new ones get ids here,
    * unlisted ones are deleted. Schedules likewise. Running runs keep their snapshots.
@@ -1239,7 +1311,7 @@ export class WorkflowTemplateService {
           'people you added',
         )
         if ((await this.activeMemberSet(orgId, nextOwners)).size === 0) {
-          throw new BadRequestException('A workflow needs at least one owner who is an active member.')
+          throw new BadRequestException('Add at least one active owner.')
         }
         owners = nextOwners
         editors = nextEditors
@@ -1264,55 +1336,52 @@ export class WorkflowTemplateService {
     }
     const manual = dto.starts.manual.enabled
 
-    // ── Steps: keys → ids, states, graph ──
+    // ── Steps: keys → ids, states; tracks → the graph (derived, never sent) ──
     const keys = dto.steps.map((s) => s.key)
     if (new Set(keys).size !== keys.length) throw new BadRequestException('Each step must be listed only once.')
     const existingById = new Map(existingSteps.map((s) => [s.id, s]))
     const keptIds = dto.steps.map((s) => s.id).filter((x): x is string => !!x)
     if (new Set(keptIds).size !== keptIds.length || keptIds.some((id) => !existingById.has(id))) {
-      throw new BadRequestException('One of the steps no longer exists. Reload the workflow and try again.')
+      throw new BadRequestException('One of the steps no longer exists. Reload and try again.')
     }
     const idOf = new Map(dto.steps.map((s) => [s.key, s.id ?? randomUUID()]))
-    const proposed: ProposedStep[] = []
-    for (const [i, sd] of dto.steps.entries()) {
-      const id = idOf.get(sd.key)!
-      const existing = sd.id ? existingById.get(sd.id)! : null
-      const state = await this.resolveStepState(orgId, p, sd, existing)
-      const deps: string[] = []
-      for (const k of unique(sd.depends_on)) {
-        if (k === sd.key) throw stepError(`${stepLabel(i, state.title)} can’t start after itself.`, sd.id ?? null, sd.key)
-        const dep = idOf.get(k)
-        if (!dep) {
-          throw stepError(
-            `${stepLabel(i, state.title)}: “Starts after” lists a step that is not in this workflow. Pick again.`,
-            sd.id ?? null,
-            sd.key,
-          )
-        }
-        deps.push(dep)
-      }
-      proposed.push({ key: sd.key, id, existing, state, deps, order_index: i })
+    const states = new Map<string, StepState>()
+    for (const sd of dto.steps) {
+      states.set(sd.key, await this.resolveStepState(orgId, p, sd, sd.id ? existingById.get(sd.id)! : null))
     }
-    const loop = findLoop(
-      new Map(proposed.map((s) => [s.id, s.deps])),
-      proposed.map((s) => s.id),
+    // Structure (every save, drafts too): known tracks, split points and merges; no loops.
+    const { plan, problem: structure } = planTracks(
+      dto.tracks,
+      dto.steps.map((sd) => ({ key: sd.key, title: states.get(sd.key)!.title, track_key: sd.track_key, merge_step_keys: sd.merge_step_keys })),
     )
-    if (loop) {
-      const from = proposed.find((s) => s.id === loop.from)!
-      const to = proposed.find((s) => s.id === loop.to)!
-      const name = (s: ProposedStep) => s.state.title.trim() || `Step ${s.order_index + 1}`
-      throw stepError(
-        `“${name(from)}” can’t start after “${name(to)}” — that would make a loop.`,
-        from.existing?.id ?? null,
-        from.key,
-      )
-    }
+    if (structure) this.throwTrackProblem(structure, idOf, existingById)
+    const sdByKey = new Map(dto.steps.map((sd) => [sd.key, sd]))
+    // In display order (tracks in order, each in its own order) — the order errors are found in.
+    const proposed: ProposedStep[] = plan.display.map((key) => {
+      const sd = sdByKey.get(key)!
+      return {
+        key,
+        id: idOf.get(key)!,
+        existing: sd.id ? existingById.get(sd.id)! : null,
+        state: states.get(key)!,
+        track_key: plan.trackOf.get(key) ?? MAIN_TRACK,
+        order_index: plan.position.get(key) ?? 0,
+        label: plan.labels.get(key) ?? '?',
+        merges: (plan.merges.get(key) ?? []).map((k) => idOf.get(k)!),
+        deps: (plan.deps.get(key) ?? []).map((k) => idOf.get(k)!),
+      }
+    })
+    const tracks = plan.tracks.map((t) => ({
+      key: t.key,
+      name: t.name,
+      split_from_step_id: t.split_from ? idOf.get(t.split_from)! : null,
+    }))
 
     // ── Schedules ──
     const existingSchedById = new Map(existingSchedules.map((e) => [e.id, e]))
     const keptSched = dto.starts.schedules.map((e) => e.id).filter((x): x is string => !!x)
     if (new Set(keptSched).size !== keptSched.length || keptSched.some((id) => !existingSchedById.has(id))) {
-      throw new BadRequestException('One of the schedules no longer exists. Reload the workflow and try again.')
+      throw new BadRequestException('One of the schedules no longer exists. Reload and try again.')
     }
     const schedules = dto.starts.schedules.map((e, i) =>
       this.scheduleData(e, i, e.id ? existingSchedById.get(e.id)! : null),
@@ -1331,7 +1400,10 @@ export class WorkflowTemplateService {
         const why = scheduleEntryProblem(e)
         if (why) throw startsError(`Schedule ${i + 1}: ${why}`, i)
       }
-      if (!proposed.length) throw stepError('Add at least one step before saving.', null, null)
+      if (!proposed.length) throw stepError('Add at least one step.', null, null)
+      if (!proposed.some((x) => x.track_key === MAIN_TRACK)) {
+        throw trackError('Main path: add at least one step.', MAIN_TRACK)
+      }
       const problem = await this.definitionProblem(orgId, proposed, frequency)
       if (problem) throw stepError(problem.message, problem.step.existing?.id ?? null, problem.step.key)
     }
@@ -1368,6 +1440,7 @@ export class WorkflowTemplateService {
             manual_start_enabled: manual,
             workflow_nature: nature.workflow_nature,
             recurring_type: nature.recurring_type,
+            tracks: tracks as unknown as Prisma.InputJsonArray,
           },
           select: { id: true },
         })
@@ -1385,6 +1458,7 @@ export class WorkflowTemplateService {
             manual_start_enabled: manual,
             workflow_nature: nature.workflow_nature,
             recurring_type: nature.recurring_type,
+            tracks: tracks as unknown as Prisma.InputJsonArray,
             updated_at: new Date(),
           },
         })
@@ -1399,6 +1473,16 @@ export class WorkflowTemplateService {
     const detail = await this.templateDetail(orgId, savedId, p)
     const warnings = await this.saveWarnings(orgId, proposed, schedules.map((x) => x.data))
     return { ...detail, step_keys: Object.fromEntries(proposed.map((s) => [s.key, s.id])), warnings }
+  }
+
+  /** A track/merge/loop problem of a definition request as the 400 the builder points at. */
+  private throwTrackProblem(problem: TrackProblem, idOf: Map<string, string>, existingById: Map<string, WorkflowStep>): never {
+    if (problem.kind === 'track') throw trackError(problem.message, problem.track_key)
+    if (problem.kind === 'step') {
+      const id = idOf.get(problem.step_key)
+      throw stepError(problem.message, id && existingById.has(id) ? id : null, problem.step_key)
+    }
+    throw new BadRequestException(problem.message)
   }
 
   /**
@@ -1422,6 +1506,7 @@ export class WorkflowTemplateService {
       const steps: TimelineStep[] = proposed.map((s) => ({
         key: s.id,
         title: s.state.title,
+        label: s.label,
         deps: s.deps,
         start_rule: s.state.start_rule,
         due_rule: s.state.due_rule,
@@ -1449,11 +1534,17 @@ export class WorkflowTemplateService {
    */
   async previewTimeline(orgId: string, dto: PreviewTimelineDto, _p: Principal) {
     const { tz, now } = await this.scheduleContext(orgId)
-    const keys = new Set(dto.steps.map((s) => s.key))
-    const steps: TimelineStep[] = dto.steps.map((s) => ({
+    // The same tracks → graph as a save; anything not valid yet is simply left out.
+    const { plan } = planTracks(
+      dto.tracks,
+      dto.steps.map((s) => ({ key: s.key, title: s.title, track_key: s.track_key, merge_step_keys: s.merge_step_keys })),
+    )
+    const byKey = new Map(dto.steps.map((s) => [s.key, s]))
+    const steps: TimelineStep[] = plan.display.map((key) => byKey.get(key)!).map((s) => ({
       key: s.key,
       title: (s.title ?? '').trim(),
-      deps: unique(s.depends_on ?? []).filter((k) => k !== s.key && keys.has(k)),
+      label: plan.labels.get(s.key) ?? '?',
+      deps: plan.deps.get(s.key) ?? [],
       start_rule: s.start_rule ?? null,
       due_rule: s.due_rule ?? null,
       due_days: s.due_days ?? DEFAULT_DUE_DAYS,
@@ -1497,10 +1588,10 @@ export class WorkflowTemplateService {
     frequency: Frequency,
   ): Promise<{ runs: TimelineRun[]; warnings: string[] }> {
     const warnings: string[] = []
-    const label = new Map(steps.map((s, i) => [s.key, stepLabel(i, s.title)]))
+    const label = new Map(steps.map((s) => [s.key, stepLabel(s.label, s.title)]))
     const name = (key: string) => {
-      const i = steps.findIndex((s) => s.key === key)
-      return steps[i]?.title.trim() || `Step ${i + 1}`
+      const st = steps.find((s) => s.key === key)
+      return st?.title.trim() || `Step ${st?.label ?? '?'}`
     }
     const inputs: TimelineStepInput[] = steps.map((s) => {
       const problem = timingProblem(s.start_rule, s.due_rule, frequency)
@@ -1538,7 +1629,7 @@ export class WorkflowTemplateService {
       })
       for (const w of plan.warnings) {
         warnings.push(
-          `${label.get(w.key)} is timed to start before “${name(w.predecessor_key)}” is due. It can only start after that, so it starts later than its timing says.`,
+          `${label.get(w.key)} starts before ${label.get(w.predecessor_key) ?? `“${name(w.predecessor_key)}”`} is due, so it is planned later.`,
         )
       }
     }
@@ -1623,6 +1714,8 @@ export class WorkflowTemplateService {
           data: {
             ...this.stepColumns(s.state, s.deps),
             order_index: s.order_index,
+            track_key: s.track_key,
+            merge_step_ids: s.merges,
             ...(handOver ? { assigner_user_id: userId } : {}),
           },
         })
@@ -1633,6 +1726,8 @@ export class WorkflowTemplateService {
             organization_id: orgId,
             workflow_template_id: templateId,
             order_index: s.order_index,
+            track_key: s.track_key,
+            merge_step_ids: s.merges,
             is_branch_step: false,
             // The step's tasks are created by the person who added the step.
             assigner_user_id: userId,
@@ -1823,7 +1918,7 @@ export class WorkflowTemplateService {
       if (alreadyLinked.has(id)) continue
       if (!byId.has(id)) {
         throw new BadRequestException(
-          'That checklist template no longer exists. Remove it from the step and pick another.',
+          'That checklist template no longer exists. Remove it from the step.',
         )
       }
       if (!(await this.checklistAccess.isAccessible(orgId, p.userId, id))) {
@@ -1975,7 +2070,7 @@ export class WorkflowTemplateService {
       const bad = exts.filter((e) => !ALLOWED_ATTACHMENT_EXTENSIONS.has(e))
       if (bad.length) {
         throw new BadRequestException(
-          `${bad.map((e) => `.${e}`).join(', ')} can't be uploaded as a file, so it can't be required as proof.`,
+          `${bad.map((e) => `.${e}`).join(', ')} can’t be uploaded, so it can’t be required as proof.`,
         )
       }
       next.proof_allowed_extensions = exts
@@ -1988,20 +2083,20 @@ export class WorkflowTemplateService {
 
   /** The rules that make one step runnable (Save, and every save while Live). */
   private stepRunnableProblem(st: StepState, activeMembers: Set<string> | null): string | null {
-    if (!st.title.trim()) return 'Give the step a title.'
-    if (!st.assignee_user_ids.length) return 'Assign it to at least one person.'
+    if (!st.title.trim()) return 'enter a title.'
+    if (!st.assignee_user_ids.length) return 'add at least one assignee.'
     if (activeMembers && st.assignee_user_ids.some((id) => !activeMembers.has(id))) {
-      return 'It is assigned to someone who is no longer an active member. Pick someone else.'
+      return 'an assignee is no longer active. Choose someone else.'
     }
     if (st.escalation_mode === 'people') {
       if (!st.escalation_user_ids.length) {
-        return "Pick at least one person to escalate to, or escalate to the assignee's manager."
+        return 'add someone to escalate to, or choose “Reporting manager”.'
       }
       if (st.escalation_user_ids.length > MAX_ESCALATION_CONTACTS) {
-        return `Pick at most ${MAX_ESCALATION_CONTACTS} people to escalate to.`
+        return `choose at most ${MAX_ESCALATION_CONTACTS} people to escalate to.`
       }
       if (activeMembers && st.escalation_user_ids.some((id) => !activeMembers.has(id))) {
-        return 'One of the people it escalates to is no longer an active member. Pick someone else.'
+        return 'someone it escalates to is no longer active. Choose someone else.'
       }
     }
     return null
@@ -2071,21 +2166,21 @@ export class WorkflowTemplateService {
     const categorySet = new Set(categories.map((r) => r.id))
 
     for (const s of steps) {
-      const fail = (why: string) => ({ message: `${stepLabel(s.order_index, s.state.title)}: ${why}`, step: s })
+      const fail = (why: string) => ({ message: `${stepLabel(s.label, s.state.title)}: ${why}`, step: s })
       const runnable = this.stepRunnableProblem(s.state, active)
       if (runnable) return fail(runnable)
       if (s.state.priority_id && !prioritySet.has(s.state.priority_id)) {
-        return fail('Its priority is no longer active. Pick another priority.')
+        return fail('its priority is no longer active. Choose another.')
       }
       if (s.state.category_id && !categorySet.has(s.state.category_id)) {
-        return fail('Its category is no longer active. Pick another category.')
+        return fail('its category is no longer active. Choose another.')
       }
       const timing = timingProblem(s.state.start_rule, s.state.due_rule, frequency)
       if (timing) return fail(timing)
     }
     if (!steps.some((s) => s.deps.length === 0)) {
       return {
-        message: 'At least one step must start when the workflow starts (nothing in “Starts after”).',
+        message: 'At least one step must start at the beginning. Remove an “Also waits for” from the first step on the main path.',
         step: steps[0],
       }
     }
@@ -2320,6 +2415,11 @@ export class WorkflowTemplateService {
     return row
   }
 
+  /** Each flow row's number in its run ("1", "B2"). */
+  private rowLabels(inst: InstanceRow, deps: Map<string, string[]> = rowDependencyMap(inst.steps)): Map<string, string> {
+    return runLanes(inst.steps, deps).labels
+  }
+
   private stepTitle(row: InstanceStepRow): string {
     return readSnapshot(row.step_snapshot)?.title ?? 'Step'
   }
@@ -2343,9 +2443,12 @@ export class WorkflowTemplateService {
     this.rowOf(inst, rowId)
     const deps = rowDependencyMap(inst.steps)
     const direct = new Set(deps.get(rowId) ?? [])
+    const labels = this.rowLabels(inst, deps)
     return sendBackTargets(inst.steps, deps, rowId).map(({ row }) => ({
       row_id: row.id,
       title: this.stepTitle(row),
+      /** "1", "B2". */
+      number_label: labels.get(row.id) ?? null,
       is_direct: direct.has(row.id),
     }))
   }
@@ -2359,7 +2462,7 @@ export class WorkflowTemplateService {
   async sendBack(orgId: string, templateId: string, instanceId: string, rowId: string, dto: SendBackDto, p: Principal) {
     const { inst, caps } = await this.loadInstance(orgId, templateId, instanceId, p)
     const row = this.rowOf(inst, rowId)
-    if (!IN_FLIGHT.includes(inst.status)) throw new BadRequestException('This run has finished, so nothing can be sent back.')
+    if (!IN_FLIGHT.includes(inst.status)) throw new BadRequestException('This run has finished, so it can’t be sent back.')
     if (!caps.can_edit && !(await this.isRowWorker(orgId, row.task_id, p.userId))) {
       throw new ForbiddenException(MSG_SEND_BACK)
     }
@@ -2368,7 +2471,7 @@ export class WorkflowTemplateService {
     }
     const targets = sendBackTargets(inst.steps, rowDependencyMap(inst.steps), rowId)
     if (!targets.some((t) => t.row.id === dto.to_row_id)) {
-      throw new BadRequestException('You can only send this back to an earlier step that is already done.')
+      throw new BadRequestException('You can only send it back to an earlier step that is done.')
     }
     await this.engine.sendBack(orgId, instanceId, rowId, dto.to_row_id, dto.reason.trim(), p.userId, {
       canEdit: caps.can_edit,
@@ -2471,6 +2574,8 @@ export class WorkflowTemplateService {
       row_status: row.status as string,
       step_title: this.stepTitle(row),
       step_number: index >= 0 ? index + 1 : null,
+      /** "1", "B2" — the step's number in its run. */
+      step_label: this.rowLabels(inst).get(row.id) ?? (index >= 0 ? `${index + 1}` : null),
       total_steps: main.length,
       can_send_back: canSendBack,
       can_open_run: canOpenRun,

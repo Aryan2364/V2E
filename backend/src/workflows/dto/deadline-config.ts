@@ -72,7 +72,7 @@ export function parseDeadlineConfig(raw: unknown): ParseResult<DeadlineConfig> {
     return { ok: false, error: 'Choose when this step is due.' }
   }
   if (!isValidTime(c.time)) {
-    return { ok: false, error: 'The due time must be a 24-hour time like 18:00.' }
+    return { ok: false, error: 'Enter a valid due time.' }
   }
   const time = c.time
 
@@ -85,14 +85,14 @@ export function parseDeadlineConfig(raw: unknown): ParseResult<DeadlineConfig> {
       return { ok: true, value: { type: type as 'x_days_after_start', days, time } }
     }
     case 'fixed_date': {
-      if (!isValidDateOnly(c.date)) return { ok: false, error: 'Pick a valid due date.' }
+      if (!isValidDateOnly(c.date)) return { ok: false, error: 'Choose a valid due date.' }
       return { ok: true, value: { type: 'fixed_date', date: c.date, time } }
     }
     case 'daily':
       return { ok: true, value: { type: 'daily', time } }
     case 'weekly': {
       const day = intInRange(c.day, 0, 6)
-      if (day === null) return { ok: false, error: 'Pick the weekday this step is due on.' }
+      if (day === null) return { ok: false, error: 'Choose the day of the week it is due.' }
       return { ok: true, value: { type: 'weekly', day, time } }
     }
     case 'monthly': {
@@ -102,7 +102,7 @@ export function parseDeadlineConfig(raw: unknown): ParseResult<DeadlineConfig> {
     }
     case 'yearly': {
       const month = intInRange(c.month, 1, 12)
-      if (month === null) return { ok: false, error: 'Pick the month this step is due in.' }
+      if (month === null) return { ok: false, error: 'Choose the month it is due.' }
       const day = intInRange(c.day, 1, 31)
       if (day === null) return { ok: false, error: 'The day must be from 1 to 31.' }
       return { ok: true, value: { type: 'yearly', month, day, time } }

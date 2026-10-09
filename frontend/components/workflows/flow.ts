@@ -1,7 +1,9 @@
 /**
- * Flow layout for workflows: steps start after other steps, so the steps form a graph
- * with no loops. Each step gets a level (0 = starts when the run starts; otherwise one
- * more than the deepest step it waits for). Steps on the same level run side by side.
+ * Flow layout for workflows: steps wait for other steps (the step before them in their
+ * track, the step their track splits from, steps in other tracks they also wait for), so
+ * the steps form a graph with no loops. Each step gets a level (0 = starts when the run
+ * starts; otherwise one more than the deepest step it waits for) — the row it is drawn
+ * on; its track is its lane (FlowDiagram).
  */
 
 export interface FlowInput {
@@ -60,72 +62,4 @@ export function layoutFlow(nodes: FlowInput[]): FlowLayout {
   })
 
   return { levels, levelOf, deps }
-}
-
-/** Every step that (directly or not) starts after `id`. A step may not start after these. */
-export function descendantsOf(id: string, nodes: { id: string; deps: string[] }[]): Set<string> {
-  const children = new Map<string, string[]>()
-  nodes.forEach((n) => n.deps.forEach((d) => children.set(d, [...(children.get(d) ?? []), n.id])))
-  const out = new Set<string>()
-  const stack = [...(children.get(id) ?? [])]
-  while (stack.length) {
-    const c = stack.pop()!
-    if (out.has(c)) continue
-    out.add(c)
-    stack.push(...(children.get(c) ?? []))
-  }
-  return out
-}
-
-/** The first loop found, as a list of ids, or null. */
-export function findCycle(nodes: { id: string; deps: string[] }[]): string[] | null {
-  const deps = new Map(nodes.map((n) => [n.id, n.deps]))
-  const state = new Map<string, 1 | 2>()
-  const path: string[] = []
-  const visit = (id: string): string[] | null => {
-    const s = state.get(id)
-    if (s === 2) return null
-    if (s === 1) return path.slice(path.indexOf(id))
-    state.set(id, 1)
-    path.push(id)
-    for (const d of deps.get(id) ?? []) {
-      if (!deps.has(d)) continue
-      const c = visit(d)
-      if (c) return c
-    }
-    path.pop()
-    state.set(id, 2)
-    return null
-  }
-  for (const n of nodes) {
-    const c = visit(n.id)
-    if (c) return c
-  }
-  return null
-}
-
-/**
- * Remove `id` from the graph, handing its own "starts after" to the steps that started
- * after it (A → B → C minus B becomes A → C). Returns each remaining node's new deps.
- */
-export function spliceOutStep(nodes: { id: string; deps: string[] }[], id: string): Map<string, string[]> {
-  const inherited = (nodes.find((n) => n.id === id)?.deps ?? []).filter((d) => d !== id)
-  const out = new Map<string, string[]>()
-  for (const n of nodes) {
-    if (n.id === id) continue
-    if (!n.deps.includes(id)) {
-      out.set(n.id, n.deps)
-      continue
-    }
-    const next: string[] = []
-    for (const d of n.deps) {
-      if (d === id) {
-        for (const x of inherited) if (x !== n.id && !next.includes(x)) next.push(x)
-      } else if (!next.includes(d)) {
-        next.push(d)
-      }
-    }
-    out.set(n.id, next)
-  }
-  return out
 }

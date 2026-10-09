@@ -4,13 +4,14 @@ import React, { useEffect, useRef, useState } from 'react'
 import { AlertTriangle, CalendarRange, ChevronDown, Loader2, RefreshCw } from 'lucide-react'
 import { workflowsApi, workflowErrorMessage, workflowErrorStatus } from '@/lib/api/workflows'
 import type { TimelinePreview, TimingWarning, WorkflowDefinitionInput } from '@/lib/types/workflows'
-import { Reveal, Skeleton, fmtDayDateTime, fmtSpan } from './shared'
+import { InfoTip, Reveal, Skeleton, fmtDayDateTime, fmtSpan } from './shared'
+import { stepName } from './tracks'
 
 /** Edits settle for this long before the example is worked out again. */
 const DEBOUNCE_MS = 700
 
 /**
- * A timing warning in words. `name` turns a step key into "Step 2 “Review”" for a
+ * A timing warning in words. `name` turns a step key into "Step B2 “Review”" for a
  * warning that only names the steps.
  */
 export function warningText(w: TimingWarning, name?: (key: string) => string): string {
@@ -20,7 +21,7 @@ export function warningText(w: TimingWarning, name?: (key: string) => string): s
   const key = w.step_key ?? w.key
   if (key && w.predecessor_key) {
     const n = name ?? ((k: string) => `Step ${k}`)
-    return `${n(key)} is timed to start before ${n(w.predecessor_key)} is due, so it is planned later than its own date.`
+    return `${n(key)} starts before ${n(w.predecessor_key)} is due, so it is planned later.`
   }
   return ''
 }
@@ -50,6 +51,7 @@ export default function ExampleRun({
   definition,
   manualOnly,
   order,
+  labels,
   onOpenStep,
   shownElsewhere,
 }: {
@@ -58,8 +60,10 @@ export default function ExampleRun({
   definition: WorkflowDefinitionInput | null
   /** No schedule: one example run starting now. */
   manualOnly: boolean
-  /** Step key → its number, for the order and the badges. */
+  /** Step key → its display position (tracks in order, each in its own order). */
   order: Map<string, number>
+  /** Step key → its number ("1", "B2"), for the badges and the warnings. */
+  labels: Map<string, string>
   onOpenStep: (key: string) => void
   /** Problems already shown on the steps themselves — not repeated here. */
   shownElsewhere?: Set<string>
@@ -90,7 +94,7 @@ export default function ExampleRun({
           setState({ status: 'hidden' })
           return
         }
-        setState({ status: 'failed', data: lastData.current, error: workflowErrorMessage(e, 'The example run could not be worked out.') })
+        setState({ status: 'failed', data: lastData.current, error: workflowErrorMessage(e, 'The example run could not be loaded.') })
       }
     }, DEBOUNCE_MS)
     return () => {
@@ -105,11 +109,7 @@ export default function ExampleRun({
   const runs = data?.runs ?? []
   const idx = Math.min(runIndex, Math.max(0, runs.length - 1))
   const run = runs[idx]
-  const nameOf = (key: string) => {
-    const n = order.get(key)
-    const title = runs.flatMap((r) => r.steps).find((s) => s.key === key)?.title?.trim()
-    return `Step ${n ?? '?'}${title ? ` “${title}”` : ''}`
-  }
+  const nameOf = (key: string) => stepName(labels.get(key), runs.flatMap((r) => r.steps).find((s) => s.key === key)?.title)
   const warnings = (data?.warnings ?? []).filter((w) => {
     const text = warningText(w, nameOf)
     return !!text && !shownElsewhere?.has(text)
@@ -128,7 +128,6 @@ export default function ExampleRun({
       >
         <CalendarRange size={16} className="text-[#2563EB] shrink-0" />
         <span className="text-[15px] font-semibold text-[#0F172A] shrink-0">Example run</span>
-        <span className="text-[13px] text-[#475569] truncate">When each step would start and be due.</span>
         {busy && data && (
           <span className="inline-flex items-center gap-1 text-[12px] text-[#475569] shrink-0" aria-live="polite">
             <Loader2 size={12} className="animate-spin" /> Updating
@@ -136,7 +135,7 @@ export default function ExampleRun({
         )}
         {warnings.length > 0 && (
           <span className="inline-flex items-center gap-1 text-[12px] font-medium text-[#92400E] shrink-0">
-            <AlertTriangle size={12} /> {warnings.length === 1 ? '1 thing to check' : `${warnings.length} things to check`}
+            <AlertTriangle size={12} /> {warnings.length === 1 ? '1 warning' : `${warnings.length} warnings`}
           </span>
         )}
         <ChevronDown size={16} className={`ml-auto shrink-0 text-[#475569] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -148,7 +147,7 @@ export default function ExampleRun({
               <AlertTriangle size={16} className="shrink-0 mt-0.5" />
               <span className="flex-1 min-w-0 break-words">
                 {state.error}
-                {data ? ' The dates below are from before your last change.' : ''}
+                {data ? ' The dates below may be out of date.' : ''}
               </span>
               <button type="button" onClick={() => setRetryKey((k) => k + 1)} className="inline-flex items-center gap-1 text-[13px] font-semibold underline shrink-0">
                 <RefreshCw size={13} /> Try again
@@ -166,7 +165,7 @@ export default function ExampleRun({
 
           {data && runs.length === 0 && (
             <p className="text-sm text-[#475569]">
-              {manualOnly ? 'No example could be worked out yet.' : 'The schedule has no upcoming runs, so there is nothing to show. Check when it starts and ends.'}
+              {manualOnly ? 'No example yet.' : 'No upcoming runs. Check the schedule’s start and end dates.'}
             </p>
           )}
 
@@ -191,12 +190,13 @@ export default function ExampleRun({
                 </div>
               )}
               <p className="text-sm text-[#1E293B]">
-                {manualOnly ? 'If someone starts it on ' : 'If it runs on '}
-                <span className="font-semibold text-[#0F172A]">{fmtDayDateTime(run.starts_at)}</span>:
+                {manualOnly ? 'If started on ' : 'If it runs on '}
+                <span className="font-semibold text-[#0F172A]">{fmtDayDateTime(run.starts_at)}</span>{' '}
+                <InfoTip label="Example run" text="Planned dates. Holidays and weekly offs are skipped." />
               </p>
               <ol className={`flex flex-col divide-y divide-[#F1F5F9] rounded-[10px] border border-[#E2E8F0] transition-opacity duration-150 ${busy ? 'opacity-70' : ''}`}>
                 {steps.map((s) => {
-                  const n = order.get(s.key)
+                  const n = labels.get(s.key)
                   return (
                     <li key={s.key}>
                       <button
@@ -235,13 +235,10 @@ export default function ExampleRun({
                   </li>
                 )
               })}
-              <li className="text-[12px] text-[#78350F] pl-[22px]">These don’t stop you saving.</li>
+              <li className="text-[12px] text-[#78350F] pl-[22px]">Warnings don’t block saving.</li>
             </ul>
           )}
 
-          <p className="text-[12px] text-[#475569]">
-            Holidays and weekly offs are taken into account. In a real run, steps still wait for the steps before them to be done.
-          </p>
         </div>
       </Reveal>
     </div>

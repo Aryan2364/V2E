@@ -7,7 +7,7 @@ import type { ScheduleEntryDraft } from '@/components/tasks/ScheduleEntryRow'
 import { getNow } from '@/lib/clock'
 import type { PersonRef, WorkflowSchedule } from '@/lib/types/workflows'
 import type { WorkflowLookups } from './useWorkflowLookups'
-import { ErrorBanner, Reveal, describeSchedule, fmtDateTime } from './shared'
+import { ErrorBanner, InfoTip, Reveal, describeSchedule, fmtDateTime } from './shared'
 import PeoplePicker, { personNames } from './PeoplePicker'
 
 /** A schedule entry being edited: the recurring-task draft, plus its id once saved. */
@@ -53,14 +53,14 @@ export function scheduleToDraft(s: WorkflowSchedule): ScheduleDraft {
   }
 }
 
-/** One "Manually" / "On a schedule" choice: a tick box as a card. */
+/** One "Manually" / "On a schedule" choice: a tick box as a card, its ⓘ beside the box (never inside it). */
 function StartChoice({
   checked,
   onChange,
   disabled,
   icon: Icon,
   label,
-  help,
+  tip,
   invalid,
 }: {
   checked: boolean
@@ -68,35 +68,37 @@ function StartChoice({
   disabled?: boolean
   icon: typeof Hand
   label: string
-  help: string
+  tip: string
   invalid?: boolean
 }) {
   return (
-    <button
-      type="button"
-      role="checkbox"
-      aria-checked={checked}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className={`w-full text-left flex items-start gap-3 rounded-[10px] border px-3.5 py-3 min-h-[44px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed ${
+    <div
+      className={`w-full flex items-center rounded-[10px] border transition-colors ${
         invalid ? 'border-[#FCA5A5]' : checked ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#CBD5E1] bg-white hover:bg-[#F8FAFC]'
       }`}
     >
-      <span
-        aria-hidden
-        className={`mt-0.5 w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center shrink-0 transition-colors ${
-          checked ? 'bg-[#2563EB] border-[#2563EB]' : 'bg-white border-[#64748B]'
-        }`}
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={checked}
+        disabled={disabled}
+        onClick={() => onChange(!checked)}
+        className="flex-1 min-w-0 text-left flex items-center gap-3 rounded-[10px] pl-3.5 pr-1 py-3 min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed"
       >
-        {checked && <Check size={12} strokeWidth={3} className="text-white" />}
-      </span>
-      <span className="min-w-0">
+        <span
+          aria-hidden
+          className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center shrink-0 transition-colors ${
+            checked ? 'bg-[#2563EB] border-[#2563EB]' : 'bg-white border-[#64748B]'
+          }`}
+        >
+          {checked && <Check size={12} strokeWidth={3} className="text-white" />}
+        </span>
         <span className={`flex items-center gap-1.5 text-sm font-semibold ${checked ? 'text-[#1D4ED8]' : 'text-[#0F172A]'}`}>
           <Icon size={15} aria-hidden /> {label}
         </span>
-        <span className="block mt-0.5 text-[13px] text-[#475569]">{help}</span>
-      </span>
-    </button>
+      </button>
+      <InfoTip label={label} text={tip} className="mr-3" />
+    </div>
   )
 }
 
@@ -160,13 +162,14 @@ export default function StartsSection({
             disabled={disabled}
             icon={Hand}
             label="Manually"
-            help="Someone starts a run with the Start button."
+            tip="Started with the Start button."
             invalid={startersMissing}
           />
           <Reveal open={value.manual}>
             <div className="pl-1">
               <span className="block text-sm font-medium text-[#374151] mb-2">
-                Who can start it <span className="text-[#DC2626]">*</span>
+                Who can start it <span className="text-[#DC2626]">*</span>{' '}
+                <InfoTip label="Who can start it" text="Only the people listed here can start it." />
               </span>
               <PeoplePicker
                 orgId={orgId}
@@ -179,9 +182,6 @@ export default function StartsSection({
                 invalid={startersMissing}
                 currentUser={currentUser}
               />
-              <p className="mt-1.5 text-[13px] text-[#475569]">
-                Only these people can start it by hand. Owners and editors can start it only if they are listed here.
-              </p>
             </div>
           </Reveal>
         </div>
@@ -193,7 +193,7 @@ export default function StartsSection({
           disabled={disabled}
           icon={CalendarClock}
           label="On a schedule"
-          help="It starts by itself, the same way a recurring task repeats."
+          tip="Starts by itself, like a recurring task."
         />
       </div>
 
@@ -203,7 +203,7 @@ export default function StartsSection({
             <ScheduleEntryList entries={value.schedules} onChange={(entries) => set({ schedules: entries as ScheduleDraft[] })} />
           </fieldset>
           {errorScheduleIndex !== null && value.schedules[errorScheduleIndex] && (
-            <p className="text-[13px] text-[#B91C1C]">Schedule entry #{errorScheduleIndex + 1} needs attention.</p>
+            <p className="text-[13px] text-[#B91C1C]">Check schedule #{errorScheduleIndex + 1}.</p>
           )}
           <div className="rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] px-3.5 py-2.5 text-[13px] text-[#334155] flex flex-col gap-1">
             {value.schedules.map((d, i) => (
@@ -211,13 +211,11 @@ export default function StartsSection({
                 <span className="font-medium text-[#0F172A]">#{i + 1}</span> {describeSchedule(d)}
               </span>
             ))}
-            <span className="text-[#475569]">
-              {live
-                ? nextRuns.length
-                  ? `Next run: ${fmtDateTime(nextRuns.map((s) => s.next_fire_at!).sort()[0])}.`
-                  : 'Times are in your organisation’s time zone.'
-                : 'Schedules run only while the workflow is live. Times are in your organisation’s time zone.'}
-            </span>
+            {(live ? nextRuns.length > 0 : true) && (
+              <span className="text-[#475569]">
+                {live ? `Next run: ${fmtDateTime(nextRuns.map((s) => s.next_fire_at!).sort()[0])}` : 'Runs only while the workflow is live.'}
+              </span>
+            )}
           </div>
         </div>
       </Reveal>
@@ -233,10 +231,9 @@ export default function StartsSection({
       }`}
     >
       <div>
-        <h2 id="starts-heading" className="text-[18px] font-semibold text-[#0F172A]">
-          How it starts
+        <h2 id="starts-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+          How it starts <InfoTip label="How it starts" text="Choose one or both. Times use your organisation’s time zone." />
         </h2>
-        <p className="text-[13px] text-[#475569]">Pick one or both.</p>
       </div>
       {editable === false && reason && (
         <p className="text-[13px] text-[#334155] rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-2">{reason}</p>

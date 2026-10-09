@@ -1,6 +1,9 @@
 // Workflows v2 — shapes served by /api/v1/org/:orgId/workflows.
-// A step is a task the system creates. Steps start after other steps ("Starts after"),
-// so a workflow is a flow (split = several steps after one, join = one step after several).
+// A step is a task the system creates. Steps live in TRACKS: the Main track always
+// exists; within a track each step waits for the one before it; another track starts
+// after the step it splits from ("Split here"), and a step may also wait for steps in
+// other tracks ("Also wait for" = a merge). The server derives `depends_on_step_ids`
+// from that on save. Steps are numbered 1, 2, 3… on the main track and B1, B2… on track B.
 
 import type { CompletionMode, RecurringEndCondition, RecurringScheduleType, TaskTagRef, YearlyDate } from '@/lib/types/tasks'
 
@@ -130,14 +133,42 @@ export interface DueRule extends TimingRuleBase {
   kind: DueRuleKind
 }
 
+// ─── Tracks ───────────────────────────────────────────────────────────────────
+
+/** 'main', or 'B', 'C', … (assigned in creation order, stable once saved). */
+export type TrackKey = string
+
+export interface WorkflowTrack {
+  key: TrackKey
+  /** Optional name, e.g. "Finance". */
+  name: string | null
+  /** "Main track", the name, or "Track B" (server-computed). */
+  label?: string
+  /** The step (in another track) this track starts after; null = when the workflow starts. Always null for main. */
+  split_from_step_id: string | null
+  step_count?: number
+}
+
+/** A run's lanes (from the steps' frozen track info). */
+export interface RunTrack {
+  key: TrackKey
+  label: string
+}
+
 // ─── Steps ────────────────────────────────────────────────────────────────────
 
 export interface WorkflowStep {
   id: string
   organization_id: string
   workflow_template_id: string
-  /** Display order only — the flow comes from depends_on_step_ids. */
+  /** Position within its track. */
   order_index: number
+  /** Its track ('main' when missing). */
+  track_key?: TrackKey
+  /** "1", "B2" (server-computed; the builder recomputes it while editing). */
+  number_label?: string
+  /** "Also wait for": steps in OTHER tracks it waits for too. */
+  merge_step_ids?: string[]
   title: string
   description: string | null
   /** Non-CC assignees (at least one to turn the workflow on). */
@@ -165,7 +196,7 @@ export interface WorkflowStep {
   /** Used when escalation_mode is 'people': 1–5 people, in order = levels. */
   escalation_user_ids: string[]
   if_late: IfLate
-  /** Steps of the same workflow this one starts after. Empty = starts when the run starts. */
+  /** Derived from the tracks (read-only): the steps it starts after. Empty = starts when the run starts. */
   depends_on_step_ids: string[]
   /** Creator of the step's tasks (server-set). */
   assigner_user_id: string | null
@@ -203,7 +234,7 @@ export interface StepInput {
   escalation_mode?: EscalationMode
   escalation_user_ids?: string[]
   if_late?: IfLate
-  depends_on_step_ids?: string[]
+  merge_step_ids?: string[]
 }
 
 // ─── How it starts ────────────────────────────────────────────────────────────
@@ -287,7 +318,9 @@ export interface WorkflowTemplate {
   schedules: WorkflowSchedule[]
   /** The next scheduled run while Live (null when paused, a draft, or nothing is scheduled). */
   next_run_at: string | null
-  /** Detail only. */
+  /** Detail only: main first, then the others in display order. */
+  tracks?: WorkflowTrack[]
+  /** Detail only — in display order (tracks in order, each in its own order). */
   steps?: WorkflowStep[]
   /** Detail only. */
   people?: WorkflowPeople
@@ -339,7 +372,12 @@ export interface RunStepTask {
 export interface WorkflowInstanceStep {
   id: string
   status: WorkflowStepStatus
+  /** Display position in the run. */
   order_index: number
+  /** The step's track in this run. */
+  track_key?: TrackKey | null
+  /** "1", "B2" — its number in this run. */
+  number_label?: string | null
   title: string
   description: string | null
   scheduled_at: string | null
@@ -397,6 +435,8 @@ export interface WorkflowInstance {
   triggered_by: PersonRef | null
   capabilities: InstanceCapabilities
   progress: InstanceProgress
+  /** The run's tracks (lanes), main first. */
+  tracks?: RunTrack[]
   /** Detail always; list may omit. */
   steps?: WorkflowInstanceStep[]
 }
@@ -452,12 +492,16 @@ export interface WorkflowStepContext {
   row_status?: WorkflowStepStatus
   /** Position of the step in the run (1-based). */
   step_number?: number | null
+  /** "1", "B2" — the step's number in its run. */
+  step_label?: string | null
   total_steps?: number
 }
 
 export interface SendBackTarget {
   row_id: string
   title: string
+  /** "1", "B2". */
+  number_label?: string | null
   /** The step right before (a direct "starts after"). */
   is_direct?: boolean
 }
@@ -480,14 +524,26 @@ export interface OrgMemberOption {
 
 // ─── Saving the whole workflow ────────────────────────────────────────────────
 
-/** One step of a definition save. `key` = its id, or a client key for a step not saved yet. */
-export interface DefinitionStepInput extends Omit<StepInput, 'depends_on_step_ids' | 'title'> {
+/**
+ * One step of a definition save. `key` = its id, or a client key for a step not saved
+ * yet. Its position in its track = its order among that track's steps in `steps`.
+ */
+export interface DefinitionStepInput extends Omit<StepInput, 'merge_step_ids' | 'title'> {
   key: string
   /** The existing step being kept (omitted for a new one). */
   id?: string
   title: string
-  /** KEYS of the steps (in this save) it starts after. */
-  depends_on: string[]
+  track_key: TrackKey
+  /** "Also wait for": KEYS of steps in other tracks. */
+  merge_step_keys: string[]
+}
+
+/** One track of a definition save (main first; empty tracks are dropped by the server). */
+export interface DefinitionTrackInput {
+  key: TrackKey
+  name: string | null
+  /** KEY of the step it starts after; null = when the workflow starts. */
+  split_from_step_key: string | null
 }
 
 export interface DefinitionScheduleInput {
@@ -518,6 +574,7 @@ export interface WorkflowDefinitionInput {
     schedules: DefinitionScheduleInput[]
   }
   steps: DefinitionStepInput[]
+  tracks: DefinitionTrackInput[]
   /** Owners and editors; omitted = unchanged. */
   people?: { owner_user_ids: string[]; editor_user_ids: string[] }
   /** The version the editor loaded: a newer save by someone else is a 409. */

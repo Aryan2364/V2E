@@ -9,7 +9,7 @@ import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
 import type { WorkflowTemplate, WorkflowTemplateStatus } from '@/lib/types/workflows'
 import WorkflowCard, { WorkflowCardSkeleton } from '@/components/workflows/WorkflowCard'
 import { useWorkflowActions } from '@/components/workflows/useWorkflowActions'
-import { BTN, EmptyState, ErrorState, GatedButton, REASONS, WORKFLOWS_BASE, useWorkflowsWritable } from '@/components/workflows/shared'
+import { BTN, EmptyState, ErrorState, GatedButton, InfoTip, REASONS, WORKFLOWS_BASE, useWorkflowsWritable } from '@/components/workflows/shared'
 
 type Filter = 'all' | WorkflowTemplateStatus
 const FILTERS: { value: Filter; label: string }[] = [
@@ -106,8 +106,9 @@ function WorkflowsList() {
       <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-4 bg-[#F8FAFC] border-b border-[#E2E8F0]">
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <h1 className="text-[22px] sm:text-[28px] font-bold text-[#0F172A] leading-tight">Workflows</h1>
-            <p className="text-[13px] text-[#475569] mt-0.5">Steps that become tasks for the right people, in the right order — started by hand or on a schedule.</p>
+            <h1 className="flex items-center gap-1.5 text-[22px] sm:text-[28px] font-bold text-[#0F172A] leading-tight">
+              Workflows <InfoTip label="Workflows" text="Steps that become tasks, in order, started manually or on a schedule." />
+            </h1>
           </div>
           <NewWorkflowButton writable={writable} variant="primary" />
         </div>
@@ -180,7 +181,7 @@ function WorkflowsList() {
           <EmptyState
             icon={Search}
             title={`No workflows match “${search.trim()}”`}
-            text="Try a different word, or clear the search."
+            text="Try a different word."
             action={
               <button type="button" onClick={() => setSearch('')} className={BTN.secondary}>
                 Clear search
@@ -201,12 +202,12 @@ function WorkflowsList() {
             }
             text={
               filter === 'archived'
-                ? 'Workflows you archive appear here, and can be restored.'
+                ? 'Archived workflows appear here.'
                 : filter === 'draft'
-                  ? 'A workflow saved with “Save draft” stays here until you save it to make it live.'
+                  ? 'Workflows saved as drafts appear here.'
                   : filter === 'paused'
-                    ? 'A live workflow you pause appears here until you resume it.'
-                    : 'Save a workflow to make it live: then it can be started and its schedule runs.'
+                    ? 'Paused workflows appear here.'
+                    : 'Live workflows appear here.'
             }
             action={
               <button type="button" onClick={() => setFilter('all')} className={BTN.secondary}>
@@ -218,7 +219,7 @@ function WorkflowsList() {
           <EmptyState
             icon={WorkflowIcon}
             title="No workflows yet"
-            text="A workflow is a set of steps. Each step becomes a task for the right people when the steps before it are done."
+            text="Create a workflow to turn steps into tasks."
             action={writable === true ? <NewWorkflowButton writable={writable} variant="secondary" /> : undefined}
           />
         )
