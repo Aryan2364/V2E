@@ -14,6 +14,7 @@ import { useAuth } from '@/lib/auth/context'
 import FileDropzone from '@/components/ui/FileDropzone'
 import { AttachmentList, AttachmentChips, PendingFileList } from '@/components/ui/AttachmentList'
 import InlineTaskTags from '@/components/tasks/InlineTaskTags'
+import { taskWorkflow, workflowSourceText } from '@/components/tasks/WorkflowTaskBadge'
 import { useCanEditTask } from '@/lib/tasks/useCanEditTask'
 
 const TERMINAL = new Set(['completed', 'partially_completed', 'incomplete'])
@@ -213,10 +214,24 @@ export default function TaskDrawer({
               <div className="grid grid-cols-2 gap-4 text-[13px]">
                 <div>
                   <p className="text-[#94A3B8] mb-1">Assigned by</p>
-                  <p className="text-[#0F172A] font-medium flex items-center gap-1.5">
-                    <User size={13} className="text-[#94A3B8]" />
-                    {task.created_by?.name ?? '—'}
-                  </p>
+                  {(() => {
+                    const wf = taskWorkflow(task)
+                    if (!wf) {
+                      return (
+                        <p className="text-[#0F172A] font-medium flex items-center gap-1.5">
+                          <User size={13} className="text-[#94A3B8]" />
+                          {task.created_by?.name ?? '—'}
+                        </p>
+                      )
+                    }
+                    const setUpBy = wf.set_up_by_name ?? task.created_by?.name
+                    return (
+                      <>
+                        <p className="text-[#0F172A] font-medium break-words">{workflowSourceText(wf)}</p>
+                        {setUpBy && <p className="text-[12px] text-[#475569]">set up by {setUpBy}</p>}
+                      </>
+                    )
+                  })()}
                 </div>
                 <div>
                   <p className="text-[#94A3B8] mb-1">Deadline</p>

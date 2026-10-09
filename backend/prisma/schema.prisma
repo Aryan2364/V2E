@@ -1888,9 +1888,16 @@ model WorkflowTemplate {
   organization_id            String
   name                       String
   description                String?                @db.Text
+  // Retired from access (20261011120000_workflow_people_instances): kept for back-compat
+  // only. Editors are the creator (permanent, `created_by_user_id`) + `edit` grants;
+  // viewers are `view` grants.
   owner_user_ids             Json                   @default("[]")
+  // The creator is always an editor and can't be removed; admins may transfer it.
   created_by_user_id         String
   status                     WorkflowTemplateStatus @default(draft)
+  // Last instance number handed out (instances are numbered 1, 2, … per workflow in
+  // start order). Incremented atomically when an instance is created.
+  instance_seq               Int                    @default(0)
   show_workflow_on_task_card Boolean                @default(true)
   // Derived from the schedules on every save (never edited directly).
   workflow_nature            WorkflowNature         @default(one_time)
@@ -2067,6 +2074,11 @@ model WorkflowInstance {
   source_task_id       String?
   // Last engine error (stuck reason) — shown in the UI, cleared on recovery.
   last_error           String?                @db.Text
+  // "Instance #12": numbered per workflow in start order (WorkflowTemplate.instance_seq).
+  instance_number      Int
+  // `name` normalised (trimmed, inner spaces collapsed, lower-cased): names are unique
+  // within a workflow, case- and space-insensitively.
+  name_key             String
   created_at           DateTime               @default(now())
   updated_at           DateTime               @updatedAt
 
@@ -2075,8 +2087,11 @@ model WorkflowInstance {
   notifications WorkflowNotification[]
   events        WorkflowInstanceEvent[]
   attachments   WorkflowInstanceAttachment[]
+  notes         WorkflowInstanceNote[]
 
   @@unique([trigger_id, source_task_id])
+  @@unique([workflow_template_id, instance_number])
+  @@unique([workflow_template_id, name_key])
   @@index([organization_id, status])
   @@map("workflow_instances")
 }
@@ -2140,7 +2155,7 @@ model WorkflowInstanceEvent {
   instance_step_id     String?
   // run_started | step_waiting | step_started | step_completed | step_late | step_moved_on |
   // step_escalated | sent_back | returned | step_skipped | run_completed |
-  // run_cancelled | run_stuck | retried | file_added | file_removed
+  // run_cancelled | run_stuck | retried | file_added | file_removed | note_added
   type                 String
   actor_user_id        String?
   message              String   @db.Text
@@ -2173,6 +2188,27 @@ model WorkflowInstanceAttachment {
   @@index([workflow_instance_id])
   @@index([organization_id])
   @@map("workflow_instance_attachments")
+}
+
+// Instance notes: posted by anyone who can see the instance, optionally for a later
+// step (`for_instance_step_id`, a row of the same instance) — shown at the top of that
+// step's task and told to its assignees. Soft-deleted via deleted_at.
+model WorkflowInstanceNote {
+  id                   String    @id @default(uuid())
+  organization_id      String
+  workflow_instance_id String
+  author_user_id       String
+  body                 String    @db.Text
+  for_instance_step_id String?
+  created_at           DateTime  @default(now())
+  deleted_at           DateTime?
+
+  instance WorkflowInstance @relation(fields: [workflow_instance_id], references: [id], onDelete: Cascade)
+
+  @@index([workflow_instance_id, created_at])
+  @@index([for_instance_step_id])
+  @@index([organization_id])
+  @@map("workflow_instance_notes")
 }
 
 model WorkflowRoundRobinTracker {

@@ -56,7 +56,9 @@ function WorkflowsList() {
     setStatus((s) => (s === 'ready' ? s : 'loading'))
     try {
       const data = await workflowsApi.listWorkflows(orgId, { includeArchived: true })
-      setWorkflows(Array.isArray(data) ? data : [])
+      // The list is for people who may see a workflow's design (admins, editors, viewers);
+      // someone who only works in its instances finds those under My workflows.
+      setWorkflows((Array.isArray(data) ? data : []).filter((w) => !w.capabilities?.access || w.capabilities.access === 'full'))
       setStatus('ready')
     } catch (e) {
       setLoadError(workflowErrorMessage(e, 'Check your connection and try again.'))
@@ -83,7 +85,7 @@ function WorkflowsList() {
   const matching = useMemo(
     () =>
       workflows.filter(
-        (w) => !q || w.name.toLowerCase().includes(q) || (w.description ?? '').toLowerCase().includes(q) || (w.owners ?? []).some((o) => o.name.toLowerCase().includes(q)),
+        (w) => !q || w.name.toLowerCase().includes(q) || (w.description ?? '').toLowerCase().includes(q) || [...(w.people?.editors ?? []), ...(w.created_by ? [w.created_by] : []), ...(w.owners ?? [])].some((o) => o.name.toLowerCase().includes(q)),
       ),
     [workflows, q],
   )
@@ -107,7 +109,7 @@ function WorkflowsList() {
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <h1 className="flex items-center gap-1.5 text-[22px] sm:text-[28px] font-bold text-[#0F172A] leading-tight">
-              Workflows <InfoTip label="Workflows" text="Steps that become tasks, in order, started manually or on a schedule." />
+              Workflows <InfoTip label="Workflows" text="Steps that become tasks, in order. Run one by hand or on a schedule; each run is an instance." />
             </h1>
           </div>
           <NewWorkflowButton writable={writable} variant="primary" />

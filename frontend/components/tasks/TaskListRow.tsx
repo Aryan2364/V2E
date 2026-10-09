@@ -9,6 +9,7 @@ import AssigneeAvatars, { type AvatarPerson } from './AssigneeAvatars'
 import { StatusControl } from './TaskCard'
 import Tooltip from '@/components/ui/Tooltip'
 import TagList from './TagList'
+import WorkflowTaskBadge, { taskWorkflow } from './WorkflowTaskBadge'
 
 interface TaskListRowProps {
   task: Task
@@ -80,8 +81,11 @@ export default function TaskListRow({
   const openStatuses = statuses.filter((s) => !TERMINAL_STATUS_PHASES.includes(s.type))
 
   // Who assigned it — hidden when the viewer is the assigner.
+  // A workflow step's task isn't handed out by a person: its source is the workflow
+  // instance (badge), never "Self" / "by <assigner>".
+  const wf = taskWorkflow(task)
   const assignerName = task.created_by?.name ?? null
-  const showAssigner = !!assignerName && task.created_by_user_id !== currentUserId
+  const showAssigner = !wf && !!assignerName && task.created_by_user_id !== currentUserId
 
   // Everyone but the viewer (primary first, then CC), with name/dept/role for the tooltip.
   const otherPeople: AvatarPerson[] = [...(task.assignees ?? [])]
@@ -156,6 +160,7 @@ export default function TaskListRow({
                 chips plus "+N", and nothing at all when the task has none. */}
             <TagList tags={task.tags} max={2} />
 
+            {wf && <WorkflowTaskBadge workflow={wf} />}
             {showAssigner && (
               <Tooltip label={`Assigned by ${assignerName}`}>
                 <span className="text-[11px] text-[#94A3B8] truncate max-w-[130px]">
@@ -165,7 +170,7 @@ export default function TaskListRow({
             )}
             {otherPeople.length > 0 ? (
               <AssigneeAvatars people={otherPeople} max={3} size="sm" />
-            ) : !showAssigner ? (
+            ) : !showAssigner && !wf ? (
               <span className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[11px] font-medium bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
                 Self
               </span>

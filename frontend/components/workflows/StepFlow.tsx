@@ -32,7 +32,7 @@ export function flowLanes(layout: TrackLayout): FlowLane[] {
           ? undefined
           : splitOk
             ? `After ${layout.labels.get(t.split_from!) ?? '?'}`
-            : 'After start of run',
+            : 'From the start',
     }
   })
 }

@@ -16,7 +16,7 @@ import {
   namesSummary,
   plural,
   recurrenceLabel,
-  runsHref,
+  instancesHref,
   startGate,
   startsSummary,
   workflowHref,
@@ -55,7 +55,7 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
     },
     {
       key: 'start',
-      label: 'Start workflow',
+      label: 'Run workflow',
       icon: Play,
       allowed: start.allowed,
       reason: start.reason,
@@ -80,7 +80,7 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
       onSelect: () => onResume?.(w),
       hidden: w.status !== 'paused' || !onResume,
     },
-    { key: 'runs', label: 'View runs', icon: History, onSelect: () => router.push(runsHref(w.id)) },
+    { key: 'instances', label: 'View instances', icon: History, onSelect: () => router.push(instancesHref(w.id)) },
     {
       key: 'archive',
       label: 'Archive workflow',
@@ -103,6 +103,8 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
   ]
 
   const running = w._count?.running_instances ?? 0
+  // Who can change it: its editors (the creator first), else the creator alone.
+  const editors = w.people?.editors?.length ? w.people.editors : w.created_by ? [w.created_by] : w.owners ?? []
   const steps = w._count?.steps ?? w.steps?.length ?? 0
 
   return (
@@ -135,13 +137,16 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
       </p>
 
       <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-[13px] text-[#334155]">
-        <span className="inline-flex items-center gap-1.5">
-          <ListChecks size={14} className="text-[#475569]" />
-          {plural(steps, 'step')}
-        </span>
+        {/* A limited card (you run it or work in it, but can't see its design) has no step count. */}
+        {w.view !== 'limited' && (
+          <span className="inline-flex items-center gap-1.5">
+            <ListChecks size={14} className="text-[#475569]" />
+            {plural(steps, 'step')}
+          </span>
+        )}
         <span className="inline-flex items-center gap-1.5">
           <History size={14} className="text-[#475569]" />
-          {running > 0 ? `${running} running` : plural(w._count?.instances ?? 0, 'run')}
+          {running > 0 ? `${running} running` : plural(w._count?.instances ?? 0, 'instance')}
         </span>
         {(w.schedules ?? []).length > 0 && (
           <Tooltip label={`Starts: ${startsSummary(w)}`}>
@@ -156,10 +161,12 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
       </div>
 
       <div className="mt-auto pt-3 border-t border-[#F1F5F9] flex items-center justify-between gap-3 text-[13px] text-[#475569]">
-        <span className="inline-flex items-center gap-1.5 min-w-0">
-          <Users size={14} className="shrink-0" />
-          <span className="truncate">{namesSummary(w.owners ?? [])}</span>
-        </span>
+        <Tooltip label="Editors">
+          <span tabIndex={0} className="relative z-10 inline-flex items-center gap-1.5 min-w-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]">
+            <Users size={14} className="shrink-0" />
+            <span className="truncate">{namesSummary(editors)}</span>
+          </span>
+        </Tooltip>
         <span className="shrink-0">Updated {fmtDate(w.updated_at)}</span>
       </div>
     </div>

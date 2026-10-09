@@ -13,9 +13,20 @@ import type {
   SendBackTarget,
   TimelinePreview,
   WorkflowStepContext,
+  InstanceNote,
 } from '@/lib/types/workflows'
 
 const base = (orgId: string) => `/api/v1/org/${orgId}/workflows`
+
+/** An instance name as the server stores it: trimmed, inner runs of spaces made one. */
+export function normalizeInstanceName(name: string): string {
+  return name.trim().replace(/\s+/g, ' ')
+}
+
+/** How names are compared for "already taken": normalised and case-insensitive. */
+export function instanceNameKey(name: string): string {
+  return normalizeInstanceName(name).toLowerCase()
+}
 
 function unwrap<T>(res: { data: unknown }): T {
   const d = res.data as { data?: T } | null
@@ -134,12 +145,19 @@ export const workflowsApi = {
   restoreWorkflow: async (orgId: string, id: string): Promise<WorkflowTemplate> =>
     unwrap<WorkflowTemplate>(await apiClient.post(`${base(orgId)}/${id}/restore`, undefined, T)),
 
-  // ── Instances (runs) ────────────────────────────────────────────────────────
+  /** Hands the permanent-editor (creator) role to another active member — admins only. */
+  changeCreator: async (orgId: string, id: string, userId: string): Promise<WorkflowTemplate | null> =>
+    unwrap<WorkflowTemplate | null>(await apiClient.post(`${base(orgId)}/${id}/change-creator`, { user_id: userId }, T)) ?? null,
 
-  /** Starts a run now. The name is optional; the server defaults it. */
-  triggerInstance: async (orgId: string, templateId: string, name?: string): Promise<{ id: string }> =>
-    unwrap<{ id: string }>(
-      await apiClient.post(`${base(orgId)}/${templateId}/instances/trigger`, name?.trim() ? { name: name.trim() } : {}, T),
+  // ── Instances ───────────────────────────────────────────────────────────────
+
+  /**
+   * Runs the workflow now: creates an instance. The name is required (1–80 characters,
+   * unique within the workflow — the server says so with a 400 if it is taken).
+   */
+  triggerInstance: async (orgId: string, templateId: string, name: string): Promise<{ id: string; instance_number?: number | null }> =>
+    unwrap<{ id: string; instance_number?: number | null }>(
+      await apiClient.post(`${base(orgId)}/${templateId}/instances/trigger`, { name: normalizeInstanceName(name) }, T),
     ),
 
   listInstances: async (orgId: string, templateId: string): Promise<WorkflowInstance[]> =>
@@ -223,7 +241,29 @@ export const workflowsApi = {
     await apiClient.delete(`${base(orgId)}/${templateId}/instances/${instanceId}/files/${fileId}`, T)
   },
 
-  /** For a task created by a workflow step: its workflow, run and step. */
+  // ── Instance notes ──────────────────────────────────────────────────────────
+
+  /** Newest first. */
+  listNotes: async (orgId: string, templateId: string, instanceId: string): Promise<InstanceNote[]> => {
+    const rows = unwrap<InstanceNote[] | null>(await apiClient.get(`${base(orgId)}/${templateId}/instances/${instanceId}/notes`, T))
+    return Array.isArray(rows) ? rows : []
+  },
+
+  /** `for_row_id`: a step of this instance that is not done yet (shown on its task when it starts). */
+  addNote: async (orgId: string, templateId: string, instanceId: string, dto: { body: string; for_row_id?: string | null }): Promise<InstanceNote> =>
+    unwrap<InstanceNote>(
+      await apiClient.post(
+        `${base(orgId)}/${templateId}/instances/${instanceId}/notes`,
+        { body: dto.body, ...(dto.for_row_id ? { for_row_id: dto.for_row_id } : {}) },
+        T,
+      ),
+    ),
+
+  deleteNote: async (orgId: string, templateId: string, instanceId: string, noteId: string): Promise<void> => {
+    await apiClient.delete(`${base(orgId)}/${templateId}/instances/${instanceId}/notes/${noteId}`, T)
+  },
+
+  /** For a task created by a workflow step: its workflow, instance and step. */
   getStepContext: async (orgId: string, taskId: string): Promise<WorkflowStepContext | null> =>
     unwrap<WorkflowStepContext | null>(await apiClient.get(`${base(orgId)}/step-context/${taskId}`, T)) ?? null,
 

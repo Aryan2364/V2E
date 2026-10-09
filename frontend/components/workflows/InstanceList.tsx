@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import type { WorkflowInstance } from '@/lib/types/workflows'
+import { instanceTitle } from './instanceLabel'
 import { BTN, RunStatusBadge, fmtDateTime, runDisplayStatus, runHref } from './shared'
 
 const PAGE = 25
@@ -51,7 +52,7 @@ export function ProgressBar({ completed, total, run }: { completed: number; tota
   )
 }
 
-/** Runs as a table (cards below md). Each row opens its run; the run name is a real link. */
+/** Instances as a table (cards below md). Each row opens its instance; the name is a real link. */
 export default function InstanceList({
   instances,
   showWorkflow = false,
@@ -73,7 +74,7 @@ export default function InstanceList({
   const columns: ResponsiveColumn<WorkflowInstance>[] = [
     {
       key: 'name',
-      header: 'Run',
+      header: 'Instance',
       primary: true,
       render: (i) => (
         <div className="min-w-0 max-w-[420px]">
@@ -84,7 +85,11 @@ export default function InstanceList({
           >
             {i.name}
           </Link>
-          {showWorkflow && i.template?.name && <p className="text-[13px] text-[#475569] truncate">{i.template.name}</p>}
+          {(i.instance_number || (showWorkflow && i.template?.name)) && (
+            <p className="text-[13px] text-[#475569] truncate">
+              {[i.instance_number ? instanceTitle(i.instance_number) : null, showWorkflow ? i.template?.name : null].filter(Boolean).join(' · ')}
+            </p>
+          )}
         </div>
       ),
     },

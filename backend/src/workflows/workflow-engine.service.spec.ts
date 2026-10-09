@@ -74,6 +74,9 @@ function matches(row: Row, where: Row = {}, relations: Record<string, (row: Row)
     }
     if (v && typeof v === 'object' && !(v instanceof Date) && 'in' in v) return (v.in as unknown[]).includes(row[k])
     if (v && typeof v === 'object' && !(v instanceof Date) && 'not' in v) return (row[k] ?? null) !== v.not
+    if (v && typeof v === 'object' && !(v instanceof Date) && 'startsWith' in v) {
+      return typeof row[k] === 'string' && row[k].startsWith(v.startsWith)
+    }
     if (v instanceof Date) return row[k] instanceof Date && row[k].getTime() === v.getTime()
     return (row[k] ?? null) === (v ?? null)
   })
@@ -96,9 +99,12 @@ function makeDb() {
   const escalations: Row[] = []
   const comments: Row[] = []
   const schedules: Row[] = []
+  const notes: Row[] = []
   const managers: Record<string, string | null> = {}
   const inactive = new Set<string>()
   let seq = 0
+  // workflow_templates.instance_seq (the raw UPDATE … RETURNING in nextInstanceNumber).
+  let instanceSeq = 0
 
   const copy = (r: Row | undefined) => (r ? { ...r } : null)
   const sortRows = (rows: Row[], orderBy?: any) => {
@@ -165,6 +171,7 @@ function makeDb() {
       instance: (row) => instances.find((i) => i.id === row.workflow_instance_id),
     }),
     workflowInstanceEvent: table(events, 'evt'),
+    workflowInstanceNote: table(notes, 'note'),
     workflowTemplate: { findFirst: jest.fn() },
     workflowStep: { findFirst: jest.fn().mockResolvedValue(null) },
     workflowScheduleEntry: table(schedules, 'sched', { template: (row) => row.template }),
@@ -201,7 +208,9 @@ function makeDb() {
         (where.user_id?.in ?? []).map((u: string) => ({ reporting_to_user_id: managers[u] ?? null })),
       ),
     },
-    $queryRaw: jest.fn().mockResolvedValue([]),
+    $queryRaw: jest.fn(async (strings: TemplateStringsArray) =>
+      strings.join('?').includes('instance_seq') ? [{ instance_seq: ++instanceSeq }] : [],
+    ),
     $transaction: jest.fn(async (fn: any) => fn(prisma)),
   }
   const holidays = { adjustDeadline: jest.fn(async (d: Date) => d), isWorkingDay: jest.fn(async (_d: Date) => true) }
@@ -389,9 +398,15 @@ describe('WorkflowEngineService (v2 — DAG runs)', () => {
       expect(db.prisma.$transaction).toHaveBeenCalledTimes(1)
       expect(db.eventsOf('run_started')).toHaveLength(1)
       expect(db.eventsOf('step_started')).toHaveLength(2)
-      // Owners hear the run started; each first-step assignee once (their assignment).
+      // Editors hear the instance started; each first-step assignee once (their assignment),
+      // plus ONE heads-up for the later step planned on a later day.
       const toWorker = db.notifications.emit.mock.calls.filter(([p]: any) => p.recipients.includes('u-worker'))
-      expect(toWorker.map(([p]: any) => p.event_type)).toEqual(['workflow_step_assigned', 'workflow_step_assigned'])
+      expect(toWorker.map(([p]: any) => p.event_type)).toEqual([
+        'workflow_step_assigned',
+        'workflow_step_assigned',
+        'workflow_step_upcoming',
+      ])
+      expect(inst.instance_number).toBe(1)
     })
 
     it('tracks: rows follow the tracks; snapshots carry the track, its name and the step number', async () => {
@@ -673,10 +688,15 @@ describe('WorkflowEngineService (v2 — DAG runs)', () => {
       expect(esc.map((e) => [e.level, e.escalate_to_user_id])).toEqual([[1, 'p-1'], [2, 'p-3']])
     })
 
-    it('no manager → the workflow owners (level 1)', async () => {
+    it('no manager → the workflow editors (creator + edit grants; legacy owners are not editors) at level 1', async () => {
       const db = makeDb()
       const { rows } = dagRun(db, [[], [0]], {
-        template: { name: 'Onboarding', owner_user_ids: ['u-owner', 'u-owner2'], created_by_user_id: 'u-owner' },
+        template: {
+          name: 'Onboarding',
+          owner_user_ids: ['u-legacy-owner'],
+          created_by_user_id: 'u-owner',
+          access: [{ user_id: 'u-owner2' }],
+        },
       })
       rows[0].status = 'active'
       db.addTask(rows[0])
@@ -1490,5 +1510,239 @@ describe('WorkflowEngineService — step timing', () => {
     expect(db.tasks[0].deadline).toEqual(new Date('2026-10-10T11:30:00Z'))
     expect(db.eventsOf('step_waiting')).toHaveLength(0)
     expect(db.holidays.isWorkingDay).not.toHaveBeenCalled()
+  })
+})
+
+describe('WorkflowEngineService — instances: numbers, names, heads-ups, notes, editors', () => {
+  // NOW = Thu 2026-10-08 10:00 IST.
+  const tStep = (id: string, order: number, over: Row = {}) => ({
+    id,
+    title: `T ${id}`,
+    description: null,
+    assigner_user_id: 'u-assigner',
+    assignee_user_ids: ['u-worker'],
+    cc_user_ids: [],
+    completion_mode: 'any_can_complete',
+    priority_id: null,
+    category_id: null,
+    tag_ids: [],
+    proof_required: false,
+    proof_allowed_extensions: [],
+    checklist_items: [],
+    due_days: 1,
+    due_time: '18:00',
+    escalation_mode: 'manager',
+    escalation_user_ids: [],
+    if_late: 'wait',
+    depends_on_step_ids: [],
+    order_index: order,
+    is_branch_step: false,
+    start_rule: null,
+    due_rule: null,
+    ...over,
+  })
+  const template = (stepsList: Row[], schedules: Row[] = []) => ({
+    id: 'tpl-1',
+    organization_id: ORG,
+    name: 'Vendor onboarding',
+    status: 'active',
+    owner_user_ids: ['u-legacy-owner'],
+    created_by_user_id: 'u-creator',
+    access: [{ user_id: 'u-editor' }],
+    steps: stepsList,
+    schedules,
+  })
+  const twoSteps = (laterOver: Row = {}) => [
+    tStep('a', 0),
+    tStep('b', 1, { depends_on_step_ids: ['a'], assignee_user_ids: ['u-later'], title: 'Issue PO', ...laterOver }),
+  ]
+  const start = async (db: Db, context: Row = {}, trigger = 'manual_trigger', by: string | null = 'u-runner') => {
+    const { id } = await db.engine.createInstance(ORG, 'tpl-1', trigger, context, by)
+    const inst = db.instances.find((i) => i.id === id)!
+    inst.template = { name: 'Vendor onboarding', created_by_user_id: 'u-creator', access: [{ user_id: 'u-editor' }] }
+    return inst
+  }
+  const emitted = (db: Db, event: string) =>
+    db.notifications.emit.mock.calls.filter(([p]: any) => p.event_type === event).map(([p]: any) => p)
+
+  it('numbers instances 1, 2, … per workflow and stores a typed name tidied, with its normalised key', async () => {
+    const db = makeDb()
+    db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
+    const a = await start(db, { name: '  ACME   Ltd ' })
+    const b = await start(db, { name: 'Globex' })
+    expect([a.instance_number, b.instance_number]).toEqual([1, 2])
+    expect(a).toMatchObject({ name: 'ACME Ltd', name_key: 'acme ltd' })
+    // The counter is bumped with a row-locking UPDATE scoped to the workflow + org.
+    const sql = db.prisma.$queryRaw.mock.calls.find((c: any) => c[0].join('?').includes('instance_seq'))
+    expect(sql[0].join('?')).toContain('"organization_id"')
+    expect(sql.slice(1)).toEqual(['tpl-1', ORG])
+  })
+
+  it('a typed name already used in the workflow (any case / spacing) is a 400 instance_name_taken', async () => {
+    const db = makeDb()
+    db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
+    await start(db, { name: 'ACME Ltd' })
+    const err: any = await db.engine
+      .createInstance(ORG, 'tpl-1', 'manual_trigger', { name: ' acme  LTD' }, 'u-runner')
+      .catch((e: unknown) => e)
+    expect(err).toBeInstanceOf(BadRequestException)
+    expect(err.getResponse()).toEqual({
+      message: 'An instance with this name already exists in this workflow.',
+      code: 'instance_name_taken',
+      field: 'name',
+    })
+    expect(db.instances).toHaveLength(1)
+  })
+
+  it('a unique-index race on a typed name is the same 400; on an automatic name it retries with the next suffix', async () => {
+    const db = makeDb()
+    db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
+    const p2002 = () =>
+      new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+        code: 'P2002',
+        clientVersion: 'test',
+        meta: { target: ['workflow_template_id', 'name_key'] },
+      })
+    db.prisma.workflowInstance.create.mockImplementationOnce(async () => {
+      throw p2002()
+    })
+    const err: any = await db.engine
+      .createInstance(ORG, 'tpl-1', 'manual_trigger', { name: 'Raced' }, 'u-runner')
+      .catch((e: unknown) => e)
+    expect(err.getResponse()).toMatchObject({ code: 'instance_name_taken' })
+
+    db.prisma.workflowInstance.create.mockImplementationOnce(async () => {
+      throw p2002()
+    })
+    const ok = await start(db, { schedule_entry_id: 's' }, 'schedule', null)
+    expect(ok.name).toBe('Vendor onboarding — 8 Oct 2026')
+  })
+
+  it('scheduled instances are named "<workflow> — 8 Oct 2026", then " (2)", " (3)" on the same day', async () => {
+    const db = makeDb()
+    db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
+    const names: string[] = []
+    for (let i = 0; i < 3; i++) names.push((await start(db, { schedule_entry_id: 's' }, 'schedule', null)).name)
+    expect(names).toEqual([
+      'Vendor onboarding — 8 Oct 2026',
+      'Vendor onboarding — 8 Oct 2026 (2)',
+      'Vendor onboarding — 8 Oct 2026 (3)',
+    ])
+    // A typed name equal to an automatic one still clashes (case-insensitive).
+    const err: any = await db.engine
+      .createInstance(ORG, 'tpl-1', 'manual_trigger', { name: 'vendor onboarding — 8 oct 2026' }, 'u-runner')
+      .catch((e: unknown) => e)
+    expect(err.getResponse()).toMatchObject({ code: 'instance_name_taken' })
+  })
+
+  it('heads-up: ONE notification per assignee of later steps planned on a later day', async () => {
+    const db = makeDb()
+    db.prisma.workflowTemplate.findFirst.mockResolvedValue(
+      template([...twoSteps(), tStep('c', 2, { depends_on_step_ids: ['b'], assignee_user_ids: ['u-later'], title: 'Pay vendor' })]),
+    )
+    await start(db, { name: 'ACME' })
+    const ups = emitted(db, 'workflow_step_upcoming')
+    expect(ups).toHaveLength(1)
+    expect(ups[0].recipients).toEqual(['u-later'])
+    expect(ups[0].body).toBe(
+      '“Vendor onboarding” has started. Your steps are planned: “Issue PO” around 9 Oct, “Pay vendor” around 10 Oct.',
+    )
+    // The first step's assignee gets their assignment, not a heads-up.
+    expect(ups.some((p: any) => p.recipients.includes('u-worker'))).toBe(false)
+  })
+
+  it('heads-up: one later step reads "Your step … is planned around …"', async () => {
+    const db = makeDb()
+    db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
+    await start(db, { name: 'ACME' })
+    expect(emitted(db, 'workflow_step_upcoming')[0].body).toBe(
+      '“Vendor onboarding” has started. Your step “Issue PO” is planned around 9 Oct.',
+    )
+  })
+
+  it('no heads-up for steps planned the same day, nor for daily workflows', async () => {
+    const sameDay = makeDb()
+    // A is due today 18:00, so B is planned to start today.
+    sameDay.prisma.workflowTemplate.findFirst.mockResolvedValue(template([tStep('a', 0, { due_days: 0 }), twoSteps()[1]]))
+    await start(sameDay, { name: 'ACME' })
+    expect(emitted(sameDay, 'workflow_step_upcoming')).toHaveLength(0)
+
+    const daily = makeDb()
+    daily.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps(), [{ schedule_type: 'daily', every: 1 }]))
+    await start(daily, { schedule_entry_id: 's' }, 'schedule', null)
+    expect(emitted(daily, 'workflow_step_upcoming')).toHaveLength(0)
+  })
+
+  it('"Workflow started" and stuck alerts go to the editors (creator + edit grants), never to legacy owners', async () => {
+    const db = makeDb()
+    db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
+    const inst = await start(db, { name: 'ACME' })
+    const started = emitted(db, 'workflow_triggered')[0]
+    expect([...started.recipients].sort()).toEqual(['u-creator', 'u-editor'])
+    expect(started.body).toContain('Instance #1 “ACME” started.')
+
+    const rowA = db.rowsOf(inst)[0]
+    db.tasks.find((t) => t.id === rowA.task_id)!.is_deleted = true
+    await db.engine.onTaskDeleted(ORG, rowA.task_id)
+    const stuck = emitted(db, 'workflow_stuck')[0]
+    expect([...stuck.recipients].sort()).toEqual(['u-creator', 'u-editor'])
+    expect(stuck.title).toBe('Instance needs attention')
+  })
+
+  it('late steps tell all editors, the escalation contacts and the assignees', async () => {
+    const db = makeDb()
+    const { rows } = dagRun(db, [[], [0]], {
+      template: { name: 'Onboarding', created_by_user_id: 'u-creator', access: [{ user_id: 'u-editor' }] },
+    })
+    rows[0].status = 'active'
+    db.addTask(rows[0])
+    db.tasks.find((t) => t.id === rows[0].task_id)!.deadline = new Date(NOW.getTime() - HOUR)
+    await db.engine.processOverdueStepsForOrg(ORG, NOW)
+    expect(recipientsOf(db, 'workflow_step_late').sort()).toEqual(['u-creator', 'u-editor', 'u-worker'])
+  })
+
+  it('a note for a started step: history entry + its assignees told now (not the author)', async () => {
+    const db = makeDb()
+    db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
+    const inst = await start(db, { name: 'ACME' })
+    const rowA = db.rowsOf(inst)[0]
+    db.notifications.emit.mockClear()
+    const { id } = await db.engine.addNote(ORG, inst.id, 'u-runner', 'Budget is 5L', rowA.id, '1')
+    expect(id).toBeTruthy()
+    const ev = db.eventsOf('note_added')[0]
+    expect(ev).toMatchObject({ type: 'note_added', actor_user_id: 'u-runner', instance_step_id: rowA.id })
+    expect(ev.message).toBe('u-runner added a note for 1 “T a”.')
+    const told = emitted(db, 'workflow_note_added')
+    expect(told).toHaveLength(1)
+    expect(told[0].recipients).toEqual(['u-worker'])
+    expect(told[0].body).toContain('Budget is 5L')
+  })
+
+  it('a note for a later step is told in its assignment notification when it starts', async () => {
+    const db = makeDb()
+    db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
+    const inst = await start(db, { name: 'ACME' })
+    const [rowA, rowB] = db.rowsOf(inst)
+    // u-worker (on step 1 “T a”) leaves a note for step 2 before it starts: nobody is told yet.
+    await db.engine.addNote(ORG, inst.id, 'u-worker', 'Use the new rate card', rowB.id, '2')
+    expect(emitted(db, 'workflow_note_added')).toHaveLength(0)
+    db.notifications.emit.mockClear()
+    await db.completeTask(db.rowsOf(inst).find((r) => r.id === rowA.id)!)
+    const assigned = emitted(db, 'workflow_step_assigned').find((p: any) => p.recipients.includes('u-later'))
+    expect(assigned.body).toBe('“Issue PO” in “Vendor onboarding” (ACME). 1 note from 1 “T a”.')
+  })
+
+  it('a note for a done step, or a step of another instance, is refused; another org is a 404', async () => {
+    const db = makeDb()
+    db.prisma.workflowTemplate.findFirst.mockResolvedValue(template(twoSteps()))
+    const inst = await start(db, { name: 'ACME' })
+    const rowA = db.steps.find((r) => r.workflow_instance_id === inst.id && r.order_index === 0)!
+    rowA.status = 'completed'
+    for (const rowId of [rowA.id, 'row-of-another-instance']) {
+      await expect(db.engine.addNote(ORG, inst.id, 'u-runner', 'x', rowId)).rejects.toThrow(
+        'Choose a step of this instance that isn’t done or skipped.',
+      )
+    }
+    await expect(db.engine.addNote('org-other', inst.id, 'u-runner', 'x', null)).rejects.toBeInstanceOf(NotFoundException)
   })
 })

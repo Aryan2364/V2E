@@ -73,7 +73,8 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const DEFAULT_SORT = 'created_desc'
 const SORT_VALUES = ['created_desc', 'created_asc', 'deadline_asc', 'deadline_desc', 'updated_desc'] as const
 const SCOPE_VALUES: readonly WorkScope[] = ['own', 'team', 'department', 'org']
-const TYPE_VALUES = ['one_time', 'recurring'] as const
+// 'workflow' = tasks a workflow step created (their source is the workflow, not a person).
+const TYPE_VALUES = ['one_time', 'recurring', 'workflow'] as const
 const TIMING_VALUES: readonly Timing[] = ['early', 'on_time', 'late', 'overdue', 'pending']
 const YMD = /^\d{4}-\d{2}-\d{2}$/
 const MAX_URL_TAGS = 50
@@ -372,7 +373,9 @@ export default function TasksOverviewPage() {
     category_id: categoryId || undefined,
     tag_ids: tagIds.length ? tagIds : undefined,
     department_id: departmentId || undefined,
-    type: typeFilter || undefined,
+    // "From workflows" is its own server filter, not a task type.
+    type: typeFilter && typeFilter !== 'workflow' ? typeFilter : undefined,
+    from_workflows: typeFilter === 'workflow' ? 'true' : undefined,
     timing: (timingFilter || undefined) as WorkQuery['timing'],
     assignee_user_id: assigneeUserId || undefined,
     created_by_user_id: createdByUserId || undefined,
@@ -544,7 +547,7 @@ export default function TasksOverviewPage() {
       list.push({ label: `Tag: ${name}`, clear: () => setTagIds((prev) => prev.filter((x) => x !== id)) })
     }
     if (departmentId) list.push({ label: `Dept: ${departments.find((d) => d.id === departmentId)?.name ?? '—'}`, clear: () => setDepartmentId('') })
-    if (typeFilter) list.push({ label: `Type: ${typeFilter === 'recurring' ? 'Recurring' : 'One-time'}`, clear: () => setTypeFilter('') })
+    if (typeFilter) list.push({ label: typeFilter === 'workflow' ? 'From workflows' : `Type: ${typeFilter === 'recurring' ? 'Recurring' : 'One-time'}`, clear: () => setTypeFilter('') })
     if (timingFilter) list.push({ label: `Timing: ${TIMING_META[timingFilter as Timing].label}`, clear: () => setTimingFilter('') })
     if (assigneeUserId) list.push({ label: `Assigned to: ${employees.find((e) => e.user_id === assigneeUserId)?.name ?? '—'}`, clear: () => setAssigneeUserId('') })
     if (createdByUserId) list.push({ label: `Assigned by: ${employees.find((e) => e.user_id === createdByUserId)?.name ?? '—'}`, clear: () => setCreatedByUserId('') })
@@ -865,6 +868,7 @@ export default function TasksOverviewPage() {
               { value: '', label: 'All types' },
               { value: 'one_time', label: 'One-time' },
               { value: 'recurring', label: 'Recurring' },
+              { value: 'workflow', label: 'From workflows' },
             ]}
           />
           <StyledSelect

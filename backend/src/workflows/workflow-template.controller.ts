@@ -25,6 +25,7 @@ import { PreviewTimelineDto, SaveDefinitionDto } from './dto/definition.dto'
 import { TriggerInstanceDto } from './dto/trigger-instance.dto'
 import { UpdateMasterDto } from './dto/update-master.dto'
 import { SendBackDto, SkipStepDto } from './dto/run-actions.dto'
+import { ChangeCreatorDto, CreateInstanceNoteDto } from './dto/instance-notes.dto'
 import { MAX_ATTACHMENT_BYTES, type UploadedFile as UploadedFileType } from '../tasks/task-attachments.service'
 
 /**
@@ -161,6 +162,13 @@ export class WorkflowTemplateController {
     return this.service.restoreTemplate(orgId, id, principalFromUser(req.user))
   }
 
+  /** Admins: hand the permanent-editor ("creator") role to another active member. */
+  @Post(':id/change-creator')
+  @RequireAdmin()
+  changeCreator(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: ChangeCreatorDto, @Req() req: any) {
+    return this.service.changeCreator(orgId, id, dto.user_id, principalFromUser(req.user))
+  }
+
   // ── Instances ────────────────────────────────────────────────────────────────
 
   @Post(':id/instances/trigger')
@@ -245,7 +253,37 @@ export class WorkflowTemplateController {
     return this.service.listEvents(orgId, id, iid, principalFromUser(req.user))
   }
 
-  // ── Run documents (participants) ─────────────────────────────────────────────
+  // ── Instance notes (everyone who can see the instance) ───────────────────────
+
+  @Get(':id/instances/:iid/notes')
+  listNotes(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {
+    return this.service.listNotes(orgId, id, iid, principalFromUser(req.user))
+  }
+
+  @Post(':id/instances/:iid/notes')
+  addNote(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @Body() dto: CreateInstanceNoteDto,
+    @Req() req: any,
+  ) {
+    return this.service.addNote(orgId, id, iid, dto, principalFromUser(req.user))
+  }
+
+  /** Its author, editors and admins. */
+  @Delete(':id/instances/:iid/notes/:noteId')
+  deleteNote(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Param('iid') iid: string,
+    @Param('noteId') noteId: string,
+    @Req() req: any,
+  ) {
+    return this.service.deleteNote(orgId, id, iid, noteId, principalFromUser(req.user))
+  }
+
+  // ── Instance documents (everyone who can see it; adding: not viewers) ─────────
 
   @Get(':id/instances/:iid/documents')
   getDocuments(@Param('orgId') orgId: string, @Param('id') id: string, @Param('iid') iid: string, @Req() req: any) {

@@ -321,7 +321,7 @@ export class DefinitionScheduleDto {
   start_date: string
 
   @IsOptional()
-  @IsEnum(RecurringEndCondition, { message: 'Ends must be never, on a date, or after a number of runs.' })
+  @IsEnum(RecurringEndCondition, { message: 'Ends must be never, on a date, or after a number of instances.' })
   end_condition?: RecurringEndCondition
 
   @IsOptional()
@@ -367,22 +367,32 @@ export class DefinitionStartsDto {
 }
 
 /**
- * Owners and editors ("can change it"). Someone listed as an owner is never also
- * stored as an editor. Changing them needs "can change who is involved".
+ * Editors ("can change it") and viewers ("can see it and all its instances"). The
+ * creator is always an editor and can't be removed — listing them or not changes
+ * nothing. Someone listed as an editor is never also stored as a viewer. Owners are
+ * retired: `owner_user_ids` is accepted from older clients and ignored.
  */
 export class DefinitionPeopleDto {
+  /** Ignored (owners are retired; kept so older clients still validate). */
+  @IsOptional()
   @IsArray()
-  @ArrayMinSize(1, { message: 'A workflow needs at least one owner.' })
-  @ArrayMaxSize(50, { message: 'A workflow can have at most 50 owners.' })
-  @ArrayUnique({ message: 'Each owner can be listed only once.' })
+  @ArrayMaxSize(200)
   @IsUUID('all', { each: true, message: 'Each owner must be a valid person.' })
-  owner_user_ids: string[]
+  owner_user_ids?: string[]
 
   @IsArray()
   @ArrayMaxSize(200, { message: 'A workflow can have at most 200 editors.' })
   @ArrayUnique({ message: 'Each editor can be listed only once.' })
   @IsUUID('all', { each: true, message: 'Each editor must be a valid person.' })
   editor_user_ids: string[]
+
+  /** Omitted = unchanged (older clients). */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(500, { message: 'A workflow can have at most 500 viewers.' })
+  @ArrayUnique({ message: 'Each viewer can be listed only once.' })
+  @IsUUID('all', { each: true, message: 'Each viewer must be a valid person.' })
+  viewer_user_ids?: string[]
 }
 
 /**

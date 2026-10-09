@@ -238,7 +238,7 @@ const IF_LATE: ChoiceOption<IfLate>[] = [
 ]
 
 const ESCALATION: ChoiceOption<EscalationMode>[] = [
-  { value: 'manager', label: 'Reporting manager', tip: 'If someone has no manager, the owners are alerted.' },
+  { value: 'manager', label: 'Reporting manager', tip: 'If someone has no manager, the editors are alerted.' },
   { value: 'people', label: 'Specific people', tip: 'Level 1 is alerted first, the next level 1 hour later.' },
 ]
 
@@ -597,7 +597,7 @@ export default function StepCard(props: EditProps | CreateProps) {
       return (
         <p className="flex items-start gap-1.5 text-[13px] text-[#92400E]">
           <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-          <span>Template no longer available. Runs use the saved copy.</span>
+          <span>Template no longer available. Instances use the saved copy.</span>
         </p>
       )
     }
@@ -605,7 +605,7 @@ export default function StepCard(props: EditProps | CreateProps) {
       <p className="flex items-start gap-1.5 text-[13px] text-[#475569]">
         <Link2 size={14} className="shrink-0 mt-0.5 text-[#1D4ED8]" />
         <span>
-          Linked. New runs use its latest items.
+          Linked. New instances use its latest items.
           {st?.accessible === false ? ' You can’t add this template, so it can’t be re-added once removed.' : ''}
         </span>
       </p>
@@ -830,7 +830,7 @@ export default function StepCard(props: EditProps | CreateProps) {
         {/* If late */}
         <div className="lg:col-span-6">
           <span className={LABEL_CLS}>
-            If late <InfoTip label="If late" text="Owners and escalation contacts are alerted either way." />
+            If late <InfoTip label="If late" text="Editors and escalation contacts are alerted either way." />
           </span>
           <ChoiceCards name="If late" value={draft.if_late} options={IF_LATE} onChange={(v) => change({ if_late: v })} disabled={disabled || creating} />
         </div>
@@ -844,7 +844,7 @@ export default function StepCard(props: EditProps | CreateProps) {
           {draft.escalation_mode === 'manager' && step?.escalation_contacts && step.escalation_contacts.length > 0 && (
             <p className={HELP}>
               Currently: <span className="text-[#0F172A] font-medium">{step.escalation_contacts.map((p) => p.name).join(', ')}</span>
-              {step.escalation_resolved_from === 'owners_fallback' ? ' (owners, no manager set)' : ''}
+              {step.escalation_resolved_from === 'owners_fallback' ? ' (editors, no manager set)' : ''}
             </p>
           )}
           {draft.escalation_mode === 'people' && (

@@ -164,11 +164,11 @@ export function frequencyNote(f: Frequency): string {
     case 'daily':
       return f.every >= 2 ? `Repeats every ${f.every} days, so steps can also use a time of day.` : 'Daily workflows can also use a time of day.'
     case 'weekly':
-      return f.every >= 2 ? `Repeats every ${f.every} weeks. Week 1 is when the run starts.` : 'Weekly workflows can also use a day of the week.'
+      return f.every >= 2 ? `Repeats every ${f.every} weeks. Week 1 is when the instance starts.` : 'Weekly workflows can also use a day of the week.'
     case 'monthly':
-      return f.every >= 2 ? `Repeats every ${f.every} months. Month 1 is when the run starts.` : 'Monthly workflows can also use a day of the month.'
+      return f.every >= 2 ? `Repeats every ${f.every} months. Month 1 is when the instance starts.` : 'Monthly workflows can also use a day of the month.'
     case 'yearly':
-      return f.every >= 2 ? `Repeats every ${f.every} years. Year 1 is when the run starts.` : 'Yearly workflows can also use a date.'
+      return f.every >= 2 ? `Repeats every ${f.every} years. Year 1 is when the instance starts.` : 'Yearly workflows can also use a date.'
   }
 }
 
@@ -453,7 +453,7 @@ export function timingSummary(start: StartRule, due: DueRule, f: Frequency, hasP
     case 'immediate':
       break
     case 'days_after_previous':
-      parts.push(`starts ${plural(start.days ?? 1, 'day')} after ${hasPredecessors ? 'previous step' : 'run start'}, ${at(start.time)}`)
+      parts.push(`starts ${plural(start.days ?? 1, 'day')} after ${hasPredecessors ? 'previous step' : 'instance start'}, ${at(start.time)}`)
       break
     case 'days_after_run_start':
       parts.push(
@@ -549,7 +549,7 @@ export interface TimingProblem {
  * ("the workflow repeats monthly. Choose “Day of the month” or a “Days after” option.").
  * With `place` (where the step sits): a later step can't start "Days after workflow is
  * triggered"; a FIRST step (nothing before it) must have its start and due on or after the
- * run start in its cycle ("pick a day on or after the 3rd, when the run starts.").
+ * run start in its cycle ("pick a day on or after the 3rd, when the instance starts.").
  * Ordered as Save checks them, so `[0]` is the message Save gives.
  */
 /**
@@ -675,7 +675,7 @@ export function runStartShort(rs: RunStart): string {
 }
 
 /** The tooltip on a day a first step can't use: "Before the run starts (3rd)". */
-export const beforeRunStartText = (rs: RunStart) => `Before the run starts (${runStartShort(rs)})`
+export const beforeRunStartText = (rs: RunStart) => `Before the instance starts (${runStartShort(rs)})`
 
 /**
  * Is this calendar position before the run start (a first step can't use it)? Day level
@@ -701,7 +701,7 @@ export function beforeRunStartProblem(rule: StartRule | DueRule, rs: RunStart): 
   if (!isCalendarKind(rule.kind)) return null
   const at = fmtTime(rs.time)
   const earlierTime = minutesOf(rule.time) < minutesOf(rs.time)
-  if (rs.type === 'daily') return rule.kind === 'time_of_day' && earlierTime ? `pick a time at or after ${at}, when the run starts.` : null
+  if (rs.type === 'daily') return rule.kind === 'time_of_day' && earlierTime ? `pick a time at or after ${at}, when the instance starts.` : null
   // Only the run's own cycle holds days before the run (explicit or legacy cycles).
   if (typeof rule.cycle === 'number' && (isCycleKind(rule.kind) || isDayKind(rule.kind)) && rule.cycle !== 1) return null
   const unit = rs.type === 'weekly' ? 'Week' : rs.type === 'monthly' ? 'Month' : 'Year'
@@ -728,8 +728,8 @@ export function beforeRunStartProblem(rule: StartRule | DueRule, rs: RunStart): 
   }
   const day = runStartDayWords(rs)
   const what = rs.type === 'yearly' ? 'a date' : 'a day'
-  if (cmp < 0) return `pick ${what} on or after ${day}${inCycle}, when the run starts.`
-  if (cmp === 0 && earlierTime) return `pick a time at or after ${at} on ${day}${inCycle}, when the run starts.`
+  if (cmp < 0) return `pick ${what} on or after ${day}${inCycle}, when the instance starts.`
+  if (cmp === 0 && earlierTime) return `pick a time at or after ${at} on ${day}${inCycle}, when the instance starts.`
   return null
 }
 

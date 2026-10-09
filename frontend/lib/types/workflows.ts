@@ -274,14 +274,25 @@ export interface WorkflowSchedule {
 // ─── Templates ────────────────────────────────────────────────────────────────
 
 export interface WorkflowCapabilities {
+  /** May see the design and every instance: admins, editors, viewers. */
   can_view: boolean
+  /** Editors (the creator is always one) and admins. */
   can_edit: boolean
-  /** May start it by hand now: chosen under "Manually", Manually is on, and it is Live. */
+  /** May run it by hand now: chosen under "Manually", Manually is on, and it is Live. */
   can_trigger: boolean
-  /** Owners and editors (owners / creator / admins). */
+  /** May change Editors / Viewers (editors and admins). */
   can_manage_access: boolean
   /** Is one of the people chosen under "Manually", whatever the status. */
   is_starter?: boolean
+  /** Created it (always an editor). */
+  is_creator?: boolean
+  /** May hand the permanent-editor (creator) role to someone else — admins only. */
+  can_change_creator?: boolean
+  /**
+   * 'full' = design + all instances; 'instances' = works in some of its instances only
+   * (sees just those). Missing = derived from can_view.
+   */
+  access?: 'full' | 'instances' | 'none'
 }
 
 /** Someone involved in a workflow, with every way they are involved. */
@@ -291,9 +302,14 @@ export interface InvolvedPerson extends PersonRef {
 }
 
 export interface WorkflowPeople {
-  owners: PersonRef[]
-  /** Can change it. */
+  /** Created it — always an editor, cannot be removed (an admin can hand it on). */
+  creator?: PersonRef | null
+  /** Can change it — the creator included. */
   editors: PersonRef[]
+  /** Can see it and all its instances; can't change anything. */
+  viewers?: PersonRef[]
+  /** Legacy (no longer used for access). */
+  owners?: PersonRef[]
   /** Chosen under "Manually": the only people who can start it by hand. */
   starters: PersonRef[]
   involved: InvolvedPerson[]
@@ -314,10 +330,17 @@ export interface WorkflowTemplate {
   created_by_user_id: string
   created_at: string
   updated_at: string
-  owner_user_ids: string[]
-  owners: PersonRef[]
+  /** Legacy (kept for older servers). */
+  owner_user_ids?: string[]
+  owners?: PersonRef[]
   created_by: PersonRef | null
   capabilities: WorkflowCapabilities
+  /**
+   * 'full' = the design and all instances (admins, editors, viewers); 'limited' = someone
+   * who runs it or works in some of its instances: name, status and Run only — their own
+   * instances come from the instances list.
+   */
+  view?: 'full' | 'limited'
   _count: { steps: number; instances: number; running_instances: number }
   /** "How it starts → On a schedule" (empty = no schedule). */
   schedules: WorkflowSchedule[]
@@ -333,7 +356,8 @@ export interface WorkflowTemplate {
   warnings?: TimingWarning[]
 }
 
-// ─── Instances (runs) ─────────────────────────────────────────────────────────
+// ─── Instances ────────────────────────────────────────────────────────────────
+// "Run" is only the action that starts a workflow; each execution is an instance.
 
 export interface InstanceCapabilities {
   can_cancel: boolean
@@ -350,6 +374,10 @@ export interface InstanceCapabilities {
   can_send_back_from?: string[]
   /** Waiting rows (pending with a start time) the caller may start now. */
   can_start_now_row_ids?: string[]
+  /** May post instance notes (everyone who can see the instance). */
+  can_add_note?: boolean
+  /** Editors and admins: may delete anyone's note. */
+  can_manage?: boolean
 }
 
 export interface InstanceProgress {
@@ -429,7 +457,14 @@ export interface WorkflowInstanceStep {
 
 export interface WorkflowInstance {
   id: string
+  /** Required when run by hand, unique within the workflow; automatic for a schedule. */
   name: string
+  /** 1, 2, 3… per workflow, in start order. */
+  instance_number?: number | null
+  /** The badge label: "<name> · 3 Nov" (manual) / "<workflow> · 3 Nov" (scheduled). */
+  label?: string
+  /** Started by a schedule (no person ran it). */
+  is_scheduled?: boolean
   status: WorkflowInstanceStatus
   display_status?: RunDisplayStatus
   trigger_type: string
@@ -444,6 +479,20 @@ export interface WorkflowInstance {
   tracks?: RunTrack[]
   /** Detail always; list may omit. */
   steps?: WorkflowInstanceStep[]
+}
+
+/** A note on an instance, optionally for a later step (shown on that step's task). */
+export interface InstanceNote {
+  id: string
+  body: string
+  author: PersonRef | null
+  created_at: string
+  /** The instance row it is for; null = the whole instance. */
+  for_row_id: string | null
+  /** That step, when the note is for one. */
+  for_step?: { row_id: string; number_label: string | null; title: string; status: string } | null
+  /** The viewer may delete it (its author, or an editor / admin). */
+  can_delete?: boolean
 }
 
 /** A run's history, newest first. */
@@ -500,6 +549,14 @@ export interface WorkflowStepContext {
   /** "1", "B2" — the step's number in its run. */
   step_label?: string | null
   total_steps?: number
+  instance_number?: number | null
+  /** The badge label ("ACME onboarding · 3 Nov"). */
+  instance_label?: string
+  started_at?: string
+  /** Null when a schedule started it. */
+  started_by?: PersonRef | null
+  /** Notes left for this step (newest first). */
+  notes?: InstanceNote[]
 }
 
 export interface SendBackTarget {
@@ -520,7 +577,7 @@ export interface WorkflowMeta {
   checklist_templates?: WorkflowChecklistTemplateOption[]
 }
 
-/** An active member of the organization, for owner / assignee / people pickers. */
+/** An active member of the organization, for editor / assignee / people pickers. */
 export interface OrgMemberOption {
   user_id: string
   name: string
@@ -580,8 +637,8 @@ export interface WorkflowDefinitionInput {
   }
   steps: DefinitionStepInput[]
   tracks: DefinitionTrackInput[]
-  /** Owners and editors; omitted = unchanged. */
-  people?: { owner_user_ids: string[]; editor_user_ids: string[] }
+  /** Editors (besides the creator, who always is one) and viewers; omitted = unchanged. */
+  people?: { editor_user_ids: string[]; viewer_user_ids: string[] }
   /** The version the editor loaded: a newer save by someone else is a 409. */
   expected_updated_at?: string
 }

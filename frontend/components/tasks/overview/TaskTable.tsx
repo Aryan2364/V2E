@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, CheckSquare } from 'lucide-react'
 import StyledSelect from '@/components/ui/StyledSelect'
 import EmployeePicker, { type EmployeePickerOption } from '@/components/ui/EmployeePicker'
 import TagList from '@/components/tasks/TagList'
+import WorkflowTaskBadge, { taskWorkflow } from '@/components/tasks/WorkflowTaskBadge'
 import TagSelect from './TagSelect'
 import {
   TIMINGS, TIMING_META, taskTiming,
@@ -139,7 +140,7 @@ export default function TaskTable({
             {/* Filter row — multiple filters can be active simultaneously. */}
             <tr className="bg-white border-b border-[#E2E8F0]">
               <td className="px-3 py-2 align-top min-w-[150px]">
-                {filterCell('type', 'All types', [{ value: 'one_time', label: 'One-time' }, { value: 'recurring', label: 'Recurring' }])}
+                {filterCell('type', 'All types', [{ value: 'one_time', label: 'One-time' }, { value: 'recurring', label: 'Recurring' }, { value: 'workflow', label: 'From workflows' }])}
               </td>
               <td className="px-3 py-2" />
               <td className="px-3 py-2 align-top min-w-[150px]">
@@ -212,7 +213,12 @@ export default function TaskTable({
                       <div className="text-[13px] text-[#475569] line-clamp-2">{t.description || '—'}</div>
                     </td>
                     <td className="px-3 py-2.5 align-top text-[#0F172A] whitespace-nowrap">{assigneeLabel(t)}</td>
-                    <td className="px-3 py-2.5 align-top text-[#475569] whitespace-nowrap">{t.created_by?.name ?? '—'}</td>
+                    <td className="px-3 py-2.5 align-top text-[#475569] whitespace-nowrap">
+                      {(() => {
+                        const wf = taskWorkflow(t)
+                        return wf ? <WorkflowTaskBadge workflow={wf} /> : t.created_by?.name ?? '—'
+                      })()}
+                    </td>
                     <td className="px-3 py-2.5 align-top text-[#475569] whitespace-nowrap">{(t.department_id && deptName.get(t.department_id)) || '—'}</td>
                     <td className="px-3 py-2.5 align-top text-[#475569] whitespace-nowrap">{t.category?.name ?? '—'}</td>
                     <td className="px-3 py-2.5 align-top">

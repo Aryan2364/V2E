@@ -234,7 +234,7 @@ function RuleParams<R extends StartRule | DueRule>({
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-[#1E293B]">At</span>
             {time}
-            {rs?.type === 'daily' && <InfoTip label="Time" text={`Not before the run starts (${runStartShort(rs)}).`} />}
+            {rs?.type === 'daily' && <InfoTip label="Time" text={`Not before the instance starts (${runStartShort(rs)}).`} />}
           </div>
           {landsNext && (
             <p className={NOTE}>
@@ -262,7 +262,7 @@ function RuleParams<R extends StartRule | DueRule>({
               {unit === 'Week' ? 'Day' : 'Date'}{' '}
               <InfoTip
                 label={`${word} day`}
-                text={`Sample run — holidays may shift dates. Bands are the other steps; striped ones are steps this waits for.${
+                text={`Sample instance — holidays may shift dates. Bands are the other steps; striped ones are steps this waits for.${
                   unit === 'Month' ? ' Shorter months use their last day instead.' : ''
                 }`}
               />
@@ -392,7 +392,7 @@ export default function StepTiming({
         const ctx = position.ctx
         const runText = runStart
           ? beforeRunStartText(runStart)
-          : `Before the run starts (${dayMonthWords(dayOf(ctx.runStart), ctx.runStart.getUTCFullYear())})`
+          : `Before the instance starts (${dayMonthWords(dayOf(ctx.runStart), ctx.runStart.getUTCFullYear())})`
         const { minDay, reason } = startMinDay(ctx, pred, runText)
         // Same day as the step before is due, at an earlier hour: fine — it waits for it.
         const note =
@@ -467,7 +467,7 @@ export default function StepTiming({
                 label="Starts"
                 text={
                   start.kind === 'days_after_run_start'
-                    ? 'Counts from the day the run is triggered. Holidays shift it to the next working day.'
+                    ? 'Counts from the day the instance starts. Holidays shift it to the next working day.'
                     : hasPredecessors
                       ? 'Waits for previous steps. Holidays shift it to the next working day.'
                       : 'Holidays shift it to the next working day.'

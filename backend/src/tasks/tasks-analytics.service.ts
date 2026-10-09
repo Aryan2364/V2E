@@ -151,7 +151,8 @@ export class TasksAnalyticsService {
       this.prisma.task.groupBy({ by: ['category_id', 'completion_timing', 'is_overdue'], where, _count: { _all: true } }),
       this.prisma.task.groupBy({ by: ['department_id', 'completion_timing', 'is_overdue'], where, _count: { _all: true } }),
       this.prisma.task.groupBy({ by: ['type', 'completion_timing', 'is_overdue'], where, _count: { _all: true } }),
-      this.prisma.task.groupBy({ by: ['created_by_user_id', 'completion_timing', 'is_overdue'], where, _count: { _all: true } }),
+      // "By assigner" counts people's own hand-outs, not tasks a workflow created.
+      this.prisma.task.groupBy({ by: ['created_by_user_id', 'completion_timing', 'is_overdue'], where: { AND: [where, { workflow_instance_step_id: null }] }, _count: { _all: true } }),
       this.tagBreakdown(orgId, where),
     ]);
     const statusFold = this.foldTimingGroups(statusGroups, 'status_id');

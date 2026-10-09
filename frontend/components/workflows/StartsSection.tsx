@@ -162,14 +162,14 @@ export default function StartsSection({
             disabled={disabled}
             icon={Hand}
             label="Manually"
-            tip="Started with the Start button."
+            tip="Started with the Run button."
             invalid={startersMissing}
           />
           <Reveal open={value.manual}>
             <div className="pl-1">
               <span className="block text-sm font-medium text-[#374151] mb-2">
                 Who can start it <span className="text-[#DC2626]">*</span>{' '}
-                <InfoTip label="Who can start it" text="Only the people listed here can start it." />
+                <InfoTip label="Who can start it" text="Only the people listed here can run it by hand." />
               </span>
               <PeoplePicker
                 orgId={orgId}
@@ -213,7 +213,7 @@ export default function StartsSection({
             ))}
             {(live ? nextRuns.length > 0 : true) && (
               <span className="text-[#475569]">
-                {live ? `Next run: ${fmtDateTime(nextRuns.map((s) => s.next_fire_at!).sort()[0])}` : 'Runs only while the workflow is live.'}
+                {live ? `Next start: ${fmtDateTime(nextRuns.map((s) => s.next_fire_at!).sort()[0])}` : 'Runs only while the workflow is live.'}
               </span>
             )}
           </div>

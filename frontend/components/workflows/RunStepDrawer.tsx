@@ -2,14 +2,15 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { CalendarClock, CheckCircle2, Circle, Download, ExternalLink, FileText, FileWarning, ListChecks, MessageSquare, Play, Send, SkipForward, Undo2 } from 'lucide-react'
+import { CalendarClock, CheckCircle2, Circle, Download, ExternalLink, FileText, FileWarning, ListChecks, MessageSquare, Play, Send, SkipForward, StickyNote, Undo2 } from 'lucide-react'
 import { AttachmentChips } from '@/components/ui/AttachmentList'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 import { workflowErrorMessage, workflowErrorStatus } from '@/lib/api/workflows'
 import { formatBytes } from '@/lib/attachments'
 import type { Task, TaskAttachment, TaskChecklistItem, TaskComment } from '@/lib/types/tasks'
-import type { WorkflowInstanceStep } from '@/lib/types/workflows'
+import type { InstanceNote, WorkflowInstanceStep } from '@/lib/types/workflows'
+import { NoteItem } from './InstanceNotes'
 import Sheet from './Sheet'
 import { Avatar, BTN, ErrorBanner, GatedButton, Skeleton, StepStatusBadge, fmtDateTime, fmtDayDateTime, taskHref } from './shared'
 
@@ -39,8 +40,8 @@ function groupItems<T extends { group_title?: string | null }>(items: T[]): { he
 }
 
 /**
- * One run step in a side panel: who has it, when it is due, its checklist, proof and
- * comments — everyone involved in the run sees these, and may comment. Send back and Skip
+ * One instance step in a side panel: who has it, when it is due, notes left for it, its
+ * checklist, proof and comments — everyone in the instance sees these, and may comment. Send back and Skip
  * hand over to the page, which closes this panel and opens their dialog (never a dialog
  * on top of a panel).
  */
@@ -61,6 +62,7 @@ export default function RunStepDrawer({
   startNowReason = '',
   startingNow = false,
   onStartNow,
+  notes = [],
 }: {
   orgId: string
   row: WorkflowInstanceStep | null
@@ -80,6 +82,8 @@ export default function RunStepDrawer({
   startNowReason?: string
   startingNow?: boolean
   onStartNow?: (row: WorkflowInstanceStep) => void
+  /** Instance notes left for this step (newest first). */
+  notes?: InstanceNote[]
 }) {
   const { addToast } = useToast()
   // Keep showing the last step while the panel slides away.
@@ -229,7 +233,7 @@ export default function RunStepDrawer({
         <div className="flex items-start gap-2.5 rounded-[10px] border border-[#DDD6FE] bg-[#F5F3FF] px-3.5 py-2.5 text-sm text-[#4C1D95]">
           <Undo2 size={16} className="shrink-0 mt-0.5" />
           <span>
-            Sent back from <span className="font-semibold">{title(row.returned_to_row_id)}</span>. The reason is in the comments. When done, the run returns there.
+            Sent back from <span className="font-semibold">{title(row.returned_to_row_id)}</span>. The reason is in the comments. When done, the instance returns there.
           </span>
         </div>
       )}
@@ -249,7 +253,20 @@ export default function RunStepDrawer({
       )}
       {row.last_error && <ErrorBanner message={row.last_error} />}
       {row.task_deleted && (
-        <ErrorBanner message="This step’s task was deleted. An owner, editor or admin must retry or skip it." />
+        <ErrorBanner message="This step’s task was deleted. An editor or admin must retry or skip it." />
+      )}
+
+      {notes.length > 0 && (
+        <section aria-labelledby="step-notes" className="flex flex-col gap-2">
+          <h3 id="step-notes" className="flex items-center gap-1.5 text-sm font-semibold text-[#0F172A]">
+            <StickyNote size={15} /> Notes for this step
+          </h3>
+          <ul className="flex flex-col gap-2">
+            {notes.map((n) => (
+              <NoteItem key={n.id} note={n} showStep={false} />
+            ))}
+          </ul>
+        </section>
       )}
 
       <dl>

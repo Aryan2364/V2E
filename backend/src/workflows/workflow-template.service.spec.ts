@@ -96,7 +96,17 @@ function build(prismaOverrides: Record<string, unknown> = {}) {
       deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
       createMany: jest.fn().mockResolvedValue({ count: 0 }),
     },
-    workflowInstance: { findFirst: jest.fn(), findMany: jest.fn().mockResolvedValue([]), groupBy: jest.fn().mockResolvedValue([]) },
+    workflowInstance: {
+      findFirst: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
+      groupBy: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+    },
+    workflowInstanceNote: {
+      findMany: jest.fn().mockResolvedValue([]),
+      findFirst: jest.fn().mockResolvedValue(null),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
     workflowInstanceStep: { findFirst: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
     workflowInstanceEvent: { findMany: jest.fn().mockResolvedValue([]) },
     organizationMember: {
@@ -121,6 +131,7 @@ function build(prismaOverrides: Record<string, unknown> = {}) {
   }
   const engine: any = {
     createInstance: jest.fn(),
+    addNote: jest.fn().mockResolvedValue({ id: 'note-new' }),
     cancelInstance: jest.fn(),
     sendBack: jest.fn().mockResolvedValue(undefined),
     skipStep: jest.fn().mockResolvedValue(undefined),
@@ -202,31 +213,68 @@ describe('WorkflowTemplateService — capabilities', () => {
   const { service } = build()
   const caps = (t: ReturnType<typeof template>, p = me()) => service.capabilitiesFor(t as never, p)
 
-  it('admins, owners and the creator manage everything — but start only if chosen under “Manually”', () => {
-    for (const p of [me({ isAdmin: true }), me({ userId: 'u-owner' }), me({ userId: 'u-creator' })]) {
-      expect(caps(template({ status: 'active' }), p)).toEqual({
-        can_view: true,
-        can_edit: true,
-        can_trigger: false,
-        can_manage_access: true,
-        is_starter: false,
-      })
-      expect(caps(template({ status: 'active' }, ['trigger']), p).can_trigger).toBe(true)
-    }
-  })
-
-  it('an editor edits but cannot change who is involved, and does not start unless chosen', () => {
+  it('admins and editors (the creator is always one) edit and manage people — but start only if chosen under “Manually”', () => {
+    expect(caps(template({ status: 'active' }), me({ userId: 'u-creator' }))).toEqual({
+      can_view: true,
+      can_edit: true,
+      can_trigger: false,
+      can_manage_access: true,
+      can_change_creator: false,
+      is_starter: false,
+      is_creator: true,
+      role: 'creator',
+    })
     expect(caps(template({ status: 'active' }, ['edit']))).toEqual({
       can_view: true,
       can_edit: true,
       can_trigger: false,
-      can_manage_access: false,
+      can_manage_access: true,
+      can_change_creator: false,
       is_starter: false,
+      is_creator: false,
+      role: 'editor',
     })
+    expect(caps(template({ status: 'active' }), me({ isAdmin: true }))).toEqual({
+      can_view: true,
+      can_edit: true,
+      can_trigger: false,
+      can_manage_access: true,
+      can_change_creator: true,
+      is_starter: false,
+      is_creator: false,
+      role: 'admin',
+    })
+    for (const p of [me({ isAdmin: true }), me({ userId: 'u-creator' })]) {
+      expect(caps(template({ status: 'active' }, ['trigger']), p).can_trigger).toBe(true)
+    }
   })
 
-  it('a starter starts only a Live (not paused) workflow whose “Manually” is on', () => {
+  it('owners are retired: a listed owner who is not an editor has no access', () => {
+    const c = caps(template({ status: 'active' }), me({ userId: 'u-owner' }))
+    expect(c.can_view).toBe(false)
+    expect(c.can_edit).toBe(false)
+    expect(c.role).toBeNull()
+  })
+
+  it('a viewer sees the design and all instances, whatever the status, but changes nothing', () => {
+    for (const status of ['draft', 'active', 'paused', 'archived']) {
+      expect(caps(template({ status }, ['view']))).toEqual({
+        can_view: true,
+        can_edit: false,
+        can_trigger: false,
+        can_manage_access: false,
+        can_change_creator: false,
+        is_starter: false,
+        is_creator: false,
+        role: 'viewer',
+      })
+    }
+  })
+
+  it('a starter starts only a Live (not paused) workflow whose “Manually” is on — without design access', () => {
     expect(caps(template({ status: 'active' }, ['trigger'])).can_trigger).toBe(true)
+    expect(caps(template({ status: 'active' }, ['trigger'])).can_view).toBe(false)
+    expect(caps(template({ status: 'active' }, ['trigger'])).role).toBe('starter')
     expect(caps(template({ status: 'active' }, ['view'])).can_trigger).toBe(false)
     expect(caps(template({ status: 'paused' }, ['trigger'])).can_trigger).toBe(false)
     expect(caps(template({ status: 'draft' }, ['trigger'])).can_trigger).toBe(false)
@@ -235,17 +283,10 @@ describe('WorkflowTemplateService — capabilities', () => {
     expect(caps(template({ status: 'paused' }, ['trigger'])).is_starter).toBe(true)
   })
 
-  it('any member may view a Live or Paused workflow, read-only, but not a draft', () => {
-    for (const status of ['active', 'paused']) {
-      expect(caps(template({ status }))).toEqual({
-        can_view: true,
-        can_edit: false,
-        can_trigger: false,
-        can_manage_access: false,
-        is_starter: false,
-      })
+  it('a member with no role can no longer see a Live workflow', () => {
+    for (const status of ['draft', 'active', 'paused']) {
+      expect(caps(template({ status })).can_view).toBe(false)
     }
-    expect(caps(template({ status: 'draft' })).can_view).toBe(false)
   })
 })
 
@@ -270,10 +311,62 @@ describe('WorkflowTemplateService — gates', () => {
     )
   })
 
-  it('viewers cannot save', async () => {
-    const h = defHarness([], template({ status: 'active' }))
-    await expect(h.service.updateDefinition(ORG, TPL, def() as never, me())).rejects.toBeInstanceOf(ForbiddenException)
-    expect(h.prisma.$transaction).not.toHaveBeenCalled()
+  it('viewers and people without a role cannot save', async () => {
+    for (const grants of [['view'], []] as Grant[][]) {
+      const h = defHarness([], template({ status: 'active' }, grants))
+      await expect(h.service.updateDefinition(ORG, TPL, def() as never, me())).rejects.toBeInstanceOf(ForbiddenException)
+      expect(h.prisma.$transaction).not.toHaveBeenCalled()
+    }
+  })
+
+  it('the workflow page: full for editors/viewers/admins; limited for a starter or someone in an instance; 403 otherwise', async () => {
+    // A member with no role and no instance → 403 "You don't have access to this workflow."
+    const none = defHarness([], template({ status: 'active' }))
+    await expect(none.service.getTemplate(ORG, TPL, me())).rejects.toThrow("You don't have access to this workflow.")
+
+    // A viewer gets the whole design.
+    const viewer = defHarness([stepRow('a')], template({ status: 'active' }, ['view']))
+    const full = (await viewer.service.getTemplate(ORG, TPL, me())) as any
+    expect(full.view).toBe('full')
+    expect(full.steps).toHaveLength(1)
+    expect(full.people.viewers).toEqual([])
+
+    // A starter of a Live workflow → limited (no steps, people or schedules).
+    const starter = defHarness([stepRow('a')], template({ status: 'active' }, ['trigger']))
+    const lim = (await starter.service.getTemplate(ORG, TPL, me())) as any
+    expect(lim.view).toBe('limited')
+    expect(lim.steps).toEqual([])
+    expect(lim.people).toBeNull()
+    expect(lim.capabilities.can_trigger).toBe(true)
+
+    // Someone who works in one of its instances → limited, counting only their instances.
+    const worker = defHarness([stepRow('a')], template({ status: 'paused' }))
+    worker.prisma.task.findMany.mockResolvedValue([{ workflow_instance_step_id: 'row-x' }])
+    worker.prisma.workflowInstanceStep.findMany.mockResolvedValue([{ workflow_instance_id: RUN }])
+    worker.prisma.workflowInstance.count.mockResolvedValue(1)
+    const mine = (await worker.service.getTemplate(ORG, TPL, me())) as any
+    expect(mine.view).toBe('limited')
+    expect(mine._count).toEqual({ steps: 0, instances: 1, running_instances: 1 })
+  })
+
+  it('the list shows editors / viewers their workflows and starters the Live ones they may start — nothing else', async () => {
+    const { service, prisma } = build()
+    prisma.workflowTemplate.findMany = jest.fn().mockResolvedValue([])
+    await service.listTemplates(ORG, false, me())
+    const where = prisma.workflowTemplate.findMany.mock.calls[0][0].where
+    expect(where.organization_id).toBe(ORG)
+    expect(where.OR).toEqual([
+      { created_by_user_id: 'u-me' },
+      { access: { some: { user_id: 'u-me', organization_id: ORG, access_type: { in: ['edit', 'view'] } } } },
+      {
+        status: { in: ['active', 'paused'] },
+        manual_start_enabled: true,
+        access: { some: { user_id: 'u-me', organization_id: ORG, access_type: 'trigger' } },
+      },
+    ])
+    // Admins see everything (no visibility filter).
+    await service.listTemplates(ORG, false, me({ isAdmin: true }))
+    expect(prisma.workflowTemplate.findMany.mock.calls[1][0].where.OR).toBeUndefined()
   })
 })
 
@@ -287,29 +380,78 @@ describe('WorkflowTemplateService — starting by hand', () => {
     return h
   }
 
-  it('only the people chosen under “Manually” can start; an owner who is not one gets 403', async () => {
-    const owner = startHarness(template({ status: 'active' }))
-    await expect(owner.service.triggerInstance(ORG, TPL, undefined, me({ userId: 'u-owner' }))).rejects.toThrow(
+  it('only the people chosen under “Manually” can start; an editor or admin who is not one gets 403', async () => {
+    const editor = startHarness(template({ status: 'active' }, ['edit']))
+    await expect(editor.service.triggerInstance(ORG, TPL, 'Batch 7', me())).rejects.toThrow(
       new ForbiddenException('Only the people listed under “Who can start it” can start this workflow.'),
     )
     const admin = startHarness(template({ status: 'active' }))
-    await expect(admin.service.triggerInstance(ORG, TPL, undefined, me({ isAdmin: true }))).rejects.toBeInstanceOf(
+    await expect(admin.service.triggerInstance(ORG, TPL, 'Batch 7', me({ isAdmin: true }))).rejects.toBeInstanceOf(
       ForbiddenException,
     )
-    expect(owner.engine.createInstance).not.toHaveBeenCalled()
+    // No role at all → no access.
+    const stranger = startHarness(template({ status: 'active' }))
+    await expect(stranger.service.triggerInstance(ORG, TPL, 'Batch 7', me())).rejects.toThrow(
+      "You don't have access to this workflow.",
+    )
+    expect(editor.engine.createInstance).not.toHaveBeenCalled()
 
+    // A starter runs it without design access; the name is tidied (trimmed, spaces collapsed).
     const starter = startHarness(template({ status: 'active' }, ['trigger']))
-    await starter.service.triggerInstance(ORG, TPL, ' Batch 7 ', me()).catch(() => undefined)
+    await starter.service.triggerInstance(ORG, TPL, '  Batch   7 ', me()).catch(() => undefined)
     expect(starter.engine.createInstance).toHaveBeenCalledWith(ORG, TPL, 'manual_trigger', { name: 'Batch 7' }, 'u-me')
+  })
+
+  it('Run needs a name (1–80 characters) that is unique in the workflow, ignoring case and spaces', async () => {
+    const err = async (h: ReturnType<typeof startHarness>, name: string | undefined) => {
+      try {
+        await h.service.triggerInstance(ORG, TPL, name, me())
+      } catch (e: any) {
+        return { status: e.getStatus(), ...e.getResponse() }
+      }
+      return null
+    }
+    const h = startHarness(template({ status: 'active' }, ['trigger']))
+    expect(await err(h, undefined)).toMatchObject({
+      status: 400,
+      message: 'Enter a name for this instance.',
+      code: 'instance_name_required',
+      field: 'name',
+    })
+    expect(await err(h, '   ')).toMatchObject({ code: 'instance_name_required' })
+    expect(await err(h, 'x'.repeat(81))).toMatchObject({
+      status: 400,
+      message: 'Keep the name to 80 characters or fewer.',
+      code: 'instance_name_too_long',
+    })
+    expect(h.engine.createInstance).not.toHaveBeenCalled()
+
+    // "  acme   LTD " clashes with an existing "ACME Ltd": the lookup is by the normalised key.
+    h.prisma.workflowInstance.findFirst.mockResolvedValueOnce({ id: 'inst-old' })
+    expect(await err(h, '  acme   LTD ')).toMatchObject({
+      status: 400,
+      message: 'An instance with this name already exists in this workflow.',
+      code: 'instance_name_taken',
+      field: 'name',
+    })
+    expect(h.prisma.workflowInstance.findFirst.mock.calls.at(-1)[0].where).toEqual({
+      workflow_template_id: TPL,
+      organization_id: ORG,
+      name_key: 'acme ltd',
+    })
+    expect(h.engine.createInstance).not.toHaveBeenCalled()
+    // 80 characters exactly is fine.
+    await h.service.triggerInstance(ORG, TPL, 'y'.repeat(80), me()).catch(() => undefined)
+    expect(h.engine.createInstance).toHaveBeenCalledWith(ORG, TPL, 'manual_trigger', { name: 'y'.repeat(80) }, 'u-me')
   })
 
   it('a paused workflow or a draft cannot be started (400 says what to do)', async () => {
     const paused = startHarness(template({ status: 'paused' }, ['trigger']))
-    await expect(paused.service.triggerInstance(ORG, TPL, undefined, me())).rejects.toThrow(
+    await expect(paused.service.triggerInstance(ORG, TPL, 'Batch', me())).rejects.toThrow(
       new BadRequestException('This workflow is paused. Resume it to start it.'),
     )
     const draft = startHarness(template({ status: 'draft' }, ['trigger']))
-    await expect(draft.service.triggerInstance(ORG, TPL, undefined, me())).rejects.toThrow(
+    await expect(draft.service.triggerInstance(ORG, TPL, 'Batch', me())).rejects.toThrow(
       'This workflow is a draft. Save it to make it live.',
     )
     expect(paused.engine.createInstance).not.toHaveBeenCalled()
@@ -318,7 +460,7 @@ describe('WorkflowTemplateService — starting by hand', () => {
 
   it('a schedule-only workflow has no start by hand', async () => {
     const h = startHarness(template({ status: 'active', manual_start_enabled: false }, ['trigger']))
-    await expect(h.service.triggerInstance(ORG, TPL, undefined, me())).rejects.toThrow(
+    await expect(h.service.triggerInstance(ORG, TPL, 'Batch', me())).rejects.toThrow(
       new BadRequestException('This workflow starts only on its schedule.'),
     )
     expect(h.engine.createInstance).not.toHaveBeenCalled()
@@ -592,27 +734,31 @@ describe('WorkflowTemplateService — definition: steps and tracks', () => {
     expect(h.prisma.workflowStep.updateMany.mock.calls.at(-1)[0].data.assigner_user_id).toBe('u-me')
   })
 
-  it('escalation contacts: specific people, else the assignees’ managers, else the owners', async () => {
+  it('escalation contacts: specific people, else the assignees’ managers, else the editors (creator first)', async () => {
     const steps = [
       stepRow('a', { order_index: 0, escalation_mode: 'people', escalation_user_ids: [U3] }),
       stepRow('b', { order_index: 1, assignee_user_ids: [U1] }),
       stepRow('c', { order_index: 2, assignee_user_ids: [U2] }),
     ]
-    const h = defHarness(steps, template({ status: 'active', owner_user_ids: ['u-owner'] }))
+    const h = defHarness(steps, template({ status: 'active', owner_user_ids: ['u-owner'] }), [], [
+      { user_id: 'u-editor', access_type: 'edit' },
+    ])
     h.prisma.employeeProfile.findMany.mockResolvedValue([
       { user_id: U1, reporting_to_user_id: 'u-boss' },
       { user_id: U2, reporting_to_user_id: null },
     ])
-    const out: any = await h.service.getTemplate(ORG, TPL, me())
+    const out: any = await h.service.getTemplate(ORG, TPL, me({ isAdmin: true }))
     const by = (id: string) => out.steps.find((s: any) => s.id === id)
     expect(by('a').escalation_resolved_from).toBe('people')
     expect(by('a').escalation_contacts.map((c: any) => c.id)).toEqual([U3])
     expect(by('b').escalation_resolved_from).toBe('manager')
     expect(by('b').escalation_contacts.map((c: any) => c.id)).toEqual(['u-boss'])
     expect(by('c').escalation_resolved_from).toBe('owners_fallback')
-    expect(by('c').escalation_contacts.map((c: any) => c.id)).toEqual(['u-owner'])
+    expect(by('c').escalation_contacts.map((c: any) => c.id)).toEqual(['u-creator', 'u-editor'])
     const involved = Object.fromEntries(out.people.involved.map((x: any) => [x.id, x.roles]))
-    expect(involved['u-owner']).toEqual(expect.arrayContaining(['owner', 'escalation_contact']))
+    expect(involved['u-creator']).toEqual(expect.arrayContaining(['creator', 'editor', 'escalation_contact']))
+    // A legacy owner is no longer anyone on the workflow.
+    expect(involved['u-owner']).toBeUndefined()
     expect(involved[U1]).toEqual(['assignee'])
     expect(involved['u-boss']).toEqual(['escalation_contact'])
   })
@@ -819,35 +965,88 @@ describe('WorkflowTemplateService — definition: people and who can start it', 
     { user_id: U1, access_type: 'trigger' },
   ]
 
-  it('owners / creator / admins replace owners and editors; an owner may also be a starter', async () => {
-    const h = defHarness([stepRow('a')], template({}, []), [], grants)
-    await h.service.updateDefinition(
+  it('editors / admins replace editors and viewers; the creator is never stored as a grant and stays an editor', async () => {
+    const h = defHarness([stepRow('a')], template({}, ['edit']), [], grants)
+    const out: any = await h.service.updateDefinition(
       ORG,
       TPL,
       def({
-        people: { owner_user_ids: [U1], editor_user_ids: [U1, U3] },
+        people: { editor_user_ids: ['u-creator', U3], viewer_user_ids: [U1, U3] },
         starts: { manual: { enabled: true, starter_user_ids: [U1, U3] }, schedules: [] },
         steps: [dstep('a', { id: 'a' })],
       }) as never,
-      me({ userId: 'u-owner' }),
+      me(),
     )
-    expect(h.prisma.workflowTemplate.updateMany.mock.calls[0][0].data.owner_user_ids).toEqual([U1])
+    // Owners are retired: a save never writes owner_user_ids any more.
+    expect(h.prisma.workflowTemplate.updateMany.mock.calls[0][0].data.owner_user_ids).toBeUndefined()
     expect(h.prisma.workflowAccess.deleteMany).toHaveBeenCalledWith({
       where: { workflow_template_id: TPL, organization_id: ORG, OR: [{ access_type: 'edit', user_id: U2 }] },
     })
+    // U3 is an editor (so not also a viewer); U1 is a viewer and a starter.
     expect(h.prisma.workflowAccess.createMany.mock.calls[0][0]).toEqual({
       data: [
         { user_id: U3, access_type: 'edit', organization_id: ORG, workflow_template_id: TPL },
+        { user_id: U1, access_type: 'view', organization_id: ORG, workflow_template_id: TPL },
         { user_id: U3, access_type: 'trigger', organization_id: ORG, workflow_template_id: TPL },
       ],
       skipDuplicates: true,
     })
+    expect(out.people.creator).toMatchObject({ id: 'u-creator' })
+    expect(out.people.editors[0]).toMatchObject({ id: 'u-creator', is_creator: true })
   })
 
-  it('an editor saves with people unchanged, may change who can start it, but may not change owners or editors', async () => {
-    const h = defHarness([stepRow('a')], template({}, ['edit']), [], grants)
-    // Same people as stored → fine; and the starter list is part of "How it starts".
-    await h.service.updateDefinition(
+  it('the creator cannot be removed: leaving them out of the editors changes nothing', async () => {
+    const h = defHarness([stepRow('a')], template({}, []), [], [{ user_id: U2, access_type: 'edit' }])
+    h.prisma.workflowAccess.findMany.mockResolvedValue([{ user_id: U2, access_type: 'edit' }])
+    const out: any = await h.service.updateDefinition(
+      ORG,
+      TPL,
+      def({ people: { editor_user_ids: [U2] }, steps: [dstep('a', { id: 'a' })] }) as never,
+      me({ userId: 'u-creator' }),
+    )
+    expect(h.prisma.workflowAccess.deleteMany).not.toHaveBeenCalled()
+    // Only the starter from "How it starts" is written — no edit grant for (or removal of) the creator.
+    expect(h.prisma.workflowAccess.createMany.mock.calls.flatMap((c: any) => c[0].data).filter((g: any) => g.access_type !== 'trigger')).toEqual([])
+    expect(out.people.editors.map((e: any) => [e.id, e.is_creator])).toEqual([
+      ['u-creator', true],
+      [U2, false],
+    ])
+    // Even an empty editor list leaves the creator as an editor.
+    const h2 = defHarness([stepRow('a')], template({}, []), [], [])
+    const out2: any = await h2.service.updateDefinition(
+      ORG,
+      TPL,
+      def({ people: { editor_user_ids: [] }, steps: [dstep('a', { id: 'a' })] }) as never,
+      me({ userId: 'u-creator' }),
+    )
+    expect(out2.people.editors.map((e: any) => e.id)).toEqual(['u-creator'])
+    expect(out2.capabilities.is_creator).toBe(true)
+  })
+
+  it('a new workflow: the saver is the creator (permanent editor) and its first starter', async () => {
+    const h = defHarness()
+    await h.service.createDefinition(ORG, def({ starts: { manual: { enabled: true }, schedules: [] } }) as never, me())
+    const data = h.prisma.workflowTemplate.create.mock.calls[0][0].data
+    expect(data.created_by_user_id).toBe('u-me')
+    expect(h.prisma.workflowAccess.createMany.mock.calls[0][0].data).toEqual([
+      { user_id: 'u-me', access_type: 'trigger', organization_id: ORG, workflow_template_id: TPL },
+    ])
+  })
+
+  it('viewers can’t change people; an editor may; viewers omitted = unchanged', async () => {
+    const viewerGrants = [...grants, { user_id: U3, access_type: 'view' }]
+    const v = defHarness([stepRow('a')], template({}, ['view']), [], viewerGrants)
+    await expect(
+      v.service.updateDefinition(
+        ORG,
+        TPL,
+        def({ people: { editor_user_ids: [U2, U3] }, steps: [dstep('a', { id: 'a' })] }) as never,
+        me(),
+      ),
+    ).rejects.toThrow(new ForbiddenException('Only editors and admins can do this.'))
+
+    const e = defHarness([stepRow('a')], template({}, ['edit']), [], viewerGrants)
+    await e.service.updateDefinition(
       ORG,
       TPL,
       def({
@@ -857,17 +1056,11 @@ describe('WorkflowTemplateService — definition: people and who can start it', 
       }) as never,
       me(),
     )
-    expect(h.prisma.workflowAccess.createMany.mock.calls[0][0].data).toEqual([
+    // Same editors, viewers omitted (kept) → only the starter list changes.
+    expect(e.prisma.workflowAccess.deleteMany).not.toHaveBeenCalled()
+    expect(e.prisma.workflowAccess.createMany.mock.calls[0][0].data).toEqual([
       { user_id: 'u-me', access_type: 'trigger', organization_id: ORG, workflow_template_id: TPL },
     ])
-    await expect(
-      h.service.updateDefinition(
-        ORG,
-        TPL,
-        def({ people: { owner_user_ids: ['u-owner'], editor_user_ids: [U2, U3] }, steps: [dstep('a', { id: 'a' })] }) as never,
-        me(),
-      ),
-    ).rejects.toThrow(new ForbiddenException("Only owners, the creator and admins can change who is involved."))
   })
 
   it('people omitted = unchanged; starters omitted on an existing workflow = unchanged', async () => {
@@ -880,30 +1073,67 @@ describe('WorkflowTemplateService — definition: people and who can start it', 
     )
     expect(h.prisma.workflowAccess.deleteMany).not.toHaveBeenCalled()
     expect(h.prisma.workflowAccess.createMany).not.toHaveBeenCalled()
-    expect(h.prisma.workflowTemplate.updateMany.mock.calls[0][0].data.owner_user_ids).toEqual(['u-owner'])
   })
 
-  it('a workflow needs an active owner; people newly added must be active members', async () => {
+  it('people newly added must be active members', async () => {
     const h = defHarness([stepRow('a')], template({}, []), [], [])
     h.prisma.organizationMember.findMany.mockImplementation(async ({ where }: any) =>
       (where.user_id.in as string[]).filter((id) => id !== U3).map((user_id) => ({ user_id })),
     )
-    await expect(
-      h.service.updateDefinition(
-        ORG,
-        TPL,
-        def({ people: { owner_user_ids: [U3], editor_user_ids: [] }, steps: [dstep('a', { id: 'a' })] }) as never,
-        me({ userId: 'u-owner' }),
-      ),
-    ).rejects.toThrow('One or more people you added are not active members of this organization')
+    for (const people of [{ editor_user_ids: [U3] }, { editor_user_ids: [], viewer_user_ids: [U3] }]) {
+      await expect(
+        h.service.updateDefinition(ORG, TPL, def({ people, steps: [dstep('a', { id: 'a' })] }) as never, me({ userId: 'u-creator' })),
+      ).rejects.toThrow('One or more people you added are not active members of this organization')
+    }
     await expect(
       h.service.updateDefinition(
         ORG,
         TPL,
         def({ starts: { manual: { enabled: true, starter_user_ids: [U3] }, schedules: [] }, steps: [dstep('a', { id: 'a' })] }) as never,
-        me({ userId: 'u-owner' }),
+        me({ userId: 'u-creator' }),
       ),
     ).rejects.toThrow('One or more people who can start it are not active members of this organization')
+  })
+})
+
+describe('WorkflowTemplateService — change creator (admins)', () => {
+  it('admins only; the new creator must be an active member', async () => {
+    const h = defHarness([], template({ status: 'active' }, ['edit']))
+    await expect(h.service.changeCreator(ORG, TPL, U1, me())).rejects.toThrow('Only admins can change who created a workflow.')
+    h.prisma.organizationMember.findMany.mockImplementation(async () => [])
+    await expect(h.service.changeCreator(ORG, TPL, U1, me({ isAdmin: true }))).rejects.toThrow(/not active members/)
+    expect(h.prisma.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('moves the permanent-editor role (org-scoped, guarded on the current creator); the old creator stays an editor', async () => {
+    const h = defHarness([], template({ status: 'active' }))
+    await h.service.changeCreator(ORG, TPL, U1, me({ isAdmin: true }))
+    expect(h.prisma.workflowTemplate.updateMany).toHaveBeenCalledWith({
+      where: { id: TPL, organization_id: ORG, created_by_user_id: 'u-creator' },
+      data: expect.objectContaining({ created_by_user_id: U1, owner_user_ids: [U1] }),
+    })
+    // The new creator's own edit/view grants are folded into the role.
+    expect(h.prisma.workflowAccess.deleteMany).toHaveBeenCalledWith({
+      where: { workflow_template_id: TPL, organization_id: ORG, user_id: U1, access_type: { in: ['edit', 'view'] } },
+    })
+    expect(h.prisma.workflowAccess.createMany).toHaveBeenCalledWith({
+      data: [{ organization_id: ORG, workflow_template_id: TPL, user_id: 'u-creator', access_type: 'edit' }],
+      skipDuplicates: true,
+    })
+  })
+
+  it('a creator who left gets no edit grant; a template of another org is a 404', async () => {
+    const h = defHarness([], template({ status: 'active' }))
+    h.prisma.organizationMember.findMany.mockImplementation(async ({ where }: any) =>
+      (where.user_id.in as string[]).filter((id) => id !== 'u-creator').map((user_id) => ({ user_id })),
+    )
+    await h.service.changeCreator(ORG, TPL, U1, me({ isAdmin: true }))
+    expect(h.prisma.workflowAccess.createMany).not.toHaveBeenCalled()
+
+    const other = build()
+    other.prisma.workflowTemplate.findFirst.mockResolvedValue(null)
+    await expect(other.service.changeCreator(ORG, TPL, U1, me({ isAdmin: true }))).rejects.toBeInstanceOf(NotFoundException)
+    expect(other.prisma.workflowTemplate.findFirst.mock.calls[0][0].where).toEqual({ id: TPL, organization_id: ORG })
   })
 })
 
@@ -981,6 +1211,8 @@ function runHarness(opts: {
     organization_id: ORG,
     workflow_template_id: TPL,
     name: 'Run 1',
+    instance_number: 7,
+    metadata: { name: 'Run 1' },
     trigger_type: 'manual_trigger',
     triggered_by_user_id: 'u-owner',
     status: opts.status ?? 'running',
@@ -992,8 +1224,14 @@ function runHarness(opts: {
   }
   h.prisma.workflowTemplate.findFirst.mockResolvedValue(tpl)
   h.prisma.workflowInstance.findFirst.mockImplementation(async (args: any) =>
-    // isRunParticipant selects the template's owner/creator/edit grants.
-    args.select ? { triggered_by_user_id: inst.triggered_by_user_id, template: { ...tpl, access: [] } } : inst,
+    // isRunParticipant selects the template's creator + the caller's edit/view grants
+    // (`tpl.access` = the grants of whoever the test calls as).
+    args.select
+      ? {
+          triggered_by_user_id: inst.triggered_by_user_id,
+          template: { ...tpl, access: tpl.access.filter((a) => a.access_type === 'edit' || a.access_type === 'view') },
+        }
+      : inst,
   )
   h.prisma.workflowInstanceStep.findMany.mockResolvedValue(rows.map((r) => ({ task_id: r.task_id })))
   h.prisma.task.findMany.mockResolvedValue(tasks)
@@ -1011,14 +1249,20 @@ function runHarness(opts: {
 }
 
 describe('WorkflowTemplateService — run view, status and capabilities', () => {
-  it('a step assignee may open a run of a workflow that is off; others may not', async () => {
+  it('a step assignee may open an instance of a workflow that is off; others may not', async () => {
     const h = runHarness({ tpl: template({ status: 'draft' }) })
     const out: any = await h.service.getInstance(ORG, TPL, RUN, me())
     expect(out.id).toBe(RUN)
+    expect(out.instance_number).toBe(7)
+    expect(out.label).toBe('Run 1 · 1 Oct')
+    expect(out.is_scheduled).toBe(false)
+    expect(out.capabilities).toMatchObject({ can_view_documents: true, can_upload: true, can_add_note: true })
+    // The instance page carries each step's notes.
+    expect(out.steps.every((st: any) => Array.isArray(st.notes))).toBe(true)
 
     const stranger = runHarness({ tpl: template({ status: 'draft' }) })
-    await expect(stranger.service.getInstance(ORG, TPL, RUN, me({ userId: 'u-stranger' }))).rejects.toBeInstanceOf(
-      ForbiddenException,
+    await expect(stranger.service.getInstance(ORG, TPL, RUN, me({ userId: 'u-stranger' }))).rejects.toThrow(
+      "You don't have access to this instance.",
     )
   })
 
@@ -1142,11 +1386,24 @@ describe('WorkflowTemplateService — skip, documents, files', () => {
     await expect(viewer.service.skipStep(ORG, TPL, RUN, 'r-c', me())).rejects.toBeInstanceOf(ForbiddenException)
   })
 
-  it('documents are for people involved in the run, not every viewer of the workflow', async () => {
+  it('documents: everyone who can see the instance reads them; viewers cannot add; strangers get nothing', async () => {
     const h = runHarness({})
-    await expect(h.service.getDocuments(ORG, TPL, RUN, me({ userId: 'u-viewer' }))).rejects.toThrow(
-      'Only people involved in this run can see or add its documents.',
+    await expect(h.service.getDocuments(ORG, TPL, RUN, me({ userId: 'u-stranger' }))).rejects.toThrow(
+      "You don't have access to this instance.",
     )
+    await expect(h.service.downloadRunFile(ORG, TPL, RUN, 'f-1', me({ userId: 'u-stranger' }))).rejects.toBeInstanceOf(
+      ForbiddenException,
+    )
+    // A viewer of the workflow reads the documents but can't add one.
+    const viewer = runHarness({ tpl: template({ status: 'active' }, ['view']) })
+    await viewer.service.getDocuments(ORG, TPL, RUN, me({ userId: 'u-viewer' }))
+    await expect(viewer.service.uploadRunFile(ORG, TPL, RUN, undefined, me({ userId: 'u-viewer' }))).rejects.toThrow(
+      'Only editors, admins and people working in this instance can add its documents.',
+    )
+    expect(viewer.files.upload).not.toHaveBeenCalled()
+    // Someone working in it may add one.
+    await h.service.uploadRunFile(ORG, TPL, RUN, undefined, me())
+    expect(h.files.upload).toHaveBeenCalledWith(ORG, 'u-me', RUN, undefined)
     await h.service.getDocuments(ORG, TPL, RUN, me())
     expect(h.files.documents).toHaveBeenCalledWith(
       ORG,
@@ -1185,7 +1442,34 @@ describe('WorkflowTemplateService — step context (task detail banner)', () => 
       total_steps: 3,
       can_send_back: true,
       can_open_run: true,
+      instance_number: 7,
+      instance_label: 'Run 1 · 1 Oct',
+      started_by: { id: 'u-owner', name: 'Unknown user' },
+      notes: [],
     })
+    // Notes are read for THIS step only, org-scoped, live ones.
+    expect(h.prisma.workflowInstanceNote.findMany.mock.calls[0][0].where).toEqual({
+      organization_id: ORG,
+      workflow_instance_id: { in: [RUN] },
+      deleted_at: null,
+      for_instance_step_id: 'r-b',
+    })
+  })
+
+  it('carries the notes left for the step (newest first), with who may remove them', async () => {
+    const h = runHarness({ tpl: template({ status: 'active' }) })
+    h.prisma.task.findFirst.mockResolvedValue({ id: 't-b', workflow_instance_step_id: 'r-b' })
+    h.prisma.workflowInstanceStep.findFirst.mockResolvedValue({ workflow_instance_id: RUN })
+    h.prisma.workflowInstanceNote.findMany.mockResolvedValue([
+      { id: 'n-2', workflow_instance_id: RUN, author_user_id: U2, body: 'Budget is 5L', for_instance_step_id: 'r-b', created_at: NOW },
+      { id: 'n-1', workflow_instance_id: RUN, author_user_id: 'u-me', body: 'Use vendor list', for_instance_step_id: 'r-b', created_at: NOW },
+    ])
+    h.prisma.user.findMany.mockResolvedValue([{ id: U2, name: 'Mehul' }])
+    const out: any = await h.service.getStepContext(ORG, 't-b', me())
+    expect(out.notes.map((n: any) => [n.id, n.author.name, n.can_delete, n.for_step.title])).toEqual([
+      ['n-2', 'Mehul', false, 'Title r-b'],
+      ['n-1', 'Unknown user', true, 'Title r-b'],
+    ])
   })
 
   it('denies when the task gate denies, and is null for a task outside any workflow', async () => {
@@ -1194,6 +1478,244 @@ describe('WorkflowTemplateService — step context (task detail banner)', () => 
     h.tasksGate.assertCanViewTask.mockRejectedValueOnce(new ForbiddenException('no'))
     await expect(h.service.getStepContext(ORG, 't-x', me())).rejects.toBeInstanceOf(ForbiddenException)
     expect(await h.service.getStepContext(ORG, 't-x', me())).toBeNull()
+  })
+})
+
+describe('WorkflowTemplateService — instance access (design vs instance)', () => {
+  it('admins, editors and viewers open any instance; the person who ran it and everyone working in it too', async () => {
+    // Viewer (no task): sees everything, acts on nothing.
+    const viewer = runHarness({ tpl: template({ status: 'active' }, ['view']) })
+    const v: any = await viewer.service.getInstance(ORG, TPL, RUN, me({ userId: 'u-viewer' }))
+    expect(v.capabilities).toMatchObject({
+      can_cancel: false,
+      can_retry: false,
+      can_skip: false,
+      can_upload: false,
+      can_view_documents: true,
+      can_add_note: true,
+      can_send_back_from: [],
+      can_start_now_row_ids: [],
+    })
+    // Admin.
+    const admin = runHarness({ tpl: template({ status: 'active' }) })
+    expect(((await admin.service.getInstance(ORG, TPL, RUN, me({ userId: 'u-admin', isAdmin: true }))) as any).id).toBe(RUN)
+    // Editor and creator manage it.
+    const editor = runHarness({ tpl: template({ status: 'active' }, ['edit']) })
+    expect(((await editor.service.getInstance(ORG, TPL, RUN, me({ userId: 'u-ed' }))) as any).capabilities.can_cancel).toBe(true)
+    const creator = runHarness({ tpl: template({ status: 'active' }) })
+    expect(((await creator.service.getInstance(ORG, TPL, RUN, me({ userId: 'u-creator' }))) as any).capabilities.can_cancel).toBe(true)
+    // The person who ran it (no task, no role).
+    const ranIt = runHarness({ tpl: template({ status: 'active' }) })
+    expect(((await ranIt.service.getInstance(ORG, TPL, RUN, me({ userId: 'u-owner' }))) as any).capabilities.can_upload).toBe(true)
+  })
+
+  it('CCs and escalation contacts of any step task see the instance; a legacy owner without a role does not', async () => {
+    const tasks = [
+      runTask('t-a', [{ user_id: U2, is_cc: false }]),
+      runTask('t-b', [{ user_id: U3, is_cc: true }]),
+      runTask('t-c', [{ user_id: U2, is_cc: false }]),
+    ]
+    const h = runHarness({ tasks })
+    // The participation lookup (assignee incl. CCs, or an escalation contact).
+    h.prisma.task.findFirst.mockImplementation(async ({ where }: any) => {
+      const assignee = where.OR?.[0]?.assignees?.some?.user_id
+      const esc = where.OR?.[1]?.escalations?.some?.escalate_to_user_id
+      if (assignee === U3 || esc === 'u-esc') return { id: 't-b' }
+      return null
+    })
+    await expect(h.service.getInstance(ORG, TPL, RUN, me({ userId: U3 }))).resolves.toBeTruthy()
+    await expect(h.service.getInstance(ORG, TPL, RUN, me({ userId: 'u-esc' }))).resolves.toBeTruthy()
+    // template().owner_user_ids = ['u-owner2'] style legacy owners no longer count.
+    const legacy = runHarness({ tpl: template({ status: 'active', owner_user_ids: ['u-legacy'] }), tasks })
+    legacy.prisma.task.findFirst.mockResolvedValue(null)
+    await expect(legacy.service.getInstance(ORG, TPL, RUN, me({ userId: 'u-legacy' }))).rejects.toBeInstanceOf(
+      ForbiddenException,
+    )
+    // Withdrawn tasks still count (no is_deleted filter in the participation lookup).
+    const where = h.prisma.task.findFirst.mock.calls[0][0].where
+    expect(where.is_deleted).toBeUndefined()
+    expect(where.organization_id).toBe(ORG)
+  })
+
+  it('someone replaced on a step keeps the instances they worked in; new instances follow the current assignees', async () => {
+    // Instance 1 was created while U3 was the step's assignee: their task is in it.
+    const old = runHarness({
+      tasks: [
+        runTask('t-a', [{ user_id: U3, is_cc: false }]),
+        runTask('t-b', [{ user_id: U2, is_cc: false }]),
+        runTask('t-c', [{ user_id: U2, is_cc: false }]),
+      ],
+    })
+    await expect(old.service.getInstance(ORG, TPL, RUN, me({ userId: U3 }))).resolves.toBeTruthy()
+    // Instance 2 started after U3 was replaced by U2 in the design: nothing of theirs in it.
+    const fresh = runHarness({
+      tasks: [
+        runTask('t-a', [{ user_id: U2, is_cc: false }]),
+        runTask('t-b', [{ user_id: U2, is_cc: false }]),
+        runTask('t-c', [{ user_id: U2, is_cc: false }]),
+      ],
+    })
+    await expect(fresh.service.getInstance(ORG, TPL, RUN, me({ userId: U3 }))).rejects.toBeInstanceOf(ForbiddenException)
+  })
+
+  it('instances list: all for admins / editors / viewers; only their own for people who work in instances; 403 for others', async () => {
+    const listHarness = (tpl: ReturnType<typeof template>) => {
+      const h = build()
+      h.prisma.workflowTemplate.findFirst.mockResolvedValue(tpl)
+      return h
+    }
+    for (const [tpl, p] of [
+      [template({ status: 'active' }, ['view']), me()],
+      [template({ status: 'active' }, ['edit']), me()],
+      [template({ status: 'active' }), me({ userId: 'u-creator' })],
+      [template({ status: 'active' }), me({ isAdmin: true })],
+    ] as const) {
+      const h = listHarness(tpl)
+      await h.service.listInstances(ORG, TPL, p)
+      expect(h.prisma.workflowInstance.findMany.mock.calls.at(-1)[0].where).toEqual({ workflow_template_id: TPL, organization_id: ORG })
+    }
+    // Works in instance RUN only (or ran it).
+    const worker = listHarness(template({ status: 'active' }))
+    worker.prisma.task.findMany.mockResolvedValue([{ workflow_instance_step_id: 'row-1' }])
+    worker.prisma.workflowInstanceStep.findMany.mockResolvedValue([{ workflow_instance_id: RUN }])
+    worker.prisma.workflowInstance.findMany.mockResolvedValueOnce([{ id: 'inst-i-ran' }])
+    await worker.service.listInstances(ORG, TPL, me())
+    expect(worker.prisma.workflowInstance.findMany.mock.calls.at(-1)[0].where).toEqual({
+      workflow_template_id: TPL,
+      organization_id: ORG,
+      id: { in: [RUN, 'inst-i-ran'] },
+    })
+    // Participation lookups are org-scoped and include withdrawn tasks.
+    expect(worker.prisma.task.findMany.mock.calls[0][0].where.organization_id).toBe(ORG)
+    expect(worker.prisma.task.findMany.mock.calls[0][0].where.is_deleted).toBeUndefined()
+    // Nothing at all → 403; a starter with none → empty list.
+    const stranger = listHarness(template({ status: 'active' }))
+    await expect(stranger.service.listInstances(ORG, TPL, me())).rejects.toThrow("You don't have access to this workflow.")
+    const starter = listHarness(template({ status: 'active' }, ['trigger']))
+    await starter.service.listInstances(ORG, TPL, me())
+    expect(starter.prisma.workflowInstance.findMany.mock.calls.at(-1)[0].where.id).toEqual({ in: [] })
+  })
+
+  it('instance actions (cancel / retry / skip / start now) stay with editors and admins — not viewers or workers', async () => {
+    for (const grants of [['view'], []] as Grant[][]) {
+      const h = runHarness({ tpl: template({ status: 'active' }, grants) })
+      await expect(h.service.cancelInstance(ORG, TPL, RUN, me())).rejects.toThrow('Only editors and admins can do this.')
+      await expect(h.service.startStepNow(ORG, TPL, RUN, 'r-c', me())).rejects.toBeInstanceOf(ForbiddenException)
+      expect(h.engine.cancelInstance).not.toHaveBeenCalled()
+    }
+  })
+
+  it('send back: a viewer of the workflow is not on the step, so 403', async () => {
+    const h = runHarness({ tpl: template({ status: 'active' }, ['view']) })
+    await expect(
+      h.service.sendBack(ORG, TPL, RUN, 'r-b', { to_row_id: 'r-a', reason: 'Because' }, me({ userId: 'u-viewer' })),
+    ).rejects.toThrow("Only this step's assignees, editors and admins can send it back.")
+  })
+
+  it('history (events) follows the instance gate', async () => {
+    const h = runHarness({ tpl: template({ status: 'active' }, ['view']) })
+    await h.service.listEvents(ORG, TPL, RUN, me({ userId: 'u-viewer' }))
+    expect(h.prisma.workflowInstanceEvent.findMany.mock.calls[0][0].where).toEqual({ workflow_instance_id: RUN, organization_id: ORG })
+    const stranger = runHarness({})
+    await expect(stranger.service.listEvents(ORG, TPL, RUN, me({ userId: 'u-stranger' }))).rejects.toBeInstanceOf(
+      ForbiddenException,
+    )
+  })
+})
+
+describe('WorkflowTemplateService — instance notes', () => {
+  const noteRow = (over: Record<string, unknown> = {}) => ({
+    id: 'n-1',
+    workflow_instance_id: RUN,
+    author_user_id: 'u-me',
+    body: 'Check the budget',
+    for_instance_step_id: null,
+    created_at: NOW,
+    ...over,
+  })
+
+  it('anyone who can see the instance lists and posts notes; strangers get 403', async () => {
+    const viewer = runHarness({ tpl: template({ status: 'active' }, ['view']) })
+    viewer.prisma.workflowInstanceNote.findMany.mockResolvedValue([noteRow({ id: 'note-new', author_user_id: 'u-viewer' })])
+    const posted: any = await viewer.service.addNote(ORG, TPL, RUN, { body: '  Check the budget ' }, me({ userId: 'u-viewer' }))
+    expect(viewer.engine.addNote).toHaveBeenCalledWith(ORG, RUN, 'u-viewer', 'Check the budget', null, null)
+    expect(posted).toMatchObject({ id: 'note-new', for_row_id: null, for_step: null, can_delete: true })
+
+    const list = await viewer.service.listNotes(ORG, TPL, RUN, me({ userId: 'u-viewer' }))
+    expect(list).toHaveLength(1)
+    expect(viewer.prisma.workflowInstanceNote.findMany.mock.calls.at(-1)[0].where).toEqual({
+      organization_id: ORG,
+      workflow_instance_id: { in: [RUN] },
+      deleted_at: null,
+    })
+
+    const stranger = runHarness({})
+    await expect(stranger.service.listNotes(ORG, TPL, RUN, me({ userId: 'u-stranger' }))).rejects.toBeInstanceOf(ForbiddenException)
+    await expect(
+      stranger.service.addNote(ORG, TPL, RUN, { body: 'hi' }, me({ userId: 'u-stranger' })),
+    ).rejects.toBeInstanceOf(ForbiddenException)
+    expect(stranger.engine.addNote).not.toHaveBeenCalled()
+  })
+
+  it('a note for a later step: a step of THIS instance that is not done or skipped', async () => {
+    const h = runHarness({})
+    h.prisma.workflowInstanceNote.findMany.mockResolvedValue([noteRow({ id: 'note-new', for_instance_step_id: 'r-b' })])
+    const out: any = await h.service.addNote(ORG, TPL, RUN, { body: 'For you', for_row_id: 'r-b' }, me())
+    expect(h.engine.addNote).toHaveBeenCalledWith(ORG, RUN, 'u-me', 'For you', 'r-b', '2')
+    expect(out.for_step).toEqual({ row_id: 'r-b', number_label: '2', title: 'Title r-b', status: 'active' })
+
+    for (const bad of ['r-a', 'r-elsewhere']) {
+      await expect(h.service.addNote(ORG, TPL, RUN, { body: 'x', for_row_id: bad }, me())).rejects.toThrow(
+        'Choose a step of this instance that isn’t done or skipped.',
+      )
+    }
+    await expect(h.service.addNote(ORG, TPL, RUN, { body: '   ' }, me())).rejects.toThrow('Write a note.')
+    await expect(h.service.addNote(ORG, TPL, RUN, { body: 'x'.repeat(2001) }, me())).rejects.toThrow(
+      'Keep the note to 2000 characters or fewer.',
+    )
+    expect(h.engine.addNote).toHaveBeenCalledTimes(1)
+  })
+
+  it('a note is removed by its author or an editor/admin; scoped to the instance + org; soft delete', async () => {
+    const h = runHarness({})
+    h.prisma.workflowInstanceNote.findFirst.mockResolvedValue({ id: 'n-1', author_user_id: U2 })
+    await expect(h.service.deleteNote(ORG, TPL, RUN, 'n-1', me())).rejects.toThrow(
+      'Only the person who wrote this note, editors and admins can remove it.',
+    )
+    expect(h.prisma.workflowInstanceNote.findFirst.mock.calls[0][0].where).toEqual({
+      id: 'n-1',
+      workflow_instance_id: RUN,
+      organization_id: ORG,
+      deleted_at: null,
+    })
+    expect(h.prisma.workflowInstanceNote.updateMany).not.toHaveBeenCalled()
+
+    // The author (U2 works in the instance).
+    await expect(h.service.deleteNote(ORG, TPL, RUN, 'n-1', me({ userId: U2 }))).resolves.toEqual({ id: 'n-1', deleted: true })
+    expect(h.prisma.workflowInstanceNote.updateMany).toHaveBeenCalledWith({
+      where: { id: 'n-1', workflow_instance_id: RUN, organization_id: ORG, deleted_at: null },
+      data: { deleted_at: NOW },
+    })
+    // An editor.
+    const ed = runHarness({ tpl: template({ status: 'active' }, ['edit']) })
+    ed.prisma.workflowInstanceNote.findFirst.mockResolvedValue({ id: 'n-1', author_user_id: U2 })
+    await expect(ed.service.deleteNote(ORG, TPL, RUN, 'n-1', me())).resolves.toEqual({ id: 'n-1', deleted: true })
+    // A note of another instance / org → 404.
+    const miss = runHarness({})
+    miss.prisma.workflowInstanceNote.findFirst.mockResolvedValue(null)
+    await expect(miss.service.deleteNote(ORG, TPL, RUN, 'n-x', me())).rejects.toBeInstanceOf(NotFoundException)
+  })
+
+  it('the instance page shows each step its notes', async () => {
+    const h = runHarness({})
+    h.prisma.workflowInstanceNote.findMany.mockResolvedValue([
+      noteRow({ id: 'n-b', for_instance_step_id: 'r-b' }),
+      noteRow({ id: 'n-all' }),
+    ])
+    const out: any = await h.service.getInstance(ORG, TPL, RUN, me())
+    const by = (id: string) => out.steps.find((st: any) => st.id === id)
+    expect(by('r-b').notes.map((n: any) => n.id)).toEqual(['n-b'])
+    expect(by('r-c').notes).toEqual([])
   })
 })
 
@@ -1369,7 +1891,7 @@ describe('WorkflowTemplateService — step timing on save', () => {
       steps: [dstep('n1', { title: 'Collect documents', start_rule: { kind: 'month_day', day: 1, time: '09:00' } })],
     })
     expect(first).toBeInstanceOf(BadRequestException)
-    expect(first.message).toBe('Step 1 “Collect documents”: pick a day on or after the 3rd, when the run starts.')
+    expect(first.message).toBe('Step 1 “Collect documents”: pick a day on or after the 3rd, when the instance starts.')
     expect(first.getResponse()).toMatchObject({ code: 'step_invalid', step_key: 'n1' })
 
     // Its due date too.
@@ -1378,7 +1900,7 @@ describe('WorkflowTemplateService — step timing on save', () => {
       starts: { manual: { enabled: false }, schedules: [on3rd] },
       steps: [dstep('n1', { title: 'Collect documents', due_rule: { kind: 'month_day', day: 2, time: '18:00' } })],
     })
-    expect(due.message).toBe('Step 1 “Collect documents”: pick a day on or after the 3rd, when the run starts.')
+    expect(due.message).toBe('Step 1 “Collect documents”: pick a day on or after the 3rd, when the instance starts.')
 
     // The first step of a path that starts with the run is a first step as well.
     const path = await saveErr(defHarness(), {
@@ -1387,7 +1909,7 @@ describe('WorkflowTemplateService — step timing on save', () => {
       tracks: [{ key: 'main' }, { key: 'B', split_from_step_key: null }],
       steps: [dstep('n1', { title: 'Collect' }), dstep('b1', { title: 'Check', track_key: 'B', start_rule: { kind: 'month_day', day: 1, time: '09:00' } })],
     })
-    expect(path.message).toBe('Step B1 “Check”: pick a day on or after the 3rd, when the run starts.')
+    expect(path.message).toBe('Step B1 “Check”: pick a day on or after the 3rd, when the instance starts.')
 
     // A later step on the 1st is fine: it lands in the next month.
     const h = defHarness()
@@ -1414,16 +1936,16 @@ describe('WorkflowTemplateService — step timing on save', () => {
         steps: [dstep('n1', { title: 'Collect', start_rule: rule })],
       })
     expect((await save({ schedule_type: 'weekly', days: [3] }, { kind: 'weekday', weekday: 1, time: '09:00' })).message).toBe(
-      'Step 1 “Collect”: pick a day on or after Wednesday, when the run starts.',
+      'Step 1 “Collect”: pick a day on or after Wednesday, when the instance starts.',
     )
     expect(
       (await save({ schedule_type: 'yearly', yearly_dates: [{ month: 4, day: 1 }] }, { kind: 'year_date', month: 3, day: 1, time: '09:00' })).message,
-    ).toBe('Step 1 “Collect”: pick a date on or after 1 Apr, when the run starts.')
+    ).toBe('Step 1 “Collect”: pick a date on or after 1 Apr, when the instance starts.')
     expect((await save({ schedule_type: 'daily' }, { kind: 'time_of_day', time: '08:00' })).message).toBe(
-      'Step 1 “Collect”: pick a time at or after 9:00 AM, when the run starts.',
+      'Step 1 “Collect”: pick a time at or after 9:00 AM, when the instance starts.',
     )
     expect((await save({ schedule_type: 'monthly', month_days: [3, 20] }, { kind: 'month_day', day: 10, time: '09:00' })).message).toBe(
-      'Step 1 “Collect”: pick a day on or after the 20th, when the run starts.',
+      'Step 1 “Collect”: pick a day on or after the 20th, when the instance starts.',
     )
   })
 
@@ -1443,7 +1965,7 @@ describe('WorkflowTemplateService — step timing on save', () => {
         me(),
       )
       .catch((e: unknown) => e)
-    expect(err.message).toBe('Step 1 “Collect”: pick a day on or after the 10th, when the run starts.')
+    expect(err.message).toBe('Step 1 “Collect”: pick a day on or after the 10th, when the instance starts.')
     expect(err.getResponse()).toMatchObject({ step_id: 'a', step_key: 'a' })
     expect(h.prisma.$transaction).not.toHaveBeenCalled()
   })
@@ -1458,7 +1980,7 @@ describe('WorkflowTemplateService — step timing on save', () => {
       }) as never,
       me(),
     )
-    expect(out.warnings).toContain('Step 1 “Collect”: pick a day on or after the 3rd, when the run starts.')
+    expect(out.warnings).toContain('Step 1 “Collect”: pick a day on or after the 3rd, when the instance starts.')
   })
 
   it('explicit days (the calendar): Save refuses a later step before the day the step it waits for is due; the same day is fine; drafts warn', async () => {
@@ -1768,7 +2290,7 @@ describe('WorkflowTemplateService — example timeline (preview)', () => {
     expect(out.runs).toHaveLength(3)
     expect(out.warnings).toEqual([
       'Step 3 “File”: the workflow repeats monthly. Choose “Day of the month” or a “Days after” option.',
-      'Runs will overlap: this run ends 7 Dec, the next starts 1 Dec.',
+      'Instances will overlap: this instance ends 7 Dec, the next starts 1 Dec.',
     ])
     // Review moves to the 5th of the month after Collect is due.
     expect(out.runs[0].steps[1].planned_start_at).toEqual(new Date('2026-12-05T03:30:00Z'))
@@ -1790,7 +2312,7 @@ describe('WorkflowTemplateService — example timeline (preview)', () => {
       me(),
     )
     expect(out.runs[0].starts_at).toEqual(new Date('2026-11-03T03:30:00Z'))
-    expect(out.warnings).toEqual(['Runs will overlap: this run ends 5 Dec, the next starts 3 Dec.'])
+    expect(out.warnings).toEqual(['Instances will overlap: this instance ends 5 Dec, the next starts 3 Dec.'])
 
     const fits: any = await h.service.previewTimeline(
       ORG,
@@ -1816,7 +2338,7 @@ describe('WorkflowTemplateService — example timeline (preview)', () => {
       }) as never,
       me(),
     )
-    expect(out.warnings).toContain('Step 1 “Collect documents”: pick a day on or after the 3rd, when the run starts.')
+    expect(out.warnings).toContain('Step 1 “Collect documents”: pick a day on or after the 3rd, when the instance starts.')
   })
 })
 
@@ -1826,24 +2348,24 @@ describe('overlapWarning', () => {
 
   it('names the run’s last date and the next run’s start, in the org’s time zone', () => {
     expect(overlapWarning([step('2026-11-03T03:30:00Z', '2026-12-05T12:30:00Z')], new Date('2026-12-03T03:30:00Z'), tz)).toBe(
-      'Runs will overlap: this run ends 5 Dec, the next starts 3 Dec.',
+      'Instances will overlap: this instance ends 5 Dec, the next starts 3 Dec.',
     )
     expect(overlapWarning([step('2026-12-03T03:30:00Z', '2027-01-05T12:30:00Z')], new Date('2027-01-03T03:30:00Z'), tz)).toBe(
-      'Runs will overlap: this run ends 5 Jan, the next starts 3 Jan.',
+      'Instances will overlap: this instance ends 5 Jan, the next starts 3 Jan.',
     )
     // When the two dates fall in different years, the years are said.
     expect(overlapWarning([step('2026-12-30T03:30:00Z', '2027-01-05T12:30:00Z')], new Date('2026-12-31T03:30:00Z'), tz)).toBe(
-      'Runs will overlap: this run ends 5 Jan 2027, the next starts 31 Dec 2026.',
+      'Instances will overlap: this instance ends 5 Jan 2027, the next starts 31 Dec 2026.',
     )
   })
 
   it('names a later example run ("the run on 3 Dec") — the first one is "this run"', () => {
     expect(
       overlapWarning([step('2026-12-03T03:30:00Z', '2027-01-04T12:30:00Z')], new Date('2027-01-03T03:30:00Z'), tz, new Date('2026-12-03T03:30:00Z')),
-    ).toBe('Runs will overlap: the run on 3 Dec 2026 ends 4 Jan 2027, the next starts 3 Jan 2027.')
+    ).toBe('Instances will overlap: the instance on 3 Dec 2026 ends 4 Jan 2027, the next starts 3 Jan 2027.')
     expect(
       overlapWarning([step('2026-11-03T03:30:00Z', '2026-12-05T12:30:00Z')], new Date('2026-12-03T03:30:00Z'), tz, new Date('2026-11-03T03:30:00Z')),
-    ).toBe('Runs will overlap: the run on 3 Nov ends 5 Dec, the next starts 3 Dec.')
+    ).toBe('Instances will overlap: the instance on 3 Nov ends 5 Dec, the next starts 3 Dec.')
   })
 
   it('no warning when the run ends by the time the next one starts (or has no steps)', () => {

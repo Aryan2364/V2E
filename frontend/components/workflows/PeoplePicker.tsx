@@ -19,7 +19,7 @@ export function personNames(lookups: WorkflowLookups, known: PersonRef[]): Map<s
 }
 
 /**
- * A workflow people list (who can start it, owners, editors) in the same picker the
+ * A workflow people list (who can start it, editors, viewers) in the same picker the
  * task form uses for Assignees & CC — without the CC role. The workflow keeps plain
  * id lists; chips are named from `names`, so saved people show even when they are no
  * longer offered by the picker, and can still be removed.
@@ -35,6 +35,8 @@ export default function PeoplePicker({
   invalid,
   placeholder,
   currentUser,
+  leading,
+  hiddenIds,
 }: {
   orgId: string
   ids: string[]
@@ -47,6 +49,10 @@ export default function PeoplePicker({
   invalid?: boolean
   placeholder?: string
   currentUser?: { user_id: string; name: string }
+  /** Fixed chips shown first (e.g. the creator, who is always an editor). */
+  leading?: React.ReactNode
+  /** People not offered (already covered by a fixed chip); dropped if picked anyway. */
+  hiddenIds?: string[]
 }) {
   // Names of people picked in this session, for anyone the members list lacks.
   const picked = useRef(new Map<string, string>())
@@ -67,7 +73,7 @@ export default function PeoplePicker({
         value={value}
         onChange={(next) => {
           next.forEach((a) => picked.current.set(a.user_id, a.name))
-          onChange(next.map((a) => a.user_id))
+          onChange(next.map((a) => a.user_id).filter((id) => !hiddenIds?.includes(id)))
         }}
         disabled={disabled}
         currentUser={currentUser}
@@ -76,6 +82,8 @@ export default function PeoplePicker({
         selfLabel="Add me"
         placeholder={placeholder}
         invalid={invalid}
+        leading={leading}
+        hiddenIds={hiddenIds}
       />
     </fieldset>
   )

@@ -434,6 +434,7 @@ export class PersonScorecardService {
         title: true,
         recurring_template_id: true,
         created_by_user_id: true,
+        workflow_instance_step_id: true, // workflow-created: "assigned by" the workflow, not its step's assigner
         deadline: true,
         original_deadline: true,        // the frozen grading baseline
         deadline_revision_count: true,  // revision transparency for the detail rows
@@ -574,7 +575,7 @@ export class PersonScorecardService {
             row.entries.push(this.entryRow(t, a, {
               frequency,
               department: deptOf.get(a.user_id) ?? null,
-              assignedBy: t.created_by_user_id ? creatorName.get(t.created_by_user_id) ?? null : null,
+              assignedBy: t.workflow_instance_step_id ? 'Workflow' : t.created_by_user_id ? creatorName.get(t.created_by_user_id) ?? null : null,
               deadline,
               completionDate,
               dateStatus,
@@ -614,7 +615,7 @@ export class PersonScorecardService {
           row.entries.push(this.entryRow(t, a, {
             frequency,
             department: deptOf.get(a.user_id) ?? null,
-            assignedBy: t.created_by_user_id ? creatorName.get(t.created_by_user_id) ?? null : null,
+            assignedBy: t.workflow_instance_step_id ? 'Workflow' : t.created_by_user_id ? creatorName.get(t.created_by_user_id) ?? null : null,
             deadline, completionDate, dateStatus, delayDays, daysLate, onTime, withdrawn: false,
             handedOverTo: heldNowBy,
           }));

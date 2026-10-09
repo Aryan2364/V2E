@@ -7,7 +7,8 @@ import { Principal } from '../access-rights/permissions.service';
 /**
  * Task object-level access (backend/AUTHORIZATION.md) for workflows v2:
  *  - escalation contacts (active TaskEscalation rows) may open the task;
- *  - for a workflow step task, participants of that run may open it;
+ *  - for a workflow step task, everyone who may see that instance may open it (the
+ *    workflow's editors and viewers, the person who ran it, everyone working in it);
  *  - comments and file uploads are gated by the same view rule;
  *  - everyone else still falls through to the data-scope check (fail closed).
  */
@@ -20,7 +21,7 @@ interface World {
   escalations: { task_id: string; escalate_to_user_id: string; is_active: boolean; organization_id: string }[];
   /** run row id → run id */
   rows: Record<string, string>;
-  run: { id: string; triggered_by_user_id: string | null; template: { created_by_user_id: string; owner_user_ids: string[]; editors: string[] } };
+  run: { id: string; triggered_by_user_id: string | null; template: { created_by_user_id: string; owner_user_ids: string[]; editors: string[]; viewers: string[] } };
   /** other tasks of the run (by id) with their live rosters */
   runTasks: { id: string; assignees: string[]; escalations: string[] }[];
 }
@@ -30,7 +31,7 @@ function makeWorld(over: Partial<World> = {}): World {
     task: { id: 'task-1', created_by_user_id: 'u-creator', workflow_instance_step_id: null, assignees: [{ user_id: 'u-worker', is_cc: false }] },
     escalations: [],
     rows: { 'row-1': 'run-1', 'row-2': 'run-1' },
-    run: { id: 'run-1', triggered_by_user_id: 'u-starter', template: { created_by_user_id: 'u-wf-creator', owner_user_ids: ['u-wf-owner'], editors: ['u-wf-editor'] } },
+    run: { id: 'run-1', triggered_by_user_id: 'u-starter', template: { created_by_user_id: 'u-wf-creator', owner_user_ids: ['u-wf-owner'], editors: ['u-wf-editor'], viewers: ['u-wf-viewer'] } },
     runTasks: [],
     ...over,
   };
@@ -99,7 +100,11 @@ function makePrisma(w: World) {
       template: {
         created_by_user_id: w.run.template.created_by_user_id,
         owner_user_ids: w.run.template.owner_user_ids,
-        access: w.run.template.editors.includes(asked) ? [{ access_type: 'edit' }] : [],
+        access: w.run.template.editors.includes(asked)
+          ? [{ access_type: 'edit' }]
+          : w.run.template.viewers.includes(asked)
+            ? [{ access_type: 'view' }]
+            : [],
       },
     };
   });
@@ -161,7 +166,7 @@ describe('TasksService — view gate (assertCanViewTask)', () => {
     );
   });
 
-  it('admits participants of the workflow run a step task belongs to', async () => {
+  it('admits everyone who may see the instance a step task belongs to (owners are retired)', async () => {
     const w = makeWorld({
       task: { id: 'task-1', created_by_user_id: 'u-creator', workflow_instance_step_id: 'row-1', assignees: [{ user_id: 'u-worker', is_cc: false }] },
       runTasks: [
@@ -169,11 +174,14 @@ describe('TasksService — view gate (assertCanViewTask)', () => {
         { id: 'task-2', assignees: ['u-other-step', 'u-cc-elsewhere'], escalations: ['u-esc-elsewhere'] },
       ],
     });
-    for (const who of ['u-wf-owner', 'u-wf-creator', 'u-wf-editor', 'u-starter', 'u-other-step', 'u-cc-elsewhere', 'u-esc-elsewhere']) {
+    for (const who of ['u-wf-creator', 'u-wf-editor', 'u-wf-viewer', 'u-starter', 'u-other-step', 'u-cc-elsewhere', 'u-esc-elsewhere']) {
       const { service, scope } = makeService(makePrisma(w));
       await expect(service.assertCanViewTask(ORG, principal(who), 'task-1')).resolves.toBeUndefined();
       expect(scope.assertCanActOn).not.toHaveBeenCalled();
     }
+    // A legacy owner who is not an editor no longer gets in through the workflow.
+    const { service } = makeService(makePrisma(w));
+    await expect(service.assertCanViewTask(ORG, principal('u-wf-owner'), 'task-1')).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('everyone else falls through to the data-scope check (fail closed)', async () => {

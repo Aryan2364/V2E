@@ -12,7 +12,7 @@ type Target = Pick<WorkflowTemplate, 'id' | 'name' | 'steps'>
 type ChangeKind = 'archived' | 'restored' | 'paused' | 'resumed'
 
 /**
- * Start / pause / resume / archive / restore for a workflow, shared by the list, My
+ * Run / pause / resume / archive / restore for a workflow, shared by the list, My
  * Workflows, the workflow page and the builder so they behave identically. Render
  * `dialogs` once.
  */
@@ -48,7 +48,7 @@ export function useWorkflowActions(orgId: string, onChanged: (change: { id: stri
       try {
         const updated = pause ? await workflowsApi.pauseWorkflow(orgId, w.id) : await workflowsApi.resumeWorkflow(orgId, w.id)
         addToast(
-          pause ? `“${w.name}” paused. Runs in progress continue.` : `“${w.name}” resumed`,
+          pause ? `“${w.name}” paused. Instances in progress continue.` : `“${w.name}” resumed`,
           'success',
         )
         onChanged({ id: w.id, kind: pause ? 'paused' : 'resumed', workflow: updated && typeof updated === 'object' && 'id' in updated ? updated : undefined })
@@ -81,7 +81,7 @@ export function useWorkflowActions(orgId: string, onChanged: (change: { id: stri
       <ConfirmDialog
         open={!!archiveTarget}
         title={`Archive “${archiveTarget?.name ?? ''}”?`}
-        message="No new runs will start. Runs in progress continue. You can restore it later."
+        message="No new instances will start. Instances in progress continue. You can restore it later."
         confirmLabel="Archive workflow"
         danger
         loading={archiving}

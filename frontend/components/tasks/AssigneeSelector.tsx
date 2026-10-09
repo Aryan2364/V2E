@@ -176,6 +176,10 @@ interface Props {
   selfLabel?: string
   /** Red border, for a required list that failed validation. */
   invalid?: boolean
+  /** Fixed chips shown first in the box (e.g. a workflow's creator, who can't be removed). */
+  leading?: React.ReactNode
+  /** People never offered in the picker (already covered by a fixed chip). */
+  hiddenIds?: string[]
 }
 
 export default function AssigneeSelector({
@@ -190,6 +194,8 @@ export default function AssigneeSelector({
   placeholder,
   selfLabel = 'Assign to me',
   invalid,
+  leading,
+  hiddenIds,
 }: Props) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -273,7 +279,7 @@ export default function AssigneeSelector({
   // The current user is offered via the dedicated "Assign to me" shortcut, so
   // drop them from the searchable list to avoid showing their own name twice.
   const departments = (data?.departments ?? [])
-    .map((d) => ({ ...d, users: d.users.filter((u) => u.user_id !== currentUser?.user_id) }))
+    .map((d) => ({ ...d, users: d.users.filter((u) => u.user_id !== currentUser?.user_id && !hiddenIds?.includes(u.user_id)) }))
     .filter((d) => d.users.length > 0)
   const visibleTotal = departments.reduce((n, d) => n + d.users.length, 0)
 
@@ -287,6 +293,7 @@ export default function AssigneeSelector({
           invalid ? 'border-[#FCA5A5] focus-within:border-[#DC2626]' : 'border-[#CBD5E1] focus-within:border-[#2563EB]'
         }`}
       >
+        {leading}
         {value.map((a) => (
           <AssigneeChip
             key={a.user_id}
@@ -296,7 +303,7 @@ export default function AssigneeSelector({
             onRemove={() => removeAssignee(a.user_id)}
           />
         ))}
-        {value.length === 0 && placeholder && (
+        {value.length === 0 && !leading && placeholder && (
           <span className="px-1.5 text-sm text-[#64748B]">{placeholder}</span>
         )}
         <button
@@ -382,7 +389,7 @@ export default function AssigneeSelector({
             {/* Panel body */}
             <div className="overflow-y-auto flex-1">
               {/* Assign to me shortcut — scrolls with the list */}
-              {currentUser && !selectedIds.has(currentUser.user_id) && (
+              {currentUser && !selectedIds.has(currentUser.user_id) && !hiddenIds?.includes(currentUser.user_id) && (
                 <button
                   type="button"
                   onClick={() => {

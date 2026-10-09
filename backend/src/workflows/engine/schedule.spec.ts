@@ -116,7 +116,7 @@ describe('workflow schedules (recurring-task format)', () => {
       'the end date can’t be before the start date.',
     )
     expect(scheduleEntryProblem({ ...base, end_condition: 'after_n', end_after: 0 })).toBe(
-      'enter how many runs it ends after (1 or more).',
+      'enter how many instances it ends after (1 or more).',
     )
   })
 })

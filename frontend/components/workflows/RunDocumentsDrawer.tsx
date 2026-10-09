@@ -118,7 +118,7 @@ export default function RunDocumentsDrawer({
 
   return (
     <>
-      <Sheet open={open} onClose={onClose} labelId="run-docs-title" title="Documents" eyebrow="This run" wide>
+      <Sheet open={open} onClose={onClose} labelId="run-docs-title" title="Instance documents" eyebrow="This instance" wide>
         {status === 'loading' || status === 'idle' ? (
           <div className="flex flex-col gap-3">
             <Skeleton className="h-20" />
@@ -133,7 +133,7 @@ export default function RunDocumentsDrawer({
             <section className="flex flex-col gap-3">
               <div>
                 <h3 className="flex items-center gap-1 text-[15px] font-semibold text-[#0F172A]">
-                  Run files <InfoTip label="Run files" text="Shared with everyone in this run." />
+                  Instance files <InfoTip label="Instance files" text="Shared with everyone in this instance." />
                 </h3>
               </div>
               {canUpload !== undefined && (
@@ -184,7 +184,7 @@ export default function RunDocumentsDrawer({
                   })}
                 </ul>
               ) : (
-                <p className="text-sm text-[#475569]">No run files yet.</p>
+                <p className="text-sm text-[#475569]">No instance files yet.</p>
               )}
             </section>
 

@@ -260,6 +260,11 @@ export interface Task {
     instance_name: string
     show_on_card: boolean
   }
+  /**
+   * Set on a task a workflow step created (batched by the server for lists and the
+   * detail): shown as the workflow badge instead of "Self" / "by <assigner>".
+   */
+  workflow?: TaskWorkflowRef | null
   reopen_expires_at?: string
   is_overdue?: boolean
   /** Attribution for the shared-status flow (any_can_complete). */
@@ -896,6 +901,8 @@ export interface WorkQuery {
   created_by_user_id?: string
   assignee_user_id?: string
   type?: string
+  /** 'true' = only tasks a workflow step created; 'false' = none of them. */
+  from_workflows?: 'true' | 'false'
   search?: string
   from_date?: string
   to_date?: string
@@ -1070,4 +1077,34 @@ export interface EmployeeAssigneePreview {
   departments: EmployeeAssigneeGroup[]
   removed: EmployeeAssigneeRemoved[]
   total: number
+}
+
+/** The workflow instance a step task belongs to — compact, for task lists and the detail. */
+export interface TaskWorkflowRef {
+  instance_id: string
+  template_id: string
+  /**
+   * The instance label: a manual instance's name, or the workflow's name for a scheduled
+   * one (the badge adds the date the instance started).
+   */
+  label: string
+  instance_number: number | null
+  /** "2", "B1". */
+  step_label: string | null
+  total_steps: number | null
+  /** Who ran it; null = started by a schedule. */
+  started_by_name: string | null
+  /** When the instance started (for the badge date). */
+  started_at?: string | null
+  /** Started by a schedule (no person ran it). */
+  is_scheduled?: boolean
+  /** 'manual' | 'schedule' … (older shape). */
+  trigger_type?: string | null
+  step_title?: string | null
+  template_name?: string | null
+  instance_name?: string | null
+  /** Who set the step up (its assigner), for "set up by …". */
+  set_up_by_name?: string | null
+  /** The viewer may open the instance page (null = not known for this response). */
+  can_open?: boolean | null
 }

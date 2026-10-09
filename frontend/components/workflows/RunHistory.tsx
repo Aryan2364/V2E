@@ -17,6 +17,7 @@ import {
   SkipForward,
   Undo2,
   CornerDownRight,
+  StickyNote,
   type LucideIcon,
 } from 'lucide-react'
 import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
@@ -42,9 +43,16 @@ const EVENT: Record<string, { Icon: LucideIcon; cls: string }> = {
   retried: { Icon: RefreshCw, cls: 'text-[#1D4ED8] bg-[#EFF6FF]' },
   file_added: { Icon: FilePlus2, cls: 'text-[#334155] bg-[#F1F5F9]' },
   file_removed: { Icon: FileX2, cls: 'text-[#334155] bg-[#F1F5F9]' },
+  note_added: { Icon: StickyNote, cls: 'text-[#92400E] bg-[#FEF3C7]' },
+  note_deleted: { Icon: StickyNote, cls: 'text-[#475569] bg-[#F1F5F9]' },
+  // Same events under their instance names.
+  instance_started: { Icon: PlayCircle, cls: 'text-[#1D4ED8] bg-[#EFF6FF]' },
+  instance_completed: { Icon: CheckCircle2, cls: 'text-[#15803D] bg-[#DCFCE7]' },
+  instance_cancelled: { Icon: Ban, cls: 'text-[#475569] bg-[#F1F5F9]' },
+  instance_stuck: { Icon: AlertTriangle, cls: 'text-[#B91C1C] bg-[#FEE2E2]' },
 }
 
-/** What happened in a run, newest first. `refreshKey` reloads it after an action. */
+/** What happened in an instance, newest first. `refreshKey` reloads it after an action. */
 export default function RunHistory({
   orgId,
   templateId,
@@ -56,7 +64,7 @@ export default function RunHistory({
   templateId: string
   instanceId: string
   refreshKey: number
-  /** Run row id → its number ("1", "B2"), to tag what each entry is about. */
+  /** Instance row id → its number ("1", "B2"), to tag what each entry is about. */
   stepLabels?: Map<string, string>
 }) {
   const [events, setEvents] = useState<WorkflowRunEvent[]>([])

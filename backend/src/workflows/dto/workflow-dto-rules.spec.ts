@@ -140,14 +140,20 @@ describe('definition / run-action DTOs', () => {
     expect(tracks([{ key: 'B', name: 'x'.repeat(41) }])).toContain('A path name can be at most 40 characters.')
   })
 
-  it('a definition needs a name and a mode; people need at least one owner', () => {
+  it('a definition needs a name and a mode; people are editors + optional viewers (owners ignored)', () => {
     expect(messages(SaveDefinitionDto, definition())).toEqual([])
     expect(messages(SaveDefinitionDto, definition({ name: '  ' }))).toContain('Enter a workflow name.')
     expect(messages(SaveDefinitionDto, definition({ mode: 'publish' }))).toContain("Mode must be 'draft' or 'save'.")
-    expect(messages(SaveDefinitionDto, definition({ people: { owner_user_ids: [], editor_user_ids: [] } }))).toContain(
-      'A workflow needs at least one owner.',
-    )
+    // No owner needed any more (the creator is always an editor); an older client's owner list still validates.
+    expect(messages(SaveDefinitionDto, definition({ people: { editor_user_ids: [] } }))).toEqual([])
     expect(messages(SaveDefinitionDto, definition({ people: { owner_user_ids: [U(1)], editor_user_ids: [] } }))).toEqual([])
+    expect(messages(SaveDefinitionDto, definition({ people: { editor_user_ids: [U(1)], viewer_user_ids: [U(2)] } }))).toEqual([])
+    expect(messages(SaveDefinitionDto, definition({ people: { editor_user_ids: [], viewer_user_ids: ['nope'] } }))).toContain(
+      'Each viewer must be a valid person.',
+    )
+    expect(messages(SaveDefinitionDto, definition({ people: { editor_user_ids: [], viewer_user_ids: [U(2), U(2)] } }))).toContain(
+      'Each viewer can be listed only once.',
+    )
   })
 
   it('schedules use the recurring-task shape', () => {

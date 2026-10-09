@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import React, { Fragment } from 'react'
-import { AlertTriangle, CheckCircle2, Clock, Info, Loader2, PlayCircle, Plus, RefreshCw, SearchX, Undo2, XCircle, type LucideIcon } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Clock, Info, Loader2, Lock, PlayCircle, Plus, RefreshCw, SearchX, Undo2, XCircle, type LucideIcon } from 'lucide-react'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { getNow } from '@/lib/clock'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import Tooltip from '@/components/ui/Tooltip'
 import { WEEKDAYS_LONG, WEEKDAYS_SHORT, fmtTime, ordinal, plural } from './format'
 import type {
+  PersonRef,
   RunDisplayStatus,
   WorkflowInstance,
   WorkflowSchedule,
@@ -20,8 +21,11 @@ import type {
 export const WORKFLOWS_BASE = '/dashboard/tasks/workflows'
 export const workflowHref = (id: string) => `${WORKFLOWS_BASE}/${id}`
 export const editHref = (id: string) => `${WORKFLOWS_BASE}/${id}/edit`
-/** The runs list lives on the workflow page. */
-export const runsHref = (id: string) => `${WORKFLOWS_BASE}/${id}#runs`
+/** The instances list lives on the workflow page. */
+export const instancesHref = (id: string) => `${WORKFLOWS_BASE}/${id}#instances`
+/** @deprecated Old name — the list is "Instances" now. */
+export const runsHref = instancesHref
+/** One instance's page. */
 export const runHref = (templateId: string, instanceId: string) => `${WORKFLOWS_BASE}/${templateId}/instances/${instanceId}`
 export const taskHref = (taskId: string) => `/dashboard/tasks/${taskId}`
 
@@ -29,14 +33,15 @@ export const taskHref = (taskId: string) => `/dashboard/tasks/${taskId}`
 
 export const REASONS = {
   preview: 'Workflows is in preview mode, so changes are turned off.',
-  edit: 'Only owners, editors and admins can do this.',
-  start: 'Only the people listed under “Who can start it” can start this workflow.',
+  edit: 'Only editors and admins can do this.',
+  start: 'Only the people listed under “Who can start it” can run this workflow.',
   startPaused: 'This workflow is paused. Resume it first.',
   startDraft: 'This workflow is a draft. Save it to make it live first.',
-  manageAccess: 'Only owners, the creator and admins can change who is involved.',
-  runActions: 'Only owners, editors and admins can manage runs.',
-  sendBack: 'Only this step’s assignees, owners and editors can send it back.',
-  upload: 'Only people in this run can add files.',
+  manageAccess: 'Only editors and admins can change who has access.',
+  runActions: 'Only editors and admins can manage instances.',
+  sendBack: 'Only this step’s assignees, editors and admins can send it back.',
+  upload: 'Only people in this instance can add files.',
+  note: 'Only people who can see this instance can add notes.',
 } as const
 
 /**
@@ -154,9 +159,9 @@ export function TemplateStatusBadge({ status }: { status: WorkflowTemplateStatus
 }
 
 /**
- * Run states as people see them. "Running" is in progress, not "Active" (kit §2.4
- * exception, recorded here: label Running, colour neutral-brand blue, because a run under
- * way is neither good nor bad yet).
+ * Instance states as people see them. "Running" is in progress, not "Active" (kit §2.4
+ * exception, recorded here: label Running, colour neutral-brand blue, because an instance
+ * under way is neither good nor bad yet).
  */
 export const RUN_STATUS: Record<RunDisplayStatus, { cls: string; label: string; Icon: LucideIcon }> = {
   running: { cls: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]', label: 'Running', Icon: PlayCircle },
@@ -457,7 +462,13 @@ export function Avatar({ name, size = 'sm' }: { name: string; size?: 'sm' | 'md'
   )
 }
 
-/** "Asha Rao, Vikram S +2" — owners by name, never ids. */
+/** The workflow's permanent editor: its creator (or whoever an admin handed that to). */
+export function creatorOf(w: Pick<WorkflowTemplate, 'people' | 'created_by' | 'created_by_user_id'> | null | undefined): PersonRef | null {
+  if (!w) return null
+  return w.people?.creator ?? w.created_by ?? (w.created_by_user_id ? { id: w.created_by_user_id, name: 'Unknown person' } : null)
+}
+
+/** "Asha Rao, Vikram S +2" — people by name, never ids. */
 export function namesSummary(people: { name: string }[], max = 2): string {
   if (!people.length) return '—'
   const shown = people.slice(0, max).map((p) => p.name).join(', ')
@@ -514,6 +525,22 @@ export function NotFoundState({ what, backHref, backLabel }: { what: string; bac
       </div>
       <h2 className="text-[18px] font-semibold text-[#0F172A] mb-1">{what} not found</h2>
       <p className="text-sm text-[#475569] max-w-md">It may have been removed, or you may not have access.</p>
+      <Link href={backHref} className={`${BTN.primary} mt-5`}>
+        {backLabel}
+      </Link>
+    </div>
+  )
+}
+
+/** A workflow (or instance) the viewer may not see: says so, with a way back. */
+export function NoAccessState({ title, text, backHref, backLabel }: { title: string; text: string; backHref: string; backLabel: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center text-center py-20 px-4">
+      <div className="w-14 h-14 rounded-[14px] bg-[#F1F5F9] flex items-center justify-center mb-4">
+        <Lock size={22} className="text-[#475569]" />
+      </div>
+      <h2 className="text-[18px] font-semibold text-[#0F172A] mb-1">{title}</h2>
+      <p className="text-sm text-[#475569] max-w-md">{text}</p>
       <Link href={backHref} className={`${BTN.primary} mt-5`}>
         {backLabel}
       </Link>
@@ -657,9 +684,9 @@ export function startsSummary(w: Pick<WorkflowTemplate, 'manual_start_enabled' |
 }
 
 /**
- * The Start button for a workflow: hidden when it can't be started by hand at all
- * ("Manually" off, or archived); otherwise disabled until a definite yes, with the reason
- * (paused, a draft, not chosen under "Manually", or the org's preview mode).
+ * The Run button for a workflow: hidden when it can't be run by hand at all ("Manually"
+ * off, or archived); otherwise disabled until a definite yes, with the reason (paused, a
+ * draft, not chosen under "Manually", or the org's preview mode).
  */
 export function startGate(
   w: Pick<WorkflowTemplate, 'status' | 'manual_start_enabled' | 'capabilities'>,

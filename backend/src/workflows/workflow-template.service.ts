@@ -34,6 +34,7 @@ import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee'
 import { ALLOWED_ATTACHMENT_EXTENSIONS, normaliseExtensions, type UploadedFile } from '../tasks/task-attachments.service'
 import { TasksService } from '../tasks/tasks.service'
 import { TimelineStepInput, WorkflowEngineService, isWaitingRow } from './workflow-engine.service'
+import { SCHEDULE_START } from './engine/schedule'
 import {
   MANUAL_START,
   ScheduleEntryLike,
@@ -95,7 +96,17 @@ import {
   sendBackTargets,
   stringIds,
 } from './step-graph'
-import { isRunParticipant, participantInstanceIds } from './run-access'
+import {
+  instanceNameKey,
+  isRunParticipant,
+  participantInstanceIds,
+  taskParticipantWhere,
+  tidyInstanceName,
+  workflowRoleOf,
+} from './run-access'
+import { instanceLabel } from './instance-label'
+import { INSTANCE_NAME_MAX, instanceNameTaken } from './workflow-engine.service'
+import { CreateInstanceNoteDto, NOTE_BODY_MAX } from './dto/instance-notes.dto'
 import {
   MAIN_TRACK,
   TrackProblem,
@@ -109,14 +120,25 @@ import { WorkflowFilesService } from './workflow-files.service'
 
 // ── Public shapes (workflows v2 spec §C) ──────────────────────────────────────
 
+/** The caller's role on a workflow (admin only when they have no role of their own). */
+export type WorkflowRole = 'creator' | 'editor' | 'viewer' | 'admin' | 'starter' | null
+
 export interface TemplateCapabilities {
+  /** Sees the design and ALL its instances: admins, editors (creator included) and viewers. */
   can_view: boolean
+  /** Edits the design, pauses/resumes/archives, manages instances: admins and editors. */
   can_edit: boolean
   /** May start it by hand NOW: a chosen starter, "Manually" is on, and it is Live. */
   can_trigger: boolean
+  /** Changes editors / viewers: admins and editors. */
   can_manage_access: boolean
+  /** "Change creator…" (⋯ menu): admins only. */
+  can_change_creator: boolean
   /** Is one of the people chosen under "Manually" (whatever the status). */
   is_starter: boolean
+  /** Created it — always an editor, can't be removed. */
+  is_creator: boolean
+  role: WorkflowRole
 }
 
 export interface InstanceCapabilities {
@@ -126,10 +148,12 @@ export interface InstanceCapabilities {
   can_skip: boolean
   /** Rows the caller may skip (in progress, late, or moved on). */
   can_skip_row_ids: string[]
-  /** May add run files (run participants). */
+  /** May add instance files: editors, admins, the person who ran it and people working in it (not viewers). */
   can_upload: boolean
-  /** May open the documents drawer (run participants). */
+  /** May open the documents drawer: everyone who can see the instance. */
   can_view_documents: boolean
+  /** May post an instance note: everyone who can see the instance. */
+  can_add_note: boolean
   /** Rows the caller may send back from (in progress, with a completed upstream step). */
   can_send_back_from: string[]
   /** Waiting rows (ready, before their start time) the caller may "Start now" (can_edit). */
@@ -183,8 +207,8 @@ export function overlapWarning(
   const years = new Set([end.year, next.year, ...(from ? [from.year] : [])])
   const word = (d: { year: number; month: number; day: number }) =>
     `${d.day} ${MONTHS_SHORT[d.month - 1]}${years.size > 1 ? ` ${d.year}` : ''}`
-  const which = from ? `the run on ${word(from)}` : 'this run'
-  return `Runs will overlap: ${which} ends ${word(end)}, the next starts ${word(next)}.`
+  const which = from ? `the instance on ${word(from)}` : 'this instance'
+  return `Instances will overlap: ${which} ends ${word(end)}, the next starts ${word(next)}.`
 }
 
 export type RunDisplayStatus =
@@ -243,6 +267,28 @@ export interface TaskSummary {
   comment_count: number
 }
 
+/** An instance note as the API returns it. */
+export interface NoteOut {
+  id: string
+  body: string
+  author: UserRef
+  created_at: Date
+  /** The later step it is for (null = the whole instance). */
+  for_row_id: string | null
+  for_step: { row_id: string; number_label: string | null; title: string; status: string } | null
+  /** The author, editors and admins may remove it. */
+  can_delete: boolean
+}
+
+type NoteRow = {
+  id: string
+  workflow_instance_id: string
+  author_user_id: string
+  body: string
+  for_instance_step_id: string | null
+  created_at: Date
+}
+
 /** The editable state of a step (v2 columns), resolved from a row and/or a DTO. */
 export interface StepState {
   title: string
@@ -287,9 +333,9 @@ interface ProposedStep {
 // ── Messages (403s say who may do it) ─────────────────────────────────────────
 
 const MSG_NOT_FOUND = 'Workflow not found'
-const MSG_RUN_NOT_FOUND = 'Run not found'
-const MSG_VIEW = "You don't have access to this workflow. Ask an owner to share it."
-const MSG_EDIT = 'Only owners, editors and admins can do this.'
+const MSG_RUN_NOT_FOUND = 'Instance not found'
+const MSG_VIEW = "You don't have access to this workflow."
+const MSG_EDIT = 'Only editors and admins can do this.'
 const MSG_TRIGGER = 'Only the people listed under “Who can start it” can start this workflow.'
 const MSG_PAUSED = 'This workflow is paused. Resume it to start it.'
 const MSG_DRAFT_START = 'This workflow is a draft. Save it to make it live.'
@@ -298,12 +344,19 @@ const MSG_SCHEDULE_ONLY = 'This workflow starts only on its schedule.'
 const MSG_CONFLICT = 'Someone else saved this workflow after you opened it. Reload to see their changes.'
 const MSG_PICK_STARTERS = 'Choose who can start this workflow.'
 const MSG_NO_START = 'Choose how this workflow starts.'
-const MSG_MANAGE = 'Only owners, the creator and admins can change who is involved.'
+const MSG_MANAGE = 'Only editors and admins can change who is involved.'
 const MSG_ARCHIVED = 'This workflow is archived. Restore it to make changes.'
-const MSG_INSTANCE_VIEW = "You don't have access to this run."
-const MSG_RUN_FILES = 'Only people involved in this run can see or add its documents.'
-const MSG_SEND_BACK = "Only this step's assignees, owners and editors can send it back."
-const MSG_REMOVE_FILE = 'Only the person who added this file, owners and editors can remove it.'
+const MSG_INSTANCE_VIEW = "You don't have access to this instance."
+const MSG_RUN_FILES = 'Only editors, admins and people working in this instance can add its documents.'
+const MSG_SEND_BACK = "Only this step's assignees, editors and admins can send it back."
+const MSG_REMOVE_FILE = 'Only the person who added this file, editors and admins can remove it.'
+const MSG_CHANGE_CREATOR = 'Only admins can change who created a workflow.'
+const MSG_NOTE_NOT_FOUND = 'Note not found'
+const MSG_REMOVE_NOTE = 'Only the person who wrote this note, editors and admins can remove it.'
+const MSG_NOTE_STEP = 'Choose a step of this instance that isn’t done or skipped.'
+const MSG_NAME_REQUIRED = 'Enter a name for this instance.'
+const MSG_NAME_TOO_LONG = `Keep the name to ${INSTANCE_NAME_MAX} characters or fewer.`
+const NOTE_LIST_LIMIT = 500
 
 const IN_FLIGHT: WorkflowInstanceStatus[] = ['running', 'stuck']
 const DEFAULT_TZ = 'Asia/Kolkata'
@@ -326,7 +379,6 @@ type AccessSubject = {
   id: string
   name: string
   status: WorkflowTemplateStatus
-  owner_user_ids: Prisma.JsonValue
   created_by_user_id: string
   /** Older callers/tests may omit it (= on). */
   manual_start_enabled?: boolean
@@ -338,7 +390,6 @@ const accessSelect = (userId: string) =>
     id: true,
     name: true,
     status: true,
-    owner_user_ids: true,
     created_by_user_id: true,
     manual_start_enabled: true,
     updated_at: true,
@@ -498,18 +549,24 @@ function runLanes(rows: InstanceStepRow[], deps: Map<string, string[]>) {
  * Workflow templates, steps, triggers, people and the read side of runs.
  *
  * AUTHORIZATION: the `workflows` permission module is leafless on purpose (see
- * permission-registry.ts) — row-level access is the template's own owner/grant
- * model, computed here by `capabilitiesFor` from the template row and the caller's
- * grants, with the app's admin bypass (`Principal.isAdmin` / super admin, the same
- * flag RolesGuard/@RequireAdmin use). Every `:id` route loads the template scoped by
+ * permission-registry.ts) — row-level access is the template's own people model,
+ * computed here by `capabilitiesFor` from the template row and the caller's grants,
+ * with the app's admin bypass (`Principal.isAdmin` / super admin, the same flag
+ * RolesGuard/@RequireAdmin use). Every `:id` route loads the template scoped by
  * `organization_id` (404 otherwise) and checks the capability; every sub-resource
- * (`:stepId`, `:triggerId`, `:iid`, `:rowId`, `:fileId`, `:userId`) is additionally
- * scoped to its parent id + org in the query.
+ * (`:iid`, `:rowId`, `:fileId`, `:noteId`) is additionally scoped to its parent id +
+ * org in the query.
  *
- * Runs: view = template `can_view` OR participant of the run (`run-access.ts`).
- * Documents/files = participants only (they are the run's working papers). Run state
- * is never written here — run actions delegate to the engine. The principal is
- * required (fail closed) — this service has no internal callers.
+ * People: editors = the creator (permanent) + `edit` grants; viewers = `view` grants;
+ * starters = `trigger` grants. Owners are retired from access.
+ *  - Design + ALL instances: admins, editors, viewers (`can_view`).
+ *  - One instance: those, plus the person who ran it and everyone working in it
+ *    (`run-access.ts`). They see all of it; they act only through the task gates
+ *    (their own step), comments, notes, and — not viewers — documents.
+ *  - Starters and people who only work in instances get a LIMITED workflow page
+ *    (`view: 'limited'`): no design, no people, only their own instances.
+ * Instance state is never written here — instance actions delegate to the engine.
+ * The principal is required (fail closed) — this service has no internal callers.
  */
 @Injectable()
 export class WorkflowTemplateService {
@@ -533,42 +590,47 @@ export class WorkflowTemplateService {
   }
 
   /**
-   * view: managers (admin / creator / owner), anyone with a grant, and every member
-   * once it is Live (active or paused). edit: managers + editors. Start by hand: ONLY
-   * the people chosen under "Manually" (`trigger` grants — owners, editors and admins
-   * are not starters unless listed), while "Manually" is on and it is active. Manage
-   * access (owners / editors): managers.
+   * view (design + all instances): admins, editors (the creator + `edit` grants) and
+   * viewers (`view` grants) — whatever the status. edit + manage people: admins and
+   * editors. Start by hand: ONLY the people chosen under "Manually" (`trigger` grants —
+   * editors and admins are not starters unless listed), while "Manually" is on and it
+   * is active. Change creator: admins.
    */
   capabilitiesFor(t: Omit<AccessSubject, 'id' | 'name'>, p: Principal): TemplateCapabilities {
-    const grants = t.access.map((a) => a.access_type)
-    const manager =
-      this.isAdmin(p) || t.created_by_user_id === p.userId || idsFromJson(t.owner_user_ids).includes(p.userId)
-    const hasEdit = grants.includes('edit')
-    const isStarter = grants.includes('trigger')
+    const admin = this.isAdmin(p)
+    const r = workflowRoleOf(t, p.userId)
     const manual = t.manual_start_enabled !== false
+    const role: WorkflowRole = r.isCreator
+      ? 'creator'
+      : r.isEditor
+        ? 'editor'
+        : r.isViewer
+          ? 'viewer'
+          : admin
+            ? 'admin'
+            : r.isStarter
+              ? 'starter'
+              : null
     return {
-      can_view: manager || grants.length > 0 || LIVE.includes(t.status),
-      can_edit: manager || hasEdit,
-      can_trigger: isStarter && manual && t.status === 'active',
-      can_manage_access: manager,
-      is_starter: isStarter,
+      can_view: admin || r.isEditor || r.isViewer,
+      can_edit: admin || r.isEditor,
+      can_trigger: r.isStarter && manual && t.status === 'active',
+      can_manage_access: admin || r.isEditor,
+      can_change_creator: admin,
+      is_starter: r.isStarter,
+      is_creator: r.isCreator,
+      role,
     }
   }
 
-  /** Load a template in this org (404 otherwise) and require `can_view`. */
-  private async loadTemplate(orgId: string, templateId: string, p: Principal) {
+  private async loadEditable(orgId: string, templateId: string, p: Principal, opts: { allowArchived?: boolean } = {}) {
     const t = await this.prisma.workflowTemplate.findFirst({
       where: { id: templateId, organization_id: orgId },
       select: accessSelect(p.userId),
     })
     if (!t) throw new NotFoundException(MSG_NOT_FOUND)
-    const caps = this.capabilitiesFor(t, p)
-    if (!caps.can_view) throw new ForbiddenException(MSG_VIEW)
-    return { t, caps }
-  }
-
-  private async loadEditable(orgId: string, templateId: string, p: Principal, opts: { allowArchived?: boolean } = {}) {
-    const loaded = await this.loadTemplate(orgId, templateId, p)
+    const loaded = { t, caps: this.capabilitiesFor(t, p) }
+    // People who see an instance but can't change the workflow get the "who may" answer.
     if (!loaded.caps.can_edit) throw new ForbiddenException(MSG_EDIT)
     if (!opts.allowArchived && loaded.t.status === 'archived') throw new BadRequestException(MSG_ARCHIVED)
     return loaded
@@ -767,9 +829,10 @@ export class WorkflowTemplateService {
    * Steps as the builder and the workflow page read them (escalation steps of the
    * old model are never returned). `escalation_contacts` is who a late task of this
    * step escalates to RIGHT NOW: the listed people ('people'); else the assignees'
-   * current managers ('manager'); else the workflow's owners ('owners_fallback').
+   * current managers ('manager'); else the workflow's editors ('owners_fallback' — the
+   * value is kept for compatibility; it means the editors now).
    */
-  private async formatSteps(orgId: string, steps: WorkflowStep[], p: Principal, ownerIds: string[], rawTracks: unknown = []) {
+  private async formatSteps(orgId: string, steps: WorkflowStep[], p: Principal, editorIds: string[], rawTracks: unknown = []) {
     const tracks = resolveStoredTracks(rawTracks, steps.filter((s) => !s.is_branch_step))
     // Display order: the tracks in order, each in its own order.
     const main = tracks.display
@@ -802,16 +865,16 @@ export class WorkflowTemplateService {
     const managerOf = new Map(
       profiles.filter((x) => !!x.reporting_to_user_id).map((x) => [x.user_id, x.reporting_to_user_id!]),
     )
-    const active = await this.activeMemberSet(orgId, [...managerOf.values(), ...ownerIds])
-    const activeOwners = ownerIds.filter((id) => active.has(id))
-    const fallbackOwners = activeOwners.length ? activeOwners : ownerIds
+    const active = await this.activeMemberSet(orgId, [...managerOf.values(), ...editorIds])
+    const activeEditors = editorIds.filter((id) => active.has(id))
+    const fallbackEditors = activeEditors.length ? activeEditors : editorIds
 
     const escalation = (st: StepState): { ids: string[]; from: EscalationResolvedFrom } => {
       if (st.escalation_mode === 'people') return { ids: st.escalation_user_ids, from: 'people' }
       const managers = unique(
         st.assignee_user_ids.map((a) => managerOf.get(a)).filter((m): m is string => !!m && active.has(m)),
       )
-      return managers.length ? { ids: managers, from: 'manager' } : { ids: fallbackOwners, from: 'owners_fallback' }
+      return managers.length ? { ids: managers, from: 'manager' } : { ids: fallbackEditors, from: 'owners_fallback' }
     }
     const resolved = new Map(main.map((s) => [s.id, escalation(states.get(s.id)!)]))
     const names = await this.userNames(
@@ -909,12 +972,12 @@ export class WorkflowTemplateService {
         where: { organization_id: orgId, workflow_template_id: { in: ids }, status: { in: IN_FLIGHT } },
         _count: { _all: true },
       }),
-      this.userNames(rows.flatMap((r) => [...idsFromJson(r.owner_user_ids), r.created_by_user_id])),
+      this.userNames(rows.map((r) => r.created_by_user_id)),
       needsSchedule ? this.scheduleContext(orgId) : Promise.resolve(null),
     ])
     const runningBy = new Map(running.map((g) => [g.workflow_template_id, g._count._all]))
     return rows.map((r) => {
-      const owners = idsFromJson(r.owner_user_ids)
+      const caps = this.capabilitiesFor(r, p)
       const schedules = this.formatSchedules(r.schedules, ctx)
       // The next scheduled run — only a Live, unpaused workflow fires its schedules.
       const nextRun =
@@ -938,10 +1001,11 @@ export class WorkflowTemplateService {
         created_by_user_id: r.created_by_user_id,
         created_at: r.created_at,
         updated_at: r.updated_at,
-        owner_user_ids: owners,
-        owners: this.refs(owners, names),
+        /** The creator — a permanent editor (admins can change it). */
         created_by: this.ref(r.created_by_user_id, names),
-        capabilities: this.capabilitiesFor(r, p),
+        capabilities: caps,
+        /** 'full' = design + all instances; 'limited' = only the caller's own instances (and Run, for a starter). */
+        view: caps.can_view ? ('full' as const) : ('limited' as const),
         _count: {
           steps: r._count.steps,
           instances: r._count.instances,
@@ -954,19 +1018,22 @@ export class WorkflowTemplateService {
   }
 
   /**
-   * People on the workflow page: owners, editors ("can change it"), starters (the
-   * people chosen under "Manually") and everyone involved (owners ∪ editors ∪
-   * starters ∪ every step's assignees, CCs and current escalation contacts) with
-   * their roles. Starters are their own list — an owner or editor may be one too.
+   * People on the workflow page: the creator (always an editor, can't be removed),
+   * editors (creator first), viewers, starters (the people chosen under "Manually")
+   * and everyone involved (editors ∪ viewers ∪ starters ∪ every step's assignees, CCs
+   * and current escalation contacts) with their roles. `is_active` = still an active
+   * member (an inactive creator stays the creator until an admin changes it).
    */
   private async buildPeople(
-    ownerIds: string[],
+    orgId: string,
+    creatorId: string,
     grants: { user_id: string; access_type: WorkflowAccessType }[],
     steps: Awaited<ReturnType<WorkflowTemplateService['formatSteps']>>,
     manualStartEnabled = true,
   ) {
-    const editorIds = unique(grants.filter((g) => g.access_type === 'edit').map((g) => g.user_id)).filter(
-      (id) => !ownerIds.includes(id),
+    const editorIds = unique([creatorId, ...grants.filter((g) => g.access_type === 'edit').map((g) => g.user_id)])
+    const viewerIds = unique(grants.filter((g) => g.access_type === 'view').map((g) => g.user_id)).filter(
+      (id) => !editorIds.includes(id),
     )
     const starterIds = unique(grants.filter((g) => g.access_type === 'trigger').map((g) => g.user_id))
     const roles = new Map<string, Set<string>>()
@@ -975,8 +1042,9 @@ export class WorkflowTemplateService {
       set.add(role)
       roles.set(id, set)
     }
-    for (const id of ownerIds) add(id, 'owner')
+    add(creatorId, 'creator')
     for (const id of editorIds) add(id, 'editor')
+    for (const id of viewerIds) add(id, 'viewer')
     // The starter list is kept while "Manually" is off (re-ticking restores it), but
     // nobody can actually start the workflow by hand then — don't label anyone so.
     if (manualStartEnabled) for (const id of starterIds) add(id, 'starter')
@@ -985,8 +1053,8 @@ export class WorkflowTemplateService {
       for (const id of s.cc_user_ids) add(id, 'cc')
       for (const c of s.escalation_contacts) add(c.id, 'escalation_contact')
     }
-    const names = await this.userNames(roles.keys())
-    const rank = (r: Set<string>) => (r.has('owner') ? 0 : r.has('editor') ? 1 : 2)
+    const [names, active] = await Promise.all([this.userNames(roles.keys()), this.activeMemberSet(orgId, [...editorIds, ...viewerIds])])
+    const rank = (r: Set<string>) => (r.has('creator') ? 0 : r.has('editor') ? 1 : r.has('viewer') ? 2 : 3)
     const involved = [...roles.entries()]
       .map(([id, r]) => ({ id, name: names.get(id) ?? 'Unknown user', roles: [...r] }))
       .sort(
@@ -994,9 +1062,11 @@ export class WorkflowTemplateService {
           rank(roles.get(a.id)!) - rank(roles.get(b.id)!) ||
           a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
       )
+    const person = (id: string) => ({ ...this.ref(id, names)!, is_active: active.has(id) })
     return {
-      owners: this.refs(ownerIds, names),
-      editors: this.refs(editorIds, names),
+      creator: person(creatorId),
+      editors: editorIds.map((id) => ({ ...person(id), is_creator: id === creatorId })),
+      viewers: viewerIds.map(person),
       starters: this.refs(starterIds, names),
       involved,
     }
@@ -1012,16 +1082,16 @@ export class WorkflowTemplateService {
         where: { workflow_template_id: templateId, organization_id: orgId, is_branch_step: false },
       }),
       this.prisma.workflowAccess.findMany({
-        where: { workflow_template_id: templateId, organization_id: orgId, access_type: { in: ['edit', 'trigger'] } },
+        where: { workflow_template_id: templateId, organization_id: orgId },
         select: { user_id: true, access_type: true },
         orderBy: { created_at: 'asc' },
       }),
     ])
     if (!row) throw new NotFoundException(MSG_NOT_FOUND)
     const [base] = await this.formatTemplates(orgId, [row], p)
-    const ownerIds = idsFromJson(row.owner_user_ids)
-    const formatted = await this.formatSteps(orgId, steps, p, ownerIds, row.tracks)
-    const people = await this.buildPeople(ownerIds, grants, formatted, row.manual_start_enabled !== false)
+    const editorIds = unique([row.created_by_user_id, ...grants.filter((g) => g.access_type === 'edit').map((g) => g.user_id)])
+    const formatted = await this.formatSteps(orgId, steps, p, editorIds, row.tracks)
+    const people = await this.buildPeople(orgId, row.created_by_user_id, grants, formatted, row.manual_start_enabled !== false)
     return { ...base, tracks: this.formatTracks(row.tracks, steps), steps: formatted, people }
   }
 
@@ -1029,7 +1099,11 @@ export class WorkflowTemplateService {
   // Formatting — runs
   // ════════════════════════════════════════════════════════════════════════════
 
-  private async formatInstances(orgId: string, rows: InstanceRow[], p: Principal) {
+  /**
+   * Instances as every list and the instance page read them. Every row passed in is
+   * one the caller may see. `opts.notes` (the instance page) adds each step's notes.
+   */
+  private async formatInstances(orgId: string, rows: InstanceRow[], p: Principal, opts: { notes?: boolean } = {}) {
     if (!rows.length) return []
     const allSteps = rows.flatMap((r) => r.steps)
     const legacyStepIds = unique(allSteps.filter((s) => !readSnapshot(s.step_snapshot)).map((s) => s.workflow_step_id))
@@ -1074,7 +1148,7 @@ export class WorkflowTemplateService {
               created_by_user_id: true,
               status: { select: { label: true, type: true, color: true } },
               assignees: { where: ACTIVE_ASSIGNEE, select: { user_id: true, is_cc: true } },
-              escalations: { where: { is_active: true, escalate_to_user_id: p.userId }, select: { id: true } },
+              escalations: { where: { escalate_to_user_id: p.userId }, select: { id: true } },
               _count: { select: { comments: { where: { is_deleted: false } } } },
             },
           })
@@ -1100,10 +1174,22 @@ export class WorkflowTemplateService {
     ])
     const liveById = new Map(liveSteps.map((s) => [s.id, s]))
     const taskById = new Map(tasks.map((t) => [t.id, t]))
+    const [{ tz, now }, notes] = await Promise.all([
+      this.scheduleContext(orgId),
+      opts.notes ? this.loadNotes(orgId, rows.map((r) => r.id)) : Promise.resolve([] as NoteRow[]),
+    ])
+    const notesByRow = new Map<string, NoteRow[]>()
+    for (const n of notes) {
+      if (!n.for_instance_step_id) continue
+      const list = notesByRow.get(n.for_instance_step_id) ?? []
+      list.push(n)
+      notesByRow.set(n.for_instance_step_id, list)
+    }
     const names = await this.userNames([
       ...tasks.flatMap((t) => t.assignees.map((a) => a.user_id)),
       ...allSteps.map((s) => s.assigned_to_user_id),
       ...rows.map((r) => r.triggered_by_user_id),
+      ...notes.map((n) => n.author_user_id),
     ])
     const checklistBy = new Map<string, typeof checklist>()
     for (const c of checklist) {
@@ -1213,19 +1299,30 @@ export class WorkflowTemplateService {
           assignees: this.refs(roster.filter((a) => !a.is_cc).map((a) => a.user_id), names),
           ccs: this.refs(roster.filter((a) => a.is_cc).map((a) => a.user_id), names),
           task: summarize(s.task_id),
+          ...(opts.notes
+            ? {
+                /** Notes left for this step, newest first. */
+                notes: (notesByRow.get(s.id) ?? []).map((n) =>
+                  this.noteOut(n, names, tcaps.can_edit, p, {
+                    row_id: s.id,
+                    number_label: lanes.labels.get(s.id) ?? null,
+                    title: snap?.title ?? live?.title ?? 'Deleted step',
+                    status: s.status,
+                  }),
+                ),
+              }
+            : {}),
         }
       })
       type Row = (typeof steps)[number]
       const main = steps.filter((s) => !s.is_branch)
 
-      // Participant (computed from what is already loaded — same definition as run-access.ts).
+      // Works in it / ran it (computed from what is already loaded — same definition as
+      // run-access.ts; withdrawn tasks count). Viewers see everything but change nothing.
       const runTasks = inst.steps.map((s) => (s.task_id ? taskById.get(s.task_id) : undefined))
-      const participant =
-        tcaps.can_edit ||
+      const worksInIt =
         inst.triggered_by_user_id === p.userId ||
-        runTasks.some(
-          (t) => !!t && !t.is_deleted && (t.assignees.some((a) => a.user_id === p.userId) || t.escalations.length > 0),
-        )
+        runTasks.some((t) => !!t && (t.assignees.some((a) => a.user_id === p.userId) || t.escalations.length > 0))
 
       const isWorker = (r: Row) => {
         const t = r.task_id ? taskById.get(r.task_id) : undefined
@@ -1270,10 +1367,16 @@ export class WorkflowTemplateService {
 
       return {
         id: inst.id,
+        /** "Instance #12" — numbered per workflow in start order. */
+        instance_number: inst.instance_number,
         name: inst.name,
+        /** The badge label: "<instance name> · 3 Nov" (manual) / "<workflow name> · 3 Nov" (schedule). */
+        label: instanceLabel(inst, inst.template.name, tz, now),
         status: inst.status,
         display_status: display,
         trigger_type: inst.trigger_type,
+        /** Started by a schedule (no person ran it). */
+        is_scheduled: inst.trigger_type === SCHEDULE_START,
         started_at: inst.started_at,
         completed_at: inst.completed_at,
         last_error: inst.last_error,
@@ -1284,8 +1387,9 @@ export class WorkflowTemplateService {
           can_retry: tcaps.can_edit && inFlight && stranded,
           can_skip: skippable.length > 0,
           can_skip_row_ids: skippable,
-          can_upload: participant,
-          can_view_documents: participant,
+          can_upload: tcaps.can_edit || worksInIt,
+          can_view_documents: true,
+          can_add_note: true,
           can_send_back_from: canSendBackFrom,
           can_start_now_row_ids: startNow,
         } satisfies InstanceCapabilities,
@@ -1310,15 +1414,23 @@ export class WorkflowTemplateService {
   // Templates
   // ════════════════════════════════════════════════════════════════════════════
 
+  /**
+   * The workflows list: everything for admins; otherwise the workflows the caller
+   * edits (creator included) or views, plus — as `view: 'limited'` — Live workflows
+   * they may start by hand. People who only work in instances don't see it listed.
+   */
   async listTemplates(orgId: string, includeArchived: boolean, p: Principal) {
     const visibility: Prisma.WorkflowTemplateWhereInput = this.isAdmin(p)
       ? {}
       : {
           OR: [
             { created_by_user_id: p.userId },
-            { owner_user_ids: { array_contains: [p.userId] } },
-            { access: { some: { user_id: p.userId, organization_id: orgId } } },
-            { status: { in: LIVE } },
+            { access: { some: { user_id: p.userId, organization_id: orgId, access_type: { in: ['edit', 'view'] } } } },
+            {
+              status: { in: LIVE },
+              manual_start_enabled: true,
+              access: { some: { user_id: p.userId, organization_id: orgId, access_type: 'trigger' } },
+            },
           ],
         }
     const rows = await this.prisma.workflowTemplate.findMany({
@@ -1333,9 +1445,64 @@ export class WorkflowTemplateService {
     return this.formatTemplates(orgId, rows, p)
   }
 
+  /**
+   * The workflow page. Admins, editors and viewers get the whole design (`view:
+   * 'full'`). A starter of a Live workflow, or someone who ran / works in one of its
+   * instances, gets the LIMITED page (`view: 'limited'`): name, status, capabilities
+   * (Run) — no steps, people or schedules; their own instances come from
+   * `GET /:id/instances`. Anyone else: 403 "You don't have access to this workflow."
+   */
   async getTemplate(orgId: string, templateId: string, p: Principal) {
-    await this.loadTemplate(orgId, templateId, p)
-    return this.templateDetail(orgId, templateId, p)
+    const t = await this.prisma.workflowTemplate.findFirst({
+      where: { id: templateId, organization_id: orgId },
+      select: accessSelect(p.userId),
+    })
+    if (!t) throw new NotFoundException(MSG_NOT_FOUND)
+    const caps = this.capabilitiesFor(t, p)
+    if (caps.can_view) return this.templateDetail(orgId, templateId, p)
+    const mine = await participantInstanceIds(this.prisma, orgId, p.userId, { templateId, includeStarted: true })
+    const startable = caps.is_starter && LIVE.includes(t.status) && t.manual_start_enabled !== false
+    if (!mine.length && !startable) throw new ForbiddenException(MSG_VIEW)
+    return this.limitedDetail(orgId, templateId, p, mine)
+  }
+
+  /** The workflow page for someone without design access (see `getTemplate`). */
+  private async limitedDetail(orgId: string, templateId: string, p: Principal, mine: string[]) {
+    const row = await this.prisma.workflowTemplate.findFirst({
+      where: { id: templateId, organization_id: orgId },
+      include: templateInclude(p.userId),
+    })
+    if (!row) throw new NotFoundException(MSG_NOT_FOUND)
+    const running = mine.length
+      ? await this.prisma.workflowInstance.count({
+          where: { id: { in: mine }, workflow_template_id: templateId, organization_id: orgId, status: { in: IN_FLIGHT } },
+        })
+      : 0
+    const names = await this.userNames([row.created_by_user_id])
+    return {
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      status: row.status,
+      is_live: LIVE.includes(row.status),
+      manual_start_enabled: row.manual_start_enabled,
+      workflow_nature: row.workflow_nature,
+      recurring_type: row.recurring_type,
+      show_workflow_on_task_card: row.show_workflow_on_task_card,
+      created_by_user_id: row.created_by_user_id,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      created_by: this.ref(row.created_by_user_id, names),
+      capabilities: this.capabilitiesFor(row, p),
+      view: 'limited' as const,
+      /** Counts of the caller's OWN instances only. */
+      _count: { steps: 0, instances: mine.length, running_instances: running },
+      schedules: [],
+      next_run_at: null,
+      tracks: [],
+      steps: [],
+      people: null,
+    }
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -1391,37 +1558,41 @@ export class WorkflowTemplateService {
             where: { workflow_template_id: templateId, organization_id: orgId },
           }),
           this.prisma.workflowAccess.findMany({
-            where: { workflow_template_id: templateId, organization_id: orgId, access_type: { in: ['edit', 'trigger'] } },
+            where: { workflow_template_id: templateId, organization_id: orgId },
             select: { user_id: true, access_type: true },
           }),
         ])
       : [[] as WorkflowStep[], [] as WorkflowScheduleEntry[], [] as { user_id: string; access_type: WorkflowAccessType }[]]
 
-    // ── People: owners + editors (manage access) ──
-    const curOwners = t ? idsFromJson(t.owner_user_ids) : [p.userId]
+    // ── People: editors + viewers (the creator is always an editor, never stored as a grant) ──
+    const creatorId = t ? t.created_by_user_id : p.userId
     const curEditors = unique(grants.filter((g) => g.access_type === 'edit').map((g) => g.user_id)).filter(
-      (id) => !curOwners.includes(id),
+      (id) => id !== creatorId,
     )
-    let owners = curOwners
+    const curViewers = unique(grants.filter((g) => g.access_type === 'view').map((g) => g.user_id)).filter(
+      (id) => id !== creatorId && !curEditors.includes(id),
+    )
     let editors = curEditors
+    let viewers = curViewers
     if (dto.people) {
-      const nextOwners = unique(dto.people.owner_user_ids)
-      const nextEditors = unique(dto.people.editor_user_ids).filter((id) => !nextOwners.includes(id))
-      if (!sameSet(nextOwners, curOwners) || !sameSet(nextEditors, curEditors)) {
-        // A creator always manages their new workflow; otherwise owners / creator / admins.
+      // Listing the creator (or not) changes nothing: they can't be removed.
+      const nextEditors = unique(dto.people.editor_user_ids).filter((id) => id !== creatorId)
+      const nextViewers =
+        dto.people.viewer_user_ids === undefined
+          ? curViewers.filter((id) => !nextEditors.includes(id))
+          : unique(dto.people.viewer_user_ids).filter((id) => id !== creatorId && !nextEditors.includes(id))
+      if (!sameSet(nextEditors, curEditors) || !sameSet(nextViewers, curViewers)) {
+        // Editors and admins manage people (a creator always may on a new workflow).
         if (loaded && !loaded.caps.can_manage_access) throw new ForbiddenException(MSG_MANAGE)
-        const known = new Set([...curOwners, ...curEditors])
+        const known = new Set([...curEditors, ...curViewers])
         await assertActiveOrgMembers(
           this.prisma,
           orgId,
-          [...nextOwners, ...nextEditors].filter((id) => !known.has(id)),
+          [...nextEditors, ...nextViewers].filter((id) => !known.has(id)),
           'people you added',
         )
-        if ((await this.activeMemberSet(orgId, nextOwners)).size === 0) {
-          throw new BadRequestException('Add at least one active owner.')
-        }
-        owners = nextOwners
         editors = nextEditors
+        viewers = nextViewers
       }
     }
 
@@ -1438,8 +1609,8 @@ export class WorkflowTemplateService {
         'people who can start it',
       )
     } else {
-      // A new workflow starts with its owners as its starters.
-      starters = curStarters ?? owners
+      // A new workflow starts with its creator as its starter.
+      starters = curStarters ?? [creatorId]
     }
     const manual = dto.starts.manual.enabled
 
@@ -1543,7 +1714,8 @@ export class WorkflowTemplateService {
             organization_id: orgId,
             name: dto.name,
             description,
-            owner_user_ids: owners,
+            // Back-compat only (owners are retired from access).
+            owner_user_ids: [p.userId],
             created_by_user_id: p.userId,
             status: nextStatus,
             manual_start_enabled: manual,
@@ -1562,7 +1734,6 @@ export class WorkflowTemplateService {
           data: {
             name: dto.name,
             description,
-            owner_user_ids: owners,
             status: nextStatus,
             manual_start_enabled: manual,
             workflow_nature: nature.workflow_nature,
@@ -1575,7 +1746,7 @@ export class WorkflowTemplateService {
       }
       await this.applySteps(tx, orgId, id, p.userId, proposed, existingSteps, assignersActive)
       await this.applySchedules(tx, orgId, id, schedules, existingSchedules, orgNow, goingLive)
-      await this.applyGrants(tx, orgId, id, grants, editors, starters)
+      await this.applyGrants(tx, orgId, id, grants, editors, viewers, starters)
       return id
     })
 
@@ -1925,19 +2096,21 @@ export class WorkflowTemplateService {
     })
   }
 
-  /** Editors (`edit` grants) and starters (`trigger` grants) → exactly these lists. */
+  /** Editors (`edit`), viewers (`view`) and starters (`trigger`) → exactly these lists. */
   private async applyGrants(
     tx: Tx,
     orgId: string,
     templateId: string,
     current: { user_id: string; access_type: WorkflowAccessType }[],
     editors: string[],
+    viewers: string[],
     starters: string[],
   ) {
     const has = (type: WorkflowAccessType, id: string) => current.some((g) => g.access_type === type && g.user_id === id)
     const drop = current.filter(
       (g) =>
         (g.access_type === 'edit' && !editors.includes(g.user_id)) ||
+        (g.access_type === 'view' && !viewers.includes(g.user_id)) ||
         (g.access_type === 'trigger' && !starters.includes(g.user_id)),
     )
     if (drop.length) {
@@ -1951,6 +2124,7 @@ export class WorkflowTemplateService {
     }
     const add = [
       ...editors.filter((id) => !has('edit', id)).map((user_id) => ({ user_id, access_type: 'edit' as WorkflowAccessType })),
+      ...viewers.filter((id) => !has('view', id)).map((user_id) => ({ user_id, access_type: 'view' as WorkflowAccessType })),
       ...starters
         .filter((id) => !has('trigger', id))
         .map((user_id) => ({ user_id, access_type: 'trigger' as WorkflowAccessType })),
@@ -2363,10 +2537,14 @@ export class WorkflowTemplateService {
   // My workflows
   // ════════════════════════════════════════════════════════════════════════════
 
+  /** Workflows the caller edits: created it, or holds an `edit` grant. */
   private ownedWhere(orgId: string, userId: string): Prisma.WorkflowTemplateWhereInput {
     return {
       organization_id: orgId,
-      OR: [{ created_by_user_id: userId }, { owner_user_ids: { array_contains: [userId] } }],
+      OR: [
+        { created_by_user_id: userId },
+        { access: { some: { user_id: userId, organization_id: orgId, access_type: 'edit' } } },
+      ],
     }
   }
 
@@ -2389,9 +2567,12 @@ export class WorkflowTemplateService {
     return this.formatInstances(orgId, rows, p)
   }
 
-  /** Running runs in which the caller is a (non-CC) assignee of a step task. */
+  /**
+   * "Instances I work in": running instances in which the caller is an assignee, CC or
+   * escalation contact of a step task.
+   */
   async getAssignedInstances(orgId: string, p: Principal) {
-    const ids = await participantInstanceIds(this.prisma, orgId, p.userId, { assigneesOnly: true })
+    const ids = await participantInstanceIds(this.prisma, orgId, p.userId)
     if (!ids.length) return []
     const rows = await this.prisma.workflowInstance.findMany({
       where: { id: { in: ids }, organization_id: orgId, status: { in: IN_FLIGHT } },
@@ -2407,8 +2588,10 @@ export class WorkflowTemplateService {
   // ════════════════════════════════════════════════════════════════════════════
 
   /**
-   * Run gate: `can_view` on its template OR a participant of the run. Scoped by
-   * org + parent template id (404 otherwise).
+   * Instance gate: `can_view` on its workflow (admins, editors, viewers) OR the person
+   * who ran it OR someone working in it (`run-access.ts`). Scoped by org + parent
+   * template id (404 otherwise). `mayAct()` = may add documents: anyone who can see
+   * it except a pure viewer.
    */
   private async loadInstance(orgId: string, templateId: string, instanceId: string, p: Principal) {
     const inst = await this.prisma.workflowInstance.findFirst({
@@ -2417,30 +2600,55 @@ export class WorkflowTemplateService {
     })
     if (!inst) throw new NotFoundException(MSG_RUN_NOT_FOUND)
     const caps = this.capabilitiesFor(inst.template, p)
-    let participantCache: boolean | null = null
-    const isParticipant = async () => {
-      if (participantCache === null) {
-        participantCache = caps.can_edit || (await isRunParticipant(this.prisma, orgId, instanceId, p.userId))
-      }
-      return participantCache
+    if (!caps.can_view && !(await isRunParticipant(this.prisma, orgId, instanceId, p.userId))) {
+      throw new ForbiddenException(MSG_INSTANCE_VIEW)
     }
-    if (!caps.can_view && !(await isParticipant())) throw new ForbiddenException(MSG_INSTANCE_VIEW)
-    return { inst, caps, isParticipant }
+    let actCache: boolean | null = null
+    const mayAct = async () => {
+      if (actCache === null) {
+        actCache =
+          caps.can_edit ||
+          inst.triggered_by_user_id === p.userId ||
+          (await this.worksInInstance(orgId, instanceId, p.userId))
+      }
+      return actCache
+    }
+    return { inst, caps, mayAct }
   }
 
-  /** Run documents/files: participants only. */
-  private async loadRunForFiles(orgId: string, templateId: string, instanceId: string, p: Principal) {
+  /** Is the caller on any task of the instance (assignee / CC / escalation contact)? */
+  private async worksInInstance(orgId: string, instanceId: string, userId: string): Promise<boolean> {
+    const rows = await this.prisma.workflowInstanceStep.findMany({
+      where: { workflow_instance_id: instanceId, organization_id: orgId, task_id: { not: null } },
+      select: { task_id: true },
+    })
+    const taskIds = unique(rows.map((r) => r.task_id).filter((x): x is string => !!x))
+    if (!taskIds.length) return false
+    const hit = await this.prisma.task.findFirst({
+      where: { id: { in: taskIds }, organization_id: orgId, ...taskParticipantWhere(userId) },
+      select: { id: true },
+    })
+    return !!hit
+  }
+
+  /** Adding instance documents: everyone who can see it except a pure viewer. */
+  private async loadRunForUpload(orgId: string, templateId: string, instanceId: string, p: Principal) {
     const loaded = await this.loadInstance(orgId, templateId, instanceId, p)
-    if (!(await loaded.isParticipant())) throw new ForbiddenException(MSG_RUN_FILES)
+    if (!(await loaded.mayAct())) throw new ForbiddenException(MSG_RUN_FILES)
     return loaded
   }
 
   private async instanceDetail(orgId: string, templateId: string, instanceId: string, p: Principal) {
     const { inst } = await this.loadInstance(orgId, templateId, instanceId, p)
-    const [out] = await this.formatInstances(orgId, [inst], p)
+    const [out] = await this.formatInstances(orgId, [inst], p, { notes: true })
     return out
   }
 
+  /**
+   * A workflow's instances. Admins, editors and viewers: all of them. Others: only the
+   * instances they ran or work in ("My instances of this workflow") — a starter with
+   * none gets an empty list; anyone else with none gets 403.
+   */
   async listInstances(orgId: string, templateId: string, p: Principal) {
     const t = await this.prisma.workflowTemplate.findFirst({
       where: { id: templateId, organization_id: orgId },
@@ -2448,14 +2656,12 @@ export class WorkflowTemplateService {
     })
     if (!t) throw new NotFoundException(MSG_NOT_FOUND)
     const caps = this.capabilitiesFor(t, p)
-    // Without template access, a caller only sees the runs they're involved in.
-    const visible: Prisma.WorkflowInstanceWhereInput = caps.can_view
-      ? {}
-      : {
-          id: {
-            in: await participantInstanceIds(this.prisma, orgId, p.userId, { templateId, includeStarted: true }),
-          },
-        }
+    let visible: Prisma.WorkflowInstanceWhereInput = {}
+    if (!caps.can_view) {
+      const mine = await participantInstanceIds(this.prisma, orgId, p.userId, { templateId, includeStarted: true })
+      if (!mine.length && !caps.is_starter) throw new ForbiddenException(MSG_VIEW)
+      visible = { id: { in: mine } }
+    }
     const rows = await this.prisma.workflowInstance.findMany({
       where: { workflow_template_id: templateId, organization_id: orgId, ...visible },
       include: instanceInclude(p.userId),
@@ -2507,24 +2713,39 @@ export class WorkflowTemplateService {
   }
 
   /**
-   * Start a run by hand. Only while Live (not paused), only when "Manually" is on, and
-   * only by the people chosen under "Manually".
+   * Run (start an instance by hand). Only while Live (not paused), only when "Manually"
+   * is on, and only by the people chosen under "Manually" — a starter may run it
+   * without design access. The instance name is required (trimmed, inner spaces
+   * collapsed, 1–80 characters) and unique within the workflow, case- and space-
+   * insensitively; every name error is a 400 `{ message, code, field: 'name' }`. The
+   * engine re-checks the name under the workflow's lock (authoritative).
    */
   async triggerInstance(orgId: string, templateId: string, name: string | undefined, p: Principal) {
-    const { t, caps } = await this.loadTemplate(orgId, templateId, p)
+    const t = await this.prisma.workflowTemplate.findFirst({
+      where: { id: templateId, organization_id: orgId },
+      select: accessSelect(p.userId),
+    })
+    if (!t) throw new NotFoundException(MSG_NOT_FOUND)
+    const caps = this.capabilitiesFor(t, p)
+    if (!caps.can_view && !caps.is_starter) throw new ForbiddenException(MSG_VIEW)
     if (t.status === 'archived') throw new BadRequestException(MSG_ARCHIVED_START)
     if (t.status === 'draft') throw new BadRequestException(MSG_DRAFT_START)
     if (t.status === 'paused') throw new BadRequestException(MSG_PAUSED)
     if (t.manual_start_enabled === false) throw new BadRequestException(MSG_SCHEDULE_ONLY)
     if (!caps.can_trigger) throw new ForbiddenException(MSG_TRIGGER)
-    const trimmed = name?.trim()
-    const created = await this.engine.createInstance(
-      orgId,
-      templateId,
-      MANUAL_START,
-      trimmed ? { name: trimmed } : {},
-      p.userId,
-    )
+    const typed = tidyInstanceName(typeof name === 'string' ? name : '')
+    if (!typed) {
+      throw new BadRequestException({ message: MSG_NAME_REQUIRED, code: 'instance_name_required', field: 'name' })
+    }
+    if (typed.length > INSTANCE_NAME_MAX) {
+      throw new BadRequestException({ message: MSG_NAME_TOO_LONG, code: 'instance_name_too_long', field: 'name' })
+    }
+    const clash = await this.prisma.workflowInstance.findFirst({
+      where: { workflow_template_id: templateId, organization_id: orgId, name_key: instanceNameKey(typed) },
+      select: { id: true },
+    })
+    if (clash) throw instanceNameTaken()
+    const created = await this.engine.createInstance(orgId, templateId, MANUAL_START, { name: typed }, p.userId)
     return this.instanceDetail(orgId, templateId, created.id, p)
   }
 
@@ -2558,7 +2779,7 @@ export class WorkflowTemplateService {
         where: { id: rowId, workflow_instance_id: instanceId, organization_id: orgId },
         select: { id: true },
       })
-      if (!row) throw new NotFoundException('Step not found in this run')
+      if (!row) throw new NotFoundException('Step not found in this instance')
     }
     await this.engine.skipStep(orgId, instanceId, p.userId, rowId)
     return this.instanceDetail(orgId, templateId, instanceId, p)
@@ -2575,7 +2796,7 @@ export class WorkflowTemplateService {
       where: { id: rowId, workflow_instance_id: instanceId, organization_id: orgId },
       select: { id: true },
     })
-    if (!row) throw new NotFoundException('Step not found in this run')
+    if (!row) throw new NotFoundException('Step not found in this instance')
     await this.engine.startStepNow(orgId, instanceId, rowId, p.userId)
     return this.instanceDetail(orgId, templateId, instanceId, p)
   }
@@ -2583,7 +2804,7 @@ export class WorkflowTemplateService {
   /** A row of this run (scoped by run + org), or 404. */
   private rowOf(inst: InstanceRow, rowId: string): InstanceStepRow {
     const row = inst.steps.find((s) => s.id === rowId)
-    if (!row || isLegacyBranchRow(row)) throw new NotFoundException('Step not found in this run')
+    if (!row || isLegacyBranchRow(row)) throw new NotFoundException('Step not found in this instance')
     return row
   }
 
@@ -2634,7 +2855,7 @@ export class WorkflowTemplateService {
   async sendBack(orgId: string, templateId: string, instanceId: string, rowId: string, dto: SendBackDto, p: Principal) {
     const { inst, caps } = await this.loadInstance(orgId, templateId, instanceId, p)
     const row = this.rowOf(inst, rowId)
-    if (!IN_FLIGHT.includes(inst.status)) throw new BadRequestException('This run has finished, so it can’t be sent back.')
+    if (!IN_FLIGHT.includes(inst.status)) throw new BadRequestException('This instance has finished, so it can’t be sent back.')
     if (!caps.can_edit && !(await this.isRowWorker(orgId, row.task_id, p.userId))) {
       throw new ForbiddenException(MSG_SEND_BACK)
     }
@@ -2671,9 +2892,9 @@ export class WorkflowTemplateService {
     }))
   }
 
-  /** Every step's files (proof-visibility filtered) + the run's own files. */
+  /** Every step's files (proof-visibility filtered) + the instance's own files: everyone who can see it. */
   async getDocuments(orgId: string, templateId: string, instanceId: string, p: Principal) {
-    const { inst } = await this.loadRunForFiles(orgId, templateId, instanceId, p)
+    const { inst } = await this.loadInstance(orgId, templateId, instanceId, p)
     const rows = inst.steps
       .filter((s) => !isLegacyBranchRow(s))
       .sort(byDisplayOrder)
@@ -2682,16 +2903,16 @@ export class WorkflowTemplateService {
   }
 
   async uploadRunFile(orgId: string, templateId: string, instanceId: string, file: UploadedFile | undefined, p: Principal) {
-    await this.loadRunForFiles(orgId, templateId, instanceId, p)
+    await this.loadRunForUpload(orgId, templateId, instanceId, p)
     return this.files.upload(orgId, p.userId, instanceId, file)
   }
 
   async downloadRunFile(orgId: string, templateId: string, instanceId: string, fileId: string, p: Principal) {
-    await this.loadRunForFiles(orgId, templateId, instanceId, p)
+    await this.loadInstance(orgId, templateId, instanceId, p)
     return this.files.getDownloadUrl(orgId, instanceId, fileId)
   }
 
-  /** Remove a run file: its uploader, or people who can change the workflow. */
+  /** Remove an instance file: its uploader, or editors / admins. */
   async deleteRunFile(orgId: string, templateId: string, instanceId: string, fileId: string, p: Principal) {
     const { caps } = await this.loadInstance(orgId, templateId, instanceId, p)
     const file = await this.files.findRunFile(orgId, instanceId, fileId)
@@ -2701,7 +2922,8 @@ export class WorkflowTemplateService {
 
   /**
    * The workflow context of a task (task-detail banner + Send back), gated by the
-   * TASK view rule. `null` when the task isn't a workflow step task (or its run is gone).
+   * TASK view rule. `null` when the task isn't a workflow step task (or its instance is
+   * gone). `notes` = the notes left for this step ("Notes for this step"), newest first.
    */
   async getStepContext(orgId: string, taskId: string, p: Principal) {
     const task = await this.prisma.task.findFirst({
@@ -2734,23 +2956,204 @@ export class WorkflowTemplateService {
       SEND_BACK_FROM.includes(row.status) &&
       mayAct &&
       sendBackTargets(inst.steps, rowDependencyMap(inst.steps), row.id).length > 0
-    const canOpenRun = caps.can_view || caps.can_edit || (await isRunParticipant(this.prisma, orgId, inst.id, p.userId))
+    const canOpenRun = caps.can_view || (await isRunParticipant(this.prisma, orgId, inst.id, p.userId))
     const index = main.findIndex((s) => s.id === row.id)
+    const labels = this.rowLabels(inst)
+    const [{ tz, now }, notes] = await Promise.all([this.scheduleContext(orgId), this.loadNotes(orgId, [inst.id], row.id)])
+    const names = await this.userNames([inst.triggered_by_user_id, ...notes.map((n) => n.author_user_id)])
+    const forStep = {
+      row_id: row.id,
+      number_label: labels.get(row.id) ?? null,
+      title: this.stepTitle(row),
+      status: row.status as string,
+    }
     return {
       template_id: inst.template.id,
       template_name: inst.template.name,
       instance_id: inst.id,
       instance_name: inst.name,
+      /** "Instance #12". */
+      instance_number: inst.instance_number,
+      /** The badge label ("ACME onboarding · 3 Nov"). */
+      instance_label: instanceLabel(inst, inst.template.name, tz, now),
       instance_status: inst.status,
+      started_at: inst.started_at,
+      /** Null when a schedule started it. */
+      started_by: this.ref(inst.triggered_by_user_id, names),
       row_id: row.id,
       row_status: row.status as string,
       step_title: this.stepTitle(row),
       step_number: index >= 0 ? index + 1 : null,
-      /** "1", "B2" — the step's number in its run. */
-      step_label: this.rowLabels(inst).get(row.id) ?? (index >= 0 ? `${index + 1}` : null),
+      /** "1", "B2" — the step's number in its instance. */
+      step_label: labels.get(row.id) ?? (index >= 0 ? `${index + 1}` : null),
       total_steps: main.length,
       can_send_back: canSendBack,
       can_open_run: canOpenRun,
+      /** Notes left for this step, newest first. */
+      notes: notes.map((n) => this.noteOut(n, names, caps.can_edit, p, forStep)),
     }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // Instance notes
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /** Live notes of these instances (optionally only those for one step), newest first. Org-scoped. */
+  private async loadNotes(orgId: string, instanceIds: string[], forRowId?: string): Promise<NoteRow[]> {
+    if (!instanceIds.length) return []
+    return this.prisma.workflowInstanceNote.findMany({
+      where: {
+        organization_id: orgId,
+        workflow_instance_id: { in: instanceIds },
+        deleted_at: null,
+        ...(forRowId ? { for_instance_step_id: forRowId } : {}),
+      },
+      select: {
+        id: true,
+        workflow_instance_id: true,
+        author_user_id: true,
+        body: true,
+        for_instance_step_id: true,
+        created_at: true,
+      },
+      orderBy: [{ created_at: 'desc' }, { id: 'desc' }],
+      take: NOTE_LIST_LIMIT,
+    })
+  }
+
+  private noteOut(
+    n: NoteRow,
+    names: Map<string, string>,
+    canEdit: boolean,
+    p: Principal,
+    forStep: NoteOut['for_step'],
+  ): NoteOut {
+    return {
+      id: n.id,
+      body: n.body,
+      author: this.ref(n.author_user_id, names)!,
+      created_at: n.created_at,
+      for_row_id: n.for_instance_step_id,
+      for_step: n.for_instance_step_id ? forStep : null,
+      can_delete: n.author_user_id === p.userId || canEdit,
+    }
+  }
+
+  /** `GET /:id/instances/:iid/notes` — everyone who can see the instance; newest first. */
+  async listNotes(orgId: string, templateId: string, instanceId: string, p: Principal): Promise<NoteOut[]> {
+    const { inst, caps } = await this.loadInstance(orgId, templateId, instanceId, p)
+    return this.formatNotes(orgId, inst, caps.can_edit, p)
+  }
+
+  private async formatNotes(orgId: string, inst: InstanceRow, canEdit: boolean, p: Principal): Promise<NoteOut[]> {
+    const notes = await this.loadNotes(orgId, [inst.id])
+    const names = await this.userNames(notes.map((n) => n.author_user_id))
+    const labels = this.rowLabels(inst)
+    const rows = new Map(inst.steps.map((s) => [s.id, s]))
+    return notes.map((n) => {
+      const r = n.for_instance_step_id ? rows.get(n.for_instance_step_id) : undefined
+      return this.noteOut(
+        n,
+        names,
+        canEdit,
+        p,
+        r ? { row_id: r.id, number_label: labels.get(r.id) ?? null, title: this.stepTitle(r), status: r.status as string } : null,
+      )
+    })
+  }
+
+  /**
+   * `POST /:id/instances/:iid/notes` — everyone who can see the instance may post.
+   * `for_row_id` (optional) must be a step of THIS instance that isn't completed or
+   * skipped (400 otherwise). Writes a `note_added` history entry; the step's assignees
+   * are told now if it has started, else when it starts (its assignment notification).
+   * Returns the new note.
+   */
+  async addNote(orgId: string, templateId: string, instanceId: string, dto: CreateInstanceNoteDto, p: Principal): Promise<NoteOut> {
+    const { inst, caps } = await this.loadInstance(orgId, templateId, instanceId, p)
+    const body = typeof dto?.body === 'string' ? dto.body.trim() : ''
+    if (!body) throw new BadRequestException({ message: 'Write a note.', code: 'note_body_required', field: 'body' })
+    if (body.length > NOTE_BODY_MAX) {
+      throw new BadRequestException({
+        message: `Keep the note to ${NOTE_BODY_MAX} characters or fewer.`,
+        code: 'note_body_too_long',
+        field: 'body',
+      })
+    }
+    const forRowId = dto.for_row_id || null
+    if (forRowId) {
+      const row = inst.steps.find((s) => s.id === forRowId)
+      if (!row || isLegacyBranchRow(row) || ['completed', 'skipped'].includes(row.status)) {
+        throw new BadRequestException({ message: MSG_NOTE_STEP, code: 'note_step_invalid', field: 'for_row_id' })
+      }
+    }
+    const label = forRowId ? this.rowLabels(inst).get(forRowId) ?? null : null
+    const note = await this.engine.addNote(orgId, inst.id, p.userId, body, forRowId, label)
+    const fresh = await this.prisma.workflowInstance.findFirst({
+      where: { id: inst.id, organization_id: orgId },
+      include: instanceInclude(p.userId),
+    })
+    const list = await this.formatNotes(orgId, fresh ?? inst, caps.can_edit, p)
+    const out = list.find((n) => n.id === note.id)
+    if (!out) throw new NotFoundException(MSG_NOTE_NOT_FOUND)
+    return out
+  }
+
+  /** `DELETE /:id/instances/:iid/notes/:noteId` — its author, editors and admins. Soft delete. */
+  async deleteNote(orgId: string, templateId: string, instanceId: string, noteId: string, p: Principal) {
+    const { caps } = await this.loadInstance(orgId, templateId, instanceId, p)
+    const note = await this.prisma.workflowInstanceNote.findFirst({
+      where: { id: noteId, workflow_instance_id: instanceId, organization_id: orgId, deleted_at: null },
+      select: { id: true, author_user_id: true },
+    })
+    if (!note) throw new NotFoundException(MSG_NOTE_NOT_FOUND)
+    if (note.author_user_id !== p.userId && !caps.can_edit) throw new ForbiddenException(MSG_REMOVE_NOTE)
+    const now = await this.clock.now(orgId)
+    const res = await this.prisma.workflowInstanceNote.updateMany({
+      where: { id: noteId, workflow_instance_id: instanceId, organization_id: orgId, deleted_at: null },
+      data: { deleted_at: now },
+    })
+    if (res.count === 0) throw new NotFoundException(MSG_NOTE_NOT_FOUND)
+    return { id: noteId, deleted: true }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // Change creator (admins)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * `POST /:id/change-creator` — admins hand the permanent-editor role to another
+   * ACTIVE member (e.g. the creator left). The new creator's own edit/view grants are
+   * folded in; the previous creator stays an ordinary editor while still an active
+   * member. Recorded in the audit log (the template update is captured).
+   */
+  async changeCreator(orgId: string, templateId: string, userId: string, p: Principal) {
+    if (!this.isAdmin(p)) throw new ForbiddenException(MSG_CHANGE_CREATOR)
+    const t = await this.prisma.workflowTemplate.findFirst({
+      where: { id: templateId, organization_id: orgId },
+      select: { id: true, created_by_user_id: true },
+    })
+    if (!t) throw new NotFoundException(MSG_NOT_FOUND)
+    if (t.created_by_user_id === userId) return this.templateDetail(orgId, templateId, p)
+    await assertActiveOrgMembers(this.prisma, orgId, [userId], 'the new creator')
+    const previous = t.created_by_user_id
+    const previousActive = (await this.activeMemberSet(orgId, [previous])).has(previous)
+    await this.prisma.$transaction(async (tx) => {
+      const res = await tx.workflowTemplate.updateMany({
+        where: { id: templateId, organization_id: orgId, created_by_user_id: previous },
+        data: { created_by_user_id: userId, owner_user_ids: [userId], updated_at: new Date() },
+      })
+      if (res.count !== 1) throw new ConflictException('Someone else just changed this workflow. Reload and try again.')
+      await tx.workflowAccess.deleteMany({
+        where: { workflow_template_id: templateId, organization_id: orgId, user_id: userId, access_type: { in: ['edit', 'view'] } },
+      })
+      if (previousActive) {
+        await tx.workflowAccess.createMany({
+          data: [{ organization_id: orgId, workflow_template_id: templateId, user_id: previous, access_type: 'edit' }],
+          skipDuplicates: true,
+        })
+      }
+    })
+    return this.templateDetail(orgId, templateId, p)
   }
 }

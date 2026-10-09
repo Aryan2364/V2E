@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { tasksApi } from '@/lib/api/tasks'
+import WorkflowTaskBadge, { taskWorkflow } from '@/components/tasks/WorkflowTaskBadge'
 import { TIMING_META, taskTiming, TERMINAL_STATUS_PHASES, type Task, type WorkQuery } from '@/lib/types/tasks'
 
 function fmt(d?: string) {
@@ -117,7 +118,11 @@ export default function SegmentDrawer({
                     {r.assignees?.filter((a) => !a.is_cc).slice(0, 2).map((a) => (
                       <span key={a.user_id} className="font-medium text-[#0F172A]">{a.user?.name ?? a.user_name ?? 'Unknown'}</span>
                     ))}
-                    {r.created_by?.name && <><span className="text-[#94A3B8]">·</span><span>by {r.created_by.name}</span></>}
+                    {taskWorkflow(r) ? (
+                      <WorkflowTaskBadge workflow={taskWorkflow(r)!} />
+                    ) : (
+                      r.created_by?.name && <><span className="text-[#94A3B8]">·</span><span>by {r.created_by.name}</span></>
+                    )}
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className="inline-flex items-center gap-1.5 font-medium" style={{ color: TIMING_META[t].color }}>

@@ -2,15 +2,18 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Undo2, Workflow as WorkflowIcon } from 'lucide-react'
+import { ArrowRight, StickyNote, Undo2, Workflow as WorkflowIcon } from 'lucide-react'
 import { workflowsApi } from '@/lib/api/workflows'
 import type { WorkflowStepContext } from '@/lib/types/workflows'
 import SendBackDialog, { type SendBackSubject } from './SendBackDialog'
+import { NoteItem } from './InstanceNotes'
+import { instanceTitle } from './instanceLabel'
 import { BTN, runHref } from './shared'
 
 /**
- * On a task a workflow created: which workflow, run and step it belongs to, a link to
- * the run, and "Send back" for the step's assignees (the server says who may).
+ * On a task a workflow created: which workflow, instance and step it belongs to, notes
+ * left for this step, a link to the instance, and "Send back" for the step's assignees
+ * (the server says who may).
  */
 export default function WorkflowTaskBanner({
   orgId,
@@ -56,35 +59,69 @@ export default function WorkflowTaskBanner({
       ? `Step ${fallback.step_order}`
       : 'Workflow step'
   const workflowName = ctx?.template_name ?? fallback?.template_name ?? 'Workflow'
-  const runName = ctx?.instance_name ?? fallback?.instance_name
+  const instanceName = ctx?.instance_name ?? fallback?.instance_name
+  const notes = (ctx?.notes ?? []).slice().sort((a, b) => b.created_at.localeCompare(a.created_at))
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-[10px] border border-[#BFDBFE] bg-[#EFF6FF] px-4 py-3 shrink-0">
-      <div className="flex items-start gap-2.5 min-w-0 flex-1">
-        <WorkflowIcon size={18} className="shrink-0 mt-0.5 text-[#1D4ED8]" />
-        <p className="text-sm text-[#1E3A8A] min-w-0">
-          <span className="font-semibold">{stepLabel}</span>
-          <span> in </span>
-          <span className="font-semibold">{workflowName}</span>
-          {runName && <span className="text-[#1E40AF]"> · {runName}</span>}
-        </p>
+    <div className="flex flex-col gap-3 rounded-[10px] border border-[#BFDBFE] bg-[#EFF6FF] px-4 py-3 shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+          <WorkflowIcon size={18} className="shrink-0 mt-0.5 text-[#1D4ED8]" />
+          <div className="min-w-0 text-sm text-[#1E3A8A]">
+            <p className="font-semibold break-words">{stepLabel}</p>
+            <p className="break-words">
+              {instanceName && <span className="font-medium">{instanceName}</span>}
+              {ctx?.instance_number ? (
+                <span>
+                  {instanceName ? ' · ' : ''}
+                  {instanceTitle(ctx.instance_number)}
+                </span>
+              ) : null}
+              <span>
+                {instanceName || ctx?.instance_number ? ' of ' : 'Workflow: '}
+                <span className="font-medium">{workflowName}</span>
+              </span>
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {ctx?.can_send_back && (
+            <button
+              type="button"
+              onClick={() =>
+                setSubject({
+                  templateId: ctx.template_id,
+                  instanceId: ctx.instance_id,
+                  rowId: ctx.row_id,
+                  stepTitle: ctx.step_title,
+                  stepLabel: ctx.step_label ?? null,
+                })
+              }
+              className={BTN.secondary}
+            >
+              <Undo2 size={16} /> Send back
+            </button>
+          )}
+          {ctx && ctx.can_open_run !== false && (
+            <Link href={runHref(ctx.template_id, ctx.instance_id)} className={BTN.quiet}>
+              Open instance <ArrowRight size={16} />
+            </Link>
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        {ctx?.can_send_back && (
-          <button
-            type="button"
-            onClick={() => setSubject({ templateId: ctx.template_id, instanceId: ctx.instance_id, rowId: ctx.row_id, stepTitle: ctx.step_title, stepLabel: ctx.step_label ?? null })}
-            className={BTN.secondary}
-          >
-            <Undo2 size={16} /> Send back
-          </button>
-        )}
-        {ctx && ctx.can_open_run !== false && (
-          <Link href={runHref(ctx.template_id, ctx.instance_id)} className={BTN.quiet}>
-            Open run <ArrowRight size={16} />
-          </Link>
-        )}
-      </div>
+
+      {notes.length > 0 && (
+        <section aria-labelledby="task-step-notes" className="flex flex-col gap-2 border-t border-[#BFDBFE] pt-3">
+          <h3 id="task-step-notes" className="flex items-center gap-1.5 text-sm font-semibold text-[#0F172A]">
+            <StickyNote size={15} className="text-[#92400E]" /> Notes for this step
+          </h3>
+          <ul className="flex flex-col gap-2">
+            {notes.map((n) => (
+              <NoteItem key={n.id} note={n} showStep={false} />
+            ))}
+          </ul>
+        </section>
+      )}
 
       {ctx && (
         <SendBackDialog

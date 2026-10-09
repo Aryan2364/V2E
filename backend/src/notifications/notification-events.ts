@@ -37,10 +37,12 @@ export const NOTIF_EVENTS = {
     'workflow_step_overdue',
     'workflow_upstream_delay',
     'workflow_completed',
-    'workflow_stuck', // a run stopped and needs an owner (retry / skip / reopen)
-    'workflow_task_withdrawn', // your workflow task was withdrawn because the run was cancelled or the step skipped
-    'workflow_sent_back', // a later step sent the run back to your step with a reason (or the run returned to yours)
-    'workflow_step_late', // a step of a run you own / are involved in is past its deadline
+    'workflow_stuck', // an instance stopped and needs an editor (retry / skip / reopen)
+    'workflow_task_withdrawn', // your workflow task was withdrawn because the instance was cancelled or the step skipped
+    'workflow_sent_back', // a later step sent the instance back to your step with a reason (or it returned to yours)
+    'workflow_step_late', // a step of an instance you edit / work in is past its deadline
+    'workflow_step_upcoming', // an instance started; your later step is planned on a later day (one heads-up)
+    'workflow_note_added', // someone left a note for your step after it had started
   ],
   tickets: ['ticket_raised', 'ticket_status_changed', 'ticket_sla_breached', 'ticket_comment', 'ticket_escalated'],
   meetings: [

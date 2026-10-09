@@ -158,7 +158,7 @@ export function scheduleEntryProblem(e: {
     if (compareLocalDates(end, start) < 0) return 'the end date can’t be before the start date.'
   }
   if (e.end_condition === 'after_n' && (!Number.isInteger(e.end_after) || (e.end_after as number) < 1)) {
-    return 'enter how many runs it ends after (1 or more).'
+    return 'enter how many instances it ends after (1 or more).'
   }
   return null
 }

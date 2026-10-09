@@ -21,8 +21,8 @@ function startOfDay(d: Date): number {
 }
 
 // Free-text match across the fields a person would search by: title, description,
-// category, tag names (kit §27.1), and the people on the task — including each person's
-// job role and department.
+// category, tag names (kit §27.1), the workflow it came from, and the people on the task —
+// including each person's job role and department.
 export function matchesSearch(t: Task, q: string): boolean {
   if (!q) return true
   const hay = [
@@ -31,6 +31,12 @@ export function matchesSearch(t: Task, q: string): boolean {
     t.category?.name ?? '',
     ...(t.tags ?? []).map((tag) => tag.name),
     t.created_by?.name ?? '',
+    // A workflow task is found by its workflow and instance names too.
+    t.workflow?.label ?? '',
+    t.workflow?.template_name ?? '',
+    t.workflow?.instance_name ?? '',
+    t.workflow_step?.template_name ?? '',
+    t.workflow_step?.instance_name ?? '',
     ...(t.assignees ?? []).flatMap((a) => [
       a.user?.name ?? a.user_name ?? '',
       a.user?.role_title ?? '',

@@ -24,7 +24,7 @@ import {
   resolveStart,
   sameTimeNextDay,
 } from './engine/plan'
-import { cycleLengthOf, frequencyOf, isCalendarRule } from './engine/timing'
+import { Frequency, cycleLengthOf, frequencyOf, isCalendarRule } from './engine/timing'
 import { SCHEDULE_START, dueScheduleOccurrence } from './engine/schedule'
 import {
   LiveChecklistTemplate,
@@ -48,6 +48,8 @@ import {
 import { createStepTask, moveTaskDeadline, reopenTaskForWorkflow, setEscalationsPaused } from './engine/step-task'
 import { formatHumanDate, localDateOf, safeTimeZone, zonedParts } from './engine/tz'
 import { MAIN_TRACK, resolveStoredTracks } from './tracks'
+import { instanceNameKey, tidyInstanceName } from './run-access'
+import { dayMonthYear, shortDate } from './instance-label'
 
 type Tx = Prisma.TransactionClient
 type Effect = () => Promise<unknown>
@@ -83,6 +85,7 @@ export type WorkflowEventType =
   | 'retried'
   | 'file_added'
   | 'file_removed'
+  | 'note_added'
 
 type WorkflowNotifEvent =
   | 'workflow_triggered'
@@ -94,6 +97,32 @@ type WorkflowNotifEvent =
   | 'workflow_task_withdrawn'
   | 'workflow_sent_back'
   | 'workflow_step_late'
+  | 'workflow_step_upcoming'
+  | 'workflow_note_added'
+
+/** The Run dialog's (and the engine's) answer to a name already used in the workflow. */
+export const MSG_INSTANCE_NAME_TAKEN = 'An instance with this name already exists in this workflow.'
+export const INSTANCE_NAME_MAX = 80
+
+/** 400 for a typed instance name already used in the workflow (the Run dialog shows it inline). */
+export function instanceNameTaken(): BadRequestException {
+  return new BadRequestException({ message: MSG_INSTANCE_NAME_TAKEN, code: 'instance_name_taken', field: 'name' })
+}
+
+/** Does a P2002 (unique violation) name `field`? (Prisma reports the target differently per driver.) */
+function uniqueViolationOn(err: Prisma.PrismaClientKnownRequestError, field: string): boolean {
+  try {
+    return JSON.stringify(err.meta ?? {}).includes(field) || String(err.message ?? '').includes(field)
+  } catch {
+    return false
+  }
+}
+
+/** Template columns the engine reads for its editors (creator + `edit` grants). */
+const EDITORS_SELECT = {
+  created_by_user_id: true,
+  access: { where: { access_type: 'edit' as const }, select: { user_id: true } },
+} satisfies Prisma.WorkflowTemplateSelect
 
 interface InstanceCtx {
   id: string
@@ -102,7 +131,8 @@ interface InstanceCtx {
   name: string
   started_at: Date
   templateName: string
-  ownerIds: string[]
+  /** The workflow's editors: the creator first, then `edit` grants (late/stuck alerts go here). */
+  editorIds: string[]
 }
 
 type StepRow = Prisma.WorkflowInstanceStepGetPayload<object>
@@ -189,10 +219,9 @@ export class WorkflowEngineService {
     return safeTimeZone(org?.timezone)
   }
 
-  private ownersOf(template: { owner_user_ids: unknown; created_by_user_id: string }): string[] {
-    const raw = Array.isArray(template.owner_user_ids) ? template.owner_user_ids : []
-    const ids = raw.filter((x): x is string => typeof x === 'string' && x.length > 0)
-    return ids.length ? Array.from(new Set(ids)) : [template.created_by_user_id]
+  /** The workflow's editors: the creator (permanent) first, then everyone with an `edit` grant. */
+  private editorsOf(template: { created_by_user_id: string; access?: { user_id: string }[] }): string[] {
+    return Array.from(new Set([template.created_by_user_id, ...(template.access ?? []).map((a) => a.user_id)].filter(Boolean)))
   }
 
   private async runEffects(effects: Effect[]): Promise<void> {
@@ -243,7 +272,7 @@ export class WorkflowEngineService {
     }
     const raw = (err as Error)?.message ?? String(err)
     const short = raw.replace(/\s+/g, ' ').trim().slice(0, 240)
-    return `The run couldn’t continue (${short}). Fix the problem, then retry the run.`
+    return `The instance couldn’t continue (${short}). Fix the problem, then retry the instance.`
   }
 
   /**
@@ -356,7 +385,7 @@ export class WorkflowEngineService {
       where: { id: instanceId, organization_id: orgId },
       select: { id: true },
     })
-    if (!inst) throw new NotFoundException('Run not found')
+    if (!inst) throw new NotFoundException('Instance not found')
     const at = await this.clock.now(orgId)
     await this.event(this.prisma, { orgId, instanceId, type, message, at, ...opts })
   }
@@ -419,11 +448,11 @@ export class WorkflowEngineService {
   /**
    * Who does the step, who is CC'd, and who the task escalates to.
    *  - Assignees / CCs: the snapshot's people who are still active members. Nobody
-   *    left → the step's assigner (else the first active owner) does it, with a
-   *    warning for `last_error` and the owners.
+   *    left → the step's assigner (else the first active editor) does it, with a
+   *    warning for `last_error` and the editors.
    *  - Escalation: 'people' → those (active) users as levels 1..n; 'manager' → the
    *    distinct current managers (EmployeeProfile.reporting_to_user_id) of the
-   *    assignees, all at level 1; nobody → the workflow owners, all at level 1.
+   *    assignees, all at level 1; nobody → the workflow's editors, all at level 1.
    *    Someone working the task never escalates to themselves.
    */
   private async resolvePeople(tx: Tx, inst: InstanceCtx, snap: StepSnapshot): Promise<StepPeople> {
@@ -431,10 +460,10 @@ export class WorkflowEngineService {
     let assignees = await this.activeMembers(tx, orgId, snap.assignee_user_ids)
     let warning: string | null = null
     if (!assignees.length) {
-      const [fallback] = await this.activeMembers(tx, orgId, [snap.assigner_user_id, ...inst.ownerIds])
+      const [fallback] = await this.activeMembers(tx, orgId, [snap.assigner_user_id, ...inst.editorIds])
       if (!fallback) {
         throw new BadRequestException(
-          `No active person can do “${snap.title}”. Add an active owner, then retry.`,
+          `No active person can do “${snap.title}”. Add an active editor, then retry.`,
         )
       }
       const why = snap.assignee_user_ids.length
@@ -471,9 +500,9 @@ export class WorkflowEngineService {
       }
     }
     if (!escalationLevels.length) {
-      const owners = (await this.activeMembers(tx, orgId, inst.ownerIds)).filter((u) => !assignees.includes(u))
-      if (owners.length) {
-        escalationLevels = [owners]
+      const editors = (await this.activeMembers(tx, orgId, inst.editorIds)).filter((u) => !assignees.includes(u))
+      if (editors.length) {
+        escalationLevels = [editors]
         escalationSource = 'owners_fallback'
       }
     }
@@ -657,20 +686,64 @@ export class WorkflowEngineService {
     })
 
     const link = `/dashboard/tasks/${taskId}`
+    // Notes left for this step ("For a later step") travel with its assignment.
+    const notes = await this.notesSummary(tx, inst, row.id)
     effects.push(
       this.notify(orgId, people.assignees, 'workflow_step_assigned', 'Step assigned to you',
-        `“${snap.title}” in “${inst.templateName}” (${inst.name}).`, link, inst.id),
+        `“${snap.title}” in “${inst.templateName}” (${inst.name}).${notes ? ` ${notes}` : ''}`, link, inst.id),
       this.notify(orgId, people.ccs, 'workflow_step_assigned', 'You were CC’d on a step',
         `“${snap.title}” in “${inst.templateName}” (${inst.name}).`, link, inst.id),
     )
     if (people.warning) {
       effects.push(
-        this.notify(orgId, inst.ownerIds.filter((o) => !people.assignees.includes(o)), 'workflow_stuck',
+        this.notify(orgId, inst.editorIds.filter((o) => !people.assignees.includes(o)), 'workflow_stuck',
           'Step needs attention', `“${snap.title}” in “${inst.name}”: ${people.warning}`,
           this.instanceLink(inst.workflow_template_id, inst.id), inst.id),
       )
     }
     return { taskId, people, deadline }
+  }
+
+  /**
+   * "1 note from B1 “Budget check”." for the live notes left for `rowId` (null when
+   * none). A note's source is the step its author works on in this instance (their
+   * latest step there as a non-CC assignee), else the author's name.
+   */
+  async notesSummary(db: Tx, inst: Pick<InstanceCtx, 'id' | 'organization_id'>, rowId: string): Promise<string | null> {
+    const orgId = inst.organization_id
+    const notes = await db.workflowInstanceNote.findMany({
+      where: { organization_id: orgId, workflow_instance_id: inst.id, for_instance_step_id: rowId, deleted_at: null },
+      select: { author_user_id: true },
+      orderBy: { created_at: 'asc' },
+    })
+    if (!notes.length) return null
+    const authors = Array.from(new Set(notes.map((n) => n.author_user_id)))
+    const rows = await db.workflowInstanceStep.findMany({
+      where: { workflow_instance_id: inst.id, organization_id: orgId, task_id: { not: null } },
+      select: { id: true, task_id: true, step_snapshot: true, task_created_at: true },
+      orderBy: { task_created_at: 'desc' },
+    })
+    const workedOn = rows.length
+      ? await db.taskAssignee.findMany({
+          where: {
+            organization_id: orgId,
+            task_id: { in: rows.map((r) => r.task_id!) },
+            user_id: { in: authors },
+            is_cc: false,
+            removed_at: null,
+          },
+          select: { task_id: true, user_id: true },
+        })
+      : []
+    const sources: string[] = []
+    for (const author of authors) {
+      const tasks = new Set(workedOn.filter((w) => w.user_id === author).map((w) => w.task_id))
+      const own = rows.find((r) => r.id !== rowId && tasks.has(r.task_id!))
+      const snap = own ? readSnapshot(own.step_snapshot) : null
+      const label = snap ? [snap.number_label, `“${snap.title}”`].filter(Boolean).join(' ') : await this.userName(db, author)
+      if (!sources.includes(label)) sources.push(label)
+    }
+    return `${notes.length} note${notes.length === 1 ? '' : 's'} from ${sources.join(', ')}.`
   }
 
   // ═══ Task withdrawal ═════════════════════════════════════════════════════════
@@ -727,7 +800,7 @@ export class WorkflowEngineService {
     const snap = await this.snapshotFor(tx, row, inst.workflow_template_id)
     if (!snap) {
       throw new BadRequestException(
-        'A step was deleted from the workflow before it ran. Skip the step or cancel the run.',
+        'A step was deleted from the workflow before it ran. Skip the step or cancel the instance.',
       )
     }
     return snap
@@ -865,7 +938,7 @@ export class WorkflowEngineService {
       at: now,
     })
     effects.push(
-      this.notify(inst.organization_id, inst.ownerIds, 'workflow_completed', 'Run completed',
+      this.notify(inst.organization_id, inst.editorIds, 'workflow_completed', 'Instance completed',
         `“${inst.name}” (${inst.templateName}) is complete.`,
         this.instanceLink(inst.workflow_template_id, inst.id), inst.id),
     )
@@ -878,7 +951,7 @@ export class WorkflowEngineService {
   ): Promise<(InstanceCtx & { status: string; current_step_id: string | null; last_error: string | null }) | null> {
     const inst = await db.workflowInstance.findFirst({
       where: { id: instanceId, organization_id: orgId },
-      include: { template: { select: { name: true, owner_user_ids: true, created_by_user_id: true } } },
+      include: { template: { select: { name: true, ...EDITORS_SELECT } } },
     })
     if (!inst) return null
     return {
@@ -888,14 +961,14 @@ export class WorkflowEngineService {
       name: inst.name,
       started_at: inst.started_at,
       templateName: inst.template.name,
-      ownerIds: this.ownersOf(inst.template),
+      editorIds: this.editorsOf(inst.template),
       status: inst.status,
       current_step_id: inst.current_step_id,
       last_error: inst.last_error,
     }
   }
 
-  /** Park a run as stuck with a readable reason and tell its owners. Never throws. */
+  /** Park an instance as stuck with a readable reason and tell the workflow's editors. Never throws. */
   private async markStuck(orgId: string, instanceId: string, rowId: string | null, message: string): Promise<void> {
     try {
       const inst = await this.loadInstanceCtx(this.prisma, orgId, instanceId)
@@ -911,7 +984,7 @@ export class WorkflowEngineService {
       if (res.count === 1) {
         await this.event(this.prisma, { orgId, instanceId, rowId, type: 'run_stuck', message, at: now })
         await this.runEffects([
-          this.notify(orgId, inst.ownerIds, 'workflow_stuck', 'Run needs attention',
+          this.notify(orgId, inst.editorIds, 'workflow_stuck', 'Instance needs attention',
             `“${inst.name}” (${inst.templateName}): ${message}`,
             this.instanceLink(inst.workflow_template_id, inst.id), inst.id),
         ])
@@ -921,30 +994,106 @@ export class WorkflowEngineService {
     }
   }
 
-  // ═══ Instance naming ═════════════════════════════════════════════════════════
+  // ═══ Instance naming + numbering ═════════════════════════════════════════════
 
+  /**
+   * The next instance number of a workflow (1, 2, …), handed out atomically. Raw SQL on
+   * purpose: the row lock serialises concurrent starts of the same workflow for the rest
+   * of the transaction (so the name check below can't race), and it must not touch
+   * `updated_at` (the builder's save-conflict check) or write an audit diff.
+   */
+  private async nextInstanceNumber(tx: Tx, orgId: string, templateId: string): Promise<number> {
+    const rows = await tx.$queryRaw<{ instance_seq: number }[]>`
+      UPDATE "workflow_templates" SET "instance_seq" = "instance_seq" + 1
+      WHERE "id" = ${templateId} AND "organization_id" = ${orgId}
+      RETURNING "instance_seq"`
+    if (!rows.length) throw new NotFoundException('Workflow not found')
+    return Number(rows[0].instance_seq)
+  }
+
+  /**
+   * The instance's name. A typed name (the Run dialog) is kept as typed (trimmed, inner
+   * spaces collapsed) and must be unique within the workflow, case- and space-
+   * insensitively — a clash is a 400 with `code: 'instance_name_taken'`. Otherwise (a
+   * schedule, or an older caller without a name) "<Workflow name> — 3 Nov 2026", with
+   * " (2)", " (3)"… when that is taken. Runs after `nextInstanceNumber` (template row
+   * locked), so two starts can't pick the same name.
+   */
   private async instanceName(
     tx: Tx,
+    orgId: string,
     templateId: string,
     templateName: string,
     context: Record<string, unknown>,
     now: Date,
     tz: string,
-  ): Promise<string> {
-    const custom = typeof context.name === 'string' ? context.name.trim() : ''
-    if (custom) return custom.slice(0, 200)
-    const today = formatHumanDate(now, tz)
-    const base = `${templateName} — ${today}`
-    const existing = await tx.workflowInstance.findMany({
-      where: { workflow_template_id: templateId, name: { startsWith: base } },
-      select: { name: true },
+  ): Promise<{ name: string; name_key: string; typed: boolean }> {
+    const typed = typeof context.name === 'string' ? tidyInstanceName(context.name) : ''
+    if (typed) {
+      const key = instanceNameKey(typed)
+      const clash = await tx.workflowInstance.findFirst({
+        where: { workflow_template_id: templateId, organization_id: orgId, name_key: key },
+        select: { id: true },
+      })
+      if (clash) throw instanceNameTaken()
+      return { name: typed, name_key: key, typed: true }
+    }
+    const base = tidyInstanceName(`${templateName} — ${dayMonthYear(now, tz)}`)
+    const baseKey = instanceNameKey(base)
+    const taken = new Set(
+      (
+        await tx.workflowInstance.findMany({
+          where: { workflow_template_id: templateId, organization_id: orgId, name_key: { startsWith: baseKey } },
+          select: { name_key: true },
+        })
+      ).map((r) => r.name_key),
+    )
+    let name = base
+    for (let n = 2; taken.has(instanceNameKey(name)); n++) name = `${base} (${n})`
+    return { name, name_key: instanceNameKey(name), typed: false }
+  }
+
+  /**
+   * "Starting soon" heads-ups when an instance starts: every assignee of a step that
+   * did not start with it and is planned to start on a LATER DAY (org calendar) gets
+   * ONE notification naming their step(s) and the planned day. Nothing for daily
+   * workflows, nor for steps planned the same day. Assignees are the step's active
+   * people as frozen in its snapshot.
+   */
+  private async upcomingHeadsUps(tx: Tx, inst: InstanceCtx, frequency: Frequency, now: Date, tz: string): Promise<Effect[]> {
+    if (frequency.kind === 'daily') return []
+    const orgId = inst.organization_id
+    const rows = await tx.workflowInstanceStep.findMany({
+      where: { workflow_instance_id: inst.id, organization_id: orgId, status: 'pending', planned_start_at: { not: null } },
+      select: { id: true, step_snapshot: true, planned_start_at: true, order_index: true },
+      orderBy: [{ planned_start_at: 'asc' }, { order_index: 'asc' }],
     })
-    if (existing.length === 0) return base
-    const nums = existing.map((e) => {
-      const m = e.name.match(/ — #(\d+)$/)
-      return m ? parseInt(m[1], 10) : 1
-    })
-    return `${base} — #${Math.max(...nums) + 1}`
+    const today = localDateOf(now, tz)
+    const byUser = new Map<string, { title: string; at: Date }[]>()
+    for (const r of rows) {
+      const snap = readSnapshot(r.step_snapshot)
+      if (!snap || isBranchRow(r)) continue
+      const day = localDateOf(r.planned_start_at!, tz)
+      const later = day.year * 10000 + day.month * 100 + day.day > today.year * 10000 + today.month * 100 + today.day
+      if (!later) continue
+      for (const u of await this.activeMembers(tx, orgId, snap.assignee_user_ids)) {
+        const list = byUser.get(u) ?? []
+        list.push({ title: snap.title, at: r.planned_start_at! })
+        byUser.set(u, list)
+      }
+    }
+    const link = this.instanceLink(inst.workflow_template_id, inst.id)
+    const effects: Effect[] = []
+    for (const [userId, steps] of byUser) {
+      const body =
+        steps.length === 1
+          ? `“${inst.templateName}” has started. Your step “${steps[0].title}” is planned around ${shortDate(steps[0].at, tz, now)}.`
+          : `“${inst.templateName}” has started. Your steps are planned: ${steps
+              .map((x) => `“${x.title}” around ${shortDate(x.at, tz, now)}`)
+              .join(', ')}.`
+      effects.push(this.notify(orgId, [userId], 'workflow_step_upcoming', 'Your step is coming up', body, link, inst.id))
+    }
+    return effects
   }
 
   // ═══ Public entry points ═════════════════════════════════════════════════════
@@ -973,6 +1122,7 @@ export class WorkflowEngineService {
       include: {
         steps: { orderBy: [{ order_index: 'asc' }, { created_at: 'asc' }] },
         schedules: { select: { schedule_type: true, every: true } },
+        access: EDITORS_SELECT.access,
       },
     })
     if (!template) throw new NotFoundException('Workflow not found')
@@ -987,7 +1137,7 @@ export class WorkflowEngineService {
     }
     if (!(await this.automationEnabled(orgId))) {
       throw new ForbiddenException(
-        'Starting runs needs the full Workflows module. Ask your administrator to turn it on.',
+        'Starting instances needs the full Workflows module. Ask your administrator to turn it on.',
       )
     }
     // Legacy escalation steps (is_branch_step) are not part of v2 flows. Rows are stored
@@ -1013,13 +1163,13 @@ export class WorkflowEngineService {
 
     const tz = await this.orgTimeZone(orgId)
     const now = opts?.startAt ?? (await this.clock.now(orgId))
-    const ownerIds = this.ownersOf(template)
-    const effects: Effect[] = []
+    const editorIds = this.editorsOf(template)
 
     // Step timing: the cycle length comes from the workflow's schedules (a manual start
     // of a scheduled workflow resolves calendar timing from its own start); every row
     // gets its planned start → due, planned in dependency order from this start.
-    const every = cycleLengthOf(frequencyOf(template.schedules ?? []))
+    const frequency = frequencyOf(template.schedules ?? [])
+    const every = cycleLengthOf(frequency)
     const rawSnaps = steps.map((step, i) => {
       const track_key = resolved.trackOf.get(step.id) ?? MAIN_TRACK
       return {
@@ -1049,109 +1199,129 @@ export class WorkflowEngineService {
     )
     const plannedBy = new Map(plan.steps.map((x) => [x.key, x]))
 
-    let instanceId: string
-    try {
-      instanceId = await this.prisma.$transaction(async (tx) => {
-        const name = await this.instanceName(tx, templateId, template.name, context, now, tz)
-        const instance = await tx.workflowInstance.create({
-          data: {
+    let instanceId = ''
+    let effects: Effect[] = []
+    // An automatic name can lose a race to a concurrent start only in theory (the
+    // template row is locked first); a retry picks the next free name.
+    for (let attempt = 0; ; attempt++) {
+      let typedName = false
+      effects = []
+      try {
+        instanceId = await this.prisma.$transaction(async (tx) => {
+          const instanceNumber = await this.nextInstanceNumber(tx, orgId, templateId)
+          const named = await this.instanceName(tx, orgId, templateId, template.name, context, now, tz)
+          typedName = named.typed
+          const name = named.name
+          const instance = await tx.workflowInstance.create({
+            data: {
+              organization_id: orgId,
+              workflow_template_id: templateId,
+              name,
+              name_key: named.name_key,
+              instance_number: instanceNumber,
+              trigger_type: triggerType,
+              triggered_by_user_id: triggeredByUserId ?? null,
+              status: 'running',
+              started_at: now,
+              created_at: now,
+              metadata: context as Prisma.InputJsonValue,
+              trigger_id: opts?.triggerId ?? null,
+              source_task_id: opts?.sourceTaskId ?? null,
+            },
+          })
+
+          // Frozen for the life of the run: linked checklist templates are resolved to
+          // their CURRENT items now (one lookup for the whole run), never again later.
+          const checklistTemplates = await this.loadChecklistTemplates(tx, orgId, [
+            ...new Set(rawSnaps.flatMap((sn) => snapshotTemplateIds(sn))),
+          ])
+          for (let i = 0; i < steps.length; i++) {
+            await tx.workflowInstanceStep.create({
+              data: {
+                organization_id: orgId,
+                workflow_instance_id: instance.id,
+                workflow_step_id: steps[i].id,
+                order_index: i,
+                status: 'pending',
+                step_snapshot: applyChecklistTemplates(rawSnaps[i], checklistTemplates) as unknown as Prisma.InputJsonValue,
+                planned_start_at: plannedBy.get(steps[i].id)?.planned_start_at ?? null,
+                planned_due_at: plannedBy.get(steps[i].id)?.planned_due_at ?? null,
+              },
+            })
+          }
+
+          const inst: InstanceCtx = {
+            id: instance.id,
             organization_id: orgId,
             workflow_template_id: templateId,
             name,
-            trigger_type: triggerType,
-            triggered_by_user_id: triggeredByUserId ?? null,
-            status: 'running',
             started_at: now,
-            created_at: now,
-            metadata: context as Prisma.InputJsonValue,
-            trigger_id: opts?.triggerId ?? null,
-            source_task_id: opts?.sourceTaskId ?? null,
-          },
-        })
-
-        // Frozen for the life of the run: linked checklist templates are resolved to
-        // their CURRENT items now (one lookup for the whole run), never again later.
-        const checklistTemplates = await this.loadChecklistTemplates(tx, orgId, [
-          ...new Set(rawSnaps.flatMap((sn) => snapshotTemplateIds(sn))),
-        ])
-        for (let i = 0; i < steps.length; i++) {
-          await tx.workflowInstanceStep.create({
-            data: {
-              organization_id: orgId,
-              workflow_instance_id: instance.id,
-              workflow_step_id: steps[i].id,
-              order_index: i,
-              status: 'pending',
-              step_snapshot: applyChecklistTemplates(rawSnaps[i], checklistTemplates) as unknown as Prisma.InputJsonValue,
-              planned_start_at: plannedBy.get(steps[i].id)?.planned_start_at ?? null,
-              planned_due_at: plannedBy.get(steps[i].id)?.planned_due_at ?? null,
-            },
+            templateName: template.name,
+            editorIds,
+          }
+          const starter = triggeredByUserId ? await this.userName(tx, triggeredByUserId) : null
+          await this.event(tx, {
+            orgId,
+            instanceId: instance.id,
+            type: 'run_started',
+            actorUserId: triggeredByUserId ?? null,
+            message: starter
+              ? `${starter} started “${name}”.`
+              : triggerType === SCHEDULE_START
+                ? `“${name}” started on its schedule.`
+                : `“${name}” started (${triggerType.replace(/_/g, ' ')}).`,
+            metadata: { trigger_type: triggerType, trigger_id: opts?.triggerId ?? null, source_task_id: opts?.sourceTaskId ?? null },
+            at: now,
           })
-        }
+          await this.settle(tx, inst, now, tz, effects)
 
-        const inst: InstanceCtx = {
-          id: instance.id,
-          organization_id: orgId,
-          workflow_template_id: templateId,
-          name,
-          started_at: now,
-          templateName: template.name,
-          ownerIds,
-        }
-        const starter = triggeredByUserId ? await this.userName(tx, triggeredByUserId) : null
-        await this.event(tx, {
-          orgId,
-          instanceId: instance.id,
-          type: 'run_started',
-          actorUserId: triggeredByUserId ?? null,
-          message: starter
-            ? `${starter} started “${name}”.`
-            : triggerType === SCHEDULE_START
-              ? `“${name}” started on its schedule.`
-              : `“${name}” started (${triggerType.replace(/_/g, ' ')}).`,
-          metadata: { trigger_type: triggerType, trigger_id: opts?.triggerId ?? null, source_task_id: opts?.sourceTaskId ?? null },
-          at: now,
-        })
-        await this.settle(tx, inst, now, tz, effects)
-
-        const begun = await tx.workflowInstanceStep.findMany({
-          where: { workflow_instance_id: instance.id, status: { in: ['active', 'pending'] } },
-          select: { status: true, step_snapshot: true, task_id: true, start_at: true },
-        })
-        const started = begun.filter((s) => s.status === 'active')
-        const waiting = begun.filter((s) => isWaitingRow(s))
-        if (!started.length && !waiting.length) {
-          throw new BadRequestException(
-            'No step can start first. Make at least one step start at the beginning.',
+          const begun = await tx.workflowInstanceStep.findMany({
+            where: { workflow_instance_id: instance.id, status: { in: ['active', 'pending'] } },
+            select: { status: true, step_snapshot: true, task_id: true, start_at: true },
+          })
+          const started = begun.filter((s) => s.status === 'active')
+          const waiting = begun.filter((s) => isWaitingRow(s))
+          if (!started.length && !waiting.length) {
+            throw new BadRequestException(
+              'No step can start first. Make at least one step start at the beginning.',
+            )
+          }
+          // Editors hear the instance started; first-step assignees already get their own
+          // assignment notification (queued by activation) — not two.
+          const firstWorkers = new Set<string>()
+          for (const s of started) for (const u of await this.taskWorkers(tx, orgId, s.task_id)) firstWorkers.add(u)
+          const titleOfRow = (s: { step_snapshot: unknown }) => `“${readSnapshot(s.step_snapshot)?.title ?? 'Step'}”`
+          const firstLine = started.length
+            ? `First step${started.length > 1 ? 's' : ''}: ${started.map(titleOfRow).join(', ')}.`
+            : `First step${waiting.length > 1 ? 's' : ''}: ${waiting
+                .map((s) => `${titleOfRow(s)} (starts ${formatStartMoment(s.start_at!, tz)})`)
+                .join(', ')}.`
+          effects.unshift(
+            this.notify(orgId, editorIds.filter((o) => !firstWorkers.has(o)), 'workflow_triggered', 'Workflow started',
+              `Instance #${instanceNumber} “${name}” started. ${firstLine}`,
+              this.instanceLink(templateId, instance.id), instance.id),
           )
+          effects.push(...(await this.upcomingHeadsUps(tx, inst, frequency, now, tz)))
+          return instance.id
+        }, TX_OPTIONS)
+        break
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+          // Lost a race on the (trigger_id, source_task_id) dedupe key → the other start wins.
+          if (opts?.triggerId && opts?.sourceTaskId && !uniqueViolationOn(err, 'name_key')) {
+            const dup = await this.prisma.workflowInstance.findFirst({
+              where: { trigger_id: opts.triggerId, source_task_id: opts.sourceTaskId },
+              select: { id: true },
+            })
+            if (dup) return dup
+          }
+          if (uniqueViolationOn(err, 'name_key') || !opts?.triggerId) {
+            if (typedName) throw instanceNameTaken()
+            if (attempt < 3) continue
+          }
         }
-        // Owners hear the run started; first-step assignees already get their own
-        // assignment notification (queued by activation) — not two.
-        const firstWorkers = new Set<string>()
-        for (const s of started) for (const u of await this.taskWorkers(tx, orgId, s.task_id)) firstWorkers.add(u)
-        const titleOfRow = (s: { step_snapshot: unknown }) => `“${readSnapshot(s.step_snapshot)?.title ?? 'Step'}”`
-        const firstLine = started.length
-          ? `First step${started.length > 1 ? 's' : ''}: ${started.map(titleOfRow).join(', ')}.`
-          : `First step${waiting.length > 1 ? 's' : ''}: ${waiting
-              .map((s) => `${titleOfRow(s)} (starts ${formatStartMoment(s.start_at!, tz)})`)
-              .join(', ')}.`
-        effects.unshift(
-          this.notify(orgId, ownerIds.filter((o) => !firstWorkers.has(o)), 'workflow_triggered', 'Workflow started',
-            `“${name}” started. ${firstLine}`,
-            this.instanceLink(templateId, instance.id), instance.id),
-        )
-        return instance.id
-      }, TX_OPTIONS)
-    } catch (err) {
-      // Lost a race on the (trigger_id, source_task_id) dedupe key → the other start wins.
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002' && opts?.triggerId && opts?.sourceTaskId) {
-        const dup = await this.prisma.workflowInstance.findFirst({
-          where: { trigger_id: opts.triggerId, source_task_id: opts.sourceTaskId },
-          select: { id: true },
-        })
-        if (dup) return dup
+        throw err
       }
-      throw err
     }
 
     await this.runEffects(effects)
@@ -1296,7 +1466,7 @@ export class WorkflowEngineService {
           orgId,
           taskId: task.id,
           newDeadline: deadline,
-          actorUserId: senderSnap?.assigner_user_id ?? inst.ownerIds[0],
+          actorUserId: senderSnap?.assigner_user_id ?? inst.editorIds[0],
           reason: `Extended while “${senderTitle}” waited for “${targetTitle}”.`,
           now,
         })
@@ -1315,7 +1485,7 @@ export class WorkflowEngineService {
       instanceId: inst.id,
       rowId: sender.id,
       type: 'returned',
-      message: `“${targetTitle}” is done again. The run is back at “${senderTitle}”.`,
+      message: `“${targetTitle}” is done again. The instance is back at “${senderTitle}”.`,
       metadata: {
         from_row_id: target.id,
         to_row_id: sender.id,
@@ -1353,10 +1523,10 @@ export class WorkflowEngineService {
       where: { id: instanceId, organization_id: orgId },
       select: { id: true, status: true },
     })
-    if (!inst) throw new NotFoundException('Run not found')
+    if (!inst) throw new NotFoundException('Instance not found')
     const rows = await this.prisma.workflowInstanceStep.findMany({ where: { workflow_instance_id: instanceId, organization_id: orgId } })
     const from = rows.find((r) => r.id === fromRowId)
-    if (!from || isBranchRow(from)) throw new NotFoundException('That step isn’t part of this run')
+    if (!from || isBranchRow(from)) throw new NotFoundException('That step isn’t part of this instance')
     if (!ADVANCEABLE.includes(inst.status as 'running') || !SENDABLE_ROW.includes(from.status as 'active')) return []
     return this.sendBackCandidates(rows, fromRowId).map((r) => ({ row_id: r.id, title: this.titleOf(r) }))
   }
@@ -1386,9 +1556,9 @@ export class WorkflowEngineService {
     opts: { canEdit?: boolean } = {},
   ): Promise<void> {
     const inst = await this.loadInstanceCtx(this.prisma, orgId, instanceId)
-    if (!inst) throw new NotFoundException('Run not found')
+    if (!inst) throw new NotFoundException('Instance not found')
     if (!ADVANCEABLE.includes(inst.status as 'running')) {
-      throw new BadRequestException(`This run is ${inst.status}, so it can’t be sent back.`)
+      throw new BadRequestException(`This instance is ${inst.status}, so it can’t be sent back.`)
     }
     const why = (reason ?? '').trim()
     if (why.length < REASON_MIN) {
@@ -1399,25 +1569,25 @@ export class WorkflowEngineService {
     const rows = await this.prisma.workflowInstanceStep.findMany({ where: { workflow_instance_id: instanceId, organization_id: orgId } })
     const from = rows.find((r) => r.id === fromRowId)
     const to = rows.find((r) => r.id === toRowId)
-    if (!from || isBranchRow(from)) throw new NotFoundException('That step isn’t part of this run')
-    if (!to || isBranchRow(to)) throw new NotFoundException('The step to send back to isn’t part of this run')
+    if (!from || isBranchRow(from)) throw new NotFoundException('That step isn’t part of this instance')
+    if (!to || isBranchRow(to)) throw new NotFoundException('The step to send back to isn’t part of this instance')
     const fromTitle = this.titleOf(from)
     const toTitle = this.titleOf(to)
     if (!SENDABLE_ROW.includes(from.status as 'active')) {
-      throw new BadRequestException(`“${fromTitle}” isn’t in progress, so it can’t send the run back.`)
+      throw new BadRequestException(`“${fromTitle}” isn’t in progress, so it can’t send the instance back.`)
     }
     if (!this.sendBackCandidates(rows, fromRowId).some((r) => r.id === toRowId)) {
       throw new BadRequestException(
         to.status === 'completed'
-          ? `“${fromTitle}” can only send the run back to an earlier step.`
-          : `“${toTitle}” isn’t done, so the run can’t be sent back to it.`,
+          ? `“${fromTitle}” can only send the instance back to an earlier step.`
+          : `“${toTitle}” isn’t done, so the instance can’t be sent back to it.`,
       )
     }
     const workers = await this.taskWorkers(this.prisma, orgId, from.task_id)
     if (!workers.includes(actorUserId) && !opts.canEdit) {
-      throw new ForbiddenException(`Only the assignees of “${fromTitle}”, owners and editors can send it back.`)
+      throw new ForbiddenException(`Only the assignees of “${fromTitle}”, editors and admins can send it back.`)
     }
-    if (!to.task_id) throw new BadRequestException(`“${toTitle}” has no task to reopen, so the run can’t be sent back to it.`)
+    if (!to.task_id) throw new BadRequestException(`“${toTitle}” has no task to reopen, so the instance can’t be sent back to it.`)
 
     const now = await this.clock.now(orgId)
     const tz = await this.orgTimeZone(orgId)
@@ -1466,7 +1636,7 @@ export class WorkflowEngineService {
         rowId: from.id,
         type: 'sent_back',
         actorUserId,
-        message: `${actorName} sent the run back from “${fromTitle}” to “${toTitle}”: ${why}`,
+        message: `${actorName} sent the instance back from “${fromTitle}” to “${toTitle}”: ${why}`,
         metadata: {
           from_row_id: from.id,
           to_row_id: to.id,
@@ -1481,11 +1651,85 @@ export class WorkflowEngineService {
         this.notify(orgId, toWorkers.filter((u) => u !== actorUserId), 'workflow_sent_back', `“${toTitle}” was sent back to you`,
           `${actorName} sent “${inst.name}” back from “${fromTitle}”: ${why}\nNew deadline: ${formatHumanDate(deadline, tz)}.`,
           `/dashboard/tasks/${to.task_id}`, inst.id),
-        this.notify(orgId, inst.ownerIds.filter((u) => u !== actorUserId && !toWorkers.includes(u)), 'workflow_sent_back',
-          'Run sent back', `${actorName} sent “${inst.name}” back from “${fromTitle}” to “${toTitle}”: ${why}`, link, inst.id),
+        this.notify(orgId, inst.editorIds.filter((u) => u !== actorUserId && !toWorkers.includes(u)), 'workflow_sent_back',
+          'Instance sent back', `${actorName} sent “${inst.name}” back from “${fromTitle}” to “${toTitle}”: ${why}`, link, inst.id),
       )
     }, TX_OPTIONS)
     await this.runEffects(effects)
+  }
+
+  // ═══ Instance notes ══════════════════════════════════════════════════════════
+
+  /**
+   * Post a note on an instance (the API has checked who may and that `forRowId` is a
+   * row of this instance). One transaction under the instance lock: the note, re-checking
+   * the step isn't completed or skipped, and a `note_added` history entry. A step that
+   * has already started has its assignees told now; a later step's assignees hear about
+   * it in their assignment notification when it starts.
+   */
+  async addNote(
+    orgId: string,
+    instanceId: string,
+    authorUserId: string,
+    body: string,
+    forRowId: string | null,
+    forLabel: string | null = null,
+  ): Promise<{ id: string }> {
+    const inst = await this.loadInstanceCtx(this.prisma, orgId, instanceId)
+    if (!inst) throw new NotFoundException('Instance not found')
+    const now = await this.clock.now(orgId)
+    const effects: Effect[] = []
+    const id = await this.prisma.$transaction(async (tx) => {
+      await this.lockInstance(tx, inst.id)
+      const row = forRowId
+        ? await tx.workflowInstanceStep.findFirst({
+            where: { id: forRowId, workflow_instance_id: inst.id, organization_id: orgId },
+          })
+        : null
+      if (forRowId && (!row || isBranchRow(row) || row.status === 'completed' || row.status === 'skipped')) {
+        throw new BadRequestException({
+          message: 'Choose a step of this instance that isn’t done or skipped.',
+          code: 'note_step_invalid',
+          field: 'for_row_id',
+        })
+      }
+      const note = await tx.workflowInstanceNote.create({
+        data: {
+          organization_id: orgId,
+          workflow_instance_id: inst.id,
+          author_user_id: authorUserId,
+          body,
+          for_instance_step_id: row?.id ?? null,
+          created_at: now,
+        },
+        select: { id: true },
+      })
+      const author = await this.userName(tx, authorUserId)
+      const title = row ? this.titleOf(row) : null
+      const stepName = row ? `${forLabel ? `${forLabel} ` : ''}“${title}”` : null
+      await this.event(tx, {
+        orgId,
+        instanceId: inst.id,
+        rowId: row?.id ?? null,
+        type: 'note_added',
+        actorUserId: authorUserId,
+        message: stepName ? `${author} added a note for ${stepName}.` : `${author} added a note.`,
+        metadata: { note_id: note.id, for_row_id: row?.id ?? null },
+        at: now,
+      })
+      if (row && row.task_id && isOpen(row.status)) {
+        const workers = (await this.taskWorkers(tx, orgId, row.task_id)).filter((u) => u !== authorUserId)
+        const excerpt = body.length > 200 ? `${body.slice(0, 199)}…` : body
+        effects.push(
+          this.notify(orgId, workers, 'workflow_note_added', 'New note for your step',
+            `${author} left a note for “${title}” in “${inst.name}”: ${excerpt}`,
+            `/dashboard/tasks/${row.task_id}`, inst.id),
+        )
+      }
+      return note.id
+    }, TX_OPTIONS)
+    await this.runEffects(effects)
+    return { id }
   }
 
   // ═══ Cancel / retry / skip ═══════════════════════════════════════════════════
@@ -1497,9 +1741,9 @@ export class WorkflowEngineService {
    */
   async cancelInstance(orgId: string, instanceId: string, actorUserId: string): Promise<void> {
     const inst = await this.loadInstanceCtx(this.prisma, orgId, instanceId)
-    if (!inst) throw new NotFoundException('Run not found')
+    if (!inst) throw new NotFoundException('Instance not found')
     if (!ADVANCEABLE.includes(inst.status as 'running')) {
-      throw new BadRequestException(`This run is already ${inst.status}, so it can’t be cancelled.`)
+      throw new BadRequestException(`This instance is already ${inst.status}, so it can’t be cancelled.`)
     }
     const now = await this.clock.now(orgId)
     const effects: Effect[] = []
@@ -1509,14 +1753,14 @@ export class WorkflowEngineService {
         where: { id: instanceId, organization_id: orgId, status: { in: ADVANCEABLE } },
         data: { status: 'cancelled', completed_at: now, last_error: null },
       })
-      if (res.count !== 1) throw new BadRequestException('This run just changed. Refresh and try again.')
+      if (res.count !== 1) throw new BadRequestException('This instance just changed. Refresh and try again.')
       const actorName = await this.userName(tx, actorUserId)
       const rows = await tx.workflowInstanceStep.findMany({
         where: { workflow_instance_id: instanceId, status: { in: ['pending', ...OPEN_ROW] } },
       })
       for (const r of rows) {
         const w = isOpen(r.status)
-          ? await this.withdrawTask(tx, orgId, r.task_id, actorUserId, `Run “${inst.name}” was cancelled`, now)
+          ? await this.withdrawTask(tx, orgId, r.task_id, actorUserId, `Instance “${inst.name}” was cancelled`, now)
           : { withdrawn: false, assigneeIds: [], title: null }
         await tx.workflowInstanceStep.update({
           where: { id: r.id },
@@ -1524,7 +1768,7 @@ export class WorkflowEngineService {
         })
         if (w.withdrawn && w.assigneeIds.length) {
           effects.push(
-            this.notify(orgId, w.assigneeIds.filter((u) => u !== actorUserId), 'workflow_task_withdrawn', 'Run cancelled',
+            this.notify(orgId, w.assigneeIds.filter((u) => u !== actorUserId), 'workflow_task_withdrawn', 'Instance cancelled',
               `“${inst.name}” was cancelled by ${actorName}. Your task “${w.title}” was withdrawn.`,
               this.instanceLink(inst.workflow_template_id, inst.id), inst.id),
           )
@@ -1535,7 +1779,7 @@ export class WorkflowEngineService {
         instanceId,
         type: 'run_cancelled',
         actorUserId,
-        message: `${actorName} cancelled the run.`,
+        message: `${actorName} cancelled the instance.`,
         metadata: { withdrawn_rows: rows.filter((r) => isOpen(r.status)).map((r) => r.id) },
         at: now,
       })
@@ -1554,9 +1798,9 @@ export class WorkflowEngineService {
    */
   async retryInstance(orgId: string, instanceId: string, actorUserId: string): Promise<void> {
     const inst = await this.loadInstanceCtx(this.prisma, orgId, instanceId)
-    if (!inst) throw new NotFoundException('Run not found')
+    if (!inst) throw new NotFoundException('Instance not found')
     if (!ADVANCEABLE.includes(inst.status as 'running')) {
-      throw new BadRequestException(`This run is ${inst.status}, so there is nothing to retry.`)
+      throw new BadRequestException(`This instance is ${inst.status}, so there is nothing to retry.`)
     }
     const rows = flowRows(await this.prisma.workflowInstanceStep.findMany({ where: { workflow_instance_id: instanceId } }))
     const open = rows.filter((r) => isOpen(r.status))
@@ -1588,7 +1832,7 @@ export class WorkflowEngineService {
       ready.length > 0 ||
       runFinished(rows) ||
       (open.length === 0 && !rows.some(waitingAhead) && rows.some((r) => r.status === 'pending'))
-    if (!stranded) throw new BadRequestException('This run is not stuck, so there is nothing to retry.')
+    if (!stranded) throw new BadRequestException('This instance is not stuck, so there is nothing to retry.')
 
     const tz = await this.orgTimeZone(orgId)
     const effects: Effect[] = []
@@ -1605,7 +1849,7 @@ export class WorkflowEngineService {
           const snap = await this.snapshotFor(tx, r, inst.workflow_template_id)
           if (!snap) {
             throw new BadRequestException(
-              `“${this.titleOf(r)}” was deleted from the workflow before it ran. Skip the step or cancel the run.`,
+              `“${this.titleOf(r)}” was deleted from the workflow before it ran. Skip the step or cancel the instance.`,
             )
           }
           // Keep the deadline when it's still ahead; else a fresh one from now.
@@ -1627,7 +1871,7 @@ export class WorkflowEngineService {
           instanceId,
           type: 'retried',
           actorUserId,
-          message: `${actorName} retried the run.`,
+          message: `${actorName} retried the instance.`,
           metadata: {
             completed_rows: finishedTask.map((r) => r.id),
             recreated_rows: brokenTask.map((r) => r.id),
@@ -1654,15 +1898,15 @@ export class WorkflowEngineService {
    */
   async skipStep(orgId: string, instanceId: string, actorUserId: string, rowId?: string | null): Promise<void> {
     const inst = await this.loadInstanceCtx(this.prisma, orgId, instanceId)
-    if (!inst) throw new NotFoundException('Run not found')
+    if (!inst) throw new NotFoundException('Instance not found')
     if (!ADVANCEABLE.includes(inst.status as 'running')) {
-      throw new BadRequestException(`This run is ${inst.status}, so steps can’t be skipped.`)
+      throw new BadRequestException(`This instance is ${inst.status}, so steps can’t be skipped.`)
     }
     const rows = flowRows(await this.prisma.workflowInstanceStep.findMany({ where: { workflow_instance_id: instanceId, organization_id: orgId } }))
     let target: StepRow | undefined
     if (rowId) {
       target = rows.find((r) => r.id === rowId)
-      if (!target) throw new NotFoundException('That step isn’t part of this run')
+      if (!target) throw new NotFoundException('That step isn’t part of this instance')
     } else {
       const open = rows.filter((r) => isOpen(r.status))
       const candidates = open.length ? open : readyRows(rows, rowDependencies(rows))
@@ -1740,14 +1984,14 @@ export class WorkflowEngineService {
    */
   async startStepNow(orgId: string, instanceId: string, rowId: string, actorUserId: string): Promise<void> {
     const inst = await this.loadInstanceCtx(this.prisma, orgId, instanceId)
-    if (!inst) throw new NotFoundException('Run not found')
+    if (!inst) throw new NotFoundException('Instance not found')
     if (!ADVANCEABLE.includes(inst.status as 'running')) {
-      throw new BadRequestException(`This run is ${inst.status}, so steps can’t be started.`)
+      throw new BadRequestException(`This instance is ${inst.status}, so steps can’t be started.`)
     }
     const row = await this.prisma.workflowInstanceStep.findFirst({
       where: { id: rowId, workflow_instance_id: instanceId, organization_id: orgId },
     })
-    if (!row || isBranchRow(row)) throw new NotFoundException('That step isn’t part of this run')
+    if (!row || isBranchRow(row)) throw new NotFoundException('That step isn’t part of this instance')
     if (!isWaitingRow(row)) {
       throw new BadRequestException(`“${this.titleOf(row)}” isn’t waiting to start.`)
     }
@@ -1838,7 +2082,7 @@ export class WorkflowEngineService {
         orgId,
         row.workflow_instance_id,
         null,
-        `“${this.titleOf(row)}” was closed as incomplete. Reopen its task, retry the run, or skip the step.`,
+        `“${this.titleOf(row)}” was closed as incomplete. Reopen its task, retry the instance, or skip the step.`,
       )
     })
   }
@@ -1929,7 +2173,7 @@ export class WorkflowEngineService {
         orgId,
         row.workflow_instance_id,
         null,
-        `The task for “${this.titleOf(row)}” was deleted. Retry the run, skip the step, or cancel the run.`,
+        `The task for “${this.titleOf(row)}” was deleted. Retry the instance, skip the step, or cancel the instance.`,
       )
     })
   }
@@ -2095,7 +2339,7 @@ export class WorkflowEngineService {
           instanceId: inst.id,
           rowId: row.id,
           type: 'step_moved_on',
-          message: `The run continued past “${title}”. Its task stays open.`,
+          message: `The instance continued past “${title}”. Its task stays open.`,
           at: now,
         })
         await this.settle(tx, inst, now, tz, effects)
@@ -2104,7 +2348,7 @@ export class WorkflowEngineService {
         ? 'The next steps have started. The task stays open.'
         : 'The next steps wait until it is done.'
       effects.unshift(
-        this.notify(orgId, [...inst.ownerIds, ...contacts, ...workers], 'workflow_step_late', 'Step is late',
+        this.notify(orgId, [...inst.editorIds, ...contacts, ...workers], 'workflow_step_late', 'Step is late',
           `“${title}” in “${inst.name}” is late (due ${due}, ${who}). ${consequence}`,
           this.instanceLink(inst.workflow_template_id, inst.id), inst.id),
       )
@@ -2158,7 +2402,7 @@ export class WorkflowEngineService {
   private async processSchedulesForOrgImpl(orgId: string, now: Date): Promise<void> {
     const entries = await this.prisma.workflowScheduleEntry.findMany({
       where: { organization_id: orgId, is_active: true, template: { status: 'active', organization_id: orgId } },
-      include: { template: { select: { name: true, owner_user_ids: true, created_by_user_id: true } } },
+      include: { template: { select: { name: true, ...EDITORS_SELECT } } },
       orderBy: [{ workflow_template_id: 'asc' }, { order_index: 'asc' }],
     })
     if (!entries.length) return
@@ -2197,8 +2441,8 @@ export class WorkflowEngineService {
                 orgId,
                 module: 'workflows',
                 event_type: 'workflow_stuck',
-                recipients: this.ownersOf(entry.template),
-                title: 'Scheduled run didn’t start',
+                recipients: this.editorsOf(entry.template),
+                title: 'Scheduled instance didn’t start',
                 body: `“${entry.template.name}” was due to start ${formatHumanDate(occurrence, tz)}: ${message}`,
                 link: `/dashboard/tasks/workflows/${entry.workflow_template_id}`,
                 entity: { type: 'workflow_template', id: entry.workflow_template_id },

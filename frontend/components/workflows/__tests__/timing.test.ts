@@ -63,14 +63,14 @@ describe('first steps: on or after the run start (the server’s words)', () => 
     const { f, rs } = setup([monthly([3])])
     const first = { first: true, runStart: rs }
     assert.deepEqual(timingProblems(md(1), DUE_1, f, first), [
-      { part: 'start', message: 'pick a day on or after the 3rd, when the run starts.' },
+      { part: 'start', message: 'pick a day on or after the 3rd, when the instance starts.' },
     ])
     assert.deepEqual(timingProblems(IMMEDIATE, mdDue(2), f, first), [
-      { part: 'due', message: 'pick a day on or after the 3rd, when the run starts.' },
+      { part: 'due', message: 'pick a day on or after the 3rd, when the instance starts.' },
     ])
     assert.deepEqual(timingProblems(md(3), mdDue(20), f, first), [])
     assert.deepEqual(timingProblems(md(3, '08:00'), DUE_1, f, first), [
-      { part: 'start', message: 'pick a time at or after 9:00 AM on the 3rd, when the run starts.' },
+      { part: 'start', message: 'pick a time at or after 9:00 AM on the 3rd, when the instance starts.' },
     ])
     // Later steps may use any day.
     assert.deepEqual(timingProblems(md(1), DUE_1, f, { first: false, runStart: rs }), [])
@@ -80,23 +80,23 @@ describe('first steps: on or after the run start (the server’s words)', () => 
     const weekly = setup([{ schedule_type: 'weekly', every: 1, days: [3], time: '09:00' }])
     assert.equal(
       timingProblems({ kind: 'weekday', weekday: 1, time: '09:00' }, DUE_1, weekly.f, { first: true, runStart: weekly.rs })[0]?.message,
-      'pick a day on or after Wednesday, when the run starts.',
+      'pick a day on or after Wednesday, when the instance starts.',
     )
     const yearly = setup([{ schedule_type: 'yearly', every: 1, yearly_dates: [{ month: 4, day: 1 }], time: '09:00' }])
     assert.equal(
       timingProblems({ kind: 'year_date', month: 3, day: 1, time: '09:00' }, DUE_1, yearly.f, { first: true, runStart: yearly.rs })[0]?.message,
-      'pick a date on or after 1 Apr, when the run starts.',
+      'pick a date on or after 1 Apr, when the instance starts.',
     )
     const daily = setup([{ schedule_type: 'daily', every: 1, time: '09:00' }])
     assert.equal(
       timingProblems(IMMEDIATE, { kind: 'time_of_day', time: '08:00' }, daily.f, { first: true, runStart: daily.rs })[0]?.message,
-      'pick a time at or after 9:00 AM, when the run starts.',
+      'pick a time at or after 9:00 AM, when the instance starts.',
     )
     const cycle = setup([{ schedule_type: 'weekly', every: 2, days: [3], time: '09:00' }])
     const place = { first: true, runStart: cycle.rs }
     assert.equal(
       timingProblems({ kind: 'cycle_weekday', cycle: 1, weekday: 1, time: '09:00' }, DUE_1, cycle.f, place)[0]?.message,
-      'pick a day on or after Wednesday in Week 1, when the run starts.',
+      'pick a day on or after Wednesday in Week 1, when the instance starts.',
     )
     assert.deepEqual(timingProblems({ kind: 'cycle_weekday', cycle: 2, weekday: 1, time: '09:00' }, DUE_1, cycle.f, place), [])
   })
@@ -104,7 +104,7 @@ describe('first steps: on or after the run start (the server’s words)', () => 
   it('several trigger days: the latest one counts (monthly on the 3rd and the 20th)', () => {
     const { f, rs } = setup([monthly([3, 20])])
     assert.deepEqual(rs, { type: 'monthly', every: 1, day: 20, time: '09:00' })
-    assert.equal(timingProblems(md(10), DUE_1, f, { first: true, runStart: rs })[0]?.message, 'pick a day on or after the 20th, when the run starts.')
+    assert.equal(timingProblems(md(10), DUE_1, f, { first: true, runStart: rs })[0]?.message, 'pick a day on or after the 20th, when the instance starts.')
   })
 
   it('greys out the days before the run start (Cycle 1 only)', () => {
@@ -412,7 +412,7 @@ describe('explicit cycles: rules, words and back-compat', () => {
     // First steps: Month 1 before the run start is refused (same words as before); Month 2 is fine.
     const { rs } = setup([monthly([3])])
     assert.deepEqual(timingProblems(emd(1, 1), DUE_1, f1, { first: true, runStart: rs }), [
-      { part: 'start', message: 'pick a day on or after the 3rd, when the run starts.' },
+      { part: 'start', message: 'pick a day on or after the 3rd, when the instance starts.' },
     ])
     assert.deepEqual(timingProblems(emd(2, 1), DUE_1, f1, { first: true, runStart: rs }), [])
   })

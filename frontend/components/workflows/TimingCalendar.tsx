@@ -45,7 +45,7 @@ export function dayWords(dayNo: number, refYear: number): string {
 
 /** "1 Collect documents — due 6:00 PM", "▶ Run starts — 9:00 AM". */
 export function eventText(e: DayEvent, runTime: string): string {
-  if (!e.span) return `▶ Run starts — ${runTime}`
+  if (!e.span) return `▶ Instance starts — ${runTime}`
   const name = `${e.span.label} ${e.span.title.trim() || 'Untitled step'}`
   const t = (d: Date) => fmtTime(`${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`)
   switch (e.what) {
@@ -379,7 +379,7 @@ export default function TimingCalendar({
       {/* Legend */}
       <ul aria-label="Legend" className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[#334155]">
         <li className="inline-flex items-center gap-1">
-          <Play size={9} aria-hidden className="text-[#0F172A] fill-[#0F172A]" /> Run starts
+          <Play size={9} aria-hidden className="text-[#0F172A] fill-[#0F172A]" /> Instance starts
         </li>
         {spans.map((s) => (
           <li key={s.id} className="inline-flex items-center gap-1 min-w-0 max-w-full">

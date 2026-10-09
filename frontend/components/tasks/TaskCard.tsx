@@ -8,6 +8,7 @@ import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import AssigneeAvatars, { type AvatarPerson } from './AssigneeAvatars'
 import Tooltip from '@/components/ui/Tooltip'
 import TagList from './TagList'
+import WorkflowTaskBadge, { taskWorkflow } from './WorkflowTaskBadge'
 // import QuadrantBadge from './QuadrantBadge'
 
 interface TaskCardProps {
@@ -205,8 +206,11 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
   const openStatuses = statuses.filter((s) => !TERMINAL_STATUS_PHASES.includes(s.type))
 
   // Who assigned the task. Hidden when the viewer is the assigner (no "By me").
+  // A workflow step's task isn't handed out by a person: its source is the workflow
+  // instance (badge), never "Self" / "by <assigner>".
+  const wf = taskWorkflow(task)
   const assignerName = task.created_by?.name ?? null
-  const showAssigner = !!assignerName && task.created_by_user_id !== currentUserId
+  const showAssigner = !wf && !!assignerName && task.created_by_user_id !== currentUserId
 
   // Other assignees = everyone but the viewer (primary first, then CC), each with
   // name/dept/role for the hover tooltip. When currentUserId is omitted, this is
@@ -247,7 +251,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
           )}
           {/* Tags sit with the category as one classification fact (two chips + "+N"). */}
           <TagList tags={task.tags} max={2} />
-          {task.workflow_step?.show_on_card && (
+          {!wf && task.workflow_step?.show_on_card && (
             <span className="inline-flex items-center gap-0.5 rounded-[999px] px-2 py-0.5 text-[10px] font-semibold bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
               <GitBranch size={9} />
               {task.workflow_step.template_name} — Step {task.workflow_step.step_order}
@@ -291,7 +295,8 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
 
       {/* People — a single clean line: who assigned it (muted) + the assignee
           avatars, or a "Self" tag when it's a task you assigned to yourself. */}
-      <div className="shrink-0 flex items-center gap-2 justify-end max-w-[240px]">
+      <div className="shrink-0 flex items-center gap-2 justify-end max-w-[320px] min-w-0">
+        {wf && <WorkflowTaskBadge workflow={wf} />}
         {showAssigner && (
           <Tooltip label={`Assigned by ${assignerName}`}>
             <span className="text-[11px] text-[#94A3B8] truncate max-w-[120px]">
@@ -301,7 +306,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
         )}
         {otherPeople.length > 0 ? (
           <AssigneeAvatars people={otherPeople} max={3} size="sm" />
-        ) : !showAssigner ? (
+        ) : !showAssigner && !wf ? (
           <span className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[11px] font-medium bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
             Self
           </span>

@@ -14,9 +14,9 @@ import { BTN, EmptyState, ErrorState, GatedButton, REASONS, WORKFLOWS_BASE, useW
 
 type View = 'owned' | 'runs' | 'assigned'
 const VIEWS: { value: View; label: string }[] = [
-  { value: 'owned', label: 'Workflows I own' },
-  { value: 'runs', label: 'My workflow runs' },
-  { value: 'assigned', label: 'Assigned to me' },
+  { value: 'owned', label: 'Workflows I edit' },
+  { value: 'runs', label: 'Instances of my workflows' },
+  { value: 'assigned', label: 'Instances I work in' },
 ]
 
 type Load<T> = { status: 'loading' | 'ready' | 'failed'; data: T[]; error: string }
@@ -155,7 +155,7 @@ function MyWorkflows() {
           <EmptyState
             icon={WorkflowIcon}
             title="No workflows yet"
-            text="Workflows you own appear here."
+            text="Workflows you created or can edit appear here."
             action={
               <Link href={WORKFLOWS_BASE} className={BTN.secondary}>
                 Go to all workflows
@@ -181,7 +181,7 @@ function MyWorkflows() {
 
       {view === 'runs' &&
         (runs.status === 'failed' ? (
-          <ErrorState title="Runs could not be loaded" message={runs.error} onRetry={loadRuns} />
+          <ErrorState title="Instances could not be loaded" message={runs.error} onRetry={loadRuns} />
         ) : (
           <InstanceList
             showWorkflow
@@ -189,7 +189,7 @@ function MyWorkflows() {
             loading={runs.status === 'loading'}
             emptyState={
               <div className="bg-white border border-[#E2E8F0] rounded-[12px]">
-                <EmptyState icon={History} title="No runs yet" text="Runs of workflows you own appear here." />
+                <EmptyState icon={History} title="No instances yet" text="Instances of workflows you edit appear here." />
               </div>
             }
           />
@@ -197,7 +197,7 @@ function MyWorkflows() {
 
       {view === 'assigned' &&
         (assigned.status === 'failed' ? (
-          <ErrorState title="Runs could not be loaded" message={assigned.error} onRetry={loadAssigned} />
+          <ErrorState title="Instances could not be loaded" message={assigned.error} onRetry={loadAssigned} />
         ) : (
           <InstanceList
             showWorkflow
@@ -205,7 +205,7 @@ function MyWorkflows() {
             loading={assigned.status === 'loading'}
             emptyState={
               <div className="bg-white border border-[#E2E8F0] rounded-[12px]">
-                <EmptyState icon={UserCheck} title="No runs yet" text="Runs where you have a step appear here." />
+                <EmptyState icon={UserCheck} title="No instances yet" text="Instances where you have a step, or are copied on one, appear here." />
               </div>
             }
           />

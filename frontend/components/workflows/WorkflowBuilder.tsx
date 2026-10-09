@@ -63,6 +63,7 @@ import {
   TemplateStatusBadge,
   WORKFLOWS_BASE,
   WorkflowBreadcrumb,
+  creatorOf,
   editHref,
   gate,
   plural,
@@ -270,8 +271,9 @@ function workingFrom(w: WorkflowTemplate): Working {
       schedules,
     },
     people: {
-      ownerIds: w.people?.owners ? w.people.owners.map((p) => p.id) : w.owner_user_ids ?? [],
-      editorIds: (w.people?.editors ?? []).map((p) => p.id),
+      // The creator is always an editor: shown as a fixed chip, never in the list.
+      editorIds: (w.people?.editors ?? []).map((p) => p.id).filter((id) => id !== creatorOf(w)?.id),
+      viewerIds: (w.people?.viewers ?? []).map((p) => p.id),
     },
     tracks,
     steps: orderByTracks(tracks, w.steps ?? []),
@@ -279,12 +281,12 @@ function workingFrom(w: WorkflowTemplate): Working {
 }
 
 function blankWorking(me: string | undefined): Working {
-  // A new workflow's owner is its creator, who is also pre-picked to start it by hand.
+  // A new workflow's creator is always an editor, and is pre-picked to run it by hand.
   return {
     name: '',
     description: '',
     starts: { manual: true, starterIds: me ? [me] : [], scheduleOn: false, schedules: [] },
-    people: { ownerIds: me ? [me] : [], editorIds: [] },
+    people: { editorIds: [], viewerIds: [] },
     tracks: [{ key: MAIN_TRACK, name: '', split_from: null }],
     steps: [],
   }
@@ -439,7 +441,7 @@ function definitionOf(work: Working, mode: 'draft' | 'save', withPeople: boolean
     tracks: work.tracks
       .filter((t) => t.key === MAIN_TRACK || used.has(t.key))
       .map((t) => ({ key: t.key, name: t.name.trim() || null, split_from_step_key: t.key === MAIN_TRACK ? null : t.split_from })),
-    ...(withPeople ? { people: { owner_user_ids: work.people.ownerIds, editor_user_ids: work.people.editorIds } } : {}),
+    ...(withPeople ? { people: { editor_user_ids: work.people.editorIds, viewer_user_ids: work.people.viewerIds } } : {}),
   }
 }
 
@@ -450,7 +452,7 @@ function signature(work: Working): string {
   return JSON.stringify({
     ...d,
     starts: { ...d.starts, manual: { ...d.starts.manual, starter_user_ids: sorted(d.starts.manual.starter_user_ids) } },
-    people: { owner_user_ids: sorted(d.people?.owner_user_ids), editor_user_ids: sorted(d.people?.editor_user_ids) },
+    people: { editor_user_ids: sorted(d.people?.editor_user_ids), viewer_user_ids: sorted(d.people?.viewer_user_ids) },
   })
 }
 
@@ -924,7 +926,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   const placementText = (prevId: string | null, track: string, first: boolean): string | null => {
     if (!first || track === MAIN_TRACK) return null
     const prev = prevId ? steps.find((s) => s.id === prevId) : undefined
-    return prev ? stepName(labels.get(prev.id), prev.title) : 'Start of run'
+    return prev ? stepName(labels.get(prev.id), prev.title) : 'Instance start'
   }
 
   // ── Saving ──
@@ -1055,7 +1057,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       }
       const warnings = (saved.warnings ?? []).map((x) => warningText(x, nameOf)).filter(Boolean)
       if (warnings.length) {
-        addToast(warnings.length === 1 ? `Check timing: ${warnings[0]}` : `${warnings.length} timing warnings. See the example run.`, 'warning')
+        addToast(warnings.length === 1 ? `Check timing: ${warnings[0]}` : `${warnings.length} timing warnings. See the example instance.`, 'warning')
       }
       return true
     } catch (e) {
@@ -1090,7 +1092,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       // Only the status (and version) change — edits on screen stay as they are.
       setWorkflow((w) => (w ? { ...w, ...updated, steps: w.steps } : updated))
       addToast(
-        pause ? 'Workflow paused. Runs in progress continue.' : 'Workflow resumed',
+        pause ? 'Workflow paused. Instances in progress continue.' : 'Workflow resumed',
         'success',
       )
     } catch (e) {
@@ -1180,18 +1182,18 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     ) : w?.status === 'paused' ? (
       <div className="flex items-start gap-2.5 rounded-[10px] border border-[#FDE68A] bg-[#FEFCE8] px-3.5 py-2.5 text-sm text-[#713F12]">
         <Pause size={16} className="shrink-0 mt-0.5" />
-        <span>This workflow is paused. Runs in progress continue. Resume it to start new runs.</span>
+        <span>This workflow is paused. Instances in progress continue. Resume it to run it again.</span>
       </div>
     ) : w?.status === 'active' && edit.allowed === true ? (
       <div className="flex items-start gap-2.5 rounded-[10px] border border-[#BFDBFE] bg-[#EFF6FF] px-3.5 py-2.5 text-sm text-[#1E3A8A]">
         <Info size={16} className="shrink-0 mt-0.5" />
-        <span>This workflow is live. Changes apply to new runs only.</span>
+        <span>This workflow is live. Changes apply to new instances only.</span>
       </div>
     ) : null
 
   // The example run works from what is on screen. Name and description don't change the
   // dates, so typing them doesn't ask for a new example.
-  const exampleDefinition = steps.length ? { ...definitionOf(work, 'draft', false), name: 'Example run', description: null } : null
+  const exampleDefinition = steps.length ? { ...definitionOf(work, 'draft', false), name: 'Example instance', description: null } : null
 
   // ── Tracks: side by side from 1024px (scrolling sideways inside the section when
   // they don't fit), stacked below. A track being started by "Add parallel path" shows as its
@@ -1295,7 +1297,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
 
     // The main path needs no "where it starts"; a parallel path says what it comes after.
     const headerHint = [
-      t.key === MAIN_TRACK ? null : split ? `After ${stepName(labels.get(split.id), split.title)}` : 'After start of run',
+      t.key === MAIN_TRACK ? null : split ? `After ${stepName(labels.get(split.id), split.title)}` : 'From the start',
       group.length === 0 && !pending ? 'Add a step to keep it' : null,
     ]
       .filter(Boolean)
@@ -1655,12 +1657,13 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       <PeopleSection
         orgId={orgId}
         currentUser={me}
+        creator={w ? creatorOf(w) : me ? { id: me.user_id, name: me.name } : null}
         value={work.people}
         onChange={(people) => setWork((cur) => ({ ...cur, people }))}
         allowed={archived && peopleGate.allowed === true ? false : peopleGate.allowed}
         reason={archived ? RESTORE_FIRST : peopleGate.reason}
         lookups={lookups}
-        known={[...(w?.people?.owners ?? w?.owners ?? []), ...(w?.people?.editors ?? [])]}
+        known={[...(w?.people?.editors ?? []), ...(w?.people?.viewers ?? [])]}
       />
 
       {actions.dialogs}
@@ -1671,7 +1674,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         title={`Delete ${stepName(deleteTarget ? labels.get(deleteTarget.id) : null, deleteTarget?.title || 'Untitled step')}?`}
         message={
           deleteTarget
-            ? [...deleteEffects(deleteTarget), isNewKey(deleteTarget.id) ? '' : 'Removed when you save. Runs in progress are not affected.']
+            ? [...deleteEffects(deleteTarget), isNewKey(deleteTarget.id) ? '' : 'Removed when you save. Instances in progress are not affected.']
                 .filter(Boolean)
                 .join(' ')
             : ''

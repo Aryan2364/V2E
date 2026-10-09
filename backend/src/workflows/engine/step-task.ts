@@ -260,7 +260,7 @@ export async function reopenTaskForWorkflow(
     where: { id: a.taskId, organization_id: a.orgId, is_deleted: false },
     select: { id: true, status_id: true, completion_mode: true },
   })
-  if (!task) throw new BadRequestException('That step’s task no longer exists, so the run can’t be sent back to it.')
+  if (!task) throw new BadRequestException('That step’s task no longer exists, so the instance can’t be sent back to it.')
 
   const statusOf = (type: 'in_progress' | 'not_started') =>
     tx.taskStatus.findFirst({

@@ -16,6 +16,7 @@ import InlineTaskTags from '@/components/tasks/InlineTaskTags'
 import { useCanEditTask } from '@/lib/tasks/useCanEditTask'
 import TaskChecklistCard from '@/components/tasks/TaskChecklistCard'
 import WorkflowTaskBanner from '@/components/workflows/WorkflowTaskBanner'
+import WorkflowTaskBadge, { taskWorkflow } from '@/components/tasks/WorkflowTaskBadge'
 import ProofOfCompletionCard from '@/components/tasks/ProofOfCompletionCard'
 import StyledSelect from '@/components/ui/StyledSelect'
 import Tooltip from '@/components/ui/Tooltip'
@@ -1745,6 +1746,35 @@ export default function TaskDetailPage() {
                     <p className="text-sm text-[#475569]">{formatDate(task.created_at)}</p>
                   </div>
                 </div>
+
+                {/* Who it came from: a person, or — for a workflow step's task — the
+                    workflow instance, with the person who set the step up. */}
+                {(() => {
+                  const wf = taskWorkflow(task)
+                  const setUpBy = wf ? wf.set_up_by_name ?? task.created_by?.name ?? null : null
+                  if (!wf && !task.created_by?.name) return null
+                  return (
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-7 h-7 rounded-[6px] bg-[#F1F5F9] flex items-center justify-center shrink-0">
+                        <User size={13} className="text-[#475569]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wide">Assigned by</p>
+                        {wf ? (
+                          <>
+                            <p className="text-sm text-[#0F172A] flex items-center gap-1.5 flex-wrap min-w-0">
+                              <span>Workflow:</span>
+                              <WorkflowTaskBadge workflow={wf} />
+                            </p>
+                            {setUpBy && <p className="text-[12px] text-[#475569]">set up by {setUpBy}</p>}
+                          </>
+                        ) : (
+                          <p className="text-sm text-[#475569]">{task.created_by?.name}</p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             </div>
 

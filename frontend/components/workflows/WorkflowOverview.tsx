@@ -3,11 +3,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Archive, ArchiveRestore, GitBranch, History, List, Pause, Pencil, Play, Users } from 'lucide-react'
+import { Archive, ArchiveRestore, GitBranch, History, List, Pause, Pencil, Play, UserCog, Users } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { workflowsApi, workflowErrorMessage, workflowErrorStatus } from '@/lib/api/workflows'
 import type { InvolvedPerson, RunDisplayStatus, WorkflowInstance, WorkflowTemplate } from '@/lib/types/workflows'
 import ActionMenu, { type ActionMenuItem } from './ActionMenu'
+import ChangeCreatorDialog from './ChangeCreatorDialog'
 import InstanceList from './InstanceList'
 import StepFlow, { assigneeNames, flowLanes } from './StepFlow'
 import { layoutTracks, orderByTracks, tracksFromServer } from './tracks'
@@ -22,13 +23,14 @@ import {
   ErrorState,
   GatedButton,
   InfoTip,
-  NotFoundState,
+  NoAccessState,
   REASONS,
   RUN_STATUS,
   Skeleton,
   TemplateStatusBadge,
   WORKFLOWS_BASE,
   WorkflowBreadcrumb,
+  creatorOf,
   editHref,
   fmtDate,
   fmtDateTime,
@@ -54,18 +56,33 @@ const RUN_FILTERS: { value: RunFilter; label: string }[] = [
 ]
 
 const ROLE_LABEL: Record<string, string> = {
-  owner: 'Owner',
+  creator: 'Creator',
   editor: 'Editor',
+  // Older servers: owners are editors now.
+  owner: 'Editor',
+  viewer: 'Viewer',
   starter: 'Can start',
   assignee: 'Assignee',
   cc: 'CC',
   escalation: 'Escalation contact',
   escalation_contact: 'Escalation contact',
-  creator: 'Creator',
 }
-const ROLE_ORDER = ['owner', 'creator', 'editor', 'starter', 'assignee', 'cc', 'escalation', 'escalation_contact']
+const ROLE_ORDER = ['creator', 'editor', 'owner', 'viewer', 'starter', 'assignee', 'cc', 'escalation', 'escalation_contact']
 
-/** Owners, editors, starters and everyone the steps involve — the server's list, or built here. */
+/** Each role said once ("owner" and "editor" both read "Editor"), in order. */
+function roleWords(roles: string[]): string {
+  const words: string[] = []
+  roles
+    .slice()
+    .sort((a, b) => ROLE_ORDER.indexOf(a) - ROLE_ORDER.indexOf(b))
+    .forEach((r) => {
+      const w = ROLE_LABEL[r] ?? r
+      if (!words.includes(w)) words.push(w)
+    })
+  return words.join(' · ')
+}
+
+/** The creator, editors, viewers, starters and everyone the steps involve — the server's list, or built here. */
 function involvedPeople(w: WorkflowTemplate, memberName: (id: string) => string | undefined): InvolvedPerson[] {
   if (w.people?.involved?.length) return w.people.involved
   const map = new Map<string, InvolvedPerson>()
@@ -74,8 +91,10 @@ function involvedPeople(w: WorkflowTemplate, memberName: (id: string) => string 
     if (!cur.roles.includes(role)) cur.roles.push(role)
     map.set(id, cur)
   }
-  ;(w.people?.owners ?? w.owners ?? []).forEach((p) => add(p.id, p.name, 'owner'))
-  ;(w.people?.editors ?? []).forEach((p) => add(p.id, p.name, 'editor'))
+  const creator = creatorOf(w)
+  if (creator) add(creator.id, creator.name, 'creator')
+  ;(w.people?.editors ?? w.people?.owners ?? w.owners ?? []).forEach((p) => add(p.id, p.name, 'editor'))
+  ;(w.people?.viewers ?? []).forEach((p) => add(p.id, p.name, 'viewer'))
   if (w.manual_start_enabled !== false) (w.people?.starters ?? []).forEach((p) => add(p.id, p.name, 'starter'))
   ;(w.steps ?? []).forEach((s) => {
     ;(s.assignees ?? s.assignee_user_ids.map((id) => ({ id, name: memberName(id) ?? '' }))).forEach((p) => add(p.id, p.name || undefined, 'assignee'))
@@ -86,8 +105,9 @@ function involvedPeople(w: WorkflowTemplate, memberName: (id: string) => string 
 }
 
 /**
- * The workflow page: what it is, who is involved, how its steps flow, and its runs.
- * Editing happens in the builder (Edit); starting a run is the one primary action.
+ * The workflow page: what it is, who is involved, how its steps flow, and its instances.
+ * Editing happens in the builder (Edit); Run is the one primary action. Someone who only
+ * works in some of its instances sees just those; anyone else sees that they have no access.
  */
 export default function WorkflowOverview({ id }: { id: string }) {
   const { user } = useAuth()
@@ -97,7 +117,10 @@ export default function WorkflowOverview({ id }: { id: string }) {
   const narrow = useNarrowScreen()
 
   const [workflow, setWorkflow] = useState<WorkflowTemplate | null>(null)
-  const [status, setStatus] = useState<'loading' | 'ready' | 'failed' | 'notfound'>('loading')
+  const [status, setStatus] = useState<'loading' | 'ready' | 'failed' | 'noaccess'>('loading')
+  // 'instances': the viewer only works in some instances — the page shows just those.
+  const [mode, setMode] = useState<'full' | 'instances'>('full')
+  const [creatorOpen, setCreatorOpen] = useState(false)
   const [loadError, setLoadError] = useState('')
   const [view, setView] = useState<'flow' | 'list'>('flow')
 
@@ -106,52 +129,80 @@ export default function WorkflowOverview({ id }: { id: string }) {
   const [runsError, setRunsError] = useState('')
   const [filter, setFilter] = useState<RunFilter>('all')
 
-  const lookups = useWorkflowLookups(orgId, status === 'ready')
+  const lookups = useWorkflowLookups(orgId, status === 'ready' && mode === 'full')
   const writable = entWritable === false || lookups.moduleAccess === 'preview' ? false : entWritable
   const memberName = useCallback((uid: string) => lookups.members.find((m) => m.user_id === uid)?.name, [lookups.members])
+
+  /** The instances the viewer may see (all of them, or only the ones they work in). */
+  const fetchRuns = useCallback(async () => {
+    const list = await workflowsApi.listInstances(orgId, id)
+    return (Array.isArray(list) ? list : []).slice().sort((a, b) => (b.started_at ?? '').localeCompare(a.started_at ?? ''))
+  }, [orgId, id])
 
   const load = useCallback(
     async (quiet = false) => {
       if (!orgId) return
       if (!quiet) setStatus('loading')
       try {
-        setWorkflow(await workflowsApi.getWorkflow(orgId, id))
+        const w = await workflowsApi.getWorkflow(orgId, id)
+        setWorkflow(w)
+        const access =
+          w.capabilities?.access ?? (w.view === 'limited' || w.capabilities?.can_view === false ? 'instances' : 'full')
+        if (access === 'none') {
+          setStatus('noaccess')
+          return
+        }
+        setMode(access === 'instances' ? 'instances' : 'full')
         setStatus('ready')
       } catch (e) {
         if (quiet) return
         const code = workflowErrorStatus(e)
-        if (code === 404 || code === 403) setStatus('notfound')
-        else {
+        if (code === 404 || code === 403) {
+          // No design access: someone working in its instances still sees those.
+          try {
+            const mine = await fetchRuns()
+            if (mine.length) {
+              setRuns(mine)
+              setRunsStatus('ready')
+              setWorkflow(null)
+              setMode('instances')
+              setStatus('ready')
+              return
+            }
+          } catch {
+            // Falls through to "no access".
+          }
+          setStatus('noaccess')
+        } else {
           setLoadError(workflowErrorMessage(e, 'Check your connection and try again.'))
           setStatus('failed')
         }
       }
     },
-    [orgId, id],
+    [orgId, id, fetchRuns],
   )
 
   const loadRuns = useCallback(async () => {
     if (!orgId) return
     setRunsStatus((s) => (s === 'ready' ? s : 'loading'))
     try {
-      const list = await workflowsApi.listInstances(orgId, id)
-      setRuns((Array.isArray(list) ? list : []).slice().sort((a, b) => (b.started_at ?? '').localeCompare(a.started_at ?? '')))
+      setRuns(await fetchRuns())
       setRunsStatus('ready')
     } catch (e) {
       setRunsError(workflowErrorMessage(e, 'Check your connection and try again.'))
       setRunsStatus('failed')
     }
-  }, [orgId, id])
+  }, [orgId, fetchRuns])
 
   useEffect(() => {
     load()
     loadRuns()
   }, [load, loadRuns])
 
-  // Old "all runs" links arrive with #runs: bring the runs into view once they are there.
+  // Links to the list arrive with #instances (older ones with #runs): bring it into view.
   useEffect(() => {
-    if (status === 'ready' && typeof window !== 'undefined' && window.location.hash === '#runs') {
-      requestAnimationFrame(() => document.getElementById('runs')?.scrollIntoView({ block: 'start' }))
+    if (status === 'ready' && typeof window !== 'undefined' && /^#(instances|runs)$/.test(window.location.hash)) {
+      requestAnimationFrame(() => document.getElementById('instances')?.scrollIntoView({ block: 'start' }))
     }
   }, [status])
 
@@ -186,8 +237,33 @@ export default function WorkflowOverview({ id }: { id: string }) {
       </div>
     )
   }
-  if (status === 'notfound') return <NotFoundState what="Workflow" backHref={WORKFLOWS_BASE} backLabel="Go to workflows" />
-  if (status === 'failed' || !workflow) return <ErrorState title="This workflow could not be loaded" message={loadError} onRetry={() => load()} />
+  if (status === 'noaccess') {
+    return (
+      <NoAccessState
+        title="You don’t have access to this workflow"
+        text="Only its editors, viewers and admins can see it. Ask one of its editors to add you."
+        backHref={WORKFLOWS_BASE}
+        backLabel="Go to workflows"
+      />
+    )
+  }
+  if (status === 'failed') return <ErrorState title="This workflow could not be loaded" message={loadError} onRetry={() => load()} />
+  if (mode === 'instances' || !workflow) {
+    return (
+      <MyInstancesView
+        name={workflow?.name ?? runs[0]?.template?.name ?? 'Workflow'}
+        templateId={id}
+        workflow={workflow}
+        writable={writable}
+        runs={runs}
+        runsStatus={runsStatus}
+        runsError={runsError}
+        onRetry={loadRuns}
+        onRun={(w) => actions.start(w)}
+        dialogs={actions.dialogs}
+      />
+    )
+  }
 
   const w = workflow
   const caps = w.capabilities
@@ -215,9 +291,16 @@ export default function WorkflowOverview({ id }: { id: string }) {
     { key: 'edit', label: 'Edit workflow', icon: Pencil, allowed: edit.allowed, reason: edit.reason, hidden: !editInMenu, onSelect: () => router.push(editHref(w.id)) },
     { key: 'pause', label: 'Pause workflow', icon: Pause, allowed: rawEdit.allowed, reason: rawEdit.reason, hidden: w.status !== 'active', onSelect: () => actions.pause(w) },
     { key: 'resume', label: 'Resume workflow', icon: Play, allowed: rawEdit.allowed, reason: rawEdit.reason, hidden: w.status !== 'paused', onSelect: () => actions.resume(w) },
+    // Admins only (the server says who): hand the permanent-editor role to someone else.
+    { key: 'creator', label: 'Change creator…', icon: UserCog, hidden: caps?.can_change_creator !== true, allowed: writable === false ? false : writable, reason: REASONS.preview, onSelect: () => setCreatorOpen(true) },
     { key: 'archive', label: 'Archive workflow', icon: Archive, danger: true, allowed: rawEdit.allowed, reason: rawEdit.reason, hidden: archived, onSelect: () => actions.archive(w) },
     // Restore is the header's primary button when archived — not repeated here.
   ]
+  const creator = creatorOf(w)
+  const editors = (() => {
+    const list = [...(creator ? [creator] : []), ...(w.people?.editors ?? w.people?.owners ?? w.owners ?? [])]
+    return list.filter((p, i) => list.findIndex((x) => x.id === p.id) === i)
+  })()
 
   // Said once: status, the facts, and how it starts (the schedule lives only here).
   const meta = (
@@ -225,7 +308,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
       <div className="flex items-center gap-2 flex-wrap">
         {!narrow && <TemplateStatusBadge status={w.status} />}
         <span className="text-[13px] text-[#475569]">
-          {narrow ? '' : `${plural(steps.length, 'step')} · `}Owners: {namesSummary(w.people?.owners ?? w.owners ?? [], 3)} · Updated {fmtDate(w.updated_at)}
+          {narrow ? '' : `${plural(steps.length, 'step')} · `}Editors: {namesSummary(editors, 3)} · Updated {fmtDate(w.updated_at)}
         </span>
       </div>
       <p className="mt-1.5 text-[13px] text-[#334155] break-words">
@@ -233,7 +316,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
         {w.next_run_at ? (
           <>
             {' '}
-            · <span className="font-medium text-[#0F172A]">Next run:</span> {fmtDateTime(w.next_run_at)}
+            · <span className="font-medium text-[#0F172A]">Next start:</span> {fmtDateTime(w.next_run_at)}
           </>
         ) : w.status === 'paused' && schedules.length > 0 ? (
           ' · Schedule paused'
@@ -267,7 +350,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
               </GatedButton>
             ) : start.hidden ? null : (
               <GatedButton allowed={start.allowed} reason={start.reason} icon={Play} variant="primary" onClick={() => actions.start(w)}>
-                Start
+                Run
               </GatedButton>
             )}
             <ActionMenu items={menuItems} label="More workflow actions" />
@@ -384,7 +467,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
             <div className="flex items-center gap-2">
               <Users size={16} className="text-[#475569]" />
               <h2 id="people-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
-                People involved <InfoTip label="People involved" text="Everyone in your organisation can view live workflows." />
+                People involved <InfoTip label="People involved" text="Editors and viewers see the workflow and all its instances. People in an instance see that instance." />
               </h2>
             </div>
             {involved.length === 0 ? (
@@ -396,13 +479,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
                     <Avatar name={p.name} size="md" />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-[#0F172A] truncate">{p.name}</p>
-                      <p className="text-[12px] text-[#475569]">
-                        {p.roles
-                          .slice()
-                          .sort((a, b) => ROLE_ORDER.indexOf(a) - ROLE_ORDER.indexOf(b))
-                          .map((r) => ROLE_LABEL[r] ?? r)
-                          .join(' · ')}
-                      </p>
+                      <p className="text-[12px] text-[#475569]">{roleWords(p.id === creator?.id && !p.roles.includes('creator') ? ['creator', ...p.roles] : p.roles)}</p>
                     </div>
                   </li>
                 ))}
@@ -412,17 +489,17 @@ export default function WorkflowOverview({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Runs */}
-      <section id="runs" aria-labelledby="runs-heading" className="flex flex-col gap-3 scroll-mt-40">
+      {/* Instances */}
+      <section id="instances" aria-labelledby="instances-heading" className="flex flex-col gap-3 scroll-mt-40">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <History size={18} className="text-[#475569]" />
-            <h2 id="runs-heading" className="text-[18px] font-semibold text-[#0F172A]">
-              Runs
+            <h2 id="instances-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+              Instances <InfoTip label="Instances" text="Each time the workflow is run — by hand or on a schedule — it creates an instance." />
             </h2>
           </div>
         </div>
-        <div role="tablist" aria-label="Filter runs" className="flex items-center gap-1.5 flex-wrap">
+        <div role="tablist" aria-label="Filter instances" className="flex items-center gap-1.5 flex-wrap">
           {RUN_FILTERS.map((f) => {
             const active = filter === f.value
             const n = counts[f.value]
@@ -452,7 +529,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
           })}
         </div>
         {runsStatus === 'failed' ? (
-          <ErrorState title="Runs could not be loaded" message={runsError} onRetry={loadRuns} />
+          <ErrorState title="Instances could not be loaded" message={runsError} onRetry={loadRuns} />
         ) : (
           <InstanceList
             templateId={w.id}
@@ -463,25 +540,25 @@ export default function WorkflowOverview({ id }: { id: string }) {
                 {filter !== 'all' && runs.length > 0 ? (
                   <EmptyState
                     icon={History}
-                    title={`No runs are “${RUN_STATUS[filter as RunDisplayStatus].label.toLowerCase()}”`}
+                    title={`No instances are “${RUN_STATUS[filter as RunDisplayStatus].label.toLowerCase()}”`}
                     text="Try another filter."
                     action={
                       <button type="button" onClick={() => setFilter('all')} className={BTN.secondary}>
-                        Show all runs
+                        Show all instances
                       </button>
                     }
                   />
                 ) : (
                   <EmptyState
                     icon={History}
-                    title="No runs yet"
+                    title="No instances yet"
                     text={
                       w.status === 'active'
-                        ? 'Runs appear here once the workflow starts.'
+                        ? 'Each run of the workflow appears here as an instance.'
                         : w.status === 'paused'
-                          ? 'Resume the workflow to start new runs.'
+                          ? 'Resume the workflow to run it again.'
                           : w.status === 'archived'
-                            ? 'This workflow has no runs.'
+                            ? 'This workflow has no instances.'
                             : 'Save the workflow to make it live.'
                     }
                   />
@@ -493,6 +570,99 @@ export default function WorkflowOverview({ id }: { id: string }) {
       </section>
 
       {actions.dialogs}
+      <ChangeCreatorDialog
+        orgId={orgId}
+        open={creatorOpen}
+        workflow={w}
+        current={creator}
+        members={lookups.members}
+        membersLoading={lookups.status === 'loading'}
+        onClose={() => setCreatorOpen(false)}
+        onChanged={(updated) => {
+          setCreatorOpen(false)
+          if (updated) setWorkflow((cur) => (cur ? { ...cur, ...updated, steps: updated.steps ?? cur.steps } : cur))
+          load(true)
+        }}
+      />
+    </div>
+  )
+}
+
+/**
+ * For someone who works in some of this workflow's instances but is not one of its
+ * editors or viewers: only "My instances of this workflow" — no design, steps, people or
+ * other instances. Run stays available to the people chosen to start it.
+ */
+function MyInstancesView({
+  name,
+  templateId,
+  workflow,
+  writable,
+  runs,
+  runsStatus,
+  runsError,
+  onRetry,
+  onRun,
+  dialogs,
+}: {
+  name: string
+  templateId: string
+  workflow: WorkflowTemplate | null
+  writable: boolean | undefined
+  runs: WorkflowInstance[]
+  runsStatus: 'loading' | 'ready' | 'failed'
+  runsError: string
+  onRetry: () => void
+  onRun: (w: WorkflowTemplate) => void
+  dialogs: React.ReactNode
+}) {
+  const start = workflow ? startGate(workflow, writable) : null
+  return (
+    <div className="flex flex-col gap-6 pb-10">
+      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-[#F8FAFC] border-b border-[#E2E8F0]">
+        <WorkflowBreadcrumb trail={[{ label: 'Workflows', href: `${WORKFLOWS_BASE}/my?view=assigned` }, { label: name }]} />
+        <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:break-words">{name}</h1>
+            {workflow && (
+              <div className="mt-1.5">
+                <TemplateStatusBadge status={workflow.status} />
+              </div>
+            )}
+          </div>
+          {workflow && start && !start.hidden && (
+            <GatedButton allowed={start.allowed} reason={start.reason} icon={Play} variant="primary" onClick={() => onRun(workflow)}>
+              Run
+            </GatedButton>
+          )}
+        </div>
+      </div>
+
+      <section id="instances" aria-labelledby="my-instances-heading" className="flex flex-col gap-3 scroll-mt-40">
+        <div className="flex items-center gap-2">
+          <History size={18} className="text-[#475569]" />
+          <h2 id="my-instances-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+            My instances of this workflow{' '}
+            <InfoTip label="My instances of this workflow" text="The instances you work in. Only its editors and viewers see the whole workflow." />
+          </h2>
+        </div>
+        {runsStatus === 'failed' ? (
+          <ErrorState title="Instances could not be loaded" message={runsError} onRetry={onRetry} />
+        ) : (
+          <InstanceList
+            templateId={templateId}
+            instances={runs}
+            loading={runsStatus === 'loading'}
+            emptyState={
+              <div className="bg-white border border-[#E2E8F0] rounded-[12px]">
+                <EmptyState icon={History} title="No instances yet" text="Instances you work in appear here." />
+              </div>
+            }
+          />
+        )}
+      </section>
+
+      {dialogs}
     </div>
   )
 }

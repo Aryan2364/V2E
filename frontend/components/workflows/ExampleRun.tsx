@@ -105,7 +105,7 @@ export default function ExampleRun({
           setState({ status: 'hidden' })
           return
         }
-        setState({ status: 'failed', data: lastData.current, error: workflowErrorMessage(e, 'The example run could not be loaded.') })
+        setState({ status: 'failed', data: lastData.current, error: workflowErrorMessage(e, 'The example instance could not be loaded.') })
       }
     }, DEBOUNCE_MS)
     return () => {
@@ -138,7 +138,7 @@ export default function ExampleRun({
         className="w-full flex items-center gap-2 px-4 py-3 text-left rounded-[12px] hover:bg-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
       >
         <CalendarRange size={16} className="text-[#2563EB] shrink-0" />
-        <span className="text-[15px] font-semibold text-[#0F172A] shrink-0">Example run</span>
+        <span className="text-[15px] font-semibold text-[#0F172A] shrink-0">Example instance</span>
         {busy && data && (
           <span className="inline-flex items-center gap-1 text-[12px] text-[#475569] shrink-0" aria-live="polite">
             <Loader2 size={12} className="animate-spin" /> Updating
@@ -176,14 +176,14 @@ export default function ExampleRun({
 
           {data && runs.length === 0 && (
             <p className="text-sm text-[#475569]">
-              {manualOnly ? 'No example yet.' : 'No upcoming runs. Check the schedule’s start and end dates.'}
+              {manualOnly ? 'No example yet.' : 'No upcoming instances. Check the schedule’s start and end dates.'}
             </p>
           )}
 
           {run && (
             <>
               {runs.length > 1 && (
-                <div role="tablist" aria-label="Example runs" className="flex flex-wrap gap-1.5">
+                <div role="tablist" aria-label="Example instances" className="flex flex-wrap gap-1.5">
                   {runs.map((r, i) => (
                     <button
                       key={`${r.starts_at}-${i}`}
@@ -203,7 +203,7 @@ export default function ExampleRun({
               <p className="text-sm text-[#1E293B]">
                 {manualOnly ? 'If triggered now, on ' : 'If triggered on '}
                 <span className="font-semibold text-[#0F172A]">{fmtDayDateTime(run.starts_at)}</span>{' '}
-                <InfoTip label="Example run" text="Planned dates. Holidays and weekly offs are skipped." />
+                <InfoTip label="Example instance" text="Planned dates. Holidays and weekly offs are skipped." />
               </p>
               <ol className={`flex flex-col divide-y divide-[#F1F5F9] rounded-[10px] border border-[#E2E8F0] transition-opacity duration-150 ${busy ? 'opacity-70' : ''}`}>
                 {steps.map((s) => {

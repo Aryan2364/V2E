@@ -6,6 +6,7 @@ import { getNow } from '@/lib/clock'
 import type { Task } from '@/lib/types/tasks'
 import AssigneeAvatars, { type AvatarPerson } from '@/components/tasks/AssigneeAvatars'
 import TagList from '@/components/tasks/TagList'
+import WorkflowTaskBadge, { taskWorkflow } from '@/components/tasks/WorkflowTaskBadge'
 
 // ─── Deadline helpers (mirror TaskCard) ─────────────────────────────────────────
 
@@ -61,7 +62,9 @@ export default function TaskRow({
   const priority = task.priority
   const status = task.status
   const category = task.category
-  const assigner = task.created_by?.name
+  // A workflow step's task: its source is the workflow instance, not the step's assigner.
+  const wf = taskWorkflow(task)
+  const assigner = wf ? null : task.created_by?.name
 
   const people: AvatarPerson[] = [...(task.assignees ?? [])]
     .sort((a, b) => Number(a.is_cc) - Number(b.is_cc))
@@ -110,6 +113,7 @@ export default function TaskRow({
           {priority && <Chip label={priority.label} color={priority.color} />}
           {/* Tags: two chips, then "+N" (kit §11.6 card budget). Clicks never open the row. */}
           <TagList tags={task.tags} max={2} />
+          {wf && <WorkflowTaskBadge workflow={wf} />}
           {assigner && (
             <span className="inline-flex items-center gap-1 text-[11px] text-[#475569]">
               <span className="text-[#94A3B8]">by</span>

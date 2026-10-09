@@ -91,10 +91,11 @@ export class TasksController {
     @Query('search') search?: string,
     @Query('from_date') from_date?: string,
     @Query('to_date') to_date?: string,
+    @Query('from_workflows') from_workflows?: string,
   ) {
     return this.service.listTasks(orgId, principalFromUser(req.user), {
       status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), quadrant, type,
-      assignee_user_id, goal_id, search, from_date, to_date,
+      assignee_user_id, goal_id, search, from_date, to_date, from_workflows,
     });
   }
 
@@ -219,11 +220,12 @@ export class TasksController {
     @Query('search') search?: string,
     @Query('from_date') from_date?: string,
     @Query('to_date') to_date?: string,
+    @Query('from_workflows') from_workflows?: string,
   ) {
     return this.service.getDashboard(orgId, principalFromUser(req.user), {
       scope: toDataScope(scope),
       status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, created_by_user_id,
-      assignee_user_id, type, search, from_date, to_date,
+      assignee_user_id, type, search, from_date, to_date, from_workflows,
     });
   }
 
@@ -277,11 +279,12 @@ export class TasksController {
     @Query('search') search?: string,
     @Query('from_date') from_date?: string,
     @Query('to_date') to_date?: string,
+    @Query('from_workflows') from_workflows?: string,
   ) {
     return this.service.listTasksPaged(
       orgId,
       principalFromUser(req.user),
-      { status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, timing, assigner_person_dept_id, assignee_person_dept_id, created_by_user_id, assignee_user_id, type, search, from_date, to_date },
+      { status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, timing, assigner_person_dept_id, assignee_person_dept_id, created_by_user_id, assignee_user_id, type, search, from_date, to_date, from_workflows },
       toDataScope(scope),
       page ? parseInt(page, 10) : 1,
       page_size ? parseInt(page_size, 10) : 25,
@@ -348,11 +351,12 @@ export class TasksController {
     @Query('search') search?: string,
     @Query('from_date') from_date?: string,
     @Query('to_date') to_date?: string,
+    @Query('from_workflows') from_workflows?: string,
   ) {
     return this.service.exportCsv(
       orgId,
       principalFromUser(req.user),
-      { status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, timing, assigner_person_dept_id, assignee_person_dept_id, created_by_user_id, assignee_user_id, type, search, from_date, to_date },
+      { status_id, priority_id, category_id, tag_ids: toTagIdsCsv(tag_ids), department_id, department_ids, role_id, timing, assigner_person_dept_id, assignee_person_dept_id, created_by_user_id, assignee_user_id, type, search, from_date, to_date, from_workflows },
       toDataScope(scope),
       bucket,
     );

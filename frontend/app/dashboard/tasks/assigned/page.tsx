@@ -73,7 +73,10 @@ export default function AssignedByMePage() {
       tasksApi.getPriorities(orgId).catch(() => []),
       tasksApi.getStatuses(orgId).catch(() => []),
     ]).then(([t, c, p, s]) => {
-      setTasks(t); setCategories(c); setPriorities(p); setStatuses(s)
+      // Tasks a workflow created aren't handed out by a person: they never count as
+      // "assigned by me" (the server leaves them out; older responses are filtered here).
+      setTasks((t as Task[]).filter((x) => !x.workflow && !x.workflow_instance_step_id))
+      setCategories(c); setPriorities(p); setStatuses(s)
     }).finally(() => setLoading(false))
   }, [orgId])
 

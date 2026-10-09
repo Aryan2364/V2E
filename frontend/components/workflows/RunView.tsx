@@ -14,6 +14,8 @@ import { ProgressBar, instanceProgress } from './InstanceList'
 import RunDocumentsDrawer from './RunDocumentsDrawer'
 import RunHistory from './RunHistory'
 import RunStepDrawer from './RunStepDrawer'
+import InstanceNotes, { useInstanceNotes } from './InstanceNotes'
+import { instanceTitle } from './instanceLabel'
 import SendBackDialog, { type SendBackSubject } from './SendBackDialog'
 import {
   BTN,
@@ -33,7 +35,7 @@ import {
   fmtSpan,
   gate,
   namesSummary,
-  runsHref,
+  instancesHref,
   useNarrowScreen,
   useWorkflowsWritable,
   workflowHref,
@@ -127,7 +129,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
         if (quiet) setHistoryKey((k) => k + 1)
       } catch (e) {
         if (quiet) {
-          addToast(workflowErrorMessage(e, 'The run could not be refreshed.'), 'error')
+          addToast(workflowErrorMessage(e, 'The instance could not be refreshed.'), 'error')
         } else if (workflowErrorStatus(e) === 404 || workflowErrorStatus(e) === 403) {
           setStatus('notfound')
         } else {
@@ -145,7 +147,11 @@ export default function RunView({ templateId, instanceId }: { templateId: string
     load()
   }, [load])
 
-  // The Documents button shows how many files the run has, before it is opened.
+  // Notes: listed on the page; a step's own notes also show in its panel.
+  const notes = useInstanceNotes(orgId, templateId, instanceId, status === 'ready')
+  const myId = user?.id
+
+  // The Documents button shows how many files the instance has, before it is opened.
   const canSeeDocs = run?.capabilities?.can_view_documents !== false
   useEffect(() => {
     if (!orgId || !canSeeDocs) return
@@ -179,7 +185,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
         return {
           key: l.key,
           label: l.label,
-          hint: l.key === 'main' ? undefined : from && laneOf.get(from) !== l.key ? `After ${labels.get(from) ?? '?'}` : 'After start of run',
+          hint: l.key === 'main' ? undefined : from && laneOf.get(from) !== l.key ? `After ${labels.get(from) ?? '?'}` : 'From the start',
         }
       }),
     [lanes, rows, laneOf, labels, deps],
@@ -358,7 +364,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
       if (action.kind === 'cancel') await workflowsApi.cancelInstance(orgId, templateId, run.id)
       if (action.kind === 'retry') await workflowsApi.retryInstance(orgId, templateId, run.id)
       if (action.kind === 'skip') await workflowsApi.skipStep(orgId, templateId, run.id, action.row.id)
-      addToast(action.kind === 'cancel' ? 'Run cancelled' : action.kind === 'retry' ? 'Run retried' : 'Step skipped', 'success')
+      addToast(action.kind === 'cancel' ? 'Instance cancelled' : action.kind === 'retry' ? 'Instance retried' : 'Step skipped', 'success')
       setAction(null)
       await load(true)
     } catch (e) {
@@ -380,8 +386,8 @@ export default function RunView({ templateId, instanceId }: { templateId: string
       </div>
     )
   }
-  if (status === 'notfound') return <NotFoundState what="Run" backHref={workflowHref(templateId)} backLabel="Go to workflow" />
-  if (status === 'failed' || !run) return <ErrorState title="This run could not be loaded" message={loadError} onRetry={() => load()} />
+  if (status === 'notfound') return <NotFoundState what="Instance" backHref={workflowHref(templateId)} backLabel="Go to workflow" />
+  if (status === 'failed' || !run) return <ErrorState title="This instance could not be loaded" message={loadError} onRetry={() => load()} />
 
   const p = instanceProgress(run)
   const currentRows = rows.filter((r) => LIVE_ROW.has(r.status))
@@ -389,16 +395,16 @@ export default function RunView({ templateId, instanceId }: { templateId: string
   const actionCopy =
     action?.kind === 'cancel'
       ? {
-          title: 'Cancel this run?',
+          title: 'Cancel this instance?',
           message: `Open tasks in “${run.name}” are withdrawn and remaining steps won’t start. This cannot be undone.`,
-          confirm: 'Cancel run',
+          confirm: 'Cancel instance',
           danger: true,
         }
       : action?.kind === 'retry'
         ? {
-            title: 'Retry this run?',
+            title: 'Retry this instance?',
             message: 'It continues from where it stopped.',
-            confirm: 'Retry run',
+            confirm: 'Retry instance',
             danger: false,
           }
         : action?.kind === 'skip'
@@ -409,6 +415,14 @@ export default function RunView({ templateId, instanceId }: { templateId: string
               danger: true,
             }
           : null
+
+  // Everyone who sees the instance may add a note; the server says so per instance.
+  const noteGate = gate(caps.can_add_note ?? true, writable, REASONS.note)
+  // Delete: the server's answer per note, else its author or someone who manages the instance.
+  const notesState = {
+    ...notes.state,
+    data: notes.state.data.map((n) => ({ ...n, can_delete: n.can_delete ?? (n.author?.id === myId || caps.can_manage === true) })),
+  }
 
   const canDocs = run.capabilities?.can_view_documents !== false
   const docsButton = canDocs ? (
@@ -444,7 +458,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
       onSelect: () => setDocsOpen(true),
     },
     { key: 'refresh', label: 'Refresh', icon: RefreshCw, allowed: refreshing ? false : true, reason: 'Refreshing…', onSelect: () => load(true) },
-    { key: 'cancel', label: 'Cancel run', icon: XCircle, danger: true, allowed: cancelGate.allowed, reason: cancelGate.reason, hidden: !live, onSelect: openCancel },
+    { key: 'cancel', label: 'Cancel instance', icon: XCircle, danger: true, allowed: cancelGate.allowed, reason: cancelGate.reason, hidden: !live, onSelect: openCancel },
   ]
   const startedLine = (
     <span className="text-[13px] text-[#475569]">
@@ -460,7 +474,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
         <WorkflowBreadcrumb
           trail={[
             { label: 'Workflows', href: WORKFLOWS_BASE },
-            { label: run.template?.name ?? 'Workflow', href: runsHref(templateId) },
+            { label: run.template?.name ?? 'Workflow', href: instancesHref(templateId) },
             { label: run.name },
           ]}
         />
@@ -468,6 +482,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
           <div className="min-w-0 flex-1">
             <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:break-words">{run.name}</h1>
             <div className="flex items-center gap-2 flex-wrap mt-1.5">
+              {run.instance_number ? <span className="text-[13px] font-semibold text-[#334155] whitespace-nowrap">{instanceTitle(run.instance_number)}</span> : null}
               <RunStatusBadge run={run} />
               {!narrow && startedLine}
             </div>
@@ -476,7 +491,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             {narrow ? (
               <>
                 {run.status === 'stuck' ? retryButton : docsButton}
-                <ActionMenu items={runMenu} label="More run actions" />
+                <ActionMenu items={runMenu} label="More instance actions" />
               </>
             ) : (
               <>
@@ -494,7 +509,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                     className="!text-[#B91C1C]"
                     onClick={openCancel}
                   >
-                    Cancel run
+                    Cancel instance
                   </GatedButton>
                 )}
               </>
@@ -527,7 +542,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
               </span>
             </div>
           </div>
-          {rows.length === 0 ? <p className="text-sm text-[#475569]">This run has no steps.</p> : <FlowDiagram nodes={nodes} lanes={flowLanes} edgeTone={edgeTone} />}
+          {rows.length === 0 ? <p className="text-sm text-[#475569]">This instance has no steps.</p> : <FlowDiagram nodes={nodes} lanes={flowLanes} edgeTone={edgeTone} />}
           {followUps.length > 0 && (
             <div className="mt-5 pt-4 border-t border-[#F1F5F9]">
               <h3 className="flex items-center gap-1 text-sm font-semibold text-[#0F172A] mb-2">
@@ -615,10 +630,27 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             )}
             {run.status === 'stuck' && (
               <p className="text-[13px] text-[#475569]">
-                This run is stuck. Open the step with a problem, then retry the run or skip the step.
+                This instance is stuck. Open the step with a problem, then retry the instance or skip the step.
               </p>
             )}
           </section>
+
+          <InstanceNotes
+            notes={notesState}
+            rows={rows}
+            labels={labels}
+            canAdd={noteGate.allowed}
+            addReason={noteGate.reason}
+            onAdd={async (body, forRowId) => {
+              await notes.add(body, forRowId)
+              setHistoryKey((k) => k + 1)
+            }}
+            onDelete={async (id) => {
+              await notes.remove(id)
+              setHistoryKey((k) => k + 1)
+            }}
+            onRetry={notes.load}
+          />
 
           <RunHistory orgId={orgId} templateId={templateId} instanceId={instanceId} refreshKey={historyKey} stepLabels={labels} />
         </div>
@@ -654,6 +686,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
         startNowReason={REASONS.preview}
         startingNow={!!openRow && startingRowId === openRow.id}
         onStartNow={(r) => startNow(r)}
+        notes={openRow ? notesState.data.filter((n) => n.for_row_id === openRow.id) : []}
       />
 
       <RunDocumentsDrawer

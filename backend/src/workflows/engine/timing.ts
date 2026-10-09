@@ -662,7 +662,7 @@ export function beforeRunStartProblem(rule: StartRule | DueRule, rs: RunStartPoi
   const at = formatTime12(rs.time)
   const earlierTime = minutesOf(rule.time) < minutesOf(rs.time)
   if (rs.kind === 'daily') {
-    return rule.kind === 'time_of_day' && earlierTime ? `pick a time at or after ${at}, when the run starts.` : null
+    return rule.kind === 'time_of_day' && earlierTime ? `pick a time at or after ${at}, when the instance starts.` : null
   }
   // Only the run's own cycle holds days before the run (explicit or legacy cycles).
   const cycle = (rule as { cycle?: number }).cycle
@@ -691,8 +691,8 @@ export function beforeRunStartProblem(rule: StartRule | DueRule, rs: RunStartPoi
   }
   const day = runStartDayWords(rs)!
   const what = rs.kind === 'yearly' ? 'a date' : 'a day'
-  if (cmp < 0) return `pick ${what} on or after ${day}${inCycle}, when the run starts.`
-  if (cmp === 0 && earlierTime) return `pick a time at or after ${at} on ${day}${inCycle}, when the run starts.`
+  if (cmp < 0) return `pick ${what} on or after ${day}${inCycle}, when the instance starts.`
+  if (cmp === 0 && earlierTime) return `pick a time at or after ${at} on ${day}${inCycle}, when the instance starts.`
   return null
 }
 

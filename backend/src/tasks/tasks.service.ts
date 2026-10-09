@@ -27,6 +27,7 @@ import { ScopeService } from '../access-rights/scope.service';
 import { AccessVisibilityService } from '../access-rights/access-visibility.service';
 import { Principal } from '../access-rights/permissions.service';
 import { instanceIdForRow, isRunParticipant } from '../workflows/run-access';
+import { taskWorkflowInfo } from '../workflows/task-workflow-info';
 import { ChecklistAccessService } from '../task-masters/checklist-access.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -123,6 +124,8 @@ export interface TaskListFilters {
   search?: string;
   from_date?: string;
   to_date?: string;
+  /** "From workflows": 'true' = only tasks a workflow created; 'false' = only tasks people handed out. */
+  from_workflows?: string;
 }
 
 @Injectable()
@@ -195,10 +198,11 @@ export class TasksService {
    * With `ctx` (the task's id + workflow link) two more kinds of people are on it:
    *   - its ACTIVE escalation contacts (TaskEscalation.is_active) — they're asked to
    *     act on it, so the Escalated page must be able to open it;
-   *   - for a workflow step task, the participants of that workflow run
-   *     (`isRunParticipant`: owners/creator/editors/starter of the run, or anyone on
-   *     any task of the run). This admits VIEW (and comment) only — completion keeps
-   *     its own gates (non-CC assignee / assigner rights).
+   *   - for a workflow step task, everyone who may see that workflow instance
+   *     (`isRunParticipant`: the workflow's editors and viewers, the person who ran
+   *     it, and everyone working in it — assignees/CCs/escalation contacts of its
+   *     tasks). This admits VIEW (and comment) only — completion keeps its own gates
+   *     (non-CC assignee / assigner rights).
    */
   private async assertParticipantView(
     orgId: string,
@@ -1118,7 +1122,7 @@ export class TasksService {
       orderBy: { created_at: 'desc' },
     });
 
-    return this.enrichTaskList(tasks);
+    return this.enrichTaskList(tasks, undefined, principal);
   }
 
   /**
@@ -1154,6 +1158,11 @@ export class TasksService {
     }
     if (filters.quadrant) where.quadrant = filters.quadrant as any;
     if (filters.type) where.type = filters.type as any;
+    if (filters.from_workflows === 'true') where.workflow_instance_step_id = { not: null };
+    else if (filters.from_workflows === 'false') where.workflow_instance_step_id = null;
+    // An assigner filter means "handed out by": a workflow-created task isn't attributed
+    // to its step's assigner (matches the by-assigner / flow analytics).
+    else if (filters.created_by_user_ids || filters.created_by_user_id) where.workflow_instance_step_id = null;
     if (filters.timing) Object.assign(where, this.analytics.timingWhere(filters.timing as any));
     if (filters.search) {
       where.OR = [
@@ -1283,7 +1292,7 @@ export class TasksService {
     ]);
 
     return {
-      items: await this.enrichTaskList(items),
+      items: await this.enrichTaskList(items, undefined, principal),
       total,
       page: Math.max(page, 1),
       page_size: take,
@@ -1374,7 +1383,8 @@ export class TasksService {
       this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: base }, _count: { _all: true } }),
       this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: { ...base, deadline: { lt: now }, ...openTask } }, _count: { _all: true } }),
       this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: { ...base, status: { type: 'completed' } } }, _count: { _all: true } }),
-      this.prisma.task.groupBy({ by: ['created_by_user_id'], where: { ...base, created_by_user_id: { in: userIds } }, _count: { _all: true } }),
+      // Delegation counts people's own hand-outs, not tasks a workflow created.
+      this.prisma.task.groupBy({ by: ['created_by_user_id'], where: { AND: [base, { created_by_user_id: { in: userIds }, workflow_instance_step_id: null }] }, _count: { _all: true } }),
       Promise.all(TasksAnalyticsService.TIMINGS.map((t) =>
         this.prisma.taskAssignee.groupBy({ by: ['user_id'], where: { is_cc: false, ...ACTIVE_ASSIGNEE, user_id: { in: userIds }, task: { ...base, ...this.analytics.timingWhere(t) } }, _count: { _all: true } }),
       )),
@@ -1432,7 +1442,8 @@ export class TasksService {
     const base = this.buildTaskWhere(orgId, scopeWhere, filters, 'created_at');
     const now = await this.clock.now(orgId);
     const asAssignee = { ...base, assignees: { some: { ...ACTIVE_ASSIGNEE, user_id: targetUserId, is_cc: false } } };
-    const asAssigner = { ...base, created_by_user_id: targetUserId };
+    // "What they delegated": workflow-created tasks aren't attributed to the step's assigner.
+    const asAssigner = { AND: [base, { created_by_user_id: targetUserId, workflow_instance_step_id: null }] };
 
     const [assigneeKpis, assignerKpis, assigneeDims] = await Promise.all([
       this.analytics.kpiFor(orgId, asAssignee, now),
@@ -1507,6 +1518,7 @@ export class TasksService {
       where,
       select: {
         created_by_user_id: true, completion_timing: true, is_overdue: true, status_id: true,
+        workflow_instance_step_id: true,
         assignees: { where: { is_cc: false, ...ACTIVE_ASSIGNEE }, select: { user_id: true } },
       },
       take: CAP,
@@ -1535,6 +1547,9 @@ export class TasksService {
     };
 
     for (const t of tasks) {
+      // "Where work comes from" is about people handing work out; a workflow-created
+      // task isn't attributed to its step's assigner.
+      if (t.workflow_instance_step_id) continue;
       const timing = this.analytics.timingOf(t.completion_timing, t.is_overdue);
       const assignerDept = userDept.get(t.created_by_user_id);
       const assignerRoot = assignerDept ? rootOf.get(assignerDept) : undefined;
@@ -1998,7 +2013,7 @@ export class TasksService {
     filters = await this.resolveFilters(orgId, filters);
     const where = { ...this.buildTaskWhere(orgId, scopeWhere, filters, 'created_at'), ...this.bucketWhere(bucket, now) };
     const tasks = await this.prisma.task.findMany({ where, include: TASK_INCLUDE, orderBy: this.taskOrderBy('created_desc'), take: 5000 });
-    const enriched = await this.enrichTaskList(tasks);
+    const enriched = await this.enrichTaskList(tasks, undefined, principal);
 
     const headers = ['Title', 'Status', 'Priority', 'Category', 'Tags', 'Type', 'Assigned By', 'Assignees', 'Deadline', 'Created'];
     const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
@@ -2012,7 +2027,8 @@ export class TasksService {
         // " | " — the same delimiter the import reads back (TASK_TAGS_PLAN.md §10.2).
         (t.tags ?? []).map((tag: { name: string }) => tag.name).join(' | '),
         t.type,
-        t.created_by?.name ?? '',
+        // A workflow-created task isn't personally handed out by the step's assigner.
+        t.workflow ? `Workflow: ${t.workflow.label}` : t.created_by?.name ?? '',
         (t.assignees ?? []).filter((a: any) => !a.is_cc).map((a: any) => a.user?.name).filter(Boolean).join('; '),
         t.deadline ? new Date(t.deadline).toISOString() : '',
         new Date(t.created_at).toISOString(),
@@ -2047,9 +2063,10 @@ export class TasksService {
     return this.enrichTaskList(tasks, userId);
   }
 
+  /** Tasks I handed out. Workflow-created tasks aren't personally handed out, so they're excluded. */
   async getTasksAssignedByMe(orgId: string, userId: string) {
     const tasks = await this.prisma.task.findMany({
-      where: { organization_id: orgId, is_deleted: false, created_by_user_id: userId },
+      where: { organization_id: orgId, is_deleted: false, created_by_user_id: userId, workflow_instance_step_id: null },
       include: TASK_INCLUDE,
       orderBy: { created_at: 'desc' },
     });
@@ -2103,7 +2120,23 @@ export class TasksService {
     return result;
   }
 
-  private async enrichTaskList(tasks: any[], viewerId?: string) {
+  /**
+   * The viewer for a task list's workflow badges: the principal when the caller has
+   * one, else the user (admin flag read from their membership of the tasks' org).
+   */
+  private async workflowViewer(tasks: any[], viewerId?: string, principal?: Principal) {
+    if (principal) return { userId: principal.userId, isAdmin: !!(principal.isAdmin || principal.isSuperAdmin) };
+    if (!viewerId) return null;
+    const orgId = tasks.find((t) => t.workflow_instance_step_id)?.organization_id;
+    if (!orgId) return { userId: viewerId, isAdmin: false };
+    const member = await this.prisma.organizationMember.findUnique({
+      where: { organization_id_user_id: { organization_id: orgId, user_id: viewerId } },
+      select: { is_admin: true },
+    });
+    return { userId: viewerId, isAdmin: !!member?.is_admin };
+  }
+
+  private async enrichTaskList(tasks: any[], viewerId?: string, principal?: Principal) {
     const allUserIds = new Set<string>();
     const allOrgIds = new Set<string>();
     for (const task of tasks) {
@@ -2133,10 +2166,21 @@ export class TasksService {
     ]);
     const userMap = new Map(users.map((u) => [u.id, u]));
     const profileMap = new Map(profiles.map((p) => [`${p.organization_id}:${p.user_id}`, p]));
+    // Workflow badges (the instance label), batched for the whole list.
+    const workflowInfo = tasks.some((t) => t.workflow_instance_step_id)
+      ? await taskWorkflowInfo(
+          this.prisma,
+          tasks,
+          await this.workflowViewer(tasks, viewerId, principal),
+          (orgId) => this.clock.now(orgId),
+        )
+      : new Map();
 
     return tasks.map((task) => ({
       ...withTagRefs(task),
       created_by: userMap.get(task.created_by_user_id) ?? null,
+      /** Set when a workflow created the task (show the instance badge, not "From <assigner>"). */
+      workflow: workflowInfo.get(task.id) ?? null,
       unread_comments: unreadMap.get(task.id) ?? 0,
       assignees: (task.assignees ?? []).map((a: any) => {
         const u = userMap.get(a.user_id);
@@ -2314,10 +2358,20 @@ export class TasksService {
     // Proof-of-completion scoreboard: who must submit (non-CC assignees) vs who has.
     // Names only, no files — safe for everyone; the "n/N submitted" badge reads from it.
     const proof_summary = task.proof_required ? await this.proofSummary(orgId, taskId) : null;
+    const workflowInfo = task.workflow_instance_step_id
+      ? await taskWorkflowInfo(
+          this.prisma,
+          [task],
+          principal ? { userId: principal.userId, isAdmin: !!(principal.isAdmin || principal.isSuperAdmin) } : null,
+          (id) => this.clock.now(id),
+        )
+      : null;
 
     return {
       ...withTagRefs(task),
       created_by: userMap.get(task.created_by_user_id) ?? null,
+      /** Set when a workflow created the task: "Assigned by Workflow: <label>", set up by `created_by`. */
+      workflow: workflowInfo?.get(task.id) ?? null,
       completed_by: nameOf(task.completed_by_user_id),
       status_actor: nameOf(task.status_actor_user_id),
       proof_summary,
