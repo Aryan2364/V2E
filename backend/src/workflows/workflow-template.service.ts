@@ -44,7 +44,7 @@ import {
   scheduleExhausted,
   storedCalendarDate,
 } from './engine/schedule'
-import { formatLocalDate, safeTimeZone } from './engine/tz'
+import { formatLocalDate, localDateOf, safeTimeZone } from './engine/tz'
 import {
   Frequency,
   allowedDueKinds,
@@ -52,11 +52,15 @@ import {
   cycleLengthOf,
   effectiveDueRule,
   effectiveStartRule,
+  firstStepTimingProblem,
   frequencyOf,
+  laterStepTimingProblem,
   looseRule,
   parseDueRule,
   parseStartRule,
+  runStartPointOf,
   timingProblem,
+  type RunStartPoint,
 } from './engine/timing'
 import { checklistTemplateIds, readSnapshot, templateItemTitles } from './engine/snapshot'
 import { ChecklistAccessService } from '../task-masters/checklist-access.service'
@@ -144,6 +148,34 @@ interface TimelineStep {
 
 /** How many scheduled occurrences the example timeline shows. */
 const TIMELINE_RUNS = 3
+
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/**
+ * "Runs will overlap: this run ends 5 Dec, the next starts 3 Dec." when a run's last
+ * planned date (start or due) is after the next scheduled run starts; null otherwise.
+ * Dates in the org's time zone; the year is added when they differ. `runStart` names a
+ * run that isn't the first example ("the run on 3 Dec ends …"), which the builder shows
+ * first and which "this run" means.
+ */
+export function overlapWarning(
+  steps: { planned_start_at: Date; planned_due_at: Date }[],
+  nextStart: Date,
+  tz: string,
+  runStart: Date | null = null,
+): string | null {
+  let last = 0
+  for (const s of steps) last = Math.max(last, s.planned_start_at.getTime(), s.planned_due_at.getTime())
+  if (!steps.length || last <= nextStart.getTime()) return null
+  const end = localDateOf(new Date(last), tz)
+  const next = localDateOf(nextStart, tz)
+  const from = runStart ? localDateOf(runStart, tz) : null
+  const years = new Set([end.year, next.year, ...(from ? [from.year] : [])])
+  const word = (d: { year: number; month: number; day: number }) =>
+    `${d.day} ${MONTHS_SHORT[d.month - 1]}${years.size > 1 ? ` ${d.year}` : ''}`
+  const which = from ? `the run on ${word(from)}` : 'this run'
+  return `Runs will overlap: ${which} ends ${word(end)}, the next starts ${word(next)}.`
+}
 
 export type RunDisplayStatus =
   | 'running'
@@ -1388,6 +1420,8 @@ export class WorkflowTemplateService {
     )
     // How it repeats decides which step timings are allowed (checked on Save).
     const frequency = frequencyOf(schedules.map((x) => x.data))
+    // Where a run starts in its cycle: first steps must be timed on or after it.
+    const runStart = runStartPointOf(schedules.map((x) => x.data), frequency)
 
     // ── Full validation (Save / Live), in the order the form reads ──
     if (full) {
@@ -1404,7 +1438,7 @@ export class WorkflowTemplateService {
       if (!proposed.some((x) => x.track_key === MAIN_TRACK)) {
         throw trackError('Main path: add at least one step.', MAIN_TRACK)
       }
-      const problem = await this.definitionProblem(orgId, proposed, frequency)
+      const problem = await this.definitionProblem(orgId, proposed, frequency, runStart)
       if (problem) throw stepError(problem.message, problem.step.existing?.id ?? null, problem.step.key)
     }
     // Complete rules are stored in their canonical shape (a draft keeps partial ones).
@@ -1514,7 +1548,9 @@ export class WorkflowTemplateService {
         due_time: s.state.due_time,
         holiday_user_id: s.state.assignee_user_ids[0] ?? null,
       }))
-      return (await this.timeline(orgId, safeTimeZone(tz), now, steps, entries, frequencyOf(schedules))).warnings
+      const frequency = frequencyOf(schedules)
+      return (await this.timeline(orgId, safeTimeZone(tz), now, steps, entries, frequency, runStartPointOf(schedules, frequency)))
+        .warnings
     } catch {
       return []
     }
@@ -1571,13 +1607,18 @@ export class WorkflowTemplateService {
         occurrence_count: 0,
       })
     }
-    return this.timeline(orgId, safeTimeZone(tz), now, steps, entries, frequencyOf(dto.starts.schedules))
+    const frequency = frequencyOf(dto.starts.schedules)
+    return this.timeline(orgId, safeTimeZone(tz), now, steps, entries, frequency, runStartPointOf(dto.starts.schedules, frequency))
   }
 
   /**
    * Plan example runs with the engine (exactly what a run would store), plus warnings:
-   * a step whose timing isn't valid for how the workflow repeats (planned with the
-   * defaults instead), and a step timed to start before a step it starts after is due.
+   *  - a step whose timing isn't valid for how the workflow repeats (planned with the
+   *    defaults instead), or a first step timed before the run starts (Save's words);
+   *  - a step timed "N days after start" that lands before a step it starts after is due;
+   *  - runs that overlap: a run's last planned date after the next scheduled run starts.
+   * A calendar day before the previous step's dates is not a warning: it is planned in
+   * the next cycle, and the builder labels it so ("1st (next month)").
    */
   private async timeline(
     orgId: string,
@@ -1586,6 +1627,7 @@ export class WorkflowTemplateService {
     steps: TimelineStep[],
     schedules: ScheduleEntryLike[],
     frequency: Frequency,
+    runStart: RunStartPoint | null = null,
   ): Promise<{ runs: TimelineRun[]; warnings: string[] }> {
     const warnings: string[] = []
     const label = new Map(steps.map((s) => [s.key, stepLabel(s.label, s.title)]))
@@ -1596,7 +1638,13 @@ export class WorkflowTemplateService {
     const inputs: TimelineStepInput[] = steps.map((s) => {
       const problem = timingProblem(s.start_rule, s.due_rule, frequency)
       if (problem) warnings.push(`${label.get(s.key)}: ${problem}`)
-      const start = s.start_rule ? parseStartRule(s.start_rule) : null
+      const placed = problem
+        ? null
+        : s.deps.length === 0
+          ? firstStepTimingProblem(s.start_rule, s.due_rule, runStart)
+          : laterStepTimingProblem(s.start_rule)
+      if (placed) warnings.push(`${label.get(s.key)}: ${placed}`)
+      const start =s.start_rule ? parseStartRule(s.start_rule) : null
       const due = s.due_rule ? parseDueRule(s.due_rule) : null
       const startOk = start?.ok && allowedStartKinds(frequency).includes(start.rule.kind) && !problem
       const dueOk = due?.ok && allowedDueKinds(frequency).includes(due.rule.kind) && !problem
@@ -1611,15 +1659,18 @@ export class WorkflowTemplateService {
       }
     })
 
-    let starts = this.upcomingOccurrences(schedules, now, tz, TIMELINE_RUNS)
+    // One occurrence more than is shown: the run after the last one, for the overlap check.
+    const upcoming = this.upcomingOccurrences(schedules, now, tz, TIMELINE_RUNS + 1)
+    let starts = upcoming.slice(0, TIMELINE_RUNS)
     if (!starts.length) starts = [now]
     const every = cycleLengthOf(frequency)
     const plans = await this.engine.planTimelines(orgId, tz, inputs, starts, every)
+    let overlap: string | null = null
     const runs: TimelineRun[] = []
     for (const [i, plan] of plans.entries()) {
-      const runStart = starts[i]
+      const runAt = starts[i]
       runs.push({
-        starts_at: runStart,
+        starts_at: runAt,
         steps: plan.steps.map((x) => ({
           key: x.key,
           title: name(x.key),
@@ -1632,7 +1683,11 @@ export class WorkflowTemplateService {
           `${label.get(w.key)} starts before ${label.get(w.predecessor_key) ?? `“${name(w.predecessor_key)}”`} is due, so it is planned later.`,
         )
       }
+      // Scheduled runs only (upcoming is empty for an example run starting now).
+      const next = upcoming[i + 1]
+      if (!overlap && next) overlap = overlapWarning(plan.steps, next, tz, i > 0 ? runAt : null)
     }
+    if (overlap) warnings.push(overlap)
     return { runs, warnings: unique(warnings) }
   }
 
@@ -2143,6 +2198,7 @@ export class WorkflowTemplateService {
     orgId: string,
     steps: ProposedStep[],
     frequency: Frequency = { kind: 'manual' },
+    runStart: RunStartPoint | null = null,
   ): Promise<{ message: string; step: ProposedStep } | null> {
     const userIds = steps.flatMap((s) => [...s.state.assignee_user_ids, ...s.state.escalation_user_ids])
     const priorityIds = unique(steps.map((s) => s.state.priority_id).filter((x): x is string => !!x))
@@ -2177,6 +2233,13 @@ export class WorkflowTemplateService {
       }
       const timing = timingProblem(s.state.start_rule, s.state.due_rule, frequency)
       if (timing) return fail(timing)
+      // A first step (nothing before it) is timed on or after the run start, in its cycle;
+      // "Days after workflow is triggered" is for first steps only.
+      const placed =
+        s.deps.length === 0
+          ? firstStepTimingProblem(s.state.start_rule, s.state.due_rule, runStart)
+          : laterStepTimingProblem(s.state.start_rule)
+      if (placed) return fail(placed)
     }
     if (!steps.some((s) => s.deps.length === 0)) {
       return {

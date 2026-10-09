@@ -5,8 +5,9 @@ import { AlertTriangle, Clock, Users } from 'lucide-react'
 import type { WorkflowStep } from '@/lib/types/workflows'
 import FlowDiagram, { type FlowDiagramNode, type FlowLane } from './FlowDiagram'
 import { namesSummary } from './shared'
-import { MAIN_TRACK, layoutTracks, stepName, trackLabel, type TrackDraft, type TrackLayout } from './tracks'
-import { dueRuleOf, startRuleOf, timingProblems, timingSummary, type Frequency } from './timing'
+import { MAIN_TRACK, layoutTracks, savedMerges, stepName, trackLabel, type TrackDraft, type TrackLayout } from './tracks'
+import { dueRuleOf, runStartOf, startRuleOf, timingProblems, timingSummary, type Frequency, type ScheduleShape } from './timing'
+import { nextCycleFlagsFor, planContext } from './timingPlan'
 
 const MANUAL: Frequency = { type: 'manual' }
 
@@ -49,6 +50,7 @@ export default function StepFlow({
   memberName,
   compact = false,
   frequency,
+  schedules,
 }: {
   steps: WorkflowStep[]
   tracks: TrackDraft[]
@@ -57,23 +59,36 @@ export default function StepFlow({
   compact?: boolean
   /** How the workflow repeats (for the words of cycle timing). */
   frequency?: Frequency
+  /** Its schedules: first steps before the run start are flagged; "(next month)" is said. */
+  schedules?: ScheduleShape[]
 }) {
   const layout = useMemo(() => layoutTracks(tracks, steps), [tracks, steps])
   const lanes = useMemo(() => flowLanes(layout), [layout])
+  const runStart = useMemo(() => (frequency && schedules ? runStartOf(schedules, frequency) : null), [frequency, schedules])
+  const next = useMemo(
+    () =>
+      frequency
+        ? nextCycleFlagsFor(
+            layout.display.map((s) => ({ id: s.id, deps: layout.deps.get(s.id) ?? [], start: startRuleOf(s), due: dueRuleOf(s) })),
+            planContext(frequency, runStart),
+          )
+        : null,
+    [layout, frequency, runStart],
+  )
   const nodes: FlowDiagramNode[] = useMemo(
     () =>
       layout.display.map((s) => {
         const n = layout.labels.get(s.id) ?? '?'
         const names = assigneeNames(s, memberName)
         const deps = layout.deps.get(s.id) ?? []
-        const timingOff = !!frequency && timingProblems(startRuleOf(s), dueRuleOf(s), frequency).length > 0
+        const timingOff = !!frequency && timingProblems(startRuleOf(s), dueRuleOf(s), frequency, { first: deps.length === 0, runStart }).length > 0
         const missing = !s.title?.trim() || names.length === 0 || timingOff
         return {
           id: s.id,
           deps,
           order: layout.order.get(s.id) ?? 0,
           lane: layout.trackOf.get(s.id),
-          alsoWaitsFor: (layout.merges.get(s.id) ?? []).map((m) => layout.labels.get(m) ?? '?'),
+          alsoWaitsFor: savedMerges(layout, s.id).map((m) => layout.labels.get(m) ?? '?'),
           label: `${stepName(n, null)}: ${s.title || 'Untitled step'}`,
           tone: missing ? 'attention' : 'default',
           onClick: onOpen ? () => onOpen(s) : undefined,
@@ -91,7 +106,7 @@ export default function StepFlow({
               </span>
               <span className="flex items-center gap-1.5 text-[12px] text-[#334155]">
                 <Clock size={12} className="shrink-0 text-[#475569]" />
-                {timingSummary(startRuleOf(s), dueRuleOf(s), frequency ?? MANUAL, deps.length > 0)}
+                {timingSummary(startRuleOf(s), dueRuleOf(s), frequency ?? MANUAL, deps.length > 0, next?.get(s.id))}
                 {s.if_late === 'move_on' && <span className="text-[#475569]">· continues if late</span>}
               </span>
               {missing && (
@@ -104,7 +119,7 @@ export default function StepFlow({
           ),
         }
       }),
-    [layout, onOpen, memberName, frequency],
+    [layout, onOpen, memberName, frequency, runStart, next],
   )
   return <FlowDiagram nodes={nodes} lanes={lanes} compact={compact} />
 }

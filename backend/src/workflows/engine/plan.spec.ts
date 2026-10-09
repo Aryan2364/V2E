@@ -341,7 +341,7 @@ describe('planRun — order, anchors and warnings', () => {
     expect(of(res, 'a')[0]).toBe(iso(at(2026, 10, 8, 11)))
   })
 
-  it('a calendar start after a late predecessor moves to the next occurrence — and warns', async () => {
+  it('a calendar start before its predecessor is due lands in the next cycle — no warning (the builder labels it)', async () => {
     const res = await planRun(
       [
         step('a', dueOn({ kind: 'month_day', day: 10, time: '18:00' })),
@@ -350,7 +350,7 @@ describe('planRun — order, anchors and warnings', () => {
       ctx(at(2026, 10, 1, 9)),
     )
     expect(of(res, 'b')[0]).toBe(iso(at(2026, 11, 5, 9)))
-    expect(res.warnings).toEqual([{ key: 'b', predecessor_key: 'a' }])
+    expect(res.warnings).toEqual([])
   })
 
   it('days_after_run_start before a predecessor is due waits for it — and warns', async () => {

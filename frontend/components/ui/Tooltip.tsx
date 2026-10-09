@@ -141,7 +141,7 @@ export default function Tooltip({ label, children, placement = 'top', openOnTap 
               top: pos.y,
               transform: `translate(-50%, ${pos.place === 'top' ? '-100%' : '0'})`,
             }}
-            className="pointer-events-none z-[80] max-w-[260px] rounded-[6px] bg-[#0F172A] px-2 py-1 text-[11px] font-medium leading-snug text-white shadow-[0_4px_16px_rgba(0,0,0,0.28)]"
+            className="pointer-events-none z-[10000] max-w-[260px] rounded-[6px] bg-[#0F172A] px-2 py-1 text-[11px] font-medium leading-snug text-white shadow-[0_4px_16px_rgba(0,0,0,0.28)]"
           >
             {label}
           </div>,

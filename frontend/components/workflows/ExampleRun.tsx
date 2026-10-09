@@ -10,6 +10,17 @@ import { stepName } from './tracks'
 /** Edits settle for this long before the example is worked out again. */
 const DEBOUNCE_MS = 700
 
+/** How long a step has, in calendar days from its start to its due: "28 days", "same day". */
+export function spanLength(from: string | null | undefined, to: string | null | undefined): string | null {
+  const a = from ? new Date(from) : null
+  const b = to ? new Date(to) : null
+  if (!a || !b || Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) return null
+  const day = (d: Date) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86_400_000
+  const n = Math.round(day(b) - day(a))
+  if (n < 0) return null
+  return n === 0 ? 'same day' : n === 1 ? '1 day' : `${n} days`
+}
+
 /**
  * A timing warning in words. `name` turns a step key into "Step B2 “Review”" for a
  * warning that only names the steps.
@@ -190,7 +201,7 @@ export default function ExampleRun({
                 </div>
               )}
               <p className="text-sm text-[#1E293B]">
-                {manualOnly ? 'If started on ' : 'If it runs on '}
+                {manualOnly ? 'If triggered now, on ' : 'If triggered on '}
                 <span className="font-semibold text-[#0F172A]">{fmtDayDateTime(run.starts_at)}</span>{' '}
                 <InfoTip label="Example run" text="Planned dates. Holidays and weekly offs are skipped." />
               </p>
@@ -210,7 +221,12 @@ export default function ExampleRun({
                           </span>
                           <span className="text-sm font-medium text-[#0F172A] truncate">{s.title || 'Untitled step'}</span>
                         </span>
-                        <span className="text-[13px] text-[#334155] tabular-nums sm:flex-1 pl-[30px] sm:pl-0">{fmtSpan(s.planned_start_at, s.planned_due_at)}</span>
+                        <span className="text-[13px] text-[#334155] tabular-nums sm:flex-1 pl-[30px] sm:pl-0">
+                          {fmtSpan(s.planned_start_at, s.planned_due_at)}
+                          {spanLength(s.planned_start_at, s.planned_due_at) && (
+                            <span className="text-[#475569] whitespace-nowrap"> · {spanLength(s.planned_start_at, s.planned_due_at)}</span>
+                          )}
+                        </span>
                       </button>
                     </li>
                   )

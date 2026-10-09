@@ -355,3 +355,185 @@ export function timingProblem(startRaw: unknown, dueRaw: unknown, freq: Frequenc
   }
   return null
 }
+
+// ═══ First steps: on or after the run start, inside its cycle ════════════════
+
+/**
+ * Where a run starts inside its cycle (from the schedules): the time of day (daily),
+ * the weekday (weekly, Sun = 0), the day of the month (monthly) or the date (yearly),
+ * at the schedule's time. With several trigger days in one cycle (monthly on the 3rd
+ * and the 20th; weekly Mon and Thu) it is the LATEST of them, so a first step timed on
+ * or after it lands inside its own cycle whichever trigger started the run.
+ */
+export type RunStartPoint =
+  | { kind: 'daily'; time: string }
+  | { kind: 'weekly'; every: number; weekday: number; time: string }
+  | { kind: 'monthly'; every: number; day: number; time: string }
+  | { kind: 'yearly'; every: number; month: number; day: number; time: string }
+
+export interface RunStartScheduleLike {
+  schedule_type: string
+  every?: number | null
+  days?: unknown
+  month_days?: unknown
+  yearly_dates?: unknown
+  time?: string | null
+}
+
+/** Monday-first position of a weekday (Mon = 0 … Sun = 6). */
+export function weekPosition(weekday: number): number {
+  return (weekday + 6) % 7
+}
+
+function minutesOf(time: string | null | undefined): number {
+  if (typeof time !== 'string' || !TIME_RE.test(time)) return 0
+  const [h, m] = time.split(':').map(Number)
+  return h * 60 + m
+}
+
+const intList = (v: unknown): number[] =>
+  Array.isArray(v) ? v.filter((x): x is number => typeof x === 'number' && Number.isInteger(x)) : []
+
+/**
+ * The run start point for a frequency that allows calendar timing (null for manual /
+ * mixed, or when the schedules name no trigger day yet).
+ */
+export function runStartPointOf(schedules: RunStartScheduleLike[], freq: Frequency): RunStartPoint | null {
+  if (freq.kind === 'manual' || freq.kind === 'mixed') return null
+  let best: { pos: number; time: string; point: RunStartPoint } | null = null
+  const consider = (pos: number, time: string, point: RunStartPoint) => {
+    if (!best || pos > best.pos || (pos === best.pos && minutesOf(time) > minutesOf(best.time))) best = { pos, time, point }
+  }
+  for (const s of schedules) {
+    const time = typeof s.time === 'string' && TIME_RE.test(s.time) ? s.time : '00:00'
+    switch (freq.kind) {
+      case 'daily':
+        consider(0, time, { kind: 'daily', time })
+        break
+      case 'weekly':
+        for (const d of intList(s.days)) {
+          if (d >= 0 && d <= 6) consider(weekPosition(d), time, { kind: 'weekly', every: freq.every, weekday: d, time })
+        }
+        break
+      case 'monthly':
+        for (const raw of intList(s.month_days)) {
+          const d = Math.abs(raw)
+          if (d >= 1 && d <= 31) consider(d, time, { kind: 'monthly', every: freq.every, day: d, time })
+        }
+        break
+      case 'yearly':
+        for (const y of Array.isArray(s.yearly_dates) ? s.yearly_dates : []) {
+          const month = (y as { month?: unknown })?.month
+          const day = (y as { day?: unknown })?.day
+          if (isInt(month, 1, 12) && isInt(day, 1, 31)) {
+            consider(month * 100 + day, time, { kind: 'yearly', every: freq.every, month, day, time })
+          }
+        }
+        break
+    }
+  }
+  return (best as { point: RunStartPoint } | null)?.point ?? null
+}
+
+const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** 3 → "3rd". */
+export function ordinalOf(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd']
+  const v = n % 100
+  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`
+}
+
+/** "18:00" → "6:00 PM" (the builder's own format). */
+export function formatTime12(hhmm: string): string {
+  const [h, m] = (TIME_RE.test(hhmm) ? hhmm : '00:00').split(':').map(Number)
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`
+}
+
+/** The run start day in words: "the 3rd", "Wednesday", "1 Apr" (null for daily). */
+export function runStartDayWords(rs: RunStartPoint): string | null {
+  switch (rs.kind) {
+    case 'daily':
+      return null
+    case 'weekly':
+      return WEEKDAY_NAMES[rs.weekday]
+    case 'monthly':
+      return `the ${ordinalOf(rs.day)}`
+    case 'yearly':
+      return `${rs.day} ${MONTH_SHORT[rs.month - 1]}`
+  }
+}
+
+/**
+ * Why a FIRST step's calendar rule falls before the run start in its cycle, or null.
+ * Only the run's own cycle counts: a cycle rule (every 2+) in Week / Month / Year 2 or
+ * later is always fine. A rule on the run start day itself must not be earlier than the
+ * run's start time (it would roll into the next cycle). Completes "Step 1 “X”: …".
+ */
+export function beforeRunStartProblem(rule: StartRule | DueRule, rs: RunStartPoint): string | null {
+  if (!isCalendarRule(rule)) return null
+  const at = formatTime12(rs.time)
+  const earlierTime = minutesOf(rule.time) < minutesOf(rs.time)
+  if (rs.kind === 'daily') {
+    return rule.kind === 'time_of_day' && earlierTime ? `pick a time at or after ${at}, when the run starts.` : null
+  }
+  if ('cycle' in rule && rule.cycle !== 1) return null
+  const unit = rs.kind === 'weekly' ? 'Week' : rs.kind === 'monthly' ? 'Month' : 'Year'
+  const inCycle = 'cycle' in rule ? ` in ${unit} 1` : ''
+  let cmp: number
+  switch (rule.kind) {
+    case 'weekday':
+    case 'cycle_weekday':
+      if (rs.kind !== 'weekly') return null
+      cmp = weekPosition(rule.weekday) - weekPosition(rs.weekday)
+      break
+    case 'month_day':
+    case 'cycle_month_day':
+      if (rs.kind !== 'monthly') return null
+      cmp = (rule.day === 'last' ? 31 : rule.day) - rs.day
+      break
+    case 'year_date':
+    case 'cycle_year_date':
+      if (rs.kind !== 'yearly') return null
+      cmp = rule.month * 100 + rule.day - (rs.month * 100 + rs.day)
+      break
+    default:
+      return null
+  }
+  const day = runStartDayWords(rs)!
+  const what = rs.kind === 'yearly' ? 'a date' : 'a day'
+  if (cmp < 0) return `pick ${what} on or after ${day}${inCycle}, when the run starts.`
+  if (cmp === 0 && earlierTime) return `pick a time at or after ${at} on ${day}${inCycle}, when the run starts.`
+  return null
+}
+
+/**
+ * Why a first step's timing (no steps before it) can't be saved: its start and its due
+ * must both fall on or after the run start, inside the run's cycle. Null when fine,
+ * when the rules are legacy / relative, or when the workflow has no run start point.
+ * Call after `timingProblem` passed.
+ */
+export function firstStepTimingProblem(startRaw: unknown, dueRaw: unknown, rs: RunStartPoint | null): string | null {
+  if (!rs) return null
+  const start = startRaw !== null && startRaw !== undefined ? readStartRule(startRaw) : null
+  const startWhy = start ? beforeRunStartProblem(start, rs) : null
+  if (startWhy) return startWhy
+  const due = dueRaw !== null && dueRaw !== undefined ? readDueRule(dueRaw) : null
+  return due ? beforeRunStartProblem(due, rs) : null
+}
+
+// ═══ Later steps: no "Days after workflow is triggered" ═══════════════════════
+
+/** The builder's name for the `days_after_run_start` start kind (first steps only). */
+export const TRIGGER_KIND_LABEL = 'Days after workflow is triggered'
+
+/**
+ * Why a LATER step's start can't be saved (it has steps before it): "Days after workflow
+ * is triggered" is only for first steps. Null when fine. Completes "Step 2 “X”: …".
+ * Call after `timingProblem` passed.
+ */
+export function laterStepTimingProblem(startRaw: unknown): string | null {
+  const start = startRaw !== null && startRaw !== undefined ? readStartRule(startRaw) : null
+  return start?.kind === 'days_after_run_start' ? `“${TRIGGER_KIND_LABEL}” is only for the first step — pick another start.` : null
+}

@@ -110,6 +110,13 @@ export interface TrackLayout {
   deps: Map<string, string[]>
   /** Its valid merges (steps in other tracks that exist). */
   merges: Map<string, string[]>
+  /** What each step waits for through its path alone: the step before it, or its track's split step. */
+  pathDeps: Map<string, string[]>
+  /**
+   * Merges a step already waits for through its path order or split point (and so add
+   * nothing): kept on screen with a note, left out of what is saved.
+   */
+  redundant: Map<string, string[]>
 }
 
 /**
@@ -146,6 +153,7 @@ export function layoutTracks(tracks: TrackDraft[], steps: WorkflowStep[]): Track
     )
   }
   const deps = new Map<string, string[]>()
+  const pathDeps = new Map<string, string[]>()
   for (const t of list) {
     const g = groups.get(t.key) ?? []
     g.forEach((s, i) => {
@@ -153,11 +161,43 @@ export function layoutTracks(tracks: TrackDraft[], steps: WorkflowStep[]): Track
       const first = i === 0 ? split : g[i - 1].id
       const out: string[] = []
       if (first) out.push(first)
+      pathDeps.set(s.id, [...out])
       for (const m of merges.get(s.id) ?? []) if (!out.includes(m)) out.push(m)
       deps.set(s.id, out)
     })
   }
-  return { tracks: list, groups, trackOf, labels, order, display, deps, merges }
+  const redundant = new Map<string, string[]>()
+  merges.forEach((list, id) => {
+    if (!list.length) return
+    const up = upstreamOf(pathDeps.get(id) ?? [], deps, id)
+    const r = list.filter((m) => up.has(m))
+    if (r.length) redundant.set(id, r)
+  })
+  return { tracks: list, groups, trackOf, labels, order, display, deps, merges, pathDeps, redundant }
+}
+
+/**
+ * Everything a step waits for, directly or not, starting from `from` (its path
+ * dependency): those steps and all that is upstream of them, through every step's own
+ * merges too. `selfId` (the step asking) is never included, so its own merges — and
+ * any loop back to it — don't count.
+ */
+export function upstreamOf(from: string[], deps: Map<string, string[]>, selfId: string | null): Set<string> {
+  const out = new Set<string>()
+  const stack = [...from]
+  while (stack.length) {
+    const d = stack.pop()!
+    if (d === selfId || out.has(d)) continue
+    out.add(d)
+    stack.push(...(deps.get(d) ?? []))
+  }
+  return out
+}
+
+/** A step's merges as saved: the redundant ones (see `TrackLayout.redundant`) left out. */
+export function savedMerges(layout: Pick<TrackLayout, 'merges' | 'redundant'>, id: string): string[] {
+  const drop = layout.redundant.get(id) ?? []
+  return (layout.merges.get(id) ?? []).filter((m) => !drop.includes(m))
 }
 
 /** Server steps (each with track_key + order_index) in display order for these tracks. */

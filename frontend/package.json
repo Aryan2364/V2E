@@ -10,7 +10,8 @@
     "prebuild": "node scripts/copy-pdfjs.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/unit-test/register.mjs --test components/workflows/__tests__/timing.test.ts components/workflows/__tests__/tracks.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

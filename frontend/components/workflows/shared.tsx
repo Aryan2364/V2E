@@ -7,6 +7,7 @@ import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { getNow } from '@/lib/clock'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import Tooltip from '@/components/ui/Tooltip'
+import { WEEKDAYS_LONG, WEEKDAYS_SHORT, fmtTime, ordinal, plural } from './format'
 import type {
   RunDisplayStatus,
   WorkflowInstance,
@@ -68,8 +69,8 @@ export const MONTHS_LONG = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ]
-export const WEEKDAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-export const WEEKDAYS_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+// Pure helpers live in format.ts (no React) and are re-exported from here.
+export { WEEKDAYS_SHORT, WEEKDAYS_LONG, fmtTime, ordinal, plural }
 
 function validDate(value: string | Date | null | undefined): Date | null {
   if (!value) return null
@@ -116,13 +117,6 @@ export function fmtSpan(from: string | null | undefined, to: string | null | und
   return `${fmtDayDateTime(a)} → ${sameDay ? fmtClock(b) : fmtDayDateTime(b)}`
 }
 
-/** "18:00" → "6:00 PM". */
-export function fmtTime(hhmm: string | undefined | null): string {
-  if (!hhmm || !/^\d{1,2}:\d{2}$/.test(hhmm)) return '—'
-  const [h, m] = hhmm.split(':').map(Number)
-  return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`
-}
-
 /** "2026-08-12" → "12 Aug 2026" without a timezone shift. */
 export function fmtIsoDate(iso: string | undefined | null): string {
   if (!iso || !/^\d{4}-\d{2}-\d{2}/.test(iso)) return '—'
@@ -136,13 +130,6 @@ export function todayIso(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-export function ordinal(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd']
-  const v = n % 100
-  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`
-}
-
-export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
 
 // ─── Status badges ───────────────────────────────────────────────────────────
 
@@ -334,11 +321,14 @@ export function InfoTip({ label, text, className = '' }: { label: string; text: 
           className={`relative inline-flex items-center justify-center w-6 h-6 -my-1 align-middle shrink-0 rounded-full text-[#475569] hover:text-[#1D4ED8] hover:bg-[#EFF6FF] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] after:absolute after:-inset-2.5 after:content-[''] ${className}`}
         >
           <Info size={14} aria-hidden />
+          {/* Inside the (relative) button: an sr-only span is position:absolute, and one
+              with no positioned ancestor is laid out against the page — far down inside a
+              scrolled <main> it made the whole document taller (a second scrollbar). */}
+          <span id={id} className="sr-only">
+            {text}
+          </span>
         </button>
       </Tooltip>
-      <span id={id} className="sr-only">
-        {text}
-      </span>
     </>
   )
 }

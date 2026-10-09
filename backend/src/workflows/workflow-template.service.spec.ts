@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { WorkflowTemplateService } from './workflow-template.service'
+import { WorkflowTemplateService, overlapWarning } from './workflow-template.service'
 import { planRun } from './engine/plan'
 import { Principal } from '../access-rights/permissions.service'
 
@@ -428,6 +428,26 @@ describe('WorkflowTemplateService — definition: steps and tracks', () => {
     ])
     expect(out.step_keys).toEqual({ a: 'a', n1: review.id, n2: approve.id })
     expect(h.prisma.$transaction).toHaveBeenCalledTimes(1)
+  })
+
+  it('tracks: an “Also waits for” on a step it already waits for through its path is dropped quietly', async () => {
+    const h = defHarness([stepRow('a', { title: 'Existing' })])
+    await h.service.updateDefinition(
+      ORG,
+      TPL,
+      def({
+        mode: 'save',
+        // Path B splits after a; B1 "also waits for" a — it already does (its split point).
+        tracks: [
+          { key: 'main', name: null, split_from_step_key: null },
+          { key: 'B', name: null, split_from_step_key: 'a' },
+        ],
+        steps: [dstep('a', { id: 'a', title: 'Existing' }), dstep('n1', { title: 'Check', track_key: 'B', merge_step_keys: ['a'] })],
+      }) as never,
+      me(),
+    )
+    const check = h.prisma.workflowStep.create.mock.calls.map((c: any[]) => c[0].data).find((d: any) => d.title === 'Check')
+    expect(check).toMatchObject({ track_key: 'B', merge_step_ids: [], depends_on_step_ids: ['a'] })
   })
 
   it('tracks: an empty track is dropped; Save needs a step on the main track', async () => {
@@ -1341,6 +1361,126 @@ describe('WorkflowTemplateService — step timing on save', () => {
     )
   })
 
+  it('Save refuses a first step timed before the run starts in its cycle; later steps may use any day', async () => {
+    const on3rd = { ...monthly, month_days: [3] }
+    const first = await saveErr(defHarness(), {
+      mode: 'save',
+      starts: { manual: { enabled: false }, schedules: [on3rd] },
+      steps: [dstep('n1', { title: 'Collect documents', start_rule: { kind: 'month_day', day: 1, time: '09:00' } })],
+    })
+    expect(first).toBeInstanceOf(BadRequestException)
+    expect(first.message).toBe('Step 1 “Collect documents”: pick a day on or after the 3rd, when the run starts.')
+    expect(first.getResponse()).toMatchObject({ code: 'step_invalid', step_key: 'n1' })
+
+    // Its due date too.
+    const due = await saveErr(defHarness(), {
+      mode: 'save',
+      starts: { manual: { enabled: false }, schedules: [on3rd] },
+      steps: [dstep('n1', { title: 'Collect documents', due_rule: { kind: 'month_day', day: 2, time: '18:00' } })],
+    })
+    expect(due.message).toBe('Step 1 “Collect documents”: pick a day on or after the 3rd, when the run starts.')
+
+    // The first step of a path that starts with the run is a first step as well.
+    const path = await saveErr(defHarness(), {
+      mode: 'save',
+      starts: { manual: { enabled: false }, schedules: [on3rd] },
+      tracks: [{ key: 'main' }, { key: 'B', split_from_step_key: null }],
+      steps: [dstep('n1', { title: 'Collect' }), dstep('b1', { title: 'Check', track_key: 'B', start_rule: { kind: 'month_day', day: 1, time: '09:00' } })],
+    })
+    expect(path.message).toBe('Step B1 “Check”: pick a day on or after the 3rd, when the run starts.')
+
+    // A later step on the 1st is fine: it lands in the next month.
+    const h = defHarness()
+    await h.service.createDefinition(
+      ORG,
+      def({
+        mode: 'save',
+        starts: { manual: { enabled: false }, schedules: [on3rd] },
+        steps: [
+          dstep('n1', { title: 'Collect', start_rule: { kind: 'month_day', day: 3, time: '09:00' } }),
+          dstep('n2', { title: 'Review', depends_on: ['n1'], start_rule: { kind: 'month_day', day: 1, time: '09:00' } }),
+        ],
+      }) as never,
+      me(),
+    )
+    expect(h.prisma.$transaction).toHaveBeenCalledTimes(1)
+  })
+
+  it('Save words the other frequencies: weekly, yearly, daily; several trigger days use the latest', async () => {
+    const save = (schedule: Record<string, unknown>, rule: Record<string, unknown>) =>
+      saveErr(defHarness(), {
+        mode: 'save',
+        starts: { manual: { enabled: false }, schedules: [{ time: '09:00', start_date: '2026-10-01', end_condition: 'never', every: 1, ...schedule }] },
+        steps: [dstep('n1', { title: 'Collect', start_rule: rule })],
+      })
+    expect((await save({ schedule_type: 'weekly', days: [3] }, { kind: 'weekday', weekday: 1, time: '09:00' })).message).toBe(
+      'Step 1 “Collect”: pick a day on or after Wednesday, when the run starts.',
+    )
+    expect(
+      (await save({ schedule_type: 'yearly', yearly_dates: [{ month: 4, day: 1 }] }, { kind: 'year_date', month: 3, day: 1, time: '09:00' })).message,
+    ).toBe('Step 1 “Collect”: pick a date on or after 1 Apr, when the run starts.')
+    expect((await save({ schedule_type: 'daily' }, { kind: 'time_of_day', time: '08:00' })).message).toBe(
+      'Step 1 “Collect”: pick a time at or after 9:00 AM, when the run starts.',
+    )
+    expect((await save({ schedule_type: 'monthly', month_days: [3, 20] }, { kind: 'month_day', day: 10, time: '09:00' })).message).toBe(
+      'Step 1 “Collect”: pick a day on or after the 20th, when the run starts.',
+    )
+  })
+
+  it('when the schedule moves past a first step’s day, Save names the step (its choice is kept as it is)', async () => {
+    const h = defHarness(
+      [stepRow('a', { title: 'Collect', start_rule: { kind: 'month_day', day: 5, time: '09:00' } })],
+      template({ status: 'active' }, ['edit']),
+    )
+    const err: any = await h.service
+      .updateDefinition(
+        ORG,
+        TPL,
+        def({
+          starts: { manual: { enabled: false }, schedules: [{ ...monthly, month_days: [10] }] },
+          steps: [dstep('a', { id: 'a', title: 'Collect' })],
+        }) as never,
+        me(),
+      )
+      .catch((e: unknown) => e)
+    expect(err.message).toBe('Step 1 “Collect”: pick a day on or after the 10th, when the run starts.')
+    expect(err.getResponse()).toMatchObject({ step_id: 'a', step_key: 'a' })
+    expect(h.prisma.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('a draft keeps a first step before the run start; its warnings say what Save will need', async () => {
+    const h = defHarness()
+    const out: any = await h.service.createDefinition(
+      ORG,
+      def({
+        starts: { manual: { enabled: false }, schedules: [{ ...monthly, month_days: [3] }] },
+        steps: [dstep('n1', { title: 'Collect', start_rule: { kind: 'month_day', day: 1, time: '09:00' } })],
+      }) as never,
+      me(),
+    )
+    expect(out.warnings).toContain('Step 1 “Collect”: pick a day on or after the 3rd, when the run starts.')
+  })
+
+  it('“Days after workflow is triggered” is for first steps only: Save refuses it on a later step; drafts keep it', async () => {
+    const trigger = { kind: 'days_after_run_start', days: 2, time: '09:00' }
+    const err = await saveErr(defHarness(), {
+      mode: 'save',
+      steps: [dstep('n1', { title: 'Collect', start_rule: trigger }), dstep('n2', { title: 'Review', depends_on: ['n1'], start_rule: trigger })],
+    })
+    expect(err).toBeInstanceOf(BadRequestException)
+    expect(err.message).toBe('Step 2 “Review”: “Days after workflow is triggered” is only for the first step — pick another start.')
+    expect(err.getResponse()).toMatchObject({ code: 'step_invalid', step_key: 'n2' })
+
+    const h = defHarness()
+    const out: any = await h.service.createDefinition(
+      ORG,
+      def({ steps: [dstep('n1', { title: 'Collect' }), dstep('n2', { title: 'Review', depends_on: ['n1'], start_rule: trigger })] }) as never,
+      me(),
+    )
+    expect(h.prisma.workflowStep.create.mock.calls.map((c: any[]) => c[0].data.start_rule)).toContainEqual(trigger)
+    expect(out.warnings).toContain('Step 2 “Review”: “Days after workflow is triggered” is only for the first step — pick another start.')
+  })
+
   it('stores valid rules in canonical form; a relative due rule is mirrored into due_days / due_time', async () => {
     const h = defHarness()
     await h.service.createDefinition(
@@ -1533,7 +1673,7 @@ describe('WorkflowTemplateService — example timeline (preview)', () => {
     expect(ended.runs.map((r: any) => r.starts_at)).toEqual([NOW])
   })
 
-  it('warns about a timing that doesn’t fit (planned with the defaults) and a start before a predecessor is due', async () => {
+  it('warns about a timing that doesn’t fit (planned with the defaults); a day before the previous step is no warning', async () => {
     const h = build()
     const out: any = await h.service.previewTimeline(
       ORG,
@@ -1553,10 +1693,88 @@ describe('WorkflowTemplateService — example timeline (preview)', () => {
     expect(out.runs).toHaveLength(3)
     expect(out.warnings).toEqual([
       'Step 3 “File”: the workflow repeats monthly. Choose “Day of the month” or a “Days after” option.',
-      'Step 2 “Review” starts before Step 1 “Collect” is due, so it is planned later.',
+      'Runs will overlap: this run ends 7 Dec, the next starts 1 Dec.',
     ])
     // Review moves to the 5th of the month after Collect is due.
     expect(out.runs[0].steps[1].planned_start_at).toEqual(new Date('2026-12-05T03:30:00Z'))
+  })
+
+  it('warns when runs overlap: a run’s last planned date after the next run starts', async () => {
+    const h = build()
+    const monthly3 = { schedule_type: 'monthly', every: 1, month_days: [3], time: '09:00', start_date: '2026-10-01', end_condition: 'never' }
+    const out: any = await h.service.previewTimeline(
+      ORG,
+      body({
+        starts: { manual: { enabled: false }, schedules: [monthly3] },
+        steps: [
+          dstep('k1', { title: 'Collect', due_rule: { kind: 'month_day', day: 20, time: '18:00' } }),
+          // Due on the 5th after the 20th → the 5th of the next month, after the next run (3rd).
+          dstep('k2', { title: 'Review', depends_on: ['k1'], due_rule: { kind: 'month_day', day: 5, time: '18:00' } }),
+        ],
+      }) as never,
+      me(),
+    )
+    expect(out.runs[0].starts_at).toEqual(new Date('2026-11-03T03:30:00Z'))
+    expect(out.warnings).toEqual(['Runs will overlap: this run ends 5 Dec, the next starts 3 Dec.'])
+
+    const fits: any = await h.service.previewTimeline(
+      ORG,
+      body({
+        starts: { manual: { enabled: false }, schedules: [monthly3] },
+        steps: [dstep('k1', { title: 'Collect', due_rule: { kind: 'month_day', day: 20, time: '18:00' } })],
+      }) as never,
+      me(),
+    )
+    expect(fits.warnings).toEqual([])
+  })
+
+  it('warns about a first step timed before the run starts (Save’s words)', async () => {
+    const h = build()
+    const out: any = await h.service.previewTimeline(
+      ORG,
+      body({
+        starts: {
+          manual: { enabled: false },
+          schedules: [{ schedule_type: 'monthly', every: 1, month_days: [3], time: '09:00', start_date: '2026-10-01', end_condition: 'never' }],
+        },
+        steps: [dstep('k1', { title: 'Collect documents', start_rule: { kind: 'month_day', day: 1, time: '09:00' } })],
+      }) as never,
+      me(),
+    )
+    expect(out.warnings).toContain('Step 1 “Collect documents”: pick a day on or after the 3rd, when the run starts.')
+  })
+})
+
+describe('overlapWarning', () => {
+  const tz = 'Asia/Kolkata'
+  const step = (start: string, due: string) => ({ planned_start_at: new Date(start), planned_due_at: new Date(due) })
+
+  it('names the run’s last date and the next run’s start, in the org’s time zone', () => {
+    expect(overlapWarning([step('2026-11-03T03:30:00Z', '2026-12-05T12:30:00Z')], new Date('2026-12-03T03:30:00Z'), tz)).toBe(
+      'Runs will overlap: this run ends 5 Dec, the next starts 3 Dec.',
+    )
+    expect(overlapWarning([step('2026-12-03T03:30:00Z', '2027-01-05T12:30:00Z')], new Date('2027-01-03T03:30:00Z'), tz)).toBe(
+      'Runs will overlap: this run ends 5 Jan, the next starts 3 Jan.',
+    )
+    // When the two dates fall in different years, the years are said.
+    expect(overlapWarning([step('2026-12-30T03:30:00Z', '2027-01-05T12:30:00Z')], new Date('2026-12-31T03:30:00Z'), tz)).toBe(
+      'Runs will overlap: this run ends 5 Jan 2027, the next starts 31 Dec 2026.',
+    )
+  })
+
+  it('names a later example run ("the run on 3 Dec") — the first one is "this run"', () => {
+    expect(
+      overlapWarning([step('2026-12-03T03:30:00Z', '2027-01-04T12:30:00Z')], new Date('2027-01-03T03:30:00Z'), tz, new Date('2026-12-03T03:30:00Z')),
+    ).toBe('Runs will overlap: the run on 3 Dec 2026 ends 4 Jan 2027, the next starts 3 Jan 2027.')
+    expect(
+      overlapWarning([step('2026-11-03T03:30:00Z', '2026-12-05T12:30:00Z')], new Date('2026-12-03T03:30:00Z'), tz, new Date('2026-11-03T03:30:00Z')),
+    ).toBe('Runs will overlap: the run on 3 Nov ends 5 Dec, the next starts 3 Dec.')
+  })
+
+  it('no warning when the run ends by the time the next one starts (or has no steps)', () => {
+    expect(overlapWarning([step('2026-11-03T03:30:00Z', '2026-11-20T12:30:00Z')], new Date('2026-12-03T03:30:00Z'), tz)).toBeNull()
+    expect(overlapWarning([step('2026-11-03T03:30:00Z', '2026-12-03T03:30:00Z')], new Date('2026-12-03T03:30:00Z'), tz)).toBeNull()
+    expect(overlapWarning([], new Date('2026-12-03T03:30:00Z'), tz)).toBeNull()
   })
 })
 

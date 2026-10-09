@@ -373,6 +373,51 @@ export function deriveDependencies<T extends { id: string }>(
   return deps
 }
 
+/**
+ * The merges ("Also waits for") of each step that it already waits for through its path
+ * order or split point: the step before it in its path (or its path's split point) and
+ * everything upstream of that — through the other steps' own merges too, but never
+ * through this step's own merges. Pure; returns step id → redundant merge ids.
+ */
+export function redundantMerges<T extends { id: string }>(
+  tracks: { key: string; split_from_step_id: string | null }[],
+  groups: Map<string, T[]>,
+  merges: Map<string, string[]>,
+): Map<string, string[]> {
+  const deps = deriveDependencies(tracks, groups, merges)
+  // Path dependencies only (the step before, or the split point), without any merges.
+  const pathDeps = deriveDependencies(tracks, groups, new Map())
+  const out = new Map<string, string[]>()
+  for (const [id, list] of merges) {
+    if (!list.length) continue
+    const upstream = new Set<string>()
+    const stack = [...(pathDeps.get(id) ?? [])]
+    while (stack.length) {
+      const d = stack.pop()!
+      if (d === id || upstream.has(d)) continue
+      upstream.add(d)
+      for (const x of deps.get(d) ?? []) stack.push(x)
+    }
+    const redundant = list.filter((m) => upstream.has(m))
+    if (redundant.length) out.set(id, redundant)
+  }
+  return out
+}
+
+/** Drop every redundant merge (see `redundantMerges`) from `merges`, in place. */
+export function dropRedundantMerges<T extends { id: string }>(
+  tracks: { key: string; split_from_step_id: string | null }[],
+  groups: Map<string, T[]>,
+  merges: Map<string, string[]>,
+): void {
+  for (const [id, redundant] of redundantMerges(tracks, groups, merges)) {
+    merges.set(
+      id,
+      (merges.get(id) ?? []).filter((m) => !redundant.includes(m)),
+    )
+  }
+}
+
 // ═══ A definition save / preview request → tracks ══════════════════════════════
 
 export interface TrackRequest {
@@ -505,6 +550,14 @@ export function planTracks(reqTracks: TrackRequest[] | null | undefined, reqStep
     }
     merges.set(key, list)
   }
+
+  // A merge on a step it already waits for (through its path order or split point) adds
+  // nothing: it is dropped quietly, so it is neither stored nor returned.
+  dropRedundantMerges(
+    tracks.map((t) => ({ key: t.key, split_from_step_id: t.split_from })),
+    groups,
+    merges,
+  )
 
   const deps = deriveDependencies(
     tracks.map((t) => ({ key: t.key, split_from_step_id: t.split_from })),

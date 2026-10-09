@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, Archive, ArchiveRestore, ChevronDown, Eye, GitBranch, Info, ListChecks, Pause, Play, Plus, RefreshCw, Save, X } from 'lucide-react'
+import { AlertTriangle, Archive, ArchiveRestore, ChevronDown, Eye, GitBranch, Info, ListChecks, Pause, Pencil, Play, Plus, RefreshCw, Save, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/Toast'
@@ -21,7 +21,7 @@ import ActionMenu, { type ActionMenuItem } from './ActionMenu'
 import ExampleRun, { warningText } from './ExampleRun'
 import PeopleSection, { type PeopleValue } from './PeopleSection'
 import StartsSection, { type ScheduleDraft, type StartsValue, scheduleToDraft } from './StartsSection'
-import StepCard, { INPUT_CLS, LABEL_CLS, blankStepDraft, type CommitNewStep, type MergeOption } from './StepCard'
+import StepCard, { INPUT_CLS, IconAction, LABEL_CLS, blankStepDraft, type CommitNewStep, type MergeOption } from './StepCard'
 import StepFlow from './StepFlow'
 import {
   MAIN_TRACK,
@@ -32,15 +32,18 @@ import {
   nextTrackKey,
   numberLabel,
   orderByTracks,
+  savedMerges,
   stepName,
   trackBaseLabel,
   trackLabel,
   trackOfStep,
   tracksFromServer,
+  upstreamOf,
   type TrackDraft,
   type TrackLayout,
 } from './tracks'
-import { cleanRule, dueRuleOf, frequencyOf, startRuleOf, stepTimingMessage, timingProblems, type Frequency } from './timing'
+import { cleanRule, dueRuleOf, frequencyOf, runStartOf, startRuleOf, stepTimingMessage, timingProblems, type Frequency, type RunStart } from './timing'
+import { planContext, planSteps } from './timingPlan'
 import { useUnsavedChangesGuard } from './useUnsavedChangesGuard'
 import { useWorkflowActions } from './useWorkflowActions'
 import { useWorkflowLookups } from './useWorkflowLookups'
@@ -296,12 +299,90 @@ function checklistInput(items: ChecklistItem[] | null | undefined): ChecklistIte
     }))
 }
 
+/**
+ * A parallel path's name in its header: "· Finance" when it has one, else its first
+ * step's title as a quiet hint ("· Budget check"), so paths are recognisable without
+ * naming them. The pencil turns it into a field: Enter or leaving it keeps the name,
+ * Escape puts it back.
+ */
+function PathName({
+  track,
+  hint,
+  allowed,
+  reason,
+  onRename,
+}: {
+  track: TrackDraft
+  hint: string | null
+  allowed: boolean | undefined
+  reason: string
+  onRename: (name: string) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [text, setText] = useState(track.name)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const cancelled = useRef(false)
+  useEffect(() => {
+    if (!editing) return
+    setText(track.name)
+    cancelled.current = false
+    requestAnimationFrame(() => inputRef.current?.select())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing])
+  const base = trackBaseLabel(track.key)
+  const name = track.name.trim()
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        // eslint-disable-next-line jsx-a11y/no-autofocus -- opened by the pencil on purpose
+        autoFocus
+        aria-label={`Name of ${base}`}
+        value={text}
+        maxLength={TRACK_NAME_MAX}
+        placeholder="Path name (optional)"
+        onChange={(e) => setText(e.target.value)}
+        onBlur={() => {
+          if (!cancelled.current) onRename(text.trim())
+          setEditing(false)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            inputRef.current?.blur()
+          } else if (e.key === 'Escape') {
+            e.preventDefault()
+            e.stopPropagation()
+            cancelled.current = true
+            inputRef.current?.blur()
+          }
+        }}
+        className={`${INPUT_CLS} !py-1.5 min-w-0 flex-1`}
+      />
+    )
+  }
+  return (
+    <>
+      <span className="min-w-0 flex-1 truncate">
+        {name ? (
+          <span className="text-[14px] font-medium text-[#0F172A]">· {name}</span>
+        ) : hint ? (
+          <span className="text-[13px] text-[#475569]">· {hint}</span>
+        ) : null}
+      </span>
+      <IconAction label="Rename path" icon={Pencil} onClick={() => setEditing(true)} allowed={allowed} reason={reason} />
+    </>
+  )
+}
+
 function stepInput(s: WorkflowStep, layout: TrackLayout): DefinitionStepInput {
   return {
     key: s.id,
     ...(isNewKey(s.id) ? {} : { id: s.id }),
     track_key: layout.trackOf.get(s.id) ?? MAIN_TRACK,
-    merge_step_keys: layout.merges.get(s.id) ?? [],
+    // A merge it already waits for through its path adds nothing and isn't saved.
+    merge_step_keys: savedMerges(layout, s.id),
     title: (s.title ?? '').trim(),
     description: s.description?.trim() || null,
     assignee_user_ids: s.assignee_user_ids ?? [],
@@ -517,13 +598,29 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   const freqKey = JSON.stringify(frequencyOf(timingSchedules))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const frequency = useMemo<Frequency>(() => JSON.parse(freqKey), [freqKey])
+  // Where runs start in their cycle (the latest trigger day): first steps can't be timed
+  // before it. A schedule change re-checks every step at once; choices are never changed.
+  const runStartKey = JSON.stringify(runStartOf(timingSchedules, frequency))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const runStart = useMemo<RunStart | null>(() => JSON.parse(runStartKey), [runStartKey])
+  /** A first step waits for nothing (the main path's first step, a path from the start of the run). */
+  const isFirstStep = useCallback((id: string) => (layout.deps.get(id) ?? []).length === 0, [layout])
+  /** One representative run, planned without holidays — for the "(next month)" marks. */
+  const timingPlan = useMemo(() => {
+    const ctx = planContext(frequency, runStart)
+    const planned = planSteps(
+      layout.display.map((s) => ({ id: s.id, deps: layout.deps.get(s.id) ?? [], start: startRuleOf(s), due: dueRuleOf(s) })),
+      ctx,
+    )
+    return { ctx, planned }
+  }, [layout, frequency, runStart])
   /** Steps whose timing this frequency does not allow (or whose dates are incomplete). */
   const timingIssues = useMemo(
     () =>
       layout.display
-        .map((s) => ({ step: s, problems: timingProblems(startRuleOf(s), dueRuleOf(s), frequency) }))
+        .map((s) => ({ step: s, problems: timingProblems(startRuleOf(s), dueRuleOf(s), frequency, { first: isFirstStep(s.id), runStart }) }))
         .filter((x) => x.problems.length > 0),
-    [layout, frequency],
+    [layout, frequency, runStart, isFirstStep],
   )
   /** The same problems in the server's words (its example-run warnings repeat them). */
   const timingIssueTexts = useMemo(
@@ -623,6 +720,10 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     setWork((w) => ({ ...w, tracks: w.tracks.map((t) => (t.key === key ? { ...t, ...patch } : t)) }))
     setTrackIssue((x) => (x?.key === key ? null : x))
   }
+
+  /** Name a path that is still being started (its first step's form is open). */
+  const renamePendingTrack = (key: string, name: string) =>
+    setAdding((a) => (a?.newTrack?.key === key ? { ...a, newTrack: { ...a.newTrack, name } } : a))
 
   /** Remove an empty track (never main). */
   const removeTrack = (key: string) => {
@@ -792,9 +893,14 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   }
 
   /** "B2 “Finance sign-off”" choices for "Also waits for": steps in other tracks that don't make a loop. */
-  const mergeOptionsFor = (track: string, blocked: Set<string>, selfId: string | null): MergeOption[] =>
+  /**
+   * The steps a step may also wait for: on other paths, not itself, not one that waits
+   * for it (a loop), and not one it already waits for through its path order or split
+   * point (`upstream`: its "After" step and everything before that).
+   */
+  const mergeOptionsFor = (track: string, blocked: Set<string>, selfId: string | null, upstream: Set<string>): MergeOption[] =>
     layout.display
-      .filter((s) => s.id !== selfId && (layout.trackOf.get(s.id) ?? MAIN_TRACK) !== track && !blocked.has(s.id))
+      .filter((s) => s.id !== selfId && (layout.trackOf.get(s.id) ?? MAIN_TRACK) !== track && !blocked.has(s.id) && !upstream.has(s.id))
       .map((s) => ({ value: s.id, label: `${labels.get(s.id) ?? '?'} “${s.title?.trim() || 'Untitled step'}”` }))
 
   /**
@@ -836,7 +942,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
           : s.escalation_mode === 'people' && !(s.escalation_user_ids ?? []).length
             ? SAVE_STEP_MSG.escalation
             : null
-      const timing = timingProblems(startRuleOf(s), dueRuleOf(s), frequency)[0]
+      const timing = timingProblems(startRuleOf(s), dueRuleOf(s), frequency, { first: isFirstStep(s.id), runStart })[0]
       const msg = why ? `${label}: ${why}` : timing ? stepTimingMessage(label, timing) : null
       if (msg) {
         perStep.set(s.id, msg)
@@ -1089,6 +1195,8 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     const next = at >= 0 ? group[at + 1] : undefined
     // Inserted before `next`: `next` (and whatever waits for it) will wait for the new step.
     const blocked = next ? new Set([next.id, ...Array.from(dependentsOf(next.id, layout.deps))]) : new Set<string>()
+    // What it will already wait for through its path: the step it goes after, and all before that.
+    const upstream = prevId && steps.some((s) => s.id === prevId) ? upstreamOf([prevId], layout.deps, null) : new Set<string>()
     return (
       // A fresh form (and fresh draft) each time one is opened — never a reused one.
       <div key={`new-step-${t.key}-${adding.seq}`} id={FORM_ID} className="scroll-mt-40 scroll-mb-6 scroll-mx-4">
@@ -1099,7 +1207,8 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         badgeLabel={next ? 'New' : undefined}
         placement={placementText(prevId, t.key, at < 0 && group.length === 0 && t.key !== MAIN_TRACK)}
         hasPredecessors={!!prevId && steps.some((s) => s.id === prevId)}
-        mergeOptions={mergeOptionsFor(t.key, blocked, null)}
+        mergeOptions={mergeOptionsFor(t.key, blocked, null, upstream)}
+        upstream={upstream}
         labels={labels}
         initial={blankStepDraft(me && (lookups.members.some((m) => m.user_id === me.user_id) || lookups.status === 'loading') ? me : undefined)}
         editable={edit.allowed}
@@ -1108,6 +1217,9 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         currentUser={me}
         frequency={frequency}
         schedules={timingSchedules}
+        runStart={runStart}
+        baseDeps={prevId && steps.some((s) => s.id === prevId) ? [prevId] : []}
+        plan={timingPlan}
         onCreate={onCreate}
         onCancel={() => setAdding(null)}
         focusKey={adding.seq}
@@ -1128,6 +1240,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     const nodes: React.ReactNode[] = []
     group.forEach((s, i) => {
       const prevId = i > 0 ? group[i - 1].id : t.key === MAIN_TRACK ? null : t.split_from
+      const upstream = upstreamOf(layout.pathDeps.get(s.id) ?? [], layout.deps, s.id)
       nodes.push(
         <div key={s.id} id={`step-card-${s.id}`} className="scroll-mt-40 scroll-mb-6 scroll-mx-4">
           <StepCard
@@ -1137,7 +1250,8 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             label={labels.get(s.id) ?? '?'}
             placement={placementText(prevId && steps.some((x) => x.id === prevId) ? prevId : null, t.key, i === 0 && t.key !== MAIN_TRACK)}
             hasPredecessors={i > 0 || (t.key !== MAIN_TRACK && !!split)}
-            mergeOptions={mergeOptionsFor(t.key, dependentsOf(s.id, layout.deps), s.id)}
+            mergeOptions={mergeOptionsFor(t.key, dependentsOf(s.id, layout.deps), s.id, upstream)}
+            upstream={upstream}
             labels={labels}
             editable={edit.allowed}
             reason={edit.reason}
@@ -1145,6 +1259,9 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             currentUser={me}
             frequency={frequency}
             schedules={timingSchedules}
+            runStart={runStart}
+            baseDeps={prevId && steps.some((x) => x.id === prevId) ? [prevId] : []}
+            plan={timingPlan}
             expanded={expanded.has(s.id)}
             onToggle={() => toggle(s.id)}
             onUpdate={onUpdate}
@@ -1182,14 +1299,12 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             {trackBaseLabel(t.key)}
           </span>
           {t.key !== MAIN_TRACK && (
-            <input
-              aria-label={`Name of ${trackBaseLabel(t.key)}`}
-              value={t.name}
-              maxLength={TRACK_NAME_MAX}
-              disabled={detailsDisabled || pending}
-              onChange={(e) => setTrack(t.key, { name: e.target.value })}
-              placeholder={pending ? 'Add a step first' : 'Name (optional)'}
-              className={`${INPUT_CLS} !py-1.5 min-w-0 flex-1`}
+            <PathName
+              track={t}
+              hint={group[0]?.title?.trim() || null}
+              allowed={edit.allowed}
+              reason={edit.reason}
+              onRename={(name) => (pending ? renamePendingTrack(t.key, name) : setTrack(t.key, { name }))}
             />
           )}
           {t.key !== MAIN_TRACK && group.length === 0 && !pending && (
@@ -1446,7 +1561,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             </button>
             <Reveal open={flowOpen} id="flow-preview">
               <div className="px-4 pb-4 pt-1 border-t border-[#F1F5F9]">
-                <StepFlow steps={steps} tracks={work.tracks} memberName={memberName} onOpen={(s) => focusStep(s.id)} frequency={frequency} compact />
+                <StepFlow steps={steps} tracks={work.tracks} memberName={memberName} onOpen={(s) => focusStep(s.id)} frequency={frequency} schedules={timingSchedules} compact />
               </div>
             </Reveal>
           </div>

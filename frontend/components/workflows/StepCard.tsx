@@ -27,8 +27,17 @@ import {
   timingProblems,
   timingSummary,
   type Frequency,
+  type RunStart,
   type ScheduleShape,
 } from './timing'
+import { anchorFor, stepNextCycle, type PlanContext, type PlannedDates } from './timingPlan'
+
+/** The representative run's plan (timingPlan.ts), for the "(next month)" marks. */
+export interface StepPlanInput {
+  ctx: PlanContext
+  /** Every step's planned dates in that run. */
+  planned: Map<string, PlannedDates>
+}
 
 export const INPUT_CLS =
   'w-full px-3 py-2.5 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F8FAFC] disabled:text-[#334155] disabled:cursor-not-allowed'
@@ -292,7 +301,7 @@ function ChoiceCards<V extends string>({
   )
 }
 
-function IconAction({
+export function IconAction({
   label,
   icon: Icon,
   onClick,
@@ -329,6 +338,46 @@ function IconAction({
   return <Tooltip label={disabled ? '' : label}>{btn}</Tooltip>
 }
 
+/**
+ * A chosen "Also waits for" step. One it already waits for through its path (a merge saved
+ * before that was spotted) is muted and says so; it is left out when the workflow is saved.
+ */
+function MergeChip({ label, redundant, onRemove, disabled }: { label: string; redundant: boolean; onRemove: () => void; disabled?: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 max-w-full rounded-[6px] border pl-2 pr-1 py-0.5 text-[13px] ${
+        redundant ? 'border-[#E2E8F0] bg-[#F8FAFC] text-[#475569]' : 'border-[#BFDBFE] bg-[#EFF6FF] font-medium text-[#1D4ED8]'
+      }`}
+    >
+      <span className="truncate">
+        {redundant ? (
+          <>
+            <span className="font-medium text-[#334155]">{label}</span> · Already waits for this through After
+          </>
+        ) : (
+          label
+        )}
+      </span>
+      {/* Inside the field: must not re-open its list. */}
+      <button
+        type="button"
+        aria-label={`Remove ${label}`}
+        disabled={disabled}
+        onClick={(e) => {
+          e.stopPropagation()
+          onRemove()
+        }}
+        onKeyDown={(e) => e.stopPropagation()}
+        className={`shrink-0 w-4 h-4 rounded-[4px] flex items-center justify-center cursor-pointer disabled:cursor-not-allowed ${
+          redundant ? 'text-[#475569] hover:bg-[#E2E8F0] hover:text-[#0F172A]' : 'text-[#2563EB] hover:bg-[#DBEAFE] hover:text-[#1D4ED8]'
+        }`}
+      >
+        <X size={11} />
+      </button>
+    </span>
+  )
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /** A step another one may also wait for. */
@@ -362,6 +411,17 @@ interface CommonProps {
   frequency: Frequency
   /** The schedules being edited (timing defaults follow them). */
   schedules: ScheduleShape[]
+  /** Where runs start in their cycle (a first step can't be timed before it). */
+  runStart?: RunStart | null
+  /** The steps it waits for through its path (before its own "Also waits for"). */
+  baseDeps?: string[]
+  /** The representative run's plan, for the "(next month)" marks. */
+  plan?: StepPlanInput | null
+  /**
+   * What it already waits for through its path order or split point. A saved "Also waits
+   * for" on one of these adds nothing: its chip says so, and it isn't saved.
+   */
+  upstream?: Set<string>
 }
 
 interface EditProps extends CommonProps {
@@ -614,7 +674,24 @@ export default function StepCard(props: EditProps | CreateProps) {
       const d = lookups.memberDetails.get(m.user_id)
       return { user_id: m.user_id, name: m.name, role_title: d?.role_title ?? null, department_name: d?.department_name ?? null }
     })
-  const problems = useMemo(() => timingProblems(draft.start_rule, draft.due_rule, frequency), [draft.start_rule, draft.due_rule, frequency])
+  // A first step (waits for nothing) is timed on or after the run start, in its cycle.
+  const firstRunStart = waits ? null : props.runStart ?? null
+  const problems = useMemo(
+    () => timingProblems(draft.start_rule, draft.due_rule, frequency, { first: !waits, runStart: props.runStart ?? null }),
+    [draft.start_rule, draft.due_rule, frequency, waits, props.runStart],
+  )
+  // Where it sits in a run: when it may start (the run start, or the latest due of the
+  // steps it waits for) — so days before that read "(next month)".
+  const plan = props.plan ?? null
+  const depsKey = Array.from(new Set([...(props.baseDeps ?? []), ...mergeValues])).join(',')
+  const position = useMemo(
+    () => (plan ? { ctx: plan.ctx, anchor: anchorFor(depsKey ? depsKey.split(',') : [], plan.planned, plan.ctx) } : null),
+    [plan, depsKey],
+  )
+  const nextFlags = useMemo(
+    () => (position ? stepNextCycle(draft.start_rule, draft.due_rule, position.anchor, position.ctx) : null),
+    [position, draft.start_rule, draft.due_rule],
+  )
 
   const alsoText = mergeValues.length ? `also waits for ${mergeValues.map((id) => labels.get(id) ?? '?').join(', ')}` : ''
   const assigneeText = mainAssignees.length
@@ -690,6 +767,8 @@ export default function StepCard(props: EditProps | CreateProps) {
             disabled={disabled || creating}
             onChange={(patch) => change(patch)}
             problems={problems}
+            runStart={firstRunStart}
+            position={position}
             startsAfter={
               placement || showMerge || (mergeOptions.length > 0 && !disabled) ? (
               <div className="flex flex-col gap-3">
@@ -704,7 +783,7 @@ export default function StepCard(props: EditProps | CreateProps) {
                     <div>
                       <span className={LABEL_CLS}>
                         <span id={`${idPrefix}-merge-label`}>Also waits for</span>{' '}
-                        <InfoTip label="Also waits for" text="This step also waits for steps on other paths." />
+                        <InfoTip label="Also waits for" text="This step also waits for steps on other paths. Use to wait for a step on another path." />
                       </span>
                       <div aria-labelledby={`${idPrefix}-merge-label`}>
                         <MultiSelect
@@ -715,6 +794,9 @@ export default function StepCard(props: EditProps | CreateProps) {
                           placeholder={mergeSelectOptions.length ? 'Choose steps' : 'No steps on other paths'}
                           searchPlaceholder="Search steps"
                           emptyText="No steps match"
+                          renderChip={(o, remove) => (
+                            <MergeChip label={o.label} redundant={!!props.upstream?.has(o.value)} onRemove={remove} disabled={disabled || creating} />
+                          )}
                         />
                       </div>
                     </div>
@@ -956,7 +1038,7 @@ export default function StepCard(props: EditProps | CreateProps) {
             {edit && (
               <p className={`text-[13px] truncate ${hasProblem ? 'text-[#B91C1C]' : 'text-[#475569]'}`}>
                 {hasProblem && <AlertTriangle size={12} className="inline -mt-0.5 mr-1" aria-hidden />}
-                {assigneeText} · {timingSummary(draft.start_rule, draft.due_rule, frequency, waits)}
+                {assigneeText} · {timingSummary(draft.start_rule, draft.due_rule, frequency, waits, nextFlags)}
                 {alsoText ? ` · ${alsoText}` : ''}
               </p>
             )}

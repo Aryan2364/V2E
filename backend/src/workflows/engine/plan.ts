@@ -1,5 +1,5 @@
 import { computeDueDeadline } from './deadline'
-import { CalendarRule, DueRule, MonthDay, StartRule, isCalendarRule } from './timing'
+import { CalendarRule, DueRule, MonthDay, StartRule } from './timing'
 import {
   LocalDate,
   addLocalDays,
@@ -196,7 +196,7 @@ export interface PlannedStep {
   planned_due_at: Date
 }
 
-/** A step whose rule lands before a predecessor is due, so its start was pushed later. */
+/** A "days after run start" step that lands before a predecessor is due (pushed later). */
 export interface PlanWarning {
   key: string
   predecessor_key: string
@@ -243,8 +243,8 @@ export function planOrder(steps: PlanStepInput[]): PlanStepInput[] {
  *    (any kind but `immediate`) is moved off holidays / weekly offs;
  *  - the due resolves against the planned start (`resolveDue`) and goes through the
  *    deadline holiday adjustment.
- * A warning is raised for a step whose rule, read from the run start, lands before a
- * predecessor's planned due (so it was pushed to a later time).
+ * A warning is raised for a step timed "N days after the run start" that lands before
+ * a predecessor's planned due (so it was pushed to a later time).
  */
 export async function planRun(
   steps: PlanStepInput[],
@@ -269,7 +269,9 @@ export async function planRun(
     let start = resolveStart(rule, anchor, ctx)
     if (rule.kind !== 'immediate') start = await shift(start, s.key)
 
-    if (latest && (isCalendarRule(rule) || rule.kind === 'days_after_run_start')) {
+    // A calendar day before the predecessor is due is no warning: it simply lands in the
+    // next cycle, which the builder labels ("1st (next month)").
+    if (latest && rule.kind === 'days_after_run_start') {
       const naive = resolveStart(rule, ctx.runStart, ctx)
       if (naive.getTime() < latest.planned_due_at.getTime()) warnings.push({ key: s.key, predecessor_key: latest.key })
     }

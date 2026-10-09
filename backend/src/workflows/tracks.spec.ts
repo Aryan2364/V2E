@@ -5,6 +5,7 @@ import {
   numberLabel,
   planTracks,
   readTracks,
+  redundantMerges,
   resolveStoredTracks,
   runTracks,
   trackIndexOf,
@@ -286,5 +287,55 @@ describe('runTracks (run page)', () => {
     const r = runTracks(rows, new Map([['r1', []], ['r2', ['r1']], ['r3', ['r1']]]))
     expect(Object.fromEntries(r.labels)).toEqual({ r1: '1', r2: '2', r3: 'B1' })
     expect(r.tracks.map((t) => t.label)).toEqual(['Main path', 'Path B'])
+  })
+})
+
+describe('redundant merges (“Also waits for” a step it already waits for)', () => {
+  const s = (key: string, track = 'main', merges: string[] = []) => ({ key, title: key.toUpperCase(), track_key: track, merge_step_keys: merges })
+
+  it('drops quietly a merge on the split point or anything before it — no problem, not kept', () => {
+    // Main 1 → 2; path B splits after 2: B1 → B2. B1 also waits for 2 (its split point)
+    // and 1 (before it); B2 also waits for 1 (upstream through B1).
+    const { plan, problem } = planTracks(
+      [{ key: 'main' }, { key: 'B', split_from_step_key: 'k2' }],
+      [s('k1'), s('k2'), s('b1', 'B', ['k2', 'k1']), s('b2', 'B', ['k1'])],
+    )
+    expect(problem).toBeNull()
+    expect(plan.merges.get('b1')).toEqual([])
+    expect(plan.merges.get('b2')).toEqual([])
+    expect(plan.deps.get('b1')).toEqual(['k2'])
+    expect(plan.deps.get('b2')).toEqual(['b1'])
+  })
+
+  it('keeps a merge that adds a real wait, and counts other steps’ merges as upstream', () => {
+    // Main 1 → 2 → 3 → 4; path B starts with the run: B1 → B2. Step 3 also waits for B2,
+    // so step 4 already waits for B1 (through 3) — its merge on B1 is dropped; step 2's
+    // merge on B1 is real.
+    const { plan, problem } = planTracks(
+      [{ key: 'main' }, { key: 'B', split_from_step_key: null }],
+      [s('k1'), s('k2', 'main', ['b1']), s('k3', 'main', ['b2']), s('k4', 'main', ['b1']), s('b1', 'B'), s('b2', 'B')],
+    )
+    expect(problem).toBeNull()
+    expect(plan.merges.get('k2')).toEqual(['b1'])
+    expect(plan.merges.get('k3')).toEqual(['b2'])
+    expect(plan.merges.get('k4')).toEqual([])
+    expect(plan.deps.get('k4')).toEqual(['k3'])
+  })
+
+  it('redundantMerges never counts the step’s own merges as its path', () => {
+    const tracks = [
+      { key: 'main', split_from_step_id: null },
+      { key: 'B', split_from_step_id: 'k1' },
+      { key: 'C', split_from_step_id: null },
+    ]
+    const groups = new Map([
+      ['main', [{ id: 'k1' }, { id: 'k2' }]],
+      ['B', [{ id: 'b1' }]],
+      ['C', [{ id: 'c1' }]],
+    ])
+    // B1 waits for 1 (its split point) — "also waits for 1" is redundant; C1 is not
+    // upstream of B1 even though B1 also waits for it.
+    const merges = new Map([['b1', ['k1', 'c1']]])
+    expect(Object.fromEntries(redundantMerges(tracks, groups, merges))).toEqual({ b1: ['k1'] })
   })
 })

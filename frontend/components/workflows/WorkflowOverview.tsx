@@ -11,7 +11,8 @@ import ActionMenu, { type ActionMenuItem } from './ActionMenu'
 import InstanceList from './InstanceList'
 import StepFlow, { assigneeNames, flowLanes } from './StepFlow'
 import { layoutTracks, orderByTracks, tracksFromServer } from './tracks'
-import { dueRuleOf, frequencyOf, startRuleOf, timingSummary } from './timing'
+import { dueRuleOf, frequencyOf, runStartOf, startRuleOf, timingSummary } from './timing'
+import { nextCycleFlagsFor, planContext } from './timingPlan'
 import { useWorkflowActions } from './useWorkflowActions'
 import { useWorkflowLookups } from './useWorkflowLookups'
 import {
@@ -200,6 +201,11 @@ export default function WorkflowOverview({ id }: { id: string }) {
   const noStarters = w.manual_start_enabled !== false && (w.people?.starters ?? []).length === 0
   const schedules = w.schedules ?? []
   const frequency = frequencyOf(schedules)
+  // Which calendar dates land in the next cycle ("Due 1st of next month").
+  const nextFlags = nextCycleFlagsFor(
+    layout.display.map((s) => ({ id: s.id, deps: layout.deps.get(s.id) ?? [], start: startRuleOf(s), due: dueRuleOf(s) })),
+    planContext(frequency, runStartOf(schedules, frequency)),
+  )
   const shownRuns = filter === 'all' ? runs : runs.filter((r) => runDisplayStatus(r) === filter)
 
   // Phone: the header row holds the title, one primary action (Start, or Restore) and the
@@ -328,7 +334,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
               }
             />
           ) : view === 'flow' ? (
-            <StepFlow steps={steps} tracks={tracks} memberName={memberName} frequency={frequency} />
+            <StepFlow steps={steps} tracks={tracks} memberName={memberName} frequency={frequency} schedules={schedules} />
           ) : (
             <div className="flex flex-col gap-4">
               {lanes.map((lane) => {
@@ -357,7 +363,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
                             <div className="min-w-0 flex-1">
                               <p className="text-[15px] font-semibold text-[#0F172A] break-words">{s.title || 'Untitled step'}</p>
                               <p className="text-[13px] text-[#334155]">
-                                {namesSummary(assigneeNames(s, memberName).map((name) => ({ name })), 3)} · {timingSummary(startRuleOf(s), dueRuleOf(s), frequency, deps.length > 0)}
+                                {namesSummary(assigneeNames(s, memberName).map((name) => ({ name })), 3)} · {timingSummary(startRuleOf(s), dueRuleOf(s), frequency, deps.length > 0, nextFlags.get(s.id))}
                               </p>
                               <p className="text-[13px] text-[#475569]">{meta}</p>
                             </div>

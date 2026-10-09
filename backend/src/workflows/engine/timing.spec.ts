@@ -5,13 +5,17 @@ import {
   cycleLengthOf,
   effectiveDueRule,
   effectiveStartRule,
+  firstStepTimingProblem,
   frequencyOf,
+  laterStepTimingProblem,
   looseRule,
   parseDueRule,
   parseStartRule,
   readDueRule,
   readStartRule,
+  runStartPointOf,
   timingProblem,
+  type RunStartPoint,
 } from './timing'
 
 describe('parseStartRule / parseDueRule', () => {
@@ -199,5 +203,123 @@ describe('timingProblem (Save)', () => {
       'choose a day of the month for the due date.',
     )
     expect(timingProblem(monthDay, { kind: 'month_day', day: 10, time: '18:00' }, { kind: 'monthly', every: 1 })).toBeNull()
+  })
+})
+
+describe('first steps: on or after the run start, inside its cycle', () => {
+  const monthly = (month_days: number[], time = '09:00') => ({ schedule_type: 'monthly', every: 1, month_days, time })
+  const start = (r: Record<string, unknown>) => ({ ...r, time: (r.time as string) ?? '09:00' })
+
+  it('the run start point is the LATEST trigger day in the cycle (and its time)', () => {
+    expect(runStartPointOf([monthly([3])], frequencyOf([monthly([3])]))).toEqual({ kind: 'monthly', every: 1, day: 3, time: '09:00' })
+    // Monthly on the 3rd and the 20th → the 20th; "-31" (31st or the last day) counts as 31.
+    const two = [monthly([20, 3])]
+    expect(runStartPointOf(two, frequencyOf(two))).toMatchObject({ day: 20 })
+    const many = [monthly([3], '10:00'), monthly([-31], '08:00')]
+    expect(runStartPointOf(many, frequencyOf(many))).toMatchObject({ day: 31, time: '08:00' })
+    // Weekly Mon and Thu → Thu; Sunday is the END of the week (Monday first).
+    const weekly = [{ schedule_type: 'weekly', every: 1, days: [4, 1], time: '09:00' }]
+    expect(runStartPointOf(weekly, frequencyOf(weekly))).toMatchObject({ kind: 'weekly', weekday: 4 })
+    const withSun = [{ schedule_type: 'weekly', every: 1, days: [0, 3], time: '09:00' }]
+    expect(runStartPointOf(withSun, frequencyOf(withSun))).toMatchObject({ weekday: 0 })
+    // Yearly 1 Apr and 15 Jan → 1 Apr; daily 09:00 and 14:30 → 14:30.
+    const yearly = [{ schedule_type: 'yearly', every: 1, yearly_dates: [{ month: 4, day: 1 }, { month: 1, day: 15 }], time: '09:00' }]
+    expect(runStartPointOf(yearly, frequencyOf(yearly))).toMatchObject({ kind: 'yearly', month: 4, day: 1 })
+    const daily = [
+      { schedule_type: 'daily', every: 1, time: '09:00' },
+      { schedule_type: 'daily', every: 1, time: '14:30' },
+    ]
+    expect(runStartPointOf(daily, frequencyOf(daily))).toEqual({ kind: 'daily', time: '14:30' })
+    // Manual, mixed, or no trigger day yet → none.
+    expect(runStartPointOf([], frequencyOf([]))).toBeNull()
+    const mixed = [monthly([3]), { schedule_type: 'weekly', every: 1, days: [1], time: '09:00' }]
+    expect(runStartPointOf(mixed, frequencyOf(mixed))).toBeNull()
+    expect(runStartPointOf([monthly([])], frequencyOf([monthly([])]))).toBeNull()
+  })
+
+  it('monthly (run on the 3rd): start and due only on the 3rd or later', () => {
+    const rs: RunStartPoint = { kind: 'monthly', every: 1, day: 3, time: '09:00' }
+    const msg = 'pick a day on or after the 3rd, when the run starts.'
+    expect(firstStepTimingProblem(start({ kind: 'month_day', day: 1 }), null, rs)).toBe(msg)
+    expect(firstStepTimingProblem(start({ kind: 'month_day', day: 2 }), null, rs)).toBe(msg)
+    expect(firstStepTimingProblem(start({ kind: 'month_day', day: 3 }), null, rs)).toBeNull()
+    expect(firstStepTimingProblem(start({ kind: 'month_day', day: 'last' }), null, rs)).toBeNull()
+    // The due date is held to the same rule (start "immediately").
+    expect(firstStepTimingProblem({ kind: 'immediate' }, { kind: 'month_day', day: 1, time: '18:00' }, rs)).toBe(msg)
+    expect(firstStepTimingProblem({ kind: 'immediate' }, { kind: 'month_day', day: 10, time: '18:00' }, rs)).toBeNull()
+    // On the run day itself, not before the time the run starts.
+    expect(firstStepTimingProblem(start({ kind: 'month_day', day: 3, time: '08:00' }), null, rs)).toBe(
+      'pick a time at or after 9:00 AM on the 3rd, when the run starts.',
+    )
+    // Relative kinds and legacy rules are unaffected; no run start point → nothing to check.
+    expect(
+      firstStepTimingProblem({ kind: 'days_after_run_start', days: 0, time: '08:00' }, { kind: 'days_after_start', days: 1, time: '18:00' }, rs),
+    ).toBeNull()
+    expect(firstStepTimingProblem(null, null, rs)).toBeNull()
+    expect(firstStepTimingProblem(start({ kind: 'month_day', day: 1 }), null, null)).toBeNull()
+  })
+
+  it('weekly (run on Wednesday): Wednesday or later that week', () => {
+    const rs: RunStartPoint = { kind: 'weekly', every: 1, weekday: 3, time: '09:00' }
+    const msg = 'pick a day on or after Wednesday, when the run starts.'
+    expect(firstStepTimingProblem(start({ kind: 'weekday', weekday: 1 }), null, rs)).toBe(msg)
+    expect(firstStepTimingProblem(start({ kind: 'weekday', weekday: 2 }), null, rs)).toBe(msg)
+    expect(firstStepTimingProblem(start({ kind: 'weekday', weekday: 3 }), null, rs)).toBeNull()
+    expect(firstStepTimingProblem(start({ kind: 'weekday', weekday: 0 }), null, rs)).toBeNull() // Sunday ends the week
+  })
+
+  it('yearly (run on 1 Apr): on or after 1 Apr that year', () => {
+    const rs: RunStartPoint = { kind: 'yearly', every: 1, month: 4, day: 1, time: '09:00' }
+    expect(firstStepTimingProblem(start({ kind: 'year_date', month: 3, day: 31 }), null, rs)).toBe(
+      'pick a date on or after 1 Apr, when the run starts.',
+    )
+    expect(firstStepTimingProblem(start({ kind: 'year_date', month: 4, day: 1 }), null, rs)).toBeNull()
+    expect(firstStepTimingProblem({ kind: 'immediate' }, { kind: 'year_date', month: 12, day: 31, time: '18:00' }, rs)).toBeNull()
+  })
+
+  it('daily (runs at 9:00 AM): a time at or after the run start, for the start and the due', () => {
+    const rs: RunStartPoint = { kind: 'daily', time: '09:00' }
+    const msg = 'pick a time at or after 9:00 AM, when the run starts.'
+    expect(firstStepTimingProblem({ kind: 'time_of_day', time: '08:30' }, null, rs)).toBe(msg)
+    expect(firstStepTimingProblem({ kind: 'time_of_day', time: '09:00' }, null, rs)).toBeNull()
+    expect(firstStepTimingProblem({ kind: 'immediate' }, { kind: 'time_of_day', time: '08:00' }, rs)).toBe(msg)
+    expect(firstStepTimingProblem({ kind: 'immediate' }, { kind: 'time_of_day', time: '17:00' }, rs)).toBeNull()
+  })
+
+  it('every 2+ (cycles): only Cycle 1 positions before the run start are refused', () => {
+    const weeks: RunStartPoint = { kind: 'weekly', every: 2, weekday: 3, time: '09:00' }
+    expect(firstStepTimingProblem(start({ kind: 'cycle_weekday', cycle: 1, weekday: 1 }), null, weeks)).toBe(
+      'pick a day on or after Wednesday in Week 1, when the run starts.',
+    )
+    expect(firstStepTimingProblem(start({ kind: 'cycle_weekday', cycle: 2, weekday: 1 }), null, weeks)).toBeNull()
+    const months: RunStartPoint = { kind: 'monthly', every: 3, day: 10, time: '09:00' }
+    expect(firstStepTimingProblem(start({ kind: 'cycle_month_day', cycle: 1, day: 5 }), null, months)).toBe(
+      'pick a day on or after the 10th in Month 1, when the run starts.',
+    )
+    expect(firstStepTimingProblem(start({ kind: 'cycle_month_day', cycle: 3, day: 1 }), null, months)).toBeNull()
+    const years: RunStartPoint = { kind: 'yearly', every: 2, month: 6, day: 5, time: '09:00' }
+    expect(
+      firstStepTimingProblem({ kind: 'immediate' }, { kind: 'cycle_year_date', cycle: 1, month: 1, day: 1, time: '18:00' }, years),
+    ).toBe('pick a date on or after 5 Jun in Year 1, when the run starts.')
+  })
+
+  it('several trigger days: first steps go on or after the latest one', () => {
+    const schedules = [monthly([3, 20])]
+    const rs = runStartPointOf(schedules, frequencyOf(schedules))
+    expect(firstStepTimingProblem(start({ kind: 'month_day', day: 10 }), null, rs)).toBe(
+      'pick a day on or after the 20th, when the run starts.',
+    )
+    expect(firstStepTimingProblem(start({ kind: 'month_day', day: 20 }), null, rs)).toBeNull()
+  })
+})
+
+describe('later steps: no “Days after workflow is triggered”', () => {
+  it('refuses days_after_run_start on a step with steps before it; anything else is fine', () => {
+    expect(laterStepTimingProblem({ kind: 'days_after_run_start', days: 2, time: '09:00' })).toBe(
+      '“Days after workflow is triggered” is only for the first step — pick another start.',
+    )
+    expect(laterStepTimingProblem({ kind: 'days_after_previous', days: 1, time: '09:00' })).toBeNull()
+    expect(laterStepTimingProblem({ kind: 'immediate' })).toBeNull()
+    expect(laterStepTimingProblem(null)).toBeNull()
   })
 })

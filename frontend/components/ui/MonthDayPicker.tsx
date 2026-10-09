@@ -3,12 +3,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import Tooltip from './Tooltip'
+
+/**
+ * What a day means to the caller: `blocked` = it can't be picked (faded; the reason is
+ * its tooltip, which also opens on tap); `note` = pickable but worth a word (dashed
+ * outline; the note is its tooltip and its accessible name).
+ */
+export interface MonthDayState {
+  blocked?: string | null
+  note?: string | null
+}
 
 interface MonthDayPickerProps {
   value: { month: number; day: number }
   onChange: (value: { month: number; day: number }) => void
   disabled?: boolean
   id?: string
+  dayState?: (month: number, day: number) => MonthDayState | null
 }
 
 const MONTHS = [
@@ -22,6 +34,7 @@ export default function MonthDayPicker({
   onChange,
   disabled = false,
   id,
+  dayState,
 }: MonthDayPickerProps) {
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<'days' | 'months'>('days')
@@ -147,21 +160,33 @@ export default function MonthDayPicker({
                 <div className="grid grid-cols-7 gap-1 mt-2">
                   {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
                     const isSel = value.month === viewMonth && value.day === d
-                    return (
+                    const st = dayState?.(viewMonth, d) ?? null
+                    const blocked = !!st?.blocked
+                    const note = !blocked && st?.note ? st.note : null
+                    const btn = (
                       <button
                         key={d}
                         type="button"
-                        onClick={() => pickDay(d)}
+                        aria-disabled={blocked || undefined}
+                        aria-label={blocked ? `${d} ${MONTHS_SHORT[viewMonth - 1]}: ${st!.blocked}` : note ?? undefined}
+                        onClick={() => {
+                          if (!blocked) pickDay(d)
+                        }}
                         className={[
-                          'h-9 rounded-[8px] text-sm flex items-center justify-center transition-colors',
+                          'h-9 rounded-[8px] text-sm flex items-center justify-center transition-colors border focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]',
                           isSel
-                            ? 'bg-[#2563EB] text-white font-semibold'
-                            : 'text-[#0F172A] hover:bg-[#EFF6FF]',
+                            ? `bg-[#2563EB] text-white font-semibold ${blocked ? 'border-[#DC2626] ring-1 ring-[#DC2626]' : 'border-[#2563EB]'}`
+                            : blocked
+                              ? 'border-transparent bg-[#F1F5F9] text-[#64748B] line-through decoration-[#94A3B8] cursor-not-allowed'
+                              : `text-[#0F172A] hover:bg-[#EFF6FF] ${note ? 'border-dashed border-[#94A3B8]' : 'border-transparent'}`,
                         ].join(' ')}
                       >
                         {d}
                       </button>
                     )
+                    if (blocked) return <Tooltip key={d} label={st!.blocked} openOnTap>{btn}</Tooltip>
+                    if (note) return <Tooltip key={d} label={note}>{btn}</Tooltip>
+                    return btn
                   })}
                 </div>
               </div>
