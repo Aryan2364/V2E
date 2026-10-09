@@ -32,17 +32,25 @@ function MyWorkflows() {
   const writable = useWorkflowsWritable()
 
   const viewParam = params.get('view') as View | null
-  const view: View = VIEWS.some((v) => v.value === viewParam) ? (viewParam as View) : 'owned'
   const setView = (v: View) => {
     const q = new URLSearchParams(params.toString())
-    if (v === 'owned') q.delete('view')
-    else q.set('view', v)
+    // Always explicit: with no `view` the page may pick "Instances I work in" for
+    // someone who edits nothing, so choosing "Workflows I edit" must stick.
+    q.set('view', v)
     router.replace(`${pathname}${q.toString() ? `?${q}` : ''}`, { scroll: false })
   }
 
   const [owned, setOwned] = useState<Load<WorkflowTemplate>>(initial)
   const [runs, setRuns] = useState<Load<WorkflowInstance>>(initial)
   const [assigned, setAssigned] = useState<Load<WorkflowInstance>>(initial)
+
+  // No tab chosen: "Workflows I edit" — unless the caller edits none but works in
+  // instances, then "Instances I work in" (never open on an empty tab when one has rows).
+  const view: View = VIEWS.some((v) => v.value === viewParam)
+    ? (viewParam as View)
+    : owned.status === 'ready' && owned.data.length === 0 && assigned.status === 'ready' && assigned.data.length > 0
+      ? 'assigned'
+      : 'owned'
 
   const loadOwned = useCallback(async () => {
     if (!orgId) return

@@ -11,6 +11,7 @@ import { formatBytes } from '@/lib/attachments'
 import type { Task, TaskAttachment, TaskChecklistItem, TaskComment } from '@/lib/types/tasks'
 import type { InstanceNote, WorkflowInstanceStep } from '@/lib/types/workflows'
 import { NoteItem } from './InstanceNotes'
+import SendBackNote from './SendBackNote'
 import Sheet from './Sheet'
 import { Avatar, BTN, CompletionChip, ErrorBanner, GatedButton, Skeleton, StepStatusBadge, fmtDateTime, fmtDayDateTime, taskHref } from './shared'
 
@@ -221,7 +222,9 @@ export default function RunStepDrawer({
       }
       footer={footer}
     >
-      {row.status === 'sent_back' && (
+      {/* An open send-back: where it went (or who asked) and the reason, said once. */}
+      {row.send_back && <SendBackNote sendBack={row.send_back} variant="panel" />}
+      {row.status === 'sent_back' && row.send_back?.role !== 'sender' && (
         <div className="flex items-start gap-2.5 rounded-[10px] border border-[#DDD6FE] bg-[#F5F3FF] px-3.5 py-2.5 text-sm text-[#4C1D95]">
           <Undo2 size={16} className="shrink-0 mt-0.5" />
           <span>
@@ -229,7 +232,7 @@ export default function RunStepDrawer({
           </span>
         </div>
       )}
-      {row.returned_to_row_id && (
+      {row.returned_to_row_id && row.send_back?.role !== 'target' && (
         <div className="flex items-start gap-2.5 rounded-[10px] border border-[#DDD6FE] bg-[#F5F3FF] px-3.5 py-2.5 text-sm text-[#4C1D95]">
           <Undo2 size={16} className="shrink-0 mt-0.5" />
           <span>

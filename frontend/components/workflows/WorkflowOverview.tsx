@@ -625,7 +625,7 @@ function MyInstancesView({
   return (
     <div className="flex flex-col gap-6 pb-10">
       <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-        <WorkflowBreadcrumb trail={[{ label: 'Workflows', href: `${WORKFLOWS_BASE}/my?view=assigned` }, { label: name }]} />
+        <WorkflowBreadcrumb trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }, { label: name }]} />
         <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
             <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:break-words">{name}</h1>

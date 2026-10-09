@@ -1481,6 +1481,85 @@ describe('WorkflowTemplateService — step context (task detail banner)', () => 
   })
 })
 
+describe('WorkflowTemplateService — open send-back (reason on the instance and the task banner)', () => {
+  const SENT_AT = new Date('2026-10-17T17:41:03Z')
+  /** B (u-me) sent the instance back to A with a reason: A reopened, B waiting. */
+  function sentBackHarness(events?: unknown[]) {
+    const h = runHarness({
+      rows: [
+        { ...row('r-a', 's-a', 'active', [], 0, 't-a'), returned_to_row_id: 'r-b' },
+        { ...row('r-b', 's-b', 'sent_back', ['s-a'], 1, 't-b'), waiting_on_row_id: 'r-a', sent_back_count: 1 },
+        row('r-c', 's-c', 'pending', ['s-b'], 2, null),
+      ] as never,
+    })
+    h.prisma.workflowInstanceEvent.findMany.mockResolvedValue(
+      events ?? [
+        // Newest first: the open one, then an older (answered) send-back from B.
+        { instance_step_id: 'r-b', actor_user_id: U2, created_at: SENT_AT, metadata: { from_row_id: 'r-b', to_row_id: 'r-a', reason: 'PAN and Aadhaar names differ' } },
+        { instance_step_id: 'r-b', actor_user_id: U3, created_at: NOW, metadata: { from_row_id: 'r-b', to_row_id: 'r-a', reason: 'Old reason' } },
+      ],
+    )
+    h.prisma.user.findMany.mockResolvedValue([{ id: U2, name: 'Priya' }])
+    return h
+  }
+
+  it('the waiting step says where it was sent and why; the reopened step who asked and why', async () => {
+    const h = sentBackHarness()
+    const out: any = await h.service.getInstance(ORG, TPL, RUN, me())
+    const by = (id: string) => out.steps.find((s: any) => s.id === id)
+    expect(by('r-b').send_back).toEqual({
+      role: 'sender',
+      reason: 'PAN and Aadhaar names differ',
+      by: { id: U2, name: 'Priya' },
+      at: SENT_AT,
+      to_row_id: 'r-a',
+      to_label: '1 “Title r-a”',
+    })
+    expect(by('r-a').send_back).toEqual({
+      role: 'target',
+      reason: 'PAN and Aadhaar names differ',
+      by: { id: U2, name: 'Priya' },
+      at: SENT_AT,
+      from_row_id: 'r-b',
+      from_label: '2 “Title r-b”',
+    })
+    expect(by('r-c').send_back).toBeNull()
+    // One batched, org- and instance-scoped query for the whole page.
+    expect(h.prisma.workflowInstanceEvent.findMany).toHaveBeenCalledTimes(1)
+    expect(h.prisma.workflowInstanceEvent.findMany.mock.calls[0][0].where).toEqual({
+      organization_id: ORG,
+      workflow_instance_id: { in: [RUN] },
+      instance_step_id: { in: ['r-b'] },
+      type: 'sent_back',
+    })
+  })
+
+  it('no open send-back → no lookup and null everywhere', async () => {
+    const h = runHarness({})
+    const out: any = await h.service.getInstance(ORG, TPL, RUN, me())
+    expect(out.steps.every((s: any) => s.send_back === null)).toBe(true)
+    expect(h.prisma.workflowInstanceEvent.findMany).not.toHaveBeenCalled()
+  })
+
+  it('an event missing (or for another target) still says where it waits, without a reason', async () => {
+    const h = sentBackHarness([
+      { instance_step_id: 'r-b', actor_user_id: U2, created_at: SENT_AT, metadata: { to_row_id: 'r-x', reason: 'Elsewhere' } },
+    ])
+    const out: any = await h.service.getInstance(ORG, TPL, RUN, me())
+    expect(out.steps.find((s: any) => s.id === 'r-b').send_back).toMatchObject({ role: 'sender', reason: null, by: null, to_label: '1 “Title r-a”' })
+  })
+
+  it("the target task's banner carries it — for a participant without editor rights too", async () => {
+    // u-me works only on B; the banner of A's task (someone else's step) still shows why.
+    const h = sentBackHarness()
+    h.prisma.task.findFirst.mockResolvedValue({ id: 't-a', workflow_instance_step_id: 'r-a' })
+    h.prisma.workflowInstanceStep.findFirst.mockResolvedValue({ workflow_instance_id: RUN })
+    const ctx: any = await h.service.getStepContext(ORG, 't-a', me())
+    expect(ctx.send_back).toMatchObject({ role: 'target', reason: 'PAN and Aadhaar names differ', by: { name: 'Priya' }, from_label: '2 “Title r-b”' })
+    expect(ctx.can_open_run).toBe(true)
+  })
+})
+
 describe('WorkflowTemplateService — instance access (design vs instance)', () => {
   it('admins, editors and viewers open any instance; the person who ran it and everyone working in it too', async () => {
     // Viewer (no task): sees everything, acts on nothing.
@@ -1620,6 +1699,153 @@ describe('WorkflowTemplateService — instance access (design vs instance)', () 
     await expect(stranger.service.listEvents(ORG, TPL, RUN, me({ userId: 'u-stranger' }))).rejects.toBeInstanceOf(
       ForbiddenException,
     )
+  })
+})
+
+describe('WorkflowTemplateService — a pure step assignee (works in an instance, no role on the workflow)', () => {
+  // 'u-me' is only the assignee of step B's task (t-b) of instance RUN: not an editor,
+  // viewer, starter or admin, and didn't run it (runHarness defaults).
+  const listRow = (over: Record<string, unknown> = {}) => ({
+    ...template({ status: 'active', manual_start_enabled: true }),
+    description: 'New joiners',
+    workflow_nature: 'one_time',
+    recurring_type: null,
+    show_workflow_on_task_card: true,
+    created_at: NOW,
+    updated_at: NOW,
+    schedules: [],
+    _count: { steps: 3, instances: 9 },
+    ...over,
+  })
+
+  /** The list harness: u-me works in RUN (row r-b) of TPL; TPL has 9 instances overall. */
+  function listHarness() {
+    const h = build()
+    h.prisma.task.findMany.mockImplementation(async ({ where }: any) =>
+      where.OR?.[0]?.assignees?.some?.user_id === 'u-me' ? [{ workflow_instance_step_id: 'r-b' }] : [],
+    )
+    h.prisma.workflowInstanceStep.findMany.mockImplementation(async ({ where }: any) =>
+      where.id?.in?.includes('r-b') ? [{ workflow_instance_id: RUN }] : [],
+    )
+    h.prisma.workflowInstance.findMany.mockImplementation(async ({ where }: any) =>
+      where.id?.in?.includes(RUN) ? [{ workflow_template_id: TPL, status: 'running' }] : [],
+    )
+    h.prisma.workflowInstance.groupBy.mockResolvedValue([{ workflow_template_id: TPL, _count: { _all: 4 } }])
+    h.prisma.workflowTemplate.findMany = jest.fn(async ({ where }: any) =>
+      (where.OR ?? []).some((c: any) => c.id?.in?.includes(TPL)) ? [listRow()] : [],
+    )
+    return h
+  }
+
+  it('the Workflows list includes the workflow, as limited, counting only her own instances', async () => {
+    const h = listHarness()
+    const list: any[] = await h.service.listTemplates(ORG, true, me())
+    expect(list).toHaveLength(1)
+    expect(list[0]).toMatchObject({ id: TPL, view: 'limited', capabilities: { can_view: false, can_edit: false } })
+    // Her instances only (1 running), never the workflow's 9 / 4; no design facts.
+    expect(list[0]._count).toEqual({ steps: 0, instances: 1, running_instances: 1 })
+    expect(list[0].schedules).toEqual([])
+    expect(list[0].next_run_at).toBeNull()
+    // The visibility clause adds exactly the workflows of her instances, org-scoped.
+    const where = h.prisma.workflowTemplate.findMany.mock.calls[0][0].where
+    expect(where.organization_id).toBe(ORG)
+    expect(where.OR).toContainEqual({ id: { in: [TPL] } })
+    expect(h.prisma.task.findMany.mock.calls[0][0].where.organization_id).toBe(ORG)
+    expect(h.prisma.workflowInstanceStep.findMany.mock.calls[0][0].where.organization_id).toBe(ORG)
+    const instLookup = h.prisma.workflowInstance.findMany.mock.calls.find((c: any) => c[0].where.id)
+    expect(instLookup[0].where.organization_id).toBe(ORG)
+  })
+
+  it('a viewer of the same workflow still gets the full row with all counts', async () => {
+    const h = listHarness()
+    h.prisma.workflowTemplate.findMany = jest.fn(async () => [listRow({ access: [{ access_type: 'view' }] })])
+    const [w]: any[] = await h.service.listTemplates(ORG, true, me())
+    expect(w.view).toBe('full')
+    expect(w._count).toEqual({ steps: 3, instances: 9, running_instances: 4 })
+  })
+
+  it('someone in no instance and with no role still does not see it listed', async () => {
+    const h = listHarness()
+    expect(await h.service.listTemplates(ORG, true, me({ userId: 'u-stranger' }))).toEqual([])
+    expect(h.prisma.workflowTemplate.findMany.mock.calls[0][0].where.OR).not.toContainEqual(
+      expect.objectContaining({ id: expect.anything() }),
+    )
+  })
+
+  it('the workflow page is the limited one: no steps, people, schedules or other instances', async () => {
+    const h = defHarness([stepRow('a'), stepRow('b')], template({ status: 'active' }))
+    h.prisma.task.findMany.mockResolvedValue([{ workflow_instance_step_id: 'r-b' }])
+    h.prisma.workflowInstanceStep.findMany.mockResolvedValue([{ workflow_instance_id: RUN }])
+    h.prisma.workflowInstance.count.mockResolvedValue(1)
+    const w: any = await h.service.getTemplate(ORG, TPL, me())
+    expect(w.view).toBe('limited')
+    expect(w.steps).toEqual([])
+    expect(w.tracks).toEqual([])
+    expect(w.people).toBeNull()
+    expect(w.schedules).toEqual([])
+    expect(w._count).toEqual({ steps: 0, instances: 1, running_instances: 1 })
+    expect(w.capabilities).toMatchObject({ can_view: false, can_edit: false, can_trigger: false, can_manage_access: false })
+    // The design read (steps, grants) never happens for her.
+    expect(h.prisma.workflowStep.findMany).not.toHaveBeenCalled()
+    expect(h.prisma.workflowAccess.findMany).not.toHaveBeenCalled()
+  })
+
+  it('opens her instance in full (every step, its people and task progress) plus history, documents and notes', async () => {
+    const h = runHarness({})
+    const out: any = await h.service.getInstance(ORG, TPL, RUN, me())
+    expect(out.steps.map((s: any) => s.id)).toEqual(['r-a', 'r-b', 'r-c'])
+    // Other people's steps are visible (status, assignees, task summary), read-only.
+    const a = out.steps.find((s: any) => s.id === 'r-a')
+    expect(a.status).toBe('completed')
+    expect(a.assignees).toEqual([{ id: U2, name: 'Unknown user' }])
+    expect(a.task).toMatchObject({ id: 't-a', comment_count: 2 })
+    // She acts only on her own step; managing the instance stays with editors.
+    expect(out.capabilities).toMatchObject({ can_cancel: false, can_retry: false, can_skip: false, can_start_now_row_ids: [] })
+    expect(out.capabilities.can_send_back_from).toEqual(['r-b'])
+    expect(out.capabilities).toMatchObject({ can_view_documents: true, can_add_note: true, can_upload: true })
+    await expect(h.service.listEvents(ORG, TPL, RUN, me())).resolves.toEqual([])
+    await expect(h.service.getDocuments(ORG, TPL, RUN, me())).resolves.toEqual({ step_files: [], run_files: [] })
+    await expect(h.service.listNotes(ORG, TPL, RUN, me())).resolves.toEqual([])
+    // Her own instances list = just this one.
+    h.prisma.task.findMany.mockResolvedValue([{ workflow_instance_step_id: 'r-b' }])
+    h.prisma.workflowInstanceStep.findMany.mockResolvedValue([{ workflow_instance_id: RUN }])
+    await h.service.listInstances(ORG, TPL, me())
+    expect(h.prisma.workflowInstance.findMany.mock.calls.at(-1)[0].where).toEqual({
+      workflow_template_id: TPL,
+      organization_id: ORG,
+      id: { in: [RUN] },
+    })
+  })
+
+  it('cannot open another instance of the same workflow she is not in', async () => {
+    const other = runHarness({
+      tasks: [
+        runTask('t-a', [{ user_id: U2, is_cc: false }]),
+        runTask('t-b', [{ user_id: U2, is_cc: false }]),
+        runTask('t-c', [{ user_id: U3, is_cc: true }]),
+      ],
+    })
+    for (const call of [
+      () => other.service.getInstance(ORG, TPL, RUN, me()),
+      () => other.service.listEvents(ORG, TPL, RUN, me()),
+      () => other.service.getDocuments(ORG, TPL, RUN, me()),
+      () => other.service.listNotes(ORG, TPL, RUN, me()),
+      () => other.service.getInstanceTasks(ORG, TPL, RUN, me()),
+    ]) {
+      await expect(call()).rejects.toThrow("You don't have access to this instance.")
+    }
+  })
+
+  it('cannot change the design, its people or the instance', async () => {
+    const h = defHarness([stepRow('a')], template({ status: 'active' }))
+    await expect(h.service.updateDefinition(ORG, TPL, def() as never, me())).rejects.toBeInstanceOf(ForbiddenException)
+    await expect(h.service.pauseTemplate(ORG, TPL, me())).rejects.toBeInstanceOf(ForbiddenException)
+    await expect(h.service.archiveTemplate(ORG, TPL, me())).rejects.toBeInstanceOf(ForbiddenException)
+    expect(h.prisma.$transaction).not.toHaveBeenCalled()
+    const r = runHarness({})
+    await expect(r.service.cancelInstance(ORG, TPL, RUN, me())).rejects.toBeInstanceOf(ForbiddenException)
+    await expect(r.service.skipStep(ORG, TPL, RUN, 'r-c', me())).rejects.toBeInstanceOf(ForbiddenException)
+    expect(r.engine.cancelInstance).not.toHaveBeenCalled()
   })
 })
 

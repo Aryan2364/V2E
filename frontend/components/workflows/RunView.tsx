@@ -17,6 +17,9 @@ import RunStepDrawer from './RunStepDrawer'
 import InstanceNotes, { useInstanceNotes } from './InstanceNotes'
 import { instanceTitle } from './instanceLabel'
 import SendBackDialog, { type SendBackSubject } from './SendBackDialog'
+import SendBackNote, { ReasonQuote } from './SendBackNote'
+import { sendBackLead, sendBackReason } from './sendBack'
+import { getNow } from '@/lib/clock'
 import {
   BTN,
   ErrorBanner,
@@ -288,12 +291,16 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                 }`}
               >
                 {r.status === 'sent_back'
-                  ? `Waiting for info from ${nameOf(r.waiting_on_row_id) ?? 'an earlier step'}`
+                  ? r.send_back
+                    ? label
+                    : `Waiting for info from ${nameOf(r.waiting_on_row_id) ?? 'an earlier step'}`
                   : isWaitingRow(r)
                     ? 'Waiting to start'
                     : label}
-                {r.returned_to_row_id ? ' · sent back here' : ''}
+                {r.returned_to_row_id && !r.send_back ? ' · sent back here' : ''}
               </span>
+              {/* Where it was sent / who asked, and why (shortened; the panel has it in full). */}
+              {r.send_back && <SendBackNote sendBack={r.send_back} variant="compact" />}
               {people.length > 0 && (
                 <span className="flex items-center gap-1.5 text-[12px] text-[#334155] min-w-0">
                   <Users size={12} className="shrink-0 text-[#475569]" />
@@ -391,6 +398,8 @@ export default function RunView({ templateId, instanceId }: { templateId: string
 
   const p = instanceProgress(run)
   const currentRows = rows.filter((r) => LIVE_ROW.has(r.status))
+  // Steps waiting on an earlier step they sent the instance back to (header "why").
+  const senderRows = rows.filter((r) => r.status === 'sent_back' && r.send_back?.role === 'sender')
   const waitingRows = rows.filter(isWaitingRow).sort((a, b) => (a.start_at ?? '').localeCompare(b.start_at ?? ''))
   const actionCopy =
     action?.kind === 'cancel'
@@ -486,6 +495,17 @@ export default function RunView({ templateId, instanceId }: { templateId: string
               <RunStatusBadge run={run} />
               {!narrow && startedLine}
             </div>
+            {/* Waiting for info: why, said once in the header (shortened, with "View reason"). */}
+            {live &&
+              senderRows.map((r) => (
+                <div key={r.id} className="mt-2 flex flex-col gap-1 max-w-3xl text-[13px] text-[#4C1D95]">
+                  <p className="font-medium break-words">
+                    <span className="font-semibold">{nameOf(r.id)}</span> is waiting · {sendBackLead(r.send_back!, getNow())}
+                    {sendBackReason(r.send_back) ? ':' : ''}
+                  </p>
+                  {sendBackReason(r.send_back) && <ReasonQuote reason={sendBackReason(r.send_back)!} collapsible />}
+                </div>
+              ))}
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-end shrink-0">
             {narrow ? (
@@ -584,6 +604,11 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                           {STEP_STATUS[r.status]?.label}
                           {(r.assignees?.length || r.assigned_to) && ` · ${namesSummary(r.assignees?.length ? r.assignees : [r.assigned_to!], 2)}`}
                         </span>
+                        {r.send_back && (
+                          <span className="block mt-1">
+                            <SendBackNote sendBack={r.send_back} variant="compact" />
+                          </span>
+                        )}
                       </button>
                     </li>
                   ))}

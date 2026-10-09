@@ -56,9 +56,10 @@ function WorkflowsList() {
     setStatus((s) => (s === 'ready' ? s : 'loading'))
     try {
       const data = await workflowsApi.listWorkflows(orgId, { includeArchived: true })
-      // The list is for people who may see a workflow's design (admins, editors, viewers);
-      // someone who only works in its instances finds those under My workflows.
-      setWorkflows((Array.isArray(data) ? data : []).filter((w) => !w.capabilities?.access || w.capabilities.access === 'full'))
+      // Everything the server lists: the workflows whose design the caller may see
+      // ('full') and — as 'limited' cards that open "My instances of this workflow" —
+      // the ones they may start or have run / work in an instance of.
+      setWorkflows(Array.isArray(data) ? data : [])
       setStatus('ready')
     } catch (e) {
       setLoadError(workflowErrorMessage(e, 'Check your connection and try again.'))

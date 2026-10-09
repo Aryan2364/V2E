@@ -419,6 +419,18 @@ const instanceInclude = (userId: string) =>
 type InstanceRow = Prisma.WorkflowInstanceGetPayload<{ include: ReturnType<typeof instanceInclude> }>
 type InstanceStepRow = InstanceRow['steps'][number]
 
+/** The latest `sent_back` event of an open send-back, by its sender row. */
+type SendBackEvent = { actor_user_id: string | null; created_at: Date; reason: string | null; to_row_id: string | null }
+
+/**
+ * An open send-back as a step shows it. On the waiting (sender) row: where it was sent
+ * and why (`to_*`); on the reopened (target) row, while it owes the sender an answer:
+ * who asked and why (`from_*`). Labels read "1 “Collect documents”".
+ */
+type SendBackInfo =
+  | { role: 'sender'; reason: string | null; by: UserRef | null; at: Date | null; to_row_id: string; to_label: string }
+  | { role: 'target'; reason: string | null; by: UserRef | null; at: Date | null; from_row_id: string; from_label: string }
+
 type Tx = Prisma.TransactionClient
 
 function idsFromJson(v: Prisma.JsonValue | null | undefined): string[] {
@@ -962,7 +974,17 @@ export class WorkflowTemplateService {
     }))
   }
 
-  private async formatTemplates(orgId: string, rows: TemplateRow[], p: Principal) {
+  /**
+   * Workflow cards / headers. `mine` (the list) = the caller's own instances per
+   * workflow: a row they can't see in full (`view: 'limited'`) then counts only those and
+   * carries no design facts (steps, schedules) — the same shape as `limitedDetail`.
+   */
+  private async formatTemplates(
+    orgId: string,
+    rows: TemplateRow[],
+    p: Principal,
+    mine?: Map<string, { instances: number; running: number }>,
+  ) {
     if (!rows.length) return []
     const ids = rows.map((r) => r.id)
     const needsSchedule = rows.some((r) => r.schedules.length > 0)
@@ -978,7 +1000,9 @@ export class WorkflowTemplateService {
     const runningBy = new Map(running.map((g) => [g.workflow_template_id, g._count._all]))
     return rows.map((r) => {
       const caps = this.capabilitiesFor(r, p)
-      const schedules = this.formatSchedules(r.schedules, ctx)
+      const limited = !caps.can_view && !!mine
+      const own = mine?.get(r.id)
+      const schedules = limited ? [] : this.formatSchedules(r.schedules, ctx)
       // The next scheduled run — only a Live, unpaused workflow fires its schedules.
       const nextRun =
         r.status === 'active'
@@ -1006,11 +1030,14 @@ export class WorkflowTemplateService {
         capabilities: caps,
         /** 'full' = design + all instances; 'limited' = only the caller's own instances (and Run, for a starter). */
         view: caps.can_view ? ('full' as const) : ('limited' as const),
-        _count: {
-          steps: r._count.steps,
-          instances: r._count.instances,
-          running_instances: runningBy.get(r.id) ?? 0,
-        },
+        /** Limited: counts of the caller's OWN instances only. */
+        _count: limited
+          ? { steps: 0, instances: own?.instances ?? 0, running_instances: own?.running ?? 0 }
+          : {
+              steps: r._count.steps,
+              instances: r._count.instances,
+              running_instances: runningBy.get(r.id) ?? 0,
+            },
         schedules,
         next_run_at: nextRun,
       }
@@ -1174,9 +1201,10 @@ export class WorkflowTemplateService {
     ])
     const liveById = new Map(liveSteps.map((s) => [s.id, s]))
     const taskById = new Map(tasks.map((t) => [t.id, t]))
-    const [{ tz, now }, notes] = await Promise.all([
+    const [{ tz, now }, notes, sendBacks] = await Promise.all([
       this.scheduleContext(orgId),
       opts.notes ? this.loadNotes(orgId, rows.map((r) => r.id)) : Promise.resolve([] as NoteRow[]),
+      this.openSendBackEvents(orgId, allSteps),
     ])
     const notesByRow = new Map<string, NoteRow[]>()
     for (const n of notes) {
@@ -1190,6 +1218,7 @@ export class WorkflowTemplateService {
       ...allSteps.map((s) => s.assigned_to_user_id),
       ...rows.map((r) => r.triggered_by_user_id),
       ...notes.map((n) => n.author_user_id),
+      ...[...sendBacks.values()].map((e) => e.actor_user_id),
     ])
     const checklistBy = new Map<string, typeof checklist>()
     for (const c of checklist) {
@@ -1241,6 +1270,7 @@ export class WorkflowTemplateService {
       // Track and number of each step ("B2") as frozen when the run started; runs
       // started before tracks are laid out from their graph the same way.
       const lanes = runLanes(inst.steps, deps)
+      const rowById = new Map(inst.steps.map((r) => [r.id, r]))
 
       const steps = [...inst.steps].sort(byDisplayOrder).map((s) => {
         // The frozen snapshot (legacy shapes normalised by the engine's reader); a row
@@ -1265,6 +1295,8 @@ export class WorkflowTemplateService {
           waiting_on_row_id: s.waiting_on_row_id ?? null,
           returned_to_row_id: s.returned_to_row_id ?? null,
           sent_back_count: s.sent_back_count ?? 0,
+          /** The open send-back this step is in (why, by whom, to / from which step), or null. */
+          send_back: this.sendBackOf(s, rowById, sendBacks, lanes.labels, names),
           due_days: snap?.due_days ?? live?.due_days ?? null,
           due_time: snap?.due_time ?? live?.due_time ?? null,
           if_late: snap ? snap.if_late : live ? ifLateOf(live.if_late) : null,
@@ -1416,11 +1448,33 @@ export class WorkflowTemplateService {
 
   /**
    * The workflows list: everything for admins; otherwise the workflows the caller
-   * edits (creator included) or views, plus — as `view: 'limited'` — Live workflows
-   * they may start by hand. People who only work in instances don't see it listed.
+   * edits (creator included) or views (`view: 'full'`), plus — as `view: 'limited'` —
+   * Live workflows they may start by hand and every workflow with an instance they ran
+   * or work in (assignee / CC / escalation contact of one of its step tasks, the same
+   * definition as the instance gate). A limited row opens "My instances of this
+   * workflow" and carries no design facts; its counts are the caller's own instances.
    */
   async listTemplates(orgId: string, includeArchived: boolean, p: Principal) {
-    const visibility: Prisma.WorkflowTemplateWhereInput = this.isAdmin(p)
+    const admin = this.isAdmin(p)
+    // The caller's own instances (ran / works in) → which workflows they make visible.
+    const own = admin
+      ? []
+      : await (async () => {
+          const ids = await participantInstanceIds(this.prisma, orgId, p.userId, { includeStarted: true })
+          if (!ids.length) return [] as { workflow_template_id: string; status: WorkflowInstanceStatus }[]
+          return this.prisma.workflowInstance.findMany({
+            where: { id: { in: ids }, organization_id: orgId },
+            select: { workflow_template_id: true, status: true },
+          })
+        })()
+    const mine = new Map<string, { instances: number; running: number }>()
+    for (const i of own) {
+      const m = mine.get(i.workflow_template_id) ?? { instances: 0, running: 0 }
+      m.instances += 1
+      if (IN_FLIGHT.includes(i.status)) m.running += 1
+      mine.set(i.workflow_template_id, m)
+    }
+    const visibility: Prisma.WorkflowTemplateWhereInput = admin
       ? {}
       : {
           OR: [
@@ -1431,6 +1485,7 @@ export class WorkflowTemplateService {
               manual_start_enabled: true,
               access: { some: { user_id: p.userId, organization_id: orgId, access_type: 'trigger' } },
             },
+            ...(mine.size ? [{ id: { in: [...mine.keys()] } }] : []),
           ],
         }
     const rows = await this.prisma.workflowTemplate.findMany({
@@ -1442,7 +1497,7 @@ export class WorkflowTemplateService {
       include: templateInclude(p.userId),
       orderBy: { created_at: 'desc' },
     })
-    return this.formatTemplates(orgId, rows, p)
+    return this.formatTemplates(orgId, rows, p, admin ? undefined : mine)
   }
 
   /**
@@ -2817,6 +2872,85 @@ export class WorkflowTemplateService {
     return readSnapshot(row.step_snapshot)?.title ?? 'Step'
   }
 
+  /**
+   * The latest `sent_back` event of every open send-back among `rows` (keyed by the
+   * sender row): senders still waiting (`sent_back` + `waiting_on_row_id`) and the
+   * senders reopened targets owe (`returned_to_row_id`). One query whatever the number
+   * of instances; org- and instance-scoped. Callers pass only rows the caller may see.
+   */
+  private async openSendBackEvents(orgId: string, rows: InstanceStepRow[]): Promise<Map<string, SendBackEvent>> {
+    const senders = unique(
+      rows
+        .flatMap((r) => [r.status === 'sent_back' && r.waiting_on_row_id ? r.id : null, r.returned_to_row_id ?? null])
+        .filter((x): x is string => !!x),
+    )
+    const out = new Map<string, SendBackEvent>()
+    if (!senders.length) return out
+    const events = await this.prisma.workflowInstanceEvent.findMany({
+      where: {
+        organization_id: orgId,
+        workflow_instance_id: { in: unique(rows.map((r) => r.workflow_instance_id)) },
+        instance_step_id: { in: senders },
+        type: 'sent_back',
+      },
+      orderBy: [{ created_at: 'desc' }, { id: 'desc' }],
+      select: { instance_step_id: true, actor_user_id: true, created_at: true, metadata: true },
+    })
+    for (const e of events) {
+      if (!e.instance_step_id || out.has(e.instance_step_id)) continue
+      const meta = (e.metadata ?? {}) as { reason?: unknown; to_row_id?: unknown }
+      out.set(e.instance_step_id, {
+        actor_user_id: e.actor_user_id,
+        created_at: e.created_at,
+        reason: typeof meta.reason === 'string' && meta.reason.trim() ? meta.reason : null,
+        to_row_id: typeof meta.to_row_id === 'string' ? meta.to_row_id : null,
+      })
+    }
+    return out
+  }
+
+  /**
+   * A row's open send-back (see `SendBackInfo`), or null. A row that was reopened and has
+   * since sent the instance back further shows where it is waiting now (sender).
+   */
+  private sendBackOf(
+    row: InstanceStepRow,
+    byId: Map<string, InstanceStepRow>,
+    events: Map<string, SendBackEvent>,
+    labels: Map<string, string>,
+    names: Map<string, string>,
+  ): SendBackInfo | null {
+    const label = (id: string) => {
+      const r = byId.get(id)
+      return `${labels.get(id) ?? ''} “${r ? this.stepTitle(r) : 'Step'}”`.trim()
+    }
+    if (row.status === 'sent_back' && row.waiting_on_row_id) {
+      const ev = events.get(row.id)
+      const matches = ev && (!ev.to_row_id || ev.to_row_id === row.waiting_on_row_id)
+      return {
+        role: 'sender',
+        reason: matches ? ev!.reason : null,
+        by: matches ? this.ref(ev!.actor_user_id, names) : null,
+        at: matches ? ev!.created_at : null,
+        to_row_id: row.waiting_on_row_id,
+        to_label: label(row.waiting_on_row_id),
+      }
+    }
+    if (row.returned_to_row_id) {
+      const ev = events.get(row.returned_to_row_id)
+      const matches = ev && (!ev.to_row_id || ev.to_row_id === row.id)
+      return {
+        role: 'target',
+        reason: matches ? ev!.reason : null,
+        by: matches ? this.ref(ev!.actor_user_id, names) : null,
+        at: matches ? ev!.created_at : null,
+        from_row_id: row.returned_to_row_id,
+        from_label: label(row.returned_to_row_id),
+      }
+    }
+    return null
+  }
+
   /** Is the caller a non-CC live assignee of this row's task? */
   private async isRowWorker(orgId: string, taskId: string | null, userId: string): Promise<boolean> {
     if (!taskId) return false
@@ -2959,8 +3093,16 @@ export class WorkflowTemplateService {
     const canOpenRun = caps.can_view || (await isRunParticipant(this.prisma, orgId, inst.id, p.userId))
     const index = main.findIndex((s) => s.id === row.id)
     const labels = this.rowLabels(inst)
-    const [{ tz, now }, notes] = await Promise.all([this.scheduleContext(orgId), this.loadNotes(orgId, [inst.id], row.id)])
-    const names = await this.userNames([inst.triggered_by_user_id, ...notes.map((n) => n.author_user_id)])
+    const [{ tz, now }, notes, sendBacks] = await Promise.all([
+      this.scheduleContext(orgId),
+      this.loadNotes(orgId, [inst.id], row.id),
+      this.openSendBackEvents(orgId, inst.steps),
+    ])
+    const names = await this.userNames([
+      inst.triggered_by_user_id,
+      ...notes.map((n) => n.author_user_id),
+      ...[...sendBacks.values()].map((e) => e.actor_user_id),
+    ])
     const forStep = {
       row_id: row.id,
       number_label: labels.get(row.id) ?? null,
@@ -2989,6 +3131,8 @@ export class WorkflowTemplateService {
       total_steps: main.length,
       can_send_back: canSendBack,
       can_open_run: canOpenRun,
+      /** This step's open send-back (asked for more info / waiting for info), or null. */
+      send_back: this.sendBackOf(row, new Map(inst.steps.map((r) => [r.id, r])), sendBacks, labels, names),
       /** Notes left for this step, newest first. */
       notes: notes.map((n) => this.noteOut(n, names, caps.can_edit, p, forStep)),
     }

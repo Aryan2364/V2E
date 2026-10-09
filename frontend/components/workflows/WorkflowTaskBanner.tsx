@@ -7,13 +7,14 @@ import { workflowsApi } from '@/lib/api/workflows'
 import type { WorkflowStepContext } from '@/lib/types/workflows'
 import SendBackDialog, { type SendBackSubject } from './SendBackDialog'
 import { NoteItem } from './InstanceNotes'
+import SendBackNote from './SendBackNote'
 import { instanceTitle } from './instanceLabel'
 import { BTN, runHref } from './shared'
 
 /**
- * On a task a workflow created: which workflow, instance and step it belongs to, notes
- * left for this step, a link to the instance, and "Send back" for the step's assignees
- * (the server says who may).
+ * On a task a workflow created: why it was sent back (if it was), which workflow,
+ * instance and step it belongs to, notes left for this step, a link to the instance, and
+ * "Send back" for the step's assignees (the server says who may).
  */
 export default function WorkflowTaskBanner({
   orgId,
@@ -64,6 +65,8 @@ export default function WorkflowTaskBanner({
 
   return (
     <div className="flex flex-col gap-3 rounded-[10px] border border-[#BFDBFE] bg-[#EFF6FF] px-4 py-3 shrink-0">
+      {/* Sent back: why this step was reopened (or why it is waiting), first. */}
+      {ctx?.send_back && <SendBackNote sendBack={ctx.send_back} variant={ctx.send_back.role === 'target' ? 'banner' : 'panel'} />}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex items-start gap-2.5 min-w-0 flex-1">
           <WorkflowIcon size={18} className="shrink-0 mt-0.5 text-[#1D4ED8]" />

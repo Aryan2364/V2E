@@ -80,7 +80,7 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
       onSelect: () => onResume?.(w),
       hidden: w.status !== 'paused' || !onResume,
     },
-    { key: 'instances', label: 'View instances', icon: History, onSelect: () => router.push(instancesHref(w.id)) },
+    { key: 'instances', label: w.view === 'limited' ? 'My instances' : 'View instances', icon: History, onSelect: () => router.push(instancesHref(w.id)) },
     {
       key: 'archive',
       label: 'Archive workflow',
@@ -146,7 +146,9 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
         )}
         <span className="inline-flex items-center gap-1.5">
           <History size={14} className="text-[#475569]" />
+          {/* A limited card counts only the caller's own instances (ran / works in). */}
           {running > 0 ? `${running} running` : plural(w._count?.instances ?? 0, 'instance')}
+          {w.view === 'limited' ? ' · yours' : ''}
         </span>
         {(w.schedules ?? []).length > 0 && (
           <Tooltip label={`Starts: ${startsSummary(w)}`}>

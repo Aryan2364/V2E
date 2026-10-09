@@ -3819,16 +3819,53 @@ export class TasksService {
    * gated by `assertCanViewTask` (anyone who may read the task — including workflow
    * run participants and escalation contacts — may discuss it; nobody else).
    */
+  /** Everyone who has already commented on this task (live comments). */
+  private async priorCommenterIds(orgId: string, taskId: string): Promise<string[]> {
+    const rows = await this.prisma.taskComment.findMany({
+      where: { task_id: taskId, organization_id: orgId, is_deleted: false },
+      select: { user_id: true },
+      distinct: ['user_id'],
+    });
+    return rows.map((r) => r.user_id);
+  }
+
+  /**
+   * People on the other side of an open workflow send-back for this task: if this is
+   * the step that was sent back TO, the sender step's people; if this is the paused
+   * sender step, the people on the step it is waiting on. Empty for anything else.
+   */
+  private async sendBackCounterparts(orgId: string, taskId: string): Promise<string[]> {
+    const row = await this.prisma.workflowInstanceStep.findFirst({
+      where: { task_id: taskId, organization_id: orgId },
+      select: { returned_to_row_id: true, waiting_on_row_id: true, status: true, workflow_instance_id: true },
+    });
+    if (!row) return [];
+    const otherRowId = row.returned_to_row_id ?? (row.status === 'sent_back' ? row.waiting_on_row_id : null);
+    if (!otherRowId) return [];
+    const other = await this.prisma.workflowInstanceStep.findFirst({
+      where: { id: otherRowId, organization_id: orgId, workflow_instance_id: row.workflow_instance_id },
+      select: { task_id: true },
+    });
+    if (!other?.task_id) return [];
+    const people = await this.prisma.taskAssignee.findMany({
+      where: { task_id: other.task_id, organization_id: orgId, ...ACTIVE_ASSIGNEE },
+      select: { user_id: true },
+    });
+    return people.map((p) => p.user_id);
+  }
+
   async addComment(orgId: string, userId: string, taskId: string, dto: CreateCommentDto, principal?: Principal) {
     const task = await this.findTaskOrFail(orgId, taskId, true);
     await this.assertCanViewTask(orgId, principal, taskId);
     // A reply must answer a live comment of THIS task (never another task's thread).
+    let replyToAuthorId: string | null = null;
     if (dto.reply_to_comment_id) {
       const parent = await this.prisma.taskComment.findFirst({
         where: { id: dto.reply_to_comment_id, task_id: taskId, organization_id: orgId, is_deleted: false },
-        select: { id: true },
+        select: { id: true, user_id: true },
       });
       if (!parent) throw new NotFoundException('The comment you are replying to was not found on this task.');
+      replyToAuthorId = parent.user_id;
     }
     // Stamp with the org's clock (respects a test org's simulated time) rather than
     // the DB's real-time default, so comments read in the timeline the user is in.
@@ -3851,20 +3888,31 @@ export class TasksService {
       .findUnique({ where: { id: userId }, select: { id: true, name: true, email: true } })
       .catch(() => null);
 
-    // Notify everyone on the task (assignees + CC + creator) except the commenter.
-    // Lead with WHO commented; show the comment itself, then the task for context.
+    // Notify everyone in the conversation except the commenter: the task's people
+    // (assignees + CC + creator), anyone who has already commented here, the author
+    // of the comment being replied to, and — on a workflow step that was sent back —
+    // the people on the step that sent it back, so both sides of a send-back hear
+    // each other. Lead with WHO commented; show the comment, then the task.
     // A file-only comment (no text yet) reads as an attachment rather than a blank line.
     const trimmed = (dto.body ?? '').trim();
     const snippet = trimmed.length > 100 ? `${trimmed.slice(0, 100)}…` : trimmed;
     const payload = snippet ? `“${snippet}”` : 'Shared an attachment';
+    // Extra recipients are best-effort: a failed lookup must never fail the comment.
+    const priorCommenters = await this.priorCommenterIds(orgId, taskId).catch(() => [] as string[]);
+    const sendBackPeople = await this.sendBackCounterparts(orgId, taskId).catch(() => [] as string[]);
     await this.notifications.emit({
       orgId,
       module: 'tasks',
       event_type: 'task_comment',
-      recipients: [
-        task.created_by_user_id,
-        ...(task.assignees ?? []).map((a: any) => a.user_id),
-      ].filter((uid) => uid !== userId),
+      recipients: Array.from(
+        new Set([
+          task.created_by_user_id,
+          ...(task.assignees ?? []).map((a: any) => a.user_id),
+          ...priorCommenters,
+          ...(replyToAuthorId ? [replyToAuthorId] : []),
+          ...sendBackPeople,
+        ]),
+      ).filter((uid) => !!uid && uid !== userId),
       title: `${user?.name ?? 'Someone'} commented`,
       body: `${payload}\non “${task.title}”`,
       link: `/dashboard/tasks/${taskId}`,

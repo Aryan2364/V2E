@@ -56,6 +56,7 @@ import {
   ErrorState,
   GatedButton,
   InfoTip,
+  NoAccessState,
   NotFoundState,
   REASONS,
   Reveal,
@@ -487,7 +488,8 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   const narrow = useNarrowScreen()
 
   const [workflow, setWorkflow] = useState<WorkflowTemplate | null>(null)
-  const [status, setStatus] = useState<'loading' | 'ready' | 'failed' | 'notfound'>(initialId ? 'loading' : 'ready')
+  // 'limited': the caller may open only their own instances of it, never its design.
+  const [status, setStatus] = useState<'loading' | 'ready' | 'failed' | 'notfound' | 'limited'>(initialId ? 'loading' : 'ready')
   const [loadError, setLoadError] = useState('')
 
   const lookups = useWorkflowLookups(orgId, status === 'ready')
@@ -559,7 +561,14 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       if (!orgId || !wid) return
       if (!quiet) setStatus('loading')
       try {
-        applyServer(await workflowsApi.getWorkflow(orgId, wid))
+        const w = await workflowsApi.getWorkflow(orgId, wid)
+        // Someone who only runs it or works in its instances gets no design (no steps,
+        // no people) — never show that as an empty, read-only builder.
+        if (w.view === 'limited' || w.capabilities?.can_view === false) {
+          setStatus('limited')
+          return
+        }
+        applyServer(w)
         setConflict(false)
         setSaveError(null)
         setStatus('ready')
@@ -1168,6 +1177,15 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     )
   }
   if (status === 'notfound') return <NotFoundState what="Workflow" backHref={WORKFLOWS_BASE} backLabel="Go to workflows" />
+  if (status === 'limited' && initialId)
+    return (
+      <NoAccessState
+        title="You can’t open this workflow’s design"
+        text="Only its editors, viewers and admins can see its steps and people. You can still open the instances you work in."
+        backHref={workflowHref(initialId)}
+        backLabel="Go to my instances"
+      />
+    )
   if (status === 'failed') return <ErrorState title="This workflow could not be loaded" message={loadError} onRetry={() => load()} />
 
   const w = workflow

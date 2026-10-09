@@ -435,6 +435,8 @@ export interface WorkflowInstanceStep {
   /** On a row being redone: the row to return to once it is completed again. */
   returned_to_row_id?: string | null
   sent_back_count?: number
+  /** The open send-back this step is in — why, by whom, to / from which step (null when none). */
+  send_back?: StepSendBack | null
   /** From the task's live roster. */
   assignees?: PersonRef[]
   ccs?: PersonRef[]
@@ -557,7 +559,18 @@ export interface WorkflowStepContext {
   started_by?: PersonRef | null
   /** Notes left for this step (newest first). */
   notes?: InstanceNote[]
+  /** This step's open send-back (asked for more info / waiting for info), or null. */
+  send_back?: StepSendBack | null
 }
+
+/**
+ * An open send-back as a step shows it. `sender`: the step that is waiting, sent back to
+ * `to_label`. `target`: the earlier step reopened, asked for more info by `from_label`.
+ * Labels read "1 “Collect documents”". `reason` is plain text (never HTML).
+ */
+export type StepSendBack =
+  | { role: 'sender'; reason: string | null; by: PersonRef | null; at: string | null; to_row_id: string; to_label: string }
+  | { role: 'target'; reason: string | null; by: PersonRef | null; at: string | null; from_row_id: string; from_label: string }
 
 export interface SendBackTarget {
   row_id: string
