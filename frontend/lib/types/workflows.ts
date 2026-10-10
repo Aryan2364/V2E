@@ -293,6 +293,8 @@ export interface WorkflowCapabilities {
    * (sees just those). Missing = derived from can_view.
    */
   access?: 'full' | 'instances' | 'none'
+  /** The caller's strongest relationship to this workflow. */
+  role?: 'creator' | 'editor' | 'viewer' | 'admin' | 'starter' | null
 }
 
 /** Someone involved in a workflow, with every way they are involved. */

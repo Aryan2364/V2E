@@ -91,7 +91,6 @@ const NAV_GROUPS: NavGroup[] = [
     module: 'workflows',
     items: [
       { label: 'Workflows', href: '/dashboard/tasks/workflows', Icon: GitBranch },
-      { label: 'My Workflows', href: '/dashboard/tasks/workflows/my', Icon: GitBranch },
     ],
   },
   {
@@ -224,8 +223,8 @@ export default function TaskModuleSidebar() {
           !['/dashboard/projects/my', '/dashboard/projects/managing', '/dashboard/projects/templates']
             .some((p) => pathname.startsWith(p)))
     }
-    // Most specific entry wins: on /workflows/my only "My Workflows" lights up, not
-    // "Workflows" as well.
+    // Most specific entry wins: on a nested route only the deepest matching entry
+    // lights up (e.g. Tickets › My Tickets, not Tickets as well).
     const matches = (h: string) => pathname === h || pathname.startsWith(h + '/')
     if (!matches(href)) return false
     return !ALL_HREFS.some((h) => h.length > href.length && h.startsWith(href + '/') && matches(h))

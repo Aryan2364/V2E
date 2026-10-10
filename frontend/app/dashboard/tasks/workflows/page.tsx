@@ -3,11 +3,12 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Plus, Search, Workflow as WorkflowIcon, X } from 'lucide-react'
+import { Plus, Search, UserCheck, Workflow as WorkflowIcon, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
-import type { WorkflowTemplate, WorkflowTemplateStatus } from '@/lib/types/workflows'
+import type { WorkflowInstance, WorkflowTemplate, WorkflowTemplateStatus } from '@/lib/types/workflows'
 import WorkflowCard, { WorkflowCardSkeleton } from '@/components/workflows/WorkflowCard'
+import InstanceList from '@/components/workflows/InstanceList'
 import { useWorkflowActions } from '@/components/workflows/useWorkflowActions'
 import { BTN, EmptyState, ErrorState, GatedButton, InfoTip, REASONS, WORKFLOWS_BASE, useWorkflowsWritable } from '@/components/workflows/shared'
 
@@ -19,6 +20,21 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: 'draft', label: 'Drafts' },
   { value: 'archived', label: 'Archived' },
 ]
+
+// Who-it's-for views (replace the old "My workflows" page).
+type Show = 'all' | 'manage' | 'working'
+const SHOWS: { value: Show; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'manage', label: 'I manage' },
+  { value: 'working', label: 'I’m working on' },
+]
+
+/** Workflows the caller edits (creator or editor) — admins only see their own here. */
+function managedByMe(w: WorkflowTemplate): boolean {
+  const role = w.capabilities?.role
+  if (role !== undefined) return role === 'creator' || role === 'editor'
+  return !!w.capabilities?.is_creator
+}
 
 function NewWorkflowButton({ writable, variant }: { writable: boolean | undefined; variant: 'primary' | 'secondary' }) {
   if (writable === true) {
@@ -45,6 +61,28 @@ function WorkflowsList() {
 
   const filterParam = params.get('status') as Filter | null
   const filter: Filter = FILTERS.some((f) => f.value === filterParam) ? (filterParam as Filter) : 'all'
+  const showParam = params.get('show') as Show | null
+  const show: Show = SHOWS.some((s) => s.value === showParam) ? (showParam as Show) : 'all'
+
+  // "I'm working on": instances where the caller has a step (loaded when first opened).
+  const [working, setWorking] = useState<WorkflowInstance[]>([])
+  const [workingStatus, setWorkingStatus] = useState<'idle' | 'loading' | 'ready' | 'failed'>('idle')
+  const [workingError, setWorkingError] = useState('')
+  const loadWorking = useCallback(async () => {
+    if (!orgId) return
+    setWorkingStatus('loading')
+    try {
+      const d = await workflowsApi.getAssignedInstances(orgId)
+      setWorking(Array.isArray(d) ? d : [])
+      setWorkingStatus('ready')
+    } catch (e) {
+      setWorkingError(workflowErrorMessage(e, 'Check your connection and try again.'))
+      setWorkingStatus('failed')
+    }
+  }, [orgId])
+  useEffect(() => {
+    if (show === 'working' && workingStatus === 'idle') loadWorking()
+  }, [show, workingStatus, loadWorking])
 
   const [workflows, setWorkflows] = useState<WorkflowTemplate[]>([])
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
@@ -73,6 +111,14 @@ function WorkflowsList() {
 
   const actions = useWorkflowActions(orgId, () => load())
 
+  function setShow(s: Show) {
+    const q = new URLSearchParams(params.toString())
+    if (s === 'all') q.delete('show')
+    else q.set('show', s)
+    if (s === 'working') q.delete('status')
+    router.replace(`${pathname}${q.toString() ? `?${q}` : ''}`, { scroll: false })
+  }
+
   function setFilter(f: Filter) {
     const q = new URLSearchParams(params.toString())
     if (f === 'all') q.delete('status')
@@ -86,9 +132,12 @@ function WorkflowsList() {
   const matching = useMemo(
     () =>
       workflows.filter(
-        (w) => !q || w.name.toLowerCase().includes(q) || (w.description ?? '').toLowerCase().includes(q) || [...(w.people?.editors ?? []), ...(w.created_by ? [w.created_by] : []), ...(w.owners ?? [])].some((o) => o.name.toLowerCase().includes(q)),
+        (w) => (show !== 'manage' || managedByMe(w)) && (!q || w.name.toLowerCase().includes(q) || (w.description ?? '').toLowerCase().includes(q) || [...(w.people?.editors ?? []), ...(w.created_by ? [w.created_by] : []), ...(w.owners ?? [])].some((o) => o.name.toLowerCase().includes(q))),
       ),
-    [workflows, q],
+    [workflows, q, show],
+  )
+  const workingShown = working.filter(
+    (i) => !q || (i.name ?? '').toLowerCase().includes(q) || (i.template?.name ?? '').toLowerCase().includes(q),
   )
   const counts = useMemo(() => {
     const c: Record<Filter, number> = { all: 0, active: 0, paused: 0, draft: 0, archived: 0 }
@@ -138,6 +187,26 @@ function WorkflowsList() {
               </button>
             )}
           </div>
+          <div role="tablist" aria-label="Show" className="inline-flex items-center rounded-[8px] border border-[#CBD5E1] bg-white p-0.5">
+            {SHOWS.map((s) => {
+              const active = show === s.value
+              return (
+                <button
+                  key={s.value}
+                  role="tab"
+                  aria-selected={active}
+                  type="button"
+                  onClick={() => setShow(s.value)}
+                  className={`px-3 min-h-[40px] sm:min-h-[32px] rounded-[6px] text-[13px] font-medium transition-colors ${
+                    active ? 'bg-[#0F172A] text-white' : 'text-[#334155] hover:text-[#0F172A]'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              )
+            })}
+          </div>
+          {show !== 'working' && (
           <div role="tablist" aria-label="Filter by status" className="flex items-center gap-1.5 flex-wrap">
             {FILTERS.map((f) => {
               const active = filter === f.value
@@ -168,10 +237,26 @@ function WorkflowsList() {
               )
             })}
           </div>
+          )}
         </div>
       </div>
 
-      {status === 'loading' ? (
+      {show === 'working' ? (
+        workingStatus === 'failed' ? (
+          <ErrorState title="Instances could not be loaded" message={workingError} onRetry={loadWorking} />
+        ) : (
+          <InstanceList
+            showWorkflow
+            instances={workingShown}
+            loading={workingStatus !== 'ready'}
+            emptyState={
+              <div className="bg-white border border-[#E2E8F0] rounded-[12px]">
+                <EmptyState icon={UserCheck} title="Nothing to work on" text="Instances where you have a step appear here." />
+              </div>
+            }
+          />
+        )
+      ) : status === 'loading' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <WorkflowCardSkeleton key={i} />
