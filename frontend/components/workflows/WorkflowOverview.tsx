@@ -9,6 +9,7 @@ import { workflowsApi, workflowErrorMessage, workflowErrorStatus } from '@/lib/a
 import type { InvolvedPerson, RunDisplayStatus, WorkflowInstance, WorkflowTemplate } from '@/lib/types/workflows'
 import ActionMenu, { type ActionMenuItem } from './ActionMenu'
 import ChangeCreatorDialog from './ChangeCreatorDialog'
+import Sheet from './Sheet'
 import InstanceList from './InstanceList'
 import StepFlow, { assigneeNames, flowLanes } from './StepFlow'
 import { layoutTracks, orderByTracks, tracksFromServer } from './tracks'
@@ -106,7 +107,8 @@ function involvedPeople(w: WorkflowTemplate, memberName: (id: string) => string 
 }
 
 /**
- * The workflow page: what it is, who is involved, how its steps flow, and its instances.
+ * The workflow page: its instances first, under a header saying what it is and how it
+ * starts. Its steps and the people involved open in side panels from the header.
  * Editing happens in the builder (Edit); Run is the one primary action. Someone who only
  * works in some of its instances sees just those; anyone else sees that they have no access.
  */
@@ -124,6 +126,8 @@ export default function WorkflowOverview({ id }: { id: string }) {
   const [creatorOpen, setCreatorOpen] = useState(false)
   const [loadError, setLoadError] = useState('')
   const [view, setView] = useState<'flow' | 'list'>('flow')
+  // The Steps and People involved side panels.
+  const [panel, setPanel] = useState<'steps' | 'people' | null>(null)
 
   const [runs, setRuns] = useState<WorkflowInstance[]>([])
   const [runsStatus, setRunsStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
@@ -230,11 +234,10 @@ export default function WorkflowOverview({ id }: { id: string }) {
       <div className="flex flex-col gap-5" aria-busy>
         <Skeleton className="h-4 w-48" />
         <Skeleton className="h-9 w-2/3 max-w-xl" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <Skeleton className="h-72 lg:col-span-2" />
-          <Skeleton className="h-72" />
-        </div>
-        <Skeleton className="h-40" />
+        <Skeleton className="h-4 w-1/2 max-w-md" />
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-10 w-full max-w-2xl" />
+        <Skeleton className="h-64" />
       </div>
     )
   }
@@ -303,6 +306,18 @@ export default function WorkflowOverview({ id }: { id: string }) {
     return list.filter((p, i) => list.findIndex((x) => x.id === p.id) === i)
   })()
 
+  // Steps and People open in side panels; the page leads with the instances.
+  const panelButtons = (
+    <>
+      <button type="button" aria-haspopup="dialog" onClick={() => setPanel('steps')} className={`${BTN.quiet} w-full sm:w-auto`}>
+        <GitBranch size={16} /> Steps · {steps.length}
+      </button>
+      <button type="button" aria-haspopup="dialog" onClick={() => setPanel('people')} className={`${BTN.quiet} w-full sm:w-auto`}>
+        <Users size={16} /> People · {involved.length}
+      </button>
+    </>
+  )
+
   // Said once: status, the facts, and how it starts (the schedule lives only here).
   const meta = (
     <>
@@ -323,6 +338,9 @@ export default function WorkflowOverview({ id }: { id: string }) {
           ' · Schedule paused'
         ) : null}
       </p>
+      {w.description && <Description text={w.description} />}
+      {/* Wide screens carry these beside Edit / Run; elsewhere they sit on their own row. */}
+      <div className="xl:hidden mt-3 grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">{panelButtons}</div>
     </>
   )
 
@@ -336,6 +354,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
             {!narrow && <div className="mt-1.5">{meta}</div>}
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <div className="hidden xl:flex items-center gap-2">{panelButtons}</div>
             {editInMenu ? null : edit.allowed === true ? (
               <Link href={editHref(w.id)} className={BTN.secondary}>
                 <Pencil size={16} /> Edit
@@ -368,131 +387,130 @@ export default function WorkflowOverview({ id }: { id: string }) {
 
       {narrow && <div className="-mt-2">{meta}</div>}
 
-      {w.description && <p className="text-[15px] text-[#1E293B] whitespace-pre-wrap break-words max-w-4xl">{w.description}</p>}
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
-        {/* Steps */}
-        <section aria-labelledby="steps-heading" className="xl:col-span-2 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-4 min-w-0">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="min-w-0">
-              <h2 id="steps-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
-                Steps <InfoTip label="Steps" text="Each step becomes a task. Parallel paths run at the same time." />
-              </h2>
+      <Sheet
+        open={panel === 'steps'}
+        onClose={() => setPanel(null)}
+        labelId="steps-panel-title"
+        wide
+        title={
+          <span className="flex items-center gap-1">
+            Steps <InfoTip label="Steps" text="Each step becomes a task. Parallel paths run at the same time." />
+          </span>
+        }
+        headerExtra={
+          steps.length > 0 ? (
+            <div role="tablist" aria-label="Show steps as" className="inline-flex rounded-[8px] border border-[#CBD5E1] bg-white p-0.5">
+              {(
+                [
+                  ['flow', 'Flow', GitBranch],
+                  ['list', 'List', List],
+                ] as const
+              ).map(([v, label, Icon]) => (
+                <button
+                  key={v}
+                  type="button"
+                  role="tab"
+                  aria-selected={view === v}
+                  onClick={() => setView(v)}
+                  className={`inline-flex items-center gap-1.5 px-3 min-h-[44px] sm:min-h-[32px] rounded-[6px] text-[13px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
+                    view === v ? 'bg-[#EFF6FF] text-[#1D4ED8]' : 'text-[#334155] hover:bg-[#F1F5F9]'
+                  }`}
+                >
+                  <Icon size={14} /> {label}
+                </button>
+              ))}
             </div>
-            {steps.length > 0 && (
-              <div role="tablist" aria-label="Show steps as" className="inline-flex rounded-[8px] border border-[#CBD5E1] bg-white p-0.5">
-                {(
-                  [
-                    ['flow', 'Flow', GitBranch],
-                    ['list', 'List', List],
-                  ] as const
-                ).map(([v, label, Icon]) => (
-                  <button
-                    key={v}
-                    type="button"
-                    role="tab"
-                    aria-selected={view === v}
-                    onClick={() => setView(v)}
-                    className={`inline-flex items-center gap-1.5 px-3 min-h-[40px] sm:min-h-[32px] rounded-[6px] text-[13px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
-                      view === v ? 'bg-[#EFF6FF] text-[#1D4ED8]' : 'text-[#334155] hover:bg-[#F1F5F9]'
-                    }`}
-                  >
-                    <Icon size={14} /> {label}
-                  </button>
-                ))}
-              </div>
-            )}
+          ) : undefined
+        }
+      >
+        {steps.length === 0 ? (
+          <EmptyState
+            icon={GitBranch}
+            title="No steps yet"
+            text={edit.allowed === true ? 'Add steps to get started.' : 'This workflow has no steps.'}
+            action={
+              edit.allowed === true ? (
+                <Link href={editHref(w.id)} className={BTN.secondary}>
+                  <Pencil size={16} /> Add steps
+                </Link>
+              ) : undefined
+            }
+          />
+        ) : view === 'flow' ? (
+          <StepFlow steps={steps} tracks={tracks} memberName={memberName} frequency={frequency} schedules={schedules} />
+        ) : (
+          <div className="flex flex-col gap-4">
+            {lanes.map((lane) => {
+              const list = layout.groups.get(lane.key) ?? []
+              if (!list.length) return null
+              return (
+                <div key={lane.key} className="flex flex-col">
+                  {lanes.length > 1 && (
+                    <p className="flex items-baseline gap-2 pb-1.5 border-b border-[#E2E8F0]">
+                      <span className="text-[14px] font-semibold text-[#0F172A]">{lane.label}</span>
+                      {lane.hint && <span className="text-[13px] text-[#475569]">{lane.hint}</span>}
+                    </p>
+                  )}
+                  <ol className="flex flex-col divide-y divide-[#F1F5F9]">
+                    {list.map((s) => {
+                      const deps = layout.deps.get(s.id) ?? []
+                      const merges = layout.merges.get(s.id) ?? []
+                      const also = merges.map((m) => layout.labels.get(m)).filter(Boolean)
+                      // What it comes after is the lane's own order (or the lane header): only extra waits are said.
+                      const names = assigneeNames(s, memberName)
+                      const meta = [also.length ? `Also waits for ${also.join(', ')}` : null, s.if_late === 'move_on' ? 'If late: continue' : 'If late: wait'].filter(Boolean).join(' · ')
+                      return (
+                        <li key={s.id} className="py-3 flex items-start gap-3">
+                          <span className="mt-0.5 min-w-[26px] h-[26px] px-1 rounded-full bg-[#2563EB] text-white text-[12px] font-semibold flex items-center justify-center shrink-0">
+                            {layout.labels.get(s.id)}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span className="text-[15px] font-semibold text-[#0F172A] break-words min-w-0">{s.title || 'Untitled step'}</span>
+                              <CompletionChip mode={s.completion_mode} count={names.length} />
+                            </p>
+                            <p className="text-[13px] text-[#334155]">
+                              {namesSummary(names.map((name) => ({ name })), 3)} · {timingSummary(startRuleOf(s), dueRuleOf(s), frequency, deps.length > 0, nextFlags.get(s.id))}
+                            </p>
+                            <p className="text-[13px] text-[#475569]">{meta}</p>
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                </div>
+              )
+            })}
           </div>
+        )}
+      </Sheet>
 
-          {steps.length === 0 ? (
-            <EmptyState
-              icon={GitBranch}
-              title="No steps yet"
-              text={edit.allowed === true ? 'Add steps to get started.' : 'This workflow has no steps.'}
-              action={
-                edit.allowed === true ? (
-                  <Link href={editHref(w.id)} className={BTN.secondary}>
-                    <Pencil size={16} /> Add steps
-                  </Link>
-                ) : undefined
-              }
-            />
-          ) : view === 'flow' ? (
-            <StepFlow steps={steps} tracks={tracks} memberName={memberName} frequency={frequency} schedules={schedules} />
-          ) : (
-            <div className="flex flex-col gap-4">
-              {lanes.map((lane) => {
-                const list = layout.groups.get(lane.key) ?? []
-                if (!list.length) return null
-                return (
-                  <div key={lane.key} className="flex flex-col">
-                    {lanes.length > 1 && (
-                      <p className="flex items-baseline gap-2 pb-1.5 border-b border-[#E2E8F0]">
-                        <span className="text-[14px] font-semibold text-[#0F172A]">{lane.label}</span>
-                        {lane.hint && <span className="text-[13px] text-[#475569]">{lane.hint}</span>}
-                      </p>
-                    )}
-                    <ol className="flex flex-col divide-y divide-[#F1F5F9]">
-                      {list.map((s) => {
-                        const deps = layout.deps.get(s.id) ?? []
-                        const merges = layout.merges.get(s.id) ?? []
-                        const also = merges.map((m) => layout.labels.get(m)).filter(Boolean)
-                        // What it comes after is the lane's own order (or the lane header): only extra waits are said.
-                        const names = assigneeNames(s, memberName)
-                        const meta = [also.length ? `Also waits for ${also.join(', ')}` : null, s.if_late === 'move_on' ? 'If late: continue' : 'If late: wait'].filter(Boolean).join(' · ')
-                        return (
-                          <li key={s.id} className="py-3 flex items-start gap-3">
-                            <span className="mt-0.5 min-w-[26px] h-[26px] px-1 rounded-full bg-[#2563EB] text-white text-[12px] font-semibold flex items-center justify-center shrink-0">
-                              {layout.labels.get(s.id)}
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <span className="text-[15px] font-semibold text-[#0F172A] break-words min-w-0">{s.title || 'Untitled step'}</span>
-                                <CompletionChip mode={s.completion_mode} count={names.length} />
-                              </p>
-                              <p className="text-[13px] text-[#334155]">
-                                {namesSummary(names.map((name) => ({ name })), 3)} · {timingSummary(startRuleOf(s), dueRuleOf(s), frequency, deps.length > 0, nextFlags.get(s.id))}
-                              </p>
-                              <p className="text-[13px] text-[#475569]">{meta}</p>
-                            </div>
-                          </li>
-                        )
-                      })}
-                    </ol>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </section>
-
-        <div className="flex flex-col gap-5 min-w-0">
-          {/* People involved */}
-          <section aria-labelledby="people-heading" className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <Users size={16} className="text-[#475569]" />
-              <h2 id="people-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
-                People involved <InfoTip label="People involved" text="Editors and viewers see the workflow and all its instances. People in an instance see that instance." />
-              </h2>
-            </div>
-            {involved.length === 0 ? (
-              <p className="text-sm text-[#475569]">No one yet.</p>
-            ) : (
-              <ul className="flex flex-col gap-2.5 max-h-[360px] overflow-y-auto pr-1">
-                {involved.map((p) => (
-                  <li key={p.id} className="flex items-start gap-2.5 min-w-0">
-                    <Avatar name={p.name} size="md" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#0F172A] truncate">{p.name}</p>
-                      <p className="text-[12px] text-[#475569]">{roleWords(p.id === creator?.id && !p.roles.includes('creator') ? ['creator', ...p.roles] : p.roles)}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        </div>
-      </div>
+      <Sheet
+        open={panel === 'people'}
+        onClose={() => setPanel(null)}
+        labelId="people-panel-title"
+        title={
+          <span className="flex items-center gap-1">
+            People involved <InfoTip label="People involved" text="Editors and viewers see the workflow and all its instances. People in an instance see that instance." />
+          </span>
+        }
+      >
+        {involved.length === 0 ? (
+          <p className="text-sm text-[#475569]">No one yet.</p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {involved.map((p) => (
+              <li key={p.id} className="flex items-start gap-2.5 min-w-0">
+                <Avatar name={p.name} size="md" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-[#0F172A] truncate">{p.name}</p>
+                  <p className="text-[12px] text-[#475569]">{roleWords(p.id === creator?.id && !p.roles.includes('creator') ? ['creator', ...p.roles] : p.roles)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Sheet>
 
       {/* Instances */}
       <section id="instances" aria-labelledby="instances-heading" className="flex flex-col gap-3 scroll-mt-40">
@@ -589,6 +607,33 @@ export default function WorkflowOverview({ id }: { id: string }) {
           load(true)
         }}
       />
+    </div>
+  )
+}
+
+/** The workflow's description, kept to two lines in the header until opened. */
+function Description({ text }: { text: string }) {
+  const [open, setOpen] = useState(false)
+  const long = text.length > 160 || text.includes('\n')
+  return (
+    <div className="mt-1.5 max-w-4xl">
+      <p
+        className={`text-[14px] text-[#1E293B] whitespace-pre-wrap break-words ${
+          long && !open ? 'line-clamp-2' : open ? 'max-h-[30vh] overflow-y-auto' : ''
+        }`}
+      >
+        {text}
+      </p>
+      {long && (
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+          className="mt-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 text-[13px] font-semibold text-[#2563EB] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded"
+        >
+          {open ? 'Show less' : 'Show more'}
+        </button>
+      )}
     </div>
   )
 }
