@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 import type { MyGroupedTasks, Task } from '@/lib/types/tasks'
 import { canQuickComplete } from '@/lib/tasks/finish-rules'
+import { COMPLETED_UNDO_MESSAGE, completeForMe, undoCompleteForMe } from '@/lib/tasks/complete-for-me'
 import PhoneScreen from '../PhoneScreen'
 import { PhoneEmptyState } from '../PhoneEmptyState'
 import { TaskPhoneRow, TaskPhoneRowSkeleton, type RowPhase } from '../TaskPhoneRow'
@@ -128,21 +129,9 @@ export default function MyWorkScreen({ route }: { route: PhoneRoute }) {
     })
   }
 
-  /** Runs the actual complete call per completion_mode (plan §5.1, item 4). */
-  async function callComplete(task: Task): Promise<Task> {
-    if (task.completion_mode === 'all_must_complete') {
-      return tasksApi.completeAssignee(orgId, task.id, 'me')
-    }
-    return tasksApi.completeTask(orgId, task.id)
-  }
-
-  async function callUndo(task: Task): Promise<void> {
-    if (task.completion_mode === 'all_must_complete') {
-      await tasksApi.reopenAssigneePart(orgId, task.id, 'me')
-    } else {
-      await tasksApi.reopenTask(orgId, task.id)
-    }
-  }
+  /** Runs the actual complete call per completion_mode (plan §5.1, item 4) - shared with the detail screen. */
+  const callComplete = (task: Task) => completeForMe(orgId, task)
+  const callUndo = (task: Task) => undoCompleteForMe(orgId, task)
 
   /** The tap-to-complete flow (KIT-PENDING item 2): optimistic, animated, undoable. */
   function completeOptimistically(task: Task) {
@@ -170,7 +159,7 @@ export default function MyWorkScreen({ route }: { route: PhoneRoute }) {
     apiCall
       .then(() => {
         void refreshBadge()
-        showUndo('Task completed · Undo', async () => {
+        showUndo(COMPLETED_UNDO_MESSAGE, async () => {
           try {
             await callUndo(task)
             reinsertTask(entry)
