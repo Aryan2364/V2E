@@ -15,13 +15,11 @@ import MoreScreen from './screens/MoreScreen'
 import NotificationChoicesScreen from './screens/NotificationChoicesScreen'
 import MyWorkScreen from './screens/MyWorkScreen'
 import TaskDetailScreen from './screens/TaskDetailScreen'
+import MeetingsScreen from './screens/MeetingsScreen'
+import MeetingDetailScreen from './screens/MeetingDetailScreen'
+import MeetingCreateScreen from './screens/MeetingCreateScreen'
 import { UndoToastProvider } from './UndoToast'
-import {
-  ComingNextScreen,
-  ComputerOnlyScreen,
-  ModuleOffScreen,
-  RecordComingNextScreen,
-} from './screens/PlaceholderScreens'
+import { ComingNextScreen, ComputerOnlyScreen, ModuleOffScreen } from './screens/PlaceholderScreens'
 
 /*
  * THE PHONE SHELL - FRONTEND_RULES_PHONE.md 41.3 and 41.4.
@@ -87,12 +85,15 @@ function GuardedScreen({ route }: { route: PhoneRoute }) {
     case 'my-work':
       return <MyWorkScreen route={route} />
     case 'given':
-    case 'meetings':
       return <ComingNextScreen route={{ ...route, key: route.key }} />
+    case 'meetings':
+      return <MeetingsScreen route={route} />
     case 'task-record':
       return <TaskDetailScreen route={route} />
     case 'meeting-record':
-      return <RecordComingNextScreen route={route} />
+      return <MeetingDetailScreen route={route} />
+    case 'meeting-create':
+      return <MeetingCreateScreen route={route} />
     case 'notifications':
       return <NotificationsScreen title={route.title} />
     case 'more':
