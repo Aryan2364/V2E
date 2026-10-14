@@ -135,3 +135,63 @@ export async function disablePush(orgId: string): Promise<void> {
     await sub.unsubscribe().catch(() => null)
   }
 }
+
+/* ------------------------------------------------------------------
+   The phone's first-useful-moment offer (plan §9, kit §41.12 rule 4).
+   Replaces NotificationsOptInPrompt on phone, which fires on open.
+
+   Asked only the first time someone does something they'd want to hear
+   back about: giving a task, or sending a comment. A "Skip for now" on
+   the app's own sheet means it's offered again only from Notification
+   choices; the plan's cooldown (3 days, matching the sister product)
+   covers the moment-of-use offer only, not that screen's own button.
+   Stored per person in localStorage, read/written in try/catch: a
+   failure there just means "not declined, not offered" and is never
+   fatal to the screen that calls it.
+   ------------------------------------------------------------------ */
+
+const OFFER_COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000
+
+type PushOfferState = { declinedAt?: number }
+
+function offerKey(userId: string): string {
+  return `v2e:phone:push-offer:${encodeURIComponent(userId)}`
+}
+
+function readOfferState(userId: string): PushOfferState {
+  try {
+    const raw = window.localStorage.getItem(offerKey(userId))
+    return raw ? (JSON.parse(raw) as PushOfferState) : {}
+  } catch {
+    return {}
+  }
+}
+
+function writeOfferState(userId: string, state: PushOfferState): void {
+  try {
+    window.localStorage.setItem(offerKey(userId), JSON.stringify(state))
+  } catch {
+    /* private mode / full quota: the offer just isn't remembered */
+  }
+}
+
+/**
+ * True when the phone-notifications sheet should be shown right now, at a
+ * moment of use. Call this from the success path of giving a task or
+ * sending a comment — never on first open. Synchronous and side-effect
+ * free; the caller opens the sheet when it returns true.
+ */
+export function shouldOfferPushNow(userId: string | undefined): boolean {
+  if (typeof window === 'undefined' || !userId) return false
+  if (!pushSupported()) return false
+  if (typeof Notification === 'undefined' || Notification.permission !== 'default') return false
+  const state = readOfferState(userId)
+  if (state.declinedAt && Date.now() - state.declinedAt < OFFER_COOLDOWN_MS) return false
+  return true
+}
+
+/** Records a "Skip for now" on the app's own sheet, starting the cooldown. */
+export function declinePushOffer(userId: string | undefined): void {
+  if (!userId) return
+  writeOfferState(userId, { declinedAt: Date.now() })
+}

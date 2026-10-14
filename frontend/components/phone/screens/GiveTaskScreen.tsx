@@ -9,8 +9,10 @@ import { tasksApi } from '@/lib/api/tasks'
 import { useBack } from '@/lib/back'
 import type { EligibleAssigneeUser, TaskPriority } from '@/lib/types/tasks'
 import { PHONE_HOME, type PhoneRoute } from '@/lib/phone-routes'
+import { shouldOfferPushNow, declinePushOffer } from '@/lib/push'
 import PhoneScreen from '../PhoneScreen'
 import { PhoneSheet } from '../PhoneSheet'
+import { NotificationOfferSheet } from '../NotificationOfferSheet'
 import { PhoneButton, ROW, cx } from '../primitives'
 
 /*
@@ -88,6 +90,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   const [priorities, setPriorities] = React.useState<TaskPriority[]>([])
   const [assigneePicker, setAssigneePicker] = React.useState(false)
   const [saving, setSaving] = React.useState(false)
+  const [offerPush, setOfferPush] = React.useState(false)
 
   React.useEffect(() => {
     const d = loadDraft()
@@ -123,7 +126,14 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
       })
       clearDraft()
       addToast('Task given', 'success')
-      back()
+      // The first useful moment to ask (plan §9, kit §41.12 rule 4): giving a
+      // task is something you'd want to hear back about. Offered at most once
+      // until declined/granted/denied; the screen still navigates back either way.
+      if (shouldOfferPushNow(user?.id)) {
+        setOfferPush(true)
+      } else {
+        back()
+      }
     } catch {
       addToast('Could not give the task. Try again.', 'error')
     } finally {
@@ -241,6 +251,16 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         orgId={orgId}
         selected={draft.assignees}
         onChange={(assignees) => setDraft((d) => ({ ...d, assignees }))}
+      />
+
+      <NotificationOfferSheet
+        orgId={orgId}
+        open={offerPush}
+        onOpenChange={(open) => {
+          setOfferPush(open)
+          if (!open) back()
+        }}
+        onDeclined={() => declinePushOffer(user?.id)}
       />
     </PhoneScreen>
   )

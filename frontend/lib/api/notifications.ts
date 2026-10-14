@@ -46,6 +46,10 @@ export const notificationsApi = {
   markRead: async (orgId: string, id: string): Promise<{ ok: boolean }> =>
     unwrap(await apiClient.patch(`${base(orgId)}/${id}/read`)),
 
+  // Phone dot/swipe toggle (FRONTEND_RULES_PHONE.md §41.12 rule 6).
+  markUnread: async (orgId: string, id: string): Promise<{ ok: boolean }> =>
+    unwrap(await apiClient.patch(`${base(orgId)}/${id}/unread`)),
+
   markAllRead: async (orgId: string): Promise<{ ok: boolean }> =>
     unwrap(await apiClient.patch(`${base(orgId)}/read-all`)),
 

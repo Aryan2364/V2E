@@ -647,6 +647,8 @@ export class WorkLogsService {
         recipients: [recipientId],
         title: isReply ? 'Reply on your remark' : 'New remark on your log',
         body: `${actorName}: ${snippet}`,
+        // The lock screen names the event, never the remark text (§41.12 rule 3).
+        pushBody: isReply ? `${actorName} replied to your remark` : `${actorName} left a remark on your log`,
         link: `${LINK}/work-log/review`,
         entity: { type: dto.target_type, id: dto.target_id },
       });

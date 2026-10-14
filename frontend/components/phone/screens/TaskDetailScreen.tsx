@@ -15,11 +15,13 @@ import { canQuickComplete, unfinishedChecklistItems } from '@/lib/tasks/finish-r
 import { useTaskBadge } from '@/lib/task-badge'
 import { detectPlatform, isInstalledApp } from '@/lib/install'
 import { COMPLETED_UNDO_MESSAGE, completeForMe, undoCompleteForMe } from '@/lib/tasks/complete-for-me'
+import { shouldOfferPushNow, declinePushOffer } from '@/lib/push'
 import PhoneScreen from '../PhoneScreen'
 import { PhoneEmptyState } from '../PhoneEmptyState'
 import { PhoneButton, PhoneLinkButton, ROW, ROW_BLOCK, cx } from '../primitives'
 import { APP_BAR_BUTTON } from '../PhoneAppBar'
 import { PhoneSheet } from '../PhoneSheet'
+import { NotificationOfferSheet } from '../NotificationOfferSheet'
 import { FinishTaskSheet } from '../FinishTaskSheet'
 import { useUndoToast } from '../UndoToast'
 
@@ -63,6 +65,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   const [sheetOpen, setSheetOpen] = React.useState(false)
   const [detailsOpen, setDetailsOpen] = React.useState(false)
   const [panel, setPanel] = React.useState<'comments' | 'files' | null>(null)
+  const [offerPush, setOfferPush] = React.useState(false)
   const [comments, setComments] = React.useState<TaskComment[] | null>(null)
   const [commentCount, setCommentCount] = React.useState(COMMENTS_PAGE)
   // 'done' while the optimistic complete animation/collapse is running, so
@@ -404,6 +407,9 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
           onPosted={() => {
             setPanel(null)
             loadComments()
+            // Sending a comment is a reply you'd want to hear back about
+            // (plan §9, kit §41.12 rule 4) - offer once, at most.
+            if (shouldOfferPushNow(userId)) setOfferPush(true)
           }}
         />
       ) : null}
@@ -411,6 +417,13 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
       {panel === 'files' ? (
         <FilesProofOverlay orgId={orgId} task={task} onClose={() => setPanel(null)} onTaskUpdate={updateTask} />
       ) : null}
+
+      <NotificationOfferSheet
+        orgId={orgId}
+        open={offerPush}
+        onOpenChange={setOfferPush}
+        onDeclined={() => declinePushOffer(userId)}
+      />
     </PhoneScreen>
   )
 }

@@ -157,6 +157,11 @@ export class TicketsService {
       recipients: userIds,
       title: mapped.title,
       body: message,
+      // 'comment' carries the raw comment text in `message` — the lock-screen
+      // push must never show it (§41.12 rule 3; plan D12), so it falls back
+      // to the already-safe title-only template. Every other type's message
+      // is already a system-authored status line, safe as pushed text too.
+      pushBody: type === 'comment' ? mapped.title : undefined,
       link: ticketId ? `/dashboard/tasks/tickets/${ticketId}` : '/dashboard/tasks/tickets',
       entity: ticketId ? { type: 'ticket', id: ticketId } : undefined,
     })

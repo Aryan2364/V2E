@@ -20,6 +20,14 @@ export interface EmitParams {
   entity?: { type: string; id: string };
   /** Skip recipients who already have a notification for (event_type, entity). */
   dedupe?: boolean;
+  /**
+   * Safe text for the PHONE/WEB PUSH payload only, when `body` carries free
+   * text (a comment, a remark, a discussion message) that must never reach
+   * the lock screen (FRONTEND_RULES_PHONE.md §41.12 rule 3; plan §6.4/D12).
+   * Falls back to `body` when omitted, for events whose body is already a
+   * safe template (no user-authored text).
+   */
+  pushBody?: string;
 }
 
 @Injectable()
@@ -143,7 +151,12 @@ export class NotificationsService {
         }
         void this.badgeCountFor(p.orgId, row.user_id).then((badge_count) =>
           this.push
-            .sendToUser(p.orgId, row.user_id, { title: row.title, body: row.body, link: row.link, badge_count })
+            .sendToUser(p.orgId, row.user_id, {
+              title: row.title,
+              body: p.pushBody ?? row.body,
+              link: row.link,
+              badge_count,
+            })
             .catch((err) => this.logger.warn(`Push failed: ${err}`)),
         );
       }
@@ -166,7 +179,14 @@ export class NotificationsService {
     try {
       if (items.length === 0) return;
       const rows: any[] = [];
-      const deliver: Array<{ userId: string; orgId: string; title: string; body: string; link: string | null }> = [];
+      const deliver: Array<{
+        userId: string;
+        orgId: string;
+        title: string;
+        body: string;
+        pushBody?: string;
+        link: string | null;
+      }> = [];
 
       // Honour `dedupe` the same way emit() does — in ONE lookup for the whole
       // batch, so a nightly sweep of hundreds of items stays a single query.
@@ -200,7 +220,14 @@ export class NotificationsService {
             entity_type: p.entity?.type ?? null,
             entity_id: p.entity?.id ?? null,
           });
-          deliver.push({ userId, orgId: p.orgId, title: p.title, body: p.body, link: p.link ?? null });
+          deliver.push({
+            userId,
+            orgId: p.orgId,
+            title: p.title,
+            body: p.body,
+            pushBody: p.pushBody,
+            link: p.link ?? null,
+          });
         }
       }
       if (rows.length === 0) return;
@@ -221,7 +248,12 @@ export class NotificationsService {
         }
         void this.badgeCountFor(d.orgId, d.userId).then((badge_count) =>
           this.push
-            .sendToUser(d.orgId, d.userId, { title: d.title, body: d.body, link: d.link, badge_count })
+            .sendToUser(d.orgId, d.userId, {
+              title: d.title,
+              body: d.pushBody ?? d.body,
+              link: d.link,
+              badge_count,
+            })
             .catch((err) => this.logger.warn(`Push failed: ${err}`)),
         );
       }
@@ -313,6 +345,14 @@ export class NotificationsService {
     await this.prisma.notification.updateMany({
       where: { id, organization_id: orgId, user_id: userId },
       data: { is_read: true },
+    });
+    return { ok: true };
+  }
+
+  async markUnread(orgId: string, userId: string, id: string) {
+    await this.prisma.notification.updateMany({
+      where: { id, organization_id: orgId, user_id: userId },
+      data: { is_read: false },
     });
     return { ok: true };
   }
