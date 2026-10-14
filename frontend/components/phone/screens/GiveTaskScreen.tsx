@@ -9,6 +9,8 @@ import { tasksApi } from '@/lib/api/tasks'
 import { useBack } from '@/lib/back'
 import type { EligibleAssigneeUser, TaskPriority } from '@/lib/types/tasks'
 import { PHONE_HOME, type PhoneRoute } from '@/lib/phone-routes'
+import { useDraft } from '@/lib/drafts'
+import { DraftBanner } from '../DraftBanner'
 import PhoneScreen from '../PhoneScreen'
 import { PhoneSheet } from '../PhoneSheet'
 import { PhoneButton, ROW, cx } from '../primitives'
@@ -21,10 +23,11 @@ import { PhoneButton, ROW, cx } from '../primitives'
  *     tap away (an expandable field, not a separate screen).
  *   - Validated against the real CreateTaskDto: title required, <= 50
  *     chars; description <= 2000.
- *   - Draft: saved to localStorage as the person types (kit §41.7 rules
- *     12-15), restored on reopen, cleared on a successful save or an
- *     explicit discard. Browser storage only, per-device - never a source
- *     of truth the server or another device reads.
+ *   - Draft: lib/drafts.ts (kit §41.7 rules 12-15), form id "task-give",
+ *     record "new". Offered back with a banner ("You have an unsaved
+ *     draft from ...") - never restored silently. Cleared on save and on
+ *     Discard draft; also cleared for everyone on sign-out (lib/auth's
+ *     logout calls clearDrafts).
  *   - Repeat (Daily/Weekly/Monthly): the plan does not call this feasible
  *     for slice 4 (recurring templates are their own, heavier object with
  *     schedule entries) - DEFERRED, not built here.
@@ -34,11 +37,10 @@ import { PhoneButton, ROW, cx } from '../primitives'
  *     screen has to enforce.
  */
 
-const DRAFT_KEY = 'v2e:phone:give-task:draft'
 const TITLE_MAX = 50
 const DESCRIPTION_MAX = 2000
 
-type Draft = {
+type GiveTaskValues = {
   title: string
   description: string
   deadline: string
@@ -46,34 +48,7 @@ type Draft = {
   assignees: { user_id: string; name: string }[]
 }
 
-const EMPTY_DRAFT: Draft = { title: '', description: '', deadline: '', priorityId: '', assignees: [] }
-
-function loadDraft(): Draft {
-  try {
-    const raw = window.localStorage.getItem(DRAFT_KEY)
-    if (!raw) return EMPTY_DRAFT
-    const parsed = JSON.parse(raw)
-    return { ...EMPTY_DRAFT, ...parsed }
-  } catch {
-    return EMPTY_DRAFT
-  }
-}
-
-function saveDraft(draft: Draft) {
-  try {
-    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
-  } catch {
-    /* private mode / storage full: the form still works, it just won't survive a reload */
-  }
-}
-
-function clearDraft() {
-  try {
-    window.localStorage.removeItem(DRAFT_KEY)
-  } catch {
-    /* nothing to clean up */
-  }
-}
+const EMPTY_DRAFT: GiveTaskValues = { title: '', description: '', deadline: '', priorityId: '', assignees: [] }
 
 export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   const { user } = useAuth()
@@ -82,24 +57,19 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   const back = useBack(route.parent ?? PHONE_HOME)
   const orgId = user?.organizationId ?? ''
 
-  const [draft, setDraft] = React.useState<Draft>(EMPTY_DRAFT)
-  const [hydrated, setHydrated] = React.useState(false)
+  const [draftValues, setDraft] = React.useState<GiveTaskValues>(EMPTY_DRAFT)
   const [showDescription, setShowDescription] = React.useState(false)
   const [priorities, setPriorities] = React.useState<TaskPriority[]>([])
   const [assigneePicker, setAssigneePicker] = React.useState(false)
   const [saving, setSaving] = React.useState(false)
 
-  React.useEffect(() => {
-    const d = loadDraft()
-    setDraft(d)
-    setShowDescription(!!d.description)
-    setHydrated(true)
-  }, [])
-
-  React.useEffect(() => {
-    if (!hydrated) return
-    saveDraft(draft)
-  }, [draft, hydrated])
+  const draft = draftValues
+  const fileDraft = useDraft<GiveTaskValues>({
+    person: user?.id,
+    form: 'task-give',
+    record: 'new',
+    values: draftValues,
+  })
 
   React.useEffect(() => {
     if (!orgId) return
@@ -121,7 +91,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         deadline: draft.deadline ? new Date(draft.deadline).toISOString() : undefined,
         assignee_user_ids: draft.assignees.map((a) => a.user_id),
       })
-      clearDraft()
+      fileDraft.clear()
       addToast('Task given', 'success')
       back()
     } catch {
@@ -132,7 +102,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   }
 
   function onDiscard() {
-    clearDraft()
+    fileDraft.clear()
     setDraft(EMPTY_DRAFT)
     back()
   }
@@ -146,6 +116,14 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           void onSave()
         }}
       >
+        <DraftBanner
+          draft={fileDraft}
+          onUse={(kept) => {
+            setDraft((d) => ({ ...d, ...kept }))
+            if (kept.description) setShowDescription(true)
+          }}
+        />
+
         <Field label="Title" error={titleError}>
           <input
             type="text"

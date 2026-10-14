@@ -10,6 +10,8 @@ import { getEmployees } from '@/lib/api/employees'
 import type { PersonOption } from '@/components/meetings/MeetingAttendeeSelector'
 import type { MeetingType } from '@/lib/types/meetings'
 import { MEETINGS_HREF, type PhoneRoute } from '@/lib/phone-routes'
+import { useDraft } from '@/lib/drafts'
+import { DraftBanner } from '../DraftBanner'
 import PhoneScreen from '../PhoneScreen'
 import { PhoneButton, cx } from '../primitives'
 import { PhoneDateField, PhoneTimeField } from '../PhoneDateTimeField'
@@ -20,11 +22,22 @@ import { AttendeePickerSheet } from '../AttendeePickerSheet'
  * CreateMeetingDto. One column, Save fixed at the bottom (§41.7 rule 3).
  * "Log a past meeting" and rhythms stay computer-only (owner scope, D11).
  *
- * KNOWN GAP (see handback report): no drafts helper exists yet in this
- * codebase (§41.7 rules 12-15) — unsaved input is not recovered after the
- * tab is closed. A phone-only screen with no existing draft infrastructure
- * to port, so this is flagged rather than built from scratch here.
+ * Draft: lib/drafts.ts (kit §41.7 rules 12-15), form id "meeting-create",
+ * record "new". Offered back with a banner, never restored silently;
+ * cleared on a successful save and on sign-out (lib/auth's logout calls
+ * clearDrafts).
  */
+
+type MeetingCreateValues = {
+  title: string
+  type: MeetingType
+  date: string
+  startTime: string
+  endTime: string
+  onlineLink: string
+  location: string
+  agenda: string
+}
 export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
   const router = useRouter()
   const { user } = useAuth()
@@ -48,6 +61,37 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
 
   const [saving, setSaving] = React.useState(false)
   const [errors, setErrors] = React.useState<Record<string, string>>({})
+
+  const draftValues: MeetingCreateValues = {
+    title,
+    type,
+    date,
+    startTime,
+    endTime,
+    onlineLink,
+    location,
+    agenda,
+  }
+  const draft = useDraft<MeetingCreateValues>({
+    person: user?.id,
+    form: 'meeting-create',
+    record: 'new',
+    values: draftValues,
+  })
+
+  function restoreDraft(kept: Partial<MeetingCreateValues>) {
+    if (kept.title !== undefined) setTitle(kept.title)
+    if (kept.type !== undefined) setType(kept.type)
+    if (kept.date !== undefined) setDate(kept.date)
+    if (kept.startTime !== undefined) setStartTime(kept.startTime)
+    if (kept.endTime !== undefined) setEndTime(kept.endTime)
+    if (kept.onlineLink !== undefined) setOnlineLink(kept.onlineLink)
+    if (kept.location !== undefined) setLocation(kept.location)
+    if (kept.agenda !== undefined) {
+      setAgenda(kept.agenda)
+      if (kept.agenda) setAgendaOpen(true)
+    }
+  }
 
   React.useEffect(() => {
     if (!orgId) return
@@ -95,6 +139,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
         optional_user_ids: optionalIds,
         agenda: agenda.trim() || undefined,
       })
+      draft.clear()
       addToast('Meeting created', 'success')
       router.replace(`/dashboard/governance/meetings/${meeting.id}`)
     } catch {
@@ -109,6 +154,8 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
   return (
     <PhoneScreen title={route.title} parent={route.parent ?? MEETINGS_HREF}>
       <div className="flex flex-col gap-[20px] pb-[96px]">
+        <DraftBanner draft={draft} onUse={restoreDraft} />
+
         <Field label="Title" required error={errors.title}>
           <input
             type="text"

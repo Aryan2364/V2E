@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { login as apiLogin, logout as apiLogout, getMe, switchOrg as apiSwitchOrg } from '../api/auth';
 import { refreshAccessToken } from '../api/refresh';
 import type { AuthUser, OrgChoice } from '../types';
+import { clearDrafts } from '../drafts';
 
 // Decode a JWT's `exp` claim (seconds → ms). Returns null if unreadable.
 function getTokenExpiryMs(token: string): number | null {
@@ -188,11 +189,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    // Section 41.7 rule 15: every phone draft for this person goes on sign-out,
+    // captured before `user` is cleared below.
+    const signedOutUserId = user?.id;
     try {
       await apiLogout();
     } catch {
       // Best-effort — proceed with local cleanup regardless
     } finally {
+      if (signedOutUserId) clearDrafts(signedOutUserId);
       if (typeof window !== 'undefined') {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
@@ -202,7 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setPendingOrgSelection(null);
       router.push('/login');
     }
-  }, [router]);
+  }, [router, user]);
 
   const value: AuthContextValue = {
     user,
