@@ -94,6 +94,14 @@ export class NotificationsController {
     return this.service.markRead(orgId, user.id, id);
   }
 
+  @Patch(':id/unread')
+  @ApiOperation({ summary: 'Mark one notification unread (phone swipe/dot toggle)' })
+  markUnread(@Param('orgId') orgId: string, @CurrentUser() user: AuthUser, @Param('id') id: string) {
+    // Recipient-scoped by construction (WHERE user_id = req.user.id), same as
+    // markRead — no ScopeService.assertCanActOn needed, per AUTHORIZATION.md.
+    return this.service.markUnread(orgId, user.id, id);
+  }
+
   // ─── Master config ───────────────────────────────────────────────────────────
 
   @Get('master')

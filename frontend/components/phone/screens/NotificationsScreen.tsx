@@ -53,6 +53,86 @@ function formatWhen(iso: string): string {
 
 type LoadState = 'loading' | 'ready' | 'failed'
 
+/** Starting this close to a side edge is ignored (shared with the row swipe). */
+const PULL_SIDE_EDGE_PX = 24
+/** The pull distance that triggers a refresh on release (kit §41.5 rule 16). */
+const PULL_THRESHOLD_PX = 72
+
+/**
+ * Pull to refresh at the top of the list - kit §41.5 rule 16. Reads touches
+ * directly (passive listeners: never holds up the scroll). Ignored: a pull
+ * starting within 24px of a side edge, one that starts with the list not at
+ * its top, one that turns sideways first, a second finger, and a pull while
+ * a refresh is still running.
+ */
+function usePullToRefresh(onRefresh: () => Promise<void>, enabled: boolean) {
+  const ref = React.useRef<HTMLDivElement | null>(null)
+  const latest = React.useRef(onRefresh)
+  latest.current = onRefresh
+  const refreshing = React.useRef(false)
+
+  React.useEffect(() => {
+    const root = ref.current
+    if (!root || !enabled) return
+
+    let pull: { x: number; y: number; decided: boolean; armed: boolean } | null = null
+
+    const onStart = (e: TouchEvent) => {
+      pull = null
+      if (refreshing.current || e.touches.length !== 1 || window.scrollY > 0) return
+      const t = e.touches[0]
+      if (t.clientX < PULL_SIDE_EDGE_PX || t.clientX > window.innerWidth - PULL_SIDE_EDGE_PX) return
+      pull = { x: t.clientX, y: t.clientY, decided: false, armed: false }
+    }
+
+    const onMove = (e: TouchEvent) => {
+      if (!pull || e.touches.length !== 1) {
+        pull = null
+        return
+      }
+      const t = e.touches[0]
+      const dx = t.clientX - pull.x
+      const dy = t.clientY - pull.y
+      if (!pull.decided) {
+        if (Math.hypot(dx, dy) < 10) return
+        if (dy <= 0 || Math.abs(dx) > Math.abs(dy)) {
+          pull = null
+          return
+        }
+        pull.decided = true
+      }
+      pull.armed = dy >= PULL_THRESHOLD_PX
+    }
+
+    const onEnd = () => {
+      const armed = pull?.armed === true
+      pull = null
+      if (!armed || refreshing.current || window.scrollY > 0) return
+      refreshing.current = true
+      latest.current().finally(() => {
+        refreshing.current = false
+      })
+    }
+
+    const cancel = () => {
+      pull = null
+    }
+
+    root.addEventListener('touchstart', onStart, { passive: true })
+    root.addEventListener('touchmove', onMove, { passive: true })
+    root.addEventListener('touchend', onEnd, { passive: true })
+    root.addEventListener('touchcancel', cancel, { passive: true })
+    return () => {
+      root.removeEventListener('touchstart', onStart)
+      root.removeEventListener('touchmove', onMove)
+      root.removeEventListener('touchend', onEnd)
+      root.removeEventListener('touchcancel', cancel)
+    }
+  }, [enabled])
+
+  return ref
+}
+
 export default function NotificationsScreen({ title }: { title: string }) {
   const router = useRouter()
   const { user } = useAuth()
@@ -125,9 +205,32 @@ export default function NotificationsScreen({ title }: { title: string }) {
       .catch(() => null)
   }
 
+  // The dot and the swipe both call this (41.12 rule 6): toggles, so no Undo
+  // is needed - doing it again reverses it.
+  const toggleRead = (n: AppNotification) => {
+    const nextRead = !n.is_read
+    setItems((prev) => prev.map((i) => (i.id === n.id ? { ...i, is_read: nextRead } : i)))
+    const call = nextRead ? notificationsApi.markRead(orgId, n.id) : notificationsApi.markUnread(orgId, n.id)
+    call.then(refreshCount).catch(() => {
+      // Roll back on failure so the dot never lies about the server's state.
+      setItems((prev) => prev.map((i) => (i.id === n.id ? { ...i, is_read: n.is_read } : i)))
+    })
+  }
+
   const open = (n: AppNotification) => {
     markOneRead(n)
     if (n.link) router.push(n.link)
+  }
+
+  const [refreshing, setRefreshing] = React.useState(false)
+  const pullToRefresh = async () => {
+    setRefreshing(true)
+    try {
+      await load()
+      await refreshCount()
+    } finally {
+      setRefreshing(false)
+    }
   }
 
   const onMarkAll = async () => {
@@ -137,6 +240,7 @@ export default function NotificationsScreen({ title }: { title: string }) {
   }
 
   const anyUnread = unreadCount > 0 || items.some((n) => !n.is_read)
+  const pullRef = usePullToRefresh(pullToRefresh, state === 'ready')
 
   return (
     <PhoneScreen
@@ -152,6 +256,10 @@ export default function NotificationsScreen({ title }: { title: string }) {
         </button>
       }
     >
+      <div ref={pullRef}>
+      {refreshing ? (
+        <p className="mb-[8px] text-center text-phone-label text-phone-text-secondary">Refreshing…</p>
+      ) : null}
       {state === 'loading' ? (
         <SkeletonRows />
       ) : state === 'failed' ? (
@@ -177,7 +285,7 @@ export default function NotificationsScreen({ title }: { title: string }) {
           </p>
           <ul className={ROW_BLOCK}>
             {items.map((n) => (
-              <NotificationRow key={n.id} n={n} onOpen={open} onMarkRead={markOneRead} />
+              <NotificationRow key={n.id} n={n} onOpen={open} onToggleRead={toggleRead} />
             ))}
           </ul>
           <div ref={endRef} aria-hidden />
@@ -189,6 +297,7 @@ export default function NotificationsScreen({ title }: { title: string }) {
           ) : null}
         </>
       )}
+      </div>
 
       <PhoneSheet open={menuOpen} onOpenChange={setMenuOpen} title="Notifications">
         <ul className="-mx-[16px]">
@@ -211,50 +320,109 @@ export default function NotificationsScreen({ title }: { title: string }) {
   )
 }
 
+/** A swipe that moves the row by this many px toggles it (41.12 rule 6). */
+const SWIPE_COMMIT_PX = 56
+/** A pull/swipe starting this close to a side edge is ignored (41.4 rule 10). */
+const SIDE_EDGE_PX = 24
+
 function NotificationRow({
   n,
   onOpen,
-  onMarkRead,
+  onToggleRead,
 }: {
   n: AppNotification
   onOpen: (n: AppNotification) => void
-  onMarkRead: (n: AppNotification) => void
+  onToggleRead: (n: AppNotification) => void
 }) {
+  const [dragX, setDragX] = React.useState(0)
+  const dragRef = React.useRef<{ x: number; y: number; active: boolean; decided: boolean } | null>(null)
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return
+    const t = e.touches[0]
+    if (t.clientX < SIDE_EDGE_PX || t.clientX > window.innerWidth - SIDE_EDGE_PX) {
+      dragRef.current = null
+      return
+    }
+    dragRef.current = { x: t.clientX, y: t.clientY, active: false, decided: false }
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    const d = dragRef.current
+    if (!d || e.touches.length !== 1) return
+    const t = e.touches[0]
+    const dx = t.clientX - d.x
+    const dy = t.clientY - d.y
+    if (!d.decided) {
+      if (Math.hypot(dx, dy) < 10) return
+      // More vertical than horizontal: this is a scroll/list gesture, not the swipe.
+      if (Math.abs(dy) > Math.abs(dx)) {
+        dragRef.current = null
+        return
+      }
+      d.decided = true
+      d.active = true
+    }
+    setDragX(Math.max(-96, Math.min(96, dx)))
+  }
+
+  const onTouchEnd = () => {
+    const d = dragRef.current
+    dragRef.current = null
+    if (d?.active && Math.abs(dragX) >= SWIPE_COMMIT_PX) onToggleRead(n)
+    setDragX(0)
+  }
+
   return (
-    <li className="relative flex min-h-[64px] bg-phone-surface">
-      {/* The dot: 44px target on an unread row (41.12 rule 6, 41.9 rule 9). */}
-      {n.is_read ? (
-        <span aria-hidden className="flex w-[44px] shrink-0 justify-center pt-[19px]">
-          <span className="size-[10px] rounded-full border-2 border-phone-border" />
-        </span>
-      ) : (
+    <li
+      className="relative flex min-h-[64px] overflow-hidden bg-phone-surface"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      onTouchCancel={() => {
+        dragRef.current = null
+        setDragX(0)
+      }}
+    >
+      <div
+        className="flex min-w-0 flex-1"
+        style={{
+          transform: `translateX(${dragX}px)`,
+          transition: dragRef.current?.active ? 'none' : 'transform 220ms ease',
+        }}
+      >
+        {/* The dot: 44px target, toggles read/unread on tap too (41.12 rule 6, 41.9 rule 9). */}
         <button
           type="button"
-          aria-label="Mark as read"
-          onClick={() => onMarkRead(n)}
+          aria-label={n.is_read ? 'Mark as unread' : 'Mark as read'}
+          onClick={() => onToggleRead(n)}
           className="flex w-[44px] shrink-0 justify-center pt-[19px] outline-none active:bg-phone-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
         >
-          <span className="size-[10px] rounded-full bg-phone-primary" />
-        </button>
-      )}
-      <button
-        type="button"
-        onClick={() => onOpen(n)}
-        className="min-w-0 flex-1 py-[12px] pr-[16px] text-left outline-none transition-[background-color] duration-[var(--duration-fast)] active:bg-phone-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
-      >
-        <span
-          className={cx(
-            'line-clamp-2 text-phone-body text-phone-text-primary',
-            n.is_read ? 'font-normal' : 'font-semibold',
+          {n.is_read ? (
+            <span className="size-[10px] rounded-full border-2 border-phone-border" />
+          ) : (
+            <span className="size-[10px] rounded-full bg-phone-primary" />
           )}
+        </button>
+        <button
+          type="button"
+          onClick={() => onOpen(n)}
+          className="min-w-0 flex-1 py-[12px] pr-[16px] text-left outline-none transition-[background-color] duration-[var(--duration-fast)] active:bg-phone-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
         >
-          {n.title}
-        </span>
-        {n.body ? (
-          <span className="mt-[2px] line-clamp-2 text-phone-label text-phone-text-secondary">{n.body}</span>
-        ) : null}
-        <span className="mt-[4px] block text-phone-meta text-phone-text-muted">{formatWhen(n.created_at)}</span>
-      </button>
+          <span
+            className={cx(
+              'line-clamp-2 text-phone-body text-phone-text-primary',
+              n.is_read ? 'font-normal' : 'font-semibold',
+            )}
+          >
+            {n.title}
+          </span>
+          {n.body ? (
+            <span className="mt-[2px] line-clamp-2 text-phone-label text-phone-text-secondary">{n.body}</span>
+          ) : null}
+          <span className="mt-[4px] block text-phone-meta text-phone-text-muted">{formatWhen(n.created_at)}</span>
+        </button>
+      </div>
     </li>
   )
 }

@@ -4096,6 +4096,9 @@ export class TasksService {
       ).filter((uid) => !!uid && uid !== userId),
       title: `${user?.name ?? 'Someone'} commented`,
       body: `${payload}\non “${task.title}”`,
+      // Lock-screen text names the event + task title only, never the comment
+      // text (FRONTEND_RULES_PHONE.md §41.12 rule 3; plan D12/§6.4).
+      pushBody: `${user?.name ?? 'Someone'} commented on “${task.title}”`,
       link: `/dashboard/tasks/${taskId}`,
       entity: { type: 'task', id: taskId },
     });
