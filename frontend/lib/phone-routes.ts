@@ -33,6 +33,7 @@ export type PhoneScreenKey =
   | 'more'
   | 'notification-choices'
   | 'task-record'
+  | 'give-task'
   | 'meeting-record'
 
 export type PhoneRoute = {
@@ -86,6 +87,7 @@ const MEETINGS_HREF = '/dashboard/governance/meetings'
 const EXACT: Record<string, PhoneRoute> = {
   [PHONE_HOME]: { key: 'my-work', title: 'My work', entitlement: 'tasks' },
   '/dashboard/tasks/assigned': { key: 'given', title: 'Given', entitlement: 'tasks' },
+  '/dashboard/tasks/new': { key: 'give-task', title: 'Give task', parent: PHONE_HOME, entitlement: 'tasks' },
   [MEETINGS_HREF]: { key: 'meetings', title: 'Meetings', entitlement: 'governance.meetings' },
   '/dashboard/notifications': { key: 'notifications', title: 'Notifications' },
   [MORE_HREF]: { key: 'more', title: 'More' },

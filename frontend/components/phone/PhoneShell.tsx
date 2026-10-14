@@ -15,6 +15,7 @@ import MoreScreen from './screens/MoreScreen'
 import NotificationChoicesScreen from './screens/NotificationChoicesScreen'
 import MyWorkScreen from './screens/MyWorkScreen'
 import TaskDetailScreen from './screens/TaskDetailScreen'
+import GiveTaskScreen from './screens/GiveTaskScreen'
 import { UndoToastProvider } from './UndoToast'
 import {
   ComingNextScreen,
@@ -91,6 +92,8 @@ function GuardedScreen({ route }: { route: PhoneRoute }) {
       return <ComingNextScreen route={{ ...route, key: route.key }} />
     case 'task-record':
       return <TaskDetailScreen route={route} />
+    case 'give-task':
+      return <GiveTaskScreen route={route} />
     case 'meeting-record':
       return <RecordComingNextScreen route={route} />
     case 'notifications':

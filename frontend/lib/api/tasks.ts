@@ -579,10 +579,15 @@ export const tasksApi = {
     return unwrap<TaskAttachment>(res)
   },
 
+  /** Resolves a short-lived signed URL without opening it (phone in-place image viewer). */
+  getAttachmentDownloadUrl: async (orgId: string, taskId: string, attachmentId: string): Promise<{ url: string; file_name: string }> => {
+    const res = await apiClient.get(`${base(orgId)}/${taskId}/attachments/${attachmentId}/download`)
+    return unwrap<{ url: string; file_name: string }>(res)
+  },
+
   /** Resolve a short-lived signed URL then trigger the browser download. */
   downloadAttachment: async (orgId: string, taskId: string, attachmentId: string): Promise<void> => {
-    const res = await apiClient.get(`${base(orgId)}/${taskId}/attachments/${attachmentId}/download`)
-    const { url } = unwrap<{ url: string; file_name: string }>(res)
+    const { url } = await tasksApi.getAttachmentDownloadUrl(orgId, taskId, attachmentId)
     if (typeof window !== 'undefined') window.open(url, '_blank', 'noopener')
   },
 
