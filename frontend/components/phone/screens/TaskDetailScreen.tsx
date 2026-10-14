@@ -3,7 +3,7 @@
 import React from 'react'
 import { createPortal } from 'react-dom'
 import { useParams } from 'next/navigation'
-import { ChevronRight, MoreVertical, Paperclip, Send, X } from 'lucide-react'
+import { Camera, ChevronRight, FileUp, MoreVertical, Paperclip, RotateCcw, Send, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
@@ -11,8 +11,10 @@ import type { Task, TaskAttachment, TaskComment, TaskChecklistItem } from '@/lib
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import { PHONE_HOME, type PhoneRoute } from '@/lib/phone-routes'
 import { shrinkImageForUpload } from '@/lib/image-resize'
-import { canQuickComplete, finishBlockedReason, unfinishedChecklistItems } from '@/lib/tasks/finish-rules'
+import { canQuickComplete, unfinishedChecklistItems } from '@/lib/tasks/finish-rules'
 import { useTaskBadge } from '@/lib/task-badge'
+import { detectPlatform, isInstalledApp } from '@/lib/install'
+import { COMPLETED_UNDO_MESSAGE, completeForMe, undoCompleteForMe } from '@/lib/tasks/complete-for-me'
 import PhoneScreen from '../PhoneScreen'
 import { PhoneEmptyState } from '../PhoneEmptyState'
 import { PhoneButton, PhoneLinkButton, ROW, ROW_BLOCK, cx } from '../primitives'
@@ -141,27 +143,21 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
     setTask(updated)
   }
 
-  async function callComplete(current: Task): Promise<Task> {
-    if (current.completion_mode === 'all_must_complete') return tasksApi.completeAssignee(orgId, current.id, 'me')
-    return tasksApi.completeTask(orgId, current.id)
-  }
-  async function callUndo(current: Task): Promise<void> {
-    if (current.completion_mode === 'all_must_complete') await tasksApi.reopenAssigneePart(orgId, current.id, 'me')
-    else await tasksApi.reopenTask(orgId, current.id)
-  }
+  // The same completion + undo calls My work uses (lib/tasks/complete-for-me.ts).
+  const callComplete = (current: Task) => completeForMe(orgId, current)
+  const callUndo = (current: Task) => undoCompleteForMe(orgId, current)
 
   function completeOptimistically() {
     if (!task) return
     const previous = task
     setCompleting(true)
     const apiCall = callComplete(previous)
-    window.setTimeout(() => setCompleting(false), 300)
 
     apiCall
       .then((updated) => {
         setTask(updated)
         void refreshBadge()
-        showUndo('Task completed · Undo', async () => {
+        showUndo(COMPLETED_UNDO_MESSAGE, async () => {
           try {
             await callUndo(previous)
             load()
@@ -453,16 +449,17 @@ function ActionBar({ children }: { children: React.ReactNode }) {
 function FullScreenOverlay({ title, onClose, footer, children }: { title: string; onClose: () => void; footer?: React.ReactNode; children: React.ReactNode }) {
   const [mounted, setMounted] = React.useState(false)
   React.useEffect(() => setMounted(true), [])
+  const onCloseRef = React.useRef(onClose)
+  onCloseRef.current = onClose
 
   // Android/back-gesture: one history entry while open, same pattern as PhoneSheet.
   React.useEffect(() => {
     window.history.pushState({ ...(window.history.state ?? {}), kitLayer: true }, '', window.location.href)
-    const onPop = () => onClose()
+    const onPop = () => onCloseRef.current()
     window.addEventListener('popstate', onPop)
     return () => {
       window.removeEventListener('popstate', onPop)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function close() {
@@ -472,10 +469,14 @@ function FullScreenOverlay({ title, onClose, footer, children }: { title: string
 
   if (!mounted) return null
   return createPortal(
-    <div className="fixed inset-0 z-[75] flex flex-col bg-phone-surface-sunken">
+    // The overlay's bottom edge follows --keyboard-inset (lib/keyboard.ts, kit
+    // 41.13 rule 6), so a footer - the comment composer - sits directly above
+    // the on-screen keyboard on iPhone. Android resizes the layout viewport
+    // itself and the inset stays ~0.
+    <div className="fixed inset-x-0 top-0 bottom-[var(--keyboard-inset)] z-[75] flex flex-col bg-phone-surface-sunken">
       <header
         className={cx(
-          'sticky top-0 z-10 flex h-[var(--h-topbar)] shrink-0 items-center gap-[8px] bg-phone-primary pl-[4px] pr-[16px] text-phone-on-brand',
+          'sticky top-0 z-10 flex h-[var(--h-topbar)] shrink-0 items-center gap-[8px] bg-phone-primary text-phone-on-brand',
           'pt-[var(--safe-top)] pl-[max(4px,var(--safe-left))] pr-[max(16px,var(--safe-right))]',
         )}
       >
@@ -484,91 +485,259 @@ function FullScreenOverlay({ title, onClose, footer, children }: { title: string
         </button>
         <h2 className="min-w-0 flex-1 truncate text-phone-bar-title font-medium">{title}</h2>
       </header>
-      <div className="min-h-0 flex-1 overflow-y-auto px-[16px] pb-[16px] pt-[16px]">{children}</div>
-      {footer}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-[16px] pb-[16px] pt-[16px]">{children}</div>
+      {footer ? <div className="shrink-0">{footer}</div> : null}
     </div>,
     document.body,
   )
 }
 
-/** "Add comment" full screen - kit §41.6 rule 5, §41.7. */
+/** One file being uploaded: its own row, progress and Retry (kit §41.16). */
+type UploadItem = {
+  id: string
+  file: File
+  progress: number
+  status: 'queued' | 'uploading' | 'done' | 'failed'
+}
+
+function newUpload(file: File): UploadItem {
+  return { id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, file, progress: 0, status: 'queued' }
+}
+
+function UploadRows({ items, onRetry, onRemove }: { items: UploadItem[]; onRetry: (id: string) => void; onRemove?: (id: string) => void }) {
+  if (items.length === 0) return null
+  return (
+    <ul className="flex flex-col gap-[8px]">
+      {items.map((u) => (
+        <li key={u.id} className="flex min-h-[44px] items-center gap-[8px] rounded-[8px] border border-phone-border-light bg-phone-surface px-[12px] py-[6px]">
+          <Paperclip aria-hidden className="size-[16px] shrink-0 text-phone-text-secondary" />
+          <span className="min-w-0 flex-1 truncate text-phone-label text-phone-text-primary">{u.file.name}</span>
+          {u.status === 'uploading' ? (
+            <span className="shrink-0 text-phone-meta text-phone-text-secondary">{u.progress}%</span>
+          ) : u.status === 'done' ? (
+            <span className="shrink-0 text-phone-label font-medium text-phone-success">Done</span>
+          ) : u.status === 'failed' ? (
+            <button
+              type="button"
+              onClick={() => onRetry(u.id)}
+              className="inline-flex min-h-[36px] shrink-0 items-center gap-[4px] rounded-[6px] px-[8px] text-phone-label font-semibold text-phone-danger active:bg-phone-danger-bg"
+            >
+              <RotateCcw aria-hidden className="size-[14px]" />
+              Retry
+            </button>
+          ) : onRemove ? (
+            <button type="button" aria-label={`Remove ${u.file.name}`} onClick={() => onRemove(u.id)} className="inline-flex size-[36px] shrink-0 items-center justify-center rounded-full active:bg-phone-surface-control">
+              <X aria-hidden className="size-[16px] text-phone-text-secondary" />
+            </button>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+const COMMENT_MAX = 1000 // CreateCommentDto body @MaxLength(1000)
+const COMPOSER_MAX_LINES = 5
+
+/**
+ * "Add comment" full screen - kit §41.6 rule 5, §41.7. The message box and
+ * Send sit in a bar pinned to the bottom, above the keyboard; the box grows
+ * with its text up to 5 lines, then scrolls. Enter is a newline; only Send
+ * sends. Once the comment exists it is never created again: a failed
+ * attachment gets its own Retry that uploads to that same comment.
+ */
 function CommentComposeOverlay({ orgId, taskId, onClose, onPosted }: { orgId: string; taskId: string; onClose: () => void; onPosted: () => void }) {
   const { addToast } = useToast()
   const [body, setBody] = React.useState('')
-  const [files, setFiles] = React.useState<File[]>([])
+  const [uploads, setUploads] = React.useState<UploadItem[]>([])
   const [sending, setSending] = React.useState(false)
+  // Set once addComment has succeeded - from then on only attachments are retried.
+  const [commentId, setCommentId] = React.useState<string | null>(null)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const textareaRef = React.useRef<HTMLTextAreaElement>(null)
 
-  async function send() {
-    if (!body.trim() || sending) return
-    setSending(true)
+  // Grow with the content up to 5 lines, then scroll.
+  React.useLayoutEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+    const cs = window.getComputedStyle(el)
+    const lineHeight = parseFloat(cs.lineHeight) || 22
+    const chrome =
+      parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth)
+    const max = lineHeight * COMPOSER_MAX_LINES + chrome
+    el.style.height = 'auto'
+    const wanted = el.scrollHeight + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth)
+    el.style.height = `${Math.min(wanted, max)}px`
+    el.style.overflowY = wanted > max ? 'auto' : 'hidden'
+  }, [body])
+
+  const setUpload = (id: string, patch: Partial<UploadItem>) =>
+    setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)))
+
+  /** Uploads one file to the existing comment; true when it landed. */
+  async function uploadOne(cid: string, item: UploadItem): Promise<boolean> {
+    setUpload(item.id, { status: 'uploading', progress: 0 })
     try {
-      const comment = await tasksApi.addComment(orgId, taskId, body.trim())
-      for (const file of files) {
-        const shrunk = await shrinkImageForUpload(file)
-        await tasksApi.uploadCommentAttachment(orgId, taskId, comment.id, shrunk)
-      }
-      onPosted()
+      const shrunk = await shrinkImageForUpload(item.file)
+      await tasksApi.uploadCommentAttachment(orgId, taskId, cid, shrunk)
+      setUpload(item.id, { status: 'done', progress: 100 })
+      return true
     } catch {
-      addToast('Could not post the comment. Try again.', 'error')
-    } finally {
-      setSending(false)
+      setUpload(item.id, { status: 'failed' })
+      return false
     }
   }
 
-  return (
-    <FullScreenOverlay title="Add comment" onClose={onClose}>
-      <div className="flex flex-col gap-[12px]">
-        <textarea
-          ref={textareaRef}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Write a comment…"
-          rows={3}
-          autoFocus
-          style={{ maxHeight: '8.5em' }}
-          className="min-h-[88px] w-full resize-none overflow-y-auto rounded-[8px] border border-phone-border-strong bg-phone-surface px-[12px] py-[10px] text-[16px] leading-[1.4] text-phone-text-primary outline-none focus-visible:border-phone-primary"
-        />
+  async function send() {
+    if (sending || commentId) return
+    const text = body.trim()
+    if (!text || text.length > COMMENT_MAX) return
+    setSending(true)
+    let cid: string
+    try {
+      const comment = await tasksApi.addComment(orgId, taskId, text)
+      cid = comment.id
+      setCommentId(cid)
+    } catch {
+      addToast('Could not post the comment. Try again.', 'error')
+      setSending(false)
+      return
+    }
+    let failed = 0
+    for (const item of uploads) {
+      if (!(await uploadOne(cid, item))) failed += 1
+    }
+    setSending(false)
+    if (failed === 0) {
+      onPosted()
+    } else {
+      addToast(`Comment posted, but ${failed} file${failed === 1 ? '' : 's'} failed to upload. Tap Retry on each.`, 'error')
+    }
+  }
+
+  async function retry(id: string) {
+    const item = uploads.find((u) => u.id === id)
+    if (!item || !commentId) return
+    await uploadOne(commentId, item)
+  }
+
+  const failedCount = uploads.filter((u) => u.status === 'failed').length
+  const anyUploading = uploads.some((u) => u.status === 'uploading')
+  const tooLong = body.trim().length > COMMENT_MAX
+  // After the comment exists, leaving always refreshes the list so it shows.
+  const leave = commentId ? onPosted : onClose
+
+  const footer = (
+    <div className={cx('flex flex-col gap-[8px] border-t border-phone-border-light bg-phone-surface px-[12px] pt-[8px]', 'pb-[calc(8px+var(--safe-bottom))] pl-[max(12px,var(--safe-left))] pr-[max(12px,var(--safe-right))]')}>
+      {tooLong ? <p className="text-phone-meta text-phone-danger">Comments can be at most {COMMENT_MAX} characters.</p> : null}
+      {commentId ? (
         <div className="flex items-center gap-[8px]">
-          <PhoneButton type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
-            <Paperclip aria-hidden className="size-[16px]" />
-            Attach
+          <p className="min-w-0 flex-1 text-phone-label text-phone-text-primary">
+            {failedCount > 0 ? `Comment posted. ${failedCount} file${failedCount === 1 ? '' : 's'} still to upload.` : 'Comment posted.'}
+          </p>
+          <PhoneButton type="button" variant="primary" disabled={anyUploading} onClick={onPosted}>
+            Done
           </PhoneButton>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files) setFiles((prev) => [...prev, ...Array.from(e.target.files!)])
-              e.target.value = ''
-            }}
-          />
-          {files.length > 0 ? <span className="text-phone-meta text-phone-text-secondary">{files.length} attached</span> : null}
         </div>
-        {files.length > 0 ? (
-          <ul className="flex flex-col gap-[6px]">
-            {files.map((f, i) => (
-              <li key={`${f.name}-${i}`} className="flex items-center gap-[8px] rounded-[6px] border border-phone-border-light px-[10px] py-[6px]">
-                <span className="min-w-0 flex-1 truncate text-phone-label text-phone-text-primary">{f.name}</span>
-                <button type="button" aria-label="Remove" onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}>
-                  <X aria-hidden className="size-[14px] text-phone-text-secondary" />
-                </button>
-              </li>
-            ))}
-          </ul>
+      ) : (
+        <div className="flex items-end gap-[8px]">
+          <button
+            type="button"
+            aria-label="Attach photo or file"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={sending}
+            className="inline-flex size-[44px] shrink-0 items-center justify-center rounded-full text-phone-text-secondary active:bg-phone-surface-control"
+          >
+            <Paperclip aria-hidden className="size-[20px]" />
+          </button>
+          <textarea
+            ref={textareaRef}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Write a comment…"
+            rows={1}
+            autoFocus
+            enterKeyHint="enter"
+            aria-label="Comment"
+            disabled={sending}
+            className="min-h-[44px] min-w-0 flex-1 resize-none rounded-[8px] border border-phone-border-strong bg-phone-surface px-[12px] py-[10px] text-[16px] leading-[22px] text-phone-text-primary outline-none focus-visible:border-phone-primary"
+          />
+          <button
+            type="button"
+            aria-label="Send"
+            onClick={() => void send()}
+            disabled={!body.trim() || tooLong || sending}
+            className="inline-flex size-[44px] shrink-0 items-center justify-center rounded-full bg-phone-primary text-phone-primary-foreground active:bg-phone-primary-pressed disabled:bg-phone-surface-control-pressed disabled:text-phone-text-secondary"
+          >
+            <Send aria-hidden className="size-[18px]" />
+          </button>
+        </div>
+      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          const picked = e.target.files ? Array.from(e.target.files) : []
+          if (picked.length) setUploads((prev) => [...prev, ...picked.map(newUpload)])
+          e.target.value = ''
+        }}
+      />
+    </div>
+  )
+
+  return (
+    <FullScreenOverlay title="Add comment" onClose={leave} footer={footer}>
+      <div className="flex flex-col gap-[12px]">
+        {commentId ? (
+          <p className="whitespace-pre-wrap rounded-[8px] border border-phone-border-light bg-phone-surface px-[12px] py-[10px] text-phone-body text-phone-text-primary">{body.trim()}</p>
         ) : null}
-        <p className="text-phone-meta text-phone-text-secondary">@mentions aren&apos;t supported yet.</p>
-      </div>
-      <div className={cx('sticky bottom-0 -mx-[16px] mt-[12px] flex gap-[8px] border-t border-phone-border-light bg-phone-surface px-[16px] pt-[12px]', 'pb-[calc(12px+var(--safe-bottom))]')}>
-        <PhoneButton type="button" variant="primary" fullWidth disabled={!body.trim() || sending} onClick={() => void send()}>
-          <Send aria-hidden className="size-[16px]" />
-          {sending ? 'Sending…' : 'Send'}
-        </PhoneButton>
+        <UploadRows
+          items={uploads}
+          onRetry={(id) => void retry(id)}
+          onRemove={commentId ? undefined : (id) => setUploads((prev) => prev.filter((u) => u.id !== id))}
+        />
+        {uploads.length === 0 && !commentId ? (
+          <p className="text-phone-meta text-phone-text-secondary">Attach photos or files with the paperclip. @mentions aren&apos;t supported on the phone yet.</p>
+        ) : null}
       </div>
     </FullScreenOverlay>
   )
+}
+
+/**
+ * Opens a non-image file (kit §41.16 rule 18). In the installed app on iPhone
+ * a new tab cannot open, so the file goes through the share sheet (Save to
+ * Files, Quick Look, another app). Everywhere else - and if sharing is
+ * unavailable or fails - it opens in the phone's own viewer.
+ */
+async function openNonImageFile(orgId: string, taskId: string, a: TaskAttachment): Promise<void> {
+  const type = a.mime_type || 'application/octet-stream'
+  const canShareFiles =
+    isInstalledApp() &&
+    detectPlatform() === 'ios' &&
+    typeof navigator.share === 'function' &&
+    typeof navigator.canShare === 'function' &&
+    navigator.canShare({ files: [new File([''], a.file_name, { type })] })
+
+  if (canShareFiles) {
+    try {
+      const { url, file_name } = await tasksApi.getAttachmentDownloadUrl(orgId, taskId, a.id)
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`download failed: ${res.status}`)
+      const blob = await res.blob()
+      const file = new File([blob], file_name || a.file_name, { type: blob.type || type })
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: file.name })
+        return
+      }
+    } catch (err) {
+      // The person closed the share sheet: that is a choice, not a failure.
+      if (err instanceof DOMException && err.name === 'AbortError') return
+    }
+  }
+  await tasksApi.downloadAttachment(orgId, taskId, a.id)
 }
 
 /** "Files & proof" full screen - kit §41.6/41.16, respecting proof_visibility. */
@@ -576,7 +745,7 @@ function FilesProofOverlay({ orgId, task, onClose, onTaskUpdate }: { orgId: stri
   const { addToast } = useToast()
   const [items, setItems] = React.useState<TaskAttachment[] | null>(null)
   const [viewer, setViewer] = React.useState<TaskAttachment | null>(null)
-  const [uploading, setUploading] = React.useState(false)
+  const [uploads, setUploads] = React.useState<UploadItem[]>([])
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const cameraInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -589,22 +758,34 @@ function FilesProofOverlay({ orgId, task, onClose, onTaskUpdate }: { orgId: stri
   }, [orgId, task.id])
   React.useEffect(load, [load])
 
-  async function addFiles(fileList: FileList | null) {
-    if (!fileList) return
-    setUploading(true)
+  const setUpload = (id: string, patch: Partial<UploadItem>) =>
+    setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)))
+
+  /** One file: its own progress; a failure marks only that row and never stops the others. */
+  async function uploadOne(item: UploadItem) {
+    setUpload(item.id, { status: 'uploading', progress: 0 })
     try {
-      for (const f of Array.from(fileList)) {
-        const shrunk = await shrinkImageForUpload(f)
-        await tasksApi.uploadTaskAttachment(orgId, task.id, shrunk)
-      }
+      const shrunk = await shrinkImageForUpload(item.file)
+      await tasksApi.uploadTaskAttachment(orgId, task.id, shrunk, (pct) => setUpload(item.id, { progress: pct }))
+      setUpload(item.id, { status: 'done', progress: 100 })
+      // Refresh the list and the task (its file count) as each file lands.
       load()
-      const refreshed = await tasksApi.getTask(orgId, task.id)
-      onTaskUpdate(refreshed)
+      tasksApi.getTask(orgId, task.id).then(onTaskUpdate).catch(() => {})
     } catch {
-      addToast('Some files could not be uploaded. Try again.', 'error')
-    } finally {
-      setUploading(false)
+      setUpload(item.id, { status: 'failed' })
     }
+  }
+
+  async function addFiles(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return
+    const added = Array.from(fileList).map(newUpload)
+    setUploads((prev) => [...prev, ...added])
+    for (const item of added) await uploadOne(item)
+  }
+
+  function retry(id: string) {
+    const item = uploads.find((u) => u.id === id)
+    if (item) void uploadOne(item)
   }
 
   function openFile(a: TaskAttachment) {
@@ -612,19 +793,19 @@ function FilesProofOverlay({ orgId, task, onClose, onTaskUpdate }: { orgId: stri
       setViewer(a)
       return
     }
-    // PDF/other: open in the phone viewer (new tab), or the share sheet handles it
-    // on an installed iPhone (kit §41.16 rule 18) since the signed URL opens in Safari.
-    void tasksApi.downloadAttachment(orgId, task.id, a.id)
+    openNonImageFile(orgId, task.id, a).catch(() => addToast('This file could not be opened. Try again.', 'error'))
   }
 
   return (
     <FullScreenOverlay title="Files & proof" onClose={onClose}>
       <div className="flex flex-col gap-[16px]">
         <div className="flex gap-[8px]">
-          <PhoneButton type="button" variant="secondary" fullWidth disabled={uploading} onClick={() => cameraInputRef.current?.click()}>
+          <PhoneButton type="button" variant="secondary" fullWidth onClick={() => cameraInputRef.current?.click()}>
+            <Camera aria-hidden className="size-[18px]" />
             Take photo
           </PhoneButton>
-          <PhoneButton type="button" variant="secondary" fullWidth disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+          <PhoneButton type="button" variant="secondary" fullWidth onClick={() => fileInputRef.current?.click()}>
+            <FileUp aria-hidden className="size-[18px]" />
             Choose file
           </PhoneButton>
         </div>
@@ -649,7 +830,7 @@ function FilesProofOverlay({ orgId, task, onClose, onTaskUpdate }: { orgId: stri
             e.target.value = ''
           }}
         />
-        {uploading ? <p className="text-phone-meta text-phone-text-secondary">Uploading…</p> : null}
+        <UploadRows items={uploads} onRetry={retry} />
 
         {items === null ? (
           <p className="text-phone-body text-phone-text-secondary">Loading…</p>
