@@ -224,3 +224,198 @@ input[type='number'] {
 .tag-chip-remove { color: inherit; }
 .tag-chip-remove:hover,
 .tag-chip-remove:focus-visible { background-color: var(--tag-remove-hover); }
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   PHONE LAYOUT - FRONTEND_RULES_PHONE.md section 41 (RGB frontend kit).
+
+   EVERYTHING BELOW IS SCOPED TO html[data-layout="phone"] (or to the phone
+   tree's own data-slot attributes, which only phone components render), so
+   the desktop layout computes exactly what it did before. data-layout is set
+   on <html> by the server's first guess (lib/layout.server.ts) and confirmed
+   in the browser by LayoutProvider (lib/layout.ts, 41.2 rule 3).
+
+   Phone components read these tokens through the `phone-*` Tailwind aliases
+   in tailwind.config.ts (bg-phone-primary, text-phone-text-secondary, ...).
+   The kit's token NAMES carry V2E's own VALUES. V2E's existing Tailwind
+   colours (primary, border, muted, ...) are untouched: the aliases live under
+   their own `phone` key, so no desktop class can change meaning.
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── PHONE BRAND BLOCK - kit section 0.1 item 1, section 2.2 ─────────────────
+   Edit these together. lib/install-settings.ts holds hand copies of
+   --primary, --surface-sunken and --primary-foreground for the manifest and
+   the status bar, and is edited with this block. */
+html[data-layout="phone"] {
+  /* Brand */
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-pressed: #1E40AF;
+  --primary-ring: #3B82F6;
+  --primary-subtle: #EFF6FF;
+  --primary-border: #BFDBFE;
+  --primary-foreground: #FFFFFF;
+  /* The brand as text on surface (links, the active tab): 5.2:1 on white. */
+  --primary-text: #2563EB;
+
+  /* On a brand ground (the app bar) - kit section 36.8. */
+  --on-brand: var(--primary-foreground);
+  --on-brand-hover: rgba(255, 255, 255, 0.12);
+  --on-brand-pressed: rgba(255, 255, 255, 0.2);
+
+  /* Status - kit 2.4 names, V2E values (DESIGN_RULES.md "Status badges"). */
+  --success: #16A34A;
+  --success-bg: #DCFCE7;
+  --success-border: #BBF7D0;
+  --warning: #D97706;
+  --warning-bg: #FEF9C3;
+  --warning-border: #FDE68A;
+  --danger: #DC2626;
+  --danger-bg: #FEE2E2;
+  --danger-border: #FECACA;
+  --on-danger: #FFFFFF;
+  --info: #0891B2;
+  --info-bg: #E0F2FE;
+  --info-border: #BAE6FD;
+
+  /* Text. --text-muted is V2E's helper colour (#64748B), the lightest text
+     allowed. #94A3B8 is a placeholder colour only and is never text here. */
+  --text-primary: #0F172A;
+  --text-body: #1E293B;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+
+  /* Surfaces and borders */
+  --surface: #FFFFFF;
+  --surface-sunken: #F8FAFC;
+  --surface-control: #F1F5F9;          /* V2E's neutral fill (ghost hover) */
+  --surface-control-pressed: #E2E8F0;
+  --border-light: #E2E8F0;
+  --border: #CBD5E1;                   /* V2E's input border */
+  --border-strong: #94A3B8;            /* borders only, never text */
+
+  /* Overlays - kit 5.4 */
+  --backdrop: rgba(15, 23, 42, 0.45);
+  --shadow-dialog: 0 16px 40px rgba(15, 23, 42, 0.16), 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+/* ─── PHONE GEOMETRY - 41.4, 41.9, 41.13 ────────────────────────────────────── */
+html[data-layout="phone"] {
+  /* Safe areas (41.13 rules 1 to 3): what each phone reports, 0 elsewhere. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  /* The on-screen keyboard (41.13 rule 6). lib/keyboard.ts writes the live
+     value inline on <html> while it is open; 0px otherwise. */
+  --keyboard-inset: 0px;
+
+  /* The two bars are fixed at 56px and never grow with text size (41.4
+     rules 1 and 12). */
+  --h-topbar: 56px;
+  --h-tab-bar: 56px;
+  /* 41.9 rule 2: every control at least 44px; rem, so it grows with the
+     phone's text-size setting (41.9 rule 7). */
+  --h-control: 2.75rem;
+  /* 41.6 rule 7: one control, 12px above and below, a 1px top line. */
+  --h-action-bar: calc(var(--h-control) + 24px + 1px);
+  /* The fixed bar currently at the bottom, worked out below by CSS alone,
+     so it is right on the first paint and never goes stale. */
+  --bottom-bar: 0px;
+  /* 41.13 rule 10: held sideways, content stays in a centred column. */
+  --phone-column: 600px;
+
+  /* Motion - kit 5.6 */
+  --duration-fast: 150ms;
+  --duration-slow: 300ms;
+
+  /* The 41.9 type table, in rem so it grows with the text-size setting. */
+  --type-page-title: 1.25rem;
+  --type-section: 1.125rem;
+  --type-card-heading: 1rem;
+  --type-body: 1rem;
+  --type-label: 0.875rem;
+  --type-meta: 0.75rem;
+}
+
+/* The bottom-bar contract (kit globals.css): a fixed bottom bar only marks
+   itself with data-fixed-bottom, and --bottom-bar follows what is in the page. */
+html[data-layout="phone"]:has([data-fixed-bottom="tab-bar"]) {
+  --bottom-bar: var(--h-tab-bar);
+}
+html[data-layout="phone"]:has([data-fixed-bottom="action-bar"]) {
+  --bottom-bar: var(--h-action-bar);
+}
+/* iPhone keeps reporting the home indicator's inset while the keyboard
+   covers it; bars sit on the keyboard instead (41.7 rule 4). */
+html[data-layout="phone"][data-keyboard="open"] {
+  --safe-bottom: 0px;
+}
+
+/* ─── PHONE BASE - 41.9 rules 1, 5 and 7, 41.13 rule 12 ─────────────────────── */
+html[data-layout="phone"] {
+  /* Large text on iPhone (41.9 rule 7): the system body font makes rem
+     follow the text-size setting. A browser that does not know
+     -apple-system-body drops the declaration; the family is set again
+     straight after it. */
+  font: -apple-system-body;
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  /* Light theme only, whatever the phone's own setting (41.13 rule 12). */
+  color-scheme: only light;
+  /* The browser's own pull-to-refresh reloads the whole page (41.5 rule 16). */
+  overscroll-behavior-y: none;
+  -webkit-text-size-adjust: 100%;
+}
+html[data-layout="phone"] body {
+  /* 16px body, so no field's text is under 16px and iPhone never zooms in
+     when one is tapped (41.9 rule 5). */
+  font-size: var(--type-body);
+  background: var(--surface-sunken);
+  color: var(--text-body);
+}
+/* A touch browser flashes its own grey box over anything tapped; on phone
+   the pressed state is the feedback (41.9 rule 1). */
+html[data-layout="phone"] * {
+  -webkit-tap-highlight-color: transparent;
+}
+/* Pages outside the phone shell (sign-in, choose organisation) are held clear
+   of the notch and the phone's bars (41.13 rule 2). The shell pads itself. */
+html[data-layout="phone"] body:not(:has([data-slot="phone-shell"])) {
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+}
+
+/* ─── TOASTS ON PHONE - 41.8 rule 12 ──────────────────────────────────────────
+   At the bottom, the screen width less 16px each side, above the tab bar or
+   action bar and the keyboard. Desktop keeps its top-right stack. */
+html[data-layout="phone"] [data-slot="toast-region"] {
+  top: auto;
+  right: calc(16px + var(--safe-right));
+  left: calc(16px + var(--safe-left));
+  bottom: calc(var(--bottom-bar) + var(--safe-bottom) + var(--keyboard-inset) + 16px);
+  max-width: var(--phone-column);
+  margin: 0 auto;
+  align-items: stretch;
+}
+html[data-layout="phone"] [data-slot="toast-region"] [role="alert"] {
+  min-width: 0;
+  max-width: none;
+}
+
+/* ─── BOTTOM SHEET - 41.8 rules 1 to 6 ────────────────────────────────────── */
+@keyframes phone-sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes phone-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+[data-slot="phone-sheet"] {
+  animation: phone-sheet-up var(--duration-slow, 300ms) cubic-bezier(0.2, 0, 0, 1);
+}
+[data-slot="phone-sheet-backdrop"] {
+  animation: phone-backdrop-in var(--duration-slow, 300ms) ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="phone-sheet"],
+  [data-slot="phone-sheet-backdrop"] { animation: none; }
+}
