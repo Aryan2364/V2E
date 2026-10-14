@@ -6,6 +6,8 @@ import { PushService } from './push.service';
 import { NotifModule } from './notification-events';
 import { TERMINAL_TYPES } from '../tasks/status-phase';
 import { ACTIVE_ASSIGNEE } from '../tasks/active-assignee';
+import { deadlineBucket, myOpenTasksWhere } from '../tasks/badge-count.util';
+import { ClockService } from '../clock/clock.service';
 
 export interface EmitParams {
   orgId: string;
@@ -31,7 +33,31 @@ export class NotificationsService {
     private readonly prisma: PrismaService,
     private readonly gateway: NotificationsGateway,
     private readonly push: PushService,
+    private readonly clock: ClockService,
   ) {}
+
+  /**
+   * The phone app's icon badge count for a recipient — looked up in-process (never
+   * an HTTP call) using the exact same predicate as `TasksService.getBadgeCount` /
+   * `getMyTasksGrouped` (`myOpenTasksWhere` + `deadlineBucket`), so the push payload's
+   * badge can never disagree with what the app shows when it's opened.
+   */
+  private async badgeCountFor(orgId: string, userId: string): Promise<number> {
+    try {
+      const now = await this.clock.now(orgId);
+      const tasks = await this.prisma.task.findMany({
+        where: myOpenTasksWhere(orgId, userId),
+        select: { deadline: true },
+      });
+      return tasks.filter((t) => {
+        const bucket = deadlineBucket(t.deadline, now);
+        return bucket === 'overdue' || bucket === 'today';
+      }).length;
+    } catch (err) {
+      this.logger.warn(`badgeCountFor failed for user ${userId}: ${err}`);
+      return 0;
+    }
+  }
 
   // ─── Master config ───────────────────────────────────────────────────────────
 
@@ -115,9 +141,11 @@ export class NotificationsService {
         } catch (err) {
           this.logger.warn(`Socket emit failed: ${err}`);
         }
-        void this.push
-          .sendToUser(p.orgId, row.user_id, { title: row.title, body: row.body, link: row.link })
-          .catch((err) => this.logger.warn(`Push failed: ${err}`));
+        void this.badgeCountFor(p.orgId, row.user_id).then((badge_count) =>
+          this.push
+            .sendToUser(p.orgId, row.user_id, { title: row.title, body: row.body, link: row.link, badge_count })
+            .catch((err) => this.logger.warn(`Push failed: ${err}`)),
+        );
       }
       return rows.length;
     } catch (err) {
@@ -191,9 +219,11 @@ export class NotificationsService {
         } catch (err) {
           this.logger.warn(`Socket emit failed: ${err}`);
         }
-        void this.push
-          .sendToUser(d.orgId, d.userId, { title: d.title, body: d.body, link: d.link })
-          .catch((err) => this.logger.warn(`Push failed: ${err}`));
+        void this.badgeCountFor(d.orgId, d.userId).then((badge_count) =>
+          this.push
+            .sendToUser(d.orgId, d.userId, { title: d.title, body: d.body, link: d.link, badge_count })
+            .catch((err) => this.logger.warn(`Push failed: ${err}`)),
+        );
       }
     } catch (err) {
       this.logger.error(`emitMany failed: ${err}`);

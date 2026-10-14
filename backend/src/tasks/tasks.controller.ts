@@ -172,6 +172,18 @@ export class TasksController {
     return this.service.getMyTasks(orgId, req.user.id);
   }
 
+  @Get('my/grouped')
+  @ApiOperation({ summary: 'Get tasks assigned to me, bucketed by deadline (phone app home screen)' })
+  getMyTasksGrouped(@Param('orgId') orgId: string, @Request() req: any) {
+    return this.service.getMyTasksGrouped(orgId, req.user.id);
+  }
+
+  @Get('badge-count')
+  @ApiOperation({ summary: 'How many of my tasks are overdue or due today (phone app icon badge)' })
+  async getBadgeCount(@Param('orgId') orgId: string, @Request() req: any) {
+    return { count: await this.service.getBadgeCount(orgId, req.user.id) };
+  }
+
   @Get('cc')
   @ApiOperation({ summary: 'Get tasks where I am CC\'d' })
   getMyCCTasks(@Param('orgId') orgId: string, @Request() req: any) {

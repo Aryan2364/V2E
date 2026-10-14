@@ -1292,6 +1292,12 @@ model Task {
   // shared status, and who actually closed the task. Powers "changed by X" / "Completed by X".
   status_actor_user_id      String?
   completed_by_user_id      String?
+  // When the delayed "task completed" notification should fire (completed_at +
+  // reopen_window_minutes). Set by completeTask instead of notifying inline;
+  // cleared by reopenTask's within-window undo so the sweep skips it. Null = no
+  // pending completion notification (never completed this way, already fired, or
+  // undone).
+  pending_completion_notification_at DateTime?
   recurring_template_id     String?
   // Date-only stamp of the day this instance was spawned from its recurring
   // template. Paired with a unique index below so the DB physically rejects a
@@ -1329,6 +1335,7 @@ model Task {
   @@index([created_by_user_id])
   @@index([department_id])
   @@index([import_batch_id])
+  @@index([pending_completion_notification_at])
   @@map("tasks")
 }
 

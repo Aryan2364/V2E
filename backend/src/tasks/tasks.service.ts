@@ -52,6 +52,8 @@ import { resolveRemindAt, expandReminderRows } from '../common/reminders/reminde
 import { ancestorChain, descendantIds } from '../holidays/dept-tree.util';
 import { TasksAnalyticsService } from './tasks-analytics.service';
 import { MAX_TAGS_PER_TASK } from '../task-masters/task-tag.constants';
+import { deadlineBucket, myOpenTasksWhere } from './badge-count.util';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 const TASK_INCLUDE = {
   status: true,
@@ -2055,6 +2057,104 @@ export class TasksService {
     return this.enrichTaskList(tasks, userId);
   }
 
+  /**
+   * "My tasks" bucketed by deadline (overdue / today / tomorrow / later / no date),
+   * for the phone app's home screen. Reuses getMyTasks's own query (same predicate as
+   * `myOpenTasksWhere`, shared with `getBadgeCount` below so they can never disagree)
+   * rather than hand-rolling a second one, then enriches with whatever the client
+   * needs to decide "tap-to-finish vs. open the Finish sheet" without a second call:
+   * proof_required, completion_mode, proof_allowed_extensions, and the checklist
+   * item count + this viewer's remaining count.
+   */
+  async getMyTasksGrouped(orgId: string, userId: string) {
+    const now = await this.clock.now(orgId);
+    const tasks = await this.prisma.task.findMany({
+      where: myOpenTasksWhere(orgId, userId),
+      include: TASK_INCLUDE,
+      orderBy: { deadline: 'asc' },
+    });
+    const enriched = (await this.enrichTaskList(tasks, userId)) as any[];
+
+    // Per-user checklist state (all_must_complete), batched for the whole list —
+    // the any_can_complete shared checklist is already fully loaded via TASK_INCLUDE.
+    const taskIds = tasks.map((t) => t.id);
+    const states = taskIds.length
+      ? await this.prisma.taskChecklistItemState.findMany({
+          where: { task_id: { in: taskIds }, user_id: userId },
+          select: { task_id: true, checklist_id: true },
+        })
+      : [];
+    const satisfiedByTask = new Map<string, Set<string>>();
+    for (const s of states) {
+      if (!satisfiedByTask.has(s.task_id)) satisfiedByTask.set(s.task_id, new Set());
+      satisfiedByTask.get(s.task_id)!.add(s.checklist_id);
+    }
+
+    const buckets: Record<'overdue' | 'today' | 'tomorrow' | 'later' | 'noDate', any[]> = {
+      overdue: [],
+      today: [],
+      tomorrow: [],
+      later: [],
+      noDate: [],
+    };
+
+    for (const t of enriched) {
+      const checklist: any[] = t.checklist ?? [];
+      const checklistTotal = checklist.length;
+      let checklistRemaining = 0;
+      if (checklistTotal > 0) {
+        if (t.completion_mode === CompletionMode.all_must_complete) {
+          const satisfied = satisfiedByTask.get(t.id) ?? new Set<string>();
+          checklistRemaining = checklist.filter((i) => !satisfied.has(i.id)).length;
+        } else {
+          checklistRemaining = checklist.filter((i: any) => !i.is_completed && !i.cant_do).length;
+        }
+      }
+      const shaped = {
+        ...t,
+        proof_required: t.proof_required,
+        completion_mode: t.completion_mode,
+        proof_allowed_extensions: t.proof_allowed_extensions ?? [],
+        checklist_total: checklistTotal,
+        checklist_remaining: checklistRemaining,
+      };
+      const key = deadlineBucket(t.deadline ? new Date(t.deadline) : null, now);
+      buckets[key].push(shaped);
+    }
+
+    return {
+      ...buckets,
+      counts: {
+        overdue: buckets.overdue.length,
+        today: buckets.today.length,
+        tomorrow: buckets.tomorrow.length,
+        later: buckets.later.length,
+        noDate: buckets.noDate.length,
+        total: tasks.length,
+      },
+    };
+  }
+
+  /**
+   * Phone app badge count: how many of MY tasks (real, non-CC, not-yet-closed
+   * assignments) are overdue or due today. Uses the exact same predicate
+   * (`myOpenTasksWhere` + `isOverdueOrDueToday`) as `getMyTasksGrouped`'s
+   * overdue/today buckets, so the two can never disagree. Self-scoped by
+   * `user_id` — no `ScopeService.assertCanActOn` needed (AUTHORIZATION.md's rule
+   * for recipient/owner-scoped rows), `organization_id` is still scoped in the query.
+   */
+  async getBadgeCount(orgId: string, userId: string): Promise<number> {
+    const now = await this.clock.now(orgId);
+    const tasks = await this.prisma.task.findMany({
+      where: myOpenTasksWhere(orgId, userId),
+      select: { deadline: true },
+    });
+    return tasks.filter((t) => {
+      const bucket = deadlineBucket(t.deadline, now);
+      return bucket === 'overdue' || bucket === 'today';
+    }).length;
+  }
+
   async getMyCCTasks(orgId: string, userId: string) {
     const tasks = await this.prisma.task.findMany({
       where: {
@@ -3301,14 +3401,18 @@ export class TasksService {
       if (completedStatus) {
         const now = new Date();
         const completionNow = await this.clock.now(orgId);
+        const reopenExpiresAt = new Date(now.getTime() + config.reopen_window_minutes * 60_000);
         await this.prisma.task.update({
           where: { id: taskId },
           data: {
             status_id: completedStatus.id,
-            reopen_expires_at: new Date(now.getTime() + config.reopen_window_minutes * 60_000),
+            reopen_expires_at: reopenExpiresAt,
             completed_at: completionNow,
             completion_timing: this.completionTiming(completionNow, gradingDeadline(task)),
             completed_by_user_id: userId,
+            // Delayed "task completed" notification — see the sweep (processPendingCompletionNotifications)
+            // below. Cleared by reopenTask's within-window undo.
+            pending_completion_notification_at: reopenExpiresAt,
           },
         });
       }
@@ -3369,6 +3473,9 @@ export class TasksService {
             completed_at: completionNow,
             completion_timing: this.completionTiming(completionNow, gradingDeadline(task)),
             completed_by_user_id: userId,
+            // Delayed "task completed" notification — see the sweep (processPendingCompletionNotifications)
+            // below. Cleared by reopenTask's within-window undo.
+            pending_completion_notification_at: reopenExpiresAt,
           },
         });
         if (closed.count === 0) {
@@ -3383,21 +3490,11 @@ export class TasksService {
 
     await this.logActivity(orgId, taskId, userId, 'completed');
 
-    // Notify creator + co-assignees (excluding whoever completed it)
-    const completerName = await this.notifications.userName(userId);
-    await this.notifications.emit({
-      orgId,
-      module: 'tasks',
-      event_type: 'task_completed',
-      recipients: [
-        task.created_by_user_id,
-        ...(task.assignees ?? []).filter((a: any) => !a.is_cc).map((a: any) => a.user_id),
-      ].filter((uid) => uid !== userId),
-      title: `${completerName} completed a task`,
-      body: `“${task.title}”`,
-      link: `/dashboard/tasks/${taskId}`,
-      entity: { type: 'task', id: taskId },
-    });
+    // The "task completed" notification is DELAYED, not fired here — it was stamped
+    // onto `pending_completion_notification_at` above (= reopen_expires_at) and the
+    // processPendingCompletionNotifications sweep below fires it once that time has
+    // passed AND the task is still completed (not undone in the meantime). This gives
+    // the undo window a clean cancel: reopenTask just clears the timestamp.
 
     // Workflow: advance this task's step (a no-op for an ordinary task). The engine
     // never throws — a workflow failure parks the run as stuck, it never fails the
@@ -3464,6 +3561,11 @@ export class TasksService {
         completion_timing: null,
         completed_by_user_id: null,
         incomplete_reason: null,
+        // Undo (within the window): cancel the delayed "task completed" notification —
+        // the sweep re-checks this before firing, but clearing it here means it's never
+        // even picked up. A manual reopen after the window has already fired (if it was
+        // ever pending), so this is a no-op there.
+        pending_completion_notification_at: null,
       },
     });
 
@@ -3493,21 +3595,26 @@ export class TasksService {
       await this.workflowEngine.onTaskReopened(orgId, taskId, userId);
     }
 
-    // Notify assignees + creator (excluding whoever reopened it)
-    const reopenerName = await this.notifications.userName(userId);
-    await this.notifications.emit({
-      orgId,
-      module: 'tasks',
-      event_type: 'task_reopened',
-      recipients: [
-        task.created_by_user_id,
-        ...(task.assignees ?? []).filter((a: any) => !a.is_cc).map((a: any) => a.user_id),
-      ].filter((uid) => uid !== userId),
-      title: `${reopenerName} reopened a task`,
-      body: `“${task.title}”${reason ? `\n${reason}` : ''}`,
-      link: `/dashboard/tasks/${taskId}`,
-      entity: { type: 'task', id: taskId },
-    });
+    // Notify assignees + creator (excluding whoever reopened it) — but NOT for a
+    // within-window undo: that's cancelling an accidental Complete/Incomplete, not an
+    // event worth a "reopened" ping (and the delayed "completed" notification this
+    // undo cancelled, above, already covers that side of it).
+    if (!withinWindow) {
+      const reopenerName = await this.notifications.userName(userId);
+      await this.notifications.emit({
+        orgId,
+        module: 'tasks',
+        event_type: 'task_reopened',
+        recipients: [
+          task.created_by_user_id,
+          ...(task.assignees ?? []).filter((a: any) => !a.is_cc).map((a: any) => a.user_id),
+        ].filter((uid) => uid !== userId),
+        title: `${reopenerName} reopened a task`,
+        body: `“${task.title}”${reason ? `\n${reason}` : ''}`,
+        link: `/dashboard/tasks/${taskId}`,
+        entity: { type: 'task', id: taskId },
+      });
+    }
 
     // Recalculate project progress if task is linked to a project
     const projectTaskReopened = await this.prisma.projectTask.findFirst({ where: { task_id: taskId } });
@@ -3516,6 +3623,83 @@ export class TasksService {
     }
 
     return this.getTask(orgId, taskId);
+  }
+
+  // ─── Delayed "task completed" notification sweep ─────────────────────────────
+  //
+  // completeTask stamps `pending_completion_notification_at` instead of notifying
+  // inline (see above); this sweep fires the notification once that time has passed,
+  // and ONLY if the task is still in exactly the state completeTask left it in — a
+  // reopen (undo or manual) clears the timestamp, which is the normal cancel path,
+  // but a race (reopen landing between the sweep's query and its own write) is still
+  // guarded against by re-checking `completed_at`/`completed_by_user_id` against what
+  // the query returned, and by an atomic `updateMany` that only succeeds if the
+  // timestamp is still exactly what was read. No existing @Cron sweep lived in this
+  // file to extend the cadence of (grep for `@Cron`/`ScheduleModule` across
+  // `backend/src` found none here); EVERY_5_MINUTES mirrors `ReplayService`'s cadence
+  // for clock-sensitive sweeps and is fine-grained enough against the 5-minute default
+  // `reopen_window_minutes`.
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async processPendingCompletionNotifications() {
+    const now = new Date();
+    const due = await this.prisma.task.findMany({
+      where: { pending_completion_notification_at: { lte: now }, is_deleted: false },
+      select: {
+        id: true,
+        organization_id: true,
+        title: true,
+        completed_at: true,
+        completed_by_user_id: true,
+        pending_completion_notification_at: true,
+        created_by_user_id: true,
+        assignees: { where: { ...ACTIVE_ASSIGNEE, is_cc: false }, select: { user_id: true } },
+      },
+    });
+    for (const task of due) {
+      await this.fireOnePendingCompletionNotification(task).catch((err) =>
+        this.logger.error(`processPendingCompletionNotifications failed for task ${task.id}: ${err}`),
+      );
+    }
+  }
+
+  private async fireOnePendingCompletionNotification(task: {
+    id: string;
+    organization_id: string;
+    title: string;
+    completed_at: Date | null;
+    completed_by_user_id: string | null;
+    pending_completion_notification_at: Date | null;
+    created_by_user_id: string;
+    assignees: { user_id: string }[];
+  }) {
+    // Atomic claim: only proceed if the row is STILL exactly the one we read — guards
+    // against a reopen (the cancel path) racing in between the sweep's query and this
+    // write. `updateMany`'s `count` tells us whether we won the race.
+    const claimed = await this.prisma.task.updateMany({
+      where: {
+        id: task.id,
+        pending_completion_notification_at: task.pending_completion_notification_at,
+        completed_at: task.completed_at,
+        completed_by_user_id: task.completed_by_user_id,
+      },
+      data: { pending_completion_notification_at: null },
+    });
+    if (claimed.count === 0) return; // reopened (or re-completed by someone else) since we read it — skip
+
+    const completerId = task.completed_by_user_id;
+    const completerName = completerId ? await this.notifications.userName(completerId) : 'Someone';
+    await this.notifications.emit({
+      orgId: task.organization_id,
+      module: 'tasks',
+      event_type: 'task_completed',
+      recipients: [task.created_by_user_id, ...task.assignees.map((a) => a.user_id)].filter(
+        (uid) => uid !== completerId,
+      ),
+      title: `${completerName} completed a task`,
+      body: `“${task.title}”`,
+      link: `/dashboard/tasks/${task.id}`,
+      entity: { type: 'task', id: task.id },
+    });
   }
 
   // ─── Mark Incomplete ──────────────────────────────────────────────────────────

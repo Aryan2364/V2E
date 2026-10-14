@@ -30,7 +30,11 @@ export class PushService {
     return this.enabled ? (process.env.VAPID_PUBLIC_KEY as string) : null;
   }
 
-  async sendToUser(orgId: string, userId: string, payload: { title: string; body: string; link?: string | null }) {
+  async sendToUser(
+    orgId: string,
+    userId: string,
+    payload: { title: string; body: string; link?: string | null; badge_count?: number },
+  ) {
     if (!this.enabled) return;
     const subs = await this.prisma.pushSubscription.findMany({
       where: { organization_id: orgId, user_id: userId },
