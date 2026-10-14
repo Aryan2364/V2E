@@ -35,6 +35,7 @@ export type PhoneScreenKey =
   | 'task-record'
   | 'give-task'
   | 'meeting-record'
+  | 'meeting-create'
 
 export type PhoneRoute = {
   key: PhoneScreenKey
@@ -80,15 +81,25 @@ const TASK_SECTIONS = new Set([
  * Rhythms and reports are planning and analysis: computer only even though
  * Meetings is on the phone (41.1, 41.10 rule 4).
  */
-const MEETING_SECTIONS = new Set(['rhythms', 'reports'])
+const MEETING_SECTIONS = new Set(['rhythms', 'reports', 'new'])
 
-const MEETINGS_HREF = '/dashboard/governance/meetings'
+/** The Meetings tab's address. Exported so meeting screens can link/fall back to it. */
+export const MEETINGS_HREF = '/dashboard/governance/meetings'
+
+/** Create meeting (41.1, 41.10 rule 4: phone-only — desktop creates via a modal). */
+const MEETING_CREATE_HREF = `${MEETINGS_HREF}/new`
 
 const EXACT: Record<string, PhoneRoute> = {
   [PHONE_HOME]: { key: 'my-work', title: 'My work', entitlement: 'tasks' },
   '/dashboard/tasks/assigned': { key: 'given', title: 'Given', entitlement: 'tasks' },
   '/dashboard/tasks/new': { key: 'give-task', title: 'Give task', parent: PHONE_HOME, entitlement: 'tasks' },
   [MEETINGS_HREF]: { key: 'meetings', title: 'Meetings', entitlement: 'governance.meetings' },
+  [MEETING_CREATE_HREF]: {
+    key: 'meeting-create',
+    title: 'Create meeting',
+    parent: MEETINGS_HREF,
+    entitlement: 'governance.meetings',
+  },
   '/dashboard/notifications': { key: 'notifications', title: 'Notifications' },
   [MORE_HREF]: { key: 'more', title: 'More' },
   [NOTIFICATION_CHOICES_HREF]: {
