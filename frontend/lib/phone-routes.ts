@@ -24,7 +24,18 @@ export const MORE_HREF = '/dashboard/more'
 /** Notification choices (41.18 rule 3), one row in More. Phone-only address. */
 export const NOTIFICATION_CHOICES_HREF = '/dashboard/more/notifications'
 
-/** The phone screens slice 1 knows how to draw. */
+/** The Given tab's address (slice 5). Exported so screens can link/fall back to it. */
+export const GIVEN_HREF = '/dashboard/tasks/assigned'
+
+/** Recurring templates (slice 5, §5.6, D8) - same address desktop uses. */
+export const RECURRING_TEMPLATES_HREF = '/dashboard/tasks/recurring'
+
+/** A recurring template's instances (slice 5, §5.6) - same address desktop uses. */
+export function recurringInstancesHref(templateId: string): string {
+  return `${RECURRING_TEMPLATES_HREF}/${templateId}`
+}
+
+/** The phone screens slice 1/5 know how to draw. */
 export type PhoneScreenKey =
   | 'my-work'
   | 'given'
@@ -36,6 +47,8 @@ export type PhoneScreenKey =
   | 'give-task'
   | 'meeting-record'
   | 'meeting-create'
+  | 'recurring-templates'
+  | 'recurring-instances'
 
 export type PhoneRoute = {
   key: PhoneScreenKey
@@ -107,6 +120,12 @@ const EXACT: Record<string, PhoneRoute> = {
     title: 'Notification choices',
     parent: MORE_HREF,
   },
+  [RECURRING_TEMPLATES_HREF]: {
+    key: 'recurring-templates',
+    title: 'Recurring tasks',
+    parent: GIVEN_HREF,
+    entitlement: 'tasks',
+  },
 }
 
 function trimSlash(pathname: string): string {
@@ -122,6 +141,16 @@ export function phoneRouteFor(rawPathname: string): PhoneRoute | null {
   const task = /^\/dashboard\/tasks\/([^/]+)$/.exec(pathname)
   if (task && !TASK_SECTIONS.has(task[1])) {
     return { key: 'task-record', title: 'Task', parent: PHONE_HOME, entitlement: 'tasks' }
+  }
+
+  const recurringInstance = /^\/dashboard\/tasks\/recurring\/([^/]+)$/.exec(pathname)
+  if (recurringInstance) {
+    return {
+      key: 'recurring-instances',
+      title: 'Recurring task',
+      parent: RECURRING_TEMPLATES_HREF,
+      entitlement: 'tasks',
+    }
   }
 
   const meeting = /^\/dashboard\/governance\/meetings\/([^/]+)$/.exec(pathname)

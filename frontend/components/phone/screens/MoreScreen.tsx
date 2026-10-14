@@ -2,9 +2,9 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { BellRing, ChevronRight, LogOut } from 'lucide-react'
+import { BellRing, ChevronRight, LogOut, Repeat } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
-import { NOTIFICATION_CHOICES_HREF, type PhoneRoute } from '@/lib/phone-routes'
+import { NOTIFICATION_CHOICES_HREF, RECURRING_TEMPLATES_HREF, type PhoneRoute } from '@/lib/phone-routes'
 import PhoneScreen from '../PhoneScreen'
 import { InstallButton } from '../InstallSheet'
 import { PhoneButton, ROW, ROW_BLOCK, cx } from '../primitives'
@@ -28,6 +28,12 @@ import { PhoneButton, ROW, ROW_BLOCK, cx } from '../primitives'
  */
 
 const ROWS: { group: string; label: string; href: string; icon: React.ReactNode }[] = [
+  {
+    group: 'Tasks',
+    label: 'Recurring tasks',
+    href: RECURRING_TEMPLATES_HREF,
+    icon: <Repeat aria-hidden />,
+  },
   {
     group: 'Settings',
     label: 'Notification choices',

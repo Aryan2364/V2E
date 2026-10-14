@@ -16,11 +16,14 @@ import NotificationChoicesScreen from './screens/NotificationChoicesScreen'
 import MyWorkScreen from './screens/MyWorkScreen'
 import TaskDetailScreen from './screens/TaskDetailScreen'
 import GiveTaskScreen from './screens/GiveTaskScreen'
+import GivenScreen from './screens/GivenScreen'
+import RecurringTemplatesScreen from './screens/RecurringTemplatesScreen'
+import RecurringInstancesScreen from './screens/RecurringInstancesScreen'
 import MeetingsScreen from './screens/MeetingsScreen'
 import MeetingDetailScreen from './screens/MeetingDetailScreen'
 import MeetingCreateScreen from './screens/MeetingCreateScreen'
 import { UndoToastProvider } from './UndoToast'
-import { ComingNextScreen, ComputerOnlyScreen, ModuleOffScreen } from './screens/PlaceholderScreens'
+import { ComputerOnlyScreen, ModuleOffScreen } from './screens/PlaceholderScreens'
 
 /*
  * THE PHONE SHELL - FRONTEND_RULES_PHONE.md 41.3 and 41.4.
@@ -86,7 +89,11 @@ function GuardedScreen({ route }: { route: PhoneRoute }) {
     case 'my-work':
       return <MyWorkScreen route={route} />
     case 'given':
-      return <ComingNextScreen route={{ ...route, key: route.key }} />
+      return <GivenScreen route={route} />
+    case 'recurring-templates':
+      return <RecurringTemplatesScreen route={route} />
+    case 'recurring-instances':
+      return <RecurringInstancesScreen route={route} />
     case 'meetings':
       return <MeetingsScreen route={route} />
     case 'task-record':
