@@ -5,6 +5,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Eye, Lock } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
+import { useLayout } from '@/lib/layout'
+import PhoneShell from '@/components/phone/PhoneShell'
 import TopNav from './TopNav'
 
 // Route prefix → entitlement module (longest match wins). Mirrors the top nav.
@@ -62,6 +64,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const router = useRouter()
   const pathname = usePathname()
   const { loading: entLoading, state } = useEntitlements()
+  const { layout } = useLayout()
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -78,6 +81,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   }
 
   if (!isAuthenticated) return null
+
+  // FRONTEND_RULES_PHONE.md 41.3: on a phone the product has its own layout.
+  // The phone shell chooses the screen for this address itself (phone screens
+  // from lib/phone-routes.ts, the computer-only page for everything else), so
+  // the desktop shell and the desktop page below are never mounted on a phone.
+  if (layout === 'phone') return <PhoneShell />
 
   const current = moduleForPath(pathname)
   // Block a module route only once we know its entitlement is `off`.

@@ -100,9 +100,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      {/* Portal-like fixed container */}
+      {/* Portal-like fixed container. data-slot lets the phone layout move it to
+          the bottom, above the tab bar (globals.css, FRONTEND_RULES_PHONE.md 41.8
+          rule 12); desktop keeps this top-right stack. */}
       <div
         aria-label="Notifications"
+        data-slot="toast-region"
         className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"
       >
         {toasts.map((toast) => (

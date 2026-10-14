@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Building2, ArrowRight, LogOut } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import type { OrgChoice } from '@/lib/types'
+import { useLayout } from '@/lib/layout'
+import { signedInHome } from '@/lib/phone-routes'
 
 const ADMIN_BADGE = 'bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]'
 const MEMBER_BADGE = 'bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]'
@@ -12,6 +14,7 @@ const MEMBER_BADGE = 'bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]'
 export default function SelectOrgPage() {
   const { pendingOrgSelection, selectOrg, logout, user } = useAuth()
   const router = useRouter()
+  const { layout } = useLayout()
   const [selecting, setSelecting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
@@ -19,9 +22,10 @@ export default function SelectOrgPage() {
   // Redirect if already authenticated or no pending orgs
   useEffect(() => {
     if (user) {
-      router.replace(user.isSuperAdmin ? '/super-admin/organizations' : '/dashboard')
+      // Desktop: unchanged. Phone: My work, the phone's home (lib/phone-routes.ts).
+      router.replace(signedInHome(user, layout))
     }
-  }, [user, router])
+  }, [user, router, layout])
 
   // If there are no pending orgs and no user, go to login.
   // Guard against the moment a selection succeeds: selectOrg() sets `user`,

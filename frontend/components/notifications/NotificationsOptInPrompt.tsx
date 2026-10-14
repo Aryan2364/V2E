@@ -5,11 +5,17 @@ import { Bell, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
 import { enablePush, getPushStatus, PUSH_ERROR_MESSAGES } from '@/lib/push'
+import { useLayout } from '@/lib/layout'
 
 // One-time nudge to enable browser/device push, so users discover they can be
 // notified even when V2E is closed. The enable/disable control also lives
 // permanently in the notification bell — this is purely for discoverability.
 // Shown at most once per user until they act on it or dismiss it.
+//
+// DESKTOP ONLY. On a phone the app never asks on first open
+// (FRONTEND_RULES_PHONE.md 41.12 rule 4): it offers phone notifications from
+// More > Notification choices (components/phone/screens/
+// NotificationChoicesScreen.tsx) and, in later slices, at the moment of use.
 
 const dismissKey = (userId: string) => `v2e_push_prompt_dismissed:${userId}`
 
@@ -19,10 +25,14 @@ export default function NotificationsOptInPrompt() {
   const orgId = user?.organizationId ?? ''
   const userId = user?.id ?? ''
 
+  const { layout } = useLayout()
+  const onPhone = layout === 'phone'
+
   const [show, setShow] = useState(false)
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
+    if (onPhone) return
     if (!userId || !orgId) return
     if (typeof window === 'undefined') return
     if (localStorage.getItem(dismissKey(userId))) return
@@ -41,7 +51,7 @@ export default function NotificationsOptInPrompt() {
       cancelled = true
       if (timer) clearTimeout(timer)
     }
-  }, [userId, orgId])
+  }, [userId, orgId, onPhone])
 
   function dismiss() {
     if (userId) localStorage.setItem(dismissKey(userId), '1')
@@ -66,7 +76,7 @@ export default function NotificationsOptInPrompt() {
     }
   }
 
-  if (!show) return null
+  if (!show || onPhone) return null
 
   return (
     <div className="fixed bottom-4 right-4 left-4 sm:left-auto z-[60] sm:w-[360px]">

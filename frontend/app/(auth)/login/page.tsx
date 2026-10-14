@@ -8,16 +8,19 @@ import Input from '@/components/ui/Input'
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect'
 import BrandMark, { BrandGlyph } from '@/components/ui/BrandMark'
 import { DEFAULT_COUNTRY, cleanNationalNumber } from '@/lib/phone'
+import { useLayout } from '@/lib/layout'
+import { signedInHome } from '@/lib/phone-routes'
 
 export default function LoginPage() {
   const { login, user } = useAuth()
   const router = useRouter()
+  const { layout } = useLayout()
 
   useEffect(() => {
     if (!user) return
-    const dest = user.isSuperAdmin ? '/super-admin/organizations' : '/dashboard'
-    router.replace(dest)
-  }, [user, router])
+    // Desktop: unchanged. Phone: My work, the phone's home (lib/phone-routes.ts).
+    router.replace(signedInHome(user, layout))
+  }, [user, router, layout])
 
   const [identifier, setIdentifier] = useState('')
   const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY)
