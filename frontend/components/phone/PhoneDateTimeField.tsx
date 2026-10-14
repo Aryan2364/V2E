@@ -1,5 +1,6 @@
 'use client'
 
+import { fmtDate as formatDate, fmtTime as formatTime } from '@/lib/phone-format'
 import React from 'react'
 import { cx } from './primitives'
 
@@ -20,7 +21,7 @@ function fmtDate(value: string): string {
   const [y, m, d] = value.split('-').map(Number)
   if (!y || !m || !d) return ''
   const dt = new Date(y, m - 1, d)
-  return dt.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
+  return formatDate(dt)
 }
 
 function fmtTime(value: string): string {
@@ -29,7 +30,7 @@ function fmtTime(value: string): string {
   if (h === undefined || m === undefined) return ''
   const dt = new Date()
   dt.setHours(h, m, 0, 0)
-  return dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+  return formatTime(dt)
 }
 
 export function PhoneDateField({

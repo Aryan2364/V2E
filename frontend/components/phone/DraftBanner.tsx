@@ -1,5 +1,6 @@
 'use client'
 
+import { fmtDateTime, fmtTime } from '@/lib/phone-format'
 import React from 'react'
 import { CircleAlert, X } from 'lucide-react'
 import type { Draft, DraftValues } from '@/lib/drafts'
@@ -21,9 +22,9 @@ import { PhoneButton, cx } from './primitives'
 function when(date: Date, now: Date): string {
   const sameDay = date.toDateString() === now.toDateString()
   if (sameDay) {
-    return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+    return fmtTime(date)
   }
-  return `${date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}, ${date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`
+  return fmtDateTime(date)
 }
 
 export function DraftBanner<T extends DraftValues>({

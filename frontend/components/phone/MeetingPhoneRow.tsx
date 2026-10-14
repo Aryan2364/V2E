@@ -1,5 +1,6 @@
 'use client'
 
+import { fmtShortDate, fmtTime } from '@/lib/phone-format'
 import React from 'react'
 import Link from 'next/link'
 import { Video, MapPin } from 'lucide-react'
@@ -17,12 +18,12 @@ import { cx } from './primitives'
 function fmtTimeRange(start: string | null, end: string | null): string {
   if (!start) return 'No time set'
   const s = new Date(start)
-  const startStr = s.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+  const startStr = fmtTime(s)
   if (!end) return startStr
   const e = new Date(end)
   const sameDay = s.toDateString() === e.toDateString()
-  const endStr = e.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
-  return sameDay ? `${startStr} – ${endStr}` : `${startStr} – ${e.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`
+  const endStr = fmtTime(e)
+  return sameDay ? `${startStr} – ${endStr}` : `${startStr} – ${fmtShortDate(e)}, ${endStr}`
 }
 
 export function MeetingPhoneRow({ meeting, href }: { meeting: Meeting; href: string }) {

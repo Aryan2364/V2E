@@ -1,5 +1,6 @@
 'use client'
 
+import { fmtDateTime, fmtDue } from '@/lib/phone-format'
 import React from 'react'
 import { createPortal } from 'react-dom'
 import { useParams } from 'next/navigation'
@@ -128,7 +129,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   const facts: { label: string; value: string }[] = [
     { label: 'Given by', value: task.created_by?.name ?? '—' },
     { label: assignees.length === 1 ? 'Assignee' : 'Assignees', value: assigneeLabel },
-    { label: 'Due', value: task.deadline ? new Date(task.deadline).toLocaleString() : 'No deadline' },
+    { label: 'Due', value: task.deadline ? fmtDue(task.deadline) : 'No deadline' },
     { label: 'Priority', value: task.priority?.label ?? '—' },
   ]
 
@@ -203,7 +204,10 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
     }
   }
 
-  const checklistDisabledReason = !isAssignee ? 'Only an assignee can tick this checklist' : null
+  // Only the people doing the task tick its checklist (tasks.service.ts). Anyone
+  // else sees it read-only, with who ticks it and how far it has got - never
+  // circles that look tappable and silently do nothing.
+  const checklistReadOnlyNote = !isAssignee ? checklistNote(task) : null
 
   return (
     <PhoneScreen
@@ -246,18 +250,17 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
         {(task.checklist ?? []).length > 0 ? (
           <section className="flex flex-col gap-[8px]">
             <h2 className="text-phone-label font-medium text-phone-text-secondary">Checklist</h2>
+            {checklistReadOnlyNote ? <p className="text-phone-label text-phone-text-secondary">{checklistReadOnlyNote}</p> : null}
             <ul className={ROW_BLOCK}>
               {(task.checklist ?? []).map((item) => {
                 const done =
                   task.completion_mode === 'all_must_complete' ? item.my_state === 'done' || item.my_state === 'skipped' : !!item.is_completed
                 return (
                   <li key={item.id}>
-                    <button
-                      type="button"
-                      onClick={() => void toggleChecklistItem(item)}
-                      disabled={checking.has(item.id) || !isAssignee}
-                      title={checklistDisabledReason ?? undefined}
-                      className="flex min-h-[48px] w-full items-center gap-[12px] px-[16px] py-[10px] text-left active:bg-phone-surface-control disabled:opacity-100"
+                    <ChecklistItemShell
+                      readOnly={!isAssignee}
+                      busy={checking.has(item.id)}
+                      onToggle={() => void toggleChecklistItem(item)}
                     >
                       <span
                         aria-hidden
@@ -275,7 +278,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
                       <span className={cx('min-w-0 flex-1 truncate text-phone-body text-phone-text-primary', done && 'text-phone-text-muted line-through')}>
                         {item.title}
                       </span>
-                    </button>
+                    </ChecklistItemShell>
                   </li>
                 )
               })}
@@ -296,11 +299,13 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
               Add file or proof
             </button>
           ) : (
-            <button type="button" onClick={() => setPanel('files')} className={cx(ROW, ROW_BLOCK)}>
-              <Paperclip aria-hidden className="size-[18px] shrink-0 text-phone-text-secondary" />
-              <span className="min-w-0 flex-1">{`${filesCount} file${filesCount === 1 ? '' : 's'}`}</span>
-              <ChevronRight aria-hidden className="size-[18px] shrink-0 text-phone-text-secondary" />
-            </button>
+            <div className={ROW_BLOCK}>
+              <button type="button" onClick={() => setPanel('files')} className={ROW}>
+                <Paperclip aria-hidden className="size-[18px] shrink-0 text-phone-text-secondary" />
+                <span className="min-w-0 flex-1">{`${filesCount} file${filesCount === 1 ? '' : 's'}`}</span>
+                <ChevronRight aria-hidden className="size-[18px] shrink-0 text-phone-text-secondary" />
+              </button>
+            </div>
           )}
         </section>
 
@@ -328,7 +333,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
                     <li key={c.id} className="flex flex-col gap-[4px] px-[16px] py-[10px]">
                       <div className="flex items-baseline justify-between gap-[8px]">
                         <span className="truncate text-phone-label font-semibold text-phone-text-primary">{c.user_name}</span>
-                        <span className="shrink-0 text-phone-meta text-phone-text-secondary">{new Date(c.created_at).toLocaleString()}</span>
+                        <span className="shrink-0 text-phone-meta text-phone-text-secondary">{fmtDateTime(c.created_at)}</span>
                       </div>
                       <p className="whitespace-pre-wrap text-phone-body text-phone-text-primary">{c.body}</p>
                       {(c.attachments ?? []).length > 0 ? (
@@ -405,9 +410,9 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
       <PhoneSheet open={detailsOpen} onOpenChange={setDetailsOpen} title="Details">
         <dl className="flex flex-col gap-[12px]">
           <Detail label="Given by" value={task.created_by?.name ?? '—'} />
-          <Detail label="Created" value={new Date(task.created_at).toLocaleString()} />
-          <Detail label="Last updated" value={new Date(task.updated_at).toLocaleString()} />
-          {task.completed_at ? <Detail label="Completed" value={new Date(task.completed_at).toLocaleString()} /> : null}
+          <Detail label="Created" value={fmtDateTime(task.created_at)} />
+          <Detail label="Last updated" value={fmtDateTime(task.updated_at)} />
+          {task.completed_at ? <Detail label="Completed" value={fmtDateTime(task.completed_at)} /> : null}
         </dl>
       </PhoneSheet>
 
@@ -438,6 +443,36 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
       />
     </PhoneScreen>
   )
+}
+
+/** A checklist row: a button for whoever may tick it, a plain row for everyone else. */
+function ChecklistItemShell({
+  readOnly,
+  busy,
+  onToggle,
+  children,
+}: {
+  readOnly: boolean
+  busy: boolean
+  onToggle: () => void
+  children: React.ReactNode
+}) {
+  const className = 'flex min-h-[48px] w-full items-center gap-[12px] px-[16px] py-[10px] text-left'
+  if (readOnly) return <div className={className}>{children}</div>
+  return (
+    <button type="button" onClick={onToggle} disabled={busy} className={cx(className, 'active:bg-phone-surface-control disabled:opacity-100')}>
+      {children}
+    </button>
+  )
+}
+
+function checklistNote(task: Task): string {
+  const items = task.checklist ?? []
+  const done = items.filter((i) => i.is_completed).length
+  const workers = (task.assignees ?? []).filter((a) => !a.is_cc)
+  const who = workers.length === 1 ? workers[0].user?.name ?? workers[0].user_name ?? 'The assignee' : 'The assignees'
+  const progress = task.completion_mode === 'all_must_complete' && workers.length > 1 ? '' : ` · ${done} of ${items.length} done`
+  return `${who} ticks these off as they work${progress}`
 }
 
 function Detail({ label, value }: { label: string; value: string }) {

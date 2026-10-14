@@ -1,5 +1,6 @@
 'use client'
 
+import { fmtDate } from '@/lib/phone-format'
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -73,7 +74,7 @@ export default function RecurringInstancesScreen({ route }: { route: PhoneRoute 
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-phone-body text-phone-text-primary">
-                      {t.deadline ? new Date(t.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : t.title}
+                      {t.deadline ? fmtDate(t.deadline) : t.title}
                     </span>
                   </span>
                   <span

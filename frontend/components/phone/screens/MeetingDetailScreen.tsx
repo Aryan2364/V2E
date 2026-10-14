@@ -1,5 +1,6 @@
 'use client'
 
+import { fmtDateTime, fmtTime } from '@/lib/phone-format'
 import React from 'react'
 import { useParams } from 'next/navigation'
 import { ChevronRight, Video, MapPin } from 'lucide-react'
@@ -119,8 +120,8 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
   }
 
   const when = meeting.scheduled_start
-    ? `${new Date(meeting.scheduled_start).toLocaleString(undefined, { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })}${
-        meeting.scheduled_end ? ` – ${new Date(meeting.scheduled_end).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}` : ''
+    ? `${fmtDateTime(meeting.scheduled_start)}${
+        meeting.scheduled_end ? ` – ${fmtTime(meeting.scheduled_end)}` : ''
       }`
     : 'No time set'
 
