@@ -9,6 +9,20 @@ const nextConfig = {
   images: {
     domains: ['localhost'],
   },
+  async headers() {
+    return [
+      {
+        // The service worker must never be served from an HTTP cache, or a fix
+        // to it reaches phones only when that cache expires (FRONTEND_RULES_PHONE.md
+        // 41.14 rule 9). Browsers re-check it byte for byte on each registration.
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/' },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
