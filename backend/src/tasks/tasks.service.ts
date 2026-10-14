@@ -132,6 +132,10 @@ export interface TaskListFilters {
   from_workflows?: string;
 }
 
+/** How long the "task completed" notification is held so an Undo (the phone's 10s toast,
+ * plus network slack) can cancel it before anyone hears of it. */
+const COMPLETION_NOTICE_HOLD_MS = 15_000;
+
 @Injectable()
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
@@ -3412,7 +3416,7 @@ export class TasksService {
             completed_by_user_id: userId,
             // Delayed "task completed" notification — see the sweep (processPendingCompletionNotifications)
             // below. Cleared by reopenTask's within-window undo.
-            pending_completion_notification_at: reopenExpiresAt,
+            pending_completion_notification_at: new Date(now.getTime() + COMPLETION_NOTICE_HOLD_MS),
           },
         });
       }
@@ -3475,7 +3479,7 @@ export class TasksService {
             completed_by_user_id: userId,
             // Delayed "task completed" notification — see the sweep (processPendingCompletionNotifications)
             // below. Cleared by reopenTask's within-window undo.
-            pending_completion_notification_at: reopenExpiresAt,
+            pending_completion_notification_at: new Date(now.getTime() + COMPLETION_NOTICE_HOLD_MS),
           },
         });
         if (closed.count === 0) {
@@ -3491,7 +3495,7 @@ export class TasksService {
     await this.logActivity(orgId, taskId, userId, 'completed');
 
     // The "task completed" notification is DELAYED, not fired here — it was stamped
-    // onto `pending_completion_notification_at` above (= reopen_expires_at) and the
+    // onto `pending_completion_notification_at` above (now + COMPLETION_NOTICE_HOLD_MS) and the
     // processPendingCompletionNotifications sweep below fires it once that time has
     // passed AND the task is still completed (not undone in the meantime). This gives
     // the undo window a clean cancel: reopenTask just clears the timestamp.
@@ -3522,6 +3526,9 @@ export class TasksService {
     // Complete/Incomplete). Once it expires the outcome locks: only the creator/admin may
     // reopen, and a reason is required.
     const withinWindow = !!task.reopen_expires_at && task.reopen_expires_at > new Date();
+    // Still pending = the "completed" notification was never sent, so nobody heard of
+    // the completion and a "reopened" ping would only be noise (the phone's Undo).
+    const completionNoticePending = !!task.pending_completion_notification_at;
 
     if (withinWindow) {
       if (!isCreator && !isAssignee && !(await this.isOrgAdmin(orgId, userId))) {
@@ -3599,7 +3606,7 @@ export class TasksService {
     // within-window undo: that's cancelling an accidental Complete/Incomplete, not an
     // event worth a "reopened" ping (and the delayed "completed" notification this
     // undo cancelled, above, already covers that side of it).
-    if (!withinWindow) {
+    if (!completionNoticePending) {
       const reopenerName = await this.notifications.userName(userId);
       await this.notifications.emit({
         orgId,
@@ -3636,10 +3643,10 @@ export class TasksService {
   // the query returned, and by an atomic `updateMany` that only succeeds if the
   // timestamp is still exactly what was read. No existing @Cron sweep lived in this
   // file to extend the cadence of (grep for `@Cron`/`ScheduleModule` across
-  // `backend/src` found none here); EVERY_5_MINUTES mirrors `ReplayService`'s cadence
-  // for clock-sensitive sweeps and is fine-grained enough against the 5-minute default
-  // `reopen_window_minutes`.
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  // `backend/src` found none here). Every 10s, so the notification lands within ~25s of
+  // completing (15s hold + sweep) instead of waiting out the whole reopen window; the
+  // query is a single-column lookup that is almost always empty.
+  @Cron('*/10 * * * * *')
   async processPendingCompletionNotifications() {
     const now = new Date();
     const due = await this.prisma.task.findMany({
