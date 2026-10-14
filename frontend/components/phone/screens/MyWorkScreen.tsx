@@ -236,6 +236,7 @@ export default function MyWorkScreen({ route }: { route: PhoneRoute }) {
                       phase={rowStates[task.id]?.phase ?? 'idle'}
                       onTapCircle={() => onTapCircle(task)}
                       href={`/dashboard/tasks/${task.id}`}
+                      dayKnown={key === 'today' || key === 'tomorrow'}
                     />
                   ))}
                 </div>

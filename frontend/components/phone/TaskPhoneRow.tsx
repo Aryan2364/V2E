@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Paperclip } from 'lucide-react'
 import type { Task } from '@/lib/types/tasks'
 import { rowMarker } from '@/lib/tasks/finish-rules'
+import { shortDue } from '@/lib/tasks/short-due'
 import { cx } from './primitives'
 
 /*
@@ -20,9 +21,12 @@ import { cx } from './primitives'
  *     lib/tasks/finish-rules.ts). Tapping the rest of the row opens the task.
  *   - `phase` drives the tap animation: 'done' fills the circle and strikes
  *     the title (~300ms) before the caller collapses the row out of the list.
- *   - Line 2 marker: a paperclip for outstanding proof and/or "n/N" for an
- *     unfinished checklist (KIT-PENDING item 3), so the Finish sheet is never
- *     a surprise.
+ *   - One line (owner's request, 2026-10-14): the title on the left; on the
+ *     right the short due label (lib/tasks/short-due.ts - just the time under
+ *     Today/Tomorrow, nothing for an end-of-day task there, "18 Oct"
+ *     otherwise; red when overdue) and the markers: a paperclip for
+ *     outstanding proof and/or "n/N" for an unfinished checklist (KIT-PENDING
+ *     item 3), so the Finish sheet is never a surprise.
  */
 
 export type RowPhase = 'idle' | 'done' | 'collapsed'
@@ -33,16 +37,19 @@ export function TaskPhoneRow({
   phase,
   onTapCircle,
   href,
+  dayKnown = false,
 }: {
   task: Task
   userId: string | undefined
   phase: RowPhase
   onTapCircle: () => void
   href: string
+  /** The row sits under a Today/Tomorrow heading, so its due label drops the day word. */
+  dayKnown?: boolean
 }) {
   const filled = phase === 'done' || phase === 'collapsed'
   const marker = rowMarker(task, userId)
-  const deadline = task.deadline ? formatDeadline(task.deadline) : null
+  const due = shortDue(task.deadline, { dayKnown })
 
   return (
     <div
@@ -53,7 +60,7 @@ export function TaskPhoneRow({
       )}
     >
       <div className="overflow-hidden">
-        <div className="flex min-h-[48px] w-full items-start gap-[4px] px-[16px] py-[10px]">
+        <div className="flex min-h-[56px] w-full items-center gap-[4px] pl-[8px] pr-[16px]">
           <button
             type="button"
             aria-label={filled ? 'Mark not complete' : 'Mark complete'}
@@ -85,24 +92,28 @@ export function TaskPhoneRow({
             </span>
           </button>
 
-          <Link href={href} className="flex min-w-0 flex-1 flex-col gap-[2px] py-[2px]">
+          <Link href={href} className="flex min-h-[56px] min-w-0 flex-1 items-center gap-[8px]">
             <span
               className={cx(
-                'truncate text-phone-body font-medium text-phone-text-primary transition-[color] duration-[var(--duration-fast)]',
+                'min-w-0 flex-1 truncate text-phone-body font-medium text-phone-text-primary transition-[color] duration-[var(--duration-fast)]',
                 filled && 'text-phone-text-muted line-through',
               )}
             >
               {task.title}
             </span>
-            <span className="flex min-h-[18px] items-center gap-[8px] text-phone-meta text-phone-text-secondary">
-              {deadline ? <span className="truncate">{deadline}</span> : null}
-              {marker.proof ? (
-                <span className="inline-flex items-center gap-[2px]" aria-label="Proof needed">
-                  <Paperclip aria-hidden className="size-[12px]" />
-                </span>
-              ) : null}
-              {marker.checklist ? <span aria-label={`Checklist ${marker.checklist}`}>{marker.checklist}</span> : null}
-            </span>
+            {due || marker.proof || marker.checklist ? (
+              <span className="flex shrink-0 items-center gap-[8px] text-phone-meta text-phone-text-secondary">
+                {marker.proof ? (
+                  <span className="inline-flex items-center" aria-label="Proof needed">
+                    <Paperclip aria-hidden className="size-[14px]" />
+                  </span>
+                ) : null}
+                {marker.checklist ? <span aria-label={`Checklist ${marker.checklist}`}>{marker.checklist}</span> : null}
+                {due ? (
+                  <span className={cx('whitespace-nowrap', task.is_overdue && 'font-medium text-phone-danger')}>{due}</span>
+                ) : null}
+              </span>
+            ) : null}
           </Link>
         </div>
       </div>
@@ -110,26 +121,15 @@ export function TaskPhoneRow({
   )
 }
 
-function formatDeadline(iso: string): string {
-  try {
-    const d = new Date(iso)
-    return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
-  } catch {
-    return ''
-  }
-}
-
 /** A skeleton row while the list loads (plan §5.1 "skeleton rows"). */
 export function TaskPhoneRowSkeleton() {
   return (
-    <div className="flex min-h-[48px] items-center gap-[4px] px-[16px] py-[10px]" aria-hidden>
+    <div className="flex min-h-[56px] items-center gap-[4px] pl-[8px] pr-[16px]" aria-hidden>
       <span className="flex size-[44px] shrink-0 items-center justify-center">
         <span className="size-[22px] rounded-full bg-phone-surface-control" />
       </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-[6px] py-[4px]">
-        <span className="h-[14px] w-3/4 rounded-full bg-phone-surface-control" />
-        <span className="h-[10px] w-1/3 rounded-full bg-phone-surface-control" />
-      </div>
+      <span className="h-[14px] flex-1 rounded-full bg-phone-surface-control" />
+      <span className="h-[10px] w-[48px] shrink-0 rounded-full bg-phone-surface-control" />
     </div>
   )
 }

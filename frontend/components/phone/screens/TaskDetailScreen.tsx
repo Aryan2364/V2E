@@ -285,11 +285,23 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
 
         <section className="flex flex-col gap-[8px]">
           <h2 className="text-phone-label font-medium text-phone-text-secondary">Files &amp; proof</h2>
-          <button type="button" onClick={() => setPanel('files')} className={cx(ROW, ROW_BLOCK)}>
-            <Paperclip aria-hidden className="size-[18px] shrink-0 text-phone-text-secondary" />
-            <span className="min-w-0 flex-1">{filesCount === 0 ? 'No files yet' : `${filesCount} file${filesCount === 1 ? '' : 's'}`}</span>
-            <ChevronRight aria-hidden className="size-[18px] shrink-0 text-phone-text-secondary" />
-          </button>
+          {filesCount === 0 ? (
+            // Nothing to list yet: one plain action instead of an empty bordered row.
+            <button
+              type="button"
+              onClick={() => setPanel('files')}
+              className="flex min-h-[44px] items-center gap-[8px] self-start text-phone-body font-semibold text-phone-primary-text"
+            >
+              <Paperclip aria-hidden className="size-[18px] shrink-0" />
+              Add file or proof
+            </button>
+          ) : (
+            <button type="button" onClick={() => setPanel('files')} className={cx(ROW, ROW_BLOCK)}>
+              <Paperclip aria-hidden className="size-[18px] shrink-0 text-phone-text-secondary" />
+              <span className="min-w-0 flex-1">{`${filesCount} file${filesCount === 1 ? '' : 's'}`}</span>
+              <ChevronRight aria-hidden className="size-[18px] shrink-0 text-phone-text-secondary" />
+            </button>
+          )}
         </section>
 
         <section className="flex flex-col gap-[8px]">
