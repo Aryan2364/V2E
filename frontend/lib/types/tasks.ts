@@ -329,6 +329,27 @@ export interface CreateTaskInput {
  */
 export type UpdateTaskInput = Partial<Task> & { tag_ids?: string[] }
 
+/**
+ * `GET /tasks/my/grouped` (v2e plan-phone-2026-10-14.md §5.1) — my tasks sorted
+ * into org-local date buckets. Each Task carries proof_required, completion_mode,
+ * checklist and proof_allowed_extensions so the phone row/sheet can decide
+ * tap-to-complete vs the Finish sheet without a second round trip.
+ */
+export interface MyGroupedTasks {
+  overdue: Task[]
+  today: Task[]
+  tomorrow: Task[]
+  later: Task[]
+  noDate: Task[]
+  counts: {
+    overdue: number
+    today: number
+    tomorrow: number
+    later: number
+    noDate: number
+  }
+}
+
 export interface TaskComment {
   id: string
   task_id: string

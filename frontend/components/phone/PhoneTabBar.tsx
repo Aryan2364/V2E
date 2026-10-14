@@ -51,7 +51,8 @@ export const PHONE_TABS: Tab[] = [
     icon: <CalendarDays aria-hidden />,
     entitlement: 'governance.meetings',
   },
-  { label: 'Notifications', href: '/dashboard/notifications', icon: <Bell aria-hidden /> },
+  // Tab label only ("Alerts"); the screen's own title stays "Notifications" (route title in lib/phone-routes.ts).
+  { label: 'Alerts', href: '/dashboard/notifications', icon: <Bell aria-hidden /> },
   { label: 'More', href: MORE_HREF, icon: <Menu aria-hidden /> },
 ]
 

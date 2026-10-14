@@ -28,6 +28,7 @@ import type {
   PagedTasks,
   WorkQuery,
   PeopleTree,
+  MyGroupedTasks,
   EmployeeReport,
   BulkAction,
   ReminderSpec,
@@ -396,6 +397,23 @@ export const tasksApi = {
   getTask: async (orgId: string, taskId: string): Promise<Task> => {
     const res = await apiClient.get(`${base(orgId)}/${taskId}`)
     return unwrap<Task>(res)
+  },
+
+  /**
+   * Phone "My work" (v2e plan-phone-2026-10-14.md §5.1): my tasks grouped into
+   * org-local date buckets, with everything a row needs to decide tap-to-complete
+   * vs the Finish sheet already on each task (proof_required, completion_mode,
+   * checklist counts, proof_allowed_extensions).
+   */
+  getMyGrouped: async (orgId: string): Promise<MyGroupedTasks> => {
+    const res = await apiClient.get(`${base(orgId)}/my/grouped`)
+    return unwrap<MyGroupedTasks>(res)
+  },
+
+  /** The phone's home-screen icon badge count: my tasks overdue or due today. */
+  getBadgeCount: async (orgId: string): Promise<number> => {
+    const res = await apiClient.get(`${base(orgId)}/badge-count`)
+    return unwrap<{ count: number }>(res).count
   },
 
   updateTask: async (orgId: string, taskId: string, dto: UpdateTaskInput): Promise<Task> => {

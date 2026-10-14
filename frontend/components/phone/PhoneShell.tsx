@@ -3,15 +3,19 @@
 import React from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTrackBackHistory } from '@/lib/back'
+import { useAuth } from '@/lib/auth/context'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
-import { useNotifications } from '@/lib/notifications/NotificationsProvider'
-import { useAppBadge, useServiceWorkerRegistration } from '@/lib/service-worker'
+import { useServiceWorkerRegistration } from '@/lib/service-worker'
+import { TaskBadgeProvider } from '@/lib/task-badge'
 import { phoneRedirectFor, phoneRouteFor, type PhoneRoute } from '@/lib/phone-routes'
 import PhoneTabBar from './PhoneTabBar'
 import PhoneScreen from './PhoneScreen'
 import NotificationsScreen from './screens/NotificationsScreen'
 import MoreScreen from './screens/MoreScreen'
 import NotificationChoicesScreen from './screens/NotificationChoicesScreen'
+import MyWorkScreen from './screens/MyWorkScreen'
+import TaskDetailScreen from './screens/TaskDetailScreen'
+import { UndoToastProvider } from './UndoToast'
 import {
   ComingNextScreen,
   ComputerOnlyScreen,
@@ -43,10 +47,9 @@ import {
 export default function PhoneShell() {
   const pathname = usePathname()
   const router = useRouter()
-  const { unreadCount } = useNotifications()
+  const { user } = useAuth()
   useTrackBackHistory()
   useServiceWorkerRegistration(true)
-  useAppBadge(true, unreadCount)
 
   const redirect = phoneRedirectFor(pathname)
   React.useEffect(() => {
@@ -57,17 +60,21 @@ export default function PhoneShell() {
   const showTabBar = !redirect && route !== null && route.parent === undefined
 
   return (
-    <div data-slot="phone-shell" className="flex min-h-[100dvh] flex-col bg-phone-surface-sunken text-phone-text-body">
-      {redirect ? (
-        // A moment while /dashboard moves on to My work: the bar, no content.
-        <PhoneScreen title="V2E">{null}</PhoneScreen>
-      ) : route ? (
-        <GuardedScreen route={route} />
-      ) : (
-        <ComputerOnlyScreen />
-      )}
-      {showTabBar ? <PhoneTabBar /> : null}
-    </div>
+    <TaskBadgeProvider orgId={user?.organizationId ?? ''}>
+      <UndoToastProvider>
+        <div data-slot="phone-shell" className="flex min-h-[100dvh] flex-col bg-phone-surface-sunken text-phone-text-body">
+          {redirect ? (
+            // A moment while /dashboard moves on to My work: the bar, no content.
+            <PhoneScreen title="V2E">{null}</PhoneScreen>
+          ) : route ? (
+            <GuardedScreen route={route} />
+          ) : (
+            <ComputerOnlyScreen />
+          )}
+          {showTabBar ? <PhoneTabBar /> : null}
+        </div>
+      </UndoToastProvider>
+    </TaskBadgeProvider>
   )
 }
 
@@ -78,10 +85,12 @@ function GuardedScreen({ route }: { route: PhoneRoute }) {
 
   switch (route.key) {
     case 'my-work':
+      return <MyWorkScreen route={route} />
     case 'given':
     case 'meetings':
       return <ComingNextScreen route={{ ...route, key: route.key }} />
     case 'task-record':
+      return <TaskDetailScreen route={route} />
     case 'meeting-record':
       return <RecordComingNextScreen route={route} />
     case 'notifications':
