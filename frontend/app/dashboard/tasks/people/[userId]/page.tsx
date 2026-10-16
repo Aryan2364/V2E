@@ -11,6 +11,8 @@ import TaskDrawer from '@/components/tasks/overview/TaskDrawer'
 import { Inbox, Send, Lock } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 
 const PAGE_SIZE = 25
 type Lens = 'assignee' | 'assigner'
@@ -93,7 +95,7 @@ export default function EmployeeReportPage() {
           <button
             key={key}
             onClick={() => { setLens(key); setBucket(null) }}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-body font-medium transition-colors ${lens === key ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'}`}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-body font-medium outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-[background-color,color] ${lens === key ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'}`}
           >
             {icon}{label}
           </button>
@@ -108,19 +110,22 @@ export default function EmployeeReportPage() {
         {listLoading ? 'Loading…' : <><span className="font-medium text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}</>}
       </p>
       {listLoading ? (
-        <div className="flex items-center justify-center h-40"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
-      ) : rows.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card py-12 text-center">
-          <p className="font-medium text-text-primary">Nothing here</p>
-          <p className="text-body text-text-secondary mt-1">No tasks in this view.</p>
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full rounded-control" />
+          ))}
         </div>
+      ) : rows.length === 0 ? (
+        <EmptyState variant="nothing-yet" heading="Nothing here">
+          No tasks in this view.
+        </EmptyState>
       ) : (
         <div className="flex flex-col gap-2">
           {rows.map((t) => <TaskRow key={t.id} task={t} onClick={() => setOpenTaskId(t.id)} />)}
           {hasMore && (
-            <button onClick={() => fetchList(page + 1, false)} className="mt-2 mx-auto px-4 py-2.5 rounded-control border border-border-light bg-surface text-body font-medium text-text-secondary hover:bg-surface-control">
+            <Button variant="secondary" onClick={() => fetchList(page + 1, false)} className="mt-2 mx-auto">
               Load more ({total - rows.length} left)
-            </button>
+            </Button>
           )}
         </div>
       )}
