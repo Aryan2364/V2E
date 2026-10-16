@@ -23,7 +23,7 @@ export default function EngagementPanel({ orgId, pathId }: { orgId: string; path
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
+      <div className="flex items-center justify-center py-12">
         <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -32,7 +32,7 @@ export default function EngagementPanel({ orgId, pathId }: { orgId: string; path
 
   if (data.total_assigned === 0) {
     return (
-      <div className="bg-white border border-dashed border-border rounded-[12px] py-12 flex flex-col items-center text-center">
+      <div className="bg-surface border border-dashed border-border rounded-card py-12 flex flex-col items-center text-center">
         <BarChart3 size={28} className="text-text-muted mb-3" />
         <p className="text-sm font-medium text-text-primary mb-1">No engagement yet</p>
         <p className="text-xs text-text-muted">Assign this course to people to start tracking who opens each material.</p>
@@ -141,12 +141,12 @@ export default function EngagementPanel({ orgId, pathId }: { orgId: string; path
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-text-primary mb-2">By material</h3>
+        <h3 className="text-sm font-medium text-text-primary mb-2">By material</h3>
         <ResponsiveTable columns={itemColumns} rows={data.items} rowKey={(it) => it.item_id} />
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-text-primary mb-2">By person</h3>
+        <h3 className="text-sm font-medium text-text-primary mb-2">By person</h3>
         <ResponsiveTable columns={learnerColumns} rows={data.learners} rowKey={(l) => l.employee_profile_id} />
       </div>
     </div>
@@ -156,11 +156,11 @@ export default function EngagementPanel({ orgId, pathId }: { orgId: string; path
 function Tile({ icon: Icon, label, value, tone = 'slate' }: { icon: any; label: string; value: number; tone?: 'slate' | 'blue' | 'green' }) {
   const toneClasses = tone === 'blue' ? 'text-primary-text' : tone === 'green' ? 'text-success' : 'text-text-secondary'
   return (
-    <div className="bg-white border border-border-light rounded-[10px] p-3.5">
+    <div className="bg-surface border border-border-light rounded-card p-3.5">
       <div className="flex items-center gap-1.5 text-xs text-text-muted mb-1">
         <Icon size={13} className={toneClasses} /> {label}
       </div>
-      <div className="text-[22px] font-bold text-text-primary tabular-nums">{value}</div>
+      <div className="text-card-heading font-medium text-text-primary tabular-nums">{value}</div>
     </div>
   )
 }

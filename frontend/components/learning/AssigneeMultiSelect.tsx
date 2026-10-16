@@ -68,7 +68,7 @@ export default function AssigneeMultiSelect({
   }
 
   return (
-    <div className="border border-border rounded-[10px] overflow-hidden">
+    <div className="border border-border rounded-card overflow-hidden">
       {/* Search */}
       <div className="px-3 py-2 border-b border-border-light bg-surface-sunken flex items-center gap-2">
         <Search size={15} className="text-text-muted shrink-0" />
@@ -91,7 +91,7 @@ export default function AssigneeMultiSelect({
           type="button"
           onClick={toggleAllFiltered}
           disabled={filteredIds.length === 0}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-text hover:text-primary-text disabled:text-text-muted disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-text hover:text-primary-text disabled:text-text-muted disabled:cursor-not-allowed"
         >
           <CheckCheck size={14} />
           {allFilteredSelected ? 'Deselect' : 'Select'} {q ? 'matching' : 'all'} ({filteredIds.length})
@@ -109,7 +109,7 @@ export default function AssigneeMultiSelect({
       {/* List */}
       <div className={`${heightClass} overflow-y-auto`}>
         {filtered.length === 0 ? (
-          <p className="text-sm text-text-muted px-3 py-5 text-center">No people found.</p>
+          <p className="text-sm text-text-muted px-3 py-4 text-center">No people found.</p>
         ) : (
           filtered.map((emp: any) => {
             const checked = selectedSet.has(emp.id)
@@ -123,9 +123,9 @@ export default function AssigneeMultiSelect({
               >
                 <span className={[
                   'w-4 h-4 rounded-sm flex items-center justify-center border shrink-0',
-                  checked ? 'bg-primary border-primary' : 'border-border bg-white',
+                  checked ? 'bg-primary border-primary' : 'border-border bg-surface',
                 ].join(' ')}>
-                  {checked && <Check size={12} className="text-white" />}
+                  {checked && <Check size={12} className="text-primary-foreground" />}
                 </span>
                 <input type="checkbox" className="hidden" checked={checked} onChange={() => toggle(emp.id)} />
                 <div className="min-w-0">

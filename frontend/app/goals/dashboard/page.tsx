@@ -57,7 +57,7 @@ export default function GoalsDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-text-secondary py-16 justify-center">
+      <div className="flex items-center gap-2 text-sm text-text-secondary py-12 justify-center">
         <Loader2 size={16} className="animate-spin" /> Loading…
       </div>
     )
@@ -70,7 +70,7 @@ export default function GoalsDashboardPage() {
         title="Couldn’t load the dashboard"
         subtitle="Something went wrong fetching the numbers."
         action={
-          <button onClick={load} className="mt-1 text-sm font-semibold text-primary-text hover:text-primary-text">
+          <button onClick={load} className="mt-1 text-sm font-medium text-primary-text hover:text-primary-text">
             Try again
           </button>
         }
@@ -81,7 +81,7 @@ export default function GoalsDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[26px] font-bold text-text-primary leading-tight">Dashboard</h1>
+        <h1 className="text-page-title font-medium text-text-primary leading-tight">Dashboard</h1>
         <p className="text-sm text-text-secondary mt-1">
           {data.total} goal{data.total === 1 ? '' : 's'} · as on {formatDate(data.as_on)}
         </p>
@@ -97,19 +97,19 @@ export default function GoalsDashboardPage() {
             <button
               key={s}
               onClick={() => router.push(`/goals/list?status=${s}`)}
-              className="bg-white border border-border-light rounded-[12px] shadow-card p-4 text-left hover:border-border transition-colors"
+              className="bg-surface border border-border-light rounded-card shadow-card p-4 text-left hover:border-border transition-colors"
             >
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: m.dot }} />
-                <span className="text-[12px] font-medium text-text-secondary truncate">{m.label}</span>
+                <span className="text-meta font-medium text-text-secondary truncate">{m.label}</span>
               </span>
-              <p className="text-[28px] font-bold text-text-primary tabular-nums leading-none mt-2">{n}</p>
+              <p className="text-page-title font-medium text-text-primary tabular-nums leading-none mt-2">{n}</p>
             </button>
           )
         })}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <GoalPanel
           icon={<AlertTriangle size={16} />}
           title="At risk"
@@ -161,20 +161,20 @@ function GoalPanel({
   return (
     // Fixed height + internal scroll so the three panels stay the same size
     // however lopsided the data is (DESIGN_RULES Part 2 / Part 3).
-    <section className="bg-white border border-border-light rounded-[12px] shadow-card flex flex-col h-[400px]">
-      <header className="px-5 py-4 border-b border-border-light shrink-0">
+    <section className="bg-surface border border-border-light rounded-card shadow-card flex flex-col h-[400px]">
+      <header className="px-4 py-4 border-b border-border-light shrink-0">
         <div className="flex items-center gap-2">
-          <h2 className="flex items-center gap-2 text-[16px] font-semibold text-text-primary">
+          <h2 className="flex items-center gap-2 text-card-heading font-medium text-text-primary">
             <span className="text-text-secondary">{icon}</span>
             {title}
           </h2>
           <CountBadge count={goals.length} />
         </div>
-        <p className="text-[12px] text-text-secondary mt-0.5">{hint}</p>
+        <p className="text-meta text-text-secondary mt-0.5">{hint}</p>
       </header>
-      <div className="table-scroll flex-1 overflow-y-auto px-5 py-2">
+      <div className="table-scroll flex-1 overflow-y-auto px-4 py-2">
         {goals.length === 0 ? (
-          <p className="text-[13px] text-text-secondary py-6">{empty}</p>
+          <p className="text-label text-text-secondary py-6">{empty}</p>
         ) : (
           <ul className="divide-y divide-surface-control">
             {goals.map((g) => (
@@ -183,15 +183,15 @@ function GoalPanel({
                   onClick={() => router.push(`/goals/${g.id}`)}
                   className="w-full text-left py-2.5 group"
                 >
-                  <p className="text-[14px] font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
+                  <p className="text-body font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
                     {g.title}
                   </p>
                   <div className="flex items-center gap-2 flex-wrap mt-1">
                     <GoalStatusBadge status={g.status} />
-                    <span className="text-[12px] text-text-secondary">{meta(g)}</span>
+                    <span className="text-meta text-text-secondary">{meta(g)}</span>
                   </div>
                   {g.target_value !== null && g.target_value !== undefined && (
-                    <p className="text-[12px] text-text-secondary mt-0.5 tabular-nums">
+                    <p className="text-meta text-text-secondary mt-0.5 tabular-nums">
                       {g.current_value === null || g.current_value === undefined ? '—' : g.current_value}
                       {' of '}
                       {formatValue(g.target_value, g.unit)}

@@ -36,12 +36,12 @@ export default function LearningPathsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary">Learning Paths</h1>
+          <h1 className="text-page-title font-medium text-text-primary">Learning Paths</h1>
           <p className="text-sm text-text-secondary mt-1">{paths.length} paths total</p>
         </div>
         <Link
           href="/learning/paths/builder"
-          className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2.5 rounded-[8px] transition-colors"
+          className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium px-4 py-2.5 rounded-control transition-colors"
         >
           <Plus size={16} />
           New Path
@@ -57,7 +57,7 @@ export default function LearningPathsPage() {
             placeholder="Search paths..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+            className="w-full pl-8 pr-3 py-2 text-sm border border-border rounded-control bg-surface text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>
         {(['all', 'draft', 'published', 'archived'] as const).map((s) => (
@@ -65,10 +65,10 @@ export default function LearningPathsPage() {
             key={s}
             onClick={() => setFilter(s)}
             className={[
-              'px-3 py-1.5 rounded-[6px] text-xs font-medium capitalize transition-colors',
+              'px-3 py-1.5 rounded-control text-xs font-medium capitalize transition-colors',
               filter === s
-                ? 'bg-primary text-white'
-                : 'bg-white text-text-secondary border border-border-light hover:border-primary hover:text-primary-text',
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-surface text-text-secondary border border-border-light hover:border-primary hover:text-primary-text',
             ].join(' ')}
           >
             {s}
@@ -80,22 +80,22 @@ export default function LearningPathsPage() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-44 bg-surface-control rounded-[12px] animate-pulse" />
+            <div key={i} className="h-44 bg-surface-control rounded-card animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-14 h-14 rounded-[14px] bg-primary-subtle flex items-center justify-center mb-4">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="w-14 h-14 rounded-card bg-primary-subtle flex items-center justify-center mb-4">
             <BookOpen size={24} className="text-primary-text" />
           </div>
-          <h3 className="text-lg font-semibold text-text-primary mb-1">No learning paths found</h3>
+          <h3 className="text-lg font-medium text-text-primary mb-1">No learning paths found</h3>
           <p className="text-sm text-text-secondary mb-4">
             {search || filter !== 'all' ? 'Try adjusting your filters.' : 'Create your first learning path to get started.'}
           </p>
           {!search && filter === 'all' && (
             <Link
               href="/learning/paths/builder"
-              className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2.5 rounded-[8px] transition-colors"
+              className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium px-4 py-2.5 rounded-control transition-colors"
             >
               <Plus size={16} />
               Create Learning Path

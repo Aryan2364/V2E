@@ -68,7 +68,7 @@ export default function StrategyMapPage() {
       {/* Breadcrumb — the way back out of the canvas, always visible. */}
       <nav
         aria-label="Breadcrumb"
-        className="flex items-center gap-1.5 text-[13px] text-text-muted shrink-0"
+        className="flex items-center gap-1.5 text-label text-text-muted shrink-0"
       >
         <button
           onClick={() => router.push('/goals/list')}
@@ -76,15 +76,15 @@ export default function StrategyMapPage() {
         >
           Goals
         </button>
-        <span className="text-[#CBD5E1]">›</span>
-        <span className="font-semibold text-text-primary" aria-current="page">
+        <span className="text-muted">›</span>
+        <span className="font-medium text-text-primary" aria-current="page">
           Strategic Map
         </span>
       </nav>
 
       <div className="shrink-0">
         <div className="min-w-0">
-          <h1 className="text-[26px] font-bold text-text-primary leading-tight">Strategic Map</h1>
+          <h1 className="text-page-title font-medium text-text-primary leading-tight">Strategic Map</h1>
           <p className="text-sm text-text-secondary mt-1">
             Every goal in its band, with a line to the goals it supports.{' '}
             {!loading && (
@@ -99,15 +99,15 @@ export default function StrategyMapPage() {
       </div>
 
       {loading ? (
-        <div className="flex-1 min-h-0 rounded-[12px] border border-border-light bg-white flex items-center justify-center gap-2 text-sm text-text-secondary">
+        <div className="flex-1 min-h-0 rounded-card border border-border-light bg-surface flex items-center justify-center gap-2 text-sm text-text-secondary">
           <Loader2 size={16} className="animate-spin" /> Loading the map…
         </div>
       ) : error ? (
-        <div className="flex-1 min-h-0 rounded-[12px] border border-border-light bg-white flex flex-col items-center justify-center gap-3 text-center px-6">
+        <div className="flex-1 min-h-0 rounded-card border border-border-light bg-surface flex flex-col items-center justify-center gap-3 text-center px-6">
           <p className="text-sm text-text-secondary">The map couldn&apos;t be loaded.</p>
           <button
             onClick={() => void load()}
-            className="inline-flex items-center gap-2 h-9 px-4 rounded-[8px] bg-primary text-white text-[13px] font-semibold hover:bg-primary-hover transition-colors"
+            className="inline-flex items-center gap-2 h-9 px-4 rounded-control bg-primary text-primary-foreground text-label font-medium hover:bg-primary-hover transition-colors"
           >
             <RefreshCw size={14} /> Try again
           </button>

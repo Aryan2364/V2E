@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { formatDate } from '@/lib/format'
 import { createPortal } from 'react-dom'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -53,13 +54,13 @@ const ASSIGN_STATUS: Record<string, { bg: string; text: string; label: string }>
 
 function StatusBadge({ status }: { status: PolicyStatus }) {
   const cfg = STATUS_CONFIG[status]
-  return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.text}`}>{cfg.label}</span>
+  return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cfg.bg} ${cfg.text}`}>{cfg.label}</span>
 }
 
 function TypeBadge({ type }: { type: PolicyContentType }) {
   const Icon = TYPE_ICONS[type]
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${TYPE_COLORS[type]}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-meta font-medium ${TYPE_COLORS[type]}`}>
       <Icon size={10} />
       {TYPE_LABELS[type]}
     </span>
@@ -88,10 +89,10 @@ function DialogShell({ title, onClose, size, children }: { title: string; onClos
       aria-modal="true"
       aria-label={title}
     >
-      <div className={`bg-white rounded-t-[16px] sm:rounded-[16px] w-full ${size === 'lg' ? 'sm:max-w-lg' : 'sm:max-w-md'} shadow-xl flex flex-col max-h-[90vh]`}>
+      <div className={`bg-surface rounded-t-[16px] sm:rounded-card w-full ${size === 'lg' ? 'sm:max-w-lg' : 'sm:max-w-md'} shadow-xl flex flex-col max-h-[90vh]`}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-border-light shrink-0">
-          <h2 className="text-[16px] font-bold text-text-primary">{title}</h2>
-          <button onClick={onClose} aria-label="Close" className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-control rounded-[6px] transition-colors">
+          <h2 className="text-card-heading font-medium text-text-primary">{title}</h2>
+          <button onClick={onClose} aria-label="Close" className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-control rounded-control transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -124,14 +125,14 @@ const assignmentColumns: ResponsiveColumn<CompanyPolicyAssignment>[] = [
     header: 'Status',
     render: (a) => {
       const cfg = ASSIGN_STATUS[a.status] ?? ASSIGN_STATUS.not_started
-      return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.text}`}>{cfg.label}</span>
+      return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cfg.bg} ${cfg.text}`}>{cfg.label}</span>
     },
   },
   {
     key: 'assigned_on',
     header: 'Assigned On',
     render: (a) => (
-      <span className="text-text-secondary text-xs">{new Date(a.assigned_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+      <span className="text-text-secondary text-xs">{formatDate(a.assigned_at)}</span>
     ),
   },
 ]
@@ -187,14 +188,14 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
     }
   }
 
-  const inputClass = 'w-full px-3 py-2.5 border border-border rounded-[8px] text-base sm:text-sm text-text-primary placeholder:text-text-muted bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  const inputClass = 'w-full px-3 py-2.5 border border-border rounded-control text-base sm:text-sm text-text-primary placeholder:text-text-muted bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
   const labelClass = 'block text-sm font-medium text-text-secondary mb-1.5'
 
   return (
     <DialogShell title={editing ? 'Edit Item' : 'Add Item'} onClose={onClose} size="lg">
 
-        <div className="overflow-y-auto px-6 py-5 flex flex-col gap-4">
-          {error && <div className="text-sm text-danger bg-danger-bg border border-danger-border rounded-[8px] px-4 py-3">{error}</div>}
+        <div className="overflow-y-auto px-6 py-4 flex flex-col gap-4">
+          {error && <div className="text-sm text-danger bg-danger-bg border border-danger-border rounded-control px-4 py-3">{error}</div>}
 
           <div>
             <label className={labelClass}>Title <span className="text-danger">*</span></label>
@@ -212,7 +213,7 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
                     key={type}
                     type="button"
                     onClick={() => set('content_type', type)}
-                    className={['flex items-center gap-2 px-3 py-2.5 rounded-[8px] border-2 text-sm font-medium transition-all', active ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary hover:border-border'].join(' ')}
+                    className={['flex items-center gap-2 px-3 py-2.5 rounded-control border-2 text-sm font-medium transition-all', active ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary hover:border-border'].join(' ')}
                   >
                     <Icon size={15} />
                     {TYPE_LABELS[type]}
@@ -250,7 +251,7 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
           >
             {saving && <Loader2 size={15} className="animate-spin" />}
             {editing ? 'Save Changes' : 'Add Item'}
@@ -310,10 +311,10 @@ function AssignModal({ policyId, orgId, onClose, onAssigned }: { policyId: strin
                 <button
                   key={emp.id}
                   onClick={() => toggle(emp.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-surface-sunken transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-control hover:bg-surface-sunken transition-colors text-left"
                 >
                   <div className={['w-5 h-5 rounded-[4px] border-2 flex items-center justify-center shrink-0 transition-colors', checked ? 'bg-primary border-primary' : 'border-border'].join(' ')}>
-                    {checked && <Check size={11} className="text-white" />}
+                    {checked && <Check size={11} className="text-primary-foreground" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-text-primary truncate">{name}</p>
@@ -325,7 +326,7 @@ function AssignModal({ policyId, orgId, onClose, onAssigned }: { policyId: strin
           )}
         </div>
         {error && (
-          <div className="mx-6 mb-3 text-sm text-danger bg-danger-bg border border-danger-border rounded-[8px] px-3 py-2">{error}</div>
+          <div className="mx-6 mb-3 text-sm text-danger bg-danger-bg border border-danger-border rounded-control px-3 py-2">{error}</div>
         )}
         <div className="px-6 py-4 border-t border-border-light flex items-center justify-between shrink-0">
           <p className="text-sm text-text-secondary">{selected.length} selected</p>
@@ -333,7 +334,7 @@ function AssignModal({ policyId, orgId, onClose, onAssigned }: { policyId: strin
             <button
               onClick={handleAssign}
               disabled={!selected.length || assigning}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
             >
               {assigning && <Loader2 size={13} className="animate-spin" />}
               Assign
@@ -461,17 +462,17 @@ export default function ManagePolicyPage() {
     setEditingItem(null)
   }
 
-  if (status === 'loading') return <div className="flex justify-center py-20"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+  if (status === 'loading') return <div className="flex justify-center py-12"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
   if (status === 'failed' || !policy) {
     return (
       <div>
         <PolicyBreadcrumb trail={[{ label: 'Company Policy', href: POLICY_BASE }, { label: 'Policy' }]} />
-        <div className="bg-white border border-border-light rounded-[12px] p-8 flex flex-col items-center text-center gap-2">
-          <p className="text-sm font-semibold text-text-primary">This policy could not be loaded</p>
+        <div className="bg-surface border border-border-light rounded-card shadow-card p-8 flex flex-col items-center text-center gap-2">
+          <p className="text-sm font-medium text-text-primary">This policy could not be loaded</p>
           <p className="text-sm text-text-secondary">It may have been deleted, or the connection dropped.</p>
           <div className="flex gap-3 mt-2">
-            <button type="button" onClick={load} className="px-4 py-2 text-sm font-semibold text-primary-text border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors">Retry</button>
-            <Link href={POLICY_BASE} className="px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors">All policies</Link>
+            <button type="button" onClick={load} className="px-4 py-2 text-sm font-medium text-primary-text border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">Retry</button>
+            <Link href={POLICY_BASE} className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">All policies</Link>
           </div>
         </div>
       </div>
@@ -487,28 +488,28 @@ export default function ManagePolicyPage() {
         ? `"${pendingDelete.item.title}" will be removed from this policy. This cannot be undone.`
         : undefined
 
-  const outlineBtn = 'flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-sm font-semibold rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:border-border-light disabled:cursor-not-allowed'
+  const outlineBtn = 'flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-sm font-medium rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:border-border-light disabled:cursor-not-allowed'
 
   return (
     <div className="w-full max-w-[1280px]">
       <PolicyBreadcrumb trail={[{ label: 'Company Policy', href: POLICY_BASE }, { label: policy.title }]} />
 
       {/* Header card */}
-      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6 mb-5">
+      <div className="bg-surface border border-border-light rounded-card shadow-card p-6 mb-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-0">
-            <h1 className="text-[22px] sm:text-[28px] font-bold text-text-primary leading-snug wrap-break-word">{policy.title}</h1>
+            <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary leading-snug wrap-break-word">{policy.title}</h1>
             <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
               <StatusBadge status={policy.status} />
             </div>
-            {policy.description && <p className="text-[14px] text-text-secondary mt-2 leading-relaxed wrap-break-word">{policy.description}</p>}
+            {policy.description && <p className="text-body text-text-secondary mt-2 leading-relaxed wrap-break-word">{policy.description}</p>}
           </div>
 
           <div className="flex items-center gap-2 flex-wrap shrink-0">
             {canEdit === true ? (
               <Link
                 href={`${policyHref(policyId)}/edit`}
-                className={`${outlineBtn} text-text-secondary bg-white border border-border hover:border-primary hover:text-primary-text`}
+                className={`${outlineBtn} text-text-secondary bg-surface border border-border hover:border-primary hover:text-primary-text`}
               >
                 <Pencil size={14} /> Edit
               </Link>
@@ -527,7 +528,7 @@ export default function ManagePolicyPage() {
                 <button
                   onClick={handlePublish}
                   disabled={publishing || canWrite !== true || itemCount === 0}
-                  className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-sm font-semibold text-white bg-success hover:bg-success rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-sm font-medium text-primary-foreground bg-success hover:bg-success rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
                 >
                   {publishing && <Loader2 size={13} className="animate-spin" />}
                   Publish
@@ -551,7 +552,7 @@ export default function ManagePolicyPage() {
                 onClick={() => { setDeleteError(null); setPendingDelete({ kind: 'policy' }) }}
                 disabled={canDeletePolicy !== true}
                 aria-label="Delete policy"
-                className="w-10 h-10 flex items-center justify-center text-danger bg-white border border-border-light rounded-[8px] hover:bg-danger-bg hover:border-danger-border transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                className="w-10 h-10 flex items-center justify-center text-danger bg-surface border border-border-light rounded-control hover:bg-danger-bg hover:border-danger-border transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 <Trash2 size={15} />
               </button>
@@ -567,7 +568,7 @@ export default function ManagePolicyPage() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={['-mb-px px-5 py-2.5 min-h-[44px] text-sm font-semibold capitalize border-b-2 transition-colors', activeTab === t ? 'border-primary text-primary-text' : 'border-transparent text-text-secondary hover:text-text-primary'].join(' ')}
+              className={['-mb-px px-4 py-2.5 min-h-[44px] text-sm font-medium capitalize border-b-2 transition-colors', activeTab === t ? 'border-primary text-primary-text' : 'border-transparent text-text-secondary hover:text-text-primary'].join(' ')}
             >
               {t}
             </button>
@@ -579,7 +580,7 @@ export default function ManagePolicyPage() {
               <button
                 onClick={() => { setEditingItem(null); setShowItemModal(true) }}
                 disabled={canWrite !== true}
-                className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium px-4 py-2 rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 <Plus size={15} /> Add Item
               </button>
@@ -592,7 +593,7 @@ export default function ManagePolicyPage() {
               <button
                 onClick={() => setShowAssignModal(true)}
                 disabled={canWrite !== true || policy.status !== 'published'}
-                className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium px-4 py-2 rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 <Users size={15} /> Assign Employees
               </button>
@@ -605,9 +606,9 @@ export default function ManagePolicyPage() {
       {activeTab === 'items' && (
         <div>
           {!policy.items?.length ? (
-            <div className="text-center py-16 bg-white border border-border-light rounded-[12px] px-4">
+            <div className="text-center py-12 bg-surface border border-border-light rounded-card shadow-card px-4">
               <FileText size={28} className="text-text-secondary mx-auto mb-3" />
-              <p className="text-sm font-semibold text-text-primary">No items yet</p>
+              <p className="text-sm font-medium text-text-primary">No items yet</p>
               <p className="text-xs text-text-secondary mt-1">
                 {canWrite === true ? 'Add articles, videos, documents or links to this policy.' : 'This policy has no content yet.'}
               </p>
@@ -617,14 +618,14 @@ export default function ManagePolicyPage() {
               {policy.items.map((item, idx) => {
                 const Icon = TYPE_ICONS[item.content_type]
                 return (
-                  <div key={item.id} className="bg-white border border-border-light rounded-[10px] px-4 py-3.5 flex items-center gap-3 sm:gap-4 hover:border-border transition-colors">
-                    <span className="hidden sm:block text-[12px] font-bold text-text-secondary w-5 text-right shrink-0">{idx + 1}</span>
-                    <div className={['w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0', TYPE_COLORS[item.content_type].split(' ')[0]].join(' ')}>
+                  <div key={item.id} className="bg-surface border border-border-light rounded-card px-4 py-3.5 flex items-center gap-3 sm:gap-4 hover:border-border transition-colors">
+                    <span className="hidden sm:block text-meta font-medium text-text-secondary w-5 text-right shrink-0">{idx + 1}</span>
+                    <div className={['w-8 h-8 rounded-control flex items-center justify-center shrink-0', TYPE_COLORS[item.content_type].split(' ')[0]].join(' ')}>
                       <Icon size={15} className={TYPE_COLORS[item.content_type].split(' ')[1]} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold text-text-primary truncate">{item.title}</p>
-                      {item.description && <p className="text-[12px] text-text-secondary truncate">{item.description}</p>}
+                      <p className="text-body font-medium text-text-primary truncate">{item.title}</p>
+                      {item.description && <p className="text-meta text-text-secondary truncate">{item.description}</p>}
                     </div>
                     <span className="hidden sm:inline-flex"><TypeBadge type={item.content_type} /></span>
                     <div className="flex items-center gap-1 shrink-0">
@@ -633,7 +634,7 @@ export default function ManagePolicyPage() {
                           onClick={() => { setEditingItem(item); setShowItemModal(true) }}
                           disabled={canEdit !== true}
                           aria-label={`Edit ${item.title}`}
-                          className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-primary-text hover:bg-primary-subtle rounded-[6px] transition-colors disabled:text-[#CBD5E1] disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                          className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-primary-text hover:bg-primary-subtle rounded-control transition-colors disabled:text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed"
                         >
                           <Pencil size={14} />
                         </button>
@@ -643,7 +644,7 @@ export default function ManagePolicyPage() {
                           onClick={() => { setDeleteError(null); setPendingDelete({ kind: 'item', item }) }}
                           disabled={canDeleteItem !== true}
                           aria-label={`Remove ${item.title}`}
-                          className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg rounded-[6px] transition-colors disabled:text-[#CBD5E1] disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                          className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg rounded-control transition-colors disabled:text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -661,17 +662,17 @@ export default function ManagePolicyPage() {
       {activeTab === 'assignments' && (
         <div>
           {assignmentsFailed ? (
-            <div className="text-center py-16 bg-white border border-border-light rounded-[12px] px-4">
-              <p className="text-sm font-semibold text-text-primary">Assignments could not be loaded</p>
+            <div className="text-center py-12 bg-surface border border-border-light rounded-card shadow-card px-4">
+              <p className="text-sm font-medium text-text-primary">Assignments could not be loaded</p>
               <p className="text-xs text-text-secondary mt-1 mb-3">Check your connection and try again.</p>
-              <button type="button" onClick={() => setAssignmentsLoaded(false)} className="px-4 py-2 text-sm font-semibold text-primary-text border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors">Retry</button>
+              <button type="button" onClick={() => setAssignmentsLoaded(false)} className="px-4 py-2 text-sm font-medium text-primary-text border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">Retry</button>
             </div>
           ) : !assignmentsLoaded ? (
             <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
           ) : assignments.length === 0 ? (
-            <div className="text-center py-16 bg-white border border-border-light rounded-[12px] px-4">
+            <div className="text-center py-12 bg-surface border border-border-light rounded-card shadow-card px-4">
               <Users size={28} className="text-text-secondary mx-auto mb-3" />
-              <p className="text-sm font-semibold text-text-primary">No assignments yet</p>
+              <p className="text-sm font-medium text-text-primary">No assignments yet</p>
               <p className="text-xs text-text-secondary mt-1">
                 {policy.status !== 'published' ? 'Publish this policy first to assign it to employees.' : 'Assign this policy to employees.'}
               </p>

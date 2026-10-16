@@ -48,14 +48,14 @@ export default function CoursePreviewPage() {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
         <div className="text-center max-w-sm">
-          <BookOpen size={40} className="text-[#CBD5E1] mx-auto mb-3" />
-          <h1 className="text-lg font-bold text-text-primary mb-1">Course not found</h1>
-          <p className="text-sm text-text-secondary mb-5">
+          <BookOpen size={40} className="text-muted mx-auto mb-3" />
+          <h1 className="text-lg font-medium text-text-primary mb-1">Course not found</h1>
+          <p className="text-sm text-text-secondary mb-4">
             This course doesn’t exist, or you don’t have access to manage it.
           </p>
           <Link
             href="/learning/paths"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
           >
             <ArrowLeft size={15} /> Back to Courses
           </Link>

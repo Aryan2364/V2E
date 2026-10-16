@@ -47,7 +47,7 @@ export default function SupportGoalsSection({
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <LinkList
           orgId={orgId}
           heading="What this goal needs"
@@ -111,30 +111,30 @@ function LinkList({
   return (
     // Fixed height with an internally scrolling body — DESIGN_RULES Part 2, so
     // the two columns stay aligned however many links each side has.
-    <section className="bg-white border border-border-light rounded-[12px] shadow-card flex flex-col h-[340px]">
-      <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-border-light shrink-0">
+    <section className="bg-surface border border-border-light rounded-card shadow-card flex flex-col h-[340px]">
+      <header className="flex items-start justify-between gap-3 px-4 py-4 border-b border-border-light shrink-0">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-[16px] font-semibold text-text-primary">{heading}</h3>
+            <h3 className="text-card-heading font-medium text-text-primary">{heading}</h3>
             <CountBadge count={links.length} />
           </div>
-          <p className="text-[12px] text-text-secondary mt-0.5">{hint}</p>
+          <p className="text-meta text-text-secondary mt-0.5">{hint}</p>
         </div>
         {canEdit && (
           <button
             onClick={onAdd}
             aria-label={heading}
             title={`Add to “${heading}”`}
-            className="w-7 h-7 shrink-0 rounded-[8px] bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-colors"
+            className="w-7 h-7 shrink-0 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground flex items-center justify-center transition-colors"
           >
             <Plus size={16} />
           </button>
         )}
       </header>
 
-      <div className="table-scroll flex-1 overflow-y-auto px-5 py-3">
+      <div className="table-scroll flex-1 overflow-y-auto px-4 py-3">
         {links.length === 0 ? (
-          <p className="text-[13px] text-text-secondary py-6">{emptyText}</p>
+          <p className="text-label text-text-secondary py-6">{emptyText}</p>
         ) : (
           <ul className="space-y-2.5">
             {links.map((l) => (
@@ -208,7 +208,7 @@ function LinkRow({
   }
 
   return (
-    <li className="rounded-[10px] border border-border-light bg-white hover:border-border transition-colors">
+    <li className="rounded-card border border-border-light bg-surface hover:border-border transition-colors">
       <div className="px-3 py-2.5">
         <div className="flex items-start justify-between gap-2">
           <button
@@ -216,7 +216,7 @@ function LinkRow({
             className="group text-left min-w-0 flex-1"
           >
             <span className="flex items-center gap-1.5">
-              <span className="text-[14px] font-semibold text-text-primary group-hover:text-primary-text transition-colors truncate">
+              <span className="text-body font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
                 {g.title}
               </span>
               <ArrowUpRight
@@ -231,7 +231,7 @@ function LinkRow({
                 onClick={() => setEditingNote((v) => !v)}
                 title={link.note ? 'Edit why' : 'Say why this link exists'}
                 aria-label="Edit link note"
-                className="w-6 h-6 rounded-[6px] flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-control transition-colors"
+                className="w-6 h-6 rounded-control flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-control transition-colors"
               >
                 <Pencil size={13} />
               </button>
@@ -239,7 +239,7 @@ function LinkRow({
                 onClick={() => setUnlinkOpen(true)}
                 title="Unlink"
                 aria-label="Unlink goal"
-                className="w-6 h-6 rounded-[6px] flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
+                className="w-6 h-6 rounded-control flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
               >
                 <Link2Off size={13} />
               </button>
@@ -249,13 +249,13 @@ function LinkRow({
 
         <div className="flex items-center flex-wrap gap-x-2.5 gap-y-1 mt-1.5">
           <GoalStatusBadge status={g.status} />
-          <span className="text-[12px] text-text-secondary">{g.owner?.name ?? '—'}</span>
-          <span className="text-[#CBD5E1]">·</span>
-          <span className="text-[12px] text-text-secondary">due {formatDate(g.due_date)}</span>
+          <span className="text-meta text-text-secondary">{g.owner?.name ?? '—'}</span>
+          <span className="text-muted">·</span>
+          <span className="text-meta text-text-secondary">due {formatDate(g.due_date)}</span>
           {g.target_value !== null && g.target_value !== undefined && (
             <>
-              <span className="text-[#CBD5E1]">·</span>
-              <span className="text-[12px] text-text-secondary tabular-nums">
+              <span className="text-muted">·</span>
+              <span className="text-meta text-text-secondary tabular-nums">
                 {g.current_value === null || g.current_value === undefined ? '—' : g.current_value}
                 {' of '}
                 {formatValue(g.target_value, g.unit)}
@@ -268,7 +268,7 @@ function LinkRow({
         {beyond > 0 && (
           <button
             onClick={() => router.push(`/goals/${g.id}`)}
-            className="inline-flex items-center gap-1 mt-1.5 text-[11px] text-primary-text hover:text-primary-text transition-colors"
+            className="inline-flex items-center gap-1 mt-1.5 text-meta text-primary-text hover:text-primary-text transition-colors"
           >
             <CornerDownRight size={11} />
             {beyond} more {beyond === 1 ? 'goal' : 'goals'} behind this
@@ -277,7 +277,7 @@ function LinkRow({
 
         {/* A deadline that doesn't add up is a permanent condition, not a toast. */}
         {link.deadline_warning && (
-          <p className="flex items-start gap-1.5 mt-2 rounded-[6px] bg-warning-bg border border-warning-border px-2 py-1.5 text-[11px] text-warning">
+          <p className="flex items-start gap-1.5 mt-2 rounded-control bg-warning-bg border border-warning-border px-2 py-1.5 text-meta text-warning">
             <AlertTriangle size={12} className="shrink-0 mt-0.5" />
             {direction === 'supported_by'
               ? `This is due ${formatDate(g.due_date)} — after the goal it supports.`
@@ -288,7 +288,7 @@ function LinkRow({
         {editingNote ? (
           <div className="mt-2">
             <textarea
-              className={`${inputClass} resize-none text-[13px]`}
+              className={`${inputClass} resize-none text-label`}
               rows={2}
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -301,7 +301,7 @@ function LinkRow({
               <button
                 onClick={saveNote}
                 disabled={savingNote}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[6px] bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted text-white text-[12px] font-semibold transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-control bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted text-primary-foreground text-meta font-medium transition-colors"
               >
                 {savingNote ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                 Save
@@ -312,7 +312,7 @@ function LinkRow({
                   setEditingNote(false)
                 }}
                 disabled={savingNote}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-[6px] text-text-secondary hover:bg-surface-control text-[12px] font-medium transition-colors"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-control text-text-secondary hover:bg-surface-control text-meta font-medium transition-colors"
               >
                 <X size={12} /> Cancel
               </button>
@@ -320,7 +320,7 @@ function LinkRow({
           </div>
         ) : (
           link.note && (
-            <p className="mt-2 rounded-[6px] bg-surface-sunken border-l-2 border-border px-2.5 py-1.5 text-[12px] text-text-primary italic">
+            <p className="mt-2 rounded-control bg-surface-sunken border-l-2 border-border px-2.5 py-1.5 text-meta text-text-primary italic">
               “{link.note}”
             </p>
           )

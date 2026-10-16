@@ -70,18 +70,18 @@ export default function BalanceScorecardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[26px] font-bold text-text-primary leading-tight">Balance Scorecard</h1>
+        <h1 className="text-page-title font-medium text-text-primary leading-tight">Balance Scorecard</h1>
         <p className="text-sm text-text-secondary mt-1">
           Every goal, grouped by which part of the business it moves.
         </p>
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-2 text-sm text-text-secondary py-16 justify-center">
+        <div className="flex items-center gap-2 text-sm text-text-secondary py-12 justify-center">
           <Loader2 size={16} className="animate-spin" /> Loading…
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {FOCUS_AREA_OPTIONS.map((focus) => (
             <PerspectiveCard
               key={focus}
@@ -123,20 +123,20 @@ function PerspectiveCard({
     // Fixed height + internal scroll so all four quadrants stay the same size
     // however lopsided the data is (DESIGN_RULES Part 2 / Part 3).
     <section
-      className="bg-white border rounded-[12px] shadow-card flex flex-col h-[420px]"
+      className="bg-surface border rounded-card shadow-card flex flex-col h-[420px]"
       style={{ borderColor: m.border }}
     >
       <header
-        className="flex items-center justify-between gap-3 px-5 py-4 border-b shrink-0 rounded-t-[12px]"
+        className="flex items-center justify-between gap-3 px-4 py-4 border-b shrink-0 rounded-t-[12px]"
         style={{ backgroundColor: m.bg, borderColor: m.border }}
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: m.dot }} />
-          <h2 className="text-[16px] font-semibold truncate" style={{ color: m.text }}>
+          <h2 className="text-card-heading font-medium truncate" style={{ color: m.text }}>
             {m.label}
           </h2>
           <span
-            className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-white text-[11px] font-semibold"
+            className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-primary-foreground text-meta font-medium"
             style={{ backgroundColor: m.dot }}
           >
             {goals.length}
@@ -147,7 +147,7 @@ function PerspectiveCard({
             onClick={onAdd}
             aria-label={`New ${m.label} goal`}
             title={`New ${m.label} goal`}
-            className="w-7 h-7 shrink-0 rounded-[8px] text-white flex items-center justify-center transition-colors"
+            className="w-7 h-7 shrink-0 rounded-control text-primary-foreground flex items-center justify-center transition-colors"
             style={{ backgroundColor: m.dot }}
             onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(0.9)')}
             onMouseLeave={(e) => (e.currentTarget.style.filter = 'none')}
@@ -156,25 +156,25 @@ function PerspectiveCard({
           </button>
         )}
       </header>
-      <div className="table-scroll flex-1 overflow-y-auto px-5 py-2">
+      <div className="table-scroll flex-1 overflow-y-auto px-4 py-2">
         {goals.length === 0 ? (
-          <div className="flex flex-col items-center text-center gap-2 py-10">
+          <div className="flex flex-col items-center text-center gap-2 py-8">
             <Target size={22} className="text-text-muted" />
-            <p className="text-[13px] text-text-secondary">No {m.label.toLowerCase()} goals yet.</p>
+            <p className="text-label text-text-secondary">No {m.label.toLowerCase()} goals yet.</p>
           </div>
         ) : (
           <ul className="divide-y divide-surface-control-pressed">
             {goals.map((g) => (
               <li key={g.id}>
                 <button onClick={() => router.push(`/goals/${g.id}`)} className="w-full text-left py-3 group">
-                  <p className="text-[14px] font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
+                  <p className="text-body font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
                     {g.title}
                   </p>
                   <div className="flex items-center gap-2 mt-1.5">
                     <span className="shrink-0">
                       <GoalStatusBadge status={g.status} />
                     </span>
-                    <span className="text-[12px] text-text-secondary truncate">
+                    <span className="text-meta text-text-secondary truncate">
                       {(g.owner?.name ?? '—') + ' · due ' + formatDate(g.due_date)}
                       {g.target_value !== null && g.target_value !== undefined && (
                         <>

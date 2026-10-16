@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { getKnowledgePost, addKnowledgeComment, deleteKnowledgeComment, toggleKnowledgeReaction } from '@/lib/api/knowledge'
 import type { KnowledgePost, KnowledgeComment } from '@/lib/types/communication'
+import { formatDate, formatDateTime } from '@/lib/format'
 import Link from 'next/link'
 import { ArrowLeft, Trash2, MessageSquare } from 'lucide-react'
 
@@ -96,12 +97,12 @@ export default function KnowledgePostPage() {
           Knowledge Hub
         </Link>
 
-        <div className="bg-white border border-border-light rounded-[12px] p-6 mb-4">
-          <h1 className="text-xl font-bold text-text-primary mb-2">{post.title}</h1>
+        <div className="bg-surface border border-border-light rounded-card p-6 mb-4">
+          <h1 className="text-xl font-medium text-text-primary mb-2">{post.title}</h1>
           <div className="flex items-center gap-3 text-xs text-text-muted mb-4">
             <span>{post.created_by?.name}</span>
             <span>·</span>
-            <span>{new Date(post.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            <span>{formatDate(post.created_at)}</span>
           </div>
 
           {post.tags?.length > 0 && (
@@ -114,7 +115,7 @@ export default function KnowledgePostPage() {
 
           <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">{post.body}</p>
 
-          <div className="flex items-center gap-1.5 mt-5 flex-wrap">
+          <div className="flex items-center gap-1.5 mt-4 flex-wrap">
             {REACTIONS.map(emoji => {
               const count = post.reactions?.filter(r => r.emoji === emoji).length ?? 0
               const mine = post.reactions?.some(r => r.emoji === emoji && r.user_id === user?.id)
@@ -124,27 +125,27 @@ export default function KnowledgePostPage() {
                   onClick={() => handleReact(emoji)}
                   className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-sm border transition-colors ${mine ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
                 >
-                  {emoji} {count > 0 && <span className="text-xs font-semibold">{count}</span>}
+                  {emoji} {count > 0 && <span className="text-xs font-medium">{count}</span>}
                 </button>
               )
             })}
           </div>
         </div>
 
-        <div className="bg-white border border-border-light rounded-[12px] p-6">
-          <h2 className="text-sm font-semibold text-text-primary mb-4 flex items-center gap-1.5">
+        <div className="bg-surface border border-border-light rounded-card p-6">
+          <h2 className="text-sm font-medium text-text-primary mb-4 flex items-center gap-1.5">
             <MessageSquare size={15} />
             {post.comments?.length ?? 0} Comments
           </h2>
 
-          <div className="flex flex-col gap-5 mb-5">
+          <div className="flex flex-col gap-4 mb-4">
             {(post.comments ?? []).map(c => (
               <CommentRow key={c.id} comment={c} userId={user?.id ?? ''} isHR={isHR} onDelete={handleDeleteComment} onReply={() => setReplyTo({ id: c.id, name: c.created_by.name })} />
             ))}
           </div>
 
           {replyTo && (
-            <div className="flex items-center gap-2 mb-2 text-xs text-text-secondary bg-surface-control px-3 py-1.5 rounded-[6px]">
+            <div className="flex items-center gap-2 mb-2 text-xs text-text-secondary bg-surface-control px-3 py-1.5 rounded-control">
               <span>Replying to <strong>{replyTo.name}</strong></span>
               <button onClick={() => setReplyTo(null)} className="ml-auto text-text-muted hover:text-text-secondary">✕</button>
             </div>
@@ -155,12 +156,12 @@ export default function KnowledgePostPage() {
               value={comment}
               onChange={e => setComment(e.target.value)}
               placeholder={replyTo ? `Reply to ${replyTo.name}…` : 'Write a comment…'}
-              className="flex-1 border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+              className="flex-1 border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
             />
             <button
               type="submit"
               disabled={submitting || !comment.trim()}
-              className="bg-primary text-white px-4 py-2 rounded-[8px] text-sm font-semibold hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Post
             </button>
@@ -181,14 +182,14 @@ function CommentRow({ comment, userId, isHR, onDelete, onReply }: {
   return (
     <div>
       <div className="flex gap-3">
-        <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold shrink-0">
+        <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-medium shrink-0">
           {comment.created_by?.name?.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <span className="text-sm font-semibold text-text-primary">{comment.created_by?.name}</span>
-              <span className="text-xs text-text-muted ml-2">{new Date(comment.created_at).toLocaleString()}</span>
+              <span className="text-sm font-medium text-text-primary">{comment.created_by?.name}</span>
+              <span className="text-xs text-text-muted ml-2">{formatDateTime(comment.created_at)}</span>
             </div>
             <div className="flex gap-1">
               <button onClick={onReply} className="text-xs text-primary-text hover:underline">Reply</button>
@@ -204,17 +205,17 @@ function CommentRow({ comment, userId, isHR, onDelete, onReply }: {
       </div>
 
       {comment.replies && comment.replies.length > 0 && (
-        <div className="ml-10 mt-3 flex flex-col gap-3">
+        <div className="ml-8 mt-3 flex flex-col gap-3">
           {comment.replies.map(reply => (
             <div key={reply.id} className="flex gap-2">
-              <div className="w-6 h-6 rounded-full bg-[#475569] flex items-center justify-center text-white text-xs font-bold shrink-0">
+              <div className="w-6 h-6 rounded-full bg-text-secondary flex items-center justify-center text-primary-foreground text-xs font-medium shrink-0">
                 {reply.created_by?.name?.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-xs font-semibold text-text-primary">{reply.created_by?.name}</span>
-                    <span className="text-xs text-text-muted ml-2">{new Date(reply.created_at).toLocaleString()}</span>
+                    <span className="text-xs font-medium text-text-primary">{reply.created_by?.name}</span>
+                    <span className="text-xs text-text-muted ml-2">{formatDateTime(reply.created_at)}</span>
                   </div>
                   {(reply.created_by_user_id === userId || isHR) && (
                     <button onClick={() => onDelete(reply.id)} className="p-1 text-text-muted hover:text-danger rounded-xs transition-colors">

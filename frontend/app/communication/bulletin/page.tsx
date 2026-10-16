@@ -6,6 +6,7 @@ import { getBoards, createBoard, deleteBoard } from '@/lib/api/bulletin'
 import type { BulletinBoard } from '@/lib/types/communication'
 import Link from 'next/link'
 import { Layout, Plus, Trash2, MessageSquare, Eye, MessageCircle } from 'lucide-react'
+import StyledSelect from '@/components/ui/StyledSelect'
 
 const MODE_LABEL: Record<string, string> = {
   read_only: 'Read Only',
@@ -59,13 +60,13 @@ export default function BulletinBoardsPage() {
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Bulletin Boards</h1>
+            <h1 className="text-2xl font-medium text-text-primary">Bulletin Boards</h1>
             <p className="text-sm text-text-secondary mt-0.5">Company and team boards for posts and updates</p>
           </div>
           {isHR && (
             <button
               onClick={() => setShowCreate(s => !s)}
-              className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-[8px] text-sm font-semibold hover:bg-primary-hover transition-colors"
+              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover transition-colors"
             >
               <Plus size={16} />
               New Board
@@ -74,15 +75,15 @@ export default function BulletinBoardsPage() {
         </div>
 
         {showCreate && (
-          <form onSubmit={handleCreate} className="bg-white border border-border-light rounded-[12px] p-5 mb-6 flex flex-col gap-4">
-            <h2 className="text-base font-semibold text-text-primary">Create Board</h2>
+          <form onSubmit={handleCreate} className="bg-surface border border-border-light rounded-card p-4 mb-6 flex flex-col gap-4">
+            <h2 className="text-base font-medium text-text-primary">Create Board</h2>
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1">Board Name</label>
               <input
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="e.g. General, Engineering, HR"
-                className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
               />
             </div>
             <div>
@@ -91,26 +92,26 @@ export default function BulletinBoardsPage() {
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 placeholder="What is this board for?"
-                className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1">Interaction Mode</label>
-              <select
+              <StyledSelect
                 value={form.interaction_mode}
-                onChange={e => setForm(f => ({ ...f, interaction_mode: e.target.value }))}
-                className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary focus:outline-hidden focus:border-primary"
-              >
-                <option value="read_only">Read Only</option>
-                <option value="comments_only">Comments Only</option>
-                <option value="comments_and_reactions">Comments & Reactions</option>
-              </select>
+                onChange={(v) => setForm(f => ({ ...f, interaction_mode: v }))}
+                options={[
+                  { value: 'read_only', label: 'Read Only' },
+                  { value: 'comments_only', label: 'Comments Only' },
+                  { value: 'comments_and_reactions', label: 'Comments & Reactions' },
+                ]}
+              />
             </div>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setShowCreate(false)} className="flex-1 border border-border-light text-text-secondary px-4 py-2 rounded-[8px] text-sm font-semibold hover:bg-surface-sunken transition-colors">
+              <button type="button" onClick={() => setShowCreate(false)} className="flex-1 border border-border-light text-text-secondary px-4 py-2 rounded-control text-sm font-medium hover:bg-surface-sunken transition-colors">
                 Cancel
               </button>
-              <button type="submit" disabled={creating} className="flex-1 bg-primary text-white px-4 py-2 rounded-[8px] text-sm font-semibold hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              <button type="submit" disabled={creating} className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                 {creating ? 'Creating…' : 'Create'}
               </button>
             </div>
@@ -118,27 +119,27 @@ export default function BulletinBoardsPage() {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : boards.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <Layout size={40} className="text-[#CBD5E1] mb-3" />
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Layout size={40} className="text-muted mb-3" />
             <p className="text-text-secondary font-medium">No boards yet</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {boards.map(board => (
-              <div key={board.id} className="bg-white border border-border-light rounded-[12px] p-5 flex flex-col gap-3 hover:border-primary transition-colors">
+              <div key={board.id} className="bg-surface border border-border-light rounded-card p-4 flex flex-col gap-3 hover:border-primary transition-colors">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <Link href={`/communication/bulletin/${board.id}`}>
-                      <h3 className="text-base font-semibold text-text-primary hover:text-primary-text transition-colors">{board.name}</h3>
+                      <h3 className="text-base font-medium text-text-primary hover:text-primary-text transition-colors">{board.name}</h3>
                     </Link>
                     {board.description && <p className="text-xs text-text-secondary mt-0.5 line-clamp-2">{board.description}</p>}
                   </div>
                   {isAdmin && (
-                    <button onClick={() => handleDelete(board.id)} className="p-1.5 text-text-muted hover:text-danger hover:bg-danger-bg rounded-[6px] transition-colors">
+                    <button onClick={() => handleDelete(board.id)} className="p-1.5 text-text-muted hover:text-danger hover:bg-danger-bg rounded-control transition-colors">
                       <Trash2 size={14} />
                     </button>
                   )}

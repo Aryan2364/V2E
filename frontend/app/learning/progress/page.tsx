@@ -11,11 +11,11 @@ import PathStatusBadge from '@/components/learning/PathStatusBadge'
 
 function StatCard({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: any; color: string }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] p-5">
-      <div className={`w-10 h-10 rounded-[10px] ${color} flex items-center justify-center mb-3`}>
+    <div className="bg-surface border border-border-light rounded-card p-4">
+      <div className={`w-10 h-10 rounded-card ${color} flex items-center justify-center mb-3`}>
         <Icon size={18} />
       </div>
-      <div className="text-2xl font-bold text-text-primary">{value}</div>
+      <div className="text-2xl font-medium text-text-primary">{value}</div>
       <div className="text-sm text-text-muted mt-0.5">{label}</div>
     </div>
   )
@@ -45,7 +45,7 @@ export default function ProgressPage() {
   return (
     <div className="px-8 py-8 max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-[28px] font-bold text-text-primary">Learning Progress</h1>
+        <h1 className="text-page-title font-medium text-text-primary">Learning Progress</h1>
         <p className="text-sm text-text-secondary mt-1">Organisation-wide learning progress overview</p>
       </div>
 
@@ -79,24 +79,24 @@ export default function ProgressPage() {
 
       {/* Per-path breakdown */}
       {summary.paths.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] py-16 flex flex-col items-center text-center">
+        <div className="bg-surface border border-border-light rounded-card py-12 flex flex-col items-center text-center">
           <BarChart2 size={32} className="text-text-muted mb-3" />
           <p className="text-sm font-medium text-text-primary mb-1">No data yet</p>
           <p className="text-xs text-text-muted">Assign learning paths to employees to track progress</p>
         </div>
       ) : (
-        <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-border-light bg-surface-sunken">
-            <h2 className="text-sm font-semibold text-text-primary">Path Progress Breakdown</h2>
+        <div className="bg-surface border border-border-light rounded-card overflow-hidden">
+          <div className="px-4 py-3.5 border-b border-border-light bg-surface-sunken">
+            <h2 className="text-sm font-medium text-text-primary">Path Progress Breakdown</h2>
           </div>
           <div className="divide-y divide-surface-control">
             {summary.paths.map((p) => (
-              <div key={p.path_id} className="px-5 py-4">
+              <div key={p.path_id} className="px-4 py-4">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
                     <Link
                       href={`/learning/paths/${p.path_id}`}
-                      className="text-sm font-semibold text-text-primary hover:text-primary-text transition-colors"
+                      className="text-sm font-medium text-text-primary hover:text-primary-text transition-colors"
                     >
                       {p.title}
                     </Link>
@@ -105,7 +105,7 @@ export default function ProgressPage() {
                       <span className="text-xs text-text-muted">{p.total_assignments} employees</span>
                     </div>
                   </div>
-                  <span className="text-sm font-bold text-text-primary shrink-0">{p.avg_percent}%</span>
+                  <span className="text-sm font-medium text-text-primary shrink-0">{p.avg_percent}%</span>
                 </div>
                 <ProgressBar percent={p.avg_percent} size="sm" className="mb-2" />
                 <div className="flex items-center gap-4 text-xs text-text-muted">
@@ -118,7 +118,7 @@ export default function ProgressPage() {
                     {p.in_progress} in progress
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-[#94A3B8] inline-block" />
+                    <span className="w-2 h-2 rounded-full bg-text-muted inline-block" />
                     {p.not_started} not started
                   </span>
                 </div>

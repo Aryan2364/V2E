@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth/context'
 import { createKnowledgePost } from '@/lib/api/knowledge'
 import Link from 'next/link'
 import { ArrowLeft, X } from 'lucide-react'
+import StyledSelect from '@/components/ui/StyledSelect'
 
 export default function NewKnowledgePostPage() {
   const { user } = useAuth()
@@ -57,11 +58,11 @@ export default function NewKnowledgePostPage() {
           Back to Knowledge Hub
         </Link>
 
-        <div className="bg-white border border-border-light rounded-[12px] p-6">
-          <h1 className="text-xl font-bold text-text-primary mb-6">Share Knowledge</h1>
+        <div className="bg-surface border border-border-light rounded-card p-6">
+          <h1 className="text-xl font-medium text-text-primary mb-6">Share Knowledge</h1>
 
           {err && (
-            <div className="mb-4 p-3 bg-danger-bg border border-danger-border rounded-[8px] text-sm text-danger">
+            <div className="mb-4 p-3 bg-danger-bg border border-danger-border rounded-control text-sm text-danger">
               {err}
             </div>
           )}
@@ -73,7 +74,7 @@ export default function NewKnowledgePostPage() {
                 value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 placeholder="What are you sharing?"
-                className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
               />
             </div>
 
@@ -84,7 +85,7 @@ export default function NewKnowledgePostPage() {
                 onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
                 rows={8}
                 placeholder="Share tips, processes, learnings, or anything useful…"
-                className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-y"
+                className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-y"
               />
             </div>
 
@@ -96,9 +97,9 @@ export default function NewKnowledgePostPage() {
                   onChange={e => setForm(f => ({ ...f, tagInput: e.target.value }))}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag() } }}
                   placeholder="Add a tag and press Enter"
-                  className="flex-1 border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                  className="flex-1 border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
                 />
-                <button type="button" onClick={addTag} className="bg-surface-control text-text-secondary px-3 py-2 rounded-[8px] text-sm font-medium hover:bg-surface-control-pressed transition-colors">
+                <button type="button" onClick={addTag} className="bg-surface-control text-text-secondary px-3 py-2 rounded-control text-sm font-medium hover:bg-surface-control-pressed transition-colors">
                   Add
                 </button>
               </div>
@@ -118,20 +119,20 @@ export default function NewKnowledgePostPage() {
 
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1">Scope</label>
-              <select
+              <StyledSelect
                 value={form.scope}
-                onChange={e => setForm(f => ({ ...f, scope: e.target.value }))}
-                className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary focus:outline-hidden focus:border-primary"
-              >
-                <option value="company_wide">Company-wide</option>
-                <option value="department">Department</option>
-              </select>
+                onChange={(v) => setForm(f => ({ ...f, scope: v }))}
+                options={[
+                  { value: 'company_wide', label: 'Company-wide' },
+                  { value: 'department', label: 'Department' },
+                ]}
+              />
             </div>
 
             <button
               type="submit"
               disabled={saving}
-              className="w-full bg-primary text-white px-4 py-2.5 rounded-[8px] text-sm font-semibold hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-primary text-primary-foreground px-4 py-2.5 rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {saving ? 'Publishing…' : 'Publish Post'}
             </button>

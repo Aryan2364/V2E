@@ -116,13 +116,13 @@ export default function EditGoalModal({
         />
 
         {clearingTarget && (
-          <p className="mt-4 rounded-[8px] border border-warning-border bg-warning-bg px-3 py-2 text-[13px] text-warning">
+          <p className="mt-4 rounded-control border border-warning-border bg-warning-bg px-3 py-2 text-label text-warning">
             Removing the target also clears this goal’s recorded number. The check-in history stays
             exactly as it is.
           </p>
         )}
 
-        <div className="flex items-center justify-between pt-5 mt-5 border-t border-border-light">
+        <div className="flex items-center justify-between pt-4 mt-4 border-t border-border-light">
           {/* Destructive action on the left, opposite the primary — DESIGN_RULES Part 4. */}
           {canDelete && onRequestDelete ? (
             <button

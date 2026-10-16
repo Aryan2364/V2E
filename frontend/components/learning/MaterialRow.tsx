@@ -118,7 +118,7 @@ export default function MaterialRow({
   const watermark = [user?.name, user?.email].filter(Boolean).join(' · ')
 
   return (
-    <div className="rounded-[10px] border border-border-light bg-white">
+    <div className="rounded-card border border-border-light bg-surface">
       <div className="flex items-start gap-3 p-3.5">
         {onGripPointerDown && (
           <Tooltip label="Drag to reorder">
@@ -126,14 +126,14 @@ export default function MaterialRow({
               type="button"
               onPointerDown={onGripPointerDown}
               aria-label="Drag to reorder"
-              className="shrink-0 mt-1.5 p-0.5 -ml-1 text-[#CBD5E1] hover:text-text-muted cursor-grab active:cursor-grabbing touch-none"
+              className="shrink-0 mt-1.5 p-0.5 -ml-1 text-muted hover:text-text-muted cursor-grab active:cursor-grabbing touch-none"
             >
               <GripVertical size={16} />
             </button>
           </Tooltip>
         )}
         <span className="text-xs text-text-muted w-5 text-center shrink-0 mt-2">{index + 1}</span>
-        <div className="w-8 h-8 rounded-[8px] bg-primary-subtle flex items-center justify-center shrink-0 mt-0.5">
+        <div className="w-8 h-8 rounded-control bg-primary-subtle flex items-center justify-center shrink-0 mt-0.5">
           <Icon size={15} className="text-primary-text" />
         </div>
 
@@ -143,7 +143,7 @@ export default function MaterialRow({
             onChange={(e) => setTitle(e.target.value)}
             onBlur={() => title.trim() && title !== item.title && save({ title: title.trim() })}
             placeholder="Material title"
-            className="w-full px-2.5 py-1.5 border border-border rounded-[7px] text-sm font-medium text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+            className="w-full px-2.5 py-1.5 border border-border rounded-control text-sm font-medium text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
           />
 
           {/* Type-specific editor */}
@@ -161,11 +161,11 @@ export default function MaterialRow({
                 }
               }}
               placeholder="https://… (paste a link, video, or doc)"
-              className="w-full px-2.5 py-1.5 border border-border rounded-[7px] text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full px-2.5 py-1.5 border border-border rounded-control text-sm text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
             />
           )}
           {item.content_type === 'url' && (
-            <p className="text-[11px] text-text-muted">
+            <p className="text-meta text-text-muted">
               Shown inside the app if the page allows it, otherwise learners get an open button — decided automatically.
             </p>
           )}
@@ -176,14 +176,14 @@ export default function MaterialRow({
               onBlur={() => body !== (item.content_body ?? '') && save({ content_body: body })}
               rows={3}
               placeholder="Write the article content…"
-              className="w-full px-2.5 py-1.5 border border-border rounded-[7px] text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-y"
+              className="w-full px-2.5 py-1.5 border border-border rounded-control text-sm text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-y"
             />
           )}
 
           {item.content_type === 'file' && (
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2 text-xs text-text-secondary">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-xs bg-surface-control font-semibold text-text-secondary text-[10px]">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-xs bg-surface-control font-medium text-text-secondary text-meta">
                   {fileKindLabel(item.file_name ?? '')}
                 </span>
                 <span className="truncate max-w-[220px]">{item.file_name ?? 'No file'}</span>
@@ -210,14 +210,14 @@ export default function MaterialRow({
                     {item.allow_download ?? true ? <Download size={12} /> : <Ban size={12} />}
                     {item.allow_download ?? true ? 'Download allowed' : 'View-only'}
                   </button>
-                  <span className="text-[11px] text-text-muted">Tap to switch</span>
+                  <span className="text-meta text-text-muted">Tap to switch</span>
                 </div>
               ) : item.file_name ? (
                 <div className="flex flex-col gap-1">
                   <span className="inline-flex w-fit items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success-bg text-success border border-success-border">
                     <Download size={12} /> Download only
                   </span>
-                  {convertHint && <span className="text-[11px] text-warning">{convertHint}</span>}
+                  {convertHint && <span className="text-meta text-warning">{convertHint}</span>}
                 </div>
               ) : null}
             </div>
@@ -234,7 +234,7 @@ export default function MaterialRow({
                   onClick={openPreview}
                   disabled={previewLoading}
                   aria-label="Preview"
-                  className="p-1.5 text-text-muted hover:text-primary-text hover:bg-primary-subtle rounded-[6px] transition-colors"
+                  className="p-1.5 text-text-muted hover:text-primary-text hover:bg-primary-subtle rounded-control transition-colors"
                 >
                   {previewLoading ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
                 </button>
@@ -242,7 +242,7 @@ export default function MaterialRow({
               <Tooltip label="Replace file">
                 <label
                   aria-label="Replace file"
-                  className="p-1.5 text-text-muted hover:text-primary-text hover:bg-primary-subtle rounded-[6px] transition-colors cursor-pointer"
+                  className="p-1.5 text-text-muted hover:text-primary-text hover:bg-primary-subtle rounded-control transition-colors cursor-pointer"
                 >
                   {replacing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
                   <input type="file" accept={ACCEPT_ATTR} className="hidden"
@@ -255,7 +255,7 @@ export default function MaterialRow({
             <button
               onClick={handleDelete}
               aria-label="Remove"
-              className="p-1.5 text-text-muted hover:text-danger hover:bg-danger-bg rounded-[6px] transition-colors"
+              className="p-1.5 text-text-muted hover:text-danger hover:bg-danger-bg rounded-control transition-colors"
             >
               <Trash2 size={14} />
             </button>
@@ -266,17 +266,17 @@ export default function MaterialRow({
       {/* Preview modal */}
       {preview && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-60 flex items-center justify-center px-4 bg-black/50" onClick={() => setPreview(null)}>
-          <div className="bg-white rounded-[14px] w-full max-w-4xl max-h-[88vh] overflow-hidden flex flex-col shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-5 py-3 border-b border-border-light">
+          <div className="bg-surface rounded-card w-full max-w-4xl max-h-[88vh] overflow-hidden flex flex-col shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border-light">
               <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-text-primary truncate">{item.title}</h3>
+                <h3 className="text-sm font-medium text-text-primary truncate">{item.title}</h3>
                 <p className="text-xs text-text-muted">Preview — exactly what learners see</p>
               </div>
-              <button onClick={() => setPreview(null)} className="p-1.5 text-text-secondary hover:bg-surface-control rounded-[6px]">
+              <button onClick={() => setPreview(null)} className="p-1.5 text-text-secondary hover:bg-surface-control rounded-control">
                 <X size={18} />
               </button>
             </div>
-            <div className="p-5 overflow-y-auto">
+            <div className="p-4 overflow-y-auto">
               <MaterialViewer
                 data={preview}
                 viewOnly={!preview.allow_download}

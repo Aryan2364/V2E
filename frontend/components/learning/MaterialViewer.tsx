@@ -50,7 +50,7 @@ export default function MaterialViewer({
         <div className="flex justify-end mb-3">
           <button
             onClick={onDownload}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
           >
             <Download size={15} /> Download
           </button>
@@ -62,7 +62,7 @@ export default function MaterialViewer({
         </div>
       )}
 
-      <div className="relative rounded-[10px] overflow-hidden border border-border-light bg-surface-sunken">
+      <div className="relative rounded-card overflow-hidden border border-border-light bg-surface-sunken">
         <MaterialBody data={data} viewOnly={viewOnly} pdfLoader={pdfLoader} fullscreen={fullscreen} onDownload={onDownload} />
         {viewOnly && watermark && <WatermarkOverlay text={watermark} />}
       </div>
@@ -80,7 +80,7 @@ function MaterialBody({ data, viewOnly, pdfLoader, fullscreen, onDownload }: { d
   if (!data.url || data.kind === 'none') {
     const preparing = data.preview_status === 'pending'
     return (
-      <div className="flex flex-col items-center justify-center text-center py-16 px-6">
+      <div className="flex flex-col items-center justify-center text-center py-12 px-6">
         {preparing ? (
           <>
             <Loader2 size={26} className="text-primary-text animate-spin mb-3" />
@@ -109,7 +109,7 @@ function MaterialBody({ data, viewOnly, pdfLoader, fullscreen, onDownload }: { d
           src={data.url}
           alt={data.file_name ?? 'Image'}
           draggable={false}
-          className="max-w-full h-auto rounded-[6px]"
+          className="max-w-full h-auto rounded-control"
         />
       </div>
     )
@@ -207,12 +207,12 @@ function PdfCanvas({ url, loader, fullscreen }: { url: string | null; loader?: (
   return (
     <div className="overflow-y-auto p-4" style={{ maxHeight: fullscreen ? 'calc(100vh - 110px)' : '72vh' }}>
       {status === 'loading' && (
-        <div className="flex items-center justify-center gap-2 py-16 text-sm text-text-secondary">
+        <div className="flex items-center justify-center gap-2 py-12 text-sm text-text-secondary">
           <Loader2 size={18} className="animate-spin text-primary-text" /> Loading document…
         </div>
       )}
       {status === 'error' && (
-        <div className="flex flex-col items-center py-16 text-center">
+        <div className="flex flex-col items-center py-12 text-center">
           <FileWarning size={24} className="text-text-muted mb-2" />
           <p className="text-sm font-medium text-text-primary">Couldn’t render this document</p>
         </div>
@@ -227,7 +227,7 @@ function WatermarkOverlay({ text }: { text: string }) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden select-none" aria-hidden>
       <div
-        className="absolute inset-[-25%] flex flex-wrap gap-x-16 gap-y-14 opacity-[0.12] rotate-[-30deg]"
+        className="absolute inset-[-25%] flex flex-wrap gap-x-12 gap-y-12 opacity-[0.12] rotate-[-30deg]"
         style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}
       >
         {Array.from({ length: 120 }).map((_, i) => (

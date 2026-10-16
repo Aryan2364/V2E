@@ -158,7 +158,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
     // max-h-full, not flex-1: the card hugs its bands (no dead white space
     // below the last one) and only starts scrolling once the map is taller
     // than the room available.
-    <div className="max-h-full rounded-[12px] border border-border-light bg-white overflow-auto shadow-card">
+    <div className="max-h-full rounded-card border border-border-light bg-surface overflow-auto shadow-card">
       {/* The click-to-clear handler lives on this CONTENT row, not on the scroll
           box above it: a click on the scroll box's own scrollbar targets that
           box, so it can never reach here and can never drop the pin. */}
@@ -184,14 +184,14 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                       style={{ backgroundColor: m.dot }}
                     />
                     <h2
-                      className="text-[12.5px] font-bold uppercase tracking-[0.06em] leading-tight min-w-0"
+                      className="text-[12.5px] font-medium uppercase tracking-[0.06em] leading-tight min-w-0"
                       style={{ color: m.text }}
                     >
                       {m.label}
                     </h2>
                     {band.nodes.length > 0 && (
                       <span
-                        className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-white text-[11px] font-semibold shrink-0"
+                        className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-primary-foreground text-meta font-medium shrink-0"
                         style={{ backgroundColor: m.dot }}
                       >
                         {band.nodes.length}
@@ -206,7 +206,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                           onAddInBand(band.key)
                         }}
                         aria-label={`New ${m.label} goal`}
-                        className="w-7 h-7 shrink-0 rounded-[8px] text-white flex items-center justify-center transition-[filter] duration-200"
+                        className="w-7 h-7 shrink-0 rounded-control text-primary-foreground flex items-center justify-center transition-[filter] duration-200"
                         style={{ backgroundColor: m.dot }}
                         onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(0.9)')}
                         onMouseLeave={(e) => (e.currentTarget.style.filter = 'none')}
@@ -217,7 +217,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                   )}
                 </div>
                 {band.key === 'untagged' && (
-                  <p className="text-[11px] text-text-muted leading-snug">
+                  <p className="text-meta text-text-muted leading-snug">
                     Edit a goal to place it in a band.
                   </p>
                 )}
@@ -381,7 +381,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                 }}
               >
                 <span
-                  className="text-[12.5px] font-semibold leading-tight line-clamp-2 wrap-break-word"
+                  className="text-[12.5px] font-medium leading-tight line-clamp-2 wrap-break-word"
                   style={{ color: m.text }}
                 >
                   {n.goal.title}

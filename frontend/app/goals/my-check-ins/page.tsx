@@ -64,9 +64,9 @@ export default function MyCheckInsPage() {
 
   return (
     <div>
-      <div className="mb-5">
+      <div className="mb-4">
         <div className="flex items-center gap-2.5">
-          <h1 className="text-[26px] font-bold text-text-primary leading-tight">My check-ins</h1>
+          <h1 className="text-page-title font-medium text-text-primary leading-tight">My check-ins</h1>
           <CountBadge count={rows.length} />
         </div>
         <p className="text-sm text-text-secondary mt-1">
@@ -76,11 +76,11 @@ export default function MyCheckInsPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-2 text-sm text-text-secondary py-16 justify-center">
+        <div className="flex items-center gap-2 text-sm text-text-secondary py-12 justify-center">
           <Loader2 size={16} className="animate-spin" /> Loading…
         </div>
       ) : rows.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-card">
+        <div className="bg-surface border border-border-light rounded-card shadow-card">
           <EmptyState
             icon={<PartyPopper size={26} />}
             title="Nothing owed"
@@ -88,7 +88,7 @@ export default function MyCheckInsPage() {
             action={
               <button
                 onClick={() => router.push('/goals')}
-                className="mt-1 text-sm font-semibold text-primary-text hover:text-primary-text"
+                className="mt-1 text-sm font-medium text-primary-text hover:text-primary-text"
               >
                 See all goals
               </button>
@@ -102,7 +102,7 @@ export default function MyCheckInsPage() {
             return (
               <li
                 key={g.id}
-                className="bg-white border border-border-light rounded-[12px] shadow-card p-4 sm:p-5"
+                className="bg-surface border border-border-light rounded-card shadow-card p-4 sm:p-4"
               >
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="min-w-0 flex-1">
@@ -111,7 +111,7 @@ export default function MyCheckInsPage() {
                       className="group text-left"
                     >
                       <span className="flex items-center gap-1.5">
-                        <span className="text-[17px] font-semibold text-text-primary group-hover:text-primary-text transition-colors">
+                        <span className="text-card-heading font-medium text-text-primary group-hover:text-primary-text transition-colors">
                           {g.title}
                         </span>
                         <ArrowUpRight
@@ -123,7 +123,7 @@ export default function MyCheckInsPage() {
 
                     <div className="flex items-center gap-2.5 flex-wrap mt-2">
                       <span
-                        className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[12px] font-semibold"
+                        className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-meta font-medium"
                         style={
                           late
                             ? { backgroundColor: 'var(--danger-bg)', borderColor: 'var(--danger-border)', color: 'var(--danger)' }
@@ -133,15 +133,15 @@ export default function MyCheckInsPage() {
                         {g.due_reason}
                       </span>
                       <GoalStatusBadge status={g.status} />
-                      <span className="text-[12px] text-text-secondary">
+                      <span className="text-meta text-text-secondary">
                         {CADENCE_META[g.review_cadence].label}
                       </span>
                     </div>
 
                     {g.target_value !== null && g.target_value !== undefined && (
-                      <p className="text-[13px] text-text-secondary mt-2 tabular-nums">
+                      <p className="text-label text-text-secondary mt-2 tabular-nums">
                         Last recorded{' '}
-                        <span className="font-semibold text-text-primary">
+                        <span className="font-medium text-text-primary">
                           {g.current_value === null || g.current_value === undefined
                             ? '—'
                             : g.current_value}
@@ -154,7 +154,7 @@ export default function MyCheckInsPage() {
                   {perms.edit && (
                     <button
                       onClick={() => setActive(g)}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-semibold transition-colors shrink-0 w-full sm:w-auto min-h-[44px]"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium transition-colors shrink-0 w-full sm:w-auto min-h-[44px]"
                     >
                       <CheckCircle2 size={16} /> Check in
                     </button>

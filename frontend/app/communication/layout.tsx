@@ -14,7 +14,7 @@ export default function CommunicationLayout({ children }: { children: React.Reac
       <div
         className={[
           'min-w-0 transition-[margin-left] duration-200 ease-in-out',
-          collapsed ? 'ml-16' : 'ml-16 md:ml-[240px]',
+          collapsed ? 'ml-12' : 'ml-12 md:ml-[240px]',
         ].join(' ')}
       >
         {children}

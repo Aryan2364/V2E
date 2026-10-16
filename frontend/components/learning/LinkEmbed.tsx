@@ -52,7 +52,7 @@ export default function LinkEmbed({
         target="_blank"
         rel="noopener noreferrer"
         onClick={onOpen}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-primary-text bg-primary-subtle border border-primary-border rounded-[8px] hover:bg-primary-subtle transition-colors"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-control hover:bg-primary-subtle transition-colors"
       >
         <ExternalLink size={14} /> Open in new tab
       </a>
@@ -72,7 +72,7 @@ export default function LinkEmbed({
             target="_blank"
             rel="noopener noreferrer"
             onClick={onOpen}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
           >
             <ExternalLink size={15} /> Open Link
           </a>
@@ -93,7 +93,7 @@ export default function LinkEmbed({
         <Tooltip label="Reload / back to start">
           <button
             onClick={reload}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-text-secondary bg-white border border-border-light rounded-[8px] hover:text-primary-text hover:border-primary transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:text-primary-text hover:border-primary transition-colors"
           >
             <RotateCcw size={14} /> Reload
           </button>
@@ -102,8 +102,8 @@ export default function LinkEmbed({
       </div>
       <div
         className={[
-          'relative w-full rounded-[8px] overflow-hidden',
-          isVideo ? 'aspect-video bg-black' : 'border border-border-light bg-white',
+          'relative w-full rounded-control overflow-hidden',
+          isVideo ? 'aspect-video bg-black' : 'border border-border-light bg-surface',
         ].join(' ')}
         style={isVideo ? undefined : { height: '70vh' }}
       >

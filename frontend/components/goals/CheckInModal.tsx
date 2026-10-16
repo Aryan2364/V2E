@@ -92,10 +92,10 @@ export default function CheckInModal({
   return (
     <Modal isOpen={isOpen} onClose={() => !saving && onClose()} title="Check in" size="md">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="rounded-[10px] bg-surface-sunken border border-border-light px-3 py-2.5">
-          <p className="text-[15px] font-semibold text-text-primary leading-snug">{goal.title}</p>
+        <div className="rounded-card bg-surface-sunken border border-border-light px-3 py-2.5">
+          <p className="text-body font-medium text-text-primary leading-snug">{goal.title}</p>
           {hasTarget && (
-            <p className="text-[13px] text-text-secondary mt-0.5">
+            <p className="text-label text-text-secondary mt-0.5">
               Target {formatValue(goal.target_value, goal.unit)}
               {goal.current_value !== null && goal.current_value !== undefined && (
                 <> · last recorded {formatValue(goal.current_value, goal.unit)}</>
@@ -122,7 +122,7 @@ export default function CheckInModal({
                 disabled={saving}
               />
               {goal.unit && (
-                <span className="flex items-center px-3 rounded-[8px] bg-surface-control border border-border-light text-[14px] text-text-secondary whitespace-nowrap">
+                <span className="flex items-center px-3 rounded-control bg-surface-control border border-border-light text-body text-text-secondary whitespace-nowrap">
                   {goal.unit}
                 </span>
               )}
@@ -144,9 +144,9 @@ export default function CheckInModal({
                   disabled={saving}
                   aria-pressed={active}
                   className={[
-                    'flex flex-col items-center justify-center gap-1.5 rounded-[10px] border-2 py-3 px-2 min-h-[64px]',
-                    'text-[13px] font-semibold transition-colors',
-                    active ? '' : 'border-border-light bg-white text-text-secondary hover:bg-surface-sunken',
+                    'flex flex-col items-center justify-center gap-1.5 rounded-card border-2 py-3 px-2 min-h-[64px]',
+                    'text-label font-medium transition-colors',
+                    active ? '' : 'border-border-light bg-surface text-text-secondary hover:bg-surface-sunken',
                   ].join(' ')}
                   style={
                     active
@@ -160,7 +160,7 @@ export default function CheckInModal({
               )
             })}
           </div>
-          <p className="text-[11px] text-text-secondary mt-1.5">
+          <p className="text-meta text-text-secondary mt-1.5">
             Your honest read, separate from the number — a goal can be on 60% and safe, or on 90%
             and about to slip.
           </p>
@@ -179,7 +179,7 @@ export default function CheckInModal({
           />
         </div>
 
-        <p className="text-[12px] text-text-secondary">
+        <p className="text-meta text-text-secondary">
           Check-ins can’t be edited or deleted afterwards — the dated history is the whole point. A
           mistake can be voided with a reason.
         </p>

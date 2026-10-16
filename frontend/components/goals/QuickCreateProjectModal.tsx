@@ -130,7 +130,7 @@ export default function QuickCreateProjectModal({
           </div>
         </div>
 
-        <p className="text-[12px] text-text-secondary">
+        <p className="text-meta text-text-secondary">
           Members, budget and milestones are set up in Work once the project exists. It’ll be linked
           to this goal automatically.
         </p>

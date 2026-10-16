@@ -208,7 +208,7 @@ export default function CreateGoalModal({
           />
 
           {allowLinking && (
-            <div className="mt-5 pt-5 border-t border-border-light space-y-4">
+            <div className="mt-4 pt-4 border-t border-border-light space-y-4">
               <FieldWithAdd
                 label="Supporting goals"
                 hint="Goals that have to land for this one to happen. Pick any that already exist, or create one."
@@ -264,7 +264,7 @@ export default function CreateGoalModal({
           )}
 
           {/* Header X is the dismiss, so the footer carries only the primary action. */}
-          <div className="flex justify-end pt-5 mt-5 border-t border-border-light">
+          <div className="flex justify-end pt-4 mt-4 border-t border-border-light">
             <Button type="submit" disabled={saving}>
               {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
               {saving ? 'Creating…' : 'Create goal'}
@@ -328,12 +328,12 @@ function FieldWithAdd({
           disabled={disabled}
           title={addLabel}
           aria-label={addLabel}
-          className="shrink-0 w-[42px] h-[42px] rounded-[8px] bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted text-white flex items-center justify-center transition-colors"
+          className="shrink-0 w-[42px] h-[42px] rounded-control bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted text-primary-foreground flex items-center justify-center transition-colors"
         >
           <Plus size={18} />
         </button>
       </div>
-      <p className="text-[11px] text-text-secondary mt-1">{hint}</p>
+      <p className="text-meta text-text-secondary mt-1">{hint}</p>
     </div>
   )
 }

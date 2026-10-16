@@ -19,16 +19,16 @@ export default function LearningPathCard({
   return (
     <Link
       href={`/learning/paths/${path.id}`}
-      className="block bg-white border border-border-light rounded-[12px] p-5 hover:shadow-md hover:border-primary/20 transition-all duration-150 group"
+      className="block bg-surface border border-border-light rounded-card p-4 hover:shadow-md hover:border-primary/20 transition-all duration-150 group"
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="w-10 h-10 rounded-[10px] bg-primary-subtle flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-card bg-primary-subtle flex items-center justify-center shrink-0">
           <BookOpen size={18} className="text-primary-text" />
         </div>
         <PathStatusBadge status={path.status} />
       </div>
 
-      <h3 className="text-[15px] font-semibold text-text-primary mb-1 line-clamp-2 group-hover:text-primary-text transition-colors">
+      <h3 className="text-body font-medium text-text-primary mb-1 line-clamp-2 group-hover:text-primary-text transition-colors">
         {path.title}
       </h3>
 
@@ -61,7 +61,7 @@ export default function LearningPathCard({
         <div className="mt-3 pt-3 border-t border-border-light">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-text-secondary">Progress</span>
-            <span className="text-xs font-semibold text-text-primary">{progress}%</span>
+            <span className="text-xs font-medium text-text-primary">{progress}%</span>
           </div>
           <div className="h-1.5 bg-surface-control-pressed rounded-full overflow-hidden">
             <div

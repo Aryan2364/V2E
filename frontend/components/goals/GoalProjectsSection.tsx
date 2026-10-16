@@ -47,16 +47,16 @@ export default function GoalProjectsSection({
   const hidden = goal.hidden_project_count ?? 0
 
   return (
-    <section className="bg-white border border-border-light rounded-[12px] shadow-card flex flex-col max-h-[420px]">
-      <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-border-light shrink-0">
+    <section className="bg-surface border border-border-light rounded-card shadow-card flex flex-col max-h-[420px]">
+      <header className="flex items-start justify-between gap-3 px-4 py-4 border-b border-border-light shrink-0">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="flex items-center gap-2 text-[16px] font-semibold text-text-primary">
+            <h2 className="flex items-center gap-2 text-card-heading font-medium text-text-primary">
               <FolderKanban size={16} className="text-text-secondary" /> Projects
             </h2>
             <CountBadge count={projects.length} />
           </div>
-          <p className="text-[12px] text-text-secondary mt-0.5">
+          <p className="text-meta text-text-secondary mt-0.5">
             {projects.length === 0
               ? 'Bigger bodies of work behind this goal.'
               : 'Projects from Work, linked to this goal.'}
@@ -67,16 +67,16 @@ export default function GoalProjectsSection({
             onClick={() => setLinkOpen(true)}
             aria-label="Link a project"
             title="Link a project to this goal"
-            className="w-7 h-7 shrink-0 rounded-[8px] bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-colors"
+            className="w-7 h-7 shrink-0 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground flex items-center justify-center transition-colors"
           >
             <Plus size={16} />
           </button>
         )}
       </header>
 
-      <div className="table-scroll flex-1 overflow-y-auto px-5 py-3">
+      <div className="table-scroll flex-1 overflow-y-auto px-4 py-3">
         {projects.length === 0 ? (
-          <p className="text-[13px] text-text-secondary py-4">
+          <p className="text-label text-text-secondary py-4">
             No projects linked. Link one when the work behind this goal is big enough to need
             milestones and a plan of its own.
           </p>
@@ -97,7 +97,7 @@ export default function GoalProjectsSection({
 
         {/* Honest about what was withheld rather than quietly showing a short list. */}
         {hidden > 0 && (
-          <p className="flex items-start gap-1.5 mt-3 rounded-[6px] bg-surface-sunken border border-border-light px-2.5 py-2 text-[12px] text-text-secondary">
+          <p className="flex items-start gap-1.5 mt-3 rounded-control bg-surface-sunken border border-border-light px-2.5 py-2 text-meta text-text-secondary">
             <Lock size={12} className="shrink-0 mt-0.5" />
             {hidden} more linked {hidden === 1 ? 'project is' : 'projects are'} hidden — you’re not
             on {hidden === 1 ? 'it' : 'them'}. Ask a project manager to add you.
@@ -161,7 +161,7 @@ function ProjectRow({
     <li className="flex items-start justify-between gap-3 py-2.5">
       <Link href={`/dashboard/projects/${project.id}`} className="group min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
-          <span className="text-[14px] font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
+          <span className="text-body font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
             {project.name}
           </span>
           <ArrowUpRight
@@ -171,18 +171,18 @@ function ProjectRow({
         </span>
         <span className="flex items-center gap-2 flex-wrap mt-1">
           <span
-            className="inline-flex items-center font-medium text-[11px] rounded-full px-2 py-0.5 border whitespace-nowrap"
+            className="inline-flex items-center font-medium text-meta rounded-full px-2 py-0.5 border whitespace-nowrap"
             style={{ backgroundColor: meta.bg, color: meta.text, borderColor: meta.border }}
           >
             {meta.label}
           </span>
-          <span className="text-[12px] text-text-secondary tabular-nums">
+          <span className="text-meta text-text-secondary tabular-nums">
             {project.completed_tasks}/{project.total_tasks} tasks
           </span>
           {project.end_date && (
             <>
-              <span className="text-[#CBD5E1]">·</span>
-              <span className="text-[12px] text-text-secondary">ends {formatDate(project.end_date)}</span>
+              <span className="text-muted">·</span>
+              <span className="text-meta text-text-secondary">ends {formatDate(project.end_date)}</span>
             </>
           )}
         </span>
@@ -193,7 +193,7 @@ function ProjectRow({
           onClick={() => setUnlinkOpen(true)}
           title="Unlink from this goal"
           aria-label="Unlink project"
-          className="w-6 h-6 shrink-0 rounded-[6px] flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
+          className="w-6 h-6 shrink-0 rounded-control flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
         >
           <Link2Off size={13} />
         </button>
@@ -266,9 +266,9 @@ function LinkProjectModal({
   return (
     <Modal isOpen onClose={() => !saving && onClose()} title="Link a project" size="md">
       <form onSubmit={submit} className="space-y-4">
-        <div className="rounded-[10px] bg-surface-sunken border border-border-light px-3 py-2.5">
-          <p className="text-[13px] text-text-secondary">Linking to</p>
-          <p className="text-[15px] font-semibold text-text-primary leading-snug">{goal.title}</p>
+        <div className="rounded-card bg-surface-sunken border border-border-light px-3 py-2.5">
+          <p className="text-label text-text-secondary">Linking to</p>
+          <p className="text-body font-medium text-text-primary leading-snug">{goal.title}</p>
         </div>
 
         {loading ? (
@@ -290,7 +290,7 @@ function LinkProjectModal({
               options={options.map((p) => ({ value: p.id, label: p.name }))}
               disabled={saving}
             />
-            <p className="text-[11px] text-text-secondary mt-1">
+            <p className="text-meta text-text-secondary mt-1">
               A project can serve several goals — linking it here doesn’t remove it from any
               others. Only projects you’re on are listed.
             </p>

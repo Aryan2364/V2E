@@ -2,10 +2,13 @@
 
 import { useMemo } from 'react'
 import { STATUS_META, formatValue, type Goal, type GoalCheckIn } from '@/lib/types/goals'
+import { formatDate } from '@/lib/format'
 
+// Chart axis label (section 18.1): the day and month only, no year — built from
+// the one formatDate implementation so it stays zone-correct and server/client
+// identical, rather than a second date formatter.
 function fmtDate(iso: string): string {
-  const d = new Date(iso)
-  return isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })
+  return formatDate(iso).replace(/ \d{4}$/, '')
 }
 
 /**
@@ -42,7 +45,7 @@ export default function GoalTrajectory({
 
   if (target === null || target === undefined) {
     return (
-      <p className="text-[13px] text-text-secondary">
+      <p className="text-label text-text-secondary">
         This goal isn’t measured by a number — its check-ins are the traffic light and the note.
       </p>
     )
@@ -50,7 +53,7 @@ export default function GoalTrajectory({
 
   if (points.length === 0) {
     return (
-      <p className="text-[13px] text-text-secondary">
+      <p className="text-label text-text-secondary">
         No number recorded yet. The first check-in starts the trajectory.
       </p>
     )
@@ -107,11 +110,11 @@ export default function GoalTrajectory({
         ))}
       </svg>
       <div className="flex items-center justify-between mt-1.5 gap-2">
-        <span className="text-[11px] text-text-secondary">{fmtDate(points[0].date)}</span>
-        <span className="text-[11px] font-medium text-text-secondary">
+        <span className="text-meta text-text-secondary">{fmtDate(points[0].date)}</span>
+        <span className="text-meta font-medium text-text-secondary">
           Target line at {formatValue(target, goal.unit)}
         </span>
-        <span className="text-[11px] text-text-secondary">{fmtDate(latest.date)}</span>
+        <span className="text-meta text-text-secondary">{fmtDate(latest.date)}</span>
       </div>
     </div>
   )

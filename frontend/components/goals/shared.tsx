@@ -14,21 +14,23 @@ import {
   type GoalStatus,
 } from '@/lib/types/goals'
 import type { DeptOption, EmployeeOption } from './GoalFormFields'
+import { formatDate as formatDateToken, formatDateTime as formatDateTimeToken, formatNumber } from '@/lib/format'
 
 // ─── Formatting ────────────────────────────────────────────────────────────────
+// Delegates to the one lib/format.ts implementation (section 4 rule 2, section
+// 18) instead of a second toLocaleDateString formatter — this also removes a
+// hydration-mismatch risk, since toLocaleDateString read the machine's own locale.
 
 export function formatDate(iso?: string | null): string {
   if (!iso) return '—'
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return '—'
-  return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
+  const out = formatDateToken(iso)
+  return out || '—'
 }
 
 export function formatDateTime(iso?: string | null): string {
   if (!iso) return '—'
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return '—'
-  return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
+  const out = formatDateTimeToken(iso)
+  return out || '—'
 }
 
 export function toDateInput(iso?: string | null): string {
@@ -66,7 +68,7 @@ export function GoalStatusBadge({ status, withDot = true }: { status: GoalStatus
   const m = STATUS_META[status]
   return (
     <span
-      className="inline-flex items-center gap-1.5 font-medium text-[12px] rounded-full px-2.5 py-0.5 border whitespace-nowrap"
+      className="inline-flex items-center gap-1.5 font-medium text-meta rounded-full px-2.5 py-0.5 border whitespace-nowrap"
       style={{ backgroundColor: m.bg, color: m.text, borderColor: m.border }}
     >
       {withDot && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: m.dot }} />}
@@ -145,7 +147,7 @@ export function GoalStatusPicker({
         title="Change status"
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="inline-flex items-center gap-1.5 font-medium text-[12px] rounded-full pl-2.5 pr-2 py-0.5 border whitespace-nowrap transition-shadow hover:shadow-[0_0_0_2px_rgba(37,99,235,0.18)] focus:outline-hidden focus:shadow-[0_0_0_2px_rgba(37,99,235,0.35)] disabled:opacity-70"
+        className="inline-flex items-center gap-1.5 font-medium text-meta rounded-full pl-2.5 pr-2 py-0.5 border whitespace-nowrap transition-shadow hover:ring-2 hover:ring-primary-ring/30 focus:outline-hidden focus:ring-2 focus:ring-primary-ring disabled:opacity-70"
         style={{ backgroundColor: m.bg, color: m.text, borderColor: m.border }}
       >
         {saving ? (
@@ -160,7 +162,7 @@ export function GoalStatusPicker({
       {open && (
         <div
           role="listbox"
-          className="absolute left-0 top-full mt-1.5 z-30 w-[228px] bg-white border border-border-light rounded-[10px] shadow-[0_8px_24px_rgba(15,23,42,0.14)] py-1"
+          className="absolute left-0 top-full mt-1.5 z-popover w-[228px] bg-surface border border-border-light rounded-card shadow-menu py-1"
         >
           {options.map((s) => {
             const om = STATUS_META[s]
@@ -174,7 +176,7 @@ export function GoalStatusPicker({
                 aria-selected={isCurrent}
                 disabled={isCheckIn}
                 onClick={() => pick(s)}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left transition-colors ${
+                className={`w-full flex items-center gap-2 px-3 py-2 text-label text-left transition-colors ${
                   isCheckIn ? 'cursor-default text-text-secondary' : 'text-text-primary hover:bg-surface-control'
                 }`}
               >
@@ -184,7 +186,7 @@ export function GoalStatusPicker({
               </button>
             )
           })}
-          <p className="text-[11px] text-text-secondary leading-snug px-3 pt-2 pb-1 mt-1 border-t border-border-light">
+          <p className="text-meta text-text-secondary leading-snug px-3 pt-2 pb-1 mt-1 border-t border-border-light">
             On track / At risk / Off track come from check-ins. On hold pauses check-in
             reminders without closing the goal.
           </p>
@@ -211,7 +213,7 @@ export function FocusAreaBadge({
   return (
     <span
       title={m.label}
-      className="inline-flex items-center gap-1.5 font-medium text-[12px] rounded-full px-2.5 py-0.5 border whitespace-nowrap"
+      className="inline-flex items-center gap-1.5 font-medium text-meta rounded-full px-2.5 py-0.5 border whitespace-nowrap"
       style={{ backgroundColor: m.bg, color: m.text, borderColor: m.border }}
     >
       <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: m.dot }} />
@@ -237,16 +239,16 @@ export function ValueAgainstTarget({
   size?: 'sm' | 'md' | 'lg'
 }) {
   if (target === null || target === undefined) {
-    return <span className="text-[13px] text-text-secondary">No target number</span>
+    return <span className="text-label text-text-secondary">No target number</span>
   }
   const cls =
-    size === 'lg' ? 'text-[24px]' : size === 'sm' ? 'text-[13px]' : 'text-[15px]'
+    size === 'lg' ? 'text-page-title' : size === 'sm' ? 'text-label' : 'text-body'
   return (
     <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
-      <span className={`${cls} font-bold text-text-primary tabular-nums`}>
-        {current === null ? '—' : current.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+      <span className={`${cls} font-medium text-text-primary tabular-nums`}>
+        {current === null ? '—' : formatNumber(current)}
       </span>
-      <span className="text-[13px] text-text-secondary">of {formatValue(target, unit)}</span>
+      <span className="text-label text-text-secondary">of {formatValue(target, unit)}</span>
     </span>
   )
 }
@@ -256,7 +258,7 @@ export function ValueAgainstTarget({
 export function CountBadge({ count }: { count: number }) {
   if (!count) return null
   return (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
       {count}
     </span>
   )
@@ -276,11 +278,11 @@ export function EmptyState({
   action?: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col items-center text-center gap-3 py-16 px-6">
-      <div className="w-14 h-14 rounded-[16px] bg-primary-subtle flex items-center justify-center text-primary-text">
+    <div className="flex flex-col items-center text-center gap-3 py-12 px-6">
+      <div className="w-14 h-14 rounded-card bg-primary-subtle flex items-center justify-center text-primary-text">
         {icon}
       </div>
-      <h3 className="text-[18px] font-semibold text-text-primary">{title}</h3>
+      <h3 className="text-card-heading font-medium text-text-primary">{title}</h3>
       <p className="text-sm text-text-secondary max-w-sm">{subtitle}</p>
       {action}
     </div>
@@ -362,7 +364,7 @@ export function PermissionsUnavailable({ onRetry }: { onRetry: () => void }) {
       action={
         <button
           onClick={onRetry}
-          className="mt-1 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-semibold transition-colors"
+          className="mt-1 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium transition-colors"
         >
           <RefreshCw size={15} /> Try again
         </button>

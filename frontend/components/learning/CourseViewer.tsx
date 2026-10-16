@@ -139,7 +139,7 @@ export default function CourseViewer({
       {/* Sidebar: item list (collapsible, animated) */}
       <div
         className={[
-          'shrink-0 bg-white flex flex-col overflow-hidden transition-[width] duration-300 ease-in-out',
+          'shrink-0 bg-surface flex flex-col overflow-hidden transition-[width] duration-300 ease-in-out',
           navOpen ? 'w-72 border-r border-border-light' : 'w-0 border-r-0',
         ].join(' ')}
       >
@@ -157,18 +157,18 @@ export default function CourseViewer({
                 <button
                   onClick={() => setNavOpen(false)}
                   aria-label="Collapse"
-                  className="p-1 -mr-1 text-text-muted hover:text-primary-text hover:bg-primary-subtle rounded-[6px] transition-colors"
+                  className="p-1 -mr-1 text-text-muted hover:text-primary-text hover:bg-primary-subtle rounded-control transition-colors"
                 >
                   <PanelLeftClose size={16} />
                 </button>
               </Tooltip>
             </div>
             {preview && (
-              <div className="mb-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-warning-bg text-warning text-[11px] font-semibold">
+              <div className="mb-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-warning-bg text-warning text-meta font-medium">
                 Preview
               </div>
             )}
-            <h2 className="text-sm font-bold text-text-primary line-clamp-2 mb-2">{title}</h2>
+            <h2 className="text-sm font-medium text-text-primary line-clamp-2 mb-2">{title}</h2>
             <ProgressBar percent={percent} showLabel size="sm" />
           </div>
 
@@ -183,7 +183,7 @@ export default function CourseViewer({
                   onClick={() => openItem(item, idx)}
                   disabled={locked}
                   className={[
-                    'w-full text-left flex items-start gap-3 px-3 py-2.5 rounded-[8px] mb-0.5 transition-colors',
+                    'w-full text-left flex items-start gap-3 px-3 py-2.5 rounded-control mb-0.5 transition-colors',
                     locked ? 'opacity-50 cursor-not-allowed'
                       : isActive ? 'bg-primary-subtle' : 'hover:bg-surface-sunken cursor-pointer',
                   ].join(' ')}
@@ -199,7 +199,7 @@ export default function CourseViewer({
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       <ItemTypeBadge type={item.content_type} />
-                      {item.estimated_minutes && <span className="text-[10px] text-text-muted">{item.estimated_minutes}m</span>}
+                      {item.estimated_minutes && <span className="text-meta text-text-muted">{item.estimated_minutes}m</span>}
                     </div>
                   </div>
                 </button>
@@ -217,13 +217,13 @@ export default function CourseViewer({
               <div className="flex items-center gap-2">
                 <Link
                   href={backHref}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-text-secondary bg-white border border-border-light rounded-[8px] shadow-xs hover:text-primary-text hover:border-primary transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-text-secondary bg-surface border border-border-light rounded-control shadow-xs hover:text-primary-text hover:border-primary transition-colors"
                 >
                   <ArrowLeft size={14} /> {backLabel}
                 </Link>
                 <button
                   onClick={() => setNavOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-text-secondary bg-white border border-border-light rounded-[8px] shadow-xs hover:text-primary-text hover:border-primary transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-text-secondary bg-surface border border-border-light rounded-control shadow-xs hover:text-primary-text hover:border-primary transition-colors"
                 >
                   <PanelLeftOpen size={14} /> Show list
                 </button>
@@ -232,7 +232,7 @@ export default function CourseViewer({
             {preview && editHref && (
               <Link
                 href={editHref}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
               >
                 <Pencil size={14} /> Edit course
               </Link>
@@ -243,7 +243,7 @@ export default function CourseViewer({
         {!activeItem ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <BookOpen size={40} className="text-[#CBD5E1] mx-auto mb-3" />
+              <BookOpen size={40} className="text-muted mx-auto mb-3" />
               <p className="text-sm text-text-secondary">
                 {items.length ? 'Select a material from the list to begin' : 'This course has no materials yet'}
               </p>
@@ -261,15 +261,15 @@ export default function CourseViewer({
                   </span>
                 )}
               </div>
-              <h1 className="text-[22px] font-bold text-text-primary mb-1">{activeItem.title}</h1>
+              <h1 className="text-card-heading font-medium text-text-primary mb-1">{activeItem.title}</h1>
               {activeItem.description && <p className="text-sm text-text-secondary">{activeItem.description}</p>}
             </div>
 
             {/* Content */}
-            <div className="bg-white border border-border-light rounded-[12px] p-6 mb-6">
+            <div className="bg-surface border border-border-light rounded-card p-6 mb-6">
               {activeItem.content_type === 'file' && (
                 fileLoading ? (
-                  <div className="flex items-center justify-center gap-2 py-16 text-sm text-text-secondary">
+                  <div className="flex items-center justify-center gap-2 py-12 text-sm text-text-secondary">
                     <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     Loading material…
                   </div>
@@ -279,14 +279,14 @@ export default function CourseViewer({
                       {fileView.allow_download && onDownload && (
                         <button
                           onClick={() => onDownload(activeItem.id)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
                         >
                           <Download size={14} /> Download
                         </button>
                       )}
                       <button
                         onClick={() => setExpanded(true)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary-text bg-primary-subtle border border-primary-border rounded-[8px] hover:bg-primary-subtle transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-control hover:bg-primary-subtle transition-colors"
                       >
                         <Maximize2 size={14} /> Fullscreen
                       </button>
@@ -320,13 +320,13 @@ export default function CourseViewer({
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Open in a new tab"
-                        className="p-1.5 text-primary-text bg-primary-subtle border border-primary-border rounded-[8px] hover:bg-primary-subtle transition-colors"
+                        className="p-1.5 text-primary-text bg-primary-subtle border border-primary-border rounded-control hover:bg-primary-subtle transition-colors"
                       >
                         <ExternalLink size={16} />
                       </a>
                     </Tooltip>
                   </div>
-                  <div className="w-full aspect-video rounded-[8px] overflow-hidden bg-black">
+                  <div className="w-full aspect-video rounded-control overflow-hidden bg-black">
                     <iframe src={toEmbeddableVideoUrl(activeItem.content_url)} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title={activeItem.title} />
                   </div>
                 </div>
@@ -350,7 +350,7 @@ export default function CourseViewer({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => { if (!isDone(activeItem.id)) markComplete(activeItem, 'auto_opened') }}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
                   >
                     <ExternalLink size={15} />
                     Open Document
@@ -368,16 +368,16 @@ export default function CourseViewer({
               <button
                 onClick={() => markComplete(activeItem, 'manual')}
                 disabled={completing === activeItem.id}
-                className="flex items-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-success hover:bg-success rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-primary-foreground bg-success hover:bg-success rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 {completing === activeItem.id
-                  ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ? <div className="w-4 h-4 border-2 border-surface border-t-transparent rounded-full animate-spin" />
                   : <CheckCircle size={16} />}
                 Mark as Complete
               </button>
             ) : (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-sm font-semibold text-success">
+                <div className="flex items-center gap-2 text-sm font-medium text-success">
                   <CheckCircle size={18} /> Completed
                 </div>
                 <button
@@ -395,17 +395,17 @@ export default function CourseViewer({
 
       {/* Fullscreen material overlay */}
       {expanded && activeItem?.content_type === 'file' && fileView && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-70 bg-white flex flex-col">
+        <div className="fixed inset-0 z-70 bg-surface flex flex-col">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border-light shrink-0">
             <div className="min-w-0 flex items-center gap-2">
               <FileIcon size={16} className="text-primary-text shrink-0" />
-              <h3 className="text-sm font-semibold text-text-primary truncate">{activeItem.title}</h3>
+              <h3 className="text-sm font-medium text-text-primary truncate">{activeItem.title}</h3>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {fileView.allow_download && onDownload && (
                 <button
                   onClick={() => onDownload(activeItem.id)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
                 >
                   <Download size={15} /> Download
                 </button>
@@ -413,7 +413,7 @@ export default function CourseViewer({
               <Tooltip label="Exit fullscreen (Esc)">
                 <button
                   onClick={() => setExpanded(false)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-text-secondary bg-white border border-border-light rounded-[8px] hover:text-primary-text hover:border-primary transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:text-primary-text hover:border-primary transition-colors"
                 >
                   <Minimize2 size={15} /> Exit
                 </button>

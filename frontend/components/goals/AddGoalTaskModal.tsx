@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 
 const inputClass =
-  'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  'w-full border border-border rounded-control px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
 
 interface Props {

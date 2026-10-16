@@ -183,14 +183,14 @@ export default function ManagePathPage() {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
         <div className="text-center max-w-sm">
-          <BookOpen size={40} className="text-[#CBD5E1] mx-auto mb-3" />
-          <h1 className="text-lg font-bold text-text-primary mb-1">Course not found</h1>
-          <p className="text-sm text-text-secondary mb-5">
+          <BookOpen size={40} className="text-muted mx-auto mb-3" />
+          <h1 className="text-lg font-medium text-text-primary mb-1">Course not found</h1>
+          <p className="text-sm text-text-secondary mb-4">
             This course doesn’t exist, or you don’t have access to manage it.
           </p>
           <Link
             href="/learning/paths"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
           >
             <ArrowLeft size={15} /> Back to Courses
           </Link>
@@ -202,9 +202,9 @@ export default function ManagePathPage() {
   const items = path.items ?? []
 
   return (
-    <div className="px-4 sm:px-8 pb-10 max-w-5xl mx-auto">
+    <div className="px-4 sm:px-8 pb-8 max-w-5xl mx-auto">
       {/* Frozen: back link + course header + tabs. Only the tab content below scrolls. */}
-      <div className="sticky top-0 z-30 bg-white pt-6">
+      <div className="sticky top-0 z-30 bg-surface pt-6">
       <Link
         href="/learning/paths"
         className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-primary-text mb-4 transition-colors"
@@ -214,10 +214,10 @@ export default function ManagePathPage() {
       </Link>
 
       {/* Header */}
-      <div className="bg-white border border-border-light rounded-[12px] p-6 mb-4">
+      <div className="bg-surface border border-border-light rounded-card p-6 mb-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-[24px] font-bold text-text-primary mb-2">{path.title}</h1>
+            <h1 className="text-page-title font-medium text-text-primary mb-2">{path.title}</h1>
             <div className="flex items-center gap-3 mb-1">
               <PathStatusBadge status={path.status} />
               <span className="text-xs text-text-muted capitalize">{path.mode.replace('_', ' ')}</span>
@@ -233,14 +233,14 @@ export default function ManagePathPage() {
           <div className="flex items-center gap-2 shrink-0">
             <Link
               href={`/learning/paths/${pathId}/preview`}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-primary-text bg-primary-subtle border border-primary-border rounded-[8px] hover:bg-primary-subtle transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-control hover:bg-primary-subtle transition-colors"
             >
               <Eye size={14} />
               Preview
             </Link>
             <Link
               href={`/learning/paths/builder?id=${pathId}`}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
             >
               <Pencil size={14} />
               Edit
@@ -250,7 +250,7 @@ export default function ManagePathPage() {
                 <button
                   onClick={handleArchive}
                   aria-label="Archive"
-                  className="p-2 text-text-secondary hover:text-warning hover:bg-warning-bg rounded-[8px] transition-colors"
+                  className="p-2 text-text-secondary hover:text-warning hover:bg-warning-bg rounded-control transition-colors"
                 >
                   <Archive size={16} />
                 </button>
@@ -259,7 +259,7 @@ export default function ManagePathPage() {
             {path.status === 'archived' && (
               <button
                 onClick={handleUnarchive}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-success bg-success-bg border border-success-border rounded-[8px] hover:bg-success-bg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-success bg-success-bg border border-success-border rounded-control hover:bg-success-bg transition-colors"
               >
                 <ArchiveRestore size={14} /> Restore
               </button>
@@ -269,7 +269,7 @@ export default function ManagePathPage() {
                 <button
                   onClick={() => { setDeleteError(null); setDeleteOpen(true) }}
                   aria-label="Delete"
-                  className="p-2 text-text-secondary hover:text-danger hover:bg-danger-bg rounded-[8px] transition-colors"
+                  className="p-2 text-text-secondary hover:text-danger hover:bg-danger-bg rounded-control transition-colors"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -300,7 +300,7 @@ export default function ManagePathPage() {
                 t === 'assignments' ? (assignmentsLoaded ? assignments.length : (path._count?.assignments ?? 0)) :
                 (path._count?.assignments ?? 0) // engagement = people being tracked
               return n > 0 ? (
-                <span className="ml-1.5 text-xs font-semibold bg-primary-subtle text-primary-text px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 text-xs font-medium bg-primary-subtle text-primary-text px-1.5 py-0.5 rounded-full">
                   {n}
                 </span>
               ) : null
@@ -342,10 +342,10 @@ export default function ManagePathPage() {
                 <button
                   type="button"
                   onClick={() => setPreviewItem(item)}
-                  className="group text-left w-full bg-white border border-border-light rounded-[10px] px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:border-primary hover:bg-surface-sunken transition-colors"
+                  className="group text-left w-full bg-surface border border-border-light rounded-card px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:border-primary hover:bg-surface-sunken transition-colors"
                 >
                   <span className="text-xs text-text-muted w-5 text-center shrink-0">{idx + 1}</span>
-                  <div className="w-8 h-8 rounded-[8px] bg-surface-sunken group-hover:bg-primary-subtle flex items-center justify-center shrink-0 transition-colors">
+                  <div className="w-8 h-8 rounded-control bg-surface-sunken group-hover:bg-primary-subtle flex items-center justify-center shrink-0 transition-colors">
                     <TypeIcon size={15} className="text-text-muted group-hover:text-primary-text transition-colors" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -358,7 +358,7 @@ export default function ManagePathPage() {
                         <span className="truncate max-w-[240px]">{item.file_name}</span>
                         {item.file_size_bytes ? <span className="text-text-muted">· {formatBytes(item.file_size_bytes)}</span> : null}
                         <span className={[
-                          'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium',
+                          'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-meta font-medium',
                           item.allow_download ?? true ? 'bg-success-bg text-success' : 'bg-warning-bg text-warning',
                         ].join(' ')}>
                           {item.allow_download ?? true ? <Download size={10} /> : <Ban size={10} />}
@@ -389,7 +389,7 @@ export default function ManagePathPage() {
       {tab === 'assignments' && (
         <div>
           {assignments.length === 0 ? (
-            <div className="bg-white border border-dashed border-border rounded-[12px] py-12 flex flex-col items-center text-center">
+            <div className="bg-surface border border-dashed border-border rounded-card py-12 flex flex-col items-center text-center">
               <Users size={28} className="text-text-muted mb-3" />
               <p className="text-sm font-medium text-text-primary mb-1">No assignments yet</p>
               <p className="text-xs text-text-muted">Assign this course to employees to get started</p>
@@ -417,11 +417,11 @@ export default function ManagePathPage() {
       {/* Assign Modal */}
       {showAssignModal && (
         <div className="fixed inset-0 z-60 flex items-center justify-center px-4 bg-black/40">
-          <div className="bg-white rounded-[16px] w-full max-w-md p-6 shadow-xl">
-            <h2 className="text-lg font-bold text-text-primary mb-1">Assign Course</h2>
+          <div className="bg-surface rounded-card w-full max-w-md p-6 shadow-xl">
+            <h2 className="text-lg font-medium text-text-primary mb-1">Assign Course</h2>
             <p className="text-sm text-text-secondary mb-4">Search, select all, or pick people to assign this course to</p>
 
-            <div className="mb-5">
+            <div className="mb-4">
               <AssigneeMultiSelect
                 employees={employees}
                 selected={selectedEmployees}
@@ -430,13 +430,13 @@ export default function ManagePathPage() {
             </div>
 
             <div className="flex items-center justify-end gap-3">
-              <button onClick={() => setShowAssignModal(false)} className="px-4 py-2.5 text-sm font-semibold text-text-secondary">
+              <button onClick={() => setShowAssignModal(false)} className="px-4 py-2.5 text-sm font-medium text-text-secondary">
                 Cancel
               </button>
               <button
                 onClick={handleAssign}
                 disabled={assigning || selectedEmployees.length === 0}
-                className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 {assigning && <Loader2 size={15} className="animate-spin" />}
                 Assign {selectedEmployees.length > 0 ? `(${selectedEmployees.length})` : ''}

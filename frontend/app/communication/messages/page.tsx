@@ -6,6 +6,7 @@ import {
   getConversations, createConversation, getMessages, sendMessage, markRead,
 } from '@/lib/api/messaging'
 import { getEmployees } from '@/lib/api/employees'
+import { formatTime } from '@/lib/format'
 import type { Conversation, Message } from '@/lib/types/communication'
 import type { EmployeeProfile } from '@/lib/types'
 import { MessageSquare, Plus, Send, X, Users, Search } from 'lucide-react'
@@ -233,14 +234,14 @@ export default function MessagesPage() {
   return (
     <div className="flex h-[calc(100vh-56px)] bg-surface-sunken">
       {/* Sidebar */}
-      <div className="w-72 bg-white border-r border-border-light flex flex-col shrink-0">
+      <div className="w-72 bg-surface border-r border-border-light flex flex-col shrink-0">
         <div className="p-4 border-b border-border-light flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-text-primary">Messages</h2>
+          <h2 className="text-sm font-medium text-text-primary">Messages</h2>
           <Tooltip label="New conversation">
           <button
             onClick={() => setShowNewConv(true)}
             aria-label="New conversation"
-            className="w-8 h-8 rounded-[6px] bg-primary-subtle text-primary-text flex items-center justify-center hover:bg-primary-subtle transition-colors"
+            className="w-8 h-8 rounded-control bg-primary-subtle text-primary-text flex items-center justify-center hover:bg-primary-subtle transition-colors"
           >
             <Plus size={16} />
           </button>
@@ -250,7 +251,7 @@ export default function MessagesPage() {
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
-              <MessageSquare size={32} className="text-[#CBD5E1] mb-2" />
+              <MessageSquare size={32} className="text-muted mb-2" />
               <p className="text-sm text-text-secondary">No conversations yet</p>
             </div>
           ) : (
@@ -265,14 +266,14 @@ export default function MessagesPage() {
                     isActive ? 'bg-primary-subtle' : '',
                   ].join(' ')}
                 >
-                  <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium shrink-0">
                     {conv.type === 'group' ? <Users size={16} /> : (conv.display_name?.charAt(0).toUpperCase() ?? '?')}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-text-primary truncate">{conv.display_name ?? conv.name ?? 'Conversation'}</span>
+                      <span className="text-sm font-medium text-text-primary truncate">{conv.display_name ?? conv.name ?? 'Conversation'}</span>
                       {(conv.unread_count ?? 0) > 0 && (
-                        <span className="ml-1 bg-primary text-white text-xs font-bold rounded-full px-1.5 py-0.5 shrink-0">
+                        <span className="ml-1 bg-primary text-primary-foreground text-xs font-medium rounded-full px-1.5 py-0.5 shrink-0">
                           {conv.unread_count}
                         </span>
                       )}
@@ -294,43 +295,43 @@ export default function MessagesPage() {
       {activeConvId && activeConv ? (
         <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
-          <div className="px-5 py-3 border-b border-border-light bg-white flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
+          <div className="px-4 py-3 border-b border-border-light bg-surface flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
               {activeConv.type === 'group' ? <Users size={15} /> : (activeConv.display_name?.charAt(0).toUpperCase() ?? '?')}
             </div>
             <div>
-              <p className="text-sm font-semibold text-text-primary">{activeConv.display_name ?? activeConv.name ?? 'Conversation'}</p>
+              <p className="text-sm font-medium text-text-primary">{activeConv.display_name ?? activeConv.name ?? 'Conversation'}</p>
               <p className="text-xs text-text-muted">{activeConv.members.length} members</p>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3">
+          <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
             {messages.map(msg => {
               const isMine = msg.sender_user_id === user?.id
               return (
                 <div key={msg.id} className={`flex gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
                   {!isMine && (
-                    <div className="w-7 h-7 rounded-full bg-[#475569] flex items-center justify-center text-white text-xs font-bold shrink-0 mt-1">
+                    <div className="w-7 h-7 rounded-full bg-text-secondary flex items-center justify-center text-primary-foreground text-xs font-medium shrink-0 mt-1">
                       {msg.sender?.name?.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div className={`max-w-[65%] flex flex-col gap-1 ${isMine ? 'items-end' : 'items-start'}`}>
-                    {!isMine && <span className="text-xs font-semibold text-text-secondary">{msg.sender?.name}</span>}
+                    {!isMine && <span className="text-xs font-medium text-text-secondary">{msg.sender?.name}</span>}
                     {msg.reply_to_message && !msg.is_deleted && (
-                      <div className={`text-xs text-text-secondary bg-surface-control px-2 py-1 rounded-[6px] border-l-2 border-primary max-w-full truncate`}>
+                      <div className={`text-xs text-text-secondary bg-surface-control px-2 py-1 rounded-control border-l-2 border-primary max-w-full truncate`}>
                         {msg.reply_to_message.body}
                       </div>
                     )}
                     <div className={[
-                      'px-3 py-2 rounded-[12px] text-sm',
-                      isMine ? 'bg-primary text-white rounded-tr-none' : 'bg-white border border-border-light text-text-primary rounded-tl-none',
+                      'px-3 py-2 rounded-card text-sm',
+                      isMine ? 'bg-primary text-primary-foreground rounded-tr-none' : 'bg-surface border border-border-light text-text-primary rounded-tl-none',
                       msg.is_deleted ? 'italic opacity-60' : '',
                     ].join(' ')}>
                       {msg.is_deleted ? 'This message was deleted' : msg.body}
                     </div>
-                    <span className="text-[10px] text-text-muted">
-                      {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    <span className="text-meta text-text-muted">
+                      {formatTime(msg.created_at)}
                     </span>
                   </div>
                 </div>
@@ -345,20 +346,20 @@ export default function MessagesPage() {
           </div>
 
           {/* Input */}
-          <div className="px-4 py-3 border-t border-border-light bg-white flex gap-2 items-end">
+          <div className="px-4 py-3 border-t border-border-light bg-surface flex gap-2 items-end">
             <textarea
               value={messageInput}
               onChange={e => handleInputChange(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Type a message…"
               rows={1}
-              className="flex-1 border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-none"
+              className="flex-1 border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-none"
               style={{ maxHeight: 120, overflowY: 'auto' }}
             />
             <button
               onClick={handleSend}
               disabled={!messageInput.trim() || sending}
-              className="w-9 h-9 rounded-[8px] bg-primary text-white flex items-center justify-center hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
+              className="w-9 h-9 rounded-control bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
             >
               <Send size={16} />
             </button>
@@ -367,7 +368,7 @@ export default function MessagesPage() {
       ) : (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <MessageSquare size={48} className="text-[#CBD5E1] mx-auto mb-3" />
+            <MessageSquare size={48} className="text-muted mx-auto mb-3" />
             <p className="text-text-secondary font-medium">Select a conversation</p>
             <p className="text-sm text-text-muted">or start a new one</p>
           </div>
@@ -377,10 +378,10 @@ export default function MessagesPage() {
       {/* New Conversation Modal */}
       {showNewConv && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-[16px] w-full max-w-md p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-bold text-text-primary">New Conversation</h2>
-              <button onClick={() => { setShowNewConv(false); setSelectedUsers([]); setEmpSearch('') }} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control transition-colors">
+          <div className="bg-surface rounded-card w-full max-w-md p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-medium text-text-primary">New Conversation</h2>
+              <button onClick={() => { setShowNewConv(false); setSelectedUsers([]); setEmpSearch('') }} className="p-1.5 rounded-control text-text-secondary hover:bg-surface-control transition-colors">
                 <X size={16} />
               </button>
             </div>
@@ -390,7 +391,7 @@ export default function MessagesPage() {
                 <button
                   key={t}
                   onClick={() => { setConvType(t); setSelectedUsers([]) }}
-                  className={`flex-1 py-2 rounded-[8px] text-sm font-semibold transition-colors ${convType === t ? 'bg-primary text-white' : 'bg-surface-control text-text-secondary hover:bg-surface-control-pressed'}`}
+                  className={`flex-1 py-2 rounded-control text-sm font-medium transition-colors ${convType === t ? 'bg-primary text-primary-foreground' : 'bg-surface-control text-text-secondary hover:bg-surface-control-pressed'}`}
                 >
                   {t === 'direct' ? 'Direct Message' : 'Group Chat'}
                 </button>
@@ -402,7 +403,7 @@ export default function MessagesPage() {
                 value={groupName}
                 onChange={e => setGroupName(e.target.value)}
                 placeholder="Group name (optional)"
-                className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary mb-3"
+                className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary mb-3"
               />
             )}
 
@@ -412,11 +413,11 @@ export default function MessagesPage() {
                 value={empSearch}
                 onChange={e => setEmpSearch(e.target.value)}
                 placeholder="Search employees…"
-                className="w-full pl-8 pr-3 py-2 border border-border rounded-[8px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                className="w-full pl-8 pr-3 py-2 border border-border rounded-control text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
               />
             </div>
 
-            <div className="max-h-48 overflow-y-auto border border-border-light rounded-[8px] mb-4">
+            <div className="max-h-48 overflow-y-auto border border-border-light rounded-control mb-4">
               {filteredEmployees.map(emp => {
                 const uid = emp.user_id
                 const selected = selectedUsers.includes(uid)
@@ -438,14 +439,14 @@ export default function MessagesPage() {
                       disabled ? 'opacity-40 cursor-not-allowed' : '',
                     ].join(' ')}
                   >
-                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-medium shrink-0">
                       {emp.user?.name?.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <p className="text-sm font-medium text-text-primary">{emp.user?.name}</p>
                       <p className="text-xs text-text-muted">{emp.user?.email}</p>
                     </div>
-                    {selected && <div className="ml-auto w-4 h-4 rounded-full bg-primary flex items-center justify-center text-white text-[10px]">✓</div>}
+                    {selected && <div className="ml-auto w-4 h-4 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-meta">✓</div>}
                   </button>
                 )
               })}
@@ -454,7 +455,7 @@ export default function MessagesPage() {
             <button
               onClick={handleCreateConversation}
               disabled={selectedUsers.length === 0}
-              className="w-full bg-primary text-white py-2.5 rounded-[8px] text-sm font-semibold hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-primary text-primary-foreground py-2.5 rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {convType === 'direct' ? 'Open Chat' : `Create Group (${selectedUsers.length} selected)`}
             </button>

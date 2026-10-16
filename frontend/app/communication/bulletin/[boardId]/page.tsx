@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { getBoard, getPosts, createPost, togglePinPost, deletePost, toggleReaction } from '@/lib/api/bulletin'
 import type { BulletinBoard, BulletinPost } from '@/lib/types/communication'
+import { formatDate } from '@/lib/format'
 import Link from 'next/link'
 import { ArrowLeft, Plus, Pin, Trash2 } from 'lucide-react'
 
@@ -74,20 +75,20 @@ export default function BulletinBoardPage() {
         </Link>
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : board && (
           <>
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-text-primary">{board.name}</h1>
+                <h1 className="text-2xl font-medium text-text-primary">{board.name}</h1>
                 {board.description && <p className="text-sm text-text-secondary mt-0.5">{board.description}</p>}
               </div>
               {canPost && (
                 <button
                   onClick={() => setShowForm(s => !s)}
-                  className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-[8px] text-sm font-semibold hover:bg-primary-hover transition-colors"
+                  className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover transition-colors"
                 >
                   <Plus size={16} />
                   New Post
@@ -96,14 +97,14 @@ export default function BulletinBoardPage() {
             </div>
 
             {showForm && (
-              <form onSubmit={handlePost} className="bg-white border border-border-light rounded-[12px] p-5 mb-6 flex flex-col gap-4">
+              <form onSubmit={handlePost} className="bg-surface border border-border-light rounded-card p-4 mb-6 flex flex-col gap-4">
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-1">Title</label>
                   <input
                     value={form.title}
                     onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                     placeholder="Post title"
-                    className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                    className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
                   />
                 </div>
                 <div>
@@ -113,12 +114,12 @@ export default function BulletinBoardPage() {
                     onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
                     rows={4}
                     placeholder="Write something..."
-                    className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-y"
+                    className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-y"
                   />
                 </div>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => setShowForm(false)} className="flex-1 border border-border-light text-text-secondary px-4 py-2 rounded-[8px] text-sm font-semibold hover:bg-surface-sunken">Cancel</button>
-                  <button type="submit" disabled={posting} className="flex-1 bg-primary text-white px-4 py-2 rounded-[8px] text-sm font-semibold hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed">
+                  <button type="button" onClick={() => setShowForm(false)} className="flex-1 border border-border-light text-text-secondary px-4 py-2 rounded-control text-sm font-medium hover:bg-surface-sunken">Cancel</button>
+                  <button type="submit" disabled={posting} className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed">
                     {posting ? 'Posting…' : 'Post'}
                   </button>
                 </div>
@@ -127,23 +128,23 @@ export default function BulletinBoardPage() {
 
             <div className="flex flex-col gap-4">
               {posts.map(post => (
-                <div key={post.id} className={`bg-white border rounded-[12px] p-5 flex flex-col gap-3 ${post.is_pinned ? 'border-primary' : 'border-border-light'}`}>
+                <div key={post.id} className={`bg-surface border rounded-card p-4 flex flex-col gap-3 ${post.is_pinned ? 'border-primary' : 'border-border-light'}`}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      {post.is_pinned && <div className="flex items-center gap-1 text-xs text-primary-text font-semibold mb-1"><Pin size={11} />Pinned</div>}
+                      {post.is_pinned && <div className="flex items-center gap-1 text-xs text-primary-text font-medium mb-1"><Pin size={11} />Pinned</div>}
                       <Link href={`/communication/bulletin/${boardId}/posts/${post.id}`}>
-                        <h3 className="text-base font-semibold text-text-primary hover:text-primary-text transition-colors">{post.title}</h3>
+                        <h3 className="text-base font-medium text-text-primary hover:text-primary-text transition-colors">{post.title}</h3>
                       </Link>
                       <p className="text-sm text-text-secondary mt-1 line-clamp-2 whitespace-pre-wrap">{post.body}</p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {isHR && (
-                        <button onClick={() => handlePin(post.id)} className={`p-1.5 rounded-[6px] transition-colors ${post.is_pinned ? 'text-primary-text hover:bg-primary-subtle' : 'text-text-muted hover:bg-surface-control'}`}>
+                        <button onClick={() => handlePin(post.id)} className={`p-1.5 rounded-control transition-colors ${post.is_pinned ? 'text-primary-text hover:bg-primary-subtle' : 'text-text-muted hover:bg-surface-control'}`}>
                           <Pin size={14} />
                         </button>
                       )}
                       {(post.created_by_user_id === user?.id || isHR) && (
-                        <button onClick={() => handleDelete(post.id)} className="p-1.5 rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
+                        <button onClick={() => handleDelete(post.id)} className="p-1.5 rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
                           <Trash2 size={14} />
                         </button>
                       )}
@@ -171,7 +172,7 @@ export default function BulletinBoardPage() {
                   <div className="flex items-center gap-3 text-xs text-text-muted">
                     <span>{post.created_by?.name}</span>
                     <span>·</span>
-                    <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                    <span>{formatDate(post.created_at)}</span>
                     <span>·</span>
                     <span>{post._count?.comments ?? 0} comments</span>
                   </div>

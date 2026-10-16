@@ -110,11 +110,11 @@ export default function LinkGoalModal({
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="rounded-[10px] bg-surface-sunken border border-border-light px-3 py-2.5">
-            <p className="text-[13px] text-text-secondary">
+          <div className="rounded-card bg-surface-sunken border border-border-light px-3 py-2.5">
+            <p className="text-label text-text-secondary">
               {isSupportedBy ? 'Helping' : 'This goal helps'}
             </p>
-            <p className="text-[15px] font-semibold text-text-primary leading-snug">{goal.title}</p>
+            <p className="text-body font-medium text-text-primary leading-snug">{goal.title}</p>
           </div>
 
           <div>
@@ -153,7 +153,7 @@ export default function LinkGoalModal({
               disabled={saving}
               maxLength={1000}
             />
-            <p className="text-[11px] text-text-secondary mt-1">
+            <p className="text-meta text-text-secondary mt-1">
               Optional, but this is the assumption you’ll want to re-read at review — most plans
               fail because an unwritten assumption quietly stopped being true.
             </p>

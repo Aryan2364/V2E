@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth/context'
 import { getKnowledgePosts, getKnowledgeTags, deleteKnowledgePost, togglePinKnowledge, toggleKnowledgeReaction } from '@/lib/api/knowledge'
 import type { KnowledgePost } from '@/lib/types/communication'
+import { formatDate } from '@/lib/format'
 import Link from 'next/link'
 import { BookOpen, Plus, Pin, Trash2, Search, Tag } from 'lucide-react'
 
@@ -67,12 +68,12 @@ export default function KnowledgePage() {
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Knowledge Hub</h1>
+            <h1 className="text-2xl font-medium text-text-primary">Knowledge Hub</h1>
             <p className="text-sm text-text-secondary mt-0.5">Tips, guides and insights shared by the team</p>
           </div>
           <Link
             href="/communication/knowledge/new"
-            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-[8px] text-sm font-semibold hover:bg-primary-hover transition-colors"
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover transition-colors"
           >
             <Plus size={16} />
             Share
@@ -86,7 +87,7 @@ export default function KnowledgePage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search knowledge posts…"
-            className="w-full pl-9 pr-4 py-2 border border-border rounded-[8px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary bg-white"
+            className="w-full pl-8 pr-4 py-2 border border-border rounded-control text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary bg-surface"
           />
         </div>
 
@@ -100,8 +101,8 @@ export default function KnowledgePage() {
                 className={[
                   'flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors',
                   activeTag === tag
-                    ? 'bg-primary text-white border-primary'
-                    : 'bg-white text-text-secondary border-border-light hover:border-primary hover:text-primary-text',
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-surface text-text-secondary border-border-light hover:border-primary hover:text-primary-text',
                 ].join(' ')}
               >
                 <Tag size={10} />
@@ -112,12 +113,12 @@ export default function KnowledgePage() {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : posts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <BookOpen size={40} className="text-[#CBD5E1] mb-3" />
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <BookOpen size={40} className="text-muted mb-3" />
             <p className="text-text-secondary font-medium">No posts yet</p>
             <p className="text-sm text-text-muted">Be the first to share your knowledge</p>
           </div>
@@ -125,9 +126,9 @@ export default function KnowledgePage() {
           <div className="flex flex-col gap-4">
             {pinned.length > 0 && (
               <>
-                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Pinned</p>
+                <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Pinned</p>
                 {pinned.map(p => <KnowledgeCard key={p.id} post={p} userId={user?.id ?? ''} isHR={isHR} onPin={handlePin} onDelete={handleDelete} onReact={handleReact} />)}
-                {rest.length > 0 && <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mt-2">Recent</p>}
+                {rest.length > 0 && <p className="text-xs font-medium text-text-muted uppercase tracking-wider mt-2">Recent</p>}
               </>
             )}
             {rest.map(p => <KnowledgeCard key={p.id} post={p} userId={user?.id ?? ''} isHR={isHR} onPin={handlePin} onDelete={handleDelete} onReact={handleReact} />)}
@@ -147,12 +148,12 @@ function KnowledgeCard({ post, userId, isHR, onPin, onDelete, onReact }: {
   onReact: (id: string, emoji: string) => void
 }) {
   return (
-    <div className={`bg-white border rounded-[12px] p-5 flex flex-col gap-3 ${post.is_pinned ? 'border-primary' : 'border-border-light'}`}>
+    <div className={`bg-surface border rounded-card p-4 flex flex-col gap-3 ${post.is_pinned ? 'border-primary' : 'border-border-light'}`}>
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
-          {post.is_pinned && <div className="flex items-center gap-1 text-xs text-primary-text font-semibold mb-1"><Pin size={11} />Pinned</div>}
+          {post.is_pinned && <div className="flex items-center gap-1 text-xs text-primary-text font-medium mb-1"><Pin size={11} />Pinned</div>}
           <Link href={`/communication/knowledge/${post.id}`}>
-            <h3 className="text-base font-semibold text-text-primary hover:text-primary-text transition-colors">{post.title}</h3>
+            <h3 className="text-base font-medium text-text-primary hover:text-primary-text transition-colors">{post.title}</h3>
           </Link>
           <p className="text-sm text-text-secondary mt-1 line-clamp-2 whitespace-pre-wrap">{post.body}</p>
           {post.tags?.length > 0 && (
@@ -165,12 +166,12 @@ function KnowledgeCard({ post, userId, isHR, onPin, onDelete, onReact }: {
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {isHR && (
-            <button onClick={() => onPin(post.id)} className={`p-1.5 rounded-[6px] transition-colors ${post.is_pinned ? 'text-primary-text hover:bg-primary-subtle' : 'text-text-muted hover:bg-surface-control'}`}>
+            <button onClick={() => onPin(post.id)} className={`p-1.5 rounded-control transition-colors ${post.is_pinned ? 'text-primary-text hover:bg-primary-subtle' : 'text-text-muted hover:bg-surface-control'}`}>
               <Pin size={14} />
             </button>
           )}
           {(post.created_by_user_id === userId || isHR) && (
-            <button onClick={() => onDelete(post.id)} className="p-1.5 rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
+            <button onClick={() => onDelete(post.id)} className="p-1.5 rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
               <Trash2 size={14} />
             </button>
           )}
@@ -196,7 +197,7 @@ function KnowledgeCard({ post, userId, isHR, onPin, onDelete, onReact }: {
       <div className="flex items-center gap-3 text-xs text-text-muted">
         <span>{post.created_by?.name}</span>
         <span>·</span>
-        <span>{new Date(post.created_at).toLocaleDateString()}</span>
+        <span>{formatDate(post.created_at)}</span>
         <span>·</span>
         <span>{post._count?.comments ?? 0} comments</span>
       </div>

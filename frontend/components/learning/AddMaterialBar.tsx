@@ -49,7 +49,7 @@ export default function AddMaterialBar({
   }
 
   const btn =
-    'flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-[8px] border transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
+    'flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-control border transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
 
   return (
     <div>
@@ -58,21 +58,21 @@ export default function AddMaterialBar({
           type="button"
           disabled={!!busy}
           onClick={() => fileInput.current?.click()}
-          className={`${btn} text-white bg-primary border-primary hover:bg-primary-hover`}
+          className={`${btn} text-primary-foreground bg-primary border-primary hover:bg-primary-hover`}
         >
           {busy === 'file' ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
           Upload files
         </button>
         <button type="button" disabled={!!busy} onClick={() => run('url')}
-          className={`${btn} text-text-secondary bg-white border-border hover:border-primary hover:text-primary-text`}>
+          className={`${btn} text-text-secondary bg-surface border-border hover:border-primary hover:text-primary-text`}>
           <Link2 size={15} /> Add link
         </button>
         <button type="button" disabled={!!busy} onClick={() => run('article')}
-          className={`${btn} text-text-secondary bg-white border-border hover:border-primary hover:text-primary-text`}>
+          className={`${btn} text-text-secondary bg-surface border-border hover:border-primary hover:text-primary-text`}>
           <FileText size={15} /> Write article
         </button>
       </div>
-      <p className="text-[11px] text-text-secondary mt-2">
+      <p className="text-meta text-text-secondary mt-2">
         Pick one or several files at once — each becomes its own material. PDF, images and video/audio play in-app · up to 25 MB each. For slides, export PowerPoint to PDF so it plays in-app (Office files upload but open by download).
       </p>
       {err && <p className="text-xs text-danger mt-1">{err}</p>}
