@@ -1,8 +1,17 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, RefreshCw, Ticket as TicketIcon, Link2, CheckSquare, Clock, AlertTriangle, PauseCircle, PlayCircle, XCircle, ArrowRightLeft, RotateCcw } from 'lucide-react'
+import { RefreshCw, Ticket as TicketIcon, Link2, CheckSquare, Clock, AlertTriangle, PauseCircle, PlayCircle, XCircle, ArrowRightLeft, RotateCcw } from 'lucide-react'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 import { useAuth } from '@/lib/auth/context'
 import { ticketsApi } from '@/lib/api/tickets'
 import type { Ticket, TicketComment, TicketActivityLog, TicketMasterConfig, TicketResolverGroup } from '@/lib/types/tickets'
@@ -158,11 +167,20 @@ export default function TicketDetailPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/dashboard/tasks/tickets" />}>Tickets</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{ticket.ticket_number}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       {/* Header */}
       <div className="flex items-start gap-3 flex-wrap">
-        <button type="button" onClick={() => router.back()} className="w-8 h-8 flex items-center justify-center rounded-[8px] text-text-secondary hover:bg-surface-control transition-colors shrink-0 mt-1">
-          <ArrowLeft size={18} />
-        </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-mono text-sm text-text-muted">{ticket.ticket_number}</span>

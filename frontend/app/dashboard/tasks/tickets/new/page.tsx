@@ -2,12 +2,14 @@
 
 import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Search, Plus, X } from 'lucide-react'
+import { Search, Plus, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { ticketsApi } from '@/lib/api/tickets'
 import type { TicketTemplate, TicketType, TicketCategory, TicketPriority } from '@/lib/types/tickets'
 import TicketTemplateCard from '@/components/tickets/TicketTemplateCard'
 import StyledSelect from '@/components/ui/StyledSelect'
+import { PageHeader } from '@/components/shell/page-header'
+import { SHOW_MORE_LINK } from '@/components/ui/truncate'
 
 type Step = 'template' | 'form'
 
@@ -125,18 +127,20 @@ export default function NewTicketPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
-      <div className="flex items-center gap-3">
-        <button type="button" onClick={() => step === 'form' ? setStep('template') : router.back()}
-          className="w-8 h-8 flex items-center justify-center rounded-[8px] text-text-secondary hover:bg-surface-control transition-colors">
-          <ArrowLeft size={18} />
+      <PageHeader
+        title="Raise ticket"
+        trail={[
+          { label: 'Tickets', href: '/dashboard/tasks/tickets' },
+          { label: 'Raise ticket', href: '/dashboard/tasks/tickets/new' },
+        ]}
+        meta={step === 'template' ? 'Step 1: Choose a template or start from scratch' : 'Step 2: Fill in ticket details'}
+      />
+
+      {step === 'form' && (
+        <button type="button" onClick={() => setStep('template')} className={SHOW_MORE_LINK}>
+          Back to templates
         </button>
-        <div>
-          <h1 className="text-[22px] font-medium text-text-primary">Raise Ticket</h1>
-          <p className="text-sm text-text-secondary mt-0.5">
-            {step === 'template' ? 'Step 1: Choose a template or start from scratch' : 'Step 2: Fill in ticket details'}
-          </p>
-        </div>
-      </div>
+      )}
 
       {step === 'template' && (
         <div className="flex flex-col gap-4">
