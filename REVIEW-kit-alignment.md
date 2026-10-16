@@ -1,6 +1,50 @@
 # Kit alignment — owner review
 
-Each agent appends its own self-contained section. Do not edit another agent's section.
+**Branch `feat/kit-alignment`** (cut from `feat/phone-app` @ ad21c94, so it includes the phone work).
+Worktree: `.claude/worktrees/kit-alignment`. ~165 commits. Not merged anywhere; not pushed past the
+first commit (push was blocked for the agents — push it yourself).
+
+## Start here: summary for the owner (main session, 16 Oct 2026)
+
+**State:** `next build` green (110 routes), `npx tsc --noEmit` clean, unit tests 69/69.
+
+**What changed everywhere**
+1. Framework moved to the kit's pins: Next 16.3.3, React 19.2.8, Tailwind 4, base-ui 1.8.0, sonner 2.0.8.
+2. The kit's token layer (`frontend/app/globals.css`) with v2e's blue brand (#2563EB family). No
+   hard-coded hex left in screens (exceptions: user-chosen data colours, install settings, avatar
+   initials). Font is Geist; body text is 14px; only two weights (400/500).
+3. All kit `components/ui` are in the app; old v2e primitives either deleted or reduced to thin
+   adapters that render the kit component (see `frontend/components/ui/ADAPTERS.md`).
+4. Shell: your top-nav + module-sidebar shape is **kept**, restyled to kit §12 (brand-filled sidebar,
+   inverted active item), one shared `ModuleSidebar` for all modules.
+5. Every module got a tokens/weights/spacing/dates pass; most pages now use the kit `PageHeader`
+   with breadcrumbs (desktop back arrows removed); native `confirm()`/`<select>` replaced; most
+   hand-rolled modals → kit Dialog/Sheet/AlertDialog; spinners → Skeleton; type scale tokens.
+   Tasks (pages + components) got the deepest finishing pass.
+
+**Decisions for you (also listed per module below under "Kept for owner decision")**
+- Navigation shape (top nav + sub-sidebar) vs kit's single sidebar; Work sidebar has >7 items.
+- Info-blue and decorative hues (violet/cyan/pink chips) became neutral grey, per kit §2.4.
+- Time fields now step in 15 minutes on desktop (kit §20.2) — previously free minutes.
+- `/admin` lost its dark theme (kit has no dark mode).
+- Thin adapters (StyledSelect, DatePicker, DateRangePicker, Modal, ConfirmDialog, ResponsiveTable,
+  TimeField) kept rather than rewriting ~150 call sites; they render the kit components.
+- Kept v2e-specific UX: gantt, kanban, calendars, process-map/org-chart canvases (tokens only),
+  workflows' own Sheet + three-button unsaved-changes guard, fullscreen material viewer.
+
+**Not done (honest)**
+- Pagination (kit §1.7) — needs backend endpoints.
+- Long tail outside Tasks: ~500 raw `<button>`s (many are legitimate row/cell click targets),
+  ~40 pages whose title row isn't `PageHeader` yet (some render it via a child component),
+  a few overlays in meetings/employees/roles/process-hierarchy, ~140 `text-[Npx]` (mostly inside
+  kit components and phone screens, which are allowed).
+- Phone duplicates of kit parts (PhoneSheet, UndoToast, PhoneAppBar…) not consolidated.
+- Nothing was clicked through in a browser — build/type/unit checks only. **Please do a visual pass**
+  on: task detail, masters, governance reports, identity page, sign-in, settings access-rights.
+
+---
+
+Each agent appended its own self-contained section below.
 
 ## P4 — Application shell (restyled, structure kept)
 
