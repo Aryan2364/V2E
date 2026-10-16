@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   FileText, Link2, Video, BookOpen, Trash2, Eye, RefreshCw,
   Loader2, X, Download, Ban, GripVertical,
@@ -264,30 +264,24 @@ export default function MaterialRow({
       </div>
 
       {/* Preview modal */}
-      {preview && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-60 flex items-center justify-center px-4 bg-black/50" onClick={() => setPreview(null)}>
-          <div className="bg-surface rounded-card w-full max-w-4xl max-h-[88vh] overflow-hidden flex flex-col shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border-light">
-              <div className="min-w-0">
-                <h3 className="text-sm font-medium text-text-primary truncate">{item.title}</h3>
-                <p className="text-xs text-text-muted">Preview — exactly what learners see</p>
-              </div>
-              <button onClick={() => setPreview(null)} className="p-1.5 text-text-secondary hover:bg-surface-control rounded-control">
-                <X size={18} />
-              </button>
-            </div>
-            <div className="p-4 overflow-y-auto">
+      <Dialog open={!!preview} onOpenChange={(next) => { if (!next) setPreview(null) }}>
+        <DialogContent size="lg">
+          <DialogHeader>
+            <DialogTitle>{item.title}</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <p className="text-xs text-text-muted mb-3">Preview — exactly what learners see</p>
+            {preview && (
               <MaterialViewer
                 data={preview}
                 viewOnly={!preview.allow_download}
                 watermark={watermark}
                 pdfLoader={() => getAdminItemFile(orgId, pathId, item.id)}
               />
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+            )}
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
