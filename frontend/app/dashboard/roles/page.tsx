@@ -120,7 +120,7 @@ export default function RolesPage() {
             </button>
             <button
               onClick={() => setFormTarget({ mode: 'create' })}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
             >
               <Plus size={16} />
               Add Job Role

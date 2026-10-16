@@ -23,7 +23,7 @@ export default function ProgressBar({
         />
       </div>
       {showLabel && (
-        <span className="text-xs font-medium text-text-secondary w-8 text-right shrink-0">
+        <span className="text-meta font-medium text-text-secondary w-8 text-right shrink-0">
           {clamped}%
         </span>
       )}

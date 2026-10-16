@@ -318,7 +318,7 @@ export default function CourseBuilderPage() {
         <h2 className="text-card-heading font-medium text-text-primary mb-4">Course details</h2>
         <div className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Title *</label>
+            <label className="block text-label font-medium text-text-secondary mb-1.5">Title *</label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -327,7 +327,7 @@ export default function CourseBuilderPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Description</label>
+            <label className="block text-label font-medium text-text-secondary mb-1.5">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -337,7 +337,7 @@ export default function CourseBuilderPage() {
             />
           </div>
           <div className="max-w-xs">
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Order</label>
+            <label className="block text-label font-medium text-text-secondary mb-1.5">Order</label>
             <StyledSelect
               value={mode}
               onChange={(v) => setMode(v as SequentialMode)}
@@ -367,8 +367,8 @@ export default function CourseBuilderPage() {
         {items.length === 0 ? (
           <div className="rounded-card border border-dashed border-border bg-surface-sunken py-8 flex flex-col items-center text-center mb-4">
             <BookOpen size={26} className="text-text-muted mb-2" />
-            <p className="text-sm font-medium text-text-primary">No materials yet</p>
-            <p className="text-xs text-text-muted mt-0.5">Upload a document, add a link, embed a video, or write an article.</p>
+            <p className="text-label font-medium text-text-primary">No materials yet</p>
+            <p className="text-meta text-text-muted mt-0.5">Upload a document, add a link, embed a video, or write an article.</p>
           </div>
         ) : (
           <div ref={listRef} className="flex flex-col gap-3 mb-4 max-h-[520px] overflow-y-auto pr-1">
@@ -410,7 +410,7 @@ export default function CourseBuilderPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Auto-assign to a role</label>
+            <label className="block text-label font-medium text-text-secondary mb-1.5">Auto-assign to a role</label>
             <StyledSelect
               value={roleId}
               onChange={setRoleId}
@@ -420,10 +420,10 @@ export default function CourseBuilderPage() {
                 ...roles.map((r) => ({ value: r.id, label: r.title })),
               ]}
             />
-            <p className="text-xs text-text-muted mt-1">Everyone in this role gets it automatically — now and future joiners.</p>
+            <p className="text-meta text-text-muted mt-1">Everyone in this role gets it automatically — now and future joiners.</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Auto-assign to a department</label>
+            <label className="block text-label font-medium text-text-secondary mb-1.5">Auto-assign to a department</label>
             <StyledSelect
               value={departmentId}
               onChange={setDepartmentId}
@@ -433,15 +433,15 @@ export default function CourseBuilderPage() {
                 ...departments.map((d) => ({ value: d.id, label: d.name })),
               ]}
             />
-            <p className="text-xs text-text-muted mt-1">Everyone in this department gets it automatically — now and future joiners.</p>
+            <p className="text-meta text-text-muted mt-1">Everyone in this department gets it automatically — now and future joiners.</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Due date (optional)</label>
+            <label className="block text-label font-medium text-text-secondary mb-1.5">Due date (optional)</label>
             <DatePicker value={dueDate} onChange={setDueDate} placeholder="No deadline" />
           </div>
         </div>
 
-        <label className="block text-sm font-medium text-text-secondary mb-1.5">Pick people</label>
+        <label className="block text-label font-medium text-text-secondary mb-1.5">Pick people</label>
         <AssigneeMultiSelect
           employees={employees}
           selected={selectedEmployees}

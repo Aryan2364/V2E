@@ -38,11 +38,11 @@ export default function EditPolicyPage() {
       <div className="max-w-3xl">
         <PolicyBreadcrumb trail={[{ label: 'Company Policy', href: POLICY_BASE }, { label: 'Edit policy' }]} />
         <div className="bg-surface border border-border-light rounded-card p-8 flex flex-col items-center text-center gap-2">
-          <p className="text-sm font-medium text-text-primary">This policy could not be loaded</p>
-          <p className="text-sm text-text-secondary">It may have been deleted, or the connection dropped.</p>
+          <p className="text-label font-medium text-text-primary">This policy could not be loaded</p>
+          <p className="text-label text-text-secondary">It may have been deleted, or the connection dropped.</p>
           <div className="flex gap-3 mt-2">
-            <button type="button" onClick={load} className="px-4 py-2 text-sm font-medium text-primary-text border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">Retry</button>
-            <Link href={POLICY_BASE} className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">All policies</Link>
+            <button type="button" onClick={load} className="px-4 py-2 text-label font-medium text-primary-text border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">Retry</button>
+            <Link href={POLICY_BASE} className="px-4 py-2 text-label font-medium text-text-secondary hover:text-text-primary transition-colors">All policies</Link>
           </div>
         </div>
       </div>

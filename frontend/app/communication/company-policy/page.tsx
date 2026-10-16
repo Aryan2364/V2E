@@ -18,7 +18,7 @@ const STATUS_CONFIG: Record<PolicyStatus, { bg: string; text: string; label: str
 function StatusBadge({ status }: { status: PolicyStatus }) {
   const cfg = STATUS_CONFIG[status]
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cfg.bg} ${cfg.text}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-meta font-medium ${cfg.bg} ${cfg.text}`}>
       {cfg.label}
     </span>
   )
@@ -86,8 +86,8 @@ export default function CompanyPolicyPage() {
   const newPolicy = (variant: 'primary' | 'secondary') => {
     const cls =
       variant === 'primary'
-        ? 'flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium px-4 py-2.5 min-h-[44px] sm:min-h-0 rounded-control transition-colors'
-        : 'flex items-center justify-center gap-2 bg-surface text-primary-text border-2 border-primary hover:bg-primary-subtle text-sm font-medium px-4 py-2 rounded-control transition-colors'
+        ? 'flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground text-label font-medium px-4 py-2.5 min-h-[44px] sm:min-h-0 rounded-control transition-colors'
+        : 'flex items-center justify-center gap-2 bg-surface text-primary-text border-2 border-primary hover:bg-primary-subtle text-label font-medium px-4 py-2 rounded-control transition-colors'
     if (canWrite === true) {
       return (
         <Link href={`${POLICY_BASE}/new`} className={cls}>
@@ -101,7 +101,7 @@ export default function CompanyPolicyPage() {
         <button
           type="button"
           disabled
-          className="flex items-center justify-center gap-2 bg-surface-control-pressed text-text-muted text-sm font-medium px-4 py-2.5 min-h-[44px] sm:min-h-0 rounded-control cursor-not-allowed"
+          className="flex items-center justify-center gap-2 bg-surface-control-pressed text-text-muted text-label font-medium px-4 py-2.5 min-h-[44px] sm:min-h-0 rounded-control cursor-not-allowed"
         >
           <Plus size={16} />
           New Policy
@@ -135,7 +135,7 @@ export default function CompanyPolicyPage() {
             placeholder="Search policies…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 text-base sm:text-sm border border-border rounded-control bg-surface text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+            className="w-full pl-8 pr-3 py-2 text-body sm:text-label border border-border rounded-control bg-surface text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>
         {(['all', 'draft', 'published', 'archived'] as const).map((s) => (
@@ -143,7 +143,7 @@ export default function CompanyPolicyPage() {
             key={s}
             onClick={() => setFilter(s)}
             className={[
-              'px-3 py-1.5 min-h-[36px] rounded-control text-xs font-medium capitalize transition-colors',
+              'px-3 py-1.5 min-h-[36px] rounded-control text-meta font-medium capitalize transition-colors',
               filter === s
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-surface text-text-secondary border border-border-light hover:border-primary hover:text-primary-text',
@@ -163,12 +163,12 @@ export default function CompanyPolicyPage() {
         </div>
       ) : status === 'failed' ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <h3 className="text-lg font-medium text-text-primary mb-1">Policies could not be loaded</h3>
-          <p className="text-sm text-text-secondary mb-4">Check your connection and try again.</p>
+          <h3 className="text-card-heading font-medium text-text-primary mb-1">Policies could not be loaded</h3>
+          <p className="text-label text-text-secondary mb-4">Check your connection and try again.</p>
           <button
             type="button"
             onClick={load}
-            className="flex items-center gap-2 bg-surface text-primary-text border-2 border-primary hover:bg-primary-subtle text-sm font-medium px-4 py-2 rounded-control transition-colors"
+            className="flex items-center gap-2 bg-surface text-primary-text border-2 border-primary hover:bg-primary-subtle text-label font-medium px-4 py-2 rounded-control transition-colors"
           >
             <RefreshCw size={14} /> Retry
           </button>
@@ -180,20 +180,20 @@ export default function CompanyPolicyPage() {
           </div>
           {filtering ? (
             <>
-              <h3 className="text-lg font-medium text-text-primary mb-1">No policies match</h3>
-              <p className="text-sm text-text-secondary mb-4">Nothing matches your search and filter.</p>
+              <h3 className="text-card-heading font-medium text-text-primary mb-1">No policies match</h3>
+              <p className="text-label text-text-secondary mb-4">Nothing matches your search and filter.</p>
               <button
                 type="button"
                 onClick={() => { setSearch(''); setFilter('all') }}
-                className="bg-surface text-primary-text border-2 border-primary hover:bg-primary-subtle text-sm font-medium px-4 py-2 rounded-control transition-colors"
+                className="bg-surface text-primary-text border-2 border-primary hover:bg-primary-subtle text-label font-medium px-4 py-2 rounded-control transition-colors"
               >
                 Clear filters
               </button>
             </>
           ) : (
             <>
-              <h3 className="text-lg font-medium text-text-primary mb-1">No policies yet</h3>
-              <p className="text-sm text-text-secondary mb-4">
+              <h3 className="text-card-heading font-medium text-text-primary mb-1">No policies yet</h3>
+              <p className="text-label text-text-secondary mb-4">
                 {canWrite === true
                   ? 'Create a policy, add its content, then publish and assign it.'
                   : 'Policies your organization publishes will appear here.'}

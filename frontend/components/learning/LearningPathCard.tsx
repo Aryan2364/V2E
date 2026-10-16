@@ -33,10 +33,10 @@ export default function LearningPathCard({
       </h3>
 
       {path.description && (
-        <p className="text-sm text-text-secondary line-clamp-2 mb-3">{path.description}</p>
+        <p className="text-label text-text-secondary line-clamp-2 mb-3">{path.description}</p>
       )}
 
-      <div className="flex items-center gap-4 text-xs text-text-muted mt-auto">
+      <div className="flex items-center gap-4 text-meta text-text-muted mt-auto">
         {path._count && (
           <span className="flex items-center gap-1">
             <BookOpen size={12} />
@@ -60,8 +60,8 @@ export default function LearningPathCard({
       {showProgress && progress !== undefined && (
         <div className="mt-3 pt-3 border-t border-border-light">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-text-secondary">Progress</span>
-            <span className="text-xs font-medium text-text-primary">{progress}%</span>
+            <span className="text-meta text-text-secondary">Progress</span>
+            <span className="text-meta font-medium text-text-primary">{progress}%</span>
           </div>
           <div className="h-1.5 bg-surface-control-pressed rounded-full overflow-hidden">
             <div

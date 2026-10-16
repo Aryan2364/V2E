@@ -129,7 +129,7 @@ export default function EditGoalModal({
               type="button"
               onClick={onRequestDelete}
               disabled={saving}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-danger hover:text-danger disabled:text-text-muted transition-colors"
+              className="inline-flex items-center gap-1.5 text-label font-medium text-danger hover:text-danger disabled:text-text-muted transition-colors"
             >
               <Trash2 size={15} /> Delete goal
             </button>

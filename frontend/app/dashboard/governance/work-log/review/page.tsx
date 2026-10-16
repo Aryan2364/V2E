@@ -8,6 +8,7 @@ import WorkLogRemarkThread from '@/components/work-logs/WorkLogRemarkThread'
 import Tooltip from '@/components/ui/tooltip'
 import type { DailyUpdate, ReadableWriter, WorkLogRemark, WorkLogSubmission } from '@/lib/types/workLogs'
 import { format as formatDateFns } from 'date-fns'
+import { PageHeader } from '@/components/shell/page-header'
 
 const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
 
@@ -80,7 +81,9 @@ export default function WorkLogReviewPage() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
+    <div className="space-y-6">
+      <PageHeader title="Review work logs" />
+      <div className="flex flex-col lg:flex-row gap-6">
       {/* Writers */}
       <aside className="lg:w-64 shrink-0">
         <div className={`${cardCls} p-3`}>
@@ -188,7 +191,7 @@ export default function WorkLogReviewPage() {
         ) : selected.kind === 'daily' ? (
           <div className="space-y-4">
             <div className={`${cardCls} p-6`}>
-              <h2 className="text-[18px] font-medium text-text-primary mb-4">{prettyDate(selected.daily.log_date)}</h2>
+              <h2 className="text-section font-medium text-text-primary mb-4">{prettyDate(selected.daily.log_date)}</h2>
               {(selected.daily.notes ?? []).length > 0 && (
                 <div className="space-y-3 mb-4">
                   {(selected.daily.notes ?? []).map((n) => (
@@ -215,7 +218,7 @@ export default function WorkLogReviewPage() {
         ) : (
           <div className="space-y-4">
             <div className={`${cardCls} p-6`}>
-              <h2 className="text-[18px] font-medium text-text-primary">{selected.submission.demand?.title}</h2>
+              <h2 className="text-section font-medium text-text-primary">{selected.submission.demand?.title}</h2>
               <p className="text-meta text-text-muted mb-4">{selected.submission.period_label}</p>
               {selected.submission.body ? (
                 <p className="text-body text-text-primary whitespace-pre-wrap">{selected.submission.body}</p>
@@ -232,6 +235,7 @@ export default function WorkLogReviewPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   )

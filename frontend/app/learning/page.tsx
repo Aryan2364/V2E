@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function LearningPage() {
   const { user, isLoading } = useAuth()
@@ -16,8 +17,10 @@ export default function LearningPage() {
   }, [user, isLoading, router])
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-56px)]">
-      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-[calc(100vh-56px)] p-6 space-y-4">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-32 w-full" />
     </div>
   )
 }

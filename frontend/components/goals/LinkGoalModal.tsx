@@ -120,11 +120,11 @@ export default function LinkGoalModal({
           <div>
             <label className={labelClass}>Goal *</label>
             {loading ? (
-              <div className="flex items-center gap-2 text-sm text-text-secondary py-2">
+              <div className="flex items-center gap-2 text-label text-text-secondary py-2">
                 <Loader2 size={15} className="animate-spin" /> Loading goals…
               </div>
             ) : candidates.length === 0 ? (
-              <p className="text-sm text-text-secondary py-2">
+              <p className="text-label text-text-secondary py-2">
                 No other goal can be linked here yet — every existing goal is either already
                 linked or would create a circle. Create a new one below.
               </p>
@@ -164,7 +164,7 @@ export default function LinkGoalModal({
               type="button"
               onClick={() => setCreateOpen(true)}
               disabled={saving}
-              className="text-sm font-medium text-primary-text hover:text-primary-text disabled:text-text-muted transition-colors"
+              className="text-label font-medium text-primary-text hover:text-primary-text disabled:text-text-muted transition-colors"
             >
               Create a new goal instead
             </button>

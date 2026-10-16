@@ -137,7 +137,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-text-secondary py-12 justify-center">
+      <div className="flex items-center gap-2 text-label text-text-secondary py-12 justify-center">
         <Loader2 size={16} className="animate-spin" /> Loading goal…
       </div>
     )

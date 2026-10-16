@@ -71,13 +71,13 @@ export default function BalanceScorecardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-page-title font-medium text-text-primary leading-tight">Balance Scorecard</h1>
-        <p className="text-sm text-text-secondary mt-1">
+        <p className="text-label text-text-secondary mt-1">
           Every goal, grouped by which part of the business it moves.
         </p>
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-2 text-sm text-text-secondary py-12 justify-center">
+        <div className="flex items-center gap-2 text-label text-text-secondary py-12 justify-center">
           <Loader2 size={16} className="animate-spin" /> Loading…
         </div>
       ) : (

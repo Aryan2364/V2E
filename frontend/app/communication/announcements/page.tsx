@@ -6,13 +6,23 @@ import { getAnnouncements, markAnnouncementRead, togglePinAnnouncement, deleteAn
 import type { Announcement } from '@/lib/types/communication'
 import { formatDate } from '@/lib/format'
 import Link from 'next/link'
-import { Bell, Pin, Plus, Trash2, Eye } from 'lucide-react'
+import { Pin, Plus, Trash2, Eye, TriangleAlert, CircleDashed } from 'lucide-react'
 import Tooltip from '@/components/ui/tooltip'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
 
-const PRIORITY_BADGE: Record<string, string> = {
-  urgent: 'bg-danger-bg text-danger',
-  high: 'bg-warning-bg text-warning',
-  normal: 'bg-surface-control text-text-secondary',
+const PRIORITY_VARIANT: Record<string, 'danger' | 'warning' | 'neutral'> = {
+  urgent: 'danger',
+  high: 'warning',
+  normal: 'neutral',
+}
+const PRIORITY_ICON: Record<string, typeof TriangleAlert> = {
+  urgent: TriangleAlert,
+  high: TriangleAlert,
+  normal: CircleDashed,
 }
 
 const TYPE_LABEL: Record<string, string> = {
@@ -62,72 +72,61 @@ export default function AnnouncementsPage() {
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-medium text-text-primary">Announcements</h1>
-            <p className="text-sm text-text-secondary mt-0.5">Official communications from leadership</p>
-          </div>
-          {isHR && (
-            <Link
-              href="/communication/announcements/new"
-              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover transition-colors"
-            >
-              <Plus size={16} />
-              New Announcement
-            </Link>
-          )}
-        </div>
+        <PageHeader
+          title="Announcements"
+          meta="Official communications from leadership"
+          actions={
+            isHR ? (
+              <Button render={<Link href="/communication/announcements/new" />}>
+                <Plus size={16} /> New announcement
+              </Button>
+            ) : undefined
+          }
+        />
 
         {/* Filters */}
         <div className="flex gap-2 mb-6 flex-wrap">
           {['general', 'policy', 'event', 'emergency'].map(t => (
-            <button
+            <Button
               key={t}
+              size="sm"
+              variant={filter.type === t ? 'primary' : 'secondary'}
+              className="capitalize"
               onClick={() => setFilter(f => ({ ...f, type: f.type === t ? undefined : t }))}
-              className={[
-                'px-3 py-1.5 rounded-control text-xs font-medium capitalize transition-colors',
-                filter.type === t
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-surface border border-border-light text-text-secondary hover:border-primary hover:text-primary-text',
-              ].join(' ')}
             >
               {t}
-            </button>
+            </Button>
           ))}
           {['urgent', 'high'].map(p => (
-            <button
+            <Button
               key={p}
+              size="sm"
+              variant={filter.priority === p ? 'primary' : 'secondary'}
+              className="capitalize"
               onClick={() => setFilter(f => ({ ...f, priority: f.priority === p ? undefined : p }))}
-              className={[
-                'px-3 py-1.5 rounded-control text-xs font-medium capitalize transition-colors',
-                filter.priority === p
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-surface border border-border-light text-text-secondary hover:border-primary hover:text-primary-text',
-              ].join(' ')}
             >
               {p}
-            </button>
+            </Button>
           ))}
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="flex flex-col gap-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Bell size={40} className="text-muted mb-3" />
-            <p className="text-text-secondary font-medium">No announcements</p>
-            <p className="text-sm text-text-muted">Check back later for updates</p>
-          </div>
+          <EmptyState variant="nothing-yet" heading="No announcements">
+            Check back later for updates.
+          </EmptyState>
         ) : (
           <div className="flex flex-col gap-4">
             {pinned.length > 0 && (
               <>
-                <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Pinned</p>
+                <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Pinned</p>
                 {pinned.map(a => <AnnouncementCard key={a.id} ann={a} isHR={isHR} onRead={handleRead} onPin={handlePin} onDelete={handleDelete} />)}
-                {rest.length > 0 && <p className="text-xs font-medium text-text-muted uppercase tracking-wider mt-2">Recent</p>}
+                {rest.length > 0 && <p className="text-meta font-medium text-text-muted uppercase tracking-wider mt-2">Recent</p>}
               </>
             )}
             {rest.map(a => <AnnouncementCard key={a.id} ann={a} isHR={isHR} onRead={handleRead} onPin={handlePin} onDelete={handleDelete} />)}
@@ -158,58 +157,66 @@ function AnnouncementCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PRIORITY_BADGE[ann.priority] ?? PRIORITY_BADGE.normal}`}>
-              {ann.priority.toUpperCase()}
-            </span>
-            <span className="text-xs text-text-secondary bg-surface-control px-2 py-0.5 rounded-full">
-              {TYPE_LABEL[ann.type] ?? ann.type}
-            </span>
+            {(() => {
+              const Icon = PRIORITY_ICON[ann.priority] ?? PRIORITY_ICON.normal
+              return (
+                <Badge variant={PRIORITY_VARIANT[ann.priority] ?? 'neutral'}>
+                  <Icon /> {ann.priority.toUpperCase()}
+                </Badge>
+              )
+            })()}
+            <Badge variant="neutral">{TYPE_LABEL[ann.type] ?? ann.type}</Badge>
             {ann.is_pinned && <Pin size={12} className="text-primary-text" />}
           </div>
           <Link href={`/communication/announcements/${ann.id}`}>
-            <h3 className="text-base font-medium text-text-primary hover:text-primary-text transition-colors line-clamp-1">
+            <h3 className="text-body font-medium text-text-primary hover:text-primary-text transition-colors line-clamp-1">
               {ann.title}
             </h3>
           </Link>
-          <p className="text-sm text-text-secondary mt-1 line-clamp-2 whitespace-pre-wrap">{ann.body}</p>
+          <p className="text-label text-text-secondary mt-1 line-clamp-2 whitespace-pre-wrap">{ann.body}</p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {!hasRead && (
             <Tooltip label="Mark as read">
-            <button
-              onClick={() => onRead(ann.id)}
-              aria-label="Mark as read"
-              className="p-1.5 rounded-control text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
-            >
-              <Eye size={15} />
-            </button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Mark as read"
+                onClick={() => onRead(ann.id)}
+              >
+                <Eye size={15} />
+              </Button>
             </Tooltip>
           )}
           {isHR && (
             <>
               <Tooltip label={ann.is_pinned ? 'Unpin' : 'Pin'}>
-              <button
-                onClick={() => onPin(ann.id)}
-                aria-label={ann.is_pinned ? 'Unpin' : 'Pin'}
-                className={`p-1.5 rounded-control transition-colors ${ann.is_pinned ? 'text-primary-text hover:bg-primary-subtle' : 'text-text-secondary hover:bg-surface-control'}`}
-              >
-                <Pin size={15} />
-              </button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={ann.is_pinned ? 'Unpin' : 'Pin'}
+                  className={ann.is_pinned ? 'text-primary-text' : ''}
+                  onClick={() => onPin(ann.id)}
+                >
+                  <Pin size={15} />
+                </Button>
               </Tooltip>
               <Tooltip label="Delete">
-              <button
-                onClick={() => onDelete(ann.id)}
-                aria-label="Delete"
-                className="p-1.5 rounded-control text-text-secondary hover:bg-danger-bg hover:text-danger transition-colors"
-              >
-                <Trash2 size={15} />
-              </button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Delete"
+                  className="hover:bg-danger-bg hover:text-danger"
+                  onClick={() => onDelete(ann.id)}
+                >
+                  <Trash2 size={15} />
+                </Button>
               </Tooltip>
             </>
           )}
         </div>
       </div>
-      <div className="flex items-center gap-3 text-xs text-text-muted">
+      <div className="flex items-center gap-3 text-meta text-text-muted">
         <span>By {ann.created_by?.name}</span>
         <span>·</span>
         <span>{formatDate(ann.published_at ?? ann.created_at)}</span>

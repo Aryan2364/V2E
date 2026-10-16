@@ -67,22 +67,22 @@ export default function AnnouncementDetailPage() {
 
         <div className="bg-surface border border-border-light rounded-card p-6">
           <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PRIORITY_BADGE[ann.priority] ?? PRIORITY_BADGE.normal}`}>
+            <span className={`text-meta font-medium px-2 py-0.5 rounded-full ${PRIORITY_BADGE[ann.priority] ?? PRIORITY_BADGE.normal}`}>
               {ann.priority.toUpperCase()}
             </span>
-            <span className="text-xs bg-surface-control text-text-secondary px-2 py-0.5 rounded-full capitalize">{ann.type}</span>
+            <span className="text-meta bg-surface-control text-text-secondary px-2 py-0.5 rounded-full capitalize">{ann.type}</span>
             {ann.is_pinned && <Pin size={12} className="text-primary-text" />}
           </div>
 
-          <h1 className="text-2xl font-medium text-text-primary mb-2">{ann.title}</h1>
+          <h1 className="text-page-title font-medium text-text-primary mb-2">{ann.title}</h1>
 
-          <div className="flex items-center gap-3 text-xs text-text-muted mb-6">
+          <div className="flex items-center gap-3 text-meta text-text-muted mb-6">
             <span>By {ann.created_by?.name}</span>
             <span>·</span>
             <span>{formatDate(ann.published_at ?? ann.created_at)}</span>
           </div>
 
-          <div className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap border-t border-border-light pt-4">
+          <div className="text-label text-text-primary leading-relaxed whitespace-pre-wrap border-t border-border-light pt-4">
             {ann.body}
           </div>
 
@@ -90,7 +90,7 @@ export default function AnnouncementDetailPage() {
             <div className="mt-8 border-t border-border-light pt-4">
               <button
                 onClick={() => setShowReads(s => !s)}
-                className="flex items-center gap-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
+                className="flex items-center gap-2 text-label font-medium text-text-secondary hover:text-text-primary transition-colors"
               >
                 <Users size={16} />
                 Read by {readStatus.read_count} / {readStatus.total_employees} employees
@@ -98,9 +98,9 @@ export default function AnnouncementDetailPage() {
               {showReads && (
                 <div className="mt-3 flex flex-col gap-2">
                   {readStatus.reads.map((r: any) => (
-                    <div key={r.user?.id ?? r.user_id} className="flex items-center justify-between text-sm">
+                    <div key={r.user?.id ?? r.user_id} className="flex items-center justify-between text-label">
                       <span className="text-text-primary font-medium">{r.user?.name}</span>
-                      <span className="text-text-muted text-xs">{formatDateTime(r.read_at)}</span>
+                      <span className="text-text-muted text-meta">{formatDateTime(r.read_at)}</span>
                     </div>
                   ))}
                 </div>

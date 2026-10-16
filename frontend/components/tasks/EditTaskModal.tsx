@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { X, Plus, History } from 'lucide-react'
 import DatePicker from '@/components/ui/DatePicker'
+import { formatDate } from '@/lib/format'
 import TimeField from '@/components/ui/TimeField'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
@@ -62,8 +63,7 @@ const toLocalTimeStr = (iso: string) => {
   const d = new Date(iso)
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
 }
-const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+const fmtDate = (iso: string) => formatDate(iso)
 
 /** Order-independent signature of who is on a task and in which role — for the dirty check. */
 const rosterSig = (r: { user_id: string; is_cc: boolean }[]) =>

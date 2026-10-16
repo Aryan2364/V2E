@@ -75,7 +75,7 @@ export default function NewAnnouncementPage() {
                 value={form.title}
                 onChange={e => set('title', e.target.value)}
                 placeholder="Announcement title"
-                className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
 

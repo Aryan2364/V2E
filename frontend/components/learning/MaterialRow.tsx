@@ -132,7 +132,7 @@ export default function MaterialRow({
             </button>
           </Tooltip>
         )}
-        <span className="text-xs text-text-muted w-5 text-center shrink-0 mt-2">{index + 1}</span>
+        <span className="text-meta text-text-muted w-5 text-center shrink-0 mt-2">{index + 1}</span>
         <div className="w-8 h-8 rounded-control bg-primary-subtle flex items-center justify-center shrink-0 mt-0.5">
           <Icon size={15} className="text-primary-text" />
         </div>
@@ -143,7 +143,7 @@ export default function MaterialRow({
             onChange={(e) => setTitle(e.target.value)}
             onBlur={() => title.trim() && title !== item.title && save({ title: title.trim() })}
             placeholder="Material title"
-            className="w-full px-2.5 py-1.5 border border-border rounded-control text-sm font-medium text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+            className="w-full px-2.5 py-1.5 border border-border rounded-control text-label font-medium text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
           />
 
           {/* Type-specific editor */}
@@ -161,7 +161,7 @@ export default function MaterialRow({
                 }
               }}
               placeholder="https://… (paste a link, video, or doc)"
-              className="w-full px-2.5 py-1.5 border border-border rounded-control text-sm text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full px-2.5 py-1.5 border border-border rounded-control text-label text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
             />
           )}
           {item.content_type === 'url' && (
@@ -176,13 +176,13 @@ export default function MaterialRow({
               onBlur={() => body !== (item.content_body ?? '') && save({ content_body: body })}
               rows={3}
               placeholder="Write the article content…"
-              className="w-full px-2.5 py-1.5 border border-border rounded-control text-sm text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-y"
+              className="w-full px-2.5 py-1.5 border border-border rounded-control text-label text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-y"
             />
           )}
 
           {item.content_type === 'file' && (
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-xs text-text-secondary">
+              <div className="flex items-center gap-2 text-meta text-text-secondary">
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded-xs bg-surface-control font-medium text-text-secondary text-meta">
                   {fileKindLabel(item.file_name ?? '')}
                 </span>
@@ -201,7 +201,7 @@ export default function MaterialRow({
                     type="button"
                     onClick={() => save({ allow_download: !(item.allow_download ?? true) })}
                     className={[
-                      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors',
+                      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors',
                       item.allow_download ?? true
                         ? 'bg-success-bg text-success border border-success-border'
                         : 'bg-warning-bg text-warning border border-warning-border',
@@ -214,7 +214,7 @@ export default function MaterialRow({
                 </div>
               ) : item.file_name ? (
                 <div className="flex flex-col gap-1">
-                  <span className="inline-flex w-fit items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success-bg text-success border border-success-border">
+                  <span className="inline-flex w-fit items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium bg-success-bg text-success border border-success-border">
                     <Download size={12} /> Download only
                   </span>
                   {convertHint && <span className="text-meta text-warning">{convertHint}</span>}
@@ -270,7 +270,7 @@ export default function MaterialRow({
             <DialogTitle>{item.title}</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <p className="text-xs text-text-muted mb-3">Preview — exactly what learners see</p>
+            <p className="text-meta text-text-muted mb-3">Preview — exactly what learners see</p>
             {preview && (
               <MaterialViewer
                 data={preview}

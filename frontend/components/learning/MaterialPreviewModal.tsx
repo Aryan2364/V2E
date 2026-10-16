@@ -92,11 +92,11 @@ export default function MaterialPreviewModal({
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-medium text-text-primary truncate">{item.title}</h3>
+                <h3 className="text-label font-medium text-text-primary truncate">{item.title}</h3>
                 <ItemTypeBadge type={item.content_type} />
               </div>
               {item.file_name && (
-                <p className="text-xs text-text-muted truncate">{item.file_name}</p>
+                <p className="text-meta text-text-muted truncate">{item.file_name}</p>
               )}
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function MaterialPreviewModal({
             {canDownload && (
               <button
                 onClick={() => downloadAdminItem(orgId, pathId, item.id)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 mr-1 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 mr-1 text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
               >
                 <Download size={14} /> Download
               </button>
@@ -134,13 +134,13 @@ export default function MaterialPreviewModal({
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-surface-sunken">
           {item.description && (
-            <p className="text-sm text-text-secondary mb-4">{item.description}</p>
+            <p className="text-label text-text-secondary mb-4">{item.description}</p>
           )}
 
           {/* File materials — inline document/media viewer */}
           {item.content_type === 'file' && (
             fileLoading ? (
-              <div className="flex items-center justify-center gap-2 py-12 text-sm text-text-secondary">
+              <div className="flex items-center justify-center gap-2 py-12 text-label text-text-secondary">
                 <Loader2 size={18} className="animate-spin text-primary-text" /> Loading material…
               </div>
             ) : fileView ? (
@@ -153,7 +153,7 @@ export default function MaterialPreviewModal({
                 fullscreen={maximized}
               />
             ) : (
-              <p className="text-sm text-text-muted text-center py-12">Couldn’t load this material.</p>
+              <p className="text-label text-text-muted text-center py-12">Couldn’t load this material.</p>
             )
           )}
 
@@ -185,12 +185,12 @@ export default function MaterialPreviewModal({
               <div className="w-12 h-12 rounded-card bg-primary-subtle flex items-center justify-center">
                 <TypeIcon size={22} className="text-primary-text" />
               </div>
-              <p className="text-sm text-text-secondary break-all max-w-lg">{item.content_url}</p>
+              <p className="text-label text-text-secondary break-all max-w-lg">{item.content_url}</p>
               <a
                 href={item.content_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
               >
                 <ExternalLink size={15} />
                 Open {item.content_type === 'document' ? 'Document' : 'Link'}
@@ -202,7 +202,7 @@ export default function MaterialPreviewModal({
           {item.content_type !== 'file'
             && !item.content_body
             && !item.content_url && (
-            <p className="text-sm text-text-muted text-center py-12">No content available for this material.</p>
+            <p className="text-label text-text-muted text-center py-12">No content available for this material.</p>
           )}
         </div>
       </div>

@@ -66,7 +66,7 @@ export default function OfficeViewer({
 
   if (status === 'loading') {
     return (
-      <div className="flex items-center justify-center gap-2 py-12 text-sm text-text-secondary">
+      <div className="flex items-center justify-center gap-2 py-12 text-label text-text-secondary">
         <Loader2 size={18} className="animate-spin text-primary-text" /> Loading document…
       </div>
     )
@@ -75,11 +75,11 @@ export default function OfficeViewer({
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-center">
         <FileWarning size={24} className="text-text-muted" />
-        <p className="text-sm font-medium text-text-primary">Couldn’t render this document</p>
+        <p className="text-label font-medium text-text-primary">Couldn’t render this document</p>
         {onDownload && (
           <button
             onClick={onDownload}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
           >
             <Download size={15} /> Download to open it
           </button>
@@ -91,7 +91,7 @@ export default function OfficeViewer({
   if (kind === 'text') {
     return (
       <div className="overflow-auto p-4" style={{ maxHeight }}>
-        <pre className="whitespace-pre-wrap text-sm text-text-primary font-mono leading-relaxed">{text}</pre>
+        <pre className="whitespace-pre-wrap text-label text-text-primary font-mono leading-relaxed">{text}</pre>
       </div>
     )
   }

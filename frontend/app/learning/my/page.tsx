@@ -41,7 +41,7 @@ export default function MyLearningPage() {
     <div className="px-8 py-8 max-w-5xl mx-auto">
       <div className="mb-6">
         <h1 className="text-page-title font-medium text-text-primary">My Learning</h1>
-        <p className="text-sm text-text-secondary mt-1">{assignments.length} paths assigned to you</p>
+        <p className="text-label text-text-secondary mt-1">{assignments.length} paths assigned to you</p>
       </div>
 
       {assignments.length === 0 ? (
@@ -49,14 +49,14 @@ export default function MyLearningPage() {
           <div className="w-16 h-16 rounded-card bg-primary-subtle flex items-center justify-center mb-4">
             <GraduationCap size={28} className="text-primary-text" />
           </div>
-          <h3 className="text-lg font-medium text-text-primary mb-1">No learning paths yet</h3>
-          <p className="text-sm text-text-secondary">Your manager will assign learning paths to you.</p>
+          <h3 className="text-card-heading font-medium text-text-primary mb-1">No learning paths yet</h3>
+          <p className="text-label text-text-secondary">Your manager will assign learning paths to you.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-8">
           {inProgress.length > 0 && (
             <section>
-              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">In Progress</h2>
+              <h2 className="text-label font-medium text-text-secondary uppercase tracking-wider mb-3">In Progress</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {inProgress.map((a) => <AssignmentCard key={a.id} assignment={a} />)}
               </div>
@@ -64,7 +64,7 @@ export default function MyLearningPage() {
           )}
           {notStarted.length > 0 && (
             <section>
-              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">Not Started</h2>
+              <h2 className="text-label font-medium text-text-secondary uppercase tracking-wider mb-3">Not Started</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {notStarted.map((a) => <AssignmentCard key={a.id} assignment={a} />)}
               </div>
@@ -72,7 +72,7 @@ export default function MyLearningPage() {
           )}
           {completed.length > 0 && (
             <section>
-              <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">Completed</h2>
+              <h2 className="text-label font-medium text-text-secondary uppercase tracking-wider mb-3">Completed</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {completed.map((a) => <AssignmentCard key={a.id} assignment={a} />)}
               </div>
@@ -97,10 +97,10 @@ function AssignmentCard({ assignment }: { assignment: LearningPathAssignment }) 
     >
       <ProgressRing percent={percent} size={52} strokeWidth={4} className="shrink-0" />
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-medium text-text-primary group-hover:text-primary-text transition-colors line-clamp-2 mb-1.5">
+        <h3 className="text-label font-medium text-text-primary group-hover:text-primary-text transition-colors line-clamp-2 mb-1.5">
           {path.title}
         </h3>
-        <div className="flex items-center gap-3 text-xs text-text-muted">
+        <div className="flex items-center gap-3 text-meta text-text-muted">
           <span className="flex items-center gap-1">
             <BookOpen size={11} />
             {path._count?.items ?? 0} items
@@ -113,7 +113,7 @@ function AssignmentCard({ assignment }: { assignment: LearningPathAssignment }) 
           )}
         </div>
         <div className="mt-2">
-          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${classes}`}>
+          <span className={`inline-flex px-2 py-0.5 rounded-full text-meta font-medium ${classes}`}>
             {label}
           </span>
         </div>

@@ -19,6 +19,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -43,35 +45,35 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           {/* Title */}
           <div className="flex items-start gap-3">
             {/* <QuadrantBadge quadrant={task.quadrant} /> */}
-            <h3 className="text-[22px] font-medium text-text-primary leading-tight flex-1">{task.title}</h3>
+            <h3 className="text-section font-medium text-text-primary leading-tight flex-1">{task.title}</h3>
           </div>
 
           {task.description && (
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Description</p>
-              <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">{task.description}</p>
+              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Description</p>
+              <p className="text-body text-text-primary leading-relaxed whitespace-pre-wrap">{task.description}</p>
             </div>
           )}
 
           {/* Meta row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Status</p>
-              <p className="text-sm text-text-primary">{task.status?.label ?? task.status_id}</p>
+              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Status</p>
+              <p className="text-body text-text-primary">{task.status?.label ?? task.status_id}</p>
             </div>
             {task.deadline && (
               <div>
-                <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Deadline</p>
-                <p className="text-sm text-text-primary">{formatDate(task.deadline)}</p>
+                <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Deadline</p>
+                <p className="text-body text-text-primary">{formatDate(task.deadline)}</p>
               </div>
             )}
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Type</p>
-              <p className="text-sm text-text-primary capitalize">{task.type.replace('_', ' ')}</p>
+              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Type</p>
+              <p className="text-body text-text-primary capitalize">{task.type.replace('_', ' ')}</p>
             </div>
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Completion Mode</p>
-              <p className="text-sm text-text-primary">
+              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Completion Mode</p>
+              <p className="text-body text-text-primary">
                 {task.completion_mode === 'all_must_complete' ? 'All must complete' : 'Any can complete'}
               </p>
             </div>
@@ -80,16 +82,16 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           {/* Assignees */}
           {task.assignees && task.assignees.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Assignees</p>
+              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-2">Assignees</p>
               <div className="flex flex-wrap gap-2">
                 {task.assignees.map((a) => (
                   <span
                     key={a.id}
-                    className="inline-flex items-center gap-1.5 bg-surface-control border border-border-light rounded-control px-2.5 py-1 text-sm text-text-primary"
+                    className="inline-flex items-center gap-1.5 bg-surface-control border border-border-light rounded-control px-2.5 py-1 text-body text-text-primary"
                   >
                     {a.user_name}
                     {a.is_cc && (
-                      <span className="text-[10px] font-medium bg-warning-bg text-warning border border-warning-border rounded-xs px-1">CC</span>
+                      <span className="text-meta font-medium bg-warning-bg text-warning border border-warning-border rounded-xs px-1">CC</span>
                     )}
                   </span>
                 ))}
@@ -100,7 +102,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           {/* Checklist */}
           {task.checklist && task.checklist.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Checklist</p>
+              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-2">Checklist</p>
               <div className="space-y-1.5">
                 {task.checklist.map((item) => (
                   <div key={item.id} className="flex items-center gap-2">
@@ -111,7 +113,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
                         </svg>
                       )}
                     </div>
-                    <span className={`text-sm ${item.is_completed ? 'line-through text-text-muted' : 'text-text-primary'}`}>
+                    <span className={`text-body ${item.is_completed ? 'line-through text-text-muted' : 'text-text-primary'}`}>
                       {item.title}
                     </span>
                   </div>
@@ -122,12 +124,12 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
 
           {/* Deletion info */}
           <div className="bg-warning-bg border border-warning-border rounded-control p-4 space-y-1">
-            <p className="text-xs font-medium text-warning uppercase tracking-wider">Deletion Info</p>
-            <p className="text-sm text-text-primary">
+            <p className="text-meta font-medium text-warning uppercase tracking-wider">Deletion Info</p>
+            <p className="text-body text-text-primary">
               Deleted on <span className="font-medium">{formatDate(item.deleted_at)}</span>
             </p>
             {item.deletion_reason && (
-              <p className="text-sm text-text-primary">
+              <p className="text-body text-text-primary">
                 Reason: <span className="font-medium">{item.deletion_reason}</span>
               </p>
             )}
@@ -210,7 +212,7 @@ export default function ArchivePage() {
       render: (item) => (
         <button
           onClick={(e) => { e.stopPropagation(); setSelected(item) }}
-          className="text-sm font-medium text-primary-text hover:text-primary-text transition-colors"
+          className="text-body font-medium text-primary-text hover:text-primary-text transition-colors"
         >
           View
         </button>
@@ -245,7 +247,7 @@ export default function ArchivePage() {
               <Archive size={24} className="text-text-muted" />
             </div>
             <p className="font-medium text-text-primary">Archive is empty</p>
-            <p className="text-sm text-text-secondary mt-1">Deleted tasks will appear here.</p>
+            <p className="text-body text-text-secondary mt-1">Deleted tasks will appear here.</p>
           </div>
         }
       />

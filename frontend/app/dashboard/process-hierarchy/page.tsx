@@ -8,6 +8,14 @@ import { usePermissions } from '@/lib/auth/use-permissions'
 import { useToast } from '@/components/ui/Toast'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { PageHeader } from '@/components/shell/page-header'
 import { processHierarchyApi, type ProcessMapSummary, type ProcessTemplateSummary } from '@/lib/api/process-hierarchy'
 import { Workflow, Plus, ChevronRight, X, Loader2, Layers, Trash2, Search, Star, FolderPlus } from 'lucide-react'
 
@@ -191,63 +199,46 @@ export default function ProcessHierarchyListPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-2 pt-6">
+        <Skeleton className="h-9 w-1/3" />
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-9 w-2/3" />
       </div>
     )
   }
 
   return (
     <div>
-      {/* Sticky header (title + primary actions stay pinned while the list scrolls) */}
-      <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-surface-sunken/95 backdrop-blur border-b border-border-light pb-4 pt-1">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
-            <h1 className="text-page-title font-medium text-text-primary leading-tight">Process Hierarchy</h1>
-            <p className="mt-1 text-meta text-text-secondary">
-              Explore how the company does things — drill into any area to see the process flow beneath it.
-            </p>
-          </div>
-          {canCreate && (
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => setShowTemplates(true)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
-              >
+      <PageHeader
+        title="Process Hierarchy"
+        meta="Explore how the company does things — drill into any area to see the process flow beneath it."
+        actions={
+          canCreate ? (
+            <>
+              <Button variant="secondary" onClick={() => setShowTemplates(true)}>
                 <Layers size={16} /> From template
-              </button>
-              <button
-                onClick={() => setCreateParent(null)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-              >
+              </Button>
+              <Button variant="primary" onClick={() => setCreateParent(null)}>
                 <Plus size={16} /> New Map
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+              </Button>
+            </>
+          ) : null
+        }
+      />
 
       <div className="pt-6">
         {maps.length === 0 ? (
-          <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
-              <Workflow size={28} className="text-text-muted" />
-            </div>
-            <h2 className="text-card-heading font-medium text-text-primary">No process maps yet</h2>
-            <p className="text-text-secondary text-body mt-1 max-w-sm">
-              {canCreate
-                ? 'Create your first map to start documenting how your teams work.'
-                : 'Maps shared with you will appear here once they are created.'}
-            </p>
-            {canCreate && (
-              <button
-                onClick={() => setCreateParent(null)}
-                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium bg-primary text-primary-foreground hover:bg-primary-hover transition-colors"
-              >
-                <Plus size={15} /> New Map
-              </button>
-            )}
-          </div>
+          <EmptyState
+            variant="nothing-yet"
+            heading="No process maps yet"
+            actionLabel={canCreate ? 'New Map' : undefined}
+            onAction={canCreate ? () => setCreateParent(null) : undefined}
+          >
+            {canCreate
+              ? 'Create your first map to start documenting how your teams work.'
+              : 'Maps shared with you will appear here once they are created.'}
+          </EmptyState>
         ) : (
           <>
             {/* Search */}
@@ -361,19 +352,19 @@ function TemplatePickerModal({ orgId, onClose, onInstantiated }: {
     } finally { setDeleting(false) }
   }
 
-  return createPortal(
+  return (
     <>
-      <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-        <div className="relative bg-surface rounded-card shadow-xl w-full max-w-md max-h-[80vh] flex flex-col animate-[fadeIn_.15s_ease-out]">
-          <div className="flex items-center gap-2 px-4 py-4 border-b border-border-light">
-            <Layers size={16} className="text-primary-text" />
-            <h3 className="text-card-heading font-medium text-text-primary">Create from template</h3>
-            <button onClick={onClose} className="ml-auto text-text-muted hover:text-text-primary"><X size={18} /></button>
-          </div>
-          <div className="flex-1 overflow-y-auto px-4 py-3">
+      <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Layers size={16} className="text-primary-text" /> Create from template</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
             {templates === null ? (
-              <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-primary-text" /></div>
+              <div className="space-y-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
             ) : templates.length === 0 ? (
               <p className="text-meta text-text-muted text-center py-8">No templates yet. Open a map and use “Save as template”.</p>
             ) : (
@@ -384,21 +375,21 @@ function TemplatePickerModal({ orgId, onClose, onInstantiated }: {
                       <p className="text-meta font-medium text-text-primary truncate">{t.name}</p>
                       {t.description && <p className="text-meta text-text-secondary truncate">{t.description}</p>}
                     </div>
-                    <button onClick={() => setNaming(t)} disabled={busy === t.id}
-                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
-                      {busy === t.id ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />} Use
-                    </button>
+                    <Button size="sm" variant="primary" onClick={() => setNaming(t)} loading={busy === t.id} loadingLabel="Using">
+                      <Plus size={13} /> Use
+                    </Button>
                     <Tooltip label="Delete template">
-                      <button onClick={() => setConfirmDelete(t)} aria-label="Delete template"
-                        className="shrink-0 text-text-muted hover:text-danger"><Trash2 size={15} /></button>
+                      <Button size="icon-sm" variant="ghost" aria-label="Delete template" onClick={() => setConfirmDelete(t)}>
+                        <Trash2 size={15} />
+                      </Button>
                     </Tooltip>
                   </div>
                 ))}
               </div>
             )}
-          </div>
-        </div>
-      </div>
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
 
       {naming && (
         <NameModal
@@ -422,8 +413,7 @@ function TemplatePickerModal({ orgId, onClose, onInstantiated }: {
         onConfirm={remove}
         onCancel={() => { if (!deleting) setConfirmDelete(null) }}
       />
-    </>,
-    document.body,
+    </>
   )
 }
 
@@ -433,31 +423,29 @@ function NameModal({ title, label, initial, confirmLabel, busy, onCancel, onSubm
   onCancel: () => void; onSubmit: (name: string) => void
 }) {
   const [name, setName] = useState(initial)
-  useEscape(onCancel)
   const submit = () => { if (name.trim() && !busy) onSubmit(name.trim()) }
-  return createPortal(
-    <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
-      <div className="relative bg-surface rounded-card shadow-xl w-full max-w-md p-6 animate-[fadeIn_.15s_ease-out]">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-card-heading font-medium text-text-primary">{title}</h3>
-          <button onClick={onCancel} className="text-text-muted hover:text-text-primary transition-colors"><X size={18} /></button>
-        </div>
-        <label className="block text-body font-medium text-text-secondary mb-1">{label}</label>
-        <input
-          autoFocus value={name} onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && submit()}
-          className="w-full px-3 py-2.5 text-meta rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary"
-        />
-        <div className="flex justify-end mt-6">
-          <button onClick={submit} disabled={!name.trim() || busy}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
-            {busy && <Loader2 size={15} className="animate-spin" />} {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
+  return (
+    <Dialog open onOpenChange={(next) => { if (!next) onCancel() }}>
+      <DialogContent size="md">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <Label htmlFor="name-modal-input">{label}</Label>
+          <Input
+            id="name-modal-input"
+            autoFocus value={name} onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && submit()}
+            className="mt-1 max-w-none"
+          />
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="primary" onClick={submit} disabled={!name.trim() || !!busy} loading={!!busy}>
+            {confirmLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

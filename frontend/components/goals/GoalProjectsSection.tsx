@@ -272,17 +272,17 @@ function LinkProjectModal({
         </div>
 
         {loading ? (
-          <div className="flex items-center gap-2 text-sm text-text-secondary py-2">
+          <div className="flex items-center gap-2 text-label text-text-secondary py-2">
             <Loader2 size={15} className="animate-spin" /> Loading projects…
           </div>
         ) : options.length === 0 ? (
-          <p className="text-sm text-text-secondary">
+          <p className="text-label text-text-secondary">
             There are no more projects you can link. Create one in Work first, then come back — or
             set the goal on it while creating it.
           </p>
         ) : (
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">Project *</label>
+            <label className="block text-label font-medium text-text-secondary mb-1">Project *</label>
             <StyledSelect
               value={selected}
               onChange={setSelected}
@@ -301,7 +301,7 @@ function LinkProjectModal({
           <button
             type="button"
             onClick={() => router.push('/dashboard/projects/new')}
-            className="text-sm font-medium text-primary-text hover:text-primary-text transition-colors"
+            className="text-label font-medium text-primary-text hover:text-primary-text transition-colors"
           >
             Create a project in Work
           </button>

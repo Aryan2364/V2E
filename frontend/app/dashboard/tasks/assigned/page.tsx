@@ -8,7 +8,7 @@ import type { Task, TaskCategory, TaskPriority, TaskStatus } from '@/lib/types/t
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import TaskListRow from '@/components/tasks/TaskListRow'
 import TaskListToolbar from '@/components/tasks/TaskListToolbar'
-import { useTaskListView, GroupedTaskList, ClearNarrowingButton } from '@/components/tasks/taskListView'
+import { useTaskListView, GroupedTaskList } from '@/components/tasks/taskListView'
 import { type TaskSort, DEFAULT_TASK_SORT } from '@/components/tasks/TaskSortControl'
 import { useSessionState } from '@/lib/tasks/useSessionState'
 import KanbanView from '@/components/tasks/KanbanView'
@@ -17,9 +17,14 @@ import CreateTaskModal from '@/components/tasks/CreateTaskModal'
 import { type TaskFilters, EMPTY_TASK_FILTERS, isTaskFiltered, applyTaskFilters, normalizeTaskFilters } from '@/components/tasks/TaskFilterBar'
 import Modal from '@/components/ui/Modal'
 import { toast } from '@/components/ui/sonner'
-import { Plus, UserCheck, LayoutList, Columns, CalendarDays, AlertCircle } from 'lucide-react'
+import { Plus, LayoutList, Columns, CalendarDays, AlertCircle } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Banner, BannerDescription } from '@/components/ui/banner'
 
 type ViewMode = 'list' | 'kanban' | 'calendar'
 
@@ -150,8 +155,14 @@ export default function AssignedByMePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-9 w-full" />
+        <div className="space-y-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full" />
+          ))}
+        </div>
       </div>
     )
   }
@@ -197,18 +208,16 @@ export default function AssignedByMePage() {
                 { mode: 'kanban', icon: <Columns size={15} />, label: 'Kanban' },
                 { mode: 'calendar', icon: <CalendarDays size={15} />, label: 'Calendar' },
               ] as const).map(({ mode, icon, label }) => (
-                <button
+                <Button
                   key={mode}
+                  size="sm"
+                  variant={viewMode === mode ? 'primary' : 'ghost'}
                   onClick={() => setViewMode(mode)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-control text-sm font-medium transition-colors ${
-                    viewMode === mode
-                      ? 'bg-primary text-white'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
-                  }`}
+                  aria-pressed={viewMode === mode}
                 >
                   {icon}
                   <span className="hidden sm:inline">{label}</span>
-                </button>
+                </Button>
               ))}
             </div>
 
@@ -242,27 +251,30 @@ export default function AssignedByMePage() {
       {viewMode === 'list' && (
         <>
           {(isFiltered || search.trim()) && (
-            <p className="text-sm text-text-secondary">
+            <p className="text-label text-text-secondary">
               Showing {sortedTasks.length} of {tasks.length} task{tasks.length !== 1 ? 's' : ''}
             </p>
           )}
           {sortedTasks.length === 0 ? (
-            <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
-              <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
-                <UserCheck size={24} className="text-text-muted" />
-              </div>
-              <p className="font-medium text-text-primary">
-                {search.trim() ? `No tasks match ‘${search.trim()}’` : isFiltered ? 'No tasks match your filters' : 'No tasks assigned by you'}
-              </p>
-              <p className="text-sm text-text-secondary mt-1">
-                {search.trim() ? 'Try a different search term.' : isFiltered ? 'Try adjusting your filters.' : 'Tasks you create and assign to others will appear here.'}
-              </p>
-            <ClearNarrowingButton
-              hasSearch={!!search.trim()}
-              hasFilters={isFiltered}
-              onClear={() => { setSearch(''); setFilters({ ...EMPTY_TASK_FILTERS }) }}
-            />
-            </div>
+            isFiltered || search.trim() ? (
+              <EmptyState
+                variant="nothing-found"
+                heading={search.trim() ? `No tasks match '${search.trim()}'` : 'No tasks match your filters'}
+                actionLabel="Clear filters"
+                onAction={() => { setSearch(''); setFilters({ ...EMPTY_TASK_FILTERS }) }}
+              >
+                {search.trim() ? 'Try a different search term.' : 'Try adjusting your filters.'}
+              </EmptyState>
+            ) : (
+              <EmptyState
+                variant="nothing-yet"
+                heading="No tasks assigned by you"
+                actionLabel="Create task"
+                onAction={() => setShowCreateModal(true)}
+              >
+                Tasks you create and assign to others will appear here.
+              </EmptyState>
+            )
           ) : (
             <GroupedTaskList groups={groups} sortedTasks={sortedTasks} renderRow={renderRow} />
           )}
@@ -300,46 +312,44 @@ export default function AssignedByMePage() {
         closeOnEscape={!incompleteSubmitting}
       >
         <div className="space-y-4">
-          <div className="flex items-start gap-2 px-3 py-2 rounded-control bg-warning-bg border border-warning-border">
-            <AlertCircle size={15} className="text-warning shrink-0 mt-0.5" />
-            <p className="text-xs text-warning">
+          <Banner variant="warning">
+            <AlertCircle />
+            <BannerDescription>
               This closes the task as not-done for everyone. A reason is required.
-            </p>
-          </div>
+            </BannerDescription>
+          </Banner>
 
           {incompleteTask && (
-            <p className="text-sm font-medium text-text-primary truncate">{incompleteTask.title}</p>
+            <p className="text-body font-medium text-text-primary truncate">{incompleteTask.title}</p>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">Reason</label>
-            <textarea
+            <Label required>Reason</Label>
+            <Textarea
               value={incompleteReason}
               onChange={(e) => setIncompleteReason(e.target.value)}
               rows={3}
               autoFocus
               placeholder="Why is this being closed as not-done?"
-              className="w-full rounded-control border border-border-light px-3 py-2 text-sm text-text-primary focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-none"
             />
           </div>
 
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-1">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               onClick={() => { setIncompleteTask(null); setIncompleteReason('') }}
               disabled={incompleteSubmitting}
-              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-text-secondary rounded-control hover:bg-surface-control disabled:opacity-60 transition-colors"
             >
               Cancel
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="danger"
               onClick={submitIncomplete}
-              disabled={incompleteSubmitting || !incompleteReason.trim()}
-              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-danger rounded-control hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              disabled={!incompleteReason.trim()}
+              loading={incompleteSubmitting}
             >
-              {incompleteSubmitting ? 'Saving…' : 'Mark Incomplete'}
-            </button>
+              Mark incomplete
+            </Button>
           </div>
         </div>
       </Modal>

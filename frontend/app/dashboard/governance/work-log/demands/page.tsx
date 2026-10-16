@@ -7,6 +7,8 @@ import { workLogApi } from '@/lib/api/workLogs'
 import DemandModal from '@/components/work-logs/DemandModal'
 import type { WorkLogDemand, WorkLogSubmission } from '@/lib/types/workLogs'
 import { format as formatDateFns } from 'date-fns'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
 const inputCls =
@@ -67,10 +69,18 @@ export default function WorkLogDemandsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        title="Work log demands"
+        actions={
+          <Button onClick={() => setShowModal(true)}>
+            <Plus size={15} /> Demand
+          </Button>
+        }
+      />
       {/* Logs demanded from me */}
       {mine.length > 0 && (
         <div className={`${cardCls} p-6`}>
-          <h2 className="text-[18px] font-medium text-text-primary flex items-center gap-2 mb-4">
+          <h2 className="text-section font-medium text-text-primary flex items-center gap-2 mb-4">
             <Inbox size={17} className="text-primary-text" /> Logs demanded from me
           </h2>
           <div className="space-y-4">
@@ -89,13 +99,9 @@ export default function WorkLogDemandsPage() {
                   className={inputCls}
                 />
                 <div className="flex justify-end mt-2">
-                  <button
-                    type="button"
-                    onClick={() => submitMine(s.id)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover"
-                  >
+                  <Button onClick={() => submitMine(s.id)}>
                     <Send size={14} /> Submit
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -106,16 +112,7 @@ export default function WorkLogDemandsPage() {
       {/* My demands + series */}
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-80 shrink-0 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-[18px] font-medium text-text-primary">Logs I demanded</h2>
-            <button
-              type="button"
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover"
-            >
-              <Plus size={15} /> Demand
-            </button>
-          </div>
+          <h2 className="text-section font-medium text-text-primary">Logs I demanded</h2>
 
           {demands.length === 0 ? (
             <div className={`${cardCls} p-6 text-center`}>
@@ -160,28 +157,20 @@ export default function WorkLogDemandsPage() {
             <div className={`${cardCls} p-6`}>
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div>
-                  <h2 className="text-[18px] font-medium text-text-primary">{selected.title}</h2>
+                  <h2 className="text-section font-medium text-text-primary">{selected.title}</h2>
                   <p className="text-body text-text-muted mt-0.5">
                     {freqLabel(selected)} · for {selected.assignee_name ?? 'someone'}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {selected.kind === 'recurring' && (
-                    <button
-                      type="button"
-                      onClick={() => toggle(selected)}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-body font-medium text-text-secondary border border-border-light hover:bg-surface-control"
-                    >
+                    <Button variant="secondary" size="sm" onClick={() => toggle(selected)}>
                       {selected.is_active ? <><Pause size={13} /> Pause</> : <><Play size={13} /> Resume</>}
-                    </button>
+                    </Button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => remove(selected.id)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-body font-medium text-danger border border-danger-border hover:bg-danger-bg"
-                  >
+                  <Button variant="danger" size="sm" onClick={() => remove(selected.id)}>
                     <Trash2 size={13} /> Delete
-                  </button>
+                  </Button>
                 </div>
               </div>
               {selected.description && <p className="text-body text-text-primary mb-4">{selected.description}</p>}

@@ -49,7 +49,7 @@ export default function AddMaterialBar({
   }
 
   const btn =
-    'flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-control border transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
+    'flex items-center gap-2 px-3.5 py-2.5 text-label font-medium rounded-control border transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
 
   return (
     <div>
@@ -75,7 +75,7 @@ export default function AddMaterialBar({
       <p className="text-meta text-text-secondary mt-2">
         Pick one or several files at once — each becomes its own material. PDF, images and video/audio play in-app · up to 25 MB each. For slides, export PowerPoint to PDF so it plays in-app (Office files upload but open by download).
       </p>
-      {err && <p className="text-xs text-danger mt-1">{err}</p>}
+      {err && <p className="text-meta text-danger mt-1">{err}</p>}
       <input
         ref={fileInput}
         type="file"

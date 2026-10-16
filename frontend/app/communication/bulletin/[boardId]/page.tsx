@@ -90,13 +90,13 @@ export default function BulletinBoardPage() {
           <>
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-medium text-text-primary">{board.name}</h1>
-                {board.description && <p className="text-sm text-text-secondary mt-0.5">{board.description}</p>}
+                <h1 className="text-page-title font-medium text-text-primary">{board.name}</h1>
+                {board.description && <p className="text-label text-text-secondary mt-0.5">{board.description}</p>}
               </div>
               {canPost && (
                 <button
                   onClick={() => setShowForm(s => !s)}
-                  className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover transition-colors"
+                  className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover transition-colors"
                 >
                   <Plus size={16} />
                   New Post
@@ -107,27 +107,27 @@ export default function BulletinBoardPage() {
             {showForm && (
               <form onSubmit={handlePost} className="bg-surface border border-border-light rounded-card p-4 mb-6 flex flex-col gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Title</label>
+                  <label className="block text-label font-medium text-text-secondary mb-1">Title</label>
                   <input
                     value={form.title}
                     onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                     placeholder="Post title"
-                    className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                    className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Content</label>
+                  <label className="block text-label font-medium text-text-secondary mb-1">Content</label>
                   <textarea
                     value={form.body}
                     onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
                     rows={4}
                     placeholder="Write something..."
-                    className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-y"
+                    className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-y"
                   />
                 </div>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => setShowForm(false)} className="flex-1 border border-border-light text-text-secondary px-4 py-2 rounded-control text-sm font-medium hover:bg-surface-sunken">Cancel</button>
-                  <button type="submit" disabled={posting} className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed">
+                  <button type="button" onClick={() => setShowForm(false)} className="flex-1 border border-border-light text-text-secondary px-4 py-2 rounded-control text-label font-medium hover:bg-surface-sunken">Cancel</button>
+                  <button type="submit" disabled={posting} className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed">
                     {posting ? 'Posting…' : 'Post'}
                   </button>
                 </div>
@@ -139,11 +139,11 @@ export default function BulletinBoardPage() {
                 <div key={post.id} className={`bg-surface border rounded-card p-4 flex flex-col gap-3 ${post.is_pinned ? 'border-primary' : 'border-border-light'}`}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      {post.is_pinned && <div className="flex items-center gap-1 text-xs text-primary-text font-medium mb-1"><Pin size={11} />Pinned</div>}
+                      {post.is_pinned && <div className="flex items-center gap-1 text-meta text-primary-text font-medium mb-1"><Pin size={11} />Pinned</div>}
                       <Link href={`/communication/bulletin/${boardId}/posts/${post.id}`}>
-                        <h3 className="text-base font-medium text-text-primary hover:text-primary-text transition-colors">{post.title}</h3>
+                        <h3 className="text-body font-medium text-text-primary hover:text-primary-text transition-colors">{post.title}</h3>
                       </Link>
-                      <p className="text-sm text-text-secondary mt-1 line-clamp-2 whitespace-pre-wrap">{post.body}</p>
+                      <p className="text-label text-text-secondary mt-1 line-clamp-2 whitespace-pre-wrap">{post.body}</p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {isHR && (
@@ -168,7 +168,7 @@ export default function BulletinBoardPage() {
                           <button
                             key={emoji}
                             onClick={() => handleReact(post.id, emoji)}
-                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-colors ${myReaction ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
+                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-meta border transition-colors ${myReaction ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
                           >
                             {emoji} {count > 0 && <span>{count}</span>}
                           </button>
@@ -177,7 +177,7 @@ export default function BulletinBoardPage() {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-3 text-xs text-text-muted">
+                  <div className="flex items-center gap-3 text-meta text-text-muted">
                     <span>{post.created_by?.name}</span>
                     <span>·</span>
                     <span>{formatDate(post.created_at)}</span>

@@ -40,7 +40,7 @@ export default function ProgressRing({
           className="transition-all duration-500"
         />
       </svg>
-      <span className="absolute text-xs font-medium text-text-primary">{clamped}%</span>
+      <span className="absolute text-meta font-medium text-text-primary">{clamped}%</span>
     </div>
   )
 }

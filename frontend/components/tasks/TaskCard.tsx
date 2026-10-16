@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Calendar, GitBranch, MessageSquare, Paperclip, ChevronDown, Check, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
 import { getNow } from '@/lib/clock'
+import { formatDateTime } from '@/lib/format'
 import type { Task, TaskPriority, TaskStatus, TaskCategory } from '@/lib/types/tasks'
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import AssigneeAvatars, { type AvatarPerson } from './AssigneeAvatars'
@@ -42,10 +43,7 @@ function deadlineClass(deadline?: string): string {
 }
 
 function formatDeadline(deadline: string): string {
-  const d = new Date(deadline)
-  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-  return `${date}, ${time}`
+  return formatDateTime(deadline)
 }
 
 // Order statuses by their lifecycle phase, then their configured order — so the

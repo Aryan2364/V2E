@@ -148,7 +148,7 @@ export default function MyCheckInsPage() {
                   {perms.edit && (
                     <button
                       onClick={() => setActive(g)}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium transition-colors shrink-0 w-full sm:w-auto min-h-[44px]"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground text-label font-medium transition-colors shrink-0 w-full sm:w-auto min-h-[44px]"
                     >
                       <CheckCircle2 size={16} /> Check in
                     </button>

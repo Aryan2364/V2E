@@ -17,7 +17,7 @@ import {
 
 export const inputClass =
   'w-full border border-border rounded-control px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
-export const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
+export const labelClass = 'block text-label font-medium text-text-secondary mb-1'
 
 const todayISO = () => {
   const d = new Date()
@@ -211,7 +211,7 @@ export default function GoalFormFields({
       {/* Optional target number. A goal with no number is normal — its check-in
           is just the traffic light and the note. */}
       <div className="rounded-card border border-border-light bg-surface-sunken p-4">
-        <p className="text-sm font-medium text-text-secondary">Target number (optional)</p>
+        <p className="text-label font-medium text-text-secondary">Target number (optional)</p>
         <p className="text-meta text-text-secondary mt-0.5 mb-3">
           Leave blank if this goal isn’t measured by a number. Values are always typed in by a
           person at each check-in — nothing is pulled from anywhere.

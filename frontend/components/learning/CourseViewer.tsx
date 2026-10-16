@@ -148,7 +148,7 @@ export default function CourseViewer({
             <div className="flex items-center justify-between mb-3">
               <Link
                 href={backHref}
-                className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-primary-text transition-colors"
+                className="inline-flex items-center gap-1.5 text-meta text-text-secondary hover:text-primary-text transition-colors"
               >
                 <ArrowLeft size={13} />
                 {backLabel}
@@ -168,7 +168,7 @@ export default function CourseViewer({
                 Preview
               </div>
             )}
-            <h2 className="text-sm font-medium text-text-primary line-clamp-2 mb-2">{title}</h2>
+            <h2 className="text-label font-medium text-text-primary line-clamp-2 mb-2">{title}</h2>
             <ProgressBar percent={percent} showLabel size="sm" />
           </div>
 
@@ -194,7 +194,7 @@ export default function CourseViewer({
                       : <div className={`w-3.5 h-3.5 rounded-full border-2 ${isActive ? 'border-primary' : 'border-border'}`} />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-xs font-medium truncate ${isActive ? 'text-primary-text' : done ? 'text-text-secondary' : 'text-text-primary'}`}>
+                    <div className={`text-meta font-medium truncate ${isActive ? 'text-primary-text' : done ? 'text-text-secondary' : 'text-text-primary'}`}>
                       {item.title}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
@@ -217,13 +217,13 @@ export default function CourseViewer({
               <div className="flex items-center gap-2">
                 <Link
                   href={backHref}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-text-secondary bg-surface border border-border-light rounded-control shadow-xs hover:text-primary-text hover:border-primary transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium text-text-secondary bg-surface border border-border-light rounded-control shadow-xs hover:text-primary-text hover:border-primary transition-colors"
                 >
                   <ArrowLeft size={14} /> {backLabel}
                 </Link>
                 <button
                   onClick={() => setNavOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-text-secondary bg-surface border border-border-light rounded-control shadow-xs hover:text-primary-text hover:border-primary transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium text-text-secondary bg-surface border border-border-light rounded-control shadow-xs hover:text-primary-text hover:border-primary transition-colors"
                 >
                   <PanelLeftOpen size={14} /> Show list
                 </button>
@@ -232,7 +232,7 @@ export default function CourseViewer({
             {preview && editHref && (
               <Link
                 href={editHref}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
               >
                 <Pencil size={14} /> Edit course
               </Link>
@@ -244,7 +244,7 @@ export default function CourseViewer({
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <BookOpen size={40} className="text-muted mx-auto mb-3" />
-              <p className="text-sm text-text-secondary">
+              <p className="text-label text-text-secondary">
                 {items.length ? 'Select a material from the list to begin' : 'This course has no materials yet'}
               </p>
             </div>
@@ -256,20 +256,20 @@ export default function CourseViewer({
               <div className="flex items-center gap-2 mb-2">
                 <ItemTypeBadge type={activeItem.content_type} />
                 {activeItem.estimated_minutes && (
-                  <span className="flex items-center gap-1 text-xs text-text-muted">
+                  <span className="flex items-center gap-1 text-meta text-text-muted">
                     <Clock size={11} /> {activeItem.estimated_minutes} min
                   </span>
                 )}
               </div>
               <h1 className="text-card-heading font-medium text-text-primary mb-1">{activeItem.title}</h1>
-              {activeItem.description && <p className="text-sm text-text-secondary">{activeItem.description}</p>}
+              {activeItem.description && <p className="text-label text-text-secondary">{activeItem.description}</p>}
             </div>
 
             {/* Content */}
             <div className="bg-surface border border-border-light rounded-card p-6 mb-6">
               {activeItem.content_type === 'file' && (
                 fileLoading ? (
-                  <div className="flex items-center justify-center gap-2 py-12 text-sm text-text-secondary">
+                  <div className="flex items-center justify-center gap-2 py-12 text-label text-text-secondary">
                     <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     Loading material…
                   </div>
@@ -279,14 +279,14 @@ export default function CourseViewer({
                       {fileView.allow_download && onDownload && (
                         <button
                           onClick={() => onDownload(activeItem.id)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
                         >
                           <Download size={14} /> Download
                         </button>
                       )}
                       <button
                         onClick={() => setExpanded(true)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-control hover:bg-primary-subtle transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-control hover:bg-primary-subtle transition-colors"
                       >
                         <Maximize2 size={14} /> Fullscreen
                       </button>
@@ -300,7 +300,7 @@ export default function CourseViewer({
                     />
                   </>
                 ) : (
-                  <p className="text-sm text-text-muted text-center py-8">Couldn’t load this material.</p>
+                  <p className="text-label text-text-muted text-center py-8">Couldn’t load this material.</p>
                 )
               )}
 
@@ -350,7 +350,7 @@ export default function CourseViewer({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => { if (!isDone(activeItem.id)) markComplete(activeItem, 'auto_opened') }}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
                   >
                     <ExternalLink size={15} />
                     Open Document
@@ -359,7 +359,7 @@ export default function CourseViewer({
               )}
 
               {activeItem.content_type !== 'file' && !activeItem.content_url && !activeItem.content_body && (
-                <p className="text-sm text-text-muted text-center py-8">No content available for this item.</p>
+                <p className="text-label text-text-muted text-center py-8">No content available for this item.</p>
               )}
             </div>
 
@@ -368,7 +368,7 @@ export default function CourseViewer({
               <button
                 onClick={() => markComplete(activeItem, 'manual')}
                 disabled={completing === activeItem.id}
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-primary-foreground bg-success hover:bg-success rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-3 text-label font-medium text-primary-foreground bg-success hover:bg-success rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 {completing === activeItem.id
                   ? <div className="w-4 h-4 border-2 border-surface border-t-transparent rounded-full animate-spin" />
@@ -377,13 +377,13 @@ export default function CourseViewer({
               </button>
             ) : (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-sm font-medium text-success">
+                <div className="flex items-center gap-2 text-label font-medium text-success">
                   <CheckCircle size={18} /> Completed
                 </div>
                 <button
                   onClick={() => unmarkComplete(activeItem)}
                   disabled={completing === activeItem.id}
-                  className="text-sm font-medium text-text-secondary hover:text-danger underline-offset-2 hover:underline disabled:opacity-60 transition-colors"
+                  className="text-label font-medium text-text-secondary hover:text-danger underline-offset-2 hover:underline disabled:opacity-60 transition-colors"
                 >
                   Undo
                 </button>
@@ -399,13 +399,13 @@ export default function CourseViewer({
           <div className="flex items-center justify-between px-4 py-3 border-b border-border-light shrink-0">
             <div className="min-w-0 flex items-center gap-2">
               <FileIcon size={16} className="text-primary-text shrink-0" />
-              <h3 className="text-sm font-medium text-text-primary truncate">{activeItem.title}</h3>
+              <h3 className="text-label font-medium text-text-primary truncate">{activeItem.title}</h3>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {fileView.allow_download && onDownload && (
                 <button
                   onClick={() => onDownload(activeItem.id)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
                 >
                   <Download size={15} /> Download
                 </button>
@@ -413,7 +413,7 @@ export default function CourseViewer({
               <Tooltip label="Exit fullscreen (Esc)">
                 <button
                   onClick={() => setExpanded(false)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:text-primary-text hover:border-primary transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-label font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:text-primary-text hover:border-primary transition-colors"
                 >
                   <Minimize2 size={15} /> Exit
                 </button>

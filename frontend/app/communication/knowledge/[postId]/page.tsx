@@ -106,8 +106,8 @@ export default function KnowledgePostPage() {
         </Breadcrumb>
 
         <div className="bg-surface border border-border-light rounded-card p-6 mb-4">
-          <h1 className="text-xl font-medium text-text-primary mb-2">{post.title}</h1>
-          <div className="flex items-center gap-3 text-xs text-text-muted mb-4">
+          <h1 className="text-section font-medium text-text-primary mb-2">{post.title}</h1>
+          <div className="flex items-center gap-3 text-meta text-text-muted mb-4">
             <span>{post.created_by?.name}</span>
             <span>·</span>
             <span>{formatDate(post.created_at)}</span>
@@ -116,12 +116,12 @@ export default function KnowledgePostPage() {
           {post.tags?.length > 0 && (
             <div className="flex gap-1.5 mb-4 flex-wrap">
               {post.tags.map(t => (
-                <span key={t} className="text-xs bg-primary-subtle text-primary-text px-2 py-0.5 rounded-full">{t}</span>
+                <span key={t} className="text-meta bg-primary-subtle text-primary-text px-2 py-0.5 rounded-full">{t}</span>
               ))}
             </div>
           )}
 
-          <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">{post.body}</p>
+          <p className="text-label text-text-primary leading-relaxed whitespace-pre-wrap">{post.body}</p>
 
           <div className="flex items-center gap-1.5 mt-4 flex-wrap">
             {REACTIONS.map(emoji => {
@@ -131,9 +131,9 @@ export default function KnowledgePostPage() {
                 <button
                   key={emoji}
                   onClick={() => handleReact(emoji)}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-sm border transition-colors ${mine ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-label border transition-colors ${mine ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
                 >
-                  {emoji} {count > 0 && <span className="text-xs font-medium">{count}</span>}
+                  {emoji} {count > 0 && <span className="text-meta font-medium">{count}</span>}
                 </button>
               )
             })}
@@ -141,7 +141,7 @@ export default function KnowledgePostPage() {
         </div>
 
         <div className="bg-surface border border-border-light rounded-card p-6">
-          <h2 className="text-sm font-medium text-text-primary mb-4 flex items-center gap-1.5">
+          <h2 className="text-label font-medium text-text-primary mb-4 flex items-center gap-1.5">
             <MessageSquare size={15} />
             {post.comments?.length ?? 0} Comments
           </h2>
@@ -153,7 +153,7 @@ export default function KnowledgePostPage() {
           </div>
 
           {replyTo && (
-            <div className="flex items-center gap-2 mb-2 text-xs text-text-secondary bg-surface-control px-3 py-1.5 rounded-control">
+            <div className="flex items-center gap-2 mb-2 text-meta text-text-secondary bg-surface-control px-3 py-1.5 rounded-control">
               <span>Replying to <strong>{replyTo.name}</strong></span>
               <button onClick={() => setReplyTo(null)} className="ml-auto text-text-muted hover:text-text-secondary">✕</button>
             </div>
@@ -164,12 +164,12 @@ export default function KnowledgePostPage() {
               value={comment}
               onChange={e => setComment(e.target.value)}
               placeholder={replyTo ? `Reply to ${replyTo.name}…` : 'Write a comment…'}
-              className="flex-1 border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+              className="flex-1 border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
             />
             <button
               type="submit"
               disabled={submitting || !comment.trim()}
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Post
             </button>
@@ -190,17 +190,17 @@ function CommentRow({ comment, userId, isHR, onDelete, onReply }: {
   return (
     <div>
       <div className="flex gap-3">
-        <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-medium shrink-0">
+        <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0">
           {comment.created_by?.name?.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <span className="text-sm font-medium text-text-primary">{comment.created_by?.name}</span>
-              <span className="text-xs text-text-muted ml-2">{formatDateTime(comment.created_at)}</span>
+              <span className="text-label font-medium text-text-primary">{comment.created_by?.name}</span>
+              <span className="text-meta text-text-muted ml-2">{formatDateTime(comment.created_at)}</span>
             </div>
             <div className="flex gap-1">
-              <button onClick={onReply} className="text-xs text-primary-text hover:underline">Reply</button>
+              <button onClick={onReply} className="text-meta text-primary-text hover:underline">Reply</button>
               {(comment.created_by_user_id === userId || isHR) && (
                 <button onClick={() => onDelete(comment.id)} className="p-1 text-text-muted hover:text-danger rounded-xs transition-colors">
                   <Trash2 size={12} />
@@ -208,7 +208,7 @@ function CommentRow({ comment, userId, isHR, onDelete, onReply }: {
               )}
             </div>
           </div>
-          <p className="text-sm text-text-primary mt-0.5 whitespace-pre-wrap">{comment.body}</p>
+          <p className="text-label text-text-primary mt-0.5 whitespace-pre-wrap">{comment.body}</p>
         </div>
       </div>
 
@@ -216,14 +216,14 @@ function CommentRow({ comment, userId, isHR, onDelete, onReply }: {
         <div className="ml-8 mt-3 flex flex-col gap-3">
           {comment.replies.map(reply => (
             <div key={reply.id} className="flex gap-2">
-              <div className="w-6 h-6 rounded-full bg-text-secondary flex items-center justify-center text-primary-foreground text-xs font-medium shrink-0">
+              <div className="w-6 h-6 rounded-full bg-text-secondary flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0">
                 {reply.created_by?.name?.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-xs font-medium text-text-primary">{reply.created_by?.name}</span>
-                    <span className="text-xs text-text-muted ml-2">{formatDateTime(reply.created_at)}</span>
+                    <span className="text-meta font-medium text-text-primary">{reply.created_by?.name}</span>
+                    <span className="text-meta text-text-muted ml-2">{formatDateTime(reply.created_at)}</span>
                   </div>
                   {(reply.created_by_user_id === userId || isHR) && (
                     <button onClick={() => onDelete(reply.id)} className="p-1 text-text-muted hover:text-danger rounded-xs transition-colors">
@@ -231,7 +231,7 @@ function CommentRow({ comment, userId, isHR, onDelete, onReply }: {
                     </button>
                   )}
                 </div>
-                <p className="text-xs text-text-primary mt-0.5 whitespace-pre-wrap">{reply.body}</p>
+                <p className="text-meta text-text-primary mt-0.5 whitespace-pre-wrap">{reply.body}</p>
               </div>
             </div>
           ))}

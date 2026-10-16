@@ -32,7 +32,7 @@ const CONFIG: Record<ContentType, { label: string; Icon: any; classes: string }>
 export default function ItemTypeBadge({ type }: { type: ContentType }) {
   const { label, Icon, classes } = CONFIG[type] ?? CONFIG.article
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${classes}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-meta font-medium ${classes}`}>
       <Icon size={11} />
       {label}
     </span>

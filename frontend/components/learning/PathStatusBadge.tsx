@@ -18,7 +18,7 @@ const CONFIG: Record<LearningPathStatus, { label: string; classes: string }> = {
 export default function PathStatusBadge({ status }: { status: LearningPathStatus }) {
   const { label, classes } = CONFIG[status] ?? CONFIG.draft
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${classes}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-meta font-medium ${classes}`}>
       {label}
     </span>
   )

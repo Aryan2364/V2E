@@ -40,18 +40,12 @@ const SELECTION_KEY = 'goals-strategy-map-selected'
 /** Idle connector colour — neutral, so the ovals' colours stay the loud thing. */
 const EDGE_IDLE = 'var(--text-muted)'
 
-function rgba(hex: string, alpha: number): string {
-  const h = hex.replace('#', '')
-  const n = parseInt(
-    h.length === 3
-      ? h
-          .split('')
-          .map((c) => c + c)
-          .join('')
-      : h,
-    16,
-  )
-  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`
+/** Fades a token colour (a var(--...) string, not a hex literal) toward
+ *  transparent. BAND_META's colours are already theme tokens, so this mixes
+ *  them with color-mix() instead of parsing hex — the old parseInt-based
+ *  helper silently produced `rgba(NaN, NaN, NaN, …)` against a var() string. */
+function fade(token: string, percent: number): string {
+  return `color-mix(in srgb, ${token} ${percent}%, transparent)`
 }
 
 interface Props {
@@ -243,7 +237,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                 style={{
                   top: band.top,
                   height: BAND_H,
-                  backgroundColor: rgba(m.bg, 0.45),
+                  backgroundColor: fade(m.bg, 45),
                   borderColor: m.border,
                 }}
               >
@@ -369,14 +363,14 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                   width: OVAL_W,
                   height: OVAL_H,
                   backgroundColor: hot || isPinned ? m.bg : 'var(--surface)',
-                  border: `1.5px solid ${hot || isPinned ? m.dot : rgba(m.dot, 0.5)}`,
+                  border: `1.5px solid ${hot || isPinned ? m.dot : fade(m.dot, 50)}`,
                   // A pin reads as a held ring, so "this one is selected" is
                   // distinguishable from "the mouse is over this one".
                   boxShadow: isPinned
-                    ? `0 0 0 3px ${rgba(m.dot, 0.32)}, 0 4px 12px ${rgba(m.dot, 0.24)}`
+                    ? `0 0 0 3px ${fade(m.dot, 32)}, 0 4px 12px ${fade(m.dot, 24)}`
                     : hot
-                      ? `0 6px 16px ${rgba(m.dot, 0.28)}`
-                      : '0 1px 2px rgba(15,23,42,0.08)',
+                      ? `0 6px 16px ${fade(m.dot, 28)}`
+                      : 'var(--shadow-card)',
                   opacity: on ? 1 : 0.35,
                 }}
               >

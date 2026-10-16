@@ -420,7 +420,7 @@ export default function EmployeesPage() {
             </button>
             <button
               onClick={() => setShowAdd(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
             >
               <UserPlus size={16} />
               Add Employee
@@ -447,7 +447,7 @@ export default function EmployeesPage() {
               setPrefillSelf(true)
               setShowAdd(true)
             }}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-meta font-medium text-white bg-warning hover:bg-warning transition-colors whitespace-nowrap self-start sm:self-center"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-meta font-medium text-primary-foreground bg-warning hover:bg-warning transition-colors whitespace-nowrap self-start sm:self-center"
           >
             Setup Profile
           </button>

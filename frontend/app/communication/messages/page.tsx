@@ -238,7 +238,7 @@ export default function MessagesPage() {
       {/* Sidebar */}
       <div className="w-72 bg-surface border-r border-border-light flex flex-col shrink-0">
         <div className="p-4 border-b border-border-light flex items-center justify-between">
-          <h2 className="text-sm font-medium text-text-primary">Messages</h2>
+          <h2 className="text-label font-medium text-text-primary">Messages</h2>
           <Tooltip label="New conversation">
           <button
             onClick={() => setShowNewConv(true)}
@@ -254,7 +254,7 @@ export default function MessagesPage() {
           {conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
               <MessageSquare size={32} className="text-muted mb-2" />
-              <p className="text-sm text-text-secondary">No conversations yet</p>
+              <p className="text-label text-text-secondary">No conversations yet</p>
             </div>
           ) : (
             conversations.map(conv => {
@@ -268,20 +268,20 @@ export default function MessagesPage() {
                     isActive ? 'bg-primary-subtle' : '',
                   ].join(' ')}
                 >
-                  <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-label font-medium shrink-0">
                     {conv.type === 'group' ? <Users size={16} /> : (conv.display_name?.charAt(0).toUpperCase() ?? '?')}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-text-primary truncate">{conv.display_name ?? conv.name ?? 'Conversation'}</span>
+                      <span className="text-label font-medium text-text-primary truncate">{conv.display_name ?? conv.name ?? 'Conversation'}</span>
                       {(conv.unread_count ?? 0) > 0 && (
-                        <span className="ml-1 bg-primary text-primary-foreground text-xs font-medium rounded-full px-1.5 py-0.5 shrink-0">
+                        <span className="ml-1 bg-primary text-primary-foreground text-meta font-medium rounded-full px-1.5 py-0.5 shrink-0">
                           {conv.unread_count}
                         </span>
                       )}
                     </div>
                     {conv.last_message && (
-                      <p className="text-xs text-text-muted truncate mt-0.5">
+                      <p className="text-meta text-text-muted truncate mt-0.5">
                         {conv.last_message.is_deleted ? <em>Message deleted</em> : conv.last_message.body}
                       </p>
                     )}
@@ -298,12 +298,12 @@ export default function MessagesPage() {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
           <div className="px-4 py-3 border-b border-border-light bg-surface flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-label font-medium">
               {activeConv.type === 'group' ? <Users size={15} /> : (activeConv.display_name?.charAt(0).toUpperCase() ?? '?')}
             </div>
             <div>
-              <p className="text-sm font-medium text-text-primary">{activeConv.display_name ?? activeConv.name ?? 'Conversation'}</p>
-              <p className="text-xs text-text-muted">{activeConv.members.length} members</p>
+              <p className="text-label font-medium text-text-primary">{activeConv.display_name ?? activeConv.name ?? 'Conversation'}</p>
+              <p className="text-meta text-text-muted">{activeConv.members.length} members</p>
             </div>
           </div>
 
@@ -314,19 +314,19 @@ export default function MessagesPage() {
               return (
                 <div key={msg.id} className={`flex gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
                   {!isMine && (
-                    <div className="w-7 h-7 rounded-full bg-text-secondary flex items-center justify-center text-primary-foreground text-xs font-medium shrink-0 mt-1">
+                    <div className="w-7 h-7 rounded-full bg-text-secondary flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 mt-1">
                       {msg.sender?.name?.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div className={`max-w-[65%] flex flex-col gap-1 ${isMine ? 'items-end' : 'items-start'}`}>
-                    {!isMine && <span className="text-xs font-medium text-text-secondary">{msg.sender?.name}</span>}
+                    {!isMine && <span className="text-meta font-medium text-text-secondary">{msg.sender?.name}</span>}
                     {msg.reply_to_message && !msg.is_deleted && (
-                      <div className={`text-xs text-text-secondary bg-surface-control px-2 py-1 rounded-control border-l-2 border-primary max-w-full truncate`}>
+                      <div className={`text-meta text-text-secondary bg-surface-control px-2 py-1 rounded-control border-l-2 border-primary max-w-full truncate`}>
                         {msg.reply_to_message.body}
                       </div>
                     )}
                     <div className={[
-                      'px-3 py-2 rounded-card text-sm',
+                      'px-3 py-2 rounded-card text-label',
                       isMine ? 'bg-primary text-primary-foreground rounded-tr-none' : 'bg-surface border border-border-light text-text-primary rounded-tl-none',
                       msg.is_deleted ? 'italic opacity-60' : '',
                     ].join(' ')}>
@@ -340,7 +340,7 @@ export default function MessagesPage() {
               )
             })}
             {typingList.length > 0 && (
-              <div className="text-xs text-text-muted italic">
+              <div className="text-meta text-text-muted italic">
                 {typingList.join(', ')} {typingList.length === 1 ? 'is' : 'are'} typing…
               </div>
             )}
@@ -355,7 +355,7 @@ export default function MessagesPage() {
               onKeyDown={handleKeyDown}
               placeholder="Type a message…"
               rows={1}
-              className="flex-1 border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-none"
+              className="flex-1 border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-none"
               style={{ maxHeight: 120, overflowY: 'auto' }}
             />
             <button
@@ -372,7 +372,7 @@ export default function MessagesPage() {
           <div className="text-center">
             <MessageSquare size={48} className="text-muted mx-auto mb-3" />
             <p className="text-text-secondary font-medium">Select a conversation</p>
-            <p className="text-sm text-text-muted">or start a new one</p>
+            <p className="text-label text-text-muted">or start a new one</p>
           </div>
         </div>
       )}
@@ -392,7 +392,7 @@ export default function MessagesPage() {
                 <button
                   key={t}
                   onClick={() => { setConvType(t); setSelectedUsers([]) }}
-                  className={`flex-1 py-2 rounded-control text-sm font-medium transition-colors ${convType === t ? 'bg-primary text-primary-foreground' : 'bg-surface-control text-text-secondary hover:bg-surface-control-pressed'}`}
+                  className={`flex-1 py-2 rounded-control text-label font-medium transition-colors ${convType === t ? 'bg-primary text-primary-foreground' : 'bg-surface-control text-text-secondary hover:bg-surface-control-pressed'}`}
                 >
                   {t === 'direct' ? 'Direct Message' : 'Group Chat'}
                 </button>
@@ -404,7 +404,7 @@ export default function MessagesPage() {
                 value={groupName}
                 onChange={e => setGroupName(e.target.value)}
                 placeholder="Group name (optional)"
-                className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary mb-3"
+                className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary mb-3"
               />
             )}
 
@@ -414,7 +414,7 @@ export default function MessagesPage() {
                 value={empSearch}
                 onChange={e => setEmpSearch(e.target.value)}
                 placeholder="Search employees…"
-                className="w-full pl-8 pr-3 py-2 border border-border rounded-control text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                className="w-full pl-8 pr-3 py-2 border border-border rounded-control text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
               />
             </div>
 
@@ -440,12 +440,12 @@ export default function MessagesPage() {
                       disabled ? 'opacity-40 cursor-not-allowed' : '',
                     ].join(' ')}
                   >
-                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-medium shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0">
                       {emp.user?.name?.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-text-primary">{emp.user?.name}</p>
-                      <p className="text-xs text-text-muted">{emp.user?.email}</p>
+                      <p className="text-label font-medium text-text-primary">{emp.user?.name}</p>
+                      <p className="text-meta text-text-muted">{emp.user?.email}</p>
                     </div>
                     {selected && <div className="ml-auto w-4 h-4 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-meta">✓</div>}
                   </button>

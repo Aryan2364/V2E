@@ -76,7 +76,7 @@ export default function AssigneeMultiSelect({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search by name, role or department…"
-          className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+          className="flex-1 bg-transparent text-label text-text-primary placeholder:text-text-muted focus:outline-hidden"
         />
         {q && (
           <button type="button" onClick={() => setQ('')} className="text-text-muted hover:text-text-secondary shrink-0">
@@ -91,15 +91,15 @@ export default function AssigneeMultiSelect({
           type="button"
           onClick={toggleAllFiltered}
           disabled={filteredIds.length === 0}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-text hover:text-primary-text disabled:text-text-muted disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1.5 text-meta font-medium text-primary-text hover:text-primary-text disabled:text-text-muted disabled:cursor-not-allowed"
         >
           <CheckCheck size={14} />
           {allFilteredSelected ? 'Deselect' : 'Select'} {q ? 'matching' : 'all'} ({filteredIds.length})
         </button>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs text-text-muted">{selected.length} selected</span>
+          <span className="text-meta text-text-muted">{selected.length} selected</span>
           {selected.length > 0 && (
-            <button type="button" onClick={() => onChange([])} className="text-xs font-medium text-text-secondary hover:text-danger">
+            <button type="button" onClick={() => onChange([])} className="text-meta font-medium text-text-secondary hover:text-danger">
               Clear
             </button>
           )}
@@ -109,7 +109,7 @@ export default function AssigneeMultiSelect({
       {/* List */}
       <div className={`${heightClass} overflow-y-auto`}>
         {filtered.length === 0 ? (
-          <p className="text-sm text-text-muted px-3 py-4 text-center">No people found.</p>
+          <p className="text-label text-text-muted px-3 py-4 text-center">No people found.</p>
         ) : (
           filtered.map((emp: any) => {
             const checked = selectedSet.has(emp.id)
@@ -129,8 +129,8 @@ export default function AssigneeMultiSelect({
                 </span>
                 <input type="checkbox" className="hidden" checked={checked} onChange={() => toggle(emp.id)} />
                 <div className="min-w-0">
-                  <div className="text-sm font-medium text-text-primary truncate">{emp.user?.name}</div>
-                  <div className="text-xs text-text-muted truncate">
+                  <div className="text-label font-medium text-text-primary truncate">{emp.user?.name}</div>
+                  <div className="text-meta text-text-muted truncate">
                     {[emp.role?.title, emp.department?.name].filter(Boolean).join(' · ') || '—'}
                   </div>
                 </div>

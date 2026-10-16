@@ -358,7 +358,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
   if (!mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-60 flex items-center justify-center px-4 py-4 bg-black/40">
+    <div className="fixed inset-0 z-60 flex items-center justify-center px-4 py-4 bg-backdrop">
       <div className="bg-surface rounded-[16px] w-full max-w-lg shadow-xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border-light shrink-0">
@@ -626,7 +626,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     <button
                       onClick={() => handleDelete(true)}
                       disabled={deleting}
-                      className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-white bg-danger hover:bg-danger-hover rounded-lg transition-colors disabled:opacity-60"
+                      className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-on-danger bg-danger hover:bg-danger-hover rounded-lg transition-colors disabled:opacity-60"
                     >
                       {deleting && <Loader2 size={14} className="animate-spin" />}
                       Clear links and delete
@@ -651,7 +651,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     <button
                       onClick={() => handleDelete()}
                       disabled={deleting}
-                      className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-white bg-danger hover:bg-danger-hover rounded-lg transition-colors disabled:opacity-60"
+                      className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-on-danger bg-danger hover:bg-danger-hover rounded-lg transition-colors disabled:opacity-60"
                     >
                       {deleting && <Loader2 size={14} className="animate-spin" />}
                       Delete employee
@@ -684,7 +684,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2.5 text-body font-medium text-white bg-primary hover:bg-primary-hover rounded-lg transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2.5 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 {saving && <Loader2 size={15} className="animate-spin" />}
                 Save Changes
@@ -696,7 +696,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
       {/* Password-change warning — a shared login is one password across all firms */}
       {showPwWarning && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center px-4 bg-black/50">
+        <div className="fixed inset-0 z-70 flex items-center justify-center px-4 bg-backdrop">
           <div className="bg-surface w-full max-w-md rounded-card shadow-xl p-6">
             <h3 className="text-card-heading font-medium text-text-primary">
               Change {employee.user?.name ?? 'this person'}’s password?
@@ -726,7 +726,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
               <button
                 onClick={doSave}
                 disabled={saving}
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-body font-medium text-white bg-primary hover:bg-primary-hover rounded-lg transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted"
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted"
               >
                 {saving && <Loader2 size={15} className="animate-spin" />}
                 {orgCount && orgCount > 1 ? 'Change password everywhere' : 'Change password'}

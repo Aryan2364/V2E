@@ -85,7 +85,7 @@ export default function StrategyMapPage() {
       <div className="shrink-0">
         <div className="min-w-0">
           <h1 className="text-page-title font-medium text-text-primary leading-tight">Strategic Map</h1>
-          <p className="text-sm text-text-secondary mt-1">
+          <p className="text-label text-text-secondary mt-1">
             Every goal in its band, with a line to the goals it supports.{' '}
             {!loading && (
               <span className="text-text-muted">
@@ -99,12 +99,12 @@ export default function StrategyMapPage() {
       </div>
 
       {loading ? (
-        <div className="flex-1 min-h-0 rounded-card border border-border-light bg-surface flex items-center justify-center gap-2 text-sm text-text-secondary">
+        <div className="flex-1 min-h-0 rounded-card border border-border-light bg-surface flex items-center justify-center gap-2 text-label text-text-secondary">
           <Loader2 size={16} className="animate-spin" /> Loading the map…
         </div>
       ) : error ? (
         <div className="flex-1 min-h-0 rounded-card border border-border-light bg-surface flex flex-col items-center justify-center gap-3 text-center px-6">
-          <p className="text-sm text-text-secondary">The map couldn&apos;t be loaded.</p>
+          <p className="text-label text-text-secondary">The map couldn&apos;t be loaded.</p>
           <button
             onClick={() => void load()}
             className="inline-flex items-center gap-2 h-9 px-4 rounded-control bg-primary text-primary-foreground text-label font-medium hover:bg-primary-hover transition-colors"

@@ -68,12 +68,12 @@ export default function KnowledgePage() {
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-medium text-text-primary">Knowledge Hub</h1>
-            <p className="text-sm text-text-secondary mt-0.5">Tips, guides and insights shared by the team</p>
+            <h1 className="text-page-title font-medium text-text-primary">Knowledge Hub</h1>
+            <p className="text-label text-text-secondary mt-0.5">Tips, guides and insights shared by the team</p>
           </div>
           <Link
             href="/communication/knowledge/new"
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover transition-colors"
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover transition-colors"
           >
             <Plus size={16} />
             Share
@@ -87,7 +87,7 @@ export default function KnowledgePage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search knowledge posts…"
-            className="w-full pl-8 pr-4 py-2 border border-border rounded-control text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary bg-surface"
+            className="w-full pl-8 pr-4 py-2 border border-border rounded-control text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary bg-surface"
           />
         </div>
 
@@ -99,7 +99,7 @@ export default function KnowledgePage() {
                 key={tag}
                 onClick={() => setActiveTag(t => t === tag ? '' : tag)}
                 className={[
-                  'flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors',
+                  'flex items-center gap-1 px-2.5 py-1 rounded-full text-meta font-medium border transition-colors',
                   activeTag === tag
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-surface text-text-secondary border-border-light hover:border-primary hover:text-primary-text',
@@ -120,15 +120,15 @@ export default function KnowledgePage() {
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <BookOpen size={40} className="text-muted mb-3" />
             <p className="text-text-secondary font-medium">No posts yet</p>
-            <p className="text-sm text-text-muted">Be the first to share your knowledge</p>
+            <p className="text-label text-text-muted">Be the first to share your knowledge</p>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
             {pinned.length > 0 && (
               <>
-                <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Pinned</p>
+                <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Pinned</p>
                 {pinned.map(p => <KnowledgeCard key={p.id} post={p} userId={user?.id ?? ''} isHR={isHR} onPin={handlePin} onDelete={handleDelete} onReact={handleReact} />)}
-                {rest.length > 0 && <p className="text-xs font-medium text-text-muted uppercase tracking-wider mt-2">Recent</p>}
+                {rest.length > 0 && <p className="text-meta font-medium text-text-muted uppercase tracking-wider mt-2">Recent</p>}
               </>
             )}
             {rest.map(p => <KnowledgeCard key={p.id} post={p} userId={user?.id ?? ''} isHR={isHR} onPin={handlePin} onDelete={handleDelete} onReact={handleReact} />)}
@@ -151,15 +151,15 @@ function KnowledgeCard({ post, userId, isHR, onPin, onDelete, onReact }: {
     <div className={`bg-surface border rounded-card p-4 flex flex-col gap-3 ${post.is_pinned ? 'border-primary' : 'border-border-light'}`}>
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
-          {post.is_pinned && <div className="flex items-center gap-1 text-xs text-primary-text font-medium mb-1"><Pin size={11} />Pinned</div>}
+          {post.is_pinned && <div className="flex items-center gap-1 text-meta text-primary-text font-medium mb-1"><Pin size={11} />Pinned</div>}
           <Link href={`/communication/knowledge/${post.id}`}>
-            <h3 className="text-base font-medium text-text-primary hover:text-primary-text transition-colors">{post.title}</h3>
+            <h3 className="text-body font-medium text-text-primary hover:text-primary-text transition-colors">{post.title}</h3>
           </Link>
-          <p className="text-sm text-text-secondary mt-1 line-clamp-2 whitespace-pre-wrap">{post.body}</p>
+          <p className="text-label text-text-secondary mt-1 line-clamp-2 whitespace-pre-wrap">{post.body}</p>
           {post.tags?.length > 0 && (
             <div className="flex gap-1.5 mt-2 flex-wrap">
               {post.tags.map(t => (
-                <span key={t} className="text-xs bg-primary-subtle text-primary-text px-2 py-0.5 rounded-full">{t}</span>
+                <span key={t} className="text-meta bg-primary-subtle text-primary-text px-2 py-0.5 rounded-full">{t}</span>
               ))}
             </div>
           )}
@@ -186,7 +186,7 @@ function KnowledgeCard({ post, userId, isHR, onPin, onDelete, onReact }: {
             <button
               key={emoji}
               onClick={() => onReact(post.id, emoji)}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-colors ${mine ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-meta border transition-colors ${mine ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
             >
               {emoji} {count > 0 && <span>{count}</span>}
             </button>
@@ -194,7 +194,7 @@ function KnowledgeCard({ post, userId, isHR, onPin, onDelete, onReact }: {
         })}
       </div>
 
-      <div className="flex items-center gap-3 text-xs text-text-muted">
+      <div className="flex items-center gap-3 text-meta text-text-muted">
         <span>{post.created_by?.name}</span>
         <span>·</span>
         <span>{formatDate(post.created_at)}</span>

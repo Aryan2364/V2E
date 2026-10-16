@@ -48,7 +48,7 @@ const assignmentColumns: ResponsiveColumn<any>[] = [
     render: (a) => (
       <>
         <div className="font-medium text-text-primary">{a.employee_profile?.user?.name}</div>
-        <div className="text-xs text-text-muted">{a.employee_profile?.role?.title}</div>
+        <div className="text-meta text-text-muted">{a.employee_profile?.role?.title}</div>
       </>
     ),
   },
@@ -64,7 +64,7 @@ const assignmentColumns: ResponsiveColumn<any>[] = [
     header: 'Status',
     render: (a) => (
       <span className={[
-        'inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium',
+        'inline-flex px-2.5 py-0.5 rounded-full text-meta font-medium',
         a.status === 'completed' ? 'bg-success-bg text-success' :
           a.status === 'in_progress' ? 'bg-primary-subtle text-primary-text' :
             'bg-surface-control text-text-muted',
@@ -239,7 +239,7 @@ export default function ManagePathPage() {
           </>
         }
       />
-      {path.description && <p className="text-sm text-text-secondary -mt-2 mb-4">{path.description}</p>}
+      {path.description && <p className="text-label text-text-secondary -mt-2 mb-4">{path.description}</p>}
 
       {/* Tabs */}
       <div className="flex items-end justify-between gap-3 mb-4 border-b border-border-light">
@@ -249,7 +249,7 @@ export default function ManagePathPage() {
             key={t}
             onClick={() => setTab(t)}
             className={[
-              'px-4 py-2.5 text-sm font-medium capitalize transition-colors border-b-2 -mb-px',
+              'px-4 py-2.5 text-label font-medium capitalize transition-colors border-b-2 -mb-px',
               tab === t
                 ? 'border-primary text-primary-text'
                 : 'border-transparent text-text-secondary hover:text-text-primary',
@@ -262,7 +262,7 @@ export default function ManagePathPage() {
                 t === 'assignments' ? (assignmentsLoaded ? assignments.length : (path._count?.assignments ?? 0)) :
                 (path._count?.assignments ?? 0) // engagement = people being tracked
               return n > 0 ? (
-                <span className="ml-1.5 text-xs font-medium bg-primary-subtle text-primary-text px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 text-meta font-medium bg-primary-subtle text-primary-text px-1.5 py-0.5 rounded-full">
                   {n}
                 </span>
               ) : null
@@ -275,14 +275,14 @@ export default function ManagePathPage() {
             {tab === 'materials' ? (
               <Link
                 href={`/learning/paths/builder?id=${pathId}`}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-text hover:text-primary-text transition-colors"
+                className="inline-flex items-center gap-1.5 text-label font-medium text-primary-text hover:text-primary-text transition-colors"
               >
                 <Pencil size={14} /> Edit materials
               </Link>
             ) : (
               <button
                 onClick={openAssignModal}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-text hover:text-primary-text transition-colors"
+                className="inline-flex items-center gap-1.5 text-label font-medium text-primary-text hover:text-primary-text transition-colors"
               >
                 <Users size={14} /> Assign Employees
               </button>
@@ -306,17 +306,17 @@ export default function ManagePathPage() {
                   onClick={() => setPreviewItem(item)}
                   className="group text-left w-full bg-surface border border-border-light rounded-card px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:border-primary hover:bg-surface-sunken transition-colors"
                 >
-                  <span className="text-xs text-text-muted w-5 text-center shrink-0">{idx + 1}</span>
+                  <span className="text-meta text-text-muted w-5 text-center shrink-0">{idx + 1}</span>
                   <div className="w-8 h-8 rounded-control bg-surface-sunken group-hover:bg-primary-subtle flex items-center justify-center shrink-0 transition-colors">
                     <TypeIcon size={15} className="text-text-muted group-hover:text-primary-text transition-colors" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-text-primary truncate">{item.title}</span>
+                      <span className="text-label font-medium text-text-primary truncate">{item.title}</span>
                       <ItemTypeBadge type={item.content_type} />
                     </div>
                     {item.content_type === 'file' && item.file_name && (
-                      <div className="flex items-center gap-2 text-xs text-text-muted mt-0.5">
+                      <div className="flex items-center gap-2 text-meta text-text-muted mt-0.5">
                         <span className="truncate max-w-[240px]">{item.file_name}</span>
                         {item.file_size_bytes ? <span className="text-text-muted">· {formatBytes(item.file_size_bytes)}</span> : null}
                         <span className={[
@@ -329,13 +329,13 @@ export default function ManagePathPage() {
                       </div>
                     )}
                     {item.content_type !== 'file' && item.description && (
-                      <p className="text-xs text-text-muted truncate mt-0.5">{item.description}</p>
+                      <p className="text-meta text-text-muted truncate mt-0.5">{item.description}</p>
                     )}
                   </div>
                   {item.estimated_minutes && (
-                    <span className="text-xs text-text-muted shrink-0">{item.estimated_minutes}m</span>
+                    <span className="text-meta text-text-muted shrink-0">{item.estimated_minutes}m</span>
                   )}
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-text-muted group-hover:text-primary-text shrink-0 transition-colors">
+                  <span className="inline-flex items-center gap-1 text-meta font-medium text-text-muted group-hover:text-primary-text shrink-0 transition-colors">
                     <Eye size={14} />
                     <span className="hidden sm:inline">Preview</span>
                   </span>
@@ -353,8 +353,8 @@ export default function ManagePathPage() {
           {assignments.length === 0 ? (
             <div className="bg-surface border border-dashed border-border rounded-card py-12 flex flex-col items-center text-center">
               <Users size={28} className="text-text-muted mb-3" />
-              <p className="text-sm font-medium text-text-primary mb-1">No assignments yet</p>
-              <p className="text-xs text-text-muted">Assign this course to employees to get started</p>
+              <p className="text-label font-medium text-text-primary mb-1">No assignments yet</p>
+              <p className="text-meta text-text-muted">Assign this course to employees to get started</p>
             </div>
           ) : (
             <ResponsiveTable columns={assignmentColumns} rows={assignments} rowKey={(a) => a.id} />

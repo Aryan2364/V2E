@@ -10,7 +10,7 @@ import { tasksApi } from '@/lib/api/tasks'
 
 const inputClass =
   'w-full border border-border rounded-control px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
-const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
+const labelClass = 'block text-label font-medium text-text-secondary mb-1'
 
 interface Props {
   isOpen: boolean
@@ -68,7 +68,7 @@ export default function AddGoalTaskModal({ isOpen, onClose, orgId, goalId, emplo
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add a task to this goal" size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <p className="text-sm text-text-secondary -mt-1">
+        <p className="text-label text-text-secondary -mt-1">
           This creates a real task in the Tasks module, linked to this goal.
         </p>
         <div>

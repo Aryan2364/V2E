@@ -83,13 +83,13 @@ export default function BulletinPostPage() {
         </Breadcrumb>
 
         <div className="bg-surface border border-border-light rounded-card p-6 mb-4">
-          <h1 className="text-xl font-medium text-text-primary mb-2">{post.title}</h1>
-          <div className="flex items-center gap-3 text-xs text-text-muted mb-4">
+          <h1 className="text-section font-medium text-text-primary mb-2">{post.title}</h1>
+          <div className="flex items-center gap-3 text-meta text-text-muted mb-4">
             <span>{post.created_by?.name}</span>
             <span>·</span>
             <span>{formatDate(post.created_at)}</span>
           </div>
-          <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">{post.body}</p>
+          <p className="text-label text-text-primary leading-relaxed whitespace-pre-wrap">{post.body}</p>
 
           {canReact && (
             <div className="flex items-center gap-1.5 mt-4 flex-wrap">
@@ -100,9 +100,9 @@ export default function BulletinPostPage() {
                   <button
                     key={emoji}
                     onClick={() => handleReact(emoji)}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-sm border transition-colors ${myReaction ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-label border transition-colors ${myReaction ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
                   >
-                    {emoji} {count > 0 && <span className="text-xs font-medium">{count}</span>}
+                    {emoji} {count > 0 && <span className="text-meta font-medium">{count}</span>}
                   </button>
                 )
               })}
@@ -111,19 +111,19 @@ export default function BulletinPostPage() {
         </div>
 
         <div className="bg-surface border border-border-light rounded-card p-6">
-          <h2 className="text-sm font-medium text-text-primary mb-4">{post.comments?.length ?? 0} Comments</h2>
+          <h2 className="text-label font-medium text-text-primary mb-4">{post.comments?.length ?? 0} Comments</h2>
 
           <div className="flex flex-col gap-4 mb-4">
             {(post.comments ?? []).map(c => (
               <div key={c.id} className="flex gap-3">
-                <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-medium shrink-0">
+                <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0">
                   {c.created_by?.name?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-sm font-medium text-text-primary">{c.created_by?.name}</span>
-                      <span className="text-xs text-text-muted ml-2">{formatDateTime(c.created_at)}</span>
+                      <span className="text-label font-medium text-text-primary">{c.created_by?.name}</span>
+                      <span className="text-meta text-text-muted ml-2">{formatDateTime(c.created_at)}</span>
                     </div>
                     {(c.created_by_user_id === user?.id || isHR) && (
                       <button onClick={() => handleDeleteComment(c.id)} className="p-1 text-text-muted hover:text-danger rounded-xs transition-colors">
@@ -131,7 +131,7 @@ export default function BulletinPostPage() {
                       </button>
                     )}
                   </div>
-                  <p className="text-sm text-text-primary mt-0.5 whitespace-pre-wrap">{c.body}</p>
+                  <p className="text-label text-text-primary mt-0.5 whitespace-pre-wrap">{c.body}</p>
                 </div>
               </div>
             ))}
@@ -143,12 +143,12 @@ export default function BulletinPostPage() {
                 value={comment}
                 onChange={e => setComment(e.target.value)}
                 placeholder="Write a comment…"
-                className="flex-1 border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                className="flex-1 border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
               />
               <button
                 type="submit"
                 disabled={submitting || !comment.trim()}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Post
               </button>

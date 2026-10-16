@@ -34,8 +34,8 @@ export default function EngagementPanel({ orgId, pathId }: { orgId: string; path
     return (
       <div className="bg-surface border border-dashed border-border rounded-card py-12 flex flex-col items-center text-center">
         <BarChart3 size={28} className="text-text-muted mb-3" />
-        <p className="text-sm font-medium text-text-primary mb-1">No engagement yet</p>
-        <p className="text-xs text-text-muted">Assign this course to people to start tracking who opens each material.</p>
+        <p className="text-label font-medium text-text-primary mb-1">No engagement yet</p>
+        <p className="text-meta text-text-muted">Assign this course to people to start tracking who opens each material.</p>
       </div>
     )
   }
@@ -55,14 +55,14 @@ export default function EngagementPanel({ orgId, pathId }: { orgId: string; path
           <div className="flex-1 h-2 rounded-full bg-surface-control overflow-hidden">
             <div className="h-full bg-primary" style={{ width: `${pct(it.viewed, it.assigned)}%` }} />
           </div>
-          <span className="text-xs text-text-secondary tabular-nums">{it.viewed}/{it.assigned}</span>
+          <span className="text-meta text-text-secondary tabular-nums">{it.viewed}/{it.assigned}</span>
         </div>
       ),
     },
     {
       key: 'opens',
       header: 'Total opens',
-      render: (it) => <span className="text-sm text-text-secondary tabular-nums">{it.total_opens}</span>,
+      render: (it) => <span className="text-label text-text-secondary tabular-nums">{it.total_opens}</span>,
     },
     {
       key: 'completed',
@@ -72,7 +72,7 @@ export default function EngagementPanel({ orgId, pathId }: { orgId: string; path
           <div className="flex-1 h-2 rounded-full bg-surface-control overflow-hidden">
             <div className="h-full bg-success" style={{ width: `${pct(it.completed, it.assigned)}%` }} />
           </div>
-          <span className="text-xs text-text-secondary tabular-nums">{it.completed}/{it.assigned}</span>
+          <span className="text-meta text-text-secondary tabular-nums">{it.completed}/{it.assigned}</span>
         </div>
       ),
     },
@@ -86,19 +86,19 @@ export default function EngagementPanel({ orgId, pathId }: { orgId: string; path
       render: (l) => (
         <>
           <div className="font-medium text-text-primary">{l.name}</div>
-          <div className="text-xs text-text-muted">{l.role ?? l.email ?? ''}</div>
+          <div className="text-meta text-text-muted">{l.role ?? l.email ?? ''}</div>
         </>
       ),
     },
     {
       key: 'opened',
       header: 'Materials opened',
-      render: (l) => <span className="text-sm text-text-secondary tabular-nums">{l.opened_count}/{data.total_items}</span>,
+      render: (l) => <span className="text-label text-text-secondary tabular-nums">{l.opened_count}/{data.total_items}</span>,
     },
     {
       key: 'completed',
       header: 'Completed',
-      render: (l) => <span className="text-sm text-text-secondary tabular-nums">{l.completed_count}/{data.total_items}</span>,
+      render: (l) => <span className="text-label text-text-secondary tabular-nums">{l.completed_count}/{data.total_items}</span>,
     },
     {
       key: 'dots',
@@ -134,19 +134,19 @@ export default function EngagementPanel({ orgId, pathId }: { orgId: string; path
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 text-xs text-text-muted">
+      <div className="flex items-center gap-4 text-meta text-text-muted">
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-xs bg-success" /> Completed</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-xs bg-primary" /> Opened</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-xs bg-surface-control-pressed" /> Not opened</span>
       </div>
 
       <div>
-        <h3 className="text-sm font-medium text-text-primary mb-2">By material</h3>
+        <h3 className="text-label font-medium text-text-primary mb-2">By material</h3>
         <ResponsiveTable columns={itemColumns} rows={data.items} rowKey={(it) => it.item_id} />
       </div>
 
       <div>
-        <h3 className="text-sm font-medium text-text-primary mb-2">By person</h3>
+        <h3 className="text-label font-medium text-text-primary mb-2">By person</h3>
         <ResponsiveTable columns={learnerColumns} rows={data.learners} rowKey={(l) => l.employee_profile_id} />
       </div>
     </div>
@@ -157,7 +157,7 @@ function Tile({ icon: Icon, label, value, tone = 'slate' }: { icon: any; label: 
   const toneClasses = tone === 'blue' ? 'text-primary-text' : tone === 'green' ? 'text-success' : 'text-text-secondary'
   return (
     <div className="bg-surface border border-border-light rounded-card p-3.5">
-      <div className="flex items-center gap-1.5 text-xs text-text-muted mb-1">
+      <div className="flex items-center gap-1.5 text-meta text-text-muted mb-1">
         <Icon size={13} className={toneClasses} /> {label}
       </div>
       <div className="text-card-heading font-medium text-text-primary tabular-nums">{value}</div>

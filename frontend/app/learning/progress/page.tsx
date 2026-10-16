@@ -15,8 +15,8 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: s
       <div className={`w-10 h-10 rounded-card ${color} flex items-center justify-center mb-3`}>
         <Icon size={18} />
       </div>
-      <div className="text-2xl font-medium text-text-primary">{value}</div>
-      <div className="text-sm text-text-muted mt-0.5">{label}</div>
+      <div className="text-page-title font-medium text-text-primary">{value}</div>
+      <div className="text-label text-text-muted mt-0.5">{label}</div>
     </div>
   )
 }
@@ -46,7 +46,7 @@ export default function ProgressPage() {
     <div className="px-8 py-8 max-w-7xl mx-auto">
       <div className="mb-6">
         <h1 className="text-page-title font-medium text-text-primary">Learning Progress</h1>
-        <p className="text-sm text-text-secondary mt-1">Organisation-wide learning progress overview</p>
+        <p className="text-label text-text-secondary mt-1">Organisation-wide learning progress overview</p>
       </div>
 
       {/* Stats */}
@@ -81,13 +81,13 @@ export default function ProgressPage() {
       {summary.paths.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-card py-12 flex flex-col items-center text-center">
           <BarChart2 size={32} className="text-text-muted mb-3" />
-          <p className="text-sm font-medium text-text-primary mb-1">No data yet</p>
-          <p className="text-xs text-text-muted">Assign learning paths to employees to track progress</p>
+          <p className="text-label font-medium text-text-primary mb-1">No data yet</p>
+          <p className="text-meta text-text-muted">Assign learning paths to employees to track progress</p>
         </div>
       ) : (
         <div className="bg-surface border border-border-light rounded-card overflow-hidden">
           <div className="px-4 py-3.5 border-b border-border-light bg-surface-sunken">
-            <h2 className="text-sm font-medium text-text-primary">Path Progress Breakdown</h2>
+            <h2 className="text-label font-medium text-text-primary">Path Progress Breakdown</h2>
           </div>
           <div className="divide-y divide-surface-control">
             {summary.paths.map((p) => (
@@ -96,19 +96,19 @@ export default function ProgressPage() {
                   <div>
                     <Link
                       href={`/learning/paths/${p.path_id}`}
-                      className="text-sm font-medium text-text-primary hover:text-primary-text transition-colors"
+                      className="text-label font-medium text-text-primary hover:text-primary-text transition-colors"
                     >
                       {p.title}
                     </Link>
                     <div className="flex items-center gap-2 mt-1">
                       <PathStatusBadge status={p.status} />
-                      <span className="text-xs text-text-muted">{p.total_assignments} employees</span>
+                      <span className="text-meta text-text-muted">{p.total_assignments} employees</span>
                     </div>
                   </div>
-                  <span className="text-sm font-medium text-text-primary shrink-0">{p.avg_percent}%</span>
+                  <span className="text-label font-medium text-text-primary shrink-0">{p.avg_percent}%</span>
                 </div>
                 <ProgressBar percent={p.avg_percent} size="sm" className="mb-2" />
-                <div className="flex items-center gap-4 text-xs text-text-muted">
+                <div className="flex items-center gap-4 text-meta text-text-muted">
                   <span className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-success inline-block" />
                     {p.completed} completed
