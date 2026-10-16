@@ -67,8 +67,8 @@ export default function MeetingScheduleTab({
                   {a.is_organizer && <span className="text-xs text-text-muted ml-1">(organizer)</span>}
                   {!a.is_organizer && (
                     a.is_required
-                      ? <span className="text-[11px] font-medium text-primary-text bg-primary-subtle rounded-full px-2 py-0.5 ml-2">Required</span>
-                      : <span className="text-[11px] font-medium text-text-muted bg-surface-control rounded-full px-2 py-0.5 ml-2">Optional</span>
+                      ? <span className="text-meta font-medium text-primary-text bg-primary-subtle rounded-full px-2 py-0.5 ml-2">Required</span>
+                      : <span className="text-meta font-medium text-text-muted bg-surface-control rounded-full px-2 py-0.5 ml-2">Optional</span>
                   )}
                 </span>
                 {a.response === 'declined' && a.reject_reason && (

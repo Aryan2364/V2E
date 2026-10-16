@@ -1,4 +1,5 @@
 import type { DelegationStatus } from '@/lib/api/delegations'
+import { formatDate } from '@/lib/format'
 
 const STATUS_META: Record<DelegationStatus, { label: string; cls: string }> = {
   active: { label: 'Active', cls: 'bg-surface-control text-text-secondary border-border-light' },
@@ -17,5 +18,5 @@ export function StatusPill({ status }: { status: DelegationStatus }) {
 
 export function fmtDate(iso: string | null): string {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+  return formatDate(iso) || '—'
 }

@@ -102,7 +102,7 @@ export default function WishModal({ open, onClose, recipient, eventType }: WishM
             {/* Recipient */}
             <div className="flex items-center gap-3">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-primary-foreground text-[11px] font-medium shrink-0 ${avatarColor(recipient.name)}`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 ${avatarColor(recipient.name)}`}
               >
                 {getInitials(recipient.name)}
               </div>

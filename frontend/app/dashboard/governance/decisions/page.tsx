@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Gavel, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { meetingsApi } from '@/lib/api/meetings'
 import { getEmployees } from '@/lib/api/employees'
@@ -10,8 +10,10 @@ import type { MeetingDecision } from '@/lib/types/meetings'
 import { fmtDate } from '@/components/meetings/shared'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import DateRangePicker from '@/components/ui/DateRangePicker'
+import { PageHeader } from '@/components/shell/page-header'
+import { EmptyState } from '@/components/ui/empty-state'
 
-const inputClass = 'border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary'
+const inputClass = 'border border-border rounded-lg px-3 py-2 text-sm text-text-primary bg-surface focus:outline-hidden focus:border-primary'
 
 export default function DecisionLogPage() {
   const { user } = useAuth()
@@ -71,10 +73,10 @@ export default function DecisionLogPage() {
 
   return (
     <div>
-      <div className="mb-4">
-        <h1 className="flex items-center gap-2 text-[26px] font-medium text-text-primary leading-tight"><Gavel size={24} className="text-primary-text" /> Decision Log</h1>
-        <p className="text-sm text-text-secondary mt-1">Every decision recorded across meetings, with a line of sight back to where it was made.</p>
-      </div>
+      <PageHeader
+        title="Decision log"
+        meta="Every decision recorded across meetings, with a line of sight back to where it was made."
+      />
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="relative flex-1 min-w-[200px]">
@@ -92,9 +94,9 @@ export default function DecisionLogPage() {
         rowKey={(d) => d.id}
         loading={loading}
         emptyState={
-          <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
-            <div className="p-8 text-center text-sm text-text-secondary">No decisions logged.</div>
-          </div>
+          <EmptyState variant="nothing-yet" heading="No decisions logged">
+            Decisions made in meetings will appear here.
+          </EmptyState>
         }
       />
     </div>

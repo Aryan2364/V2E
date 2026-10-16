@@ -331,11 +331,11 @@ function PeopleCard({ meeting, orgId, canManage, onChanged, nameOf }: { meeting:
               <div className="min-w-0">
                 <span className="text-[14px] text-text-primary">
                   {a.user?.name ?? nameOf.get(a.user_id) ?? 'Unknown'}
-                  {a.is_organizer && <span className="text-[11px] text-text-muted ml-1">(organizer)</span>}
-                  {!a.is_organizer && !a.is_required && <span className="text-[10px] font-medium text-text-muted bg-surface-control rounded-full px-1.5 py-0.5 ml-1.5">Optional</span>}
+                  {a.is_organizer && <span className="text-meta text-text-muted ml-1">(organizer)</span>}
+                  {!a.is_organizer && !a.is_required && <span className="text-meta font-medium text-text-muted bg-surface-control rounded-full px-1.5 py-0.5 ml-1.5">Optional</span>}
                 </span>
                 {a.response === 'declined' && a.reject_reason && (
-                  <p className="text-[11px] text-danger mt-0.5 truncate">“{a.reject_reason}”{a.is_required ? <span className="text-warning"> · was required</span> : null}</p>
+                  <p className="text-meta text-danger mt-0.5 truncate">“{a.reject_reason}”{a.is_required ? <span className="text-warning"> · was required</span> : null}</p>
                 )}
               </div>
             </div>
@@ -343,7 +343,7 @@ function PeopleCard({ meeting, orgId, canManage, onChanged, nameOf }: { meeting:
           </div>
         ))}
       </div>
-      {canMarkAttendance && <p className="text-[11px] text-text-muted mt-2">Tap the circle to mark who attended.</p>}
+      {canMarkAttendance && <p className="text-meta text-text-muted mt-2">Tap the circle to mark who attended.</p>}
     </div>
   )
 }
@@ -394,7 +394,7 @@ function NotesCard({ orgId, meeting }: { orgId: string; meeting: Meeting }) {
       </button>
       {expanded && (
         <div className="mt-2.5">
-          <p className="text-[11px] text-text-muted mb-2">Only you can see these — never part of the official record.</p>
+          <p className="text-meta text-text-muted mb-2">Only you can see these — never part of the official record.</p>
           <textarea className="w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-hidden focus:border-primary resize-y" rows={6} value={body} onChange={(e) => setBody(e.target.value)} />
           <div className="flex justify-end items-center gap-3 mt-2">
             {saved && <span className="inline-flex items-center gap-1 text-xs font-medium text-success"><Check size={14} /> Saved</span>}
@@ -435,7 +435,7 @@ function ActionItemsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting
                   <p className="text-xs text-text-muted flex items-center gap-1.5 flex-wrap">
                     <span>{it.owner_user_id ? nameOf.get(it.owner_user_id) ?? 'Owner' : 'Unassigned'}{it.due_date ? ` · due ${fmtDate(it.due_date)}` : ''}</span>
                     {it.due_date && !it.is_done && new Date(it.due_date) < new Date() && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-danger bg-danger-bg border border-danger-border rounded-full px-1.5 py-0"><AlertTriangle size={10} /> Overdue</span>
+                      <span className="inline-flex items-center gap-1 text-meta font-medium text-danger bg-danger-bg border border-danger-border rounded-full px-1.5 py-0"><AlertTriangle size={10} /> Overdue</span>
                     )}
                   </p>
                 </div>

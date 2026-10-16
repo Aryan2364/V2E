@@ -104,8 +104,8 @@ export default function BusyTimesPanel({
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-[15px] text-text-primary">{p.name}</span>
                 {p.required
-                  ? <span className="text-[11px] font-medium text-primary-text bg-primary-subtle rounded-full px-2 py-0.5">Required</span>
-                  : <span className="text-[11px] font-medium text-text-muted bg-surface-control rounded-full px-2 py-0.5">Optional</span>}
+                  ? <span className="text-meta font-medium text-primary-text bg-primary-subtle rounded-full px-2 py-0.5">Required</span>
+                  : <span className="text-meta font-medium text-text-muted bg-surface-control rounded-full px-2 py-0.5">Optional</span>}
               </div>
               {p.busy.length === 0 ? (
                 <p className="text-xs text-success">Nothing on the calendar in this window.</p>

@@ -201,7 +201,7 @@ export default function WeekGrid({
               onClick={() => onSelectDay?.(day)}
               className="py-2 text-center border-r border-white/20 last:border-r-0 transition-colors hover:bg-surface/10"
             >
-              <div className="text-[11px] font-medium uppercase tracking-wide text-white">
+              <div className="text-meta font-medium uppercase tracking-wide text-white">
                 {day.toLocaleDateString(undefined, { weekday: 'short' })}
               </div>
               <div className="mt-0.5 flex items-center justify-center">
@@ -221,7 +221,7 @@ export default function WeekGrid({
           {/* time rail — dedicated gutter so hour labels never overlap events */}
           <div className="w-[52px] shrink-0 border-r border-border-light relative">
             {hourLabels.map((h) => (
-              <div key={h} className="absolute right-1.5 -translate-y-1/2 text-[11px] font-medium text-text-secondary" style={{ top: h * PX_PER_HOUR }}>
+              <div key={h} className="absolute right-1.5 -translate-y-1/2 text-meta font-medium text-text-secondary" style={{ top: h * PX_PER_HOUR }}>
                 {h === 0 ? '' : h < 12 ? `${h} AM` : h === 12 ? '12 PM' : `${h - 12} PM`}
               </div>
             ))}
@@ -273,7 +273,7 @@ export default function WeekGrid({
                                 <span className="truncate">{b.title}</span>
                               </div>
                               {height >= 40 && (
-                                <div className="text-[11px] opacity-90 truncate">
+                                <div className="text-meta opacity-90 truncate">
                                   {b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`}
                                 </div>
                               )}
@@ -321,7 +321,7 @@ export default function WeekGrid({
                                 <span className={['text-[12px] font-medium truncate', lk.strike ? 'line-through' : ''].join(' ')}>{m.title}</span>
                               </div>
                               {!compact && (
-                                <div className="text-[11px] opacity-90 truncate">
+                                <div className="text-meta opacity-90 truncate">
                                   {lk.live ? 'Live now' : `${fmtTime(m.scheduled_start)}${m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}`}
                                 </div>
                               )}

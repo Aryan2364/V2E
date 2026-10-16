@@ -1,5 +1,6 @@
 import React from 'react'
 import type { EntryDateStatus, HandoverInfo } from '@/lib/types/reports'
+import { formatDate } from '@/lib/format'
 
 // Where a task stands TODAY, from the dates — a coloured tag next to the work stage.
 // A task past its due date and not finished always carries the red Overdue tag, no
@@ -64,8 +65,5 @@ export function DateStatusTag({
 }
 
 function fmt(iso: string): string {
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime())
-    ? iso
-    : d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+  return formatDate(iso) || iso
 }

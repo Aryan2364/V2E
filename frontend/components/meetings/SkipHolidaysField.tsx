@@ -59,7 +59,7 @@ export default function SkipHolidaysField({
       </label>
 
       {showInfo && (
-        <p className="text-[11px] text-text-secondary mt-1.5 bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2 leading-relaxed">
+        <p className="text-meta text-text-secondary mt-1.5 bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2 leading-relaxed">
           When on, any occurrence that lands on a company/department holiday is <b>skipped</b> — the meeting is not moved to another day, and for “after N times” a skipped holiday does <b>not</b> use up one of your N. Employee leaves are not considered. Turn off to hold the meeting on the holiday anyway.
         </p>
       )}

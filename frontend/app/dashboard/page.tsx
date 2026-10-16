@@ -9,6 +9,7 @@ import { getDepartments } from '@/lib/api/departments'
 import { getRoles } from '@/lib/api/roles'
 import { getEmployees, getPeopleEvents } from '@/lib/api/employees'
 import PeopleEventsCard from '@/components/dashboard/PeopleEventsCard'
+import { PageHeader } from '@/components/shell/page-header'
 import type { Organization, OrgIdentity, Department, Role, EmployeeProfile, PeopleEventsResponse } from '@/lib/types'
 import {
   Building2,
@@ -183,15 +184,10 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Page header */}
-      <div>
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">
-          {greeting}
-        </h1>
-        <p className="mt-1 text-[15px] text-text-secondary">
-          Here&apos;s an overview of what&apos;s happening at {org?.name ?? 'your organization'} today.
-        </p>
-      </div>
+      <PageHeader
+        title={greeting}
+        meta={`Here's an overview of what's happening at ${org?.name ?? 'your organization'} today.`}
+      />
 
       {/* Setup banner — only for admins, who are the only ones who can reach
           Settings/Setup. Members (no settings gear) must never see this. */}

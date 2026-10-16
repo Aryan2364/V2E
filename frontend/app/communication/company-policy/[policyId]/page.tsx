@@ -2,17 +2,19 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { formatDate } from '@/lib/format'
-import { createPortal } from 'react-dom'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Plus, Pencil, Trash2, Users, Loader2,
-  Play, FileText, Link2, BookOpen, X, Check,
+  Play, FileText, Link2, BookOpen,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { POLICY_BASE, POLICY_REASONS, PolicyBreadcrumb, policyHref, usePolicyPermissions } from '@/components/company-policy/shared'
 import {
   getPolicy, publishPolicy, archivePolicy, deletePolicy,
@@ -73,33 +75,20 @@ function errorMessage(e: unknown, fallback: string): string {
   return typeof m === 'string' && m ? m : fallback
 }
 
-// Dialog shell: portaled to <body> above the top nav, a full-width sheet on mobile.
+// Dialog shell, now a thin wrapper over the kit's dialog.tsx (section 24) in place
+// of a hand-rolled `fixed inset-0` overlay: same title/onClose/size/children API,
+// so neither call site below changed its own markup beyond the body/footer split
+// dialog.tsx now owns (header and footer fixed, body scrolls — section 24 rule 1/6).
 function DialogShell({ title, onClose, size, children }: { title: string; onClose: () => void; size: 'md' | 'lg'; children: React.ReactNode }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
-  if (typeof document === 'undefined') return null
-  return createPortal(
-    <div
-      className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-    >
-      <div className={`bg-surface rounded-t-[16px] sm:rounded-card w-full ${size === 'lg' ? 'sm:max-w-lg' : 'sm:max-w-md'} shadow-xl flex flex-col max-h-[90vh]`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light shrink-0">
-          <h2 className="text-card-heading font-medium text-text-primary">{title}</h2>
-          <button onClick={onClose} aria-label="Close" className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-control rounded-control transition-colors">
-            <X size={18} />
-          </button>
-        </div>
+  return (
+    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
+      <DialogContent size={size === 'lg' ? 'lg' : 'md'}>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
         {children}
-      </div>
-    </div>,
-    document.body,
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -194,7 +183,7 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
   return (
     <DialogShell title={editing ? 'Edit Item' : 'Add Item'} onClose={onClose} size="lg">
 
-        <div className="overflow-y-auto px-6 py-4 flex flex-col gap-4">
+        <DialogBody className="flex flex-col gap-4">
           {error && <div className="text-sm text-danger bg-danger-bg border border-danger-border rounded-control px-4 py-3">{error}</div>}
 
           <div>
@@ -245,18 +234,14 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
             <label className={labelClass}>Description <span className="text-text-secondary font-normal">(optional)</span></label>
             <textarea value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="Short description…" rows={2} className={`${inputClass} resize-none`} />
           </div>
-        </div>
+        </DialogBody>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light shrink-0">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
-          >
-            {saving && <Loader2 size={15} className="animate-spin" />}
-            {editing ? 'Save Changes' : 'Add Item'}
-          </button>
-        </div>
+        <DialogFooter>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving} loading={saving}>
+            {editing ? 'Save changes' : 'Add item'}
+          </Button>
+        </DialogFooter>
     </DialogShell>
   )
 }
@@ -296,9 +281,9 @@ function AssignModal({ policyId, orgId, onClose, onAssigned }: { policyId: strin
 
   return (
     <DialogShell title="Assign Employees" onClose={onClose} size="md">
-        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+        <DialogBody>
           {loading ? (
-            <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+            <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-primary" /></div>
           ) : loadFailed ? (
             <p className="text-sm text-text-secondary text-center py-8">Employees could not be loaded. Close this and try again.</p>
           ) : employees.length === 0 ? (
@@ -310,12 +295,11 @@ function AssignModal({ policyId, orgId, onClose, onAssigned }: { policyId: strin
               return (
                 <button
                   key={emp.id}
+                  type="button"
                   onClick={() => toggle(emp.id)}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-control hover:bg-surface-sunken transition-colors text-left"
                 >
-                  <div className={['w-5 h-5 rounded-[4px] border-2 flex items-center justify-center shrink-0 transition-colors', checked ? 'bg-primary border-primary' : 'border-border'].join(' ')}>
-                    {checked && <Check size={11} className="text-primary-foreground" />}
-                  </div>
+                  <Checkbox checked={checked} onCheckedChange={() => toggle(emp.id)} tabIndex={-1} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-text-primary truncate">{name}</p>
                     <p className="text-xs text-text-secondary truncate">{emp.role?.title ?? ''}</p>
@@ -324,23 +308,16 @@ function AssignModal({ policyId, orgId, onClose, onAssigned }: { policyId: strin
               )
             })
           )}
-        </div>
-        {error && (
-          <div className="mx-6 mb-3 text-sm text-danger bg-danger-bg border border-danger-border rounded-control px-3 py-2">{error}</div>
-        )}
-        <div className="px-6 py-4 border-t border-border-light flex items-center justify-between shrink-0">
+          {error && (
+            <div className="mt-3 text-sm text-danger bg-danger-bg border border-danger-border rounded-control px-3 py-2">{error}</div>
+          )}
+        </DialogBody>
+        <DialogFooter className="justify-between">
           <p className="text-sm text-text-secondary">{selected.length} selected</p>
-          <div className="flex gap-3">
-            <button
-              onClick={handleAssign}
-              disabled={!selected.length || assigning}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
-            >
-              {assigning && <Loader2 size={13} className="animate-spin" />}
-              Assign
-            </button>
-          </div>
-        </div>
+          <Button onClick={handleAssign} disabled={!selected.length || assigning} loading={assigning}>
+            Assign
+          </Button>
+        </DialogFooter>
     </DialogShell>
   )
 }

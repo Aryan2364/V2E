@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BarChart2, Download, AlertTriangle } from 'lucide-react'
+import { Download, AlertTriangle } from 'lucide-react'
 import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import { useAuth } from '@/lib/auth/context'
 import { meetingsApi } from '@/lib/api/meetings'
@@ -9,6 +9,8 @@ import { getEmployees } from '@/lib/api/employees'
 import { goalsApi } from '@/lib/api/goals'
 import type { MeetingReport } from '@/lib/types/meetings'
 import DateRangePicker from '@/components/ui/DateRangePicker'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 // A 5-series qualitative chart palette (kit section 21): position, not hex
 // identity, is what distinguishes the slices, so this reads chart-1..5.
@@ -17,7 +19,7 @@ const LINK_LABEL: Record<string, string> = { goal: 'Goal', project: 'Project', t
 
 function Stat({ label, value, color = 'var(--text-primary)', flag }: { label: string; value: string | number; color?: string; flag?: boolean }) {
   return (
-    <div className={['bg-white border rounded-[12px] p-4', flag ? 'border-danger-border' : 'border-border-light'].join(' ')}>
+    <div className={['bg-surface border rounded-xl p-4', flag ? 'border-danger-border' : 'border-border-light'].join(' ')}>
       <p className="text-[26px] font-medium leading-none flex items-center gap-1" style={{ color }}>{flag && <AlertTriangle size={18} className="text-danger" />}{value}</p>
       <p className="text-sm text-text-secondary mt-1">{label}</p>
     </div>
@@ -84,18 +86,18 @@ export default function MeetingReportsPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-[26px] font-medium text-text-primary leading-tight"><BarChart2 size={24} className="text-primary-text" /> Meeting Reports</h1>
-          <p className="text-sm text-text-secondary mt-1">Scoped to what you can see. Reports are only as honest as the capture.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-[220px]">
-            <DateRangePicker from={from} to={to} onChange={(f, t) => { setFrom(f); setTo(t) }} />
-          </div>
-          <button onClick={exportCsv} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary border border-border-light rounded-[8px]"><Download size={15} /> CSV</button>
-        </div>
-      </div>
+      <PageHeader
+        title="Meeting reports"
+        meta="Scoped to what you can see. Reports are only as honest as the capture."
+        actions={
+          <>
+            <div className="w-[220px]">
+              <DateRangePicker from={from} to={to} onChange={(f, t) => { setFrom(f); setTo(t) }} />
+            </div>
+            <Button variant="secondary" onClick={exportCsv}><Download size={15} /> CSV</Button>
+          </>
+        }
+      />
 
       {loading ? <div className="p-8 text-center text-sm text-text-secondary">Loading…</div> : !data ? <div className="p-8 text-center text-sm text-text-muted">No data.</div> : (
         <>

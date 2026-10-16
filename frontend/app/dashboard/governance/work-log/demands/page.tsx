@@ -6,13 +6,14 @@ import { useAuth } from '@/lib/auth/context'
 import { workLogApi } from '@/lib/api/workLogs'
 import DemandModal from '@/components/work-logs/DemandModal'
 import type { WorkLogDemand, WorkLogSubmission } from '@/lib/types/workLogs'
+import { format as formatDateFns } from 'date-fns'
 
 const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
 const inputCls =
-  'w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary bg-white placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden'
+  'w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary bg-surface placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden'
 
 function freqLabel(d: WorkLogDemand): string {
-  if (d.kind === 'one_time') return d.deadline ? `One-time · due ${new Date(d.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}` : 'One-time'
+  if (d.kind === 'one_time') return d.deadline ? `One-time · due ${formatDateFns(new Date(d.deadline), 'd MMM')}` : 'One-time'
   const t = d.schedule_entries?.[0]?.schedule_type
   return `Recurring · ${t ?? 'custom'}`
 }
@@ -132,7 +133,7 @@ export default function WorkLogDemandsPage() {
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-medium text-text-primary truncate">{d.title}</span>
                       {!d.is_active && (
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-danger-bg text-danger border border-danger-border shrink-0">Paused</span>
+                        <span className="text-meta font-medium px-1.5 py-0.5 rounded-full bg-danger-bg text-danger border border-danger-border shrink-0">Paused</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-xs text-text-muted">
@@ -195,7 +196,7 @@ export default function WorkLogDemandsPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-text-primary">{s.period_label}</span>
                         <span
-                          className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                          className={`text-meta font-medium px-1.5 py-0.5 rounded-full ${
                             s.status === 'submitted'
                               ? 'bg-success-bg text-success border border-success-border'
                               : 'bg-warning-bg text-warning border border-warning-border'

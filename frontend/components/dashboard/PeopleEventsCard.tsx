@@ -88,17 +88,17 @@ function EventRow({
   return (
     <div className="h-14 flex items-center gap-3 px-4 border-b border-border-light last:border-b-0">
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(event.name)}`}
+        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(event.name)}`}
       >
         {getInitials(event.name)}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-medium text-text-primary truncate">{event.name}</p>
-        <p className="text-[11px] text-text-secondary truncate">{event.label}</p>
+        <p className="text-meta text-text-secondary truncate">{event.label}</p>
       </div>
       <button
         onClick={() => onWish(event, eventType)}
-        className="shrink-0 px-3 py-1 text-[11px] font-medium text-primary-text border border-primary rounded-full hover:bg-primary-subtle transition-colors"
+        className="shrink-0 px-3 py-1 text-meta font-medium text-primary-text border border-primary rounded-full hover:bg-primary-subtle transition-colors"
       >
         Wish
       </button>
@@ -169,7 +169,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
             <div>
               <h3 className="text-[15px] font-medium text-text-primary leading-tight">People Events</h3>
               {totalCount > 0 && (
-                <p className="text-[11px] text-text-secondary">{totalCount} event{totalCount !== 1 ? 's' : ''} upcoming</p>
+                <p className="text-meta text-text-secondary">{totalCount} event{totalCount !== 1 ? 's' : ''} upcoming</p>
               )}
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
                 key={tab.key}
                 onClick={() => handleTabChange(tab.key)}
                 className={[
-                  'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-medium transition-colors relative',
+                  'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-meta font-medium transition-colors relative',
                   isActive
                     ? 'text-primary-text bg-white'
                     : 'text-text-secondary hover:text-text-primary hover:bg-white/60',
@@ -202,7 +202,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
                 <span className="truncate">{tab.label}</span>
                 {count > 0 && (
                   <span
-                    className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full leading-none ${
+                    className={`text-meta font-medium px-1.5 py-0.5 rounded-full leading-none ${
                       isActive ? 'bg-primary-subtle text-primary-text' : 'bg-surface-control-pressed text-text-secondary'
                     }`}
                   >

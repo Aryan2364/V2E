@@ -239,7 +239,7 @@ export default function FindTimeDialog({
                     <div key={p.user_id} className="flex items-center gap-2 text-sm">
                       <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.conflict ? 'var(--danger)' : 'var(--success)' }} />
                       <span className="text-text-primary truncate">{p.name}</span>
-                      {!p.required && <span className="text-[10px] text-text-muted">optional</span>}
+                      {!p.required && <span className="text-meta text-text-muted">optional</span>}
                       <span className="ml-auto text-xs shrink-0" style={{ color: p.conflict ? 'var(--danger)' : 'var(--success)' }}>{p.conflict ? 'Busy' : 'Free'}</span>
                     </div>
                   ))}
@@ -286,7 +286,7 @@ export default function FindTimeDialog({
                 ) : useAgg ? (
                   <div className="py-2.5 px-3 flex items-center justify-center gap-4 text-white flex-wrap">
                     <span className="text-[13px] font-medium">Team availability · {perPerson.length} people</span>
-                    <span className="flex items-center gap-3 text-[11px]">
+                    <span className="flex items-center gap-3 text-meta">
                       <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: 'color-mix(in srgb, var(--success) 50%, transparent)' }} /> all free</span>
                       <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: 'color-mix(in srgb, var(--danger) 60%, transparent)' }} /> most busy</span>
                     </span>
@@ -297,7 +297,7 @@ export default function FindTimeDialog({
                       <div key={p.user_id} className="py-1.5 px-2 text-center border-r border-white/20 last:border-r-0">
                         <div className="text-[13px] font-medium text-white truncate">{p.name.split(' ')[0]}</div>
                         <div className="flex items-center justify-center gap-1 mt-0.5">
-                          <span className="text-[10px] text-white">{p.required ? 'Required' : 'Optional'}</span>
+                          <span className="text-meta text-white">{p.required ? 'Required' : 'Optional'}</span>
                           {p.conflict && <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.required ? 'var(--warning-border)' : 'color-mix(in srgb, white 60%, transparent)' }} />}
                         </div>
                       </div>
@@ -313,7 +313,7 @@ export default function FindTimeDialog({
                 {/* time rail */}
                 <div className="w-[54px] shrink-0 border-r border-border-light relative">
                   {hours.map((h) => (
-                    <div key={h} className="absolute right-1.5 -translate-y-1/2 text-[11px] font-medium text-text-secondary" style={{ top: topFor(h * 60) }}>
+                    <div key={h} className="absolute right-1.5 -translate-y-1/2 text-meta font-medium text-text-secondary" style={{ top: topFor(h * 60) }}>
                       {h === 12 ? '12 PM' : h < 12 ? `${h} AM` : `${h - 12} PM`}
                     </div>
                   ))}
@@ -351,7 +351,7 @@ export default function FindTimeDialog({
                                 className="absolute left-0.5 right-0.5 rounded-[4px] border-l-2 pointer-events-none overflow-hidden"
                                 style={{ top: topFor(b.s), height: Math.max(6, ((b.e - b.s) / 60) * PX_PER_HOUR), background: bg, borderLeftColor: bd }}
                               >
-                                {isOOO && <span className="text-[9px] text-text-secondary px-1 leading-tight">{b.kind === 'leave' ? 'Leave' : 'Holiday'}</span>}
+                                {isOOO && <span className="text-meta text-text-secondary px-1 leading-tight">{b.kind === 'leave' ? 'Leave' : 'Holiday'}</span>}
                               </div>
                               </Tooltip>
                             )
@@ -366,7 +366,7 @@ export default function FindTimeDialog({
                     style={{ top: topFor(cand), height: Math.max(20, (durationMin / 60) * PX_PER_HOUR) }}
                   >
                     <div className="h-full mx-0.5 rounded-[6px] border-2 border-primary bg-primary/15 flex items-center justify-center">
-                      <span className="text-[11px] font-medium text-primary-text whitespace-nowrap">{minLabel(cand)} – {minLabel(candEnd)}</span>
+                      <span className="text-meta font-medium text-primary-text whitespace-nowrap">{minLabel(cand)} – {minLabel(candEnd)}</span>
                     </div>
                   </div>
                 </div>

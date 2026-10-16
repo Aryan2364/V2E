@@ -31,7 +31,7 @@ function ParticipantAvatars({ people, max = 6 }: { people: Person[]; max?: numbe
         <div key={p.id} className="relative group/av">
           <div
             className={[
-              'w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-medium border-2 border-white',
+              'w-6 h-6 rounded-full flex items-center justify-center text-meta font-medium border-2 border-white',
               p.declined ? 'bg-surface-control text-text-muted ring-1 ring-border-light' : `${avatarColor(p.name)} text-white`,
               p.isHost ? 'ring-2 ring-warning-border' : '',
             ].join(' ')}
@@ -45,7 +45,7 @@ function ParticipantAvatars({ people, max = 6 }: { people: Person[]; max?: numbe
                 <p className="text-xs font-medium text-white whitespace-nowrap">{p.name}</p>
                 <span
                   className={[
-                    'inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide',
+                    'inline-flex items-center rounded-full px-1.5 py-0.5 text-meta font-medium uppercase tracking-wide',
                     p.isHost ? 'bg-text-secondary text-white' : p.declined ? 'bg-text-secondary text-muted' : 'bg-primary text-white',
                   ].join(' ')}
                 >
@@ -58,7 +58,7 @@ function ParticipantAvatars({ people, max = 6 }: { people: Person[]; max?: numbe
         </div>
       ))}
       {extra > 0 && (
-        <div className="w-6 h-6 rounded-full bg-surface-control-pressed flex items-center justify-center text-[9px] font-medium text-text-secondary border-2 border-white">+{extra}</div>
+        <div className="w-6 h-6 rounded-full bg-surface-control-pressed flex items-center justify-center text-meta font-medium text-text-secondary border-2 border-white">+{extra}</div>
       )}
     </div>
   )

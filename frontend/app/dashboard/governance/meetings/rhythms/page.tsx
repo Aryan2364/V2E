@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Repeat, Pause, Play, Square, Clock, Users, CalendarClock, Pencil } from 'lucide-react'
+import { Plus, Repeat, Pause, Play, Square, Clock, Users, CalendarClock, Pencil } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { meetingsApi } from '@/lib/api/meetings'
 import { getEmployees } from '@/lib/api/employees'
@@ -16,6 +16,8 @@ import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import Tooltip from '@/components/ui/tooltip'
+import { PageHeader } from '@/components/shell/page-header'
+import { formatWeekday, formatDayMonth } from '@/lib/format'
 
 function cadence(r: MeetingRhythm): string {
   const e = r.schedule_entries?.[0]
@@ -31,7 +33,7 @@ function cadence(r: MeetingRhythm): string {
 function fmt(iso?: string | null): string {
   if (!iso) return '—'
   const d = new Date(iso)
-  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short' })
+  return isNaN(d.getTime()) ? '—' : `${formatWeekday(d)}, ${formatDayMonth(d)}`
 }
 
 export default function RhythmsPage() {
@@ -83,34 +85,34 @@ export default function RhythmsPage() {
 
   return (
     <div>
-      <Link href="/dashboard/governance/meetings" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary w-fit mb-4"><ArrowLeft size={15} /> Meetings</Link>
-
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <h1 className="text-[26px] font-medium text-text-primary leading-tight flex items-center gap-2"><Repeat size={24} className="text-text-secondary" /> Rhythms</h1>
-          <p className="text-sm text-text-secondary mt-1">Recurring meetings — a daily huddle, an every-Thursday review. Occurrences appear 60 days ahead.</p>
-        </div>
-        {perms.write && (
-          <button onClick={() => setCreateOpen(true)} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-[8px] shrink-0">
-            <Plus size={16} /> New Rhythm
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Rhythms"
+        meta="Recurring meetings — a daily huddle, an every-Thursday review. Occurrences appear 60 days ahead."
+        trail={[
+          { label: 'Meetings', href: '/dashboard/governance/meetings' },
+          { label: 'Rhythms', href: '/dashboard/governance/meetings/rhythms' },
+        ]}
+        actions={perms.write ? (
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus size={16} /> New rhythm
+          </Button>
+        ) : undefined}
+      />
 
       {!permsLoading && !perms.read ? (
         <AccessHiddenState orgId={orgId} leaf="meetings" moduleLabel="Meetings" />
       ) : loading ? (
         <div className="p-8 text-center text-sm text-text-secondary">Loading…</div>
       ) : rhythms.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] p-12 text-center">
-          <div className="w-14 h-14 rounded-[16px] bg-surface-control flex items-center justify-center text-text-secondary mx-auto mb-3"><Repeat size={26} /></div>
+        <div className="bg-surface border border-border-light rounded-xl p-12 text-center">
+          <div className="w-14 h-14 rounded-xl bg-surface-control flex items-center justify-center text-text-secondary mx-auto mb-3"><Repeat size={26} /></div>
           <h3 className="text-[18px] font-medium text-text-primary">No rhythms yet</h3>
           <p className="text-sm text-text-secondary mt-1">Set up a recurring meeting to build a cadence.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {rhythms.map((r) => (
-            <div key={r.id} className="bg-white border border-border-light rounded-[12px] p-4 flex flex-col">
+            <div key={r.id} className="bg-surface border border-border-light rounded-xl p-4 flex flex-col">
               <div className="flex items-start justify-between gap-2">
                 <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-[16px] font-medium text-text-primary hover:text-primary-text hover:underline">{r.title}</Link>
                 <span className="inline-flex items-center font-medium text-[12px] rounded-full px-2.5 py-0.5 border shrink-0"
@@ -127,13 +129,13 @@ export default function RhythmsPage() {
                 <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-sm font-medium text-primary-text hover:underline">View details &amp; history</Link>
                 {r.can_manage && (
                   <div className="ml-auto flex items-center gap-1">
-                    <Tooltip label="Edit"><button onClick={() => setEditing(r)} aria-label="Edit" className="p-1.5 text-text-secondary hover:bg-surface-control rounded-[8px]"><Pencil size={16} /></button></Tooltip>
+                    <Tooltip label="Edit"><button onClick={() => setEditing(r)} aria-label="Edit" className="p-1.5 text-text-secondary hover:bg-surface-control rounded-lg"><Pencil size={16} /></button></Tooltip>
                     <Tooltip label={r.is_active ? 'Pause' : 'Resume'}>
-                    <button onClick={() => toggle(r)} aria-label={r.is_active ? 'Pause' : 'Resume'} className="p-1.5 text-text-secondary hover:bg-surface-control rounded-[8px]">
+                    <button onClick={() => toggle(r)} aria-label={r.is_active ? 'Pause' : 'Resume'} className="p-1.5 text-text-secondary hover:bg-surface-control rounded-lg">
                       {r.is_active ? <Pause size={16} /> : <Play size={16} />}
                     </button>
                     </Tooltip>
-                    <Tooltip label="Stop"><button onClick={() => setStopping(r)} aria-label="Stop" className="p-1.5 text-danger hover:bg-danger-bg rounded-[8px]"><Square size={16} /></button></Tooltip>
+                    <Tooltip label="Stop"><button onClick={() => setStopping(r)} aria-label="Stop" className="p-1.5 text-danger hover:bg-danger-bg rounded-lg"><Square size={16} /></button></Tooltip>
                   </div>
                 )}
               </div>

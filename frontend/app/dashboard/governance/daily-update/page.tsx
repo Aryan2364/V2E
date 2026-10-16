@@ -20,6 +20,7 @@ import { useAuth } from '@/lib/auth/context'
 import { workLogApi, type UpsertDailyPayload } from '@/lib/api/workLogs'
 import type { DailyUpdateView, DayContext } from '@/lib/types/workLogs'
 import DatePicker from '@/components/ui/DatePicker'
+import { format as formatDateFns } from 'date-fns'
 
 // Local YYYY-MM-DD (avoids UTC drift from toISOString).
 function localDate(d: Date): string {
@@ -36,12 +37,7 @@ function shiftDate(date: string, days: number): string {
 }
 function prettyDate(date: string): string {
   const [y, m, d] = date.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString('en-IN', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
+  return formatDateFns(new Date(y, m - 1, d), 'EEEE, d MMM yyyy')
 }
 
 interface NoteDraft {
@@ -198,7 +194,7 @@ export default function DailyUpdatePage() {
                 {context.tickets.map((t) => (
                   <li key={t.id} className="text-sm flex items-start gap-1.5">
                     <span
-                      className={`mt-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${
+                      className={`mt-0.5 text-meta font-medium px-1.5 py-0.5 rounded-full shrink-0 ${
                         t.direction === 'by_me'
                           ? 'bg-primary-subtle text-primary-text border border-primary-border'
                           : 'bg-warning-bg text-warning border border-warning-border'
@@ -304,7 +300,7 @@ export default function DailyUpdatePage() {
                         <div className="flex items-center justify-between mb-1.5">
                           <span className="text-sm font-medium text-text-primary">{f.title}</span>
                           {f.status === 'submitted' && (
-                            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-success-bg text-success border border-success-border">
+                            <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-success-bg text-success border border-success-border">
                               Submitted
                             </span>
                           )}

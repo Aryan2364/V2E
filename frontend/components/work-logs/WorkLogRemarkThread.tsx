@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { Send, Trash2 } from 'lucide-react'
 import type { WorkLogRemark } from '@/lib/types/workLogs'
+import { formatDate } from '@/lib/format'
 
 // Remarks + threaded replies on a Work Log entry. Ported from TicketCommentThread for
 // consistency: one-level replies, optimistic delete with undo.
@@ -22,7 +23,7 @@ function timeAgo(d: string) {
   if (diff < 60) return 'just now'
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return new Date(d).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })
+  return formatDate(d)
 }
 
 function RemarkItem({
@@ -66,12 +67,12 @@ function RemarkItem({
   return (
     <div className={depth > 0 ? 'ml-8 border-l-2 border-border-light pl-3' : ''}>
       <div className="flex gap-3 py-2">
-        <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+        <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-meta font-medium shrink-0">
           {getInitials(remark.user_name ?? remark.user_id.slice(0, 4))}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-text-primary">{remark.user_name ?? 'User'}</span>
+            <span className="text-sm font-medium text-text-primary">{remark.user_name ?? 'User'}</span>
             <span className="text-xs text-text-muted">{timeAgo(remark.created_at)}</span>
           </div>
           <p className="text-sm text-text-primary mt-0.5 whitespace-pre-wrap">{remark.body}</p>
@@ -140,7 +141,7 @@ export default function WorkLogRemarkThread({ remarks, currentUserId, onAdd, onD
             type="button"
             onClick={handleSend}
             disabled={!body.trim() || sending}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
           >
             <Send size={13} /> {sending ? 'Sending…' : 'Send'}
           </button>

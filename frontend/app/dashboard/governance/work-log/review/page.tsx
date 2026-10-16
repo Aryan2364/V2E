@@ -7,6 +7,7 @@ import { workLogApi } from '@/lib/api/workLogs'
 import WorkLogRemarkThread from '@/components/work-logs/WorkLogRemarkThread'
 import Tooltip from '@/components/ui/tooltip'
 import type { DailyUpdate, ReadableWriter, WorkLogRemark, WorkLogSubmission } from '@/lib/types/workLogs'
+import { format as formatDateFns } from 'date-fns'
 
 const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
 
@@ -15,7 +16,7 @@ type SelectedLog =
   | { kind: 'submission'; submission: WorkLogSubmission }
 
 function prettyDate(d: string) {
-  return new Date(d).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+  return formatDateFns(new Date(d), 'EEE, d MMM yyyy')
 }
 
 export default function WorkLogReviewPage() {
@@ -159,7 +160,7 @@ export default function WorkLogReviewPage() {
                       >
                         <span className="text-sm text-text-primary truncate">{s.demand?.title ?? s.period_label}</span>
                         <span
-                          className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${
+                          className={`text-meta font-medium px-1.5 py-0.5 rounded-full shrink-0 ${
                             s.status === 'submitted'
                               ? 'bg-success-bg text-success border border-success-border'
                               : 'bg-warning-bg text-warning border border-warning-border'

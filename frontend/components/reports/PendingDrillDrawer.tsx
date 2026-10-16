@@ -184,7 +184,7 @@ export default function PendingDrillDrawer({
                       <td className="px-3 py-3 text-text-primary whitespace-nowrap">
                         {r.assigned_to}
                         {r.handover && (
-                        <span className="block text-[11px] font-normal text-text-secondary" title={`Taken off ${r.assigned_to} on ${fmtDate(r.handover.at)}. This is no longer pending on them.`}>
+                        <span className="block text-meta font-normal text-text-secondary" title={`Taken off ${r.assigned_to} on ${fmtDate(r.handover.at)}. This is no longer pending on them.`}>
                           → now with {r.handover.to.length ? r.handover.to.join(', ') : 'no one'}
                         </span>
                       )}

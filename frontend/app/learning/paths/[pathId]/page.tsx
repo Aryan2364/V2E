@@ -22,6 +22,8 @@ import ProgressBar from '@/components/learning/ProgressBar'
 import EngagementPanel from '@/components/learning/EngagementPanel'
 import AssigneeMultiSelect from '@/components/learning/AssigneeMultiSelect'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import MaterialPreviewModal from '@/components/learning/MaterialPreviewModal'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import Tooltip from '@/components/ui/tooltip'
@@ -415,36 +417,31 @@ export default function ManagePathPage() {
       )}
 
       {/* Assign Modal */}
-      {showAssignModal && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center px-4 bg-black/40">
-          <div className="bg-surface rounded-card w-full max-w-md p-6 shadow-xl">
-            <h2 className="text-lg font-medium text-text-primary mb-1">Assign Course</h2>
-            <p className="text-sm text-text-secondary mb-4">Search, select all, or pick people to assign this course to</p>
-
-            <div className="mb-4">
-              <AssigneeMultiSelect
-                employees={employees}
-                selected={selectedEmployees}
-                onChange={setSelectedEmployees}
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-3">
-              <button onClick={() => setShowAssignModal(false)} className="px-4 py-2.5 text-sm font-medium text-text-secondary">
-                Cancel
-              </button>
-              <button
-                onClick={handleAssign}
-                disabled={assigning || selectedEmployees.length === 0}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
-              >
-                {assigning && <Loader2 size={15} className="animate-spin" />}
-                Assign {selectedEmployees.length > 0 ? `(${selectedEmployees.length})` : ''}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog open={showAssignModal} onOpenChange={(next) => { if (!next) setShowAssignModal(false) }}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle>Assign course</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <p className="text-body text-text-secondary mb-4">Search, select all, or pick people to assign this course to</p>
+            <AssigneeMultiSelect
+              employees={employees}
+              selected={selectedEmployees}
+              onChange={setSelectedEmployees}
+            />
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setShowAssignModal(false)}>Cancel</Button>
+            <Button
+              onClick={handleAssign}
+              disabled={assigning || selectedEmployees.length === 0}
+              loading={assigning}
+            >
+              Assign {selectedEmployees.length > 0 ? `(${selectedEmployees.length})` : ''}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ConfirmDialog
         open={deleteOpen}

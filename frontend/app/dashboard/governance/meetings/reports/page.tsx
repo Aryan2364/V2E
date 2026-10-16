@@ -1,18 +1,18 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, BarChart3, AlertTriangle, Info } from 'lucide-react'
+import { AlertTriangle, Info } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { meetingsApi } from '@/lib/api/meetings'
 import type { MeetingReport } from '@/lib/types/meetings'
 import { useMeetingPermissions } from '@/components/meetings/shared'
 import DateRangePicker from '@/components/ui/DateRangePicker'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
+import { PageHeader } from '@/components/shell/page-header'
 
 function Stat({ label, value, color = 'var(--text-primary)', sub }: { label: string; value: string | number; color?: string; sub?: string }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] p-4">
+    <div className="bg-surface border border-border-light rounded-xl p-4">
       <p className="text-[26px] font-medium leading-none" style={{ color }}>{value}</p>
       <p className="text-sm text-text-secondary mt-1">{label}</p>
       {sub && <p className="text-xs text-text-muted mt-0.5">{sub}</p>}
@@ -43,19 +43,17 @@ export default function MeetingReportsPage() {
 
   return (
     <div>
-      <Link href="/dashboard/governance/meetings" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary w-fit mb-4"><ArrowLeft size={15} /> Meetings</Link>
+      <PageHeader
+        title="Meeting governance"
+        meta="Who's actually showing up, across the meetings and rhythms you run."
+        trail={[
+          { label: 'Meetings', href: '/dashboard/governance/meetings' },
+          { label: 'Governance', href: '/dashboard/governance/meetings/reports' },
+        ]}
+        actions={<div className="w-[260px] shrink-0"><DateRangePicker from={from} to={to} onChange={(s, e) => { setFrom(s); setTo(e) }} /></div>}
+      />
 
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <h1 className="text-[26px] font-medium text-text-primary leading-tight flex items-center gap-2"><BarChart3 size={24} className="text-primary-text" /> Meeting governance</h1>
-          <p className="text-sm text-text-secondary mt-1">Who’s actually showing up, across the meetings and rhythms you run.</p>
-        </div>
-        <div className="w-[260px] shrink-0">
-          <DateRangePicker from={from} to={to} onChange={(s, e) => { setFrom(s); setTo(e) }} />
-        </div>
-      </div>
-
-      <div className="flex items-start gap-2 text-xs text-text-secondary bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2 mb-4">
+      <div className="flex items-start gap-2 text-xs text-text-secondary bg-surface-sunken border border-border-light rounded-lg px-3 py-2 mb-4">
         <Info size={14} className="mt-0.5 shrink-0 text-text-muted" />
         <span>You see only the meetings and rhythms you created. Attendance rates count only meetings where attendance was actually recorded — an ungraded meeting is never counted as everyone no-showing.</span>
       </div>
@@ -85,7 +83,7 @@ export default function MeetingReportsPage() {
               <Stat label="Started on time" value={`${report.attendance.started_on_time_rate}%`} />
             </div>
             {report.attendance.unrecorded_meetings > 0 && (
-              <div className="flex items-start gap-2 bg-surface-control border border-border-light rounded-[8px] px-3 py-2 text-sm text-text-secondary mt-3">
+              <div className="flex items-start gap-2 bg-surface-control border border-border-light rounded-lg px-3 py-2 text-sm text-text-secondary mt-3">
                 <AlertTriangle size={15} className="mt-0.5 shrink-0 text-text-muted" />
                 <span>{report.attendance.unrecorded_meetings} meeting(s) have no attendance recorded — excluded from the rates above, not counted as no-shows.</span>
               </div>
@@ -93,7 +91,7 @@ export default function MeetingReportsPage() {
           </div>
 
           {/* Per-person over the series */}
-          <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
+          <div className="bg-surface border border-border-light rounded-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-border-light"><h2 className="text-[16px] font-medium text-text-primary">Per person</h2></div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

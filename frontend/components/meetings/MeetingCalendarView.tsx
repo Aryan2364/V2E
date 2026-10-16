@@ -95,7 +95,7 @@ export default function MeetingCalendarView({
                           <TooltipTrigger
                             render={
                               <div
-                                className="w-full text-[11px] leading-tight rounded-xs px-1.5 py-1 truncate"
+                                className="w-full text-meta leading-tight rounded-xs px-1.5 py-1 truncate"
                                 style={{ backgroundColor: meta.bg, color: meta.text }}
                               >
                                 {m.title}
@@ -112,7 +112,7 @@ export default function MeetingCalendarView({
                         </Tooltip>
                       )
                     })}
-                    {items.length > 3 && <span className="text-[11px] text-primary-text font-medium px-1">+{items.length - 3} more</span>}
+                    {items.length > 3 && <span className="text-meta text-primary-text font-medium px-1">+{items.length - 3} more</span>}
                     {(blocksByDate.get(`${cursor.year}-${cursor.month}-${day}`) ?? []).slice(0, 2).map((b) => (
                       <Tooltip key={b.id}>
                         <TooltipTrigger
@@ -120,7 +120,7 @@ export default function MeetingCalendarView({
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onBlockSelect?.(b) }}
-                              className="w-full text-left text-[11px] leading-tight rounded-xs px-1.5 py-1 truncate border border-dashed border-border bg-surface-sunken text-text-muted flex items-center gap-1 hover:brightness-95"
+                              className="w-full text-left text-meta leading-tight rounded-xs px-1.5 py-1 truncate border border-dashed border-border bg-surface-sunken text-text-muted flex items-center gap-1 hover:brightness-95"
                             >
                               <span className="w-1.5 h-1.5 rounded-full bg-text-muted shrink-0" />
                               <span className="truncate">{b.title}</span>

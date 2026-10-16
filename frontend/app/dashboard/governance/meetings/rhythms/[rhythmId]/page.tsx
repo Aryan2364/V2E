@@ -253,7 +253,7 @@ export default function RhythmDetailPage() {
                   <button key={m.id} onClick={() => router.push(`/dashboard/governance/meetings/${m.id}`)}
                     className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-surface-sunken transition-colors">
                     <div className="w-11 shrink-0 text-center">
-                      <div className="text-[11px] font-medium text-text-muted uppercase">{m.scheduled_start ? new Date(m.scheduled_start).toLocaleDateString(undefined, { month: 'short' }) : '—'}</div>
+                      <div className="text-meta font-medium text-text-muted uppercase">{m.scheduled_start ? new Date(m.scheduled_start).toLocaleDateString(undefined, { month: 'short' }) : '—'}</div>
                       <div className="text-[18px] font-medium text-text-primary leading-none">{m.scheduled_start ? new Date(m.scheduled_start).getDate() : '·'}</div>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -263,7 +263,7 @@ export default function RhythmDetailPage() {
                         <span className="inline-flex items-center gap-1">· {m.type === 'offline' ? <MapPin size={11} /> : <Video size={11} />} {m._count?.attendees ?? (m.attendees?.length ?? 0)}</span>
                       </p>
                     </div>
-                    <span className="inline-flex items-center font-medium text-[11px] rounded-full px-2.5 py-0.5 border shrink-0" style={{ backgroundColor: meta.bg, color: meta.fg, borderColor: meta.border }}>{meta.label}</span>
+                    <span className="inline-flex items-center font-medium text-meta rounded-full px-2.5 py-0.5 border shrink-0" style={{ backgroundColor: meta.bg, color: meta.fg, borderColor: meta.border }}>{meta.label}</span>
                     <ChevronRight size={16} className="text-muted shrink-0" />
                   </button>
                 )
@@ -299,18 +299,18 @@ export default function RhythmDetailPage() {
             <div className="flex flex-col gap-2">
               {/* Host is always in. */}
               <div className="flex items-center gap-2.5">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(rhythm.created_by_name ?? 'Host')}`}>{initials(rhythm.created_by_name ?? 'H')}</div>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(rhythm.created_by_name ?? 'Host')}`}>{initials(rhythm.created_by_name ?? 'H')}</div>
                 <span className="text-sm text-text-primary truncate">{rhythm.created_by_user_id === user?.id ? 'You' : (rhythm.created_by_name ?? 'Host')}</span>
-                <span className="text-[10px] font-medium rounded-[4px] px-1.5 py-0.5 bg-primary-subtle text-primary-text border border-primary-border ml-auto shrink-0">Host</span>
+                <span className="text-meta font-medium rounded-[4px] px-1.5 py-0.5 bg-primary-subtle text-primary-text border border-primary-border ml-auto shrink-0">Host</span>
               </div>
               {attendeeIds.map((id) => {
                 const name = nameOf.get(id) ?? 'Unknown'
                 const opt = (rhythm.optional_user_ids ?? []).includes(id)
                 return (
                   <div key={id} className="flex items-center gap-2.5">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(name)}`}>{initials(name)}</div>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(name)}`}>{initials(name)}</div>
                     <span className="text-sm text-text-secondary truncate">{name}</span>
-                    {opt && <span className="text-[10px] font-medium rounded-[4px] px-1.5 py-0.5 bg-surface-control text-text-muted ml-auto shrink-0">Optional</span>}
+                    {opt && <span className="text-meta font-medium rounded-[4px] px-1.5 py-0.5 bg-surface-control text-text-muted ml-auto shrink-0">Optional</span>}
                   </div>
                 )
               })}

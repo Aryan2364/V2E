@@ -45,11 +45,11 @@ function initials(name: string): string {
 function HostChip({ name }: { name: string }) {
   return (
     <div className="inline-flex items-center gap-1.5 bg-primary-subtle border border-primary-border rounded-lg pl-1.5 pr-2 py-1 max-w-[220px]">
-      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-medium shrink-0 ${avatarColor(name)}`}>
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(name)}`}>
         {initials(name)}
       </div>
       <span className="text-xs font-medium text-text-primary truncate">{name.split(' ')[0]}</span>
-      <span className="text-[10px] font-medium rounded-[4px] px-1.5 py-0.5 bg-surface text-primary-text border border-primary-border shrink-0">Host</span>
+      <span className="text-meta font-medium rounded-[4px] px-1.5 py-0.5 bg-surface text-primary-text border border-primary-border shrink-0">Host</span>
     </div>
   )
 }
@@ -65,7 +65,7 @@ function AttendeeChip({
 }) {
   return (
     <div className="inline-flex items-center gap-1.5 bg-surface-sunken border border-border-light rounded-lg pl-1.5 pr-1 py-1 max-w-[200px]">
-      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-medium shrink-0 ${avatarColor(person.name)}`}>
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(person.name)}`}>
         {initials(person.name)}
       </div>
       <span className="text-xs font-medium text-text-primary truncate">{person.name.split(' ')[0]}</span>
@@ -74,7 +74,7 @@ function AttendeeChip({
           <button
             type="button"
             onClick={onToggleOptional}
-            className={`text-[10px] font-medium rounded-[4px] px-1.5 py-0.5 transition-colors shrink-0 border ${
+            className={`text-meta font-medium rounded-[4px] px-1.5 py-0.5 transition-colors shrink-0 border ${
               isOptional ? 'bg-surface-control text-text-muted border-border-light' : 'bg-primary-subtle text-primary-text border-primary-border'
             }`}
           >
@@ -224,7 +224,7 @@ export default function MeetingAttendeeSelector({
                         blocked ? 'opacity-55 cursor-not-allowed' : selected ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                       }`}
                     >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${blocked ? 'bg-text-muted' : avatarColor(p.name)}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${blocked ? 'bg-text-muted' : avatarColor(p.name)}`}>
                         {initials(p.name)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -236,7 +236,7 @@ export default function MeetingAttendeeSelector({
                         )}
                       </div>
                       {blocked ? (
-                        <span className="text-[10px] font-medium text-text-muted uppercase tracking-wide shrink-0">Can't invite</span>
+                        <span className="text-meta font-medium text-text-muted uppercase tracking-wide shrink-0">Can't invite</span>
                       ) : selected && (
                         <span className="w-4 h-4 flex items-center justify-center bg-primary rounded-full shrink-0">
                           <Check size={10} className="text-white" strokeWidth={3} />

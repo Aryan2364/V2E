@@ -12,6 +12,7 @@ import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/Responsi
 import { getMyProfile, updateMyProfile, getEmployees } from '@/lib/api/employees'
 import { changePassword } from '@/lib/api/auth'
 import type { EmployeeProfile, KraItem, Role } from '@/lib/types'
+import { formatDate as formatDateToken } from '@/lib/format'
 
 const roleLevelLabel: Record<string, string> = { junior: 'Junior', mid: 'Mid', senior: 'Senior', head: 'Head' }
 
@@ -36,9 +37,7 @@ function toDateInput(iso?: string): string {
 }
 function formatDate(dateStr?: string): string {
   if (!dateStr) return '—'
-  try {
-    return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-  } catch { return dateStr }
+  return formatDateToken(dateStr) || dateStr
 }
 
 // ─── Shared look with the employee-detail page ─────────────────────────────────

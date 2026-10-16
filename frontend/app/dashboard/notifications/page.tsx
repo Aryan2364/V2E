@@ -6,6 +6,10 @@ import { Bell, CheckCheck } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { notificationsApi, type AppNotification } from '@/lib/api/notifications'
 import { useNotifications } from '@/lib/notifications/NotificationsProvider'
+import { formatDateTime } from '@/lib/format'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const MODULE_COLORS: Record<string, string> = {
   tasks: 'bg-primary-subtle text-primary-text border-primary-border',
@@ -20,11 +24,7 @@ const MODULE_COLORS: Record<string, string> = {
 const MODULE_FILTERS = ['all', 'tasks', 'projects', 'workflows', 'tickets', 'meetings'] as const
 
 function formatWhen(iso: string): string {
-  const d = new Date(iso)
-  return d.toLocaleString('en-IN', {
-    day: 'numeric', month: 'short', year: 'numeric',
-    hour: 'numeric', minute: '2-digit', hour12: true,
-  })
+  return formatDateTime(iso)
 }
 
 export default function NotificationsPage() {
@@ -86,31 +86,25 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-3 max-w-3xl">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full" />
       </div>
     )
   }
 
   return (
     <div className="space-y-6 max-w-3xl">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Notifications</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">
-            {unread > 0 ? `${unread} unread notification${unread !== 1 ? 's' : ''}` : 'You’re all caught up.'}
-          </p>
-        </div>
-        {unread > 0 && (
-          <button
-            onClick={handleMarkAll}
-            className="flex items-center gap-2 px-4 py-[9px] text-sm font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-lg hover:bg-primary-subtle transition-colors shrink-0"
-          >
+      <PageHeader
+        title="Notifications"
+        meta={unread > 0 ? `${unread} unread notification${unread !== 1 ? 's' : ''}` : "You're all caught up."}
+        actions={unread > 0 ? (
+          <Button variant="secondary" onClick={handleMarkAll}>
             <CheckCheck size={15} /> Mark all read
-          </button>
-        )}
-      </div>
+          </Button>
+        ) : undefined}
+      />
 
       {/* Module filter */}
       <div className="flex items-center gap-1.5 flex-wrap">
@@ -119,10 +113,10 @@ export default function NotificationsPage() {
             key={m}
             onClick={() => setModuleFilter(m)}
             className={[
-              'px-3 py-1.5 rounded-[999px] text-xs font-medium capitalize transition-colors',
+              'px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors',
               moduleFilter === m
-                ? 'bg-primary text-white'
-                : 'bg-white border border-border-light text-text-secondary hover:border-border',
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-surface border border-border-light text-text-secondary hover:border-border',
             ].join(' ')}
           >
             {m === 'all' ? 'All' : m}
@@ -156,7 +150,7 @@ export default function NotificationsPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-medium text-text-primary">{n.title}</p>
                     <span
-                      className={`inline-flex rounded-[999px] border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${MODULE_COLORS[n.module] ?? MODULE_COLORS.system}`}
+                      className={`inline-flex rounded-full border px-2 py-0.5 text-meta font-medium uppercase tracking-wide ${MODULE_COLORS[n.module] ?? MODULE_COLORS.system}`}
                     >
                       {n.module}
                     </span>
@@ -174,7 +168,7 @@ export default function NotificationsPage() {
         <button
           onClick={loadMore}
           disabled={loadingMore}
-          className="w-full py-2.5 text-sm font-medium text-primary-text bg-white border border-border-light rounded-[10px] hover:bg-surface-sunken disabled:opacity-60 transition-colors"
+          className="w-full py-2.5 text-sm font-medium text-primary-text bg-surface border border-border-light rounded-xl hover:bg-surface-sunken disabled:opacity-60 transition-colors"
         >
           {loadingMore ? 'Loading…' : 'Load older notifications'}
         </button>

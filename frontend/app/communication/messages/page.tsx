@@ -9,10 +9,12 @@ import { getEmployees } from '@/lib/api/employees'
 import { formatTime } from '@/lib/format'
 import type { Conversation, Message } from '@/lib/types/communication'
 import type { EmployeeProfile } from '@/lib/types'
-import { MessageSquare, Plus, Send, X, Users, Search } from 'lucide-react'
+import { MessageSquare, Plus, Send, Users, Search } from 'lucide-react'
 import { io, Socket } from 'socket.io-client'
 import { refreshAccessToken } from '@/lib/api/refresh'
 import Tooltip from '@/components/ui/tooltip'
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001'
 
@@ -376,16 +378,15 @@ export default function MessagesPage() {
       )}
 
       {/* New Conversation Modal */}
-      {showNewConv && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-surface rounded-card w-full max-w-md p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-medium text-text-primary">New Conversation</h2>
-              <button onClick={() => { setShowNewConv(false); setSelectedUsers([]); setEmpSearch('') }} className="p-1.5 rounded-control text-text-secondary hover:bg-surface-control transition-colors">
-                <X size={16} />
-              </button>
-            </div>
-
+      <Dialog
+        open={showNewConv}
+        onOpenChange={(next) => { if (!next) { setShowNewConv(false); setSelectedUsers([]); setEmpSearch('') } }}
+      >
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>New conversation</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
             <div className="flex gap-2 mb-4">
               {(['direct', 'group'] as const).map(t => (
                 <button
@@ -451,17 +452,15 @@ export default function MessagesPage() {
                 )
               })}
             </div>
-
-            <button
-              onClick={handleCreateConversation}
-              disabled={selectedUsers.length === 0}
-              className="w-full bg-primary text-primary-foreground py-2.5 rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {convType === 'direct' ? 'Open Chat' : `Create Group (${selectedUsers.length} selected)`}
-            </button>
-          </div>
-        </div>
-      )}
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => { setShowNewConv(false); setSelectedUsers([]); setEmpSearch('') }}>Cancel</Button>
+            <Button onClick={handleCreateConversation} disabled={selectedUsers.length === 0}>
+              {convType === 'direct' ? 'Open chat' : `Create group (${selectedUsers.length})`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

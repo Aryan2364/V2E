@@ -334,7 +334,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
                     canDelete={false}
                   />
                   <SkipHolidaysField orgId={orgId} sched={sched} value={skipHolidays} onChange={setSkipHolidays} />
-                  <p className="text-[11px] text-text-muted mt-3">Creates a rhythm — occurrences spawn automatically.</p>
+                  <p className="text-meta text-text-muted mt-3">Creates a rhythm — occurrences spawn automatically.</p>
                 </div>
               )}
             </>
@@ -372,7 +372,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
           {type === 'online' ? (
             <div>
               <input className={inputClass} value={onlineLink} onChange={(e) => setOnlineLink(e.target.value)} placeholder="https://…" />
-              <p className="text-[11px] text-text-muted mt-1.5">Leave blank to auto-generate a link.</p>
+              <p className="text-meta text-text-muted mt-1.5">Leave blank to auto-generate a link.</p>
             </div>
           ) : (
             <div>
