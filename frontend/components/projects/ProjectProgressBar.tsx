@@ -13,7 +13,7 @@ export default function ProjectProgressBar({ percentage, showLabel = true, heigh
   return (
     <div className="w-full">
       <div
-        className="w-full rounded-full bg-[#F1F5F9] overflow-hidden"
+        className="w-full rounded-full bg-surface-control overflow-hidden"
         style={{ height }}
       >
         <div
@@ -22,7 +22,7 @@ export default function ProjectProgressBar({ percentage, showLabel = true, heigh
         />
       </div>
       {showLabel && (
-        <p className="text-xs text-[#475569] mt-1">{Math.round(pct)}% complete</p>
+        <p className="text-xs text-text-secondary mt-1">{Math.round(pct)}% complete</p>
       )}
     </div>
   )

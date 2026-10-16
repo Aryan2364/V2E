@@ -16,14 +16,14 @@ export default function ProgressBar({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <div className={`flex-1 bg-[#E2E8F0] rounded-full ${h} overflow-hidden`}>
+      <div className={`flex-1 bg-surface-control-pressed rounded-full ${h} overflow-hidden`}>
         <div
-          className="bg-[#2563EB] h-full rounded-full transition-all duration-500"
+          className="bg-primary h-full rounded-full transition-all duration-500"
           style={{ width: `${clamped}%` }}
         />
       </div>
       {showLabel && (
-        <span className="text-xs font-medium text-[#475569] w-8 text-right shrink-0">
+        <span className="text-xs font-medium text-text-secondary w-8 text-right shrink-0">
           {clamped}%
         </span>
       )}

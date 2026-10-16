@@ -48,13 +48,13 @@ export default function OrganizationsPage() {
       primary: true,
       render: (org) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-[8px] bg-[#EFF6FF] flex items-center justify-center shrink-0">
-            <Building2 size={16} className="text-[#2563EB]" />
+          <div className="w-8 h-8 rounded-[8px] bg-primary-subtle flex items-center justify-center shrink-0">
+            <Building2 size={16} className="text-primary-text" />
           </div>
           <div className="flex flex-col gap-0.5">
-            <span className="font-medium text-[#0F172A]">{org.name}</span>
+            <span className="font-medium text-text-primary">{org.name}</span>
             {org.group && (
-              <span className="inline-flex self-start items-center rounded-[999px] bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD] text-[11px] font-medium px-2 py-0.5">
+              <span className="inline-flex self-start items-center rounded-[999px] bg-surface-control text-text-secondary border border-border-light text-[11px] font-medium px-2 py-0.5">
                 {org.group.name}
               </span>
             )}
@@ -65,12 +65,12 @@ export default function OrganizationsPage() {
     {
       key: 'industry',
       header: 'Industry',
-      render: (org) => <span className="text-[#475569]">{org.industry ?? '—'}</span>,
+      render: (org) => <span className="text-text-secondary">{org.industry ?? '—'}</span>,
     },
     {
       key: 'country',
       header: 'Country',
-      render: (org) => <span className="text-[#475569]">{org.country ?? '—'}</span>,
+      render: (org) => <span className="text-text-secondary">{org.country ?? '—'}</span>,
     },
     {
       key: 'status',
@@ -85,7 +85,7 @@ export default function OrganizationsPage() {
       render: (org) => (
         <button
           onClick={() => router.push(`/super-admin/organizations/${org.id}`)}
-          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-[#2563EB] text-sm font-medium hover:text-[#1D4ED8] transition-colors rounded-[6px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-primary-text text-sm font-medium hover:text-primary-text transition-colors rounded-[6px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
         >
           View <ArrowRight size={14} />
         </button>
@@ -98,8 +98,8 @@ export default function OrganizationsPage() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">Organizations</h1>
-          <p className="text-sm text-[#475569] mt-1">Manage all tenant organizations on the platform.</p>
+          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Organizations</h1>
+          <p className="text-sm text-text-secondary mt-1">Manage all tenant organizations on the platform.</p>
         </div>
         <Button
           variant="primary"
@@ -112,7 +112,7 @@ export default function OrganizationsPage() {
 
       {/* Table card */}
       {!isLoading && error ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] px-6 py-12 text-center text-[#DC2626] text-sm">
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] px-6 py-12 text-center text-danger text-sm">
           {error}
         </div>
       ) : (
@@ -122,13 +122,13 @@ export default function OrganizationsPage() {
           rowKey={(org) => org.id}
           loading={isLoading}
           emptyState={
-            <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+            <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
               <div className="flex flex-col items-center gap-3 py-16">
-                <div className="w-12 h-12 rounded-full bg-[#F1F5F9] flex items-center justify-center">
-                  <Building2 size={22} className="text-[#94A3B8]" />
+                <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center">
+                  <Building2 size={22} className="text-text-muted" />
                 </div>
-                <p className="text-[#475569] font-medium">No organizations yet</p>
-                <p className="text-[#94A3B8] text-xs">Click "New Organization" to add one.</p>
+                <p className="text-text-secondary font-medium">No organizations yet</p>
+                <p className="text-text-muted text-xs">Click "New Organization" to add one.</p>
               </div>
             </div>
           }

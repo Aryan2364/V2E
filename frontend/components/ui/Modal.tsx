@@ -88,24 +88,24 @@ export default function Modal({
       <div
         ref={panelRef}
         className={[
-          'relative w-full bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-[#E2E8F0]',
+          'relative w-full bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light',
           'max-h-[92vh] flex flex-col',
           sizeClasses[size],
         ].join(' ')}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#E2E8F0] shrink-0">
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-light shrink-0">
           {title && (
             <h2
               id="modal-title"
-              className="text-[22px] font-semibold text-[#0F172A] leading-tight"
+              className="text-[22px] font-semibold text-text-primary leading-tight"
             >
               {title}
             </h2>
           )}
           <button
             onClick={onClose}
-            className="ml-auto flex items-center justify-center w-8 h-8 rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+            className="ml-auto flex items-center justify-center w-8 h-8 rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Close modal"
           >
             <X size={18} aria-hidden="true" />

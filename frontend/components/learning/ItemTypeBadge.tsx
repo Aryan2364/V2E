@@ -5,27 +5,27 @@ const CONFIG: Record<ContentType, { label: string; Icon: any; classes: string }>
   video: {
     label: 'Video',
     Icon: Video,
-    classes: 'bg-[#EFF6FF] text-[#2563EB]',
+    classes: 'bg-primary-subtle text-primary-text',
   },
   file: {
     label: 'File',
     Icon: FileIcon,
-    classes: 'bg-[#EFF6FF] text-[#2563EB]',
+    classes: 'bg-primary-subtle text-primary-text',
   },
   document: {
     label: 'Document',
     Icon: FileText,
-    classes: 'bg-[#F0FDF4] text-[#16A34A]',
+    classes: 'bg-success-bg text-success',
   },
   url: {
     label: 'URL',
     Icon: Link2,
-    classes: 'bg-[#FEF9C3] text-[#CA8A04]',
+    classes: 'bg-warning-bg text-warning',
   },
   article: {
     label: 'Article',
     Icon: BookOpen,
-    classes: 'bg-[#FDF4FF] text-[#9333EA]',
+    classes: 'bg-surface-control text-text-secondary',
   },
 }
 

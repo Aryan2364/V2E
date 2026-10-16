@@ -83,15 +83,15 @@ export default function RhythmsPage() {
 
   return (
     <div>
-      <Link href="/dashboard/governance/meetings" className="inline-flex items-center gap-1.5 text-sm font-medium text-[#475569] hover:text-[#0F172A] w-fit mb-4"><ArrowLeft size={15} /> Meetings</Link>
+      <Link href="/dashboard/governance/meetings" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary w-fit mb-4"><ArrowLeft size={15} /> Meetings</Link>
 
       <div className="flex items-start justify-between gap-4 mb-5">
         <div>
-          <h1 className="text-[26px] font-bold text-[#0F172A] leading-tight flex items-center gap-2"><Repeat size={24} className="text-[#7C3AED]" /> Rhythms</h1>
-          <p className="text-sm text-[#475569] mt-1">Recurring meetings — a daily huddle, an every-Thursday review. Occurrences appear 60 days ahead.</p>
+          <h1 className="text-[26px] font-bold text-text-primary leading-tight flex items-center gap-2"><Repeat size={24} className="text-text-secondary" /> Rhythms</h1>
+          <p className="text-sm text-text-secondary mt-1">Recurring meetings — a daily huddle, an every-Thursday review. Occurrences appear 60 days ahead.</p>
         </div>
         {perms.write && (
-          <button onClick={() => setCreateOpen(true)} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] shrink-0">
+          <button onClick={() => setCreateOpen(true)} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] shrink-0">
             <Plus size={16} /> New Rhythm
           </button>
         )}
@@ -100,40 +100,40 @@ export default function RhythmsPage() {
       {!permsLoading && !perms.read ? (
         <AccessHiddenState orgId={orgId} leaf="meetings" moduleLabel="Meetings" />
       ) : loading ? (
-        <div className="p-10 text-center text-sm text-[#475569]">Loading…</div>
+        <div className="p-10 text-center text-sm text-text-secondary">Loading…</div>
       ) : rhythms.length === 0 ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-12 text-center">
-          <div className="w-14 h-14 rounded-[16px] bg-[#F5F3FF] flex items-center justify-center text-[#7C3AED] mx-auto mb-3"><Repeat size={26} /></div>
-          <h3 className="text-[18px] font-semibold text-[#0F172A]">No rhythms yet</h3>
-          <p className="text-sm text-[#475569] mt-1">Set up a recurring meeting to build a cadence.</p>
+        <div className="bg-white border border-border-light rounded-[12px] p-12 text-center">
+          <div className="w-14 h-14 rounded-[16px] bg-surface-control flex items-center justify-center text-text-secondary mx-auto mb-3"><Repeat size={26} /></div>
+          <h3 className="text-[18px] font-semibold text-text-primary">No rhythms yet</h3>
+          <p className="text-sm text-text-secondary mt-1">Set up a recurring meeting to build a cadence.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {rhythms.map((r) => (
-            <div key={r.id} className="bg-white border border-[#E2E8F0] rounded-[12px] p-5 flex flex-col">
+            <div key={r.id} className="bg-white border border-border-light rounded-[12px] p-5 flex flex-col">
               <div className="flex items-start justify-between gap-2">
-                <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-[16px] font-semibold text-[#0F172A] hover:text-[#2563EB] hover:underline">{r.title}</Link>
+                <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-[16px] font-semibold text-text-primary hover:text-primary-text hover:underline">{r.title}</Link>
                 <span className="inline-flex items-center font-medium text-[12px] rounded-full px-2.5 py-0.5 border shrink-0"
                   style={r.is_active ? { backgroundColor: '#DCFCE7', color: '#16A34A', borderColor: '#BBF7D0' } : { backgroundColor: '#F1F5F9', color: '#475569', borderColor: '#E2E8F0' }}>
                   {r.is_active ? 'Active' : 'Paused'}
                 </span>
               </div>
-              <div className="flex flex-col gap-1.5 mt-3 text-sm text-[#475569]">
+              <div className="flex flex-col gap-1.5 mt-3 text-sm text-text-secondary">
                 <span className="inline-flex items-center gap-1.5"><Clock size={14} /> {cadence(r)}</span>
                 <span className="inline-flex items-center gap-1.5"><CalendarClock size={14} /> Next: {fmt(r.next_run)}</span>
                 <span className="inline-flex items-center gap-1.5"><Users size={14} /> {(r.attendee_user_ids ?? []).length} attendee(s) · {r.occurrences ?? 0} held</span>
               </div>
-              <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[#E2E8F0]">
-                <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-sm font-medium text-[#2563EB] hover:underline">View details &amp; history</Link>
+              <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border-light">
+                <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-sm font-medium text-primary-text hover:underline">View details &amp; history</Link>
                 {r.can_manage && (
                   <div className="ml-auto flex items-center gap-1">
-                    <Tooltip label="Edit"><button onClick={() => setEditing(r)} aria-label="Edit" className="p-1.5 text-[#475569] hover:bg-[#F1F5F9] rounded-[8px]"><Pencil size={16} /></button></Tooltip>
+                    <Tooltip label="Edit"><button onClick={() => setEditing(r)} aria-label="Edit" className="p-1.5 text-text-secondary hover:bg-surface-control rounded-[8px]"><Pencil size={16} /></button></Tooltip>
                     <Tooltip label={r.is_active ? 'Pause' : 'Resume'}>
-                    <button onClick={() => toggle(r)} aria-label={r.is_active ? 'Pause' : 'Resume'} className="p-1.5 text-[#475569] hover:bg-[#F1F5F9] rounded-[8px]">
+                    <button onClick={() => toggle(r)} aria-label={r.is_active ? 'Pause' : 'Resume'} className="p-1.5 text-text-secondary hover:bg-surface-control rounded-[8px]">
                       {r.is_active ? <Pause size={16} /> : <Play size={16} />}
                     </button>
                     </Tooltip>
-                    <Tooltip label="Stop"><button onClick={() => setStopping(r)} aria-label="Stop" className="p-1.5 text-[#DC2626] hover:bg-[#FEE2E2] rounded-[8px]"><Square size={16} /></button></Tooltip>
+                    <Tooltip label="Stop"><button onClick={() => setStopping(r)} aria-label="Stop" className="p-1.5 text-danger hover:bg-danger-bg rounded-[8px]"><Square size={16} /></button></Tooltip>
                   </div>
                 )}
               </div>
@@ -146,7 +146,7 @@ export default function RhythmsPage() {
       <CreateRhythmModal isOpen={!!editing} onClose={() => setEditing(null)} orgId={orgId} people={people} rhythm={editing} onCreated={() => { setEditing(null); load() }} />
 
       <Modal isOpen={!!stopping} onClose={() => setStopping(null)} title="Stop rhythm" size="sm">
-        <p className="text-sm text-[#1E293B]">Stop “{stopping?.title}”? No new occurrences will be created. Past meetings are kept.</p>
+        <p className="text-sm text-text-primary">Stop “{stopping?.title}”? No new occurrences will be created. Past meetings are kept.</p>
         <div className="flex flex-col gap-2 mt-5">
           <Button variant="primary" onClick={() => stop('stop')}>Stop — keep upcoming meetings</Button>
           <Button variant="danger" onClick={() => stop('delete-future')}>Stop &amp; remove upcoming (still-scheduled) meetings</Button>

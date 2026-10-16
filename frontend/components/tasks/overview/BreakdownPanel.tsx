@@ -43,8 +43,8 @@ function BreakdownCard({
   const top = items.slice(0, 7)
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
-      <p className="text-[13px] font-semibold text-[#0F172A] mb-3">{title}</p>
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
+      <p className="text-[13px] font-semibold text-text-primary mb-3">{title}</p>
       <div className="space-y-2">
         {top.map((it) => {
           const id = it.id ?? '__none__'
@@ -55,15 +55,15 @@ function BreakdownCard({
               key={id}
               type="button"
               onClick={() => onToggle(isActive ? null : (it.id ?? null))}
-              className={`w-full text-left group rounded-[8px] px-2 py-1.5 transition-colors ${isActive ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'}`}
+              className={`w-full text-left group rounded-[8px] px-2 py-1.5 transition-colors ${isActive ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'}`}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className={`text-[13px] truncate ${isActive ? 'font-semibold text-[#2563EB]' : 'text-[#334155] group-hover:text-[#0F172A]'}`}>
+                <span className={`text-[13px] truncate ${isActive ? 'font-semibold text-primary-text' : 'text-text-secondary group-hover:text-text-primary'}`}>
                   {it.label}
                 </span>
-                <span className="text-[12px] font-semibold tabular-nums text-[#475569] shrink-0">{it.total}</span>
+                <span className="text-[12px] font-semibold tabular-nums text-text-secondary shrink-0">{it.total}</span>
               </div>
-              <div className="mt-1 h-1.5 rounded-full bg-[#F1F5F9] overflow-hidden">
+              <div className="mt-1 h-1.5 rounded-full bg-surface-control overflow-hidden">
                 <div className="h-full rounded-full transition-all" style={{ width: `${(it.total / max) * 100}%`, backgroundColor: color }} />
               </div>
             </button>

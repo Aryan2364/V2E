@@ -37,7 +37,7 @@ export default function DashboardLayout({
   const role: SidebarRole = sidebarRole ?? (user?.is_admin ? 'admin' : 'member')
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-surface-sunken">
       <Sidebar role={role} mobileOpen={drawerOpen} onMobileClose={() => setDrawerOpen(false)} />
 
       {/* Mobile drawer backdrop */}
@@ -51,25 +51,25 @@ export default function DashboardLayout({
 
       <main className="ml-0 md:ml-[240px] min-h-screen flex flex-col">
         {/* Mobile top bar with hamburger — sidebar is off-canvas below md */}
-        <div className="md:hidden sticky top-0 z-30 flex items-center gap-2 h-14 px-4 bg-white border-b border-[#E2E8F0]">
+        <div className="md:hidden sticky top-0 z-30 flex items-center gap-2 h-14 px-4 bg-white border-b border-border-light">
           <button
             onClick={() => setDrawerOpen((v) => !v)}
             aria-label="Toggle navigation menu"
             aria-expanded={drawerOpen}
-            className="w-11 h-11 -ml-2 flex items-center justify-center rounded-[8px] text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+            className="w-11 h-11 -ml-2 flex items-center justify-center rounded-[8px] text-text-secondary hover:text-text-primary hover:bg-surface-control transition-colors"
           >
             {drawerOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
-          <span className="text-[#0F172A] font-bold text-lg tracking-tight select-none">V2E</span>
+          <span className="text-text-primary font-bold text-lg tracking-tight select-none">V2E</span>
         </div>
 
         {title && (
           <header className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-4">
-            <h1 className="text-[22px] md:text-[28px] font-bold text-[#0F172A] leading-tight">
+            <h1 className="text-[22px] md:text-[28px] font-bold text-text-primary leading-tight">
               {title}
             </h1>
             {subtitle && (
-              <p className="mt-1 text-[15px] text-[#475569]">{subtitle}</p>
+              <p className="mt-1 text-[15px] text-text-secondary">{subtitle}</p>
             )}
           </header>
         )}

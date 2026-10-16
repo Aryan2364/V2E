@@ -38,11 +38,11 @@ function moduleForPath(pathname: string) {
 function ModuleDisabled({ label }: { label: string }) {
   return (
     <div className="flex flex-col items-center text-center gap-3 py-24 px-6">
-      <div className="w-14 h-14 rounded-[16px] bg-[#FEE2E2] flex items-center justify-center text-[#DC2626]">
+      <div className="w-14 h-14 rounded-[16px] bg-danger-bg flex items-center justify-center text-danger">
         <Lock size={24} />
       </div>
-      <h2 className="text-[18px] font-semibold text-[#0F172A]">{label} isn’t enabled</h2>
-      <p className="text-sm text-[#475569] max-w-sm">
+      <h2 className="text-[18px] font-semibold text-text-primary">{label} isn’t enabled</h2>
+      <p className="text-sm text-text-secondary max-w-sm">
         The {label} module is not part of your organization’s plan. Contact your administrator if you
         think this is a mistake.
       </p>
@@ -52,7 +52,7 @@ function ModuleDisabled({ label }: { label: string }) {
 
 function PreviewNotice({ label }: { label: string }) {
   return (
-    <div className="flex items-center gap-2 border-b border-[#FDE68A] bg-[#FFFBEB] px-4 py-2 text-sm text-[#92400E] sm:px-6 lg:px-8">
+    <div className="flex items-center gap-2 border-b border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning sm:px-6 lg:px-8">
       <Eye size={15} className="shrink-0" />
       <span><strong>{label}</strong> is in preview mode. You can view content, but changes are disabled.</span>
     </div>
@@ -74,8 +74,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-surface-sunken flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -94,7 +94,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const preview = current && !entLoading && state(current.module) === 'preview'
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-surface-sunken">
       <TopNav />
       <div className="pt-14">
         {blocked ? (

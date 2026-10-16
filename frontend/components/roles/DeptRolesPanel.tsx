@@ -17,7 +17,7 @@ function RoleCard({ role, onClick }: { role: Role; onClick?: () => void }) {
   const body = (
     <>
       <div className="flex items-center gap-2 flex-wrap">
-        <h4 className="font-semibold text-sm text-[#0F172A]">{role.title}</h4>
+        <h4 className="font-semibold text-sm text-text-primary">{role.title}</h4>
         <span
           className={[
             'inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-[11px] font-semibold capitalize',
@@ -28,16 +28,16 @@ function RoleCard({ role, onClick }: { role: Role; onClick?: () => void }) {
         </span>
       </div>
       {role.job_description && (
-        <p className="text-xs text-[#475569] mt-1.5 line-clamp-2">{role.job_description}</p>
+        <p className="text-xs text-text-secondary mt-1.5 line-clamp-2">{role.job_description}</p>
       )}
       <div className="flex gap-3 mt-2">
         {role.kra && role.kra.length > 0 && (
-          <span className="text-xs text-[#94A3B8]">
+          <span className="text-xs text-text-muted">
             {role.kra.length} KRA{role.kra.length !== 1 ? 's' : ''}
           </span>
         )}
         {role.kpi && role.kpi.length > 0 && (
-          <span className="text-xs text-[#94A3B8]">
+          <span className="text-xs text-text-muted">
             {role.kpi.length} KPI{role.kpi.length !== 1 ? 's' : ''}
           </span>
         )}
@@ -47,13 +47,13 @@ function RoleCard({ role, onClick }: { role: Role; onClick?: () => void }) {
 
   if (!onClick) {
     return (
-      <div className="bg-white border border-[#E2E8F0] rounded-[10px] p-4">{body}</div>
+      <div className="bg-white border border-border-light rounded-[10px] p-4">{body}</div>
     )
   }
   return (
     <button
       onClick={onClick}
-      className="text-left bg-white border border-[#E2E8F0] rounded-[10px] p-4 hover:border-[#CBD5E1] hover:shadow-xs transition-all"
+      className="text-left bg-white border border-border-light rounded-[10px] p-4 hover:border-border hover:shadow-xs transition-all"
     >
       {body}
     </button>
@@ -115,12 +115,12 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
 
   if (departments.length === 0) {
     return (
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-14 h-14 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-          <Building2 size={24} className="text-[#94A3B8]" />
+      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
+        <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
+          <Building2 size={24} className="text-text-muted" />
         </div>
-        <p className="font-semibold text-[#0F172A]">No departments yet</p>
-        <p className="text-[#475569] text-sm mt-1">
+        <p className="font-semibold text-text-primary">No departments yet</p>
+        <p className="text-text-secondary text-sm mt-1">
           Create departments in the org chart first — job roles live inside them.
         </p>
       </div>
@@ -131,9 +131,9 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
     <>
       <div className="flex flex-col md:flex-row gap-4 min-h-[500px]">
         {/* Left: department tree */}
-        <div className="md:w-[260px] shrink-0 bg-white border border-[#E2E8F0] rounded-[12px] overflow-hidden self-start w-full">
-          <div className="px-4 py-3 border-b border-[#E2E8F0]">
-            <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
+        <div className="md:w-[260px] shrink-0 bg-white border border-border-light rounded-[12px] overflow-hidden self-start w-full">
+          <div className="px-4 py-3 border-b border-border-light">
+            <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
               Departments
             </p>
           </div>
@@ -148,7 +148,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
                   style={{ paddingLeft: 12 + depth * 16 }}
                   className={[
                     'flex items-center gap-2 pr-3 py-2.5 text-left transition-colors',
-                    active ? 'bg-[#EFF6FF] text-[#2563EB]' : 'text-[#475569] hover:bg-[#F8FAFC]',
+                    active ? 'bg-primary-subtle text-primary-text' : 'text-text-secondary hover:bg-surface-sunken',
                   ].join(' ')}
                 >
                   <span
@@ -157,7 +157,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
                   />
                   <span className="text-sm font-medium truncate flex-1">{dept.name}</span>
                   {typeof dept._count?.roles === 'number' && (
-                    <span className="text-xs text-[#94A3B8]">{dept._count.roles}</span>
+                    <span className="text-xs text-text-muted">{dept._count.roles}</span>
                   )}
                   {active && <ChevronRight size={14} className="shrink-0" />}
                 </button>
@@ -167,35 +167,35 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
         </div>
 
         {/* Right: roles for the selected department */}
-        <div className="flex-1 bg-white border border-[#E2E8F0] rounded-[12px] flex flex-col overflow-hidden">
+        <div className="flex-1 bg-white border border-border-light rounded-[12px] flex flex-col overflow-hidden">
           {!selectedDept ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center p-8">
               <Briefcase size={28} className="text-[#CBD5E1]" />
-              <p className="text-sm text-[#94A3B8]">Select a department to manage its job roles.</p>
+              <p className="text-sm text-text-muted">Select a department to manage its job roles.</p>
             </div>
           ) : (
             <>
               {/* Header + breadcrumb */}
-              <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-[#E2E8F0]">
+              <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-border-light">
                 <div className="min-w-0">
                   {breadcrumb.length > 1 && (
-                    <nav className="flex items-center flex-wrap gap-1 text-xs text-[#94A3B8] mb-1">
+                    <nav className="flex items-center flex-wrap gap-1 text-xs text-text-muted mb-1">
                       {breadcrumb.slice(0, -1).map((a) => (
                         <span key={a.id} className="flex items-center gap-1">
                           <button
                             onClick={() => setSelectedDeptId(a.id)}
-                            className="hover:text-[#2563EB] transition-colors"
+                            className="hover:text-primary-text transition-colors"
                           >
                             {a.name}
                           </button>
                           <ChevronRight size={11} />
                         </span>
                       ))}
-                      <span className="text-[#475569] font-medium">{selectedDept.name}</span>
+                      <span className="text-text-secondary font-medium">{selectedDept.name}</span>
                     </nav>
                   )}
-                  <h3 className="font-bold text-[#0F172A] truncate">{selectedDept.name}</h3>
-                  <p className="text-xs text-[#94A3B8] mt-0.5">
+                  <h3 className="font-bold text-text-primary truncate">{selectedDept.name}</h3>
+                  <p className="text-xs text-text-muted mt-0.5">
                     {roles.length} job role{roles.length !== 1 ? 's' : ''}
                   </p>
                 </div>
@@ -214,16 +214,16 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
               <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-3">
                 {loadingRoles ? (
                   Array.from({ length: 2 }).map((_, i) => (
-                    <div key={i} className="h-24 bg-[#E2E8F0] rounded-[10px] animate-pulse" />
+                    <div key={i} className="h-24 bg-surface-control-pressed rounded-[10px] animate-pulse" />
                   ))
                 ) : roles.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-12">
                     <Briefcase size={28} className="text-[#CBD5E1]" />
-                    <p className="text-sm text-[#94A3B8]">No job roles in this department yet.</p>
+                    <p className="text-sm text-text-muted">No job roles in this department yet.</p>
                     {canEdit && (
                       <button
                         onClick={() => setDrawerTarget({ mode: 'create', deptId: selectedDept.id })}
-                        className="text-sm text-[#2563EB] font-medium hover:text-[#1D4ED8]"
+                        className="text-sm text-primary-text font-medium hover:text-primary-text"
                       >
                         Add the first job role
                       </button>

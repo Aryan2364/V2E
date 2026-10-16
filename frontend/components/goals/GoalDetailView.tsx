@@ -135,7 +135,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-[#475569] py-16 justify-center">
+      <div className="flex items-center gap-2 text-sm text-text-secondary py-16 justify-center">
         <Loader2 size={16} className="animate-spin" /> Loading goal…
       </div>
     )
@@ -148,7 +148,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
         title="Goal not found"
         subtitle="It may have been deleted."
         action={
-          <Link href="/goals" className="mt-1 text-sm font-semibold text-[#2563EB] hover:text-[#1D4ED8]">
+          <Link href="/goals" className="mt-1 text-sm font-semibold text-primary-text hover:text-primary-text">
             Back to goals
           </Link>
         }
@@ -190,21 +190,21 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
   return (
     <div className="space-y-6">
       {/* Sticky header: back + title + the actions, always reachable */}
-      <div className="sticky top-0 z-20 bg-[#F8FAFC] -mt-2 pt-2 pb-4 border-b border-[#E2E8F0]">
+      <div className="sticky top-0 z-20 bg-surface-sunken -mt-2 pt-2 pb-4 border-b border-border-light">
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-[#475569] hover:text-[#0F172A] transition-colors mb-3"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors mb-3"
         >
           <ArrowLeft size={15} /> Back
         </button>
 
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[26px] font-bold text-[#0F172A] leading-tight">{goal.title}</h1>
+            <h1 className="text-[26px] font-bold text-text-primary leading-tight">{goal.title}</h1>
             <div className="flex items-center gap-2.5 flex-wrap mt-2">
               <GoalStatusPicker status={goal.status} canEdit={perms.edit} onSelect={changeStatus} />
               <FocusAreaBadge focus={goal.focus_area} />
-              <span className={`text-[13px] font-medium ${isClosed ? 'text-[#475569]' : DAYS_TONE[days.tone]}`}>
+              <span className={`text-[13px] font-medium ${isClosed ? 'text-text-secondary' : DAYS_TONE[days.tone]}`}>
                 {isClosed ? formatDate(goal.due_date) : days.text}
               </span>
             </div>
@@ -215,7 +215,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
             {perms.edit && !isClosed && (
               <button
                 onClick={() => setCheckInOpen(true)}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-semibold transition-colors"
               >
                 <CheckCircle2 size={16} /> Check in
               </button>
@@ -223,7 +223,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
             {perms.edit && (
               <button
                 onClick={() => setEditOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-[8px] bg-white border-2 border-[#2563EB] text-[#2563EB] hover:bg-[#EFF6FF] text-sm font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-[8px] bg-white border-2 border-primary text-primary-text hover:bg-primary-subtle text-sm font-semibold transition-colors"
               >
                 <Pencil size={15} /> Edit
               </button>
@@ -233,46 +233,46 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
       </div>
 
       {goal.description && (
-        <p className="text-[15px] text-[#1E293B] leading-relaxed whitespace-pre-wrap max-w-3xl">
+        <p className="text-[15px] text-text-primary leading-relaxed whitespace-pre-wrap max-w-3xl">
           {goal.description}
         </p>
       )}
 
       {/* Facts + the number */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <section className="lg:col-span-2 bg-white border border-[#E2E8F0] rounded-[12px] shadow-card p-5">
+        <section className="lg:col-span-2 bg-white border border-border-light rounded-[12px] shadow-card p-5">
           <div className="flex items-baseline justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[13px] font-medium text-[#475569]">The number</p>
+              <p className="text-[13px] font-medium text-text-secondary">The number</p>
               {goal.target_value === null || goal.target_value === undefined ? (
-                <p className="text-[15px] text-[#1E293B] mt-1">
+                <p className="text-[15px] text-text-primary mt-1">
                   Not measured by a number — check-ins are the traffic light and the note.
                 </p>
               ) : (
                 <p className="mt-1">
-                  <span className="text-[30px] font-bold text-[#0F172A] tabular-nums leading-none">
+                  <span className="text-[30px] font-bold text-text-primary tabular-nums leading-none">
                     {goal.current_value === null || goal.current_value === undefined
                       ? '—'
                       : goal.current_value.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                   </span>
-                  <span className="text-[15px] text-[#475569] ml-2">
+                  <span className="text-[15px] text-text-secondary ml-2">
                     of {formatValue(goal.target_value, goal.unit)}
                   </span>
                 </p>
               )}
             </div>
-            <p className="text-[12px] text-[#475569] max-w-[230px]">
+            <p className="text-[12px] text-text-secondary max-w-[230px]">
               Typed in by {goal.owner?.name ?? 'the owner'} at each check-in. Nothing here is
               calculated or pulled from another goal.
             </p>
           </div>
 
-          <div className="mt-5 pt-4 border-t border-[#F1F5F9]">
+          <div className="mt-5 pt-4 border-t border-border-light">
             <GoalTrajectory goal={goal} checkIns={checkIns} />
           </div>
         </section>
 
-        <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card p-5 space-y-3.5">
+        <section className="bg-white border border-border-light rounded-[12px] shadow-card p-5 space-y-3.5">
           <Meta icon={<User size={15} />} label="Owner" value={goal.owner?.name ?? '—'} />
           <Meta icon={<CalendarDays size={15} />} label="Deadline" value={formatDate(goal.due_date)} />
           <Meta
@@ -295,7 +295,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
 
       {/* The web — both directions, editable from here */}
       <div>
-        <h2 className="text-[18px] font-semibold text-[#0F172A] mb-3">Support goals</h2>
+        <h2 className="text-[18px] font-semibold text-text-primary mb-3">Support goals</h2>
         <SupportGoalsSection
           orgId={orgId}
           goal={goal}
@@ -308,16 +308,16 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
       {/* The work behind the goal: day-to-day tasks, and projects when the firm
           has that module. Peers, so they sit on one row and read the same. */}
       <div className={hasProjects ? 'grid grid-cols-1 xl:grid-cols-2 gap-5 items-start' : ''}>
-      <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card flex flex-col max-h-[420px]">
-        <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-[#F1F5F9] shrink-0">
+      <section className="bg-white border border-border-light rounded-[12px] shadow-card flex flex-col max-h-[420px]">
+        <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-border-light shrink-0">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="flex items-center gap-2 text-[16px] font-semibold text-[#0F172A]">
-                <ClipboardList size={16} className="text-[#475569]" /> Tasks
+              <h2 className="flex items-center gap-2 text-[16px] font-semibold text-text-primary">
+                <ClipboardList size={16} className="text-text-secondary" /> Tasks
               </h2>
               <CountBadge count={tasks.length} />
             </div>
-            <p className="text-[12px] text-[#475569] mt-0.5">
+            <p className="text-[12px] text-text-secondary mt-0.5">
               {tasks.length === 0
                 ? 'The work that moves this goal.'
                 : `${openTasks} open · ${tasks.length - openTasks} done`}
@@ -328,7 +328,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
               onClick={() => setTaskOpen(true)}
               aria-label="Add task"
               title="Add a task to this goal"
-              className="w-7 h-7 shrink-0 rounded-[8px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white flex items-center justify-center transition-colors"
+              className="w-7 h-7 shrink-0 rounded-[8px] bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-colors"
             >
               <Plus size={16} />
             </button>
@@ -336,23 +336,23 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
         </header>
         <div className="table-scroll flex-1 overflow-y-auto px-5 py-3">
           {tasks.length === 0 ? (
-            <p className="text-[13px] text-[#475569] py-4">
+            <p className="text-[13px] text-text-secondary py-4">
               No tasks yet. Attach the actual work so this goal isn’t just a number on a screen.
             </p>
           ) : (
-            <ul className="divide-y divide-[#F1F5F9]">
+            <ul className="divide-y divide-surface-control">
               {tasks.map((t: any) => (
                 <li key={t.id}>
                   <Link
                     href={`/dashboard/tasks/${t.id}`}
                     className="flex items-center justify-between gap-3 py-2.5 group"
                   >
-                    <span className="text-[14px] text-[#0F172A] group-hover:text-[#2563EB] transition-colors truncate">
+                    <span className="text-[14px] text-text-primary group-hover:text-primary-text transition-colors truncate">
                       {t.title}
                     </span>
                     <span className="flex items-center gap-2 shrink-0">
                       {t.deadline && (
-                        <span className="text-[12px] text-[#475569]">{formatDate(t.deadline)}</span>
+                        <span className="text-[12px] text-text-secondary">{formatDate(t.deadline)}</span>
                       )}
                       {t.status?.label && (
                         <span
@@ -386,14 +386,14 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
       </div>
 
       {/* The record */}
-      <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card p-5">
+      <section className="bg-white border border-border-light rounded-[12px] shadow-card p-5">
         <div className="flex items-center gap-2 mb-1">
-          <h2 className="flex items-center gap-2 text-[16px] font-semibold text-[#0F172A]">
-            <History size={16} className="text-[#475569]" /> Check-in history
+          <h2 className="flex items-center gap-2 text-[16px] font-semibold text-text-primary">
+            <History size={16} className="text-text-secondary" /> Check-in history
           </h2>
           <CountBadge count={checkIns.filter((c) => !c.is_voided).length} />
         </div>
-        <p className="text-[12px] text-[#475569] mb-4">
+        <p className="text-[12px] text-text-secondary mb-4">
           The dated record, oldest at the bottom. Rows are never edited or deleted.
         </p>
         <CheckInHistory
@@ -468,10 +468,10 @@ function Meta({
 }) {
   return (
     <div className="flex items-start gap-2.5">
-      <span className="text-[#94A3B8] mt-0.5 shrink-0">{icon}</span>
+      <span className="text-text-muted mt-0.5 shrink-0">{icon}</span>
       <div className="min-w-0">
-        <p className="text-[12px] text-[#475569]">{label}</p>
-        <p className="text-[14px] font-medium text-[#0F172A] truncate">{value}</p>
+        <p className="text-[12px] text-text-secondary">{label}</p>
+        <p className="text-[14px] font-medium text-text-primary truncate">{value}</p>
       </div>
     </div>
   )

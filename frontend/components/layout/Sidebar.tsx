@@ -117,9 +117,9 @@ export default function Sidebar({ role, mobileOpen = false, onMobileClose }: Sid
               onClick={onMobileClose}
               className={[
                 'flex items-center gap-3 rounded-[8px] px-3 min-h-[44px] py-2 text-sm font-medium transition-colors duration-150',
-                'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-inset',
+                'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset',
                 active
-                  ? 'bg-[#2563EB] text-white'
+                  ? 'bg-primary text-white'
                   : 'text-[#CBD5E1] hover:bg-[#1E293B] hover:text-[#F1F5F9]',
               ].join(' ')}
             >
@@ -137,18 +137,18 @@ export default function Sidebar({ role, mobileOpen = false, onMobileClose }: Sid
             onClick={handleOrgSwitcherOpen}
             className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#1E293B] transition-colors"
           >
-            <div className="w-7 h-7 rounded-[6px] bg-[#2563EB] flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 rounded-[6px] bg-primary flex items-center justify-center shrink-0">
               <Building2 size={14} className="text-white" />
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <p className="text-[12px] text-[#64748B] leading-none mb-0.5">Organization</p>
+              <p className="text-[12px] text-text-muted leading-none mb-0.5">Organization</p>
               <p className="text-[13px] text-[#CBD5E1] font-medium truncate leading-tight">
                 {currentOrgName ?? '—'}
               </p>
             </div>
             <ChevronUp
               size={14}
-              className={`text-[#64748B] shrink-0 transition-transform ${showOrgSwitcher ? '' : 'rotate-180'}`}
+              className={`text-text-muted shrink-0 transition-transform ${showOrgSwitcher ? '' : 'rotate-180'}`}
             />
           </button>
 
@@ -157,10 +157,10 @@ export default function Sidebar({ role, mobileOpen = false, onMobileClose }: Sid
             <div className="mx-3 mb-2 bg-[#1E293B] rounded-[8px] overflow-hidden">
               {!orgs ? (
                 <div className="px-3 py-4 text-center">
-                  <div className="w-4 h-4 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin mx-auto" />
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
                 </div>
               ) : orgs.length === 0 ? (
-                <p className="px-3 py-3 text-[12px] text-[#64748B]">No other organizations</p>
+                <p className="px-3 py-3 text-[12px] text-text-muted">No other organizations</p>
               ) : (
                 orgs.map((m) => {
                   const isCurrent = m.organization_id === user.organizationId
@@ -173,14 +173,14 @@ export default function Sidebar({ role, mobileOpen = false, onMobileClose }: Sid
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#0F172A]/60 transition-colors disabled:opacity-60"
                     >
                       <div className="w-6 h-6 rounded-[4px] bg-[#0F172A] flex items-center justify-center shrink-0">
-                        <Building2 size={12} className="text-[#64748B]" />
+                        <Building2 size={12} className="text-text-muted" />
                       </div>
                       <div className="flex-1 min-w-0 text-left">
                         <p className="text-[12px] text-[#CBD5E1] font-medium truncate">{m.organization.name}</p>
-                        <p className="text-[11px] text-[#64748B] capitalize">{m.is_admin ? 'Administrator' : 'Member'}</p>
+                        <p className="text-[11px] text-text-muted capitalize">{m.is_admin ? 'Administrator' : 'Member'}</p>
                       </div>
-                      {isCurrent && !isLoading && <Check size={12} className="text-[#2563EB] shrink-0" />}
-                      {isLoading && <div className="w-3 h-3 border border-[#2563EB] border-t-transparent rounded-full animate-spin shrink-0" />}
+                      {isCurrent && !isLoading && <Check size={12} className="text-primary-text shrink-0" />}
+                      {isLoading && <div className="w-3 h-3 border border-primary border-t-transparent rounded-full animate-spin shrink-0" />}
                     </button>
                   )
                 })
@@ -197,7 +197,7 @@ export default function Sidebar({ role, mobileOpen = false, onMobileClose }: Sid
             <p className="text-white text-sm font-medium truncate leading-tight">
               {user.name}
             </p>
-            <span className="inline-flex self-start items-center rounded-[999px] bg-[#1E293B] text-[#94A3B8] text-[11px] font-medium px-2 py-0.5">
+            <span className="inline-flex self-start items-center rounded-[999px] bg-[#1E293B] text-text-muted text-[11px] font-medium px-2 py-0.5">
               {role === 'super_admin' ? 'Super Admin' : role === 'admin' ? 'Administrator' : 'Member'}
             </span>
           </div>

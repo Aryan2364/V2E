@@ -27,20 +27,20 @@ export default function DelegationPanel({
     return (
       <Tag
         {...(onSelect ? { type: 'button' as const, onClick: () => onSelect(kind) } : {})}
-        className={`text-left rounded-[10px] border px-4 py-3 transition-colors ${onSelect ? 'hover:border-[#2563EB] hover:bg-white' : ''}`}
+        className={`text-left rounded-[10px] border px-4 py-3 transition-colors ${onSelect ? 'hover:border-primary hover:bg-white' : ''}`}
         style={{ borderColor: danger && value > 0 ? '#FECACA' : '#E2E8F0', background: danger && value > 0 ? '#FEF2F2' : '#FFFFFF' }}
       >
         <div className="text-2xl font-bold tabular-nums leading-none" style={{ color: danger && value > 0 ? '#DC2626' : '#0F172A' }}>{value}</div>
-        <div className="text-[13px] text-[#475569] mt-1">{label}</div>
+        <div className="text-[13px] text-text-secondary mt-1">{label}</div>
       </Tag>
     )
   }
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="w-7 h-7 rounded-[8px] bg-[#EFF6FF] text-[#2563EB] grid place-items-center"><Send size={15} /></span>
-        <h3 className="text-[15px] font-semibold text-[#0F172A]">Work {scopeLabel} delegated</h3>
+        <span className="w-7 h-7 rounded-[8px] bg-primary-subtle text-primary-text grid place-items-center"><Send size={15} /></span>
+        <h3 className="text-[15px] font-semibold text-text-primary">Work {scopeLabel} delegated</h3>
       </div>
       <div className="grid grid-cols-3 gap-2.5 mb-3">
         <Stat label="Assigned out" value={delegated.total} kind="all" />
@@ -50,9 +50,9 @@ export default function DelegationPanel({
       <TimingMiniBar timing={delegated.timing} />
       <TimingLegend className="mt-3" />
       {outgoing && outgoing.by_dept.length > 0 && (
-        <p className="text-xs text-[#475569] mt-3">
+        <p className="text-xs text-text-secondary mt-3">
           Pushed outside your control to {outgoing.by_dept.length} department{outgoing.by_dept.length > 1 ? 's' : ''} —
-          <span className="font-semibold text-[#DC2626]"> {outgoing.overdue} overdue</span>. If these stall, they block your team.
+          <span className="font-semibold text-danger"> {outgoing.overdue} overdue</span>. If these stall, they block your team.
         </p>
       )}
     </div>

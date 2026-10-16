@@ -16,10 +16,10 @@ export default function TrendChart({ trend }: { trend: TrendPoint[] }) {
   const empty = data.every((d) => d.created === 0 && d.completed === 0)
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
-      <p className="text-[13px] font-semibold text-[#0F172A] mb-3">Trend · created vs completed (8 weeks)</p>
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
+      <p className="text-[13px] font-semibold text-text-primary mb-3">Trend · created vs completed (8 weeks)</p>
       {empty ? (
-        <p className="text-[13px] text-[#94A3B8] py-8 text-center">No activity in this window.</p>
+        <p className="text-[13px] text-text-muted py-8 text-center">No activity in this window.</p>
       ) : (
         <div style={{ width: '100%', height: 220 }}>
           <ResponsiveContainer>

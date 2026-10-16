@@ -132,7 +132,7 @@ export default function RunDocumentsDrawer({
             {/* Run files */}
             <section className="flex flex-col gap-3">
               <div>
-                <h3 className="flex items-center gap-1 text-[15px] font-semibold text-[#0F172A]">
+                <h3 className="flex items-center gap-1 text-[15px] font-semibold text-text-primary">
                   Instance files <InfoTip label="Instance files" text="Shared with everyone in this instance." />
                 </h3>
               </div>
@@ -145,11 +145,11 @@ export default function RunDocumentsDrawer({
               {(uploads.length > 0 || (docs?.run_files.length ?? 0) > 0) ? (
                 <ul className="flex flex-col gap-1.5">
                   {uploads.map((u) => (
-                    <li key={u.key} className={`flex items-center gap-2 rounded-[8px] border px-3 py-2 ${u.error ? 'border-[#FECACA] bg-[#FEF2F2]' : 'border-[#E2E8F0]'}`}>
-                      {u.error ? <AlertTriangle size={15} className="shrink-0 text-[#B91C1C]" /> : <Loader2 size={15} className="shrink-0 animate-spin text-[#2563EB]" />}
+                    <li key={u.key} className={`flex items-center gap-2 rounded-[8px] border px-3 py-2 ${u.error ? 'border-danger-border bg-danger-bg' : 'border-border-light'}`}>
+                      {u.error ? <AlertTriangle size={15} className="shrink-0 text-danger" /> : <Loader2 size={15} className="shrink-0 animate-spin text-primary-text" />}
                       <span className="min-w-0 flex-1">
-                        <span className="block text-sm text-[#0F172A] truncate">{u.file.name}</span>
-                        <span className={`block text-[12px] ${u.error ? 'text-[#B91C1C]' : 'text-[#475569]'}`}>{u.error ?? `Uploading… ${u.pct}%`}</span>
+                        <span className="block text-sm text-text-primary truncate">{u.file.name}</span>
+                        <span className={`block text-[12px] ${u.error ? 'text-danger' : 'text-text-secondary'}`}>{u.error ?? `Uploading… ${u.pct}%`}</span>
                       </span>
                       {u.error && (
                         <>
@@ -185,14 +185,14 @@ export default function RunDocumentsDrawer({
                   })}
                 </ul>
               ) : (
-                <p className="text-sm text-[#475569]">No instance files yet.</p>
+                <p className="text-sm text-text-secondary">No instance files yet.</p>
               )}
             </section>
 
             {/* Step files */}
-            <section className="flex flex-col gap-3 pt-2 border-t border-[#F1F5F9]">
+            <section className="flex flex-col gap-3 pt-2 border-t border-border-light">
               <div>
-                <h3 className="flex items-center gap-1 text-[15px] font-semibold text-[#0F172A]">
+                <h3 className="flex items-center gap-1 text-[15px] font-semibold text-text-primary">
                   Step files <InfoTip label="Step files" text="Attachments, discussion files and proof, by the step they were added on." />
                 </h3>
               </div>
@@ -202,9 +202,9 @@ export default function RunDocumentsDrawer({
                 stepGroups.map((g) => (
                   <div key={g.row_id} className="flex flex-col gap-1.5">
                     <div className="flex items-center justify-between gap-2">
-                      <h4 className="text-sm font-semibold text-[#334155] truncate">{g.step_title}</h4>
+                      <h4 className="text-sm font-semibold text-text-secondary truncate">{g.step_title}</h4>
                       {g.task_id && (
-                        <Link href={taskHref(g.task_id)} className="inline-flex items-center gap-1 text-[13px] font-medium text-[#1D4ED8] hover:underline shrink-0">
+                        <Link href={taskHref(g.task_id)} className="inline-flex items-center gap-1 text-[13px] font-medium text-primary-text hover:underline shrink-0">
                           Open task <ExternalLink size={13} />
                         </Link>
                       )}
@@ -254,14 +254,14 @@ export default function RunDocumentsDrawer({
 
 function FileRow({ name, meta, tag, onDownload, onRemove }: { name: string; meta: string; tag?: string; onDownload?: () => void; onRemove?: () => void }) {
   return (
-    <li className="flex items-center gap-2 rounded-[8px] border border-[#E2E8F0] bg-white px-3 py-2">
-      <FileText size={15} className="shrink-0 text-[#475569]" />
+    <li className="flex items-center gap-2 rounded-[8px] border border-border-light bg-white px-3 py-2">
+      <FileText size={15} className="shrink-0 text-text-secondary" />
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2 min-w-0">
-          <span className="text-sm text-[#0F172A] truncate">{name}</span>
-          {tag && <span className="shrink-0 rounded-full border border-[#CBD5E1] px-2 py-0.5 text-[11px] font-medium text-[#334155]">{tag}</span>}
+          <span className="text-sm text-text-primary truncate">{name}</span>
+          {tag && <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-text-secondary">{tag}</span>}
         </span>
-        <span className="block text-[12px] text-[#475569] truncate">{meta}</span>
+        <span className="block text-[12px] text-text-secondary truncate">{meta}</span>
       </span>
       {onDownload && (
         <button type="button" aria-label={`Download ${name}`} onClick={onDownload} className={BTN.icon}>
@@ -269,7 +269,7 @@ function FileRow({ name, meta, tag, onDownload, onRemove }: { name: string; meta
         </button>
       )}
       {onRemove && (
-        <button type="button" aria-label={`Remove ${name}`} onClick={onRemove} className={`${BTN.icon} hover:text-[#B91C1C]! hover:bg-[#FEF2F2]!`}>
+        <button type="button" aria-label={`Remove ${name}`} onClick={onRemove} className={`${BTN.icon} hover:text-danger! hover:bg-danger-bg!`}>
           <Trash2 size={16} />
         </button>
       )}

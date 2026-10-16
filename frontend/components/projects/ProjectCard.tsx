@@ -32,11 +32,11 @@ export default function ProjectCard({ project, orgId }: ProjectCardProps) {
 
   return (
     <div
-      className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 cursor-pointer hover:shadow-[0_4px_12px_rgba(0,0,0,0.10)] hover:border-[#CBD5E1] transition-all"
+      className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 cursor-pointer hover:shadow-[0_4px_12px_rgba(0,0,0,0.10)] hover:border-border transition-all"
       onClick={() => router.push(`/dashboard/projects/${project.id}`)}
     >
       <div className="flex items-start justify-between gap-2 mb-3">
-        <h3 className="text-[16px] font-semibold text-[#0F172A] leading-tight">{project.name}</h3>
+        <h3 className="text-[16px] font-semibold text-text-primary leading-tight">{project.name}</h3>
         <span
           className="text-[11px] font-medium px-2.5 py-0.5 rounded-full border shrink-0"
           style={{ backgroundColor: badge.bg, color: badge.text, borderColor: badge.border }}
@@ -46,22 +46,22 @@ export default function ProjectCard({ project, orgId }: ProjectCardProps) {
       </div>
 
       {project.description && (
-        <p className="text-sm text-[#475569] line-clamp-2 mb-3">{project.description}</p>
+        <p className="text-sm text-text-secondary line-clamp-2 mb-3">{project.description}</p>
       )}
 
       <ProjectProgressBar percentage={project.completion_percentage} height={6} />
 
-      <div className="flex gap-4 mt-3 text-xs text-[#475569]">
+      <div className="flex gap-4 mt-3 text-xs text-text-secondary">
         <span>{project.achieved_milestones}/{project.total_milestones} milestones</span>
         <span>{project.completed_tasks}/{project.total_tasks} tasks</span>
       </div>
 
-      <div className="mt-3 pt-3 border-t border-[#F1F5F9] flex items-center justify-between gap-2 flex-wrap">
+      <div className="mt-3 pt-3 border-t border-border-light flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1">
           {(project.members ?? []).slice(0, 5).map((m, i) => (
             <Tooltip key={m.id} label={m.user_id}>
             <div
-              className="w-6 h-6 rounded-full bg-[#EFF6FF] border-2 border-white flex items-center justify-center text-[9px] font-semibold text-[#2563EB]"
+              className="w-6 h-6 rounded-full bg-primary-subtle border-2 border-white flex items-center justify-center text-[9px] font-semibold text-primary-text"
               style={{ marginLeft: i > 0 ? -6 : 0 }}
             >
               {m.user_id.charAt(0).toUpperCase()}
@@ -69,12 +69,12 @@ export default function ProjectCard({ project, orgId }: ProjectCardProps) {
             </Tooltip>
           ))}
           {(project._count?.members ?? 0) > 5 && (
-            <span className="text-[10px] text-[#94A3B8] ml-1">+{(project._count?.members ?? 0) - 5}</span>
+            <span className="text-[10px] text-text-muted ml-1">+{(project._count?.members ?? 0) - 5}</span>
           )}
         </div>
 
         {project.start_date && (
-          <p className="text-xs text-[#94A3B8]">
+          <p className="text-xs text-text-muted">
             {fmtDate(project.start_date)}
             {project.end_date ? ` → ${fmtDate(project.end_date)}` : ''}
           </p>
@@ -82,9 +82,9 @@ export default function ProjectCard({ project, orgId }: ProjectCardProps) {
       </div>
 
       {(project.planned_budget || project.actual_spent) && (
-        <div className="mt-2 pt-2 border-t border-[#F1F5F9] flex justify-between text-xs text-[#475569]">
+        <div className="mt-2 pt-2 border-t border-border-light flex justify-between text-xs text-text-secondary">
           <span>Budget: {project.planned_budget ? fmtCurrency(project.planned_budget) : '—'}</span>
-          {project.actual_spent && <span className="text-[#D97706]">Spent: {fmtCurrency(project.actual_spent)}</span>}
+          {project.actual_spent && <span className="text-warning">Spent: {fmtCurrency(project.actual_spent)}</span>}
         </div>
       )}
     </div>

@@ -115,11 +115,11 @@ export default function TaskTable({
   )
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
+            <tr className="bg-surface-sunken border-b border-border-light">
               <Th>Task</Th>
               <Th>Description</Th>
               <Th>Assigned To</Th>
@@ -131,14 +131,14 @@ export default function TaskTable({
               <Th>Status</Th>
               <Th>Timing</Th>
               <Th>
-                <button onClick={onToggleDeadlineSort} className="inline-flex items-center gap-1 hover:text-[#0F172A]">
+                <button onClick={onToggleDeadlineSort} className="inline-flex items-center gap-1 hover:text-text-primary">
                   Deadline
                   {sortDir === 'asc' ? <ArrowUp size={12} /> : sortDir === 'desc' ? <ArrowDown size={12} /> : null}
                 </button>
               </Th>
             </tr>
             {/* Filter row — multiple filters can be active simultaneously. */}
-            <tr className="bg-white border-b border-[#E2E8F0]">
+            <tr className="bg-white border-b border-border-light">
               <td className="px-3 py-2 align-top min-w-[150px]">
                 {filterCell('type', 'All types', [{ value: 'one_time', label: 'One-time' }, { value: 'recurring', label: 'Recurring' }, { value: 'workflow', label: 'From workflows' }])}
               </td>
@@ -190,13 +190,13 @@ export default function TaskTable({
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={11} className="py-16 text-center"><div className="inline-block w-6 h-6 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" /></td></tr>
+              <tr><td colSpan={11} className="py-16 text-center"><div className="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></td></tr>
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={11} className="py-16 text-center">
-                  <div className="w-12 h-12 rounded-full bg-[#F1F5F9] flex items-center justify-center mx-auto mb-3"><CheckSquare size={20} className="text-[#94A3B8]" /></div>
-                  <p className="font-semibold text-[#0F172A]">No tasks match these filters</p>
-                  <p className="text-sm text-[#475569] mt-1">Clear a filter to widen the view.</p>
+                  <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center mx-auto mb-3"><CheckSquare size={20} className="text-text-muted" /></div>
+                  <p className="font-semibold text-text-primary">No tasks match these filters</p>
+                  <p className="text-sm text-text-secondary mt-1">Clear a filter to widen the view.</p>
                 </td>
               </tr>
             ) : (
@@ -204,25 +204,25 @@ export default function TaskTable({
                 const timing = taskTiming(t)
                 const overdue = timing === 'overdue'
                 return (
-                  <tr key={t.id} onClick={() => onOpenTask(t.id)} className="border-b border-[#E2E8F0] hover:bg-[#EFF6FF] cursor-pointer transition-colors">
+                  <tr key={t.id} onClick={() => onOpenTask(t.id)} className="border-b border-border-light hover:bg-primary-subtle cursor-pointer transition-colors">
                     <td className="px-3 py-2.5 align-top max-w-[240px]">
-                      <div className="font-medium text-[#0F172A] truncate">{t.title}</div>
-                      <div className="text-[11px] text-[#94A3B8]">{t.type === 'recurring' ? 'Recurring' : 'One-time'}</div>
+                      <div className="font-medium text-text-primary truncate">{t.title}</div>
+                      <div className="text-[11px] text-text-muted">{t.type === 'recurring' ? 'Recurring' : 'One-time'}</div>
                     </td>
                     <td className="px-3 py-2.5 align-top max-w-[260px]">
-                      <div className="text-[13px] text-[#475569] line-clamp-2">{t.description || '—'}</div>
+                      <div className="text-[13px] text-text-secondary line-clamp-2">{t.description || '—'}</div>
                     </td>
-                    <td className="px-3 py-2.5 align-top text-[#0F172A] whitespace-nowrap">{assigneeLabel(t)}</td>
-                    <td className="px-3 py-2.5 align-top text-[#475569] whitespace-nowrap">
+                    <td className="px-3 py-2.5 align-top text-text-primary whitespace-nowrap">{assigneeLabel(t)}</td>
+                    <td className="px-3 py-2.5 align-top text-text-secondary whitespace-nowrap">
                       {(() => {
                         const wf = taskWorkflow(t)
                         return wf ? <WorkflowTaskBadge workflow={wf} /> : t.created_by?.name ?? '—'
                       })()}
                     </td>
-                    <td className="px-3 py-2.5 align-top text-[#475569] whitespace-nowrap">{(t.department_id && deptName.get(t.department_id)) || '—'}</td>
-                    <td className="px-3 py-2.5 align-top text-[#475569] whitespace-nowrap">{t.category?.name ?? '—'}</td>
+                    <td className="px-3 py-2.5 align-top text-text-secondary whitespace-nowrap">{(t.department_id && deptName.get(t.department_id)) || '—'}</td>
+                    <td className="px-3 py-2.5 align-top text-text-secondary whitespace-nowrap">{t.category?.name ?? '—'}</td>
                     <td className="px-3 py-2.5 align-top">
-                      {t.tags?.length ? <TagList tags={t.tags} max={2} /> : <span className="text-[#475569]">—</span>}
+                      {t.tags?.length ? <TagList tags={t.tags} max={2} /> : <span className="text-text-secondary">—</span>}
                     </td>
                     <td className="px-3 py-2.5 align-top">{t.priority ? <Badge label={t.priority.label} color={t.priority.color} /> : '—'}</td>
                     <td className="px-3 py-2.5 align-top">{t.status ? <Badge label={t.status.label} color={t.status.color} /> : '—'}</td>
@@ -240,10 +240,10 @@ export default function TaskTable({
           </tbody>
         </table>
       </div>
-      <div className="flex items-center justify-between px-4 py-3 border-t border-[#E2E8F0] bg-[#F8FAFC]">
-        <span className="text-xs text-[#475569]"><span className="font-semibold text-[#0F172A] tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}</span>
+      <div className="flex items-center justify-between px-4 py-3 border-t border-border-light bg-surface-sunken">
+        <span className="text-xs text-text-secondary"><span className="font-semibold text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}</span>
         {hasMore && (
-          <button onClick={onLoadMore} disabled={loadingMore} className="px-4 py-2 rounded-[8px] border border-[#E2E8F0] bg-white text-sm font-medium text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] disabled:opacity-60 transition-colors">
+          <button onClick={onLoadMore} disabled={loadingMore} className="px-4 py-2 rounded-[8px] border border-border-light bg-white text-sm font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
             {loadingMore ? 'Loading…' : `Load more (${total - rows.length} left)`}
           </button>
         )}
@@ -253,5 +253,5 @@ export default function TaskTable({
 }
 
 function Th({ children }: { children: React.ReactNode }) {
-  return <th className="text-left font-semibold text-[12px] text-[#475569] px-3 py-2.5 whitespace-nowrap select-none">{children}</th>
+  return <th className="text-left font-semibold text-[12px] text-text-secondary px-3 py-2.5 whitespace-nowrap select-none">{children}</th>
 }

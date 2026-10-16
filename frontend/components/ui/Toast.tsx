@@ -30,10 +30,10 @@ const toastConfig: Record<
   ToastType,
   { bg: string; Icon: LucideIcon }
 > = {
-  success: { bg: 'bg-[#16A34A]', Icon: CheckCircle },
-  error: { bg: 'bg-[#DC2626]', Icon: XCircle },
-  warning: { bg: 'bg-[#D97706]', Icon: AlertTriangle },
-  info: { bg: 'bg-[#0891B2]', Icon: Info },
+  success: { bg: 'bg-success', Icon: CheckCircle },
+  error: { bg: 'bg-danger', Icon: XCircle },
+  warning: { bg: 'bg-warning', Icon: AlertTriangle },
+  info: { bg: 'bg-text-secondary', Icon: Info },
 }
 
 const AUTO_DISMISS_MS = 3000

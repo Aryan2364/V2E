@@ -276,7 +276,7 @@ export default function CourseBuilderPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-56px)]">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -286,10 +286,10 @@ export default function CourseBuilderPage() {
   return (
     <div className="px-4 sm:px-8 pb-10 max-w-4xl mx-auto">
       {/* Sticky top bar — keeps the title + Save action visible as you scroll the form */}
-      <div className="sticky top-0 z-30 bg-white pt-6 pb-4 mb-6 border-b border-[#E2E8F0]">
+      <div className="sticky top-0 z-30 bg-white pt-6 pb-4 mb-6 border-b border-border-light">
         <Link
           href="/learning/paths"
-          className="inline-flex items-center gap-1.5 text-sm text-[#475569] hover:text-[#2563EB] mb-3 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-primary-text mb-3 transition-colors"
         >
           <ArrowLeft size={16} />
           Back to Courses
@@ -297,21 +297,21 @@ export default function CourseBuilderPage() {
 
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-[28px] font-bold text-[#0F172A]">
+            <h1 className="text-[28px] font-bold text-text-primary">
               {params.get('id') ? 'Edit Course' : 'Create Course'}
             </h1>
-            <p className="text-sm text-[#475569] mt-1">
+            <p className="text-sm text-text-secondary mt-1">
               Add materials and pick who learns — it all saves as you go.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs text-[#64748B] w-16 text-right">
+            <span className="text-xs text-text-muted w-16 text-right">
               {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved ✓' : ''}
             </span>
             <button
               onClick={handleFinish}
               disabled={!canPublish}
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
             >
               {publishing ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle size={15} />}
               {isPublished ? 'Save & Close' : 'Publish & Assign'}
@@ -320,37 +320,37 @@ export default function CourseBuilderPage() {
         </div>
 
         {error && (
-          <div className="mt-3 rounded-[10px] border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-sm text-[#B91C1C]">
+          <div className="mt-3 rounded-[10px] border border-danger-border bg-danger-bg px-4 py-3 text-sm text-danger">
             {error}
           </div>
         )}
       </div>
 
       {/* 1 — Details */}
-      <section className="bg-white border border-[#E2E8F0] rounded-[12px] p-6 mb-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-        <h2 className="text-[18px] font-semibold text-[#0F172A] mb-4">Course details</h2>
+      <section className="bg-white border border-border-light rounded-[12px] p-6 mb-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+        <h2 className="text-[18px] font-semibold text-text-primary mb-4">Course details</h2>
         <div className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Title *</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Title *</label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. New Joiner Onboarding"
-              className="w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-[15px] text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+              className="w-full px-3 py-2.5 border border-border rounded-[8px] text-[15px] text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
               placeholder="What will people learn?"
-              className="w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-[15px] text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none"
+              className="w-full px-3 py-2.5 border border-border rounded-[8px] text-[15px] text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-none"
             />
           </div>
           <div className="max-w-xs">
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Order</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Order</label>
             <StyledSelect
               value={mode}
               onChange={(v) => setMode(v as SequentialMode)}
@@ -364,24 +364,24 @@ export default function CourseBuilderPage() {
       </section>
 
       {/* 2 — Materials */}
-      <section className="bg-white border border-[#E2E8F0] rounded-[12px] p-6 mb-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <section className="bg-white border border-border-light rounded-[12px] p-6 mb-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-[18px] font-semibold text-[#0F172A]">Materials</h2>
+          <h2 className="text-[18px] font-semibold text-text-primary">Materials</h2>
           {items.length > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
               {items.length}
             </span>
           )}
           {items.length > 1 && (
-            <span className="ml-auto text-[11px] text-[#94A3B8]">Drag the handle to set the order learners see</span>
+            <span className="ml-auto text-[11px] text-text-muted">Drag the handle to set the order learners see</span>
           )}
         </div>
 
         {items.length === 0 ? (
-          <div className="rounded-[10px] border border-dashed border-[#CBD5E1] bg-[#F8FAFC] py-10 flex flex-col items-center text-center mb-4">
-            <BookOpen size={26} className="text-[#94A3B8] mb-2" />
-            <p className="text-sm font-medium text-[#0F172A]">No materials yet</p>
-            <p className="text-xs text-[#64748B] mt-0.5">Upload a document, add a link, embed a video, or write an article.</p>
+          <div className="rounded-[10px] border border-dashed border-border bg-surface-sunken py-10 flex flex-col items-center text-center mb-4">
+            <BookOpen size={26} className="text-text-muted mb-2" />
+            <p className="text-sm font-medium text-text-primary">No materials yet</p>
+            <p className="text-xs text-text-muted mt-0.5">Upload a document, add a link, embed a video, or write an article.</p>
           </div>
         ) : (
           <div ref={listRef} className="flex flex-col gap-3 mb-4 max-h-[520px] overflow-y-auto pr-1">
@@ -394,7 +394,7 @@ export default function CourseBuilderPage() {
                 onDragEnd={handleDragEnd}
                 onDrop={(e) => e.preventDefault()}
                 className={`transition-shadow duration-200 rounded-[10px] ${
-                  dragId === item.id ? 'opacity-60 ring-2 ring-[#2563EB] shadow-md' : ''
+                  dragId === item.id ? 'opacity-60 ring-2 ring-primary shadow-md' : ''
                 }`}
               >
                 <MaterialRow
@@ -415,15 +415,15 @@ export default function CourseBuilderPage() {
       </section>
 
       {/* 3 — People */}
-      <section className="bg-white border border-[#E2E8F0] rounded-[12px] p-6 mb-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <section className="bg-white border border-border-light rounded-[12px] p-6 mb-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
         <div className="flex items-center gap-2 mb-4">
-          <Users size={18} className="text-[#2563EB]" />
-          <h2 className="text-[18px] font-semibold text-[#0F172A]">Who learns this</h2>
+          <Users size={18} className="text-primary-text" />
+          <h2 className="text-[18px] font-semibold text-text-primary">Who learns this</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Auto-assign to a role</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Auto-assign to a role</label>
             <StyledSelect
               value={roleId}
               onChange={setRoleId}
@@ -433,10 +433,10 @@ export default function CourseBuilderPage() {
                 ...roles.map((r) => ({ value: r.id, label: r.title })),
               ]}
             />
-            <p className="text-xs text-[#64748B] mt-1">Everyone in this role gets it automatically — now and future joiners.</p>
+            <p className="text-xs text-text-muted mt-1">Everyone in this role gets it automatically — now and future joiners.</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Auto-assign to a department</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Auto-assign to a department</label>
             <StyledSelect
               value={departmentId}
               onChange={setDepartmentId}
@@ -446,15 +446,15 @@ export default function CourseBuilderPage() {
                 ...departments.map((d) => ({ value: d.id, label: d.name })),
               ]}
             />
-            <p className="text-xs text-[#64748B] mt-1">Everyone in this department gets it automatically — now and future joiners.</p>
+            <p className="text-xs text-text-muted mt-1">Everyone in this department gets it automatically — now and future joiners.</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Due date (optional)</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Due date (optional)</label>
             <DatePicker value={dueDate} onChange={setDueDate} placeholder="No deadline" />
           </div>
         </div>
 
-        <label className="block text-sm font-medium text-[#374151] mb-1.5">Pick people</label>
+        <label className="block text-sm font-medium text-text-secondary mb-1.5">Pick people</label>
         <AssigneeMultiSelect
           employees={employees}
           selected={selectedEmployees}

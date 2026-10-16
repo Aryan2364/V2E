@@ -1,9 +1,9 @@
 import type { DelegationStatus } from '@/lib/api/delegations'
 
 const STATUS_META: Record<DelegationStatus, { label: string; cls: string }> = {
-  active: { label: 'Active', cls: 'bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]' },
-  completed: { label: 'Completed', cls: 'bg-[#DCFCE7] text-[#16A34A] border-[#BBF7D0]' },
-  cancelled: { label: 'Cancelled', cls: 'bg-[#FEE2E2] text-[#DC2626] border-[#FECACA]' },
+  active: { label: 'Active', cls: 'bg-surface-control text-text-secondary border-border-light' },
+  completed: { label: 'Completed', cls: 'bg-success-bg text-success border-success-border' },
+  cancelled: { label: 'Cancelled', cls: 'bg-danger-bg text-danger border-danger-border' },
 }
 
 export function StatusPill({ status }: { status: DelegationStatus }) {

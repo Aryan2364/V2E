@@ -110,14 +110,14 @@ export default function FilterButton({
         className={[
           'inline-flex items-center gap-2 rounded-[8px] border px-3 py-2 text-sm font-medium transition-colors',
           activeCount > 0
-            ? 'border-[#2563EB] bg-[#EFF6FF] text-[#2563EB]'
-            : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#475569] hover:bg-white hover:border-[#94A3B8]',
+            ? 'border-primary bg-primary-subtle text-primary-text'
+            : 'border-border bg-surface-sunken text-text-secondary hover:bg-white hover:border-border-strong',
         ].join(' ')}
       >
         <SlidersHorizontal size={15} />
         {label}
         {activeCount > 0 && (
-          <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">
+          <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
             {activeCount}
           </span>
         )}
@@ -129,16 +129,16 @@ export default function FilterButton({
           aria-label={label}
           className={`absolute left-0 sm:left-auto sm:right-0 ${
             dropUp ? 'bottom-[calc(100%+6px)]' : 'top-[calc(100%+6px)]'
-          } z-50 w-[min(92vw,340px)] flex flex-col rounded-[10px] border border-[#E2E8F0] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden`}
+          } z-50 w-[min(92vw,340px)] flex flex-col rounded-[10px] border border-border-light bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden`}
         >
-          <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-[#F1F5F9] shrink-0">
-            <p className="text-[14px] font-semibold text-[#0F172A]">{label}</p>
+          <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border-light shrink-0">
+            <p className="text-[14px] font-semibold text-text-primary">{label}</p>
             <div className="flex items-center gap-1">
               {activeCount > 0 && (
                 <button
                   type="button"
                   onClick={onClearAll}
-                  className="text-[12px] font-medium text-[#475569] hover:text-[#0F172A] px-1.5"
+                  className="text-[12px] font-medium text-text-secondary hover:text-text-primary px-1.5"
                 >
                   Clear all
                 </button>
@@ -147,7 +147,7 @@ export default function FilterButton({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close filters"
-                className="w-6 h-6 rounded-[6px] flex items-center justify-center text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+                className="w-6 h-6 rounded-[6px] flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-control transition-colors"
               >
                 <X size={14} />
               </button>
@@ -156,7 +156,7 @@ export default function FilterButton({
 
           <div className="table-scroll flex-1 overflow-y-auto overscroll-contain max-h-[min(60vh,420px)]">
             {usable.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-[#475569]">
+              <p className="px-4 py-6 text-center text-sm text-text-secondary">
                 Nothing to filter by yet.
               </p>
             ) : (
@@ -166,14 +166,14 @@ export default function FilterButton({
                   ? section.options.filter((o) => o.label.toLowerCase().includes(q))
                   : section.options
                 return (
-                  <div key={section.key} className={i > 0 ? 'border-t border-[#F1F5F9]' : ''}>
+                  <div key={section.key} className={i > 0 ? 'border-t border-border-light' : ''}>
                     {/* Sticky so you always know which section you're scrolling
                         through once the panel itself is scrolled. */}
                     <div className="sticky top-0 z-10 bg-white px-4 pt-3 pb-1">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-[11px] font-semibold text-[#475569] uppercase tracking-wider">
+                        <p className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
                           {section.label}
-                          <span className="ml-1.5 font-normal normal-case tracking-normal text-[#94A3B8]">
+                          <span className="ml-1.5 font-normal normal-case tracking-normal text-text-muted">
                             {section.options.length}
                           </span>
                         </p>
@@ -181,7 +181,7 @@ export default function FilterButton({
                           <button
                             type="button"
                             onClick={() => section.onChange([])}
-                            className="text-[11px] font-medium text-[#2563EB] hover:text-[#1D4ED8]"
+                            className="text-[11px] font-medium text-primary-text hover:text-primary-text"
                           >
                             Reset
                           </button>
@@ -191,7 +191,7 @@ export default function FilterButton({
                         <div className="relative mt-1.5">
                           <Search
                             size={12}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
                           />
                           <input
                             type="text"
@@ -200,7 +200,7 @@ export default function FilterButton({
                               setSearch((s) => ({ ...s, [section.key]: e.target.value }))
                             }
                             placeholder={`Search ${section.label.toLowerCase()}…`}
-                            className="w-full rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] pl-6 pr-2 py-1 text-[12px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:bg-white"
+                            className="w-full rounded-[6px] border border-border-light bg-surface-sunken pl-6 pr-2 py-1 text-[12px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:bg-white"
                           />
                         </div>
                       )}
@@ -211,7 +211,7 @@ export default function FilterButton({
                         its end. One scroll container, like TaskFilterPopover. */}
                     <div className="pb-2">
                       {visible.length === 0 ? (
-                        <p className="px-4 py-3 text-[12px] text-[#94A3B8]">No matches.</p>
+                        <p className="px-4 py-3 text-[12px] text-text-muted">No matches.</p>
                       ) : (
                         visible.map((o) => {
                           const checked = section.selected.includes(o.value)
@@ -222,14 +222,14 @@ export default function FilterButton({
                               onClick={() => toggle(section, o.value)}
                               style={o.depth ? { paddingLeft: `${16 + o.depth * 16}px` } : undefined}
                               className={`w-full flex items-center gap-2.5 px-4 py-2 text-left transition-colors ${
-                                checked ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+                                checked ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                               }`}
                             >
                               <span
                                 className={`shrink-0 w-4 h-4 rounded-[4px] border flex items-center justify-center ${
                                   checked
-                                    ? 'bg-[#2563EB] border-[#2563EB] text-white'
-                                    : 'border-[#CBD5E1] bg-white'
+                                    ? 'bg-primary border-primary text-white'
+                                    : 'border-border bg-white'
                                 }`}
                               >
                                 {checked && <Check size={11} />}
@@ -240,10 +240,10 @@ export default function FilterButton({
                                   style={{ backgroundColor: o.color }}
                                 />
                               )}
-                              <span className="flex-1 min-w-0 truncate text-[14px] text-[#0F172A]">
+                              <span className="flex-1 min-w-0 truncate text-[14px] text-text-primary">
                                 {o.label}
                               </span>
-                              <span className="shrink-0 text-[12px] text-[#475569] tabular-nums">
+                              <span className="shrink-0 text-[12px] text-text-secondary tabular-nums">
                                 {o.count}
                               </span>
                             </button>
@@ -258,9 +258,9 @@ export default function FilterButton({
           </div>
 
           {resultCount !== undefined && (
-            <div className="px-4 py-2.5 border-t border-[#F1F5F9] bg-[#F8FAFC] shrink-0">
-              <p className="text-[12px] text-[#475569]">
-                Showing <span className="font-semibold text-[#0F172A]">{resultCount}</span>{' '}
+            <div className="px-4 py-2.5 border-t border-border-light bg-surface-sunken shrink-0">
+              <p className="text-[12px] text-text-secondary">
+                Showing <span className="font-semibold text-text-primary">{resultCount}</span>{' '}
                 {resultCount === 1 ? 'goal' : 'goals'}
               </p>
             </div>

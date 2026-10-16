@@ -70,35 +70,35 @@ export default function EmployeeReportPage() {
   if (denied) {
     return (
       <div className="flex flex-col items-center justify-center h-72 text-center">
-        <div className="w-14 h-14 rounded-full bg-[#FEE2E2] flex items-center justify-center mb-4"><Lock size={24} className="text-[#DC2626]" /></div>
-        <p className="font-semibold text-[#0F172A] text-base">This employee is outside your scope</p>
-        <p className="text-[#475569] text-sm mt-1 max-w-sm">You can only open the work report of people within your visibility scope.</p>
-        <button onClick={() => router.push('/dashboard/tasks')} className="mt-4 px-4 py-2 rounded-[8px] border border-[#E2E8F0] text-sm font-medium text-[#475569] hover:bg-[#F1F5F9]">Back to Overview</button>
+        <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
+        <p className="font-semibold text-text-primary text-base">This employee is outside your scope</p>
+        <p className="text-text-secondary text-sm mt-1 max-w-sm">You can only open the work report of people within your visibility scope.</p>
+        <button onClick={() => router.push('/dashboard/tasks')} className="mt-4 px-4 py-2 rounded-[8px] border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-control">Back to Overview</button>
       </div>
     )
   }
 
   return (
     <div className="space-y-5">
-      <button onClick={() => router.push('/dashboard/tasks')} className="inline-flex items-center gap-1.5 text-sm text-[#475569] hover:text-[#0F172A] transition-colors">
+      <button onClick={() => router.push('/dashboard/tasks')} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
         <ArrowLeft size={15} /> Back to Overview
       </button>
 
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-[#2563EB] text-white text-lg font-bold flex items-center justify-center shrink-0">
+        <div className="w-14 h-14 rounded-full bg-primary text-white text-lg font-bold flex items-center justify-center shrink-0">
           {report ? initials(report.employee.name) : '…'}
         </div>
         <div className="min-w-0">
-          <h1 className="text-[24px] font-bold text-[#0F172A] leading-tight truncate">{report?.employee.name ?? 'Loading…'}</h1>
-          <p className="text-[14px] text-[#475569] truncate">
+          <h1 className="text-[24px] font-bold text-text-primary leading-tight truncate">{report?.employee.name ?? 'Loading…'}</h1>
+          <p className="text-[14px] text-text-secondary truncate">
             {[report?.employee.role_title, report?.employee.department_name].filter(Boolean).join(' · ') || report?.employee.email}
           </p>
         </div>
       </div>
 
       {/* Lens tabs */}
-      <div className="inline-flex items-center border border-[#E2E8F0] rounded-[8px] bg-white p-0.5 gap-0.5">
+      <div className="inline-flex items-center border border-border-light rounded-[8px] bg-white p-0.5 gap-0.5">
         {([
           { key: 'assignee', label: 'Their Work', icon: <Inbox size={15} /> },
           { key: 'assigner', label: 'Delegated by Them', icon: <Send size={15} /> },
@@ -106,7 +106,7 @@ export default function EmployeeReportPage() {
           <button
             key={key}
             onClick={() => { setLens(key); setBucket(null) }}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-[6px] text-sm font-medium transition-colors ${lens === key ? 'bg-[#2563EB] text-white' : 'text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9]'}`}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-[6px] text-sm font-medium transition-colors ${lens === key ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'}`}
           >
             {icon}{label}
           </button>
@@ -117,21 +117,21 @@ export default function EmployeeReportPage() {
       {kpis && <KpiTiles kpis={kpis} active={bucket} onSelect={setBucket} />}
 
       {/* Tasks */}
-      <p className="text-sm text-[#475569]">
-        {listLoading ? 'Loading…' : <><span className="font-semibold text-[#0F172A] tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}</>}
+      <p className="text-sm text-text-secondary">
+        {listLoading ? 'Loading…' : <><span className="font-semibold text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}</>}
       </p>
       {listLoading ? (
-        <div className="flex items-center justify-center h-40"><div className="w-7 h-7 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" /></div>
+        <div className="flex items-center justify-center h-40"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : rows.length === 0 ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] py-14 text-center">
-          <p className="font-semibold text-[#0F172A]">Nothing here</p>
-          <p className="text-sm text-[#475569] mt-1">No tasks in this view.</p>
+        <div className="bg-white border border-border-light rounded-[12px] py-14 text-center">
+          <p className="font-semibold text-text-primary">Nothing here</p>
+          <p className="text-sm text-text-secondary mt-1">No tasks in this view.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           {rows.map((t) => <TaskRow key={t.id} task={t} onClick={() => setOpenTaskId(t.id)} />)}
           {hasMore && (
-            <button onClick={() => fetchList(page + 1, false)} className="mt-2 mx-auto px-5 py-2.5 rounded-[8px] border border-[#E2E8F0] bg-white text-sm font-medium text-[#475569] hover:bg-[#F1F5F9]">
+            <button onClick={() => fetchList(page + 1, false)} className="mt-2 mx-auto px-5 py-2.5 rounded-[8px] border border-border-light bg-white text-sm font-medium text-text-secondary hover:bg-surface-control">
               Load more ({total - rows.length} left)
             </button>
           )}

@@ -32,12 +32,12 @@ export default function Input({
   const inputId = id ?? name
 
   const baseInput = [
-    'w-full rounded-[8px] bg-white px-3 py-[10px] text-[#0F172A] placeholder:text-[#94A3B8] text-sm transition-colors duration-150',
+    'w-full rounded-[8px] bg-white px-3 py-[10px] text-text-primary placeholder:text-text-muted text-sm transition-colors duration-150',
     'focus:outline-hidden',
     error
-      ? 'border-2 border-[#DC2626] focus:border-[#DC2626]'
-      : 'border border-[#CBD5E1] focus:border-2 focus:border-[#2563EB]',
-    disabled ? 'bg-[#F8FAFC] cursor-not-allowed text-[#94A3B8]' : '',
+      ? 'border-2 border-danger focus:border-danger'
+      : 'border border-border focus:border-2 focus:border-primary',
+    disabled ? 'bg-surface-sunken cursor-not-allowed text-text-muted' : '',
     isPassword ? 'pr-10' : '',
     className,
   ]
@@ -49,11 +49,11 @@ export default function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="text-sm font-medium text-[#374151]"
+          className="text-sm font-medium text-text-secondary"
         >
           {label}
           {required && (
-            <span className="ml-0.5 text-[#DC2626]" aria-hidden="true">
+            <span className="ml-0.5 text-danger" aria-hidden="true">
               *
             </span>
           )}
@@ -86,7 +86,7 @@ export default function Input({
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors duration-150 focus:outline-hidden"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors duration-150 focus:outline-hidden"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
             tabIndex={-1}
           >
@@ -100,13 +100,13 @@ export default function Input({
       </div>
 
       {error && (
-        <p id={`${inputId}-error`} className="text-xs text-[#DC2626]" role="alert">
+        <p id={`${inputId}-error`} className="text-xs text-danger" role="alert">
           {error}
         </p>
       )}
 
       {!error && helperText && (
-        <p id={`${inputId}-helper`} className="text-xs text-[#64748B]">
+        <p id={`${inputId}-helper`} className="text-xs text-text-muted">
           {helperText}
         </p>
       )}

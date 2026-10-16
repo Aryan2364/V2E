@@ -186,12 +186,12 @@ export default function WeekGrid({
   const hourLabels = Array.from({ length: 24 }, (_, h) => h)
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] overflow-hidden">
+    <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
       {/* Header sits ABOVE the scroll body (not inside it) so the scrollbar starts
           BELOW the header, never cutting through the blue band. Both the header and
           the scroll body reserve a stable scrollbar gutter, so their columns still
           line up (no drift). Full-width 7 columns match the month grid. */}
-      <div className="flex border-b border-[#1D4ED8] bg-[#2563EB] overflow-hidden" style={{ scrollbarGutter: 'stable' }}>
+      <div className="flex border-b border-primary-hover bg-primary overflow-hidden" style={{ scrollbarGutter: 'stable' }}>
         <div className="w-[52px] shrink-0 border-r border-white/20" />
         <div className="flex-1 grid" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0,1fr))` }}>
         {days.map((day) => {
@@ -206,7 +206,7 @@ export default function WeekGrid({
                 {day.toLocaleDateString(undefined, { weekday: 'short' })}
               </div>
               <div className="mt-0.5 flex items-center justify-center">
-                <span className={['w-8 h-8 flex items-center justify-center rounded-full text-[18px] font-bold leading-none', today ? 'bg-white text-[#2563EB]' : 'text-white'].join(' ')}>
+                <span className={['w-8 h-8 flex items-center justify-center rounded-full text-[18px] font-bold leading-none', today ? 'bg-white text-primary-text' : 'text-white'].join(' ')}>
                   {day.getDate()}
                 </span>
               </div>
@@ -220,9 +220,9 @@ export default function WeekGrid({
         {/* time body */}
         <div className="flex relative" style={{ height: DAY_PX }}>
           {/* time rail — dedicated gutter so hour labels never overlap events */}
-          <div className="w-[52px] shrink-0 border-r border-[#E2E8F0] relative">
+          <div className="w-[52px] shrink-0 border-r border-border-light relative">
             {hourLabels.map((h) => (
-              <div key={h} className="absolute right-1.5 -translate-y-1/2 text-[11px] font-medium text-[#475569]" style={{ top: h * PX_PER_HOUR }}>
+              <div key={h} className="absolute right-1.5 -translate-y-1/2 text-[11px] font-medium text-text-secondary" style={{ top: h * PX_PER_HOUR }}>
                 {h === 0 ? '' : h < 12 ? `${h} AM` : h === 12 ? '12 PM' : `${h - 12} PM`}
               </div>
             ))}
@@ -235,23 +235,23 @@ export default function WeekGrid({
               return (
                 <div
                   key={day.toISOString()}
-                  className={['relative border-r border-[#E2E8F0] last:border-r-0', onCreateAt ? 'cursor-pointer' : ''].join(' ')}
+                  className={['relative border-r border-border-light last:border-r-0', onCreateAt ? 'cursor-pointer' : ''].join(' ')}
                   style={{ height: DAY_PX, background: today ? 'rgba(239,246,255,0.4)' : undefined }}
                   onClick={(e) => handleColumnClick(day, e)}
                 >
                   {/* hour lines */}
                   {hourLabels.map((h) => (
                     <div key={h}>
-                      <div className="absolute left-0 right-0 border-t border-[#CBD5E1]" style={{ top: h * PX_PER_HOUR }} />
-                      <div className="absolute left-0 right-0 border-t border-[#E9EEF4]" style={{ top: h * PX_PER_HOUR + PX_PER_HOUR / 2 }} />
+                      <div className="absolute left-0 right-0 border-t border-border" style={{ top: h * PX_PER_HOUR }} />
+                      <div className="absolute left-0 right-0 border-t border-border-light" style={{ top: h * PX_PER_HOUR + PX_PER_HOUR / 2 }} />
                     </div>
                   ))}
 
                   {/* now line */}
                   {today && (
                     <div className="absolute left-0 right-0 z-20 pointer-events-none" style={{ top: (minutesFromMidnight(now) / 60) * PX_PER_HOUR }}>
-                      <div className="h-[2px] bg-[#EF4444]" />
-                      <div className="absolute left-[-3px] top-[-3px] w-2 h-2 rounded-full bg-[#EF4444]" />
+                      <div className="h-[2px] bg-danger" />
+                      <div className="absolute left-[-3px] top-[-3px] w-2 h-2 rounded-full bg-danger" />
                     </div>
                   )}
 
@@ -306,7 +306,7 @@ export default function WeekGrid({
                         {...tip.bind(<div><div className="font-semibold">{m.title}</div><div className="text-white/70">{fmtTime(m.scheduled_start)}{m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}</div></div>)}
                       >
                         <div className="flex items-center gap-1 min-w-0">
-                          {lk.live && <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] animate-pulse shrink-0" />}
+                          {lk.live && <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />}
                           {lk.rhythm && <Repeat size={10} className="shrink-0" />}
                           <span className={['text-[12px] font-semibold truncate', lk.strike ? 'line-through' : ''].join(' ')}>{m.title}</span>
                         </div>
@@ -353,38 +353,38 @@ function MeetingPopover({ meeting, onClose, onOpen }: { meeting: Meeting; onClos
       {/* click-away catcher */}
       <div className="fixed inset-0 z-55" onClick={onClose} />
       {/* centered card — avoids scroll-drift; keeps the "no navigation" promise */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-56 w-[320px] bg-white border border-[#E2E8F0] rounded-[12px] shadow-xl p-4">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-56 w-[320px] bg-white border border-border-light rounded-[12px] shadow-xl p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: lk.stripe }} />
-            <h4 className="text-[16px] font-semibold text-[#0F172A] leading-tight truncate">{meeting.title}</h4>
+            <h4 className="text-[16px] font-semibold text-text-primary leading-tight truncate">{meeting.title}</h4>
           </div>
-          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#475569] shrink-0"><X size={16} /></button>
+          <button onClick={onClose} className="text-text-muted hover:text-text-secondary shrink-0"><X size={16} /></button>
         </div>
 
-        <div className="text-sm text-[#475569] flex items-center gap-2 mb-1">
-          {lk.live ? <span className="text-[#16A34A] font-medium">Live now</span>
+        <div className="text-sm text-text-secondary flex items-center gap-2 mb-1">
+          {lk.live ? <span className="text-success font-medium">Live now</span>
             : <span>{fmtTime(meeting.scheduled_start)}{meeting.scheduled_end ? ` – ${fmtTime(meeting.scheduled_end)}` : ''}</span>}
         </div>
-        <div className="text-sm text-[#475569] flex items-center gap-2 mb-3">
-          {online ? <Video size={14} className="text-[#94A3B8]" /> : <MapPin size={14} className="text-[#94A3B8]" />}
+        <div className="text-sm text-text-secondary flex items-center gap-2 mb-3">
+          {online ? <Video size={14} className="text-text-muted" /> : <MapPin size={14} className="text-text-muted" />}
           <span className="truncate">{online ? (meeting.location ? `Online · ${meeting.location}` : 'Online') : (meeting.location || 'In person')}</span>
         </div>
 
         {/* governance summary */}
-        <div className="flex flex-wrap items-center gap-3 text-xs text-[#64748B] border-t border-[#F1F5F9] pt-2 mb-3">
+        <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted border-t border-border-light pt-2 mb-3">
           <span className="inline-flex items-center gap-1"><Users size={12} /> {attendees} {attendees === 1 ? 'person' : 'people'}</span>
-          {meeting.rhythm_id && <span className="inline-flex items-center gap-1 text-[#7C3AED]"><Repeat size={12} /> Rhythm</span>}
+          {meeting.rhythm_id && <span className="inline-flex items-center gap-1 text-text-secondary"><Repeat size={12} /> Rhythm</span>}
           {decisions > 0 && <span>{decisions} decision{decisions === 1 ? '' : 's'}</span>}
           {actionItems > 0 && <span>{actionItems} action item{actionItems === 1 ? '' : 's'}</span>}
         </div>
 
         <div className="flex items-center gap-2">
-          <button onClick={onOpen} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px]">
+          <button onClick={onOpen} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px]">
             <ArrowUpRight size={15} /> Open meeting
           </button>
           {online && meeting.online_link && (
-            <a href={meeting.online_link} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold text-[#2563EB] border-2 border-[#2563EB] hover:bg-[#EFF6FF] rounded-[8px]">
+            <a href={meeting.online_link} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold text-primary-text border-2 border-primary hover:bg-primary-subtle rounded-[8px]">
               <ExternalLink size={15} /> Join
             </a>
           )}

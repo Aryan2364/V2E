@@ -52,7 +52,7 @@ export default function LinkEmbed({
         target="_blank"
         rel="noopener noreferrer"
         onClick={onOpen}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] rounded-[8px] hover:bg-[#DBEAFE] transition-colors"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-primary-text bg-primary-subtle border border-primary-border rounded-[8px] hover:bg-primary-subtle transition-colors"
       >
         <ExternalLink size={14} /> Open in new tab
       </a>
@@ -63,7 +63,7 @@ export default function LinkEmbed({
   if (status === 'blocked') {
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-center">
-        <p className="text-sm text-[#475569] max-w-md">
+        <p className="text-sm text-text-secondary max-w-md">
           This page can’t be shown inside the app — open it in a new tab to view it.
         </p>
         <div className="flex items-center gap-3">
@@ -72,13 +72,13 @@ export default function LinkEmbed({
             target="_blank"
             rel="noopener noreferrer"
             onClick={onOpen}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
           >
             <ExternalLink size={15} /> Open Link
           </a>
           <button
             onClick={reload}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-[#475569] hover:text-[#2563EB] transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-primary-text transition-colors"
           >
             <RotateCcw size={14} /> Try again
           </button>
@@ -93,7 +93,7 @@ export default function LinkEmbed({
         <Tooltip label="Reload / back to start">
           <button
             onClick={reload}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:text-[#2563EB] hover:border-[#2563EB] transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-text-secondary bg-white border border-border-light rounded-[8px] hover:text-primary-text hover:border-primary transition-colors"
           >
             <RotateCcw size={14} /> Reload
           </button>
@@ -103,13 +103,13 @@ export default function LinkEmbed({
       <div
         className={[
           'relative w-full rounded-[8px] overflow-hidden',
-          isVideo ? 'aspect-video bg-black' : 'border border-[#E2E8F0] bg-white',
+          isVideo ? 'aspect-video bg-black' : 'border border-border-light bg-white',
         ].join(' ')}
         style={isVideo ? undefined : { height: '70vh' }}
       >
         {status === 'loading' && (
-          <div className="absolute inset-0 flex items-center justify-center gap-2 text-sm text-[#475569] bg-[#F8FAFC] z-10">
-            <Loader2 size={18} className="animate-spin text-[#2563EB]" /> Loading page…
+          <div className="absolute inset-0 flex items-center justify-center gap-2 text-sm text-text-secondary bg-surface-sunken z-10">
+            <Loader2 size={18} className="animate-spin text-primary-text" /> Loading page…
           </div>
         )}
         <iframe

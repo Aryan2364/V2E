@@ -18,8 +18,8 @@ interface Props {
 }
 
 const inputCls =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden'
-const labelCls = 'text-sm font-medium text-[#374151]'
+  'w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary bg-white placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden'
+const labelCls = 'text-sm font-medium text-text-secondary'
 
 function defaultSchedule(): ScheduleEntryDraft {
   return {
@@ -103,9 +103,9 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/30 p-0 md:p-4">
       <div className="bg-white w-full md:max-w-2xl md:rounded-[16px] rounded-t-[16px] max-h-[92vh] overflow-y-auto shadow-[0_8px_32px_rgba(0,0,0,0.18)]">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] sticky top-0 bg-white">
-          <h2 className="text-[18px] font-semibold text-[#0F172A]">Demand a log</h2>
-          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-[8px] text-[#94A3B8] hover:bg-[#F1F5F9]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light sticky top-0 bg-white">
+          <h2 className="text-[18px] font-semibold text-text-primary">Demand a log</h2>
+          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-[8px] text-text-muted hover:bg-surface-control">
             <X size={18} />
           </button>
         </div>
@@ -126,20 +126,20 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
             <div className="mt-1.5">
               <AssigneeSelector orgId={orgId} value={assignees} onChange={handleAssigneeChange} />
             </div>
-            <p className="text-xs text-[#64748B] mt-1">Must be someone below you in the hierarchy.</p>
+            <p className="text-xs text-text-muted mt-1">Must be someone below you in the hierarchy.</p>
           </div>
 
           {/* Kind */}
           <div>
             <label className={labelCls}>Frequency</label>
-            <div className="flex items-center border border-[#E2E8F0] rounded-[8px] p-0.5 gap-0.5 mt-1.5 w-fit">
+            <div className="flex items-center border border-border-light rounded-[8px] p-0.5 gap-0.5 mt-1.5 w-fit">
               {(['one_time', 'recurring'] as const).map((k) => (
                 <button
                   key={k}
                   type="button"
                   onClick={() => setKind(k)}
                   className={`px-4 py-1.5 rounded-[6px] text-sm font-semibold transition-colors ${
-                    kind === k ? 'bg-[#2563EB] text-white' : 'text-[#475569] hover:bg-[#F1F5F9]'
+                    kind === k ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-control'
                   }`}
                 >
                   {k === 'one_time' ? 'One-time' : 'Recurring'}
@@ -183,18 +183,18 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
             </div>
           )}
 
-          {error && <p className="text-sm text-[#DC2626]">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#E2E8F0] sticky bottom-0 bg-white">
-          <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-[#475569] hover:bg-[#F1F5F9]">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light sticky bottom-0 bg-white">
+          <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-text-secondary hover:bg-surface-control">
             Cancel
           </button>
           <button
             type="button"
             onClick={submit}
             disabled={saving}
-            className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]"
+            className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
           >
             {saving ? 'Creating…' : 'Demand log'}
           </button>

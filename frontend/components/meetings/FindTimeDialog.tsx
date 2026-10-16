@@ -173,39 +173,39 @@ export default function FindTimeDialog({
     <div className="fixed inset-0 z-70 bg-white flex flex-col">
       <div className="w-full flex-1 min-h-0 bg-white flex flex-col overflow-hidden">
         {/* header */}
-        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E2E8F0]">
+        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-border-light">
           <div className="flex items-center gap-2">
-            <Sparkles size={18} className="text-[#2563EB]" />
-            <h3 className="text-[18px] font-semibold text-[#0F172A]">Find a time</h3>
+            <Sparkles size={18} className="text-primary-text" />
+            <h3 className="text-[18px] font-semibold text-text-primary">Find a time</h3>
           </div>
           <div className="flex items-center gap-1.5">
-            <button aria-label="Previous day" onClick={() => shiftDay(-1)} className="p-1.5 rounded-[6px] text-[#475569] hover:bg-[#F1F5F9]"><ChevronLeft size={18} /></button>
+            <button aria-label="Previous day" onClick={() => shiftDay(-1)} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control"><ChevronLeft size={18} /></button>
             <DatePicker value={date} onChange={onChangeDate} min={todayStr()} placeholder="Pick a date" bare hideClear />
-            <button aria-label="Next day" onClick={() => shiftDay(1)} className="p-1.5 rounded-[6px] text-[#475569] hover:bg-[#F1F5F9]"><ChevronRight size={18} /></button>
-            <button onClick={() => onChangeDate(todayStr())} className="px-2.5 py-1 text-sm font-medium text-[#475569] rounded-[6px] hover:bg-[#F1F5F9]">Today</button>
-            <button onClick={onClose} className="p-1.5 text-[#94A3B8] hover:text-[#475569] ml-1"><X size={18} /></button>
+            <button aria-label="Next day" onClick={() => shiftDay(1)} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control"><ChevronRight size={18} /></button>
+            <button onClick={() => onChangeDate(todayStr())} className="px-2.5 py-1 text-sm font-medium text-text-secondary rounded-[6px] hover:bg-surface-control">Today</button>
+            <button onClick={onClose} className="p-1.5 text-text-muted hover:text-text-secondary ml-1"><X size={18} /></button>
           </div>
         </div>
 
         {/* duration */}
-        <div className="flex items-center gap-2 px-5 py-2 border-b border-[#F1F5F9]">
+        <div className="flex items-center gap-2 px-5 py-2 border-b border-border-light">
           <DurationField value={durationMin} onChange={onChangeDuration} label="Duration" inline />
-          {loading && <Loader2 size={15} className="animate-spin text-[#94A3B8] ml-1" />}
+          {loading && <Loader2 size={15} className="animate-spin text-text-muted ml-1" />}
         </div>
 
         <div className="flex flex-1 min-h-0">
           {/* left rail */}
-          <aside className="w-[300px] shrink-0 border-r border-[#E2E8F0] overflow-y-auto p-4 flex flex-col gap-4">
+          <aside className="w-[300px] shrink-0 border-r border-border-light overflow-y-auto p-4 flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">Participants</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1">Participants</label>
               <MeetingAttendeeSelector options={people} value={attendees} onChange={onChangeAttendees} optional={optional} onToggleOptional={toggleOptional} />
             </div>
 
             {/* best times */}
             <div>
-              <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider mb-2">Best times</p>
+              <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Best times</p>
               {!data || data.suggestions.length === 0 ? (
-                <p className="text-sm text-[#94A3B8]">{attendees.length === 0 ? 'Add people to see suggestions.' : 'No clear slot on this day — try another day or trim the guest list.'}</p>
+                <p className="text-sm text-text-muted">{attendees.length === 0 ? 'Add people to see suggestions.' : 'No clear slot on this day — try another day or trim the guest list.'}</p>
               ) : (
                 <div className="flex flex-col gap-1.5">
                   {data.suggestions.slice(0, 6).map((s, i) => {
@@ -215,10 +215,10 @@ export default function FindTimeDialog({
                       <button
                         key={i}
                         onClick={() => { const c = Math.max(START_HOUR * 60, Math.min(END_HOUR * 60 - durationMin, sMin)); setCand(c); scrollToMin(c) }}
-                        className="flex items-center justify-between gap-2 text-left border rounded-[8px] px-3 py-2 hover:border-[#2563EB]"
+                        className="flex items-center justify-between gap-2 text-left border rounded-[8px] px-3 py-2 hover:border-primary"
                         style={{ borderColor: clean ? '#BBF7D0' : '#FDE68A', background: clean ? '#F0FDF4' : '#FEFCE8' }}
                       >
-                        <span className="text-sm text-[#0F172A]">{minLabel(sMin)}</span>
+                        <span className="text-sm text-text-primary">{minLabel(sMin)}</span>
                         <span className="text-xs" style={{ color: clean ? '#16A34A' : '#CA8A04' }}>
                           {clean ? 'No required clashes' : `${s.hard_conflicts.length} required`}
                           {s.soft_conflicts.length > 0 ? ` · ${s.soft_conflicts.length} optional` : ''}
@@ -233,13 +233,13 @@ export default function FindTimeDialog({
             {/* Who's free at the selected slot — vertical list scales to any headcount */}
             {useAgg && perPerson.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider mb-2">At {minLabel(cand)} – {minLabel(candEnd)}</p>
+                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">At {minLabel(cand)} – {minLabel(candEnd)}</p>
                 <div className="flex flex-col gap-1 max-h-[240px] overflow-y-auto pr-1">
                   {[...perPerson].sort((a, b) => Number(b.conflict) - Number(a.conflict)).map((p) => (
                     <div key={p.user_id} className="flex items-center gap-2 text-sm">
                       <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.conflict ? '#DC2626' : '#16A34A' }} />
-                      <span className="text-[#0F172A] truncate">{p.name}</span>
-                      {!p.required && <span className="text-[10px] text-[#94A3B8]">optional</span>}
+                      <span className="text-text-primary truncate">{p.name}</span>
+                      {!p.required && <span className="text-[10px] text-text-muted">optional</span>}
                       <span className="ml-auto text-xs shrink-0" style={{ color: p.conflict ? '#DC2626' : '#16A34A' }}>{p.conflict ? 'Busy' : 'Free'}</span>
                     </div>
                   ))}
@@ -247,8 +247,8 @@ export default function FindTimeDialog({
               </div>
             )}
 
-            <div className="flex items-start gap-2 text-xs text-[#475569] bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] px-3 py-2">
-              <Info size={14} className="mt-0.5 shrink-0 text-[#94A3B8]" />
+            <div className="flex items-start gap-2 text-xs text-text-secondary bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2">
+              <Info size={14} className="mt-0.5 shrink-0 text-text-muted" />
               <span>{data?.caveat ?? 'Shows only meetings, leave and holidays this app knows about — not a guarantee someone is free.'}</span>
             </div>
           </aside>
@@ -256,29 +256,29 @@ export default function FindTimeDialog({
           {/* grid */}
           <div className="flex-1 min-w-0 flex flex-col p-4 gap-3">
             {/* candidate summary + confirm */}
-            <div className="flex items-center justify-between gap-3 px-4 py-2.5 border border-[#E2E8F0] rounded-[10px] bg-[#FBFCFE] shrink-0">
+            <div className="flex items-center justify-between gap-3 px-4 py-2.5 border border-border-light rounded-[10px] bg-surface-sunken shrink-0">
               <div className="text-sm">
-                <span className="font-semibold text-[#0F172A]">{minLabel(cand)} – {minLabel(candEnd)}</span>
+                <span className="font-semibold text-text-primary">{minLabel(cand)} – {minLabel(candEnd)}</span>
                 {clashes.hard.length === 0 && clashes.soft.length === 0 ? (
-                  <span className="ml-2 text-[#16A34A]">Everyone’s free</span>
+                  <span className="ml-2 text-success">Everyone’s free</span>
                 ) : (
-                  <span className="ml-2 text-[#475569]">
-                    {clashes.hard.length > 0 && <span className="text-[#D97706] font-medium">Clashes: {clashes.hard.join(', ')}</span>}
+                  <span className="ml-2 text-text-secondary">
+                    {clashes.hard.length > 0 && <span className="text-warning font-medium">Clashes: {clashes.hard.join(', ')}</span>}
                     {clashes.hard.length > 0 && clashes.soft.length > 0 && ' · '}
-                    {clashes.soft.length > 0 && <span className="text-[#64748B]">optional: {clashes.soft.join(', ')}</span>}
+                    {clashes.soft.length > 0 && <span className="text-text-muted">optional: {clashes.soft.join(', ')}</span>}
                   </span>
                 )}
               </div>
-              <button onClick={confirm} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px]">
+              <button onClick={confirm} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px]">
                 <Check size={15} /> Use this time
               </button>
             </div>
 
             {/* calendar card — rounded like the week view; header + body reserve a stable
                 scrollbar gutter so columns align and the scrollbar sits below the header */}
-            <div className="flex-1 min-h-0 flex flex-col border border-[#E2E8F0] rounded-[12px] overflow-hidden">
+            <div className="flex-1 min-h-0 flex flex-col border border-border-light rounded-[12px] overflow-hidden">
             {/* column headers */}
-            <div className="flex border-b border-[#1D4ED8] bg-[#2563EB] overflow-hidden" style={{ scrollbarGutter: 'stable' }}>
+            <div className="flex border-b border-primary-hover bg-primary overflow-hidden" style={{ scrollbarGutter: 'stable' }}>
               <div className="w-[54px] shrink-0 border-r border-white/20" />
               <div className="flex-1 min-w-0">
                 {perPerson.length === 0 ? (
@@ -311,9 +311,9 @@ export default function FindTimeDialog({
             <div ref={colsRef} className="flex-1 overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
               <div className="flex relative" style={{ height: GRID_PX }}>
                 {/* time rail */}
-                <div className="w-[54px] shrink-0 border-r border-[#E2E8F0] relative">
+                <div className="w-[54px] shrink-0 border-r border-border-light relative">
                   {hours.map((h) => (
-                    <div key={h} className="absolute right-1.5 -translate-y-1/2 text-[11px] font-medium text-[#475569]" style={{ top: topFor(h * 60) }}>
+                    <div key={h} className="absolute right-1.5 -translate-y-1/2 text-[11px] font-medium text-text-secondary" style={{ top: topFor(h * 60) }}>
                       {h === 12 ? '12 PM' : h < 12 ? `${h} AM` : `${h - 12} PM`}
                     </div>
                   ))}
@@ -325,7 +325,7 @@ export default function FindTimeDialog({
                 >
                   {/* hour lines */}
                   {hours.map((h) => (
-                    <div key={h} className="absolute left-0 right-0 border-t border-[#CBD5E1] pointer-events-none" style={{ top: topFor(h * 60) }} />
+                    <div key={h} className="absolute left-0 right-0 border-t border-border pointer-events-none" style={{ top: topFor(h * 60) }} />
                   ))}
                   {useAgg ? (
                     /* Large group → busy-density heatmap: darker = more people busy */
@@ -340,7 +340,7 @@ export default function FindTimeDialog({
                   ) : (
                     <div className="grid absolute inset-0" style={{ gridTemplateColumns: `repeat(${cols}, minmax(80px,1fr))` }}>
                       {perPerson.map((p) => (
-                        <div key={p.user_id} className="relative border-r border-[#E2E8F0] last:border-r-0">
+                        <div key={p.user_id} className="relative border-r border-border-light last:border-r-0">
                           {p.blocks.map((b, i) => {
                             const isOOO = b.kind === 'leave' || b.kind === 'holiday'
                             const bg = isOOO ? 'rgba(100,116,139,0.16)' : p.required ? 'rgba(220,38,38,0.14)' : 'rgba(217,119,6,0.14)'
@@ -351,7 +351,7 @@ export default function FindTimeDialog({
                                 className="absolute left-0.5 right-0.5 rounded-[4px] border-l-2 pointer-events-none overflow-hidden"
                                 style={{ top: topFor(b.s), height: Math.max(6, ((b.e - b.s) / 60) * PX_PER_HOUR), background: bg, borderLeftColor: bd }}
                               >
-                                {isOOO && <span className="text-[9px] text-[#475569] px-1 leading-tight">{b.kind === 'leave' ? 'Leave' : 'Holiday'}</span>}
+                                {isOOO && <span className="text-[9px] text-text-secondary px-1 leading-tight">{b.kind === 'leave' ? 'Leave' : 'Holiday'}</span>}
                               </div>
                               </Tooltip>
                             )
@@ -365,8 +365,8 @@ export default function FindTimeDialog({
                     className="absolute left-0 right-0 pointer-events-none z-10"
                     style={{ top: topFor(cand), height: Math.max(20, (durationMin / 60) * PX_PER_HOUR) }}
                   >
-                    <div className="h-full mx-0.5 rounded-[6px] border-2 border-[#2563EB] bg-[#2563EB]/15 flex items-center justify-center">
-                      <span className="text-[11px] font-semibold text-[#1D4ED8] whitespace-nowrap">{minLabel(cand)} – {minLabel(candEnd)}</span>
+                    <div className="h-full mx-0.5 rounded-[6px] border-2 border-primary bg-primary/15 flex items-center justify-center">
+                      <span className="text-[11px] font-semibold text-primary-text whitespace-nowrap">{minLabel(cand)} – {minLabel(candEnd)}</span>
                     </div>
                   </div>
                 </div>

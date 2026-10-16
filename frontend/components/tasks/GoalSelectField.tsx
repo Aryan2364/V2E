@@ -40,7 +40,7 @@ export default function GoalSelectField({ orgId, value, onChange, hint }: Props)
 
   return (
     <div>
-      <label className="block text-sm font-medium text-[#374151] mb-1.5">Link to goal</label>
+      <label className="block text-sm font-medium text-text-secondary mb-1.5">Link to goal</label>
       <StyledSelect
         value={value}
         onChange={onChange}
@@ -51,7 +51,7 @@ export default function GoalSelectField({ orgId, value, onChange, hint }: Props)
           ...goals.map((g) => ({ value: g.id, label: g.title })),
         ]}
       />
-      <p className="text-[11px] text-[#475569] mt-1">
+      <p className="text-[11px] text-text-secondary mt-1">
         {hint ?? 'Optional — the task shows up on that goal as part of the work behind it.'}
       </p>
     </div>

@@ -243,7 +243,7 @@ export default function TaskModuleSidebar() {
       <div className="hidden md:flex h-12 items-center border-b border-white/10 shrink-0 px-2">
         <span
           className={[
-            'flex-1 px-2 text-xs font-semibold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap',
+            'flex-1 px-2 text-xs font-semibold text-text-muted uppercase tracking-widest whitespace-nowrap',
             collapsed ? 'hidden' : 'block',
           ].join(' ')}
         >
@@ -252,7 +252,7 @@ export default function TaskModuleSidebar() {
         <Tooltip label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
           <button
             onClick={toggleCollapsed}
-            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-white hover:bg-[#1E293B] transition-colors shrink-0"
+            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-text-muted hover:text-white hover:bg-[#1E293B] transition-colors shrink-0"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -287,13 +287,13 @@ export default function TaskModuleSidebar() {
               {group.label && (
                 <p
                   className={[
-                    'px-3 pt-1 pb-0.5 text-[10px] font-semibold text-[#475569] uppercase tracking-widest',
+                    'px-3 pt-1 pb-0.5 text-[10px] font-semibold text-text-secondary uppercase tracking-widest',
                     collapsed ? 'hidden' : 'hidden md:block',
                   ].join(' ')}
                 >
                   {group.label}
                   {entitlementState === 'preview' && (
-                    <span className="ml-2 normal-case tracking-normal text-[9px] text-[#FBBF24]">Read only</span>
+                    <span className="ml-2 normal-case tracking-normal text-[9px] text-text-secondary">Read only</span>
                   )}
                 </p>
               )}
@@ -303,7 +303,7 @@ export default function TaskModuleSidebar() {
                     <Tooltip key={item.href} label={collapsed ? item.label : undefined}>
                     <span
                       className={[
-                        'flex items-center rounded-[8px] py-2.5 text-sm font-medium text-[#334155] cursor-not-allowed',
+                        'flex items-center rounded-[8px] py-2.5 text-sm font-medium text-text-secondary cursor-not-allowed',
                         collapsed ? 'justify-center px-2' : 'justify-center px-2 md:justify-start md:gap-3 md:px-3',
                       ].join(' ')}
                     >
@@ -311,7 +311,7 @@ export default function TaskModuleSidebar() {
                       {!collapsed && (
                         <>
                           <span className="hidden md:inline">{item.label}</span>
-                          <span className="ml-auto hidden md:block text-[9px] font-semibold text-[#475569] bg-[#1E293B] px-1.5 py-0.5 rounded-xs">
+                          <span className="ml-auto hidden md:block text-[9px] font-semibold text-text-secondary bg-[#1E293B] px-1.5 py-0.5 rounded-xs">
                             Soon
                           </span>
                         </>
@@ -330,7 +330,7 @@ export default function TaskModuleSidebar() {
                       'flex items-center rounded-[8px] py-2.5 text-sm font-medium transition-colors duration-150 whitespace-nowrap',
                       collapsed ? 'justify-center px-2' : 'justify-center px-2 md:justify-start md:gap-3 md:px-3',
                       active
-                        ? 'bg-[#2563EB] text-white'
+                        ? 'bg-primary text-white'
                         : 'text-[#CBD5E1] hover:bg-[#1E293B] hover:text-[#F1F5F9]',
                     ].join(' ')}
                   >

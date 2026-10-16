@@ -42,7 +42,7 @@ function resolvePreviewKind(fileName?: string | null, mime?: string | null): Pre
 
 function MaterialIcon({ type }: { type: ProcessArtifactContentType }) {
   const I = type === 'link' ? Link2 : type === 'article' ? StickyNote : FileText
-  return <I size={13} className="text-[#2563EB] shrink-0" />
+  return <I size={13} className="text-primary-text shrink-0" />
 }
 
 // ─── Top-level component used by the drawer's Documents section ──────────────
@@ -172,11 +172,11 @@ function DirectionSection({
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[11px] font-semibold text-[#374151] uppercase tracking-wide">{title}</p>
+        <p className="text-[11px] font-semibold text-text-secondary uppercase tracking-wide">{title}</p>
         {canEdit && mode === 'closed' && (
           <Tooltip label="Add">
             <button onClick={() => setMode('chooser')} aria-label={`Add ${direction}`}
-              className="shrink-0 w-7 h-7 rounded-[8px] bg-[#2563EB] text-white flex items-center justify-center hover:bg-[#1D4ED8] transition-colors">
+              className="shrink-0 w-7 h-7 rounded-[8px] bg-primary text-white flex items-center justify-center hover:bg-primary-hover transition-colors">
               <Plus size={14} />
             </button>
           </Tooltip>
@@ -185,54 +185,54 @@ function DirectionSection({
 
       {/* Chooser: File / Link / Article */}
       {mode === 'chooser' && (
-        <div className="mb-2 flex items-center gap-1.5 rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] p-1.5">
+        <div className="mb-2 flex items-center gap-1.5 rounded-[8px] bg-surface-sunken border border-border-light p-1.5">
           <input ref={fileRef} type="file" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) { onUploadFile(direction, f, allowDownload); reset() } e.target.value = '' }} />
           <ChooserBtn icon={<FileText size={13} />} label="File" onClick={() => setMode('file')} />
           <ChooserBtn icon={<Link2 size={13} />} label="Link" onClick={() => { setEditing(null); setLinkTitle(''); setLinkUrl(''); setMode('link') }} />
           <ChooserBtn icon={<StickyNote size={13} />} label="Article" onClick={() => { reset(); onNewArticle() }} />
-          <button onClick={reset} aria-label="Cancel" className="ml-auto text-[#94A3B8] hover:text-[#0F172A] px-1"><X size={14} /></button>
+          <button onClick={reset} aria-label="Cancel" className="ml-auto text-text-muted hover:text-text-primary px-1"><X size={14} /></button>
         </div>
       )}
 
       {/* File: pick download/view-only, then choose the file */}
       {mode === 'file' && (
-        <div className="mb-2 rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 space-y-2">
-          <div className="inline-flex rounded-[8px] border border-[#E2E8F0] overflow-hidden bg-white">
+        <div className="mb-2 rounded-[8px] bg-surface-sunken border border-border-light p-2.5 space-y-2">
+          <div className="inline-flex rounded-[8px] border border-border-light overflow-hidden bg-white">
             {[{ v: true, l: 'Download' }, { v: false, l: 'View-only' }].map(({ v, l }) => (
               <button key={l} type="button" onClick={() => setAllowDownload(v)}
-                className={`px-2.5 py-1.5 text-[12px] font-medium transition-colors ${allowDownload === v ? 'bg-[#2563EB] text-white' : 'bg-white text-[#475569] hover:bg-[#F1F5F9]'}`}>{l}</button>
+                className={`px-2.5 py-1.5 text-[12px] font-medium transition-colors ${allowDownload === v ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-surface-control'}`}>{l}</button>
             ))}
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => fileRef.current?.click()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-[#2563EB] text-white hover:bg-[#1D4ED8]">
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-primary text-white hover:bg-primary-hover">
               <Upload size={14} /> Choose file
             </button>
-            <button onClick={reset} className="text-[13px] text-[#64748B] hover:text-[#0F172A]">Cancel</button>
+            <button onClick={reset} className="text-[13px] text-text-muted hover:text-text-primary">Cancel</button>
           </div>
         </div>
       )}
 
       {/* Link: title + url */}
       {mode === 'link' && (
-        <div className="mb-2 rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 space-y-2">
+        <div className="mb-2 rounded-[8px] bg-surface-sunken border border-border-light p-2.5 space-y-2">
           <input autoFocus value={linkTitle} maxLength={TITLE_MAX} onChange={(e) => setLinkTitle(e.target.value)}
-            placeholder="Title" className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white" />
+            placeholder="Title" className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white" />
           <input value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submitLink()}
-            placeholder="https://…" className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white" />
+            placeholder="https://…" className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white" />
           <div className="flex items-center gap-2">
             <button onClick={submitLink} disabled={!linkTitle.trim() || !linkUrl.trim()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]">
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
               {editing ? 'Save' : 'Add link'}
             </button>
-            <button onClick={reset} className="text-[13px] text-[#64748B] hover:text-[#0F172A]">Cancel</button>
+            <button onClick={reset} className="text-[13px] text-text-muted hover:text-text-primary">Cancel</button>
           </div>
         </div>
       )}
 
       {links.length === 0 ? (
-        <p className="text-[13px] text-[#64748B]">None</p>
+        <p className="text-[13px] text-text-muted">None</p>
       ) : (
         <div className="space-y-1">
           {links.map((l) => (
@@ -250,7 +250,7 @@ function DirectionSection({
 function ChooserBtn({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
   return (
     <button onClick={onClick}
-      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium rounded-[6px] bg-white border border-[#E2E8F0] text-[#475569] hover:text-[#0F172A] hover:border-[#CBD5E1]">
+      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium rounded-[6px] bg-white border border-border-light text-text-secondary hover:text-text-primary hover:border-border">
       {icon} {label}
     </button>
   )
@@ -263,18 +263,18 @@ function MaterialRow({ link, canEdit, onOpen, onDownload, onEdit, onDelete }: {
   const a = link.artifact
   const editable = a.content_type === 'link' || a.content_type === 'article'
   return (
-    <div className="flex items-center gap-2 text-[13px] bg-[#F8FAFC] border border-[#E2E8F0] rounded-[6px] px-2 py-1.5">
+    <div className="flex items-center gap-2 text-[13px] bg-surface-sunken border border-border-light rounded-[6px] px-2 py-1.5">
       <MaterialIcon type={a.content_type} />
-      <Tooltip label={a.name}><button onClick={onOpen} className="flex-1 min-w-0 truncate text-left text-[#0F172A] hover:text-[#2563EB]">{a.name}</button></Tooltip>
-      {a.content_type === 'link' && <ExternalLink size={12} className="text-[#94A3B8] shrink-0" />}
+      <Tooltip label={a.name}><button onClick={onOpen} className="flex-1 min-w-0 truncate text-left text-text-primary hover:text-primary-text">{a.name}</button></Tooltip>
+      {a.content_type === 'link' && <ExternalLink size={12} className="text-text-muted shrink-0" />}
       {a.content_type === 'file' && a.allow_download && (
-        <button onClick={onDownload} aria-label="Download" className="text-[#475569] hover:text-[#2563EB] shrink-0"><Download size={13} /></button>
+        <button onClick={onDownload} aria-label="Download" className="text-text-secondary hover:text-primary-text shrink-0"><Download size={13} /></button>
       )}
       {canEdit && editable && (
-        <button onClick={onEdit} aria-label="Edit" className="text-[#94A3B8] hover:text-[#2563EB] shrink-0"><Pencil size={12} /></button>
+        <button onClick={onEdit} aria-label="Edit" className="text-text-muted hover:text-primary-text shrink-0"><Pencil size={12} /></button>
       )}
       {canEdit && (
-        <button onClick={onDelete} aria-label="Remove" className="text-[#94A3B8] hover:text-[#DC2626] shrink-0"><Trash2 size={13} /></button>
+        <button onClick={onDelete} aria-label="Remove" className="text-text-muted hover:text-danger shrink-0"><Trash2 size={13} /></button>
       )}
     </div>
   )
@@ -297,22 +297,22 @@ function ArticleEditorModal({ initial, onSave, onCancel }: {
       <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-lg p-5 animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-semibold text-[#0F172A]">{initial ? 'Edit article' : 'Write an article'}</h3>
-          <button onClick={onCancel} className="text-[#94A3B8] hover:text-[#0F172A]"><X size={18} /></button>
+          <h3 className="text-base font-semibold text-text-primary">{initial ? 'Edit article' : 'Write an article'}</h3>
+          <button onClick={onCancel} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
         <div className="flex items-center justify-between mb-1">
-          <label className="text-xs font-medium text-[#374151]">Title</label>
-          <span className="text-[10px] text-[#94A3B8] tabular-nums">{name.length}/{TITLE_MAX}</span>
+          <label className="text-xs font-medium text-text-secondary">Title</label>
+          <span className="text-[10px] text-text-muted tabular-nums">{name.length}/{TITLE_MAX}</span>
         </div>
         <input autoFocus value={name} maxLength={TITLE_MAX} onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white mb-3" />
-        <label className="block text-xs font-medium text-[#374151] mb-1">Content</label>
+          className="w-full px-3 py-2 text-[14px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white mb-3" />
+        <label className="block text-xs font-medium text-text-secondary mb-1">Content</label>
         <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={10}
           placeholder="Write the article…"
-          className="w-full px-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white resize-none" />
+          className="w-full px-3 py-2 text-[14px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white resize-none" />
         <div className="flex justify-end mt-4">
           <button onClick={save} disabled={!name.trim() || !body.trim() || busy}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]">
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
             {busy && <Loader2 size={15} className="animate-spin" />} Save
           </button>
         </div>
@@ -349,16 +349,16 @@ export function MaterialPreviewModal({ orgId, mapId, artifact, onClose, onDownlo
     <div className="fixed inset-0 z-80 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-3xl max-h-[88vh] flex flex-col overflow-hidden animate-[fadeIn_.15s_ease-out]">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-[#E2E8F0] shrink-0">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-border-light shrink-0">
           <MaterialIcon type={artifact.content_type} />
-          <h3 className="flex-1 min-w-0 truncate text-sm font-semibold text-[#0F172A]">{artifact.name}</h3>
-          <button onClick={onClose} aria-label="Close" className="text-[#94A3B8] hover:text-[#0F172A]"><X size={18} /></button>
+          <h3 className="flex-1 min-w-0 truncate text-sm font-semibold text-text-primary">{artifact.name}</h3>
+          <button onClick={onClose} aria-label="Close" className="text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
         <div className="flex-1 overflow-y-auto p-4">
           {artifact.content_type === 'article' ? (
-            <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-[#1E293B]">{artifact.content_body}</div>
+            <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-text-primary">{artifact.content_body}</div>
           ) : loading ? (
-            <div className="flex items-center justify-center py-16"><Loader2 size={22} className="animate-spin text-[#2563EB]" /></div>
+            <div className="flex items-center justify-center py-16"><Loader2 size={22} className="animate-spin text-primary-text" /></div>
           ) : (
             <MaterialViewer
               data={data}

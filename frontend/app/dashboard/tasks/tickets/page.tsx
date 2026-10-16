@@ -65,8 +65,8 @@ export default function TicketsPage() {
   useEffect(() => { load() }, [load])
 
   const statCard = (label: string, value: number, color: string) => (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex-1">
-      <p className="text-xs font-medium text-[#475569] mb-1">{label}</p>
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex-1">
+      <p className="text-xs font-medium text-text-secondary mb-1">{label}</p>
       <p className="text-2xl font-bold" style={{ color }}>{value}</p>
     </div>
   )
@@ -76,7 +76,7 @@ export default function TicketsPage() {
   if (!permsLoading && !can('tickets.ticket.manage', 'read')) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-[22px] font-bold text-[#0F172A]">Tickets</h1>
+        <h1 className="text-[22px] font-bold text-text-primary">Tickets</h1>
         <AccessHiddenState orgId={orgId} leaf="tickets.ticket.manage" moduleLabel="Tickets" />
       </div>
     )
@@ -87,13 +87,13 @@ export default function TicketsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[22px] font-bold text-[#0F172A]">Tickets</h1>
-          <p className="text-sm text-[#475569] mt-0.5">Track and manage support requests</p>
+          <h1 className="text-[22px] font-bold text-text-primary">Tickets</h1>
+          <p className="text-sm text-text-secondary mt-0.5">Track and manage support requests</p>
         </div>
         <button
           type="button"
           onClick={() => router.push('/dashboard/tasks/tickets/new')}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
         >
           <Plus size={15} /> Raise Ticket
         </button>
@@ -112,13 +112,13 @@ export default function TicketsPage() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tickets..."
-            className="w-full pl-9 pr-3 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-hidden"
+            className="w-full pl-9 pr-3 py-1.5 border border-border rounded-[7px] text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden"
           />
         </div>
         <StyledSelect
@@ -176,7 +176,7 @@ export default function TicketsPage() {
           <button
             type="button"
             onClick={() => { setFilterType(''); setFilterCategory(''); setFilterPriority(''); setFilterStatus(''); setFilterSla('') }}
-            className="text-sm text-[#2563EB] hover:underline"
+            className="text-sm text-primary-text hover:underline"
           >
             Clear
           </button>
@@ -186,13 +186,13 @@ export default function TicketsPage() {
       {/* List */}
       {loading ? (
         <div className="flex flex-col gap-2">
-          {[1, 2, 3, 4].map((i) => <div key={i} className="h-16 bg-[#F1F5F9] rounded-[12px] animate-pulse" />)}
+          {[1, 2, 3, 4].map((i) => <div key={i} className="h-16 bg-surface-control rounded-[12px] animate-pulse" />)}
         </div>
       ) : tickets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-[#E2E8F0] rounded-[12px]">
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border-light rounded-[12px]">
           <Filter size={28} className="text-[#CBD5E1] mb-3" />
-          <p className="text-sm font-medium text-[#0F172A]">No tickets found</p>
-          <p className="text-xs text-[#475569] mt-1">{hasFilters || search ? 'Try adjusting your filters' : 'Raise the first ticket to get started'}</p>
+          <p className="text-sm font-medium text-text-primary">No tickets found</p>
+          <p className="text-xs text-text-secondary mt-1">{hasFilters || search ? 'Try adjusting your filters' : 'Raise the first ticket to get started'}</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">

@@ -87,13 +87,13 @@ function StatCard({
   icon: React.ReactNode
 }) {
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-4 sm:p-6 flex items-start gap-3 sm:gap-4">
-      <div className="w-10 h-10 rounded-[8px] bg-[#EFF6FF] flex items-center justify-center text-[#2563EB] shrink-0">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-4 sm:p-6 flex items-start gap-3 sm:gap-4">
+      <div className="w-10 h-10 rounded-[8px] bg-primary-subtle flex items-center justify-center text-primary-text shrink-0">
         {icon}
       </div>
       <div>
-        <p className="text-3xl font-bold text-[#0F172A] leading-tight tabular-nums">{value}</p>
-        <p className="text-sm text-[#475569] mt-0.5">{label}</p>
+        <p className="text-3xl font-bold text-text-primary leading-tight tabular-nums">{value}</p>
+        <p className="text-sm text-text-secondary mt-0.5">{label}</p>
       </div>
     </div>
   )
@@ -113,7 +113,7 @@ function QuickNavCard({ label, description, href, icon, iconBg }: QuickNavCardPr
   return (
     <Link
       href={href}
-      className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 flex items-start gap-4 hover:border-[#2563EB] hover:shadow-md active:scale-[0.99] active:border-[#2563EB] transition-all duration-150 group focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1"
+      className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 flex items-start gap-4 hover:border-primary hover:shadow-md active:scale-[0.99] active:border-primary transition-all duration-150 group focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
     >
       <div
         className={`w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0 ${iconBg}`}
@@ -121,12 +121,12 @@ function QuickNavCard({ label, description, href, icon, iconBg }: QuickNavCardPr
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-[#0F172A] text-sm">{label}</p>
-        <p className="text-xs text-[#475569] mt-0.5 leading-relaxed">{description}</p>
+        <p className="font-semibold text-text-primary text-sm">{label}</p>
+        <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{description}</p>
       </div>
       <ChevronRight
         size={16}
-        className="text-[#CBD5E1] group-hover:text-[#2563EB] group-active:text-[#2563EB] transition-colors mt-0.5 shrink-0"
+        className="text-[#CBD5E1] group-hover:text-primary-text group-active:text-primary-text transition-colors mt-0.5 shrink-0"
       />
     </Link>
   )
@@ -176,7 +176,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -185,10 +185,10 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Page header */}
       <div>
-        <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">
+        <h1 className="text-[28px] font-bold text-text-primary leading-tight">
           {greeting}
         </h1>
-        <p className="mt-1 text-[15px] text-[#475569]">
+        <p className="mt-1 text-[15px] text-text-secondary">
           Here&apos;s an overview of what&apos;s happening at {org?.name ?? 'your organization'} today.
         </p>
       </div>
@@ -196,19 +196,19 @@ export default function DashboardPage() {
       {/* Setup banner — only for admins, who are the only ones who can reach
           Settings/Setup. Members (no settings gear) must never see this. */}
       {user?.is_admin && setupProgress < 100 && (
-        <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-[12px] p-5">
+        <div className="bg-primary-subtle border border-primary-border rounded-[12px] p-5">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
-              <p className="font-semibold text-[#1D4ED8] text-sm">
+              <p className="font-semibold text-primary-text text-sm">
                 Complete your organization setup
               </p>
-              <p className="text-xs text-[#3B82F6] mt-0.5">
+              <p className="text-xs text-primary-text mt-0.5">
                 {setupProgress}% complete — finish setting up to unlock all features.
               </p>
             </div>
             <Link
               href="/settings/organization/company"
-              className="flex items-center gap-1.5 text-sm font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors shrink-0 whitespace-nowrap"
+              className="flex items-center gap-1.5 text-sm font-semibold text-primary-text hover:text-primary-text transition-colors shrink-0 whitespace-nowrap"
             >
               Continue setup
               <ArrowRight size={14} />
@@ -216,7 +216,7 @@ export default function DashboardPage() {
           </div>
           <div className="h-2 bg-[#BFDBFE] rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#2563EB] rounded-full transition-all duration-500"
+              className="h-full bg-primary rounded-full transition-all duration-500"
               style={{ width: `${setupProgress}%` }}
             />
           </div>
@@ -236,42 +236,42 @@ export default function DashboardPage() {
 
       {/* Quick nav */}
       <div>
-        <h2 className="text-base font-semibold text-[#0F172A] mb-4">Quick access</h2>
+        <h2 className="text-base font-semibold text-text-primary mb-4">Quick access</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           <QuickNavCard
             label="Identity"
             description="Company vision, mission, purpose and values."
             href="/settings/organization/company"
-            icon={<BookOpen size={18} className="text-[#2563EB]" />}
-            iconBg="bg-[#EFF6FF]"
+            icon={<BookOpen size={18} className="text-primary-text" />}
+            iconBg="bg-primary-subtle"
           />
           <QuickNavCard
             label="Culture"
             description="Expected and unacceptable behaviors that define your culture."
             href="/settings/organization/culture"
-            icon={<Heart size={18} className="text-[#DC2626]" />}
-            iconBg="bg-[#FEE2E2]"
+            icon={<Heart size={18} className="text-danger" />}
+            iconBg="bg-danger-bg"
           />
           <QuickNavCard
             label="Org Chart"
             description="Visual hierarchy of departments and their relationships."
             href="/settings/organization/structure"
-            icon={<Network size={18} className="text-[#16A34A]" />}
-            iconBg="bg-[#DCFCE7]"
+            icon={<Network size={18} className="text-success" />}
+            iconBg="bg-success-bg"
           />
           <QuickNavCard
             label="Roles"
             description="Job descriptions, KRAs and KPIs for each role."
             href="/settings/organization/roles"
-            icon={<Briefcase size={18} className="text-[#CA8A04]" />}
-            iconBg="bg-[#FEF9C3]"
+            icon={<Briefcase size={18} className="text-warning" />}
+            iconBg="bg-warning-bg"
           />
           <QuickNavCard
             label="Employees"
             description="Directory of all employees with profiles and reporting chains."
             href="/settings/organization/employees"
-            icon={<Users size={18} className="text-[#7C3AED]" />}
-            iconBg="bg-[#F3E8FF]"
+            icon={<Users size={18} className="text-text-secondary" />}
+            iconBg="bg-surface-control"
           />
         </div>
       </div>

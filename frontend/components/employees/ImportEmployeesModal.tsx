@@ -169,9 +169,9 @@ function parseCsv(text: string): string[][] {
 }
 
 const STATUS_STYLES: Record<ImportValidationRow['status'], { dot: string; text: string; label: string }> = {
-  ready: { dot: 'bg-[#16A34A]', text: 'text-[#166534]', label: 'Ready' },
-  duplicate: { dot: 'bg-[#DC2626]', text: 'text-[#991B1B]', label: 'Duplicate' },
-  error: { dot: 'bg-[#DC2626]', text: 'text-[#991B1B]', label: 'Error' },
+  ready: { dot: 'bg-success', text: 'text-success', label: 'Ready' },
+  duplicate: { dot: 'bg-danger', text: 'text-danger', label: 'Duplicate' },
+  error: { dot: 'bg-danger', text: 'text-danger', label: 'Error' },
 }
 
 /**
@@ -811,7 +811,7 @@ export default function ImportEmployeesModal({
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
           <div className="flex items-center gap-3">
             {(phase === 'history' || phase === 'batch-detail') && (
               <button
@@ -822,13 +822,13 @@ export default function ImportEmployeesModal({
                       ? resetToUpload
                       : openHistory
                 }
-                className="p-1.5 rounded-[6px] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors"
+                className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
                 aria-label="Back"
               >
                 <ArrowLeft size={18} />
               </button>
             )}
-            <h2 className="text-[18px] font-semibold text-[#0F172A]">
+            <h2 className="text-[18px] font-semibold text-text-primary">
               {phase === 'preview'
                 ? 'Review before importing'
                 : phase === 'history'
@@ -842,14 +842,14 @@ export default function ImportEmployeesModal({
             {phase === 'upload' && (
               <button
                 onClick={openHistory}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[13px] font-medium text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[13px] font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
               >
                 <History size={15} /> History
               </button>
             )}
             <button
               onClick={onClose}
-              className="p-1.5 rounded-[6px] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors"
+              className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
               aria-label="Close"
             >
               <X size={18} />
@@ -865,12 +865,12 @@ export default function ImportEmployeesModal({
           {/* ── Upload ── */}
           {phase === 'upload' && (
             <>
-              <div className="flex items-start gap-3 p-4 rounded-[10px] bg-[#EFF6FF] border border-[#BFDBFE]">
-                <FileText size={18} className="text-[#2563EB] mt-0.5 shrink-0" />
+              <div className="flex items-start gap-3 p-4 rounded-[10px] bg-primary-subtle border border-primary-border">
+                <FileText size={18} className="text-primary-text mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-[#0F172A]">Step 1 — Download the Excel template</p>
-                  <p className="text-[13px] text-[#475569] mt-0.5">
-                    Required columns (<span className="font-semibold text-[#2563EB]">blue header, marked *</span>): name,
+                  <p className="text-sm font-semibold text-text-primary">Step 1 — Download the Excel template</p>
+                  <p className="text-[13px] text-text-secondary mt-0.5">
+                    Required columns (<span className="font-semibold text-primary-text">blue header, marked *</span>): name,
                     email, department, role, system_role. The <strong>department</strong>, <strong>role</strong>,{' '}
                     <strong>system role</strong>, <strong>manager</strong> and <strong>employment type</strong> columns
                     are <strong>dropdowns</strong> sourced from the reference sheets. Dates use a date picker and can’t be
@@ -879,7 +879,7 @@ export default function ImportEmployeesModal({
                   <button
                     onClick={downloadTemplate}
                     disabled={building}
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors"
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                   >
                     {building ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
                     {building ? 'Building…' : 'Download Excel template'}
@@ -888,18 +888,18 @@ export default function ImportEmployeesModal({
               </div>
 
               <div>
-                <p className="text-sm font-semibold text-[#0F172A] mb-2">Step 2 — Upload the filled file to review</p>
+                <p className="text-sm font-semibold text-text-primary mb-2">Step 2 — Upload the filled file to review</p>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-[10px] border-2 border-dashed border-[#CBD5E1] hover:border-[#2563EB] hover:bg-[#F8FAFC] transition-colors"
+                  className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-[10px] border-2 border-dashed border-border hover:border-primary hover:bg-surface-sunken transition-colors"
                 >
                   {validating ? (
-                    <Loader2 size={26} className="text-[#2563EB] animate-spin" />
+                    <Loader2 size={26} className="text-primary-text animate-spin" />
                   ) : (
-                    <UploadCloud size={26} className="text-[#94A3B8]" />
+                    <UploadCloud size={26} className="text-text-muted" />
                   )}
-                  <span className="text-sm font-medium text-[#475569]">
+                  <span className="text-sm font-medium text-text-secondary">
                     {validating ? 'Checking your file…' : fileName || 'Click to choose an .xlsx or .csv file'}
                   </span>
                 </button>
@@ -916,7 +916,7 @@ export default function ImportEmployeesModal({
               </div>
 
               {parseError && (
-                <div className="p-3 bg-[#FEF2F2] border border-[#FECACA] rounded-[8px] text-sm text-[#DC2626]">
+                <div className="p-3 bg-danger-bg border border-danger-border rounded-[8px] text-sm text-danger">
                   {parseError}
                 </div>
               )}
@@ -940,16 +940,16 @@ export default function ImportEmployeesModal({
                 {validation.warnings > 0 && (
                   <FilterChip color="amber" label={`${validation.warnings} warning`} active={chipFilter === 'warning'} onClick={() => setChipFilter('warning')} />
                 )}
-                <span className="ml-auto text-xs text-[#64748B]">from {fileName}</span>
+                <span className="ml-auto text-xs text-text-muted">from {fileName}</span>
               </div>
 
               {/* Row table — bounded height with its own scroll so the list never
                   stretches the page; the outer body still scrolls normally. */}
-              <div className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
+              <div className="border border-border-light rounded-[10px] overflow-hidden">
                 <div className="max-h-[72vh] overflow-auto">
                   <table className="w-full text-[13px]">
-                    <thead className="bg-[#F8FAFC] sticky top-0 z-10">
-                      <tr className="text-left text-[#64748B]">
+                    <thead className="bg-surface-sunken sticky top-0 z-10">
+                      <tr className="text-left text-text-muted">
                         <th className="px-3 py-2 font-semibold">#</th>
                         <th className="px-3 py-2 font-semibold">Status</th>
                         <th className="px-3 py-2 font-semibold">Name</th>
@@ -959,10 +959,10 @@ export default function ImportEmployeesModal({
                         <th className="px-3 py-2 font-semibold">Issues</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#E2E8F0]">
+                    <tbody className="divide-y divide-surface-control-pressed">
                       {visibleRows.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="px-3 py-8 text-center text-[13px] text-[#94A3B8]">
+                          <td colSpan={7} className="px-3 py-8 text-center text-[13px] text-text-muted">
                             No rows in this category.
                           </td>
                         </tr>
@@ -974,11 +974,11 @@ export default function ImportEmployeesModal({
                         // solid (not faded) red tint, with red preserved on hover.
                         const rowBg =
                           r.status !== 'ready'
-                            ? 'bg-[#FEF2F2] hover:bg-[#FEE2E2]'
-                            : `${i % 2 === 1 ? 'bg-[#F8FAFC]' : 'bg-white'} hover:bg-[#EEF2F8]`
+                            ? 'bg-danger-bg hover:bg-danger-bg'
+                            : `${i % 2 === 1 ? 'bg-surface-sunken' : 'bg-white'} hover:bg-surface-control`
                         return (
                           <tr key={r.row} className={`${rowBg} transition-colors`}>
-                            <td className="px-3 py-2 text-[#94A3B8]">{r.row}</td>
+                            <td className="px-3 py-2 text-text-muted">{r.row}</td>
                             <td className="px-3 py-2">
                               <span className={`inline-flex items-center gap-1.5 font-semibold ${s.text}`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
@@ -986,21 +986,21 @@ export default function ImportEmployeesModal({
                               </span>
                             </td>
                             <td className="px-3 py-2">
-                              <div className="font-medium text-[#0F172A]">{r.name || '—'}</div>
-                              <div className="text-[#94A3B8]">{r.email || '—'}</div>
+                              <div className="font-medium text-text-primary">{r.name || '—'}</div>
+                              <div className="text-text-muted">{r.email || '—'}</div>
                             </td>
-                            <td className="px-3 py-2 text-[#475569]">{r.resolved.department || '—'}</td>
-                            <td className="px-3 py-2 text-[#475569]">{r.resolved.role || '—'}</td>
-                            <td className="px-3 py-2 text-[#475569]">{r.resolved.system_role || '—'}</td>
+                            <td className="px-3 py-2 text-text-secondary">{r.resolved.department || '—'}</td>
+                            <td className="px-3 py-2 text-text-secondary">{r.resolved.role || '—'}</td>
+                            <td className="px-3 py-2 text-text-secondary">{r.resolved.system_role || '—'}</td>
                             <td className="px-3 py-2">
                               {r.issues.length === 0 ? (
-                                <span className="text-[#94A3B8]">—</span>
+                                <span className="text-text-muted">—</span>
                               ) : (
                                 <ul className="space-y-0.5">
                                   {r.issues.map((iss, k) => (
                                     <li
                                       key={k}
-                                      className={`flex items-start gap-1 ${iss.severity === 'error' ? 'text-[#DC2626]' : 'text-[#B45309]'}`}
+                                      className={`flex items-start gap-1 ${iss.severity === 'error' ? 'text-danger' : 'text-warning'}`}
                                     >
                                       {iss.severity === 'error' ? (
                                         <AlertCircle size={13} className="mt-0.5 shrink-0" />
@@ -1028,21 +1028,21 @@ export default function ImportEmployeesModal({
                 if (notReady === 0) return null
                 const rowWord = notReady === 1 ? 'row' : 'rows'
                 return (
-                  <div className="flex items-start gap-3 p-3.5 rounded-[10px] bg-[#EFF6FF] border border-[#BFDBFE]">
-                    <Wrench size={18} className="text-[#2563EB] mt-0.5 shrink-0" />
+                  <div className="flex items-start gap-3 p-3.5 rounded-[10px] bg-primary-subtle border border-primary-border">
+                    <Wrench size={18} className="text-primary-text mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] text-[#1E3A8A]">
+                      <p className="text-[13px] text-primary-text">
                         <strong>{validation.ready} of {validation.total} rows are ready</strong> and will be imported now.
                         The other <strong>{notReady} {rowWord}</strong> {notReady === 1 ? 'has a problem' : 'have problems'} and
                         will be skipped — your ready rows aren’t affected.
                       </p>
-                      <p className="text-[13px] text-[#1E40AF] mt-1">
+                      <p className="text-[13px] text-primary-text mt-1">
                         Download a file with <strong>only those {notReady} {rowWord}</strong> (each tagged with the reason it
                         failed), fix them there, and re-upload just that file — no need to touch the rows that already passed.
                       </p>
                       <button
                         onClick={downloadFailures}
-                        className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[8px] text-[13px] font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+                        className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[8px] text-[13px] font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
                       >
                         <Download size={14} /> Download {notReady} {rowWord} to fix
                       </button>
@@ -1090,11 +1090,11 @@ export default function ImportEmployeesModal({
 
         {/* Footer */}
         {phase === 'preview' && validation && (
-          <div className="flex items-center gap-4 px-6 py-4 border-t border-[#E2E8F0]">
+          <div className="flex items-center gap-4 px-6 py-4 border-t border-border-light">
             {/* Warning fills the empty space on the left of the button bar. */}
             <div className="flex items-start gap-2 flex-1 min-w-0">
-              <ShieldAlert size={16} className="text-[#B45309] mt-0.5 shrink-0" />
-              <p className="text-[12px] leading-snug text-[#92400E]">
+              <ShieldAlert size={16} className="text-warning mt-0.5 shrink-0" />
+              <p className="text-[12px] leading-snug text-warning">
                 Importing creates live user accounts and is <strong>not automatically reversible</strong> — please check the
                 rows above thoroughly. Only the <strong>{validation.ready} ready</strong> row
                 {validation.ready !== 1 ? 's' : ''} will be imported; the rest are skipped (download them to fix and
@@ -1104,7 +1104,7 @@ export default function ImportEmployeesModal({
             <button
               type="button"
               onClick={() => setPhase('upload')}
-              className="shrink-0 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-[#2563EB] bg-white border-2 border-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+              className="shrink-0 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               Choose another file
             </button>
@@ -1112,7 +1112,7 @@ export default function ImportEmployeesModal({
               type="button"
               onClick={() => setConfirmOpen(true)}
               disabled={validation.ready === 0 || importing}
-              className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed transition-colors"
+              className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {importing && <Loader2 size={15} className="animate-spin" />}
               {importing ? 'Importing…' : `Import ${validation.ready} ready`}
@@ -1121,16 +1121,16 @@ export default function ImportEmployeesModal({
         )}
 
         {phase === 'result' && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#E2E8F0]">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
             <button
               onClick={resetToUpload}
-              className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-[#2563EB] bg-white border-2 border-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+              className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               Import another file
             </button>
             <button
               onClick={onClose}
-              className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+              className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
             >
               Done
             </button>
@@ -1140,16 +1140,16 @@ export default function ImportEmployeesModal({
         {/* Footer only after a fresh import (finish actions). When opened from
             history, the top-left back arrow is the only affordance needed. */}
         {phase === 'batch-detail' && detailOrigin === 'import' && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#E2E8F0]">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
             <button
               onClick={resetToUpload}
-              className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-[#2563EB] bg-white border-2 border-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+              className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               Import another file
             </button>
             <button
               onClick={onClose}
-              className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+              className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
             >
               Done
             </button>
@@ -1162,12 +1162,12 @@ export default function ImportEmployeesModal({
         <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-[12px] shadow-xl max-w-md w-full p-6">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#FEF2F2] flex items-center justify-center shrink-0">
-                <ShieldAlert size={20} className="text-[#DC2626]" />
+              <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
+                <ShieldAlert size={20} className="text-danger" />
               </div>
               <div>
-                <h3 className="text-[16px] font-semibold text-[#0F172A]">Import {validation.ready} employees?</h3>
-                <p className="text-[13px] text-[#475569] mt-1">
+                <h3 className="text-[16px] font-semibold text-text-primary">Import {validation.ready} employees?</h3>
+                <p className="text-[13px] text-text-secondary mt-1">
                   This creates live accounts and <strong>cannot be undone automatically</strong>. A guarded undo is
                   available for a short window afterward, but it can only remove people who haven’t started accumulating
                   data. Make sure you’ve reviewed the rows.
@@ -1177,13 +1177,13 @@ export default function ImportEmployeesModal({
             <div className="flex justify-end gap-3 mt-5">
               <button
                 onClick={() => setConfirmOpen(false)}
-                className="px-4 py-2 rounded-[8px] text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] transition-colors"
+                className="px-4 py-2 rounded-[8px] text-sm font-semibold text-text-secondary bg-white border border-border-light hover:bg-surface-sunken transition-colors"
               >
                 Go back
               </button>
               <button
                 onClick={handleImport}
-                className="px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] transition-colors"
+                className="px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-danger hover:bg-danger-hover transition-colors"
               >
                 Yes, import now
               </button>
@@ -1197,12 +1197,12 @@ export default function ImportEmployeesModal({
         <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-[12px] shadow-xl max-w-md w-full p-6">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#FEF2F2] flex items-center justify-center shrink-0">
-                <Undo2 size={20} className="text-[#DC2626]" />
+              <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
+                <Undo2 size={20} className="text-danger" />
               </div>
               <div>
-                <h3 className="text-[16px] font-semibold text-[#0F172A]">Undo this import?</h3>
-                <p className="text-[13px] text-[#475569] mt-1">
+                <h3 className="text-[16px] font-semibold text-text-primary">Undo this import?</h3>
+                <p className="text-[13px] text-text-secondary mt-1">
                   This removes the employee accounts created by this import. Anyone who already has activity — heads a
                   department, owns data, or has people reporting to them — is <strong>kept</strong> and listed afterward.
                   This can’t be reversed.
@@ -1212,7 +1212,7 @@ export default function ImportEmployeesModal({
             <div className="flex justify-end gap-3 mt-5">
               <button
                 onClick={() => setUndoConfirm(null)}
-                className="px-4 py-2 rounded-[8px] text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] transition-colors"
+                className="px-4 py-2 rounded-[8px] text-sm font-semibold text-text-secondary bg-white border border-border-light hover:bg-surface-sunken transition-colors"
               >
                 Go back
               </button>
@@ -1222,7 +1222,7 @@ export default function ImportEmployeesModal({
                   setUndoConfirm(null)
                   handleUndo(id)
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-danger hover:bg-danger-hover transition-colors"
               >
                 <Undo2 size={14} /> Yes, undo import
               </button>
@@ -1249,10 +1249,10 @@ function FilterChip({
   onClick: () => void
 }) {
   const palette = {
-    slate: { on: 'bg-[#0F172A] text-white border-[#0F172A]', off: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0] hover:bg-[#E2E8F0]' },
-    green: { on: 'bg-[#16A34A] text-white border-[#16A34A]', off: 'bg-[#DCFCE7] text-[#166534] border-[#BBF7D0] hover:bg-[#BBF7D0]' },
-    red: { on: 'bg-[#DC2626] text-white border-[#DC2626]', off: 'bg-[#FEE2E2] text-[#991B1B] border-[#FECACA] hover:bg-[#FECACA]' },
-    amber: { on: 'bg-[#B45309] text-white border-[#B45309]', off: 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A] hover:bg-[#FDE68A]' },
+    slate: { on: 'bg-[#0F172A] text-white border-[#0F172A]', off: 'bg-surface-control text-text-secondary border-border-light hover:bg-surface-control-pressed' },
+    green: { on: 'bg-success text-white border-success', off: 'bg-success-bg text-success border-success-border hover:bg-success-bg' },
+    red: { on: 'bg-danger text-white border-danger', off: 'bg-danger-bg text-danger border-danger-border hover:bg-danger-bg' },
+    amber: { on: 'bg-warning text-white border-warning-border', off: 'bg-warning-bg text-warning border-warning-border hover:bg-warning-bg' },
   }[color]
   return (
     <button
@@ -1293,40 +1293,40 @@ function ResultView({
         {undoResult ? (
           // After an undo, the import counts are stale — show what the undo did.
           <>
-            <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-[#F1F5F9] border border-[#E2E8F0]">
-              <Undo2 size={16} className="text-[#475569]" />
-              <span className="text-sm font-semibold text-[#334155]">{undoResult.undone} removed</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-surface-control border border-border-light">
+              <Undo2 size={16} className="text-text-secondary" />
+              <span className="text-sm font-semibold text-text-secondary">{undoResult.undone} removed</span>
             </div>
             {undoResult.kept.length > 0 && (
-              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-[#FEF3C7] border border-[#FDE68A]">
-                <AlertTriangle size={16} className="text-[#B45309]" />
-                <span className="text-sm font-semibold text-[#92400E]">{undoResult.kept.length} kept</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-warning-bg border border-warning-border">
+                <AlertTriangle size={16} className="text-warning" />
+                <span className="text-sm font-semibold text-warning">{undoResult.kept.length} kept</span>
               </div>
             )}
             {failed.length > 0 && (
-              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-[#FEE2E2] border border-[#FECACA]">
-                <AlertCircle size={16} className="text-[#DC2626]" />
-                <span className="text-sm font-semibold text-[#991B1B]">{failed.length} failed</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-danger-bg border border-danger-border">
+                <AlertCircle size={16} className="text-danger" />
+                <span className="text-sm font-semibold text-danger">{failed.length} failed</span>
               </div>
             )}
           </>
         ) : (
           <>
-            <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-[#DCFCE7] border border-[#BBF7D0]">
-              <CheckCircle2 size={16} className="text-[#16A34A]" />
-              <span className="text-sm font-semibold text-[#166534]">{result.created} imported</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-success-bg border border-success-border">
+              <CheckCircle2 size={16} className="text-success" />
+              <span className="text-sm font-semibold text-success">{result.created} imported</span>
             </div>
             {result.failed > 0 && (
-              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-[#FEE2E2] border border-[#FECACA]">
-                <AlertCircle size={16} className="text-[#DC2626]" />
-                <span className="text-sm font-semibold text-[#991B1B]">{result.failed} failed</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-danger-bg border border-danger-border">
+                <AlertCircle size={16} className="text-danger" />
+                <span className="text-sm font-semibold text-danger">{result.failed} failed</span>
               </div>
             )}
             {result.batch_id && result.created > 0 && (
               <button
                 onClick={onUndo}
                 disabled={undoing}
-                className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-sm font-semibold text-[#B91C1C] bg-white border border-[#FECACA] hover:bg-[#FEF2F2] disabled:opacity-60 transition-colors"
+                className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-sm font-semibold text-danger bg-white border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
               >
                 {undoing ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />}
                 Undo this import
@@ -1339,7 +1339,7 @@ function ResultView({
       {downloadCount > 0 && (
         <button
           onClick={onDownload}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] text-[13px] font-semibold text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] hover:bg-[#DBEAFE] transition-colors"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] text-[13px] font-semibold text-primary-text bg-primary-subtle border border-primary-border hover:bg-primary-subtle transition-colors"
         >
           <Download size={14} />
           {removed.length > 0
@@ -1351,16 +1351,16 @@ function ResultView({
       {undoResult && undoResult.kept.length > 0 && <UndoSummary undoResult={undoResult} compact />}
 
       {removed.length > 0 && (
-        <div className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
-          <div className="px-4 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-            <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider">Removed ({removed.length})</p>
+        <div className="border border-border-light rounded-[10px] overflow-hidden">
+          <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
+            <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Removed ({removed.length})</p>
           </div>
-          <div className="max-h-52 overflow-y-auto divide-y divide-[#F1F5F9]">
+          <div className="max-h-52 overflow-y-auto divide-y divide-surface-control">
             {removed.map((r) => (
               <div key={r.row} className="px-4 py-2">
-                <p className="text-[13px] text-[#0F172A]">
+                <p className="text-[13px] text-text-primary">
                   <span className="font-medium">{r.name || `Row ${r.row}`}</span>
-                  {r.email && <span className="text-[#94A3B8]"> · {r.email}</span>}
+                  {r.email && <span className="text-text-muted"> · {r.email}</span>}
                 </p>
               </div>
             ))}
@@ -1369,18 +1369,18 @@ function ResultView({
       )}
 
       {failed.length > 0 && (
-        <div className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
-          <div className="px-4 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-            <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider">Rows that need fixing</p>
+        <div className="border border-border-light rounded-[10px] overflow-hidden">
+          <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
+            <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Rows that need fixing</p>
           </div>
-          <div className="max-h-56 overflow-y-auto divide-y divide-[#F1F5F9]">
+          <div className="max-h-56 overflow-y-auto divide-y divide-surface-control">
             {failed.map((r) => (
               <div key={r.row} className="px-4 py-2.5">
-                <p className="text-sm font-medium text-[#0F172A]">
+                <p className="text-sm font-medium text-text-primary">
                   Row {r.row}
                   {r.email ? ` · ${r.email}` : r.name ? ` · ${r.name}` : ''}
                 </p>
-                <p className="text-sm text-[#DC2626] mt-0.5">{r.error}</p>
+                <p className="text-sm text-danger mt-0.5">{r.error}</p>
               </div>
             ))}
           </div>
@@ -1388,9 +1388,9 @@ function ResultView({
       )}
 
       {!undoResult && (
-        <p className="text-[13px] text-[#475569]">
+        <p className="text-[13px] text-text-secondary">
           New accounts use the password from the sheet, or{' '}
-          <span className="font-semibold text-[#0F172A]">Welcome@123</span> when the password column is blank. Ask staff to
+          <span className="font-semibold text-text-primary">Welcome@123</span> when the password column is blank. Ask staff to
           change it after first sign-in.
         </p>
       )}
@@ -1400,21 +1400,21 @@ function ResultView({
 
 function UndoSummary({ undoResult, compact = false }: { undoResult: UndoImportResult; compact?: boolean }) {
   return (
-    <div className="border border-[#E2E8F0] rounded-[10px] p-4 space-y-2">
+    <div className="border border-border-light rounded-[10px] p-4 space-y-2">
       {!compact && (
-        <p className="text-sm font-semibold text-[#0F172A]">
+        <p className="text-sm font-semibold text-text-primary">
           Removed {undoResult.undone} employee{undoResult.undone !== 1 ? 's' : ''}.
         </p>
       )}
       {undoResult.kept.length > 0 && (
         <>
-          <p className="text-[13px] text-[#B45309]">
+          <p className="text-[13px] text-warning">
             Kept {undoResult.kept.length} — they already had activity and were left untouched:
           </p>
           <ul className="space-y-1 max-h-52 overflow-y-auto pr-1">
             {undoResult.kept.map((k) => (
-              <li key={k.email} className="text-[13px] text-[#475569]">
-                <span className="font-medium text-[#0F172A]">{k.name}</span> — {k.reason}
+              <li key={k.email} className="text-[13px] text-text-secondary">
+                <span className="font-medium text-text-primary">{k.name}</span> — {k.reason}
               </li>
             ))}
           </ul>
@@ -1438,12 +1438,12 @@ function HistoryView({
   undoResult: UndoImportResult | null
 }) {
   if (batches.length === 0) {
-    return <p className="text-sm text-[#94A3B8] py-8 text-center">No imports yet.</p>
+    return <p className="text-sm text-text-muted py-8 text-center">No imports yet.</p>
   }
   return (
     <div className="space-y-3">
       {undoResult && <UndoSummary undoResult={undoResult} />}
-      <div className="border border-[#E2E8F0] rounded-[10px] divide-y divide-[#F1F5F9]">
+      <div className="border border-border-light rounded-[10px] divide-y divide-surface-control">
         {batches.map((b) => {
           return (
             <div key={b.id} className="px-4 py-3 flex items-center gap-3">
@@ -1454,20 +1454,20 @@ function HistoryView({
                 className="flex-1 min-w-0 flex items-center gap-2 text-left group"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#0F172A] truncate group-hover:text-[#2563EB] transition-colors">
+                  <p className="text-sm font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
                     {b.file_name || 'Untitled import'}
                     {b.status !== 'committed' && (
-                      <span className="ml-2 text-[11px] font-semibold text-[#94A3B8] uppercase">{b.status.replace('_', ' ')}</span>
+                      <span className="ml-2 text-[11px] font-semibold text-text-muted uppercase">{b.status.replace('_', ' ')}</span>
                     )}
                   </p>
-                  <p className="text-xs text-[#64748B] mt-0.5">
+                  <p className="text-xs text-text-muted mt-0.5">
                     {new Date(b.created_at).toLocaleString()} · by {b.imported_by} · {b.created_count} created
                     {b.failed_count > 0 ? `, ${b.failed_count} failed` : ''} · {b.remaining} still present
                   </p>
                 </div>
                 <ChevronRight
                   size={16}
-                  className="shrink-0 text-[#94A3B8] group-hover:text-[#2563EB] transition-colors"
+                  className="shrink-0 text-text-muted group-hover:text-primary-text transition-colors"
                 />
               </button>
               </Tooltip>
@@ -1475,13 +1475,13 @@ function HistoryView({
                 <button
                   onClick={() => onUndo(b.id)}
                   disabled={undoingId === b.id}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-semibold text-[#B91C1C] bg-white border border-[#FECACA] hover:bg-[#FEF2F2] disabled:opacity-60 transition-colors shrink-0"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-semibold text-danger bg-white border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors shrink-0"
                 >
                   {undoingId === b.id ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />}
                   Undo
                 </button>
               ) : (
-                <span className="text-[11px] text-[#94A3B8] shrink-0">
+                <span className="text-[11px] text-text-muted shrink-0">
                   {b.status === 'committed' ? 'Undo window passed' : 'Undone'}
                 </span>
               )}
@@ -1510,7 +1510,7 @@ function BatchDetailView({
 }) {
   if (loading || !detail) {
     return (
-      <div className="flex items-center justify-center py-16 text-[#94A3B8]">
+      <div className="flex items-center justify-center py-16 text-text-muted">
         <Loader2 size={20} className="animate-spin mr-2" /> Loading import details…
       </div>
     )
@@ -1528,37 +1528,37 @@ function BatchDetailView({
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-sm font-semibold text-[#0F172A]">{detail.file_name || 'Untitled import'}</p>
-        <p className="text-xs text-[#64748B] mt-0.5">
+        <p className="text-sm font-semibold text-text-primary">{detail.file_name || 'Untitled import'}</p>
+        <p className="text-xs text-text-muted mt-0.5">
           {new Date(detail.created_at).toLocaleString()} · by {detail.imported_by}
           {detail.status !== 'committed' && (
-            <span className="ml-2 text-[11px] font-semibold text-[#94A3B8] uppercase">{detail.status.replace('_', ' ')}</span>
+            <span className="ml-2 text-[11px] font-semibold text-text-muted uppercase">{detail.status.replace('_', ' ')}</span>
           )}
         </p>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-[#DCFCE7] border border-[#BBF7D0]">
-          <CheckCircle2 size={16} className="text-[#16A34A]" />
-          <span className="text-sm font-semibold text-[#166534]">{createdPresent.length} present</span>
+        <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-success-bg border border-success-border">
+          <CheckCircle2 size={16} className="text-success" />
+          <span className="text-sm font-semibold text-success">{createdPresent.length} present</span>
         </div>
         {removedCount > 0 && (
-          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-[#F1F5F9] border border-[#E2E8F0]">
-            <Undo2 size={16} className="text-[#475569]" />
-            <span className="text-sm font-semibold text-[#334155]">{removedCount} removed</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-surface-control border border-border-light">
+            <Undo2 size={16} className="text-text-secondary" />
+            <span className="text-sm font-semibold text-text-secondary">{removedCount} removed</span>
           </div>
         )}
         {failed.length > 0 && (
-          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-[#FEE2E2] border border-[#FECACA]">
-            <AlertCircle size={16} className="text-[#DC2626]" />
-            <span className="text-sm font-semibold text-[#991B1B]">{failed.length} failed</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-danger-bg border border-danger-border">
+            <AlertCircle size={16} className="text-danger" />
+            <span className="text-sm font-semibold text-danger">{failed.length} failed</span>
           </div>
         )}
         {detail.can_undo && (
           <button
             onClick={() => onUndo(detail.id)}
             disabled={undoing}
-            className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-sm font-semibold text-[#B91C1C] bg-white border border-[#FECACA] hover:bg-[#FEF2F2] disabled:opacity-60 transition-colors"
+            className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-sm font-semibold text-danger bg-white border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
           >
             {undoing ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />}
             Undo this import
@@ -1567,9 +1567,9 @@ function BatchDetailView({
       </div>
 
       {noRowDetail ? (
-        <div className="flex items-start gap-2 p-3 rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0]">
-          <AlertTriangle size={16} className="text-[#94A3B8] mt-0.5 shrink-0" />
-          <p className="text-[13px] text-[#64748B]">
+        <div className="flex items-start gap-2 p-3 rounded-[8px] bg-surface-sunken border border-border-light">
+          <AlertTriangle size={16} className="text-text-muted mt-0.5 shrink-0" />
+          <p className="text-[13px] text-text-muted">
             Row-level details weren’t recorded for this import (it predates detailed history). The summary above still
             applies: {detail.created_count} created, {detail.failed_count} failed, {detail.remaining} still present.
           </p>
@@ -1577,9 +1577,9 @@ function BatchDetailView({
       ) : (
         <>
           {detail.rows_reconstructed && (
-            <div className="flex items-start gap-2 p-3 rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0]">
-              <AlertTriangle size={16} className="text-[#94A3B8] mt-0.5 shrink-0" />
-              <p className="text-[13px] text-[#64748B]">
+            <div className="flex items-start gap-2 p-3 rounded-[8px] bg-surface-sunken border border-border-light">
+              <AlertTriangle size={16} className="text-text-muted mt-0.5 shrink-0" />
+              <p className="text-[13px] text-text-muted">
                 This import predates detailed history, so the list below is rebuilt from the employees still in the
                 system. Original cell values and any failed rows weren’t recorded, so re-export isn’t available for this
                 one. New imports keep full row-level detail.
@@ -1590,7 +1590,7 @@ function BatchDetailView({
           {downloadCount > 0 && (
             <button
               onClick={onDownload}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] text-[13px] font-semibold text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] hover:bg-[#DBEAFE] transition-colors"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] text-[13px] font-semibold text-primary-text bg-primary-subtle border border-primary-border hover:bg-primary-subtle transition-colors"
             >
               <Download size={14} />
               {removed.length > 0
@@ -1600,14 +1600,14 @@ function BatchDetailView({
           )}
 
           {detail.undo_summary && detail.undo_summary.kept.length > 0 && (
-            <div className="border border-[#E2E8F0] rounded-[10px] p-4 space-y-2">
-              <p className="text-[13px] text-[#B45309]">
+            <div className="border border-border-light rounded-[10px] p-4 space-y-2">
+              <p className="text-[13px] text-warning">
                 Kept {detail.undo_summary.kept.length} on undo — they already had activity and were left untouched:
               </p>
               <ul className="space-y-1 max-h-52 overflow-y-auto pr-1">
                 {detail.undo_summary.kept.map((k) => (
-                  <li key={k.email} className="text-[13px] text-[#475569]">
-                    <span className="font-medium text-[#0F172A]">{k.name}</span> — {k.reason}
+                  <li key={k.email} className="text-[13px] text-text-secondary">
+                    <span className="font-medium text-text-primary">{k.name}</span> — {k.reason}
                   </li>
                 ))}
               </ul>
@@ -1615,16 +1615,16 @@ function BatchDetailView({
           )}
 
           {removed.length > 0 && (
-            <div className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
-              <div className="px-4 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-                <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider">Removed ({removed.length})</p>
+            <div className="border border-border-light rounded-[10px] overflow-hidden">
+              <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
+                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Removed ({removed.length})</p>
               </div>
-              <div className="max-h-52 overflow-y-auto divide-y divide-[#F1F5F9]">
+              <div className="max-h-52 overflow-y-auto divide-y divide-surface-control">
                 {removed.map((r) => (
                   <div key={r.row} className="px-4 py-2">
-                    <p className="text-[13px] text-[#0F172A]">
+                    <p className="text-[13px] text-text-primary">
                       <span className="font-medium">{r.name || `Row ${r.row}`}</span>
-                      {r.email && <span className="text-[#94A3B8]"> · {r.email}</span>}
+                      {r.email && <span className="text-text-muted"> · {r.email}</span>}
                     </p>
                   </div>
                 ))}
@@ -1633,16 +1633,16 @@ function BatchDetailView({
           )}
 
           {createdPresent.length > 0 && (
-            <div className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
-              <div className="px-4 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-                <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider">Imported &amp; present ({createdPresent.length})</p>
+            <div className="border border-border-light rounded-[10px] overflow-hidden">
+              <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
+                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Imported &amp; present ({createdPresent.length})</p>
               </div>
-              <div className="max-h-52 overflow-y-auto divide-y divide-[#F1F5F9]">
+              <div className="max-h-52 overflow-y-auto divide-y divide-surface-control">
                 {createdPresent.map((r) => (
                   <div key={r.row} className="px-4 py-2">
-                    <p className="text-[13px] text-[#0F172A]">
+                    <p className="text-[13px] text-text-primary">
                       <span className="font-medium">{r.name || `Row ${r.row}`}</span>
-                      {r.email && <span className="text-[#94A3B8]"> · {r.email}</span>}
+                      {r.email && <span className="text-text-muted"> · {r.email}</span>}
                     </p>
                   </div>
                 ))}
@@ -1651,18 +1651,18 @@ function BatchDetailView({
           )}
 
           {failed.length > 0 && (
-            <div className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
-              <div className="px-4 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-                <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider">Rows that need fixing ({failed.length})</p>
+            <div className="border border-border-light rounded-[10px] overflow-hidden">
+              <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
+                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Rows that need fixing ({failed.length})</p>
               </div>
-              <div className="max-h-56 overflow-y-auto divide-y divide-[#F1F5F9]">
+              <div className="max-h-56 overflow-y-auto divide-y divide-surface-control">
                 {failed.map((r) => (
                   <div key={r.row} className="px-4 py-2.5">
-                    <p className="text-sm font-medium text-[#0F172A]">
+                    <p className="text-sm font-medium text-text-primary">
                       Row {r.row}
                       {r.email ? ` · ${r.email}` : r.name ? ` · ${r.name}` : ''}
                     </p>
-                    <p className="text-sm text-[#DC2626] mt-0.5">{r.error}</p>
+                    <p className="text-sm text-danger mt-0.5">{r.error}</p>
                   </div>
                 ))}
               </div>
@@ -1674,16 +1674,16 @@ function BatchDetailView({
       {origin === 'import' && (
         <>
           {createdPresent.length > 0 && (
-            <p className="text-[13px] text-[#475569]">
+            <p className="text-[13px] text-text-secondary">
               New accounts use the password from the sheet, or{' '}
-              <span className="font-semibold text-[#0F172A]">Welcome@123</span> when the password column is blank. Ask staff
+              <span className="font-semibold text-text-primary">Welcome@123</span> when the password column is blank. Ask staff
               to change it after first sign-in.
             </p>
           )}
-          <div className="flex items-start gap-2 p-3 rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0]">
-            <History size={15} className="text-[#94A3B8] mt-0.5 shrink-0" />
-            <p className="text-[13px] text-[#64748B]">
-              You can reopen this import anytime from <span className="font-semibold text-[#0F172A]">Import → History</span>.
+          <div className="flex items-start gap-2 p-3 rounded-[8px] bg-surface-sunken border border-border-light">
+            <History size={15} className="text-text-muted mt-0.5 shrink-0" />
+            <p className="text-[13px] text-text-muted">
+              You can reopen this import anytime from <span className="font-semibold text-text-primary">Import → History</span>.
             </p>
           </div>
         </>

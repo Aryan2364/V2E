@@ -85,7 +85,7 @@ export default function BrandMark({
       {showWordmark && (
         <span
           className={`font-bold tracking-tight select-none ${s.word} ${
-            tone === 'dark' ? 'text-white' : 'text-[#0F172A]'
+            tone === 'dark' ? 'text-white' : 'text-text-primary'
           }`}
         >
           V2E

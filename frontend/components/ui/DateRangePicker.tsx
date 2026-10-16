@@ -151,17 +151,17 @@ export default function DateRangePicker({
 
   const hasValue = !!(fromD || toD)
 
-  const triggerCls = `w-full flex items-center gap-0 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] text-left text-[15px] cursor-pointer transition-colors hover:bg-white hover:border-[#94A3B8] ${
-    open ? 'bg-white! border-[#2563EB]! ring-1 ring-[#2563EB]' : ''
+  const triggerCls = `w-full flex items-center gap-0 rounded-[8px] border border-border bg-surface-sunken text-left text-[15px] cursor-pointer transition-colors hover:bg-white hover:border-border-strong ${
+    open ? 'bg-white! border-primary! ring-1 ring-primary' : ''
   }`
 
   return (
     <div ref={wrapRef} className={wrapperClassName}>
       <button type="button" onClick={() => setOpen((o) => !o)} className={triggerCls}>
-        <span className="flex items-center px-2.5 py-2.5 border-r border-[#E2E8F0] rounded-l-[8px] text-[#64748B]">
+        <span className="flex items-center px-2.5 py-2.5 border-r border-border-light rounded-l-[8px] text-text-muted">
           <Calendar size={15} />
         </span>
-        <span className={`flex-1 px-3 py-2.5 truncate ${hasValue ? 'text-[#0F172A]' : 'text-[#94A3B8]'}`}>
+        <span className={`flex-1 px-3 py-2.5 truncate ${hasValue ? 'text-text-primary' : 'text-text-muted'}`}>
           {label}
         </span>
         {hasValue && (
@@ -173,7 +173,7 @@ export default function DateRangePicker({
               e.stopPropagation()
               onChange('', '')
             }}
-            className="flex items-center px-2.5 text-[#94A3B8] hover:text-[#DC2626]"
+            className="flex items-center px-2.5 text-text-muted hover:text-danger"
           >
             <X size={14} />
           </span>
@@ -186,7 +186,7 @@ export default function DateRangePicker({
           onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
           <div
-            className="w-[340px] max-w-full rounded-[12px] border border-[#E2E8F0] bg-white shadow-[0_12px_40px_rgba(0,0,0,0.20)] p-3"
+            className="w-[340px] max-w-full rounded-[12px] border border-border-light bg-white shadow-[0_12px_40px_rgba(0,0,0,0.20)] p-3"
           >
             {/* Quick presets */}
             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -199,7 +199,7 @@ export default function DateRangePicker({
                     onChange(f, t)
                     setOpen(false)
                   }}
-                  className="px-2.5 py-1 rounded-[999px] text-xs font-medium text-[#475569] bg-[#F1F5F9] hover:bg-[#EFF6FF] hover:text-[#2563EB] transition-colors"
+                  className="px-2.5 py-1 rounded-[999px] text-xs font-medium text-text-secondary bg-surface-control hover:bg-primary-subtle hover:text-primary-text transition-colors"
                 >
                   {p.label}
                 </button>
@@ -211,18 +211,18 @@ export default function DateRangePicker({
               <button
                 type="button"
                 onClick={() => shiftMonth(-1)}
-                className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#475569] hover:bg-[#F1F5F9]"
+                className="w-8 h-8 rounded-[8px] flex items-center justify-center text-text-secondary hover:bg-surface-control"
                 aria-label="Previous month"
               >
                 <ChevronLeft size={17} />
               </button>
-              <span className="text-sm font-semibold text-[#0F172A]">
+              <span className="text-sm font-semibold text-text-primary">
                 {MONTHS[view.getMonth()]} {view.getFullYear()}
               </span>
               <button
                 type="button"
                 onClick={() => shiftMonth(1)}
-                className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#475569] hover:bg-[#F1F5F9]"
+                className="w-8 h-8 rounded-[8px] flex items-center justify-center text-text-secondary hover:bg-surface-control"
                 aria-label="Next month"
               >
                 <ChevronRight size={17} />
@@ -232,7 +232,7 @@ export default function DateRangePicker({
             {/* Weekday labels */}
             <div className="grid grid-cols-7 mb-1">
               {WEEKDAYS.map((w) => (
-                <div key={w} className="text-center text-[11px] font-semibold text-[#94A3B8] py-1">
+                <div key={w} className="text-center text-[11px] font-semibold text-text-muted py-1">
                   {w}
                 </div>
               ))}
@@ -253,10 +253,10 @@ export default function DateRangePicker({
                     key={i}
                     className={[
                       'h-9 flex items-center justify-center',
-                      within ? 'bg-[#EFF6FF]' : '',
+                      within ? 'bg-primary-subtle' : '',
                       // Round the band ends.
-                      isStart ? 'rounded-l-[8px] bg-[#EFF6FF]' : '',
-                      isEnd ? 'rounded-r-[8px] bg-[#EFF6FF]' : '',
+                      isStart ? 'rounded-l-[8px] bg-primary-subtle' : '',
+                      isEnd ? 'rounded-r-[8px] bg-primary-subtle' : '',
                       isStart && isEnd ? 'bg-transparent' : '',
                     ].join(' ')}
                   >
@@ -270,13 +270,13 @@ export default function DateRangePicker({
                         off
                           ? 'text-[#CBD5E1] cursor-not-allowed'
                           : isEndpoint
-                            ? 'bg-[#2563EB] text-white font-semibold'
+                            ? 'bg-primary text-white font-semibold'
                             : within
-                              ? 'text-[#0F172A]'
+                              ? 'text-text-primary'
                               : inMonth
-                                ? 'text-[#0F172A] hover:bg-[#EFF6FF]'
-                                : 'text-[#CBD5E1] hover:bg-[#F1F5F9]',
-                        !isEndpoint && isToday && !off ? 'ring-1 ring-inset ring-[#2563EB]' : '',
+                                ? 'text-text-primary hover:bg-primary-subtle'
+                                : 'text-[#CBD5E1] hover:bg-surface-control',
+                        !isEndpoint && isToday && !off ? 'ring-1 ring-inset ring-primary' : '',
                       ].join(' ')}
                     >
                       {d.getDate()}
@@ -287,21 +287,21 @@ export default function DateRangePicker({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#F1F5F9]">
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-border-light">
               <button
                 type="button"
                 onClick={() => {
                   onChange('', '')
                   setOpen(false)
                 }}
-                className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A] px-2 py-1"
+                className="text-xs font-semibold text-text-muted hover:text-text-primary px-2 py-1"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] px-2 py-1"
+                className="text-xs font-semibold text-primary-text hover:text-primary-text px-2 py-1"
               >
                 Done
               </button>

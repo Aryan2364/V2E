@@ -71,14 +71,14 @@ export default function OrgCalendarPage() {
   }
 
   if (loading && !workingDays) {
-    return <div className="flex items-center justify-center h-64"><Loader2 size={24} className="animate-spin text-[#94A3B8]" /></div>
+    return <div className="flex items-center justify-center h-64"><Loader2 size={24} className="animate-spin text-text-muted" /></div>
   }
 
   return (
     <div className="space-y-5 pb-12">
       <div>
-        <h1 className="text-[28px] font-bold text-[#0F172A]">Org Calendar</h1>
-        <p className="text-[15px] text-[#475569] mt-1">Set your working days and holidays. They drive deadlines, leave, and reports.</p>
+        <h1 className="text-[28px] font-bold text-text-primary">Org Calendar</h1>
+        <p className="text-[15px] text-text-secondary mt-1">Set your working days and holidays. They drive deadlines, leave, and reports.</p>
       </div>
 
       {/* Working days — slim, auto-saving strip */}
@@ -87,25 +87,25 @@ export default function OrgCalendarPage() {
       {/* Holidays + calendar, side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 items-start lg:items-stretch">
         {/* Holidays list */}
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col">
+        <div className="bg-white border border-border-light rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col">
           <div className="flex items-center justify-between gap-3 flex-wrap mb-4 shrink-0">
             <div className="flex items-center gap-3">
-              <h2 className="text-[18px] font-semibold text-[#0F172A]">Holidays</h2>
+              <h2 className="text-[18px] font-semibold text-text-primary">Holidays</h2>
               {/* Year stepper — < 2026 > */}
-              <div className="flex items-center gap-1 rounded-[8px] border border-[#CBD5E1] bg-white">
+              <div className="flex items-center gap-1 rounded-[8px] border border-border bg-white">
                 <button
                   type="button"
                   onClick={() => setSelectedYear((y) => y - 1)}
-                  className="p-1.5 rounded-l-[7px] text-[#475569] hover:bg-[#F1F5F9] transition-colors"
+                  className="p-1.5 rounded-l-[7px] text-text-secondary hover:bg-surface-control transition-colors"
                   aria-label="Previous year"
                 >
                   <ChevronLeft size={15} />
                 </button>
-                <span className="min-w-[44px] text-center text-sm font-semibold text-[#0F172A] tabular-nums">{selectedYear}</span>
+                <span className="min-w-[44px] text-center text-sm font-semibold text-text-primary tabular-nums">{selectedYear}</span>
                 <button
                   type="button"
                   onClick={() => setSelectedYear((y) => y + 1)}
-                  className="p-1.5 rounded-r-[7px] text-[#475569] hover:bg-[#F1F5F9] transition-colors"
+                  className="p-1.5 rounded-r-[7px] text-text-secondary hover:bg-surface-control transition-colors"
                   aria-label="Next year"
                 >
                   <ChevronRight size={15} />
@@ -118,7 +118,7 @@ export default function OrgCalendarPage() {
                 <button
                   type="button"
                   onClick={() => setShowImport(true)}
-                  className="flex items-center gap-1.5 h-9 px-3 rounded-[8px] border border-[#CBD5E1] text-sm font-medium text-[#475569] hover:border-[#2563EB] hover:text-[#2563EB] transition-colors"
+                  className="flex items-center gap-1.5 h-9 px-3 rounded-[8px] border border-border text-sm font-medium text-text-secondary hover:border-primary hover:text-primary-text transition-colors"
                 >
                   <Upload size={14} />
                   Import CSV
@@ -126,7 +126,7 @@ export default function OrgCalendarPage() {
                 <button
                   type="button"
                   onClick={() => setShowAdd(true)}
-                  className="flex items-center gap-1.5 h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+                  className="flex items-center gap-1.5 h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
                 >
                   <Plus size={15} />
                   Add Holiday
@@ -136,7 +136,7 @@ export default function OrgCalendarPage() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center h-16"><Loader2 size={18} className="animate-spin text-[#94A3B8]" /></div>
+            <div className="flex items-center justify-center h-16"><Loader2 size={18} className="animate-spin text-text-muted" /></div>
           ) : (
             <div className="flex-1 min-h-0 overflow-y-auto lg:max-h-[360px]">
               <OrgHolidayList

@@ -8,7 +8,7 @@ import EmployeePicker, { type EmployeePickerOption } from '@/components/ui/Emplo
 import StyledSelect from '@/components/ui/StyledSelect'
 import type { RecurringAccessPanel, RecurringAccessLevel } from '@/lib/types/tasks'
 
-const AVATAR_COLORS = ['bg-[#2563EB]', 'bg-[#7C3AED]', 'bg-[#059669]', 'bg-[#D97706]', 'bg-[#DC2626]', 'bg-[#0891B2]']
+const AVATAR_COLORS = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary']
 function avatarColor(name: string): string {
   let h = 0; for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
   return AVATAR_COLORS[h % AVATAR_COLORS.length]
@@ -112,17 +112,17 @@ export default function ManageAccessModal({
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-lg bg-white rounded-[14px] shadow-[0_12px_40px_rgba(0,0,0,0.18)] border border-[#E2E8F0] flex flex-col max-h-[85vh]">
+      <div className="w-full max-w-lg bg-white rounded-[14px] shadow-[0_12px_40px_rgba(0,0,0,0.18)] border border-border-light flex flex-col max-h-[85vh]">
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-[#E2E8F0]">
+        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border-light">
           <div className="flex items-center gap-2 min-w-0">
-            <Shield size={17} className="text-[#2563EB] shrink-0" />
+            <Shield size={17} className="text-primary-text shrink-0" />
             <div className="min-w-0">
-              <h3 className="text-[16px] font-semibold text-[#0F172A] leading-tight">Manage access</h3>
-              {panel && <p className="text-[13px] text-[#475569] truncate">“{panel.title}”</p>}
+              <h3 className="text-[16px] font-semibold text-text-primary leading-tight">Manage access</h3>
+              {panel && <p className="text-[13px] text-text-secondary truncate">“{panel.title}”</p>}
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-[8px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors shrink-0">
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-[8px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0">
             <X size={18} />
           </button>
         </div>
@@ -130,19 +130,19 @@ export default function ManageAccessModal({
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           {error && (
-            <div className="bg-[#FEE2E2] border border-[#FECACA] rounded-[8px] px-3 py-2 text-sm text-[#DC2626]">{error}</div>
+            <div className="bg-danger-bg border border-danger-border rounded-[8px] px-3 py-2 text-sm text-danger">{error}</div>
           )}
 
           {loading ? (
             <div className="flex items-center justify-center py-10">
-              <div className="w-7 h-7 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+              <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
           ) : panel ? (
             <>
               {/* Add people */}
-              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[10px] p-3">
-                <div className="flex items-center gap-1.5 mb-2 text-[13px] font-semibold text-[#0F172A]">
-                  <UserPlus size={14} className="text-[#2563EB]" /> Add or remove a person
+              <div className="bg-surface-sunken border border-border-light rounded-[10px] p-3">
+                <div className="flex items-center gap-1.5 mb-2 text-[13px] font-semibold text-text-primary">
+                  <UserPlus size={14} className="text-primary-text" /> Add or remove a person
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex-1 min-w-[180px]">
@@ -168,12 +168,12 @@ export default function ManageAccessModal({
                   <button
                     onClick={handleAdd}
                     disabled={!addUser || busyUser === addUser}
-                    className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors"
+                    className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                   >
                     Apply
                   </button>
                 </div>
-                <p className="mt-2 flex items-start gap-1 text-[12px] text-[#64748B]">
+                <p className="mt-2 flex items-start gap-1 text-[12px] text-text-muted">
                   <Info size={12} className="mt-0.5 shrink-0" />
                   “No access” hides the template from someone the rules would otherwise let see it. It does not change who does the work — edit the assignees for that.
                 </p>
@@ -181,24 +181,24 @@ export default function ManageAccessModal({
 
               {/* Has access */}
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wide text-[#94A3B8] mb-2">Has access</p>
+                <p className="text-[12px] font-semibold uppercase tracking-wide text-text-muted mb-2">Has access</p>
                 <div className="space-y-1.5">
                   {panel.rule_viewers.map((p) => (
-                    <div key={`rv-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-[8px] hover:bg-[#F8FAFC]">
+                    <div key={`rv-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-[8px] hover:bg-surface-sunken">
                       <Avatar name={p.name} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#0F172A] truncate">{p.name}</p>
-                        <p className="text-[12px] text-[#64748B]">{SOURCE_LABEL[p.source ?? ''] ?? 'Viewer'} · by rule</p>
+                        <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
+                        <p className="text-[12px] text-text-muted">{SOURCE_LABEL[p.source ?? ''] ?? 'Viewer'} · by rule</p>
                       </div>
                       {p.source === 'creator' ? (
-                        <span className="text-[12px] font-medium text-[#94A3B8] px-2">Full access</span>
+                        <span className="text-[12px] font-medium text-text-muted px-2">Full access</span>
                       ) : p.source === 'assignee' ? (
-                        <span className="text-[12px] text-[#94A3B8] px-2">Does the work</span>
+                        <span className="text-[12px] text-text-muted px-2">Does the work</span>
                       ) : (
                         <button
                           onClick={() => revoke(p.user_id)}
                           disabled={busyUser === p.user_id}
-                          className="text-[13px] font-medium text-[#DC2626] hover:underline disabled:opacity-50"
+                          className="text-[13px] font-medium text-danger hover:underline disabled:opacity-50"
                         >
                           Remove
                         </button>
@@ -207,11 +207,11 @@ export default function ManageAccessModal({
                   ))}
 
                   {panel.shares.map((p) => (
-                    <div key={`sh-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-[8px] hover:bg-[#F8FAFC]">
+                    <div key={`sh-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-[8px] hover:bg-surface-sunken">
                       <Avatar name={p.name} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#0F172A] truncate">{p.name}</p>
-                        <p className="text-[12px] text-[#2563EB]">Shared</p>
+                        <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
+                        <p className="text-[12px] text-primary-text">Shared</p>
                       </div>
                       <StyledSelect
                         value={p.level ?? 'view'}
@@ -222,7 +222,7 @@ export default function ManageAccessModal({
                       <button
                         onClick={() => clear(p.user_id)}
                         disabled={busyUser === p.user_id}
-                        className="text-[13px] font-medium text-[#DC2626] hover:underline disabled:opacity-50"
+                        className="text-[13px] font-medium text-danger hover:underline disabled:opacity-50"
                       >
                         Remove
                       </button>
@@ -234,19 +234,19 @@ export default function ManageAccessModal({
               {/* Removed */}
               {panel.revokes.length > 0 && (
                 <div>
-                  <p className="text-[12px] font-semibold uppercase tracking-wide text-[#94A3B8] mb-2">Hidden from</p>
+                  <p className="text-[12px] font-semibold uppercase tracking-wide text-text-muted mb-2">Hidden from</p>
                   <div className="space-y-1.5">
                     {panel.revokes.map((p) => (
-                      <div key={`rk-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-[8px] hover:bg-[#F8FAFC]">
+                      <div key={`rk-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-[8px] hover:bg-surface-sunken">
                         <Avatar name={p.name} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#0F172A] truncate">{p.name}</p>
-                          <p className="text-[12px] text-[#64748B]">No access</p>
+                          <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
+                          <p className="text-[12px] text-text-muted">No access</p>
                         </div>
                         <button
                           onClick={() => clear(p.user_id)}
                           disabled={busyUser === p.user_id}
-                          className="text-[13px] font-medium text-[#2563EB] hover:underline disabled:opacity-50"
+                          className="text-[13px] font-medium text-primary-text hover:underline disabled:opacity-50"
                         >
                           Restore
                         </button>
@@ -260,8 +260,8 @@ export default function ManageAccessModal({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end px-5 py-3.5 border-t border-[#E2E8F0]">
-          <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors">
+        <div className="flex justify-end px-5 py-3.5 border-t border-border-light">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors">
             Done
           </button>
         </div>

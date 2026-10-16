@@ -7,8 +7,8 @@ import { forgotPassword, verifyResetOtp, resetPassword } from '@/lib/api/auth'
 import Button from '@/components/ui/Button'
 
 const inputCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors'
-const labelCls = 'block text-sm font-medium text-[#374151] mb-1.5'
+  'w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
+const labelCls = 'block text-sm font-medium text-text-secondary mb-1.5'
 
 const RESEND_COOLDOWN_S = 60
 
@@ -123,17 +123,17 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
     <div className="w-full max-w-[420px]">
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-8">
+      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-8">
         {/* Brand */}
         <div className="mb-7 text-center">
-          <span className="text-[28px] font-bold text-[#0F172A] tracking-tight">V2E</span>
-          <h1 className="mt-3 text-[20px] font-bold text-[#0F172A]">{heading[step].title}</h1>
-          <p className="text-sm text-[#475569] mt-1">{heading[step].sub}</p>
+          <span className="text-[28px] font-bold text-text-primary tracking-tight">V2E</span>
+          <h1 className="mt-3 text-[20px] font-bold text-text-primary">{heading[step].title}</h1>
+          <p className="text-sm text-text-secondary mt-1">{heading[step].sub}</p>
         </div>
 
         {error && (
-          <div role="alert" className="mb-5 rounded-[8px] border border-[#FECACA] bg-[#FEE2E2] px-4 py-3">
-            <p className="text-sm text-[#DC2626]">{error}</p>
+          <div role="alert" className="mb-5 rounded-[8px] border border-danger-border bg-danger-bg px-4 py-3">
+            <p className="text-sm text-danger">{error}</p>
           </div>
         )}
 
@@ -191,7 +191,7 @@ export default function ForgotPasswordPage() {
               type="button"
               onClick={resend}
               disabled={cooldown > 0 || isLoading}
-              className="text-sm text-[#2563EB] hover:underline disabled:text-[#94A3B8] disabled:no-underline disabled:cursor-not-allowed"
+              className="text-sm text-primary-text hover:underline disabled:text-text-muted disabled:no-underline disabled:cursor-not-allowed"
             >
               {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
             </button>
@@ -222,7 +222,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -249,7 +249,7 @@ export default function ForgotPasswordPage() {
         {/* Step 4 — done */}
         {step === 'done' && (
           <div className="flex flex-col items-center gap-4">
-            <CheckCircle2 size={44} className="text-[#16A34A]" />
+            <CheckCircle2 size={44} className="text-success" />
             <Button
               type="button"
               variant="primary"
@@ -265,7 +265,7 @@ export default function ForgotPasswordPage() {
           <div className="mt-6 text-center">
             <a
               href="/login"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-[#475569] hover:text-[#0F172A]"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary"
             >
               <ArrowLeft size={15} /> Back to sign in
             </a>

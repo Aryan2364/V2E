@@ -9,7 +9,7 @@ import type { Department, EmployeeProfile } from '@/lib/types'
 /** Small pill that tags the department head wherever they appear. */
 function HeadBadge() {
   return (
-    <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#2563EB] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+    <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
       <Crown size={10} />
       Head
     </span>
@@ -73,22 +73,22 @@ export default function DeptInfoPanel({
       {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
 
       <div
-        className={`fixed inset-y-0 right-0 z-70 w-full max-w-sm bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-70 w-full max-w-sm bg-white border-l border-border-light shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         {department && (
           <>
             {/* Header */}
-            <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-[#E2E8F0]">
+            <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-border-light">
               <div className="min-w-0">
                 {ancestors.length > 0 && (
-                  <nav className="flex items-center flex-wrap gap-0.5 mb-1 text-xs text-[#64748B]">
+                  <nav className="flex items-center flex-wrap gap-0.5 mb-1 text-xs text-text-muted">
                     {ancestors.map((a) => (
                       <span key={a.id} className="flex items-center gap-0.5">
                         <button
                           onClick={() => onSelectDepartment(a)}
-                          className="hover:text-[#2563EB] hover:underline font-medium truncate max-w-[120px]"
+                          className="hover:text-primary-text hover:underline font-medium truncate max-w-[120px]"
                         >
                           {a.name}
                         </button>
@@ -97,7 +97,7 @@ export default function DeptInfoPanel({
                     ))}
                   </nav>
                 )}
-                <h3 className="font-bold text-[#0F172A] text-[17px] truncate flex items-center gap-2">
+                <h3 className="font-bold text-text-primary text-[17px] truncate flex items-center gap-2">
                   {accentColor && (
                     <span
                       className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -106,7 +106,7 @@ export default function DeptInfoPanel({
                   )}
                   {department.name}
                 </h3>
-                <p className="text-xs text-[#64748B] mt-0.5">
+                <p className="text-xs text-text-muted mt-0.5">
                   {department._count?.employee_profiles ?? members.length} members ·{' '}
                   {department._count?.roles ?? 0} roles ·{' '}
                   {department._count?.child_departments ?? subDepartments.length} sub-departments
@@ -116,7 +116,7 @@ export default function DeptInfoPanel({
                 {canEdit && (
                   <button
                     onClick={() => onEdit(department)}
-                    className="w-7 h-7 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+                    className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors"
                     aria-label="Edit department"
                   >
                     <Pencil size={15} />
@@ -124,7 +124,7 @@ export default function DeptInfoPanel({
                 )}
                 <button
                   onClick={onClose}
-                  className="w-7 h-7 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+                  className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
                   aria-label="Close"
                 >
                   <X size={16} />
@@ -134,27 +134,27 @@ export default function DeptInfoPanel({
 
             <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-6">
               {department.description && (
-                <p className="text-sm text-[#475569] leading-relaxed">{department.description}</p>
+                <p className="text-sm text-text-secondary leading-relaxed">{department.description}</p>
               )}
 
               {/* Members — the department head is pinned to the top and tagged. */}
               <section>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2 flex items-center gap-1.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-2 flex items-center gap-1.5">
                   <Users size={13} /> Members ({members.length})
                 </h4>
                 {members.length === 0 && !headOnlyName ? (
-                  <p className="text-sm text-[#94A3B8]">No one is in this department yet.</p>
+                  <p className="text-sm text-text-muted">No one is in this department yet.</p>
                 ) : (
                   <div className="flex flex-col gap-1">
                     {/* Head who isn't on the member roster (e.g. heads from a parent
                         department): show a read-only row so they're never lost. */}
                     {headOnlyName && (
-                      <div className="flex items-center gap-2.5 rounded-[8px] px-2 py-2 bg-[#EFF6FF] ring-1 ring-inset ring-[#BFDBFE]">
-                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#2563EB] text-xs font-bold shrink-0">
+                      <div className="flex items-center gap-2.5 rounded-[8px] px-2 py-2 bg-primary-subtle ring-1 ring-inset ring-primary-border">
+                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary-text text-xs font-bold shrink-0">
                           {headOnlyName.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-[#0F172A] truncate flex items-center gap-1.5">
+                          <p className="text-sm font-semibold text-text-primary truncate flex items-center gap-1.5">
                             <span className="truncate">{headOnlyName}</span>
                             <HeadBadge />
                           </p>
@@ -169,27 +169,27 @@ export default function DeptInfoPanel({
                           onClick={() => router.push(`/settings/organization/employees/${m.id}`)}
                           className={`group flex items-center gap-2.5 rounded-[8px] px-2 py-2 text-left transition-colors ${
                             isHead
-                              ? 'bg-[#EFF6FF] ring-1 ring-inset ring-[#BFDBFE] hover:bg-[#DBEAFE]'
-                              : 'hover:bg-[#F8FAFC]'
+                              ? 'bg-primary-subtle ring-1 ring-inset ring-primary-border hover:bg-primary-subtle'
+                              : 'hover:bg-surface-sunken'
                           }`}
                         >
                           <div
                             className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${
-                              isHead ? 'bg-white text-[#2563EB] font-bold' : 'bg-[#F1F5F9] text-[#475569]'
+                              isHead ? 'bg-white text-primary-text font-bold' : 'bg-surface-control text-text-secondary'
                             }`}
                           >
                             {(m.user?.name ?? 'U').charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-[#0F172A] truncate flex items-center gap-1.5">
+                            <p className="text-sm font-medium text-text-primary truncate flex items-center gap-1.5">
                               <span className="truncate">{m.user?.name ?? '—'}</span>
                               {isHead && <HeadBadge />}
                             </p>
-                            <p className="text-xs text-[#64748B] truncate">{m.role?.title ?? ''}</p>
+                            <p className="text-xs text-text-muted truncate">{m.role?.title ?? ''}</p>
                           </div>
                           <ChevronRight
                             size={14}
-                            className="text-[#CBD5E1] group-hover:text-[#94A3B8] shrink-0"
+                            className="text-[#CBD5E1] group-hover:text-text-muted shrink-0"
                           />
                         </button>
                       )
@@ -200,21 +200,21 @@ export default function DeptInfoPanel({
 
               {/* Sub-departments */}
               <section>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2 flex items-center gap-1.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-2 flex items-center gap-1.5">
                   <Network size={13} /> Sub-departments ({subDepartments.length})
                 </h4>
                 {subDepartments.length === 0 ? (
-                  <p className="text-sm text-[#94A3B8]">No sub-departments.</p>
+                  <p className="text-sm text-text-muted">No sub-departments.</p>
                 ) : (
                   <div className="flex flex-col gap-1">
                     {subDepartments.map((d) => (
                       <button
                         key={d.id}
                         onClick={() => onSelectDepartment(d)}
-                        className="group flex items-center justify-between gap-2 rounded-[8px] px-3 py-2 text-left bg-[#F8FAFC] hover:bg-[#EFF6FF] transition-colors"
+                        className="group flex items-center justify-between gap-2 rounded-[8px] px-3 py-2 text-left bg-surface-sunken hover:bg-primary-subtle transition-colors"
                       >
-                        <span className="text-sm font-medium text-[#0F172A] truncate">{d.name}</span>
-                        <span className="text-xs text-[#64748B] shrink-0">
+                        <span className="text-sm font-medium text-text-primary truncate">{d.name}</span>
+                        <span className="text-xs text-text-muted shrink-0">
                           {d._count?.employee_profiles ?? 0} ·{' '}
                           <ChevronRight size={12} className="inline" />
                         </span>

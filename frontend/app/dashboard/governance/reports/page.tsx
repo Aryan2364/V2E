@@ -15,16 +15,16 @@ const LINK_LABEL: Record<string, string> = { goal: 'Goal', project: 'Project', t
 
 function Stat({ label, value, color = '#0F172A', flag }: { label: string; value: string | number; color?: string; flag?: boolean }) {
   return (
-    <div className={['bg-white border rounded-[12px] p-4', flag ? 'border-[#FECACA]' : 'border-[#E2E8F0]'].join(' ')}>
-      <p className="text-[26px] font-bold leading-none flex items-center gap-1" style={{ color }}>{flag && <AlertTriangle size={18} className="text-[#DC2626]" />}{value}</p>
-      <p className="text-sm text-[#475569] mt-1">{label}</p>
+    <div className={['bg-white border rounded-[12px] p-4', flag ? 'border-danger-border' : 'border-border-light'].join(' ')}>
+      <p className="text-[26px] font-bold leading-none flex items-center gap-1" style={{ color }}>{flag && <AlertTriangle size={18} className="text-danger" />}{value}</p>
+      <p className="text-sm text-text-secondary mt-1">{label}</p>
     </div>
   )
 }
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-6">
-      <h2 className="text-[18px] font-semibold text-[#0F172A] mb-3">{title}</h2>
+      <h2 className="text-[18px] font-semibold text-text-primary mb-3">{title}</h2>
       {children}
     </div>
   )
@@ -84,18 +84,18 @@ export default function MeetingReportsPage() {
     <div>
       <div className="flex items-start justify-between gap-4 mb-5">
         <div>
-          <h1 className="flex items-center gap-2 text-[26px] font-bold text-[#0F172A] leading-tight"><BarChart2 size={24} className="text-[#2563EB]" /> Meeting Reports</h1>
-          <p className="text-sm text-[#475569] mt-1">Scoped to what you can see. Reports are only as honest as the capture.</p>
+          <h1 className="flex items-center gap-2 text-[26px] font-bold text-text-primary leading-tight"><BarChart2 size={24} className="text-primary-text" /> Meeting Reports</h1>
+          <p className="text-sm text-text-secondary mt-1">Scoped to what you can see. Reports are only as honest as the capture.</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-[220px]">
             <DateRangePicker from={from} to={to} onChange={(f, t) => { setFrom(f); setTo(t) }} />
           </div>
-          <button onClick={exportCsv} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[#475569] border border-[#E2E8F0] rounded-[8px]"><Download size={15} /> CSV</button>
+          <button onClick={exportCsv} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary border border-border-light rounded-[8px]"><Download size={15} /> CSV</button>
         </div>
       </div>
 
-      {loading ? <div className="p-10 text-center text-sm text-[#475569]">Loading…</div> : !data ? <div className="p-10 text-center text-sm text-[#94A3B8]">No data.</div> : (
+      {loading ? <div className="p-10 text-center text-sm text-text-secondary">Loading…</div> : !data ? <div className="p-10 text-center text-sm text-text-muted">No data.</div> : (
         <>
           <Section title="Activity">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
@@ -105,8 +105,8 @@ export default function MeetingReportsPage() {
               <Stat label="Avg overrun (min)" value={data.activity.avg_overrun_min} color={data.activity.avg_overrun_min > 0 ? '#D97706' : '#16A34A'} />
             </div>
             {loadData.length > 0 && (
-              <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-4">
-                <p className="text-sm font-medium text-[#374151] mb-2">Meeting load per person</p>
+              <div className="bg-white border border-border-light rounded-[12px] p-4">
+                <p className="text-sm font-medium text-text-secondary mb-2">Meeting load per person</p>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={loadData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
@@ -141,9 +141,9 @@ export default function MeetingReportsPage() {
 
           <Section title="Linkage">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-4">
-                <p className="text-sm font-medium text-[#374151] mb-2">Meeting hours by linkage</p>
-                {linkData.length === 0 ? <p className="text-sm text-[#94A3B8]">No data.</p> : (
+              <div className="bg-white border border-border-light rounded-[12px] p-4">
+                <p className="text-sm font-medium text-text-secondary mb-2">Meeting hours by linkage</p>
+                {linkData.length === 0 ? <p className="text-sm text-text-muted">No data.</p> : (
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
                       <Pie data={linkData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={(e: any) => `${e.name} (${e.value}h)`}>
@@ -154,14 +154,14 @@ export default function MeetingReportsPage() {
                   </ResponsiveContainer>
                 )}
               </div>
-              <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-4">
-                <p className="text-sm font-medium text-[#374151] mb-2">Goals getting attention</p>
-                {data.linkage.goal_attention.length === 0 ? <p className="text-sm text-[#94A3B8]">No goal-linked meetings.</p> : (
+              <div className="bg-white border border-border-light rounded-[12px] p-4">
+                <p className="text-sm font-medium text-text-secondary mb-2">Goals getting attention</p>
+                {data.linkage.goal_attention.length === 0 ? <p className="text-sm text-text-muted">No goal-linked meetings.</p> : (
                   <div className="flex flex-col gap-1.5">
                     {data.linkage.goal_attention.slice(0, 8).map((g) => (
                       <div key={g.goal_id} className="flex items-center justify-between text-sm">
-                        <span className="text-[#0F172A] truncate">{goals.get(g.goal_id) ?? 'Goal'}</span>
-                        <span className="text-[#475569] shrink-0">{g.meetings} mtg · {g.hours}h</span>
+                        <span className="text-text-primary truncate">{goals.get(g.goal_id) ?? 'Goal'}</span>
+                        <span className="text-text-secondary shrink-0">{g.meetings} mtg · {g.hours}h</span>
                       </div>
                     ))}
                   </div>

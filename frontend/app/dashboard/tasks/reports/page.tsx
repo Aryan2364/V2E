@@ -36,13 +36,13 @@ function completionRate(completed: number, total: number): string {
 function SectionHeader({ icon, title, onExport }: { icon: React.ReactNode; title: string; onExport: () => void }) {
   return (
     <div className="flex items-center justify-between mb-5">
-      <h2 className="flex items-center gap-2 text-[17px] font-semibold text-[#0F172A]">
+      <h2 className="flex items-center gap-2 text-[17px] font-semibold text-text-primary">
         {icon}
         {title}
       </h2>
       <button
         onClick={onExport}
-        className="flex items-center gap-1.5 px-3 py-[7px] text-sm font-medium text-[#2563EB] border border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors"
+        className="flex items-center gap-1.5 px-3 py-[7px] text-sm font-medium text-primary-text border border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
       >
         <Download size={14} />
         Export CSV
@@ -69,7 +69,7 @@ function StatBanner({ data }: { data: TaskReportData }) {
       {stats.map((s) => (
         <div
           key={s.label}
-          className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 flex items-start gap-4"
+          className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 flex items-start gap-4"
         >
           <div
             className="w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0"
@@ -78,8 +78,8 @@ function StatBanner({ data }: { data: TaskReportData }) {
             {s.icon}
           </div>
           <div>
-            <p className="text-3xl font-bold text-[#0F172A] leading-tight tabular-nums">{s.value}</p>
-            <p className="text-sm text-[#475569] mt-0.5">{s.label}</p>
+            <p className="text-3xl font-bold text-text-primary leading-tight tabular-nums">{s.value}</p>
+            <p className="text-sm text-text-secondary mt-0.5">{s.label}</p>
           </div>
         </div>
       ))}
@@ -116,11 +116,11 @@ function UserPerformanceSection({ data }: { data: TaskReportData }) {
   }
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
-      <SectionHeader icon={<Users size={16} className="text-[#2563EB]" />} title="User Performance" onExport={handleExport} />
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+      <SectionHeader icon={<Users size={16} className="text-primary-text" />} title="User Performance" onExport={handleExport} />
 
       {rows.length === 0 ? (
-        <p className="text-sm text-[#475569] text-center py-8">No user data available for this period.</p>
+        <p className="text-sm text-text-secondary text-center py-8">No user data available for this period.</p>
       ) : (
         <div className="space-y-6">
           <div className="h-64">
@@ -157,31 +157,31 @@ const userPerfColumns: ResponsiveColumn<UserPerfRow>[] = [
     key: 'name',
     header: 'Name',
     primary: true,
-    cellClassName: 'font-medium text-[#0F172A]',
+    cellClassName: 'font-medium text-text-primary',
     render: (u) => u.user?.name ?? 'Unknown',
   },
   {
     key: 'email',
     header: 'Email',
-    cellClassName: 'text-[#475569]',
+    cellClassName: 'text-text-secondary',
     render: (u) => u.user?.email ?? '—',
   },
   {
     key: 'total',
     header: 'Total',
-    cellClassName: 'text-[#0F172A] tabular-nums',
+    cellClassName: 'text-text-primary tabular-nums',
     render: (u) => u.total,
   },
   {
     key: 'completed',
     header: 'Completed',
-    cellClassName: 'text-[#16A34A] font-medium tabular-nums',
+    cellClassName: 'text-success font-medium tabular-nums',
     render: (u) => u.completed,
   },
   {
     key: 'overdue',
     header: 'Overdue',
-    cellClassName: 'text-[#DC2626] font-medium tabular-nums',
+    cellClassName: 'text-danger font-medium tabular-nums',
     render: (u) => u.overdue,
   },
   {
@@ -191,10 +191,10 @@ const userPerfColumns: ResponsiveColumn<UserPerfRow>[] = [
       const rate = u.total > 0 ? Math.round((u.completed / u.total) * 100) : 0
       return (
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden">
-            <div className="h-full bg-[#16A34A] rounded-full" style={{ width: `${rate}%` }} />
+          <div className="flex-1 h-1.5 bg-surface-control rounded-full overflow-hidden">
+            <div className="h-full bg-success rounded-full" style={{ width: `${rate}%` }} />
           </div>
-          <span className="text-xs font-semibold text-[#475569] w-8 shrink-0">{rate}%</span>
+          <span className="text-xs font-semibold text-text-secondary w-8 shrink-0">{rate}%</span>
         </div>
       )
     },
@@ -227,11 +227,11 @@ function DeptPerformanceSection({ data }: { data: TaskReportData }) {
   }
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
-      <SectionHeader icon={<Building2 size={16} className="text-[#7C3AED]" />} title="Department Performance" onExport={handleExport} />
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+      <SectionHeader icon={<Building2 size={16} className="text-text-secondary" />} title="Department Performance" onExport={handleExport} />
 
       {rows.length === 0 ? (
-        <p className="text-sm text-[#475569] text-center py-8">No department data available for this period.</p>
+        <p className="text-sm text-text-secondary text-center py-8">No department data available for this period.</p>
       ) : (
         <div className="space-y-6">
           <div className="h-56">
@@ -268,25 +268,25 @@ const deptPerfColumns: ResponsiveColumn<DeptPerfRow>[] = [
     key: 'department',
     header: 'Department',
     primary: true,
-    cellClassName: 'font-medium text-[#0F172A]',
+    cellClassName: 'font-medium text-text-primary',
     render: (d) => d.department?.name ?? 'No Department',
   },
   {
     key: 'total',
     header: 'Total',
-    cellClassName: 'text-[#0F172A] tabular-nums',
+    cellClassName: 'text-text-primary tabular-nums',
     render: (d) => d.total,
   },
   {
     key: 'completed',
     header: 'Completed',
-    cellClassName: 'text-[#16A34A] font-medium tabular-nums',
+    cellClassName: 'text-success font-medium tabular-nums',
     render: (d) => d.completed,
   },
   {
     key: 'overdue',
     header: 'Overdue',
-    cellClassName: 'text-[#DC2626] font-medium tabular-nums',
+    cellClassName: 'text-danger font-medium tabular-nums',
     render: (d) => d.overdue,
   },
   {
@@ -296,10 +296,10 @@ const deptPerfColumns: ResponsiveColumn<DeptPerfRow>[] = [
       const rate = d.total > 0 ? Math.round((d.completed / d.total) * 100) : 0
       return (
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden">
-            <div className="h-full bg-[#16A34A] rounded-full" style={{ width: `${rate}%` }} />
+          <div className="flex-1 h-1.5 bg-surface-control rounded-full overflow-hidden">
+            <div className="h-full bg-success rounded-full" style={{ width: `${rate}%` }} />
           </div>
-          <span className="text-xs font-semibold text-[#475569] w-8 shrink-0">{rate}%</span>
+          <span className="text-xs font-semibold text-text-secondary w-8 shrink-0">{rate}%</span>
         </div>
       )
     },
@@ -326,11 +326,11 @@ function BreakdownSection({
   }
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
       <SectionHeader icon={icon} title={title} onExport={handleExport} />
 
       {rows.length === 0 ? (
-        <p className="text-sm text-[#475569] text-center py-8">No data available for this period.</p>
+        <p className="text-sm text-text-secondary text-center py-8">No data available for this period.</p>
       ) : (
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           <div className="w-full lg:w-48 shrink-0 h-48">
@@ -365,23 +365,23 @@ function BreakdownSection({
                   render: (r) => (
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
-                      <span className="font-medium text-[#0F172A] truncate">{r.label}</span>
+                      <span className="font-medium text-text-primary truncate">{r.label}</span>
                     </div>
                   ),
                 },
-                { key: 'total', header: 'Total', cellClassName: 'text-[#0F172A] tabular-nums', render: (r) => r.total },
-                { key: 'completed', header: 'Completed', cellClassName: 'text-[#16A34A] font-medium tabular-nums', render: (r) => r.completed },
-                { key: 'overdue', header: 'Overdue', cellClassName: 'text-[#DC2626] font-medium tabular-nums', render: (r) => r.overdue },
+                { key: 'total', header: 'Total', cellClassName: 'text-text-primary tabular-nums', render: (r) => r.total },
+                { key: 'completed', header: 'Completed', cellClassName: 'text-success font-medium tabular-nums', render: (r) => r.completed },
+                { key: 'overdue', header: 'Overdue', cellClassName: 'text-danger font-medium tabular-nums', render: (r) => r.overdue },
                 {
                   key: 'rate',
                   header: 'Rate',
-                  cellClassName: 'text-[#475569] tabular-nums',
+                  cellClassName: 'text-text-secondary tabular-nums',
                   render: (r) => `${r.total > 0 ? Math.round((r.completed / r.total) * 100) : 0}%`,
                 },
                 {
                   key: 'share',
                   header: 'Share',
-                  cellClassName: 'text-[#475569] tabular-nums',
+                  cellClassName: 'text-text-secondary tabular-nums',
                   render: (r) => `${grandTotal > 0 ? Math.round((r.total / grandTotal) * 100) : 0}%`,
                 },
               ]}
@@ -410,11 +410,11 @@ function StatusBreakdownSection({ data }: { data: TaskReportData }) {
   }
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
-      <SectionHeader icon={<CheckCircle2 size={16} className="text-[#16A34A]" />} title="Status Distribution" onExport={handleExport} />
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+      <SectionHeader icon={<CheckCircle2 size={16} className="text-success" />} title="Status Distribution" onExport={handleExport} />
 
       {rows.length === 0 ? (
-        <p className="text-sm text-[#475569] text-center py-8">No status data available.</p>
+        <p className="text-sm text-text-secondary text-center py-8">No status data available.</p>
       ) : (
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           <div className="w-full lg:w-48 shrink-0 h-48">
@@ -436,11 +436,11 @@ function StatusBreakdownSection({ data }: { data: TaskReportData }) {
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
-                      <span className="text-sm font-medium text-[#0F172A]">{r.label}</span>
+                      <span className="text-sm font-medium text-text-primary">{r.label}</span>
                     </div>
-                    <span className="text-sm text-[#475569] tabular-nums">{r.total} ({pct}%)</span>
+                    <span className="text-sm text-text-secondary tabular-nums">{r.total} ({pct}%)</span>
                   </div>
-                  <div className="h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-surface-control rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: r.color }} />
                   </div>
                 </div>
@@ -475,8 +475,8 @@ function FrequencySection({ data }: { data: TaskReportData }) {
   }
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
-      <SectionHeader icon={<RotateCcw size={16} className="text-[#D97706]" />} title="Task Frequency" onExport={handleExport} />
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+      <SectionHeader icon={<RotateCcw size={16} className="text-warning" />} title="Task Frequency" onExport={handleExport} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="h-48">
@@ -501,9 +501,9 @@ function FrequencySection({ data }: { data: TaskReportData }) {
             const pct = total > 0 ? Math.round((d.total / total) * 100) : 0
             const rate = d.total > 0 ? Math.round((d.completed / d.total) * 100) : 0
             return (
-              <div key={label} className="border border-[#E2E8F0] rounded-[10px] p-4">
+              <div key={label} className="border border-border-light rounded-[10px] p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-[#0F172A]">{label}</span>
+                  <span className="font-semibold text-text-primary">{label}</span>
                   <span
                     className="text-xs font-semibold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: color + '18', color }}
@@ -512,9 +512,9 @@ function FrequencySection({ data }: { data: TaskReportData }) {
                   </span>
                 </div>
                 <div className="flex gap-4 text-sm">
-                  <span className="text-[#475569]">Total: <strong className="text-[#0F172A]">{d.total}</strong></span>
-                  <span className="text-[#475569]">Completed: <strong className="text-[#16A34A]">{d.completed}</strong></span>
-                  <span className="text-[#475569]">Rate: <strong className="text-[#0F172A]">{rate}%</strong></span>
+                  <span className="text-text-secondary">Total: <strong className="text-text-primary">{d.total}</strong></span>
+                  <span className="text-text-secondary">Completed: <strong className="text-success">{d.completed}</strong></span>
+                  <span className="text-text-secondary">Rate: <strong className="text-text-primary">{rate}%</strong></span>
                 </div>
               </div>
             )
@@ -553,7 +553,7 @@ export default function ReportsPage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-[#0F172A]">No organization found</p>
+        <p className="font-semibold text-text-primary">No organization found</p>
       </div>
     )
   }
@@ -563,8 +563,8 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">Analytics</h1>
-          <p className="mt-1 text-[15px] text-[#475569]">Organization-wide task analytics — completion, priority, category and status breakdowns.</p>
+          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Analytics</h1>
+          <p className="mt-1 text-[15px] text-text-secondary">Organization-wide task analytics — completion, priority, category and status breakdowns.</p>
         </div>
 
         {/* Date range filter */}
@@ -575,7 +575,7 @@ export default function ReportsPage() {
           {(fromDate || toDate) && (
             <button
               onClick={() => { setFromDate(''); setToDate('') }}
-              className="px-3 py-[7px] text-sm font-medium text-[#DC2626] border border-[#FECACA] bg-[#FEE2E2] rounded-[8px] hover:bg-[#FECACA] transition-colors"
+              className="px-3 py-[7px] text-sm font-medium text-danger border border-danger-border bg-danger-bg rounded-[8px] hover:bg-danger-bg transition-colors"
             >
               Clear
             </button>
@@ -585,12 +585,12 @@ export default function ReportsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : !data ? (
         <div className="flex flex-col items-center justify-center h-64">
-          <p className="font-semibold text-[#0F172A]">Failed to load reports</p>
-          <button onClick={loadData} className="mt-3 px-4 py-2 text-sm font-semibold bg-[#2563EB] text-white rounded-[8px] hover:bg-[#1D4ED8] transition-colors">Retry</button>
+          <p className="font-semibold text-text-primary">Failed to load reports</p>
+          <button onClick={loadData} className="mt-3 px-4 py-2 text-sm font-semibold bg-primary text-white rounded-[8px] hover:bg-primary-hover transition-colors">Retry</button>
         </div>
       ) : (
         <>
@@ -600,13 +600,13 @@ export default function ReportsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <BreakdownSection
-              icon={<Tag size={16} className="text-[#D97706]" />}
+              icon={<Tag size={16} className="text-warning" />}
               title="Priority Breakdown"
               rows={data.priority_breakdown}
               exportFilename="priority_breakdown.csv"
             />
             <BreakdownSection
-              icon={<Tag size={16} className="text-[#0891B2]" />}
+              icon={<Tag size={16} className="text-text-secondary" />}
               title="Category Breakdown"
               rows={data.category_breakdown}
               exportFilename="category_breakdown.csv"

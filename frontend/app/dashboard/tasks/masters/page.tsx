@@ -47,7 +47,7 @@ import TagsTab from '@/components/tasks/masters/TagsTab'
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-[#374151] mb-1.5">{label}</label>
+      <label className="block text-sm font-medium text-text-secondary mb-1.5">{label}</label>
       {children}
     </div>
   )
@@ -60,13 +60,13 @@ function apiError(e: unknown): string | null {
   return msg ?? null
 }
 
-const inputCls = 'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white'
+const inputCls = 'w-full border border-border rounded-[8px] px-3 py-[8px] text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white'
 
 /** Solid blue count pill beside a heading; hidden when the count is 0. */
 function CountPill({ n }: { n: number }) {
   if (!n) return null
   return (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold leading-none">
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold leading-none">
       {n}
     </span>
   )
@@ -75,7 +75,7 @@ function CountPill({ n }: { n: number }) {
 function Spinner() {
   return (
     <div className="h-40 flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   )
 }
@@ -106,7 +106,7 @@ function ConfigTab({ orgId }: { orgId: string }) {
   }
 
   if (loading) return <Spinner />
-  if (!config) return <p className="text-sm text-[#475569]">Could not load configuration.</p>
+  if (!config) return <p className="text-sm text-text-secondary">Could not load configuration.</p>
 
   return (
     <div className="space-y-6 max-w-xl">
@@ -128,7 +128,7 @@ function ConfigTab({ orgId }: { orgId: string }) {
         </FormField>
       </div>
       <button onClick={handleSave} disabled={saving}
-        className="flex items-center gap-2 px-5 py-[10px] text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors">
+        className="flex items-center gap-2 px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
         <Save size={15} />
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Configuration'}
       </button>
@@ -184,59 +184,59 @@ function CategoriesTab({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-[#475569]">{items.length} categor{items.length !== 1 ? 'ies' : 'y'}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors">
+        <p className="text-sm text-text-secondary">{items.length} categor{items.length !== 1 ? 'ies' : 'y'}</p>
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors">
           <Plus size={14} /> Add Category
         </button>
       </div>
       {creating && (
-        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] p-4 space-y-3">
+        <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Name"><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Category name" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-[#CBD5E1] cursor-pointer" />
+                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
                 <input type="text" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className={inputCls} />
               </div>
             </FormField>
           </div>
           <FormField label="Description (optional)"><input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Brief description..." className={inputCls} /></FormField>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F1F5F9] transition-colors">Cancel</button>
+            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
+            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       )}
-      {items.length === 0 && !creating && <div className="text-center py-12 text-[#475569] text-sm">No categories yet.</div>}
+      {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-sm">No categories yet.</div>}
       <div className="space-y-2">
         {items.map((item) => editingId === item.id ? (
-          <div key={item.id} className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] p-4 space-y-3">
+          <div key={item.id} className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Name"><input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className={inputCls} /></FormField>
               <FormField label="Color">
                 <div className="flex gap-2 items-center">
-                  <input type="color" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-[#CBD5E1] cursor-pointer" />
+                  <input type="color" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
                   <input type="text" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} className={inputCls} />
                 </div>
               </FormField>
             </div>
             <FormField label="Description"><input type="text" value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} className={inputCls} /></FormField>
             <div className="flex gap-2">
-              <button onClick={() => handleEdit(item.id)} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : 'Save'}</button>
-              <button onClick={() => setEditingId(null)} className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F1F5F9] transition-colors">Cancel</button>
+              <button onClick={() => handleEdit(item.id)} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : 'Save'}</button>
+              <button onClick={() => setEditingId(null)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
             </div>
           </div>
         ) : (
-          <div key={item.id} className="bg-white border border-[#E2E8F0] rounded-[8px] px-4 py-3 flex items-center gap-3">
+          <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
             <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#0F172A]">{item.name}</p>
-              {item.description && <p className="text-xs text-[#475569] truncate">{item.description}</p>}
+              <p className="text-sm font-semibold text-text-primary">{item.name}</p>
+              {item.description && <p className="text-xs text-text-secondary truncate">{item.description}</p>}
             </div>
-            <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
+            <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, description: item.description ?? '', color: item.color }) }} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"><Pencil size={13} /></button>
-              <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"><Trash2 size={13} /></button>
+              <button onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, description: item.description ?? '', color: item.color }) }} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
+              <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
             </div>
           </div>
         ))}
@@ -322,30 +322,30 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-[#475569]">{items.length} priorit{items.length !== 1 ? 'ies' : 'y'}</p>
-          {items.length > 1 && <p className="text-xs text-[#94A3B8] mt-0.5">Ordered highest → lowest. Drag the handle or use the arrows to rearrange.</p>}
+          <p className="text-sm text-text-secondary">{items.length} priorit{items.length !== 1 ? 'ies' : 'y'}</p>
+          {items.length > 1 && <p className="text-xs text-text-muted mt-0.5">Ordered highest → lowest. Drag the handle or use the arrows to rearrange.</p>}
         </div>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors shrink-0"><Plus size={14} /> Add Priority</button>
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors shrink-0"><Plus size={14} /> Add Priority</button>
       </div>
       {creating && (
-        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] p-4 space-y-3">
+        <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Label"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. High" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-[#CBD5E1] cursor-pointer" />
+                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
                 <input type="text" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className={inputCls} />
               </div>
             </FormField>
           </div>
-          <p className="text-xs text-[#64748B]">Added to the bottom of the list. Drag it into position afterwards — the rank number updates automatically.</p>
+          <p className="text-xs text-text-muted">Added to the bottom of the list. Drag it into position afterwards — the rank number updates automatically.</p>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F1F5F9] transition-colors">Cancel</button>
+            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
+            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       )}
-      {items.length === 0 && !creating && <div className="text-center py-12 text-[#475569] text-sm">No priorities yet.</div>}
+      {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-sm">No priorities yet.</div>}
       <div className="space-y-2">
         {items.map((item, idx) => {
           const rankLabel = items.length > 1 ? (idx === 0 ? 'Highest' : idx === items.length - 1 ? 'Lowest' : null) : null
@@ -358,17 +358,17 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
               onDragOver={(e) => { e.preventDefault(); if (overIndex !== idx) setOverIndex(idx) }}
               onDragEnd={() => { setDragIndex(null); setOverIndex(null) }}
               onDrop={(e) => { e.preventDefault(); handleDrop(idx) }}
-              className={`bg-white border rounded-[8px] pl-2 pr-3 py-3 flex items-center gap-2.5 transition-colors ${isDropTarget ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0]'} ${dragIndex === idx ? 'opacity-50' : ''}`}
+              className={`bg-white border rounded-[8px] pl-2 pr-3 py-3 flex items-center gap-2.5 transition-colors ${isDropTarget ? 'border-primary bg-primary-subtle' : 'border-border-light'} ${dragIndex === idx ? 'opacity-50' : ''}`}
             >
-              <Tooltip label="Drag to reorder"><span className="cursor-grab active:cursor-grabbing text-[#94A3B8] hover:text-[#475569] shrink-0" aria-label="Drag to reorder"><GripVertical size={16} /></span></Tooltip>
-              <span className="w-7 h-7 shrink-0 flex items-center justify-center rounded-full bg-[#EFF6FF] text-[#2563EB] text-xs font-bold">{idx + 1}</span>
+              <Tooltip label="Drag to reorder"><span className="cursor-grab active:cursor-grabbing text-text-muted hover:text-text-secondary shrink-0" aria-label="Drag to reorder"><GripVertical size={16} /></span></Tooltip>
+              <span className="w-7 h-7 shrink-0 flex items-center justify-center rounded-full bg-primary-subtle text-primary-text text-xs font-bold">{idx + 1}</span>
               <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-              <span className="flex-1 min-w-0 truncate text-sm font-semibold text-[#0F172A]">{item.label}</span>
-              {rankLabel && <span className="hidden sm:inline text-[11px] font-medium text-[#475569]">{rankLabel}</span>}
-              <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
+              <span className="flex-1 min-w-0 truncate text-sm font-semibold text-text-primary">{item.label}</span>
+              {rankLabel && <span className="hidden sm:inline text-[11px] font-medium text-text-secondary">{rankLabel}</span>}
+              <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
               <div className="flex flex-col shrink-0">
-                <button type="button" disabled={idx === 0 || savingOrder} onClick={() => move(idx, idx - 1)} aria-label="Move up" className="w-7 h-5 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronUp size={15} /></button>
-                <button type="button" disabled={idx === items.length - 1 || savingOrder} onClick={() => move(idx, idx + 1)} aria-label="Move down" className="w-7 h-5 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronDown size={15} /></button>
+                <button type="button" disabled={idx === 0 || savingOrder} onClick={() => move(idx, idx - 1)} aria-label="Move up" className="w-7 h-5 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronUp size={15} /></button>
+                <button type="button" disabled={idx === items.length - 1 || savingOrder} onClick={() => move(idx, idx + 1)} aria-label="Move down" className="w-7 h-5 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronDown size={15} /></button>
               </div>
             </div>
           )
@@ -457,7 +457,7 @@ function StatusesTab({ orgId }: { orgId: string }) {
   function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
     return (
       <div className="flex gap-2 items-center">
-        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="w-10 h-[38px] rounded-[6px] border border-[#CBD5E1] cursor-pointer" />
+        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
         <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className={inputCls} />
       </div>
     )
@@ -465,14 +465,14 @@ function StatusesTab({ orgId }: { orgId: string }) {
 
   function EditRow({ id }: { id: string }) {
     return (
-      <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] p-4 space-y-3">
+      <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <FormField label="Label"><input type="text" autoFocus value={editForm.label} onChange={(e) => setEditForm({ ...editForm, label: e.target.value })} className={inputCls} /></FormField>
           <FormField label="Color"><ColorPicker value={editForm.color} onChange={(c) => setEditForm({ ...editForm, color: c })} /></FormField>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => handleSaveEdit(id)} disabled={submitting} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors"><Save size={14} /> {submitting ? 'Saving...' : 'Save'}</button>
-          <button onClick={() => setEditingId(null)} className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F1F5F9] transition-colors">Cancel</button>
+          <button onClick={() => handleSaveEdit(id)} disabled={submitting} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"><Save size={14} /> {submitting ? 'Saving...' : 'Save'}</button>
+          <button onClick={() => setEditingId(null)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
         </div>
       </div>
     )
@@ -490,23 +490,23 @@ function StatusesTab({ orgId }: { orgId: string }) {
   const lineFor = (item: TaskStatus, role: string, stage: boolean, idx: number) => {
     if (editingId === item.id) return <EditRow key={item.id} id={item.id} />
     return (
-      <div key={item.id} className="flex items-center gap-2.5 bg-white border border-[#E2E8F0] rounded-[8px] pl-3 pr-2 py-2">
+      <div key={item.id} className="flex items-center gap-2.5 bg-white border border-border-light rounded-[8px] pl-3 pr-2 py-2">
         <span className="w-[78px] shrink-0 flex items-center">
           {stage
-            ? <span className="w-5 h-5 flex items-center justify-center rounded-full bg-[#EFF6FF] text-[#2563EB] text-[11px] font-bold">{idx + 1}</span>
-            : <span className="text-[10px] font-semibold uppercase tracking-wide text-[#94A3B8]">{role}</span>}
+            ? <span className="w-5 h-5 flex items-center justify-center rounded-full bg-primary-subtle text-primary-text text-[11px] font-bold">{idx + 1}</span>
+            : <span className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">{role}</span>}
         </span>
         <span className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-        <span className="flex-1 min-w-0 truncate text-sm font-semibold text-[#0F172A]">{item.label}</span>
+        <span className="flex-1 min-w-0 truncate text-sm font-semibold text-text-primary">{item.label}</span>
         {stage && (
           <div className="flex items-center shrink-0">
-            <button type="button" disabled={idx === 0 || savingOrder} onClick={() => move(idx, -1)} aria-label="Move up" className="w-6 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronUp size={15} /></button>
-            <button type="button" disabled={idx === inProgress.length - 1 || savingOrder} onClick={() => move(idx, 1)} aria-label="Move down" className="w-6 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronDown size={15} /></button>
+            <button type="button" disabled={idx === 0 || savingOrder} onClick={() => move(idx, -1)} aria-label="Move up" className="w-6 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronUp size={15} /></button>
+            <button type="button" disabled={idx === inProgress.length - 1 || savingOrder} onClick={() => move(idx, 1)} aria-label="Move down" className="w-6 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronDown size={15} /></button>
           </div>
         )}
-        <button type="button" onClick={() => startEdit(item)} aria-label="Rename" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors shrink-0"><Pencil size={13} /></button>
+        <button type="button" onClick={() => startEdit(item)} aria-label="Rename" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"><Pencil size={13} /></button>
         {stage && (
-          <Tooltip label={inProgress.length <= 1 ? 'At least one In Progress stage is required' : 'Remove stage'}><button type="button" onClick={() => handleDelete(item.id)} disabled={inProgress.length <= 1} aria-label="Remove stage" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors shrink-0"><Trash2 size={13} /></button></Tooltip>
+          <Tooltip label={inProgress.length <= 1 ? 'At least one In Progress stage is required' : 'Remove stage'}><button type="button" onClick={() => handleDelete(item.id)} disabled={inProgress.length <= 1} aria-label="Remove stage" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors shrink-0"><Trash2 size={13} /></button></Tooltip>
         )}
       </div>
     )
@@ -514,24 +514,24 @@ function StatusesTab({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-1.5 max-w-2xl">
-      {error && <div className="text-sm text-[#DC2626] bg-[#FEE2E2] border border-[#FECACA] rounded-[8px] px-3 py-2 mb-1">{error}</div>}
+      {error && <div className="text-sm text-danger bg-danger-bg border border-danger-border rounded-[8px] px-3 py-2 mb-1">{error}</div>}
 
       {notStarted && lineFor(notStarted, 'Start', false, -1)}
 
       {inProgress.map((s, i) => lineFor(s, 'In progress', true, i))}
 
       {adding ? (
-        <div className="flex items-center gap-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] pl-3 pr-2 py-2">
+        <div className="flex items-center gap-2.5 bg-surface-sunken border border-border-light rounded-[8px] pl-3 pr-2 py-2">
           <span className="w-[78px] shrink-0" />
-          <input type="color" value={addForm.color} onChange={(e) => setAddForm({ ...addForm, color: e.target.value })} className="w-7 h-7 shrink-0 rounded-[6px] border border-[#CBD5E1] cursor-pointer p-0" />
-          <input type="text" autoFocus value={addForm.label} onChange={(e) => setAddForm({ ...addForm, label: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAdding(false); setAddForm({ label: '', color: '#0891B2' }) } }} placeholder="New stage name (e.g. In Review)" className="flex-1 min-w-0 border border-[#CBD5E1] rounded-[6px] px-2.5 py-1.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white" />
-          <button onClick={handleAdd} disabled={submitting || !addForm.label.trim()} className="px-3 py-1.5 text-sm font-semibold text-white bg-[#2563EB] rounded-[6px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors shrink-0">{submitting ? 'Adding…' : 'Add'}</button>
-          <button onClick={() => { setAdding(false); setAddForm({ label: '', color: '#0891B2' }) }} aria-label="Cancel" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors shrink-0"><X size={15} /></button>
+          <input type="color" value={addForm.color} onChange={(e) => setAddForm({ ...addForm, color: e.target.value })} className="w-7 h-7 shrink-0 rounded-[6px] border border-border cursor-pointer p-0" />
+          <input type="text" autoFocus value={addForm.label} onChange={(e) => setAddForm({ ...addForm, label: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAdding(false); setAddForm({ label: '', color: '#0891B2' }) } }} placeholder="New stage name (e.g. In Review)" className="flex-1 min-w-0 border border-border rounded-[6px] px-2.5 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white" />
+          <button onClick={handleAdd} disabled={submitting || !addForm.label.trim()} className="px-3 py-1.5 text-sm font-semibold text-white bg-primary rounded-[6px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors shrink-0">{submitting ? 'Adding…' : 'Add'}</button>
+          <button onClick={() => { setAdding(false); setAddForm({ label: '', color: '#0891B2' }) }} aria-label="Cancel" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"><X size={15} /></button>
         </div>
       ) : (
         <div className="flex items-center gap-2.5">
           <span className="w-[78px] shrink-0" />
-          <button onClick={() => { setAdding(true); setError(null) }} className="flex items-center gap-1.5 text-sm font-medium text-[#2563EB] hover:text-[#1D4ED8] py-1 transition-colors"><Plus size={14} /> Add In Progress stage</button>
+          <button onClick={() => { setAdding(true); setError(null) }} className="flex items-center gap-1.5 text-sm font-medium text-primary-text hover:text-primary-text py-1 transition-colors"><Plus size={14} /> Add In Progress stage</button>
         </div>
       )}
 
@@ -748,34 +748,34 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
     return (
       <div className="space-y-5 max-w-6xl">
         <div className="flex items-center gap-3">
-          <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] transition-colors shrink-0"><ArrowLeft size={18} /></button>
+          <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
-            <h2 className="text-[22px] font-semibold text-[#0F172A] leading-tight">{editingId ? 'Edit Checklist Template' : 'New Checklist Template'}</h2>
-            <p className="text-sm text-[#475569]">{editingId ? 'Update the name, items, and who can use this template.' : 'Name the template, add its items, and choose who can use it.'}</p>
+            <h2 className="text-[22px] font-semibold text-text-primary leading-tight">{editingId ? 'Edit Checklist Template' : 'New Checklist Template'}</h2>
+            <p className="text-sm text-text-secondary">{editingId ? 'Update the name, items, and who can use this template.' : 'Name the template, add its items, and choose who can use it.'}</p>
           </div>
         </div>
 
         {/* Single column: name + items card on top, access card full-width below. */}
         <div className="space-y-6">
           {/* Name + items */}
-          <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-5">
+          <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-5">
             <FormField label="Template Name"><input type="text" autoFocus value={templateName} onChange={(e) => { setTemplateName(e.target.value); if (error) setError(null) }} placeholder="e.g. Onboarding Checklist" className={`${inputCls} max-w-xl`} /></FormField>
 
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">Items</label>
-              <p className="text-xs text-[#64748B] mb-2">Press Enter to add the next item. Ctrl+Z undoes a removal.</p>
+              <label className="block text-sm font-medium text-text-secondary mb-1">Items</label>
+              <p className="text-xs text-text-muted mb-2">Press Enter to add the next item. Ctrl+Z undoes a removal.</p>
               {templateItems.map((item, idx) => (
                 <div key={idx} className="relative mb-2 max-w-xl">
                   <input ref={(el) => { itemRefs.current[idx] = el }} type="text" value={item} onChange={(e) => handleItemChange(idx, e.target.value)} onKeyDown={(e) => handleItemKeyDown(e, idx)} onBlur={() => handleItemBlur(idx)} placeholder={`Item ${idx + 1}`} className={`${inputCls} pr-9`} />
-                  <button onMouseDown={(e) => e.preventDefault()} onClick={() => { pushHistory(); setTemplateItems((prev) => prev.length <= 1 ? [''] : prev.filter((_, i) => i !== idx)) }} className="absolute top-0 right-0 h-[38px] w-9 flex items-center justify-center text-[#94A3B8] hover:text-[#DC2626] transition-colors" aria-label="Remove item"><X size={14} /></button>
+                  <button onMouseDown={(e) => e.preventDefault()} onClick={() => { pushHistory(); setTemplateItems((prev) => prev.length <= 1 ? [''] : prev.filter((_, i) => i !== idx)) }} className="absolute top-0 right-0 h-[38px] w-9 flex items-center justify-center text-text-muted hover:text-danger transition-colors" aria-label="Remove item"><X size={14} /></button>
                 </div>
               ))}
-              <button onClick={() => { pushHistory(); setTemplateItems((prev) => [...prev, '']) }} className="flex items-center gap-1.5 text-sm font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors mt-1"><Plus size={13} /> Add item</button>
+              <button onClick={() => { pushHistory(); setTemplateItems((prev) => [...prev, '']) }} className="flex items-center gap-1.5 text-sm font-medium text-primary-text hover:text-primary-text transition-colors mt-1"><Plus size={13} /> Add item</button>
             </div>
           </div>
 
           {/* Access rules card — full width below items */}
-          <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5">
+          <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5">
             <ChecklistAccessEditor
               mode={accessMode}
               rules={accessRules}
@@ -788,11 +788,11 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
           </div>
         </div>
 
-        {error && <p className="text-sm font-medium text-[#DC2626]">{error}</p>}
+        {error && <p className="text-sm font-medium text-danger">{error}</p>}
 
         <div className="flex gap-2 pt-2">
-          <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Template'}</button>
-          <button onClick={closeForm} className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F1F5F9] transition-colors">Cancel</button>
+          <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Template'}</button>
+          <button onClick={closeForm} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
         </div>
       </div>
     )
@@ -808,43 +808,43 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
         />
       )}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-[#475569]">{items.length} template{items.length !== 1 ? 's' : ''}</p>
+        <p className="text-sm text-text-secondary">{items.length} template{items.length !== 1 ? 's' : ''}</p>
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-[#2563EB] bg-white border-2 border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors"><Upload size={14} /> Import Checklists</button>
-          <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors"><Plus size={14} /> Add Template</button>
+          <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-primary-text bg-white border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"><Upload size={14} /> Import Checklists</button>
+          <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Template</button>
         </div>
       </div>
-      {items.length === 0 && <div className="text-center py-12 text-[#475569] text-sm">No checklist templates yet.</div>}
+      {items.length === 0 && <div className="text-center py-12 text-text-secondary text-sm">No checklist templates yet.</div>}
       <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
         {items.map((t) => {
           const count = (t.items ?? []).length
           const restricted = (t.access_mode ?? 'everyone') === 'restricted'
           const active = t.is_active
           return (
-            <div key={t.id} className={['bg-white border rounded-[10px] p-4 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all', active ? 'border-[#E2E8F0] hover:border-[#CBD5E1]' : 'border-dashed border-[#CBD5E1] bg-[#F8FAFC]'].join(' ')}>
+            <div key={t.id} className={['bg-white border rounded-[10px] p-4 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all', active ? 'border-border-light hover:border-border' : 'border-dashed border-border bg-surface-sunken'].join(' ')}>
               <div className="flex items-start justify-between gap-2 mb-3">
-                <p className={['text-sm font-semibold leading-snug', active ? 'text-[#0F172A]' : 'text-[#64748B]'].join(' ')}>{t.name}</p>
+                <p className={['text-sm font-semibold leading-snug', active ? 'text-text-primary' : 'text-text-muted'].join(' ')}>{t.name}</p>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => openEdit(t)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"><Pencil size={13} /></button>
-                  <button onClick={() => handleDelete(t.id)} aria-label="Delete" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"><Trash2 size={13} /></button>
+                  <button onClick={() => openEdit(t)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
+                  <button onClick={() => handleDelete(t.id)} aria-label="Delete" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
                 </div>
               </div>
               <div className="space-y-1.5">
                 {(t.items ?? []).map((item, idx) => (
                   <div key={idx} className="flex items-start gap-2">
-                    <div className="w-3.5 h-3.5 rounded-[4px] border border-[#CBD5E1] shrink-0 mt-0.5" />
-                    <span className="text-xs text-[#475569] leading-snug">{item.title}</span>
+                    <div className="w-3.5 h-3.5 rounded-[4px] border border-border shrink-0 mt-0.5" />
+                    <span className="text-xs text-text-secondary leading-snug">{item.title}</span>
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#F1F5F9] flex-wrap">
-                <span className="text-[11px] font-medium rounded-[999px] px-2 py-0.5 bg-[#EFF6FF] text-[#2563EB]">{count} item{count !== 1 ? 's' : ''}</span>
-                <span className={['text-[11px] font-medium rounded-[999px] px-2 py-0.5', restricted ? 'bg-[#FEF3C7] text-[#B45309]' : 'bg-[#F1F5F9] text-[#475569]'].join(' ')}>{accessSummary(t)}</span>
-                <span className={['text-[11px] font-medium rounded-[999px] px-2 py-0.5', active ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#F1F5F9] text-[#64748B]'].join(' ')}>{active ? 'Active' : 'Inactive'}</span>
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border-light flex-wrap">
+                <span className="text-[11px] font-medium rounded-[999px] px-2 py-0.5 bg-primary-subtle text-primary-text">{count} item{count !== 1 ? 's' : ''}</span>
+                <span className={['text-[11px] font-medium rounded-[999px] px-2 py-0.5', restricted ? 'bg-warning-bg text-warning' : 'bg-surface-control text-text-secondary'].join(' ')}>{accessSummary(t)}</span>
+                <span className={['text-[11px] font-medium rounded-[999px] px-2 py-0.5', active ? 'bg-success-bg text-success' : 'bg-surface-control text-text-muted'].join(' ')}>{active ? 'Active' : 'Inactive'}</span>
                 <button
                   onClick={() => toggleActive(t)}
                   disabled={togglingId === t.id}
-                  className={['ml-auto text-[12px] font-semibold rounded-[6px] px-2.5 py-1 transition-colors disabled:opacity-60', active ? 'text-[#475569] bg-white border border-[#E2E8F0] hover:bg-[#F1F5F9]' : 'text-white bg-[#16A34A] hover:bg-[#15803D]'].join(' ')}
+                  className={['ml-auto text-[12px] font-semibold rounded-[6px] px-2.5 py-1 transition-colors disabled:opacity-60', active ? 'text-text-secondary bg-white border border-border-light hover:bg-surface-control' : 'text-white bg-success hover:bg-success'].join(' ')}
                 >
                   {togglingId === t.id ? '…' : active ? 'Deactivate' : 'Activate'}
                 </button>
@@ -881,7 +881,7 @@ function TktConfigTab({ orgId }: { orgId: string }) {
   }
 
   if (loading) return <Spinner />
-  if (!config) return <p className="text-sm text-[#475569]">Could not load configuration.</p>
+  if (!config) return <p className="text-sm text-text-secondary">Could not load configuration.</p>
 
   const modeOptions: { value: TicketReassignmentMode; label: string; desc: string }[] = [
     { value: 'both', label: 'Both', desc: 'Assignee and administrators can reassign' },
@@ -895,11 +895,11 @@ function TktConfigTab({ orgId }: { orgId: string }) {
         <div className="space-y-2">
           {modeOptions.map((opt) => (
             <button key={opt.value} type="button" onClick={() => setConfig({ ...config, reassignment_mode: opt.value })}
-              className={`w-full flex items-start gap-3 p-3 rounded-[8px] border-2 text-left transition-all ${config.reassignment_mode === opt.value ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0] hover:border-[#CBD5E1]'}`}>
-              <div className={`w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 ${config.reassignment_mode === opt.value ? 'border-[#2563EB] bg-[#2563EB]' : 'border-[#CBD5E1]'}`} />
+              className={`w-full flex items-start gap-3 p-3 rounded-[8px] border-2 text-left transition-all ${config.reassignment_mode === opt.value ? 'border-primary bg-primary-subtle' : 'border-border-light hover:border-border'}`}>
+              <div className={`w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 ${config.reassignment_mode === opt.value ? 'border-primary bg-primary' : 'border-border'}`} />
               <div>
-                <p className={`text-sm font-semibold ${config.reassignment_mode === opt.value ? 'text-[#2563EB]' : 'text-[#0F172A]'}`}>{opt.label}</p>
-                <p className="text-xs text-[#475569]">{opt.desc}</p>
+                <p className={`text-sm font-semibold ${config.reassignment_mode === opt.value ? 'text-primary-text' : 'text-text-primary'}`}>{opt.label}</p>
+                <p className="text-xs text-text-secondary">{opt.desc}</p>
               </div>
             </button>
           ))}
@@ -931,19 +931,19 @@ function TktConfigTab({ orgId }: { orgId: string }) {
           { key: 'allow_requester_reopen' as const, label: 'Allow requester to reopen', desc: 'The person who raised the ticket can reopen it after it is resolved or closed' },
           { key: 'allow_assignee_reopen' as const, label: 'Allow assignee to reopen', desc: 'The assigned resolver can reopen a ticket after it is resolved or closed' },
         ].map(({ key, label, desc }) => (
-          <div key={key} className={`flex items-start gap-3 p-3 rounded-[8px] border-2 cursor-pointer transition-all ${config[key] ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0]'}`} onClick={() => setConfig({ ...config, [key]: !config[key] })}>
-            <div className={`relative w-9 h-5 rounded-full mt-0.5 shrink-0 transition-colors duration-200 ${config[key] ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'}`}>
+          <div key={key} className={`flex items-start gap-3 p-3 rounded-[8px] border-2 cursor-pointer transition-all ${config[key] ? 'border-primary bg-primary-subtle' : 'border-border-light'}`} onClick={() => setConfig({ ...config, [key]: !config[key] })}>
+            <div className={`relative w-9 h-5 rounded-full mt-0.5 shrink-0 transition-colors duration-200 ${config[key] ? 'bg-primary' : 'bg-surface-control-pressed'}`}>
               <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-xs transition-transform duration-200 ${config[key] ? 'translate-x-4' : 'translate-x-0'}`} />
             </div>
             <div>
-              <p className={`text-sm font-semibold ${config[key] ? 'text-[#2563EB]' : 'text-[#0F172A]'}`}>{label}</p>
-              <p className="text-xs text-[#475569] mt-0.5">{desc}</p>
+              <p className={`text-sm font-semibold ${config[key] ? 'text-primary-text' : 'text-text-primary'}`}>{label}</p>
+              <p className="text-xs text-text-secondary mt-0.5">{desc}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-[10px] text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors">
+      <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
         <Save size={15} /> {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Configuration'}
       </button>
     </div>
@@ -997,13 +997,13 @@ function TktTypesTab({ orgId }: { orgId: string }) {
 
   function TypeForm({ f, setF, onSave, onCancel, label }: { f: typeof emptyForm; setF: (v: typeof emptyForm) => void; onSave: () => void; onCancel: () => void; label: string }) {
     return (
-      <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] p-4 space-y-3">
+      <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <FormField label="Name"><input type="text" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="e.g. Issue" className={inputCls} /></FormField>
           <FormField label="Icon (emoji)"><input type="text" value={f.icon} onChange={(e) => setF({ ...f, icon: e.target.value })} className={inputCls} /></FormField>
           <FormField label="Color">
             <div className="flex gap-2 items-center">
-              <input type="color" value={f.color} onChange={(e) => setF({ ...f, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-[#CBD5E1] cursor-pointer" />
+              <input type="color" value={f.color} onChange={(e) => setF({ ...f, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
               <input type="text" value={f.color} onChange={(e) => setF({ ...f, color: e.target.value })} className={inputCls} />
             </div>
           </FormField>
@@ -1023,8 +1023,8 @@ function TktTypesTab({ orgId }: { orgId: string }) {
         </div>
         <FormField label="Description (optional)"><input type="text" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Brief description..." className={inputCls} /></FormField>
         <div className="flex gap-2">
-          <button onClick={onSave} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : label}</button>
-          <button onClick={onCancel} className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F1F5F9] transition-colors">Cancel</button>
+          <button onClick={onSave} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : label}</button>
+          <button onClick={onCancel} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
         </div>
       </div>
     )
@@ -1035,27 +1035,27 @@ function TktTypesTab({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-[#475569]">{items.length} type{items.length !== 1 ? 's' : ''}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors"><Plus size={14} /> Add Type</button>
+        <p className="text-sm text-text-secondary">{items.length} type{items.length !== 1 ? 's' : ''}</p>
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Type</button>
       </div>
       {creating && <TypeForm f={form} setF={setForm} onSave={handleCreate} onCancel={() => setCreating(false)} label="Create" />}
-      {items.length === 0 && !creating && <div className="text-center py-12 text-[#475569] text-sm">No ticket types yet. Click "Add Type" to create one.</div>}
+      {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-sm">No ticket types yet. Click "Add Type" to create one.</div>}
       <div className="space-y-2">
         {items.map((item) => editingId === item.id ? (
           <TypeForm key={item.id} f={editForm} setF={setEditForm} onSave={() => handleEdit(item.id)} onCancel={() => setEditingId(null)} label="Save" />
         ) : (
-          <div key={item.id} className="bg-white border border-[#E2E8F0] rounded-[8px] px-4 py-3 flex items-center gap-3">
+          <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
             <span className="text-xl">{item.icon}</span>
             <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#0F172A]">{item.name}</p>
-              {item.description && <p className="text-xs text-[#475569] truncate">{item.description}</p>}
+              <p className="text-sm font-semibold text-text-primary">{item.name}</p>
+              {item.description && <p className="text-xs text-text-secondary truncate">{item.description}</p>}
             </div>
-            <span className="text-xs text-[#475569]">SLA: {item.default_sla_days}d</span>
-            <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
+            <span className="text-xs text-text-secondary">SLA: {item.default_sla_days}d</span>
+            <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, icon: item.icon, color: item.color, default_sla_days: item.default_sla_days, default_response_sla_hours: item.default_response_sla_hours?.toString() ?? '', resolver_group_id: item.resolver_group_id ?? '', description: item.description ?? '' }) }} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"><Pencil size={13} /></button>
-              <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"><Trash2 size={13} /></button>
+              <button onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, icon: item.icon, color: item.color, default_sla_days: item.default_sla_days, default_response_sla_hours: item.default_response_sla_hours?.toString() ?? '', resolver_group_id: item.resolver_group_id ?? '', description: item.description ?? '' }) }} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
+              <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
             </div>
           </div>
         ))}
@@ -1111,16 +1111,16 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-[#475569]">{items.length} categor{items.length !== 1 ? 'ies' : 'y'}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors"><Plus size={14} /> Add Category</button>
+        <p className="text-sm text-text-secondary">{items.length} categor{items.length !== 1 ? 'ies' : 'y'}</p>
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Category</button>
       </div>
       {creating && (
-        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] p-4 space-y-3">
+        <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Name"><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Network" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-[#CBD5E1] cursor-pointer" />
+                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
                 <input type="text" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className={inputCls} />
               </div>
             </FormField>
@@ -1151,23 +1151,23 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
           </div>
           <FormField label="Description (optional)"><input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputCls} /></FormField>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F1F5F9] transition-colors">Cancel</button>
+            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
+            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       )}
-      {items.length === 0 && !creating && <div className="text-center py-12 text-[#475569] text-sm">No categories yet.</div>}
+      {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-sm">No categories yet.</div>}
       <div className="space-y-2">
         {items.map((item) => (
-          <div key={item.id} className="bg-white border border-[#E2E8F0] rounded-[8px] px-4 py-3 flex items-center gap-3">
+          <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
             <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#0F172A]">{item.name}</p>
-              {item.ticket_type && <p className="text-xs text-[#94A3B8]">{item.ticket_type.icon} {item.ticket_type.name}</p>}
+              <p className="text-sm font-semibold text-text-primary">{item.name}</p>
+              {item.ticket_type && <p className="text-xs text-text-muted">{item.ticket_type.icon} {item.ticket_type.name}</p>}
             </div>
-            {item.default_sla_days && <span className="text-xs text-[#475569]">SLA: {item.default_sla_days}d</span>}
-            <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
-            <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"><Trash2 size={13} /></button>
+            {item.default_sla_days && <span className="text-xs text-text-secondary">SLA: {item.default_sla_days}d</span>}
+            <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
+            <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
           </div>
         ))}
       </div>
@@ -1208,38 +1208,38 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-[#475569]">{items.length} priorit{items.length !== 1 ? 'ies' : 'y'}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors"><Plus size={14} /> Add Priority</button>
+        <p className="text-sm text-text-secondary">{items.length} priorit{items.length !== 1 ? 'ies' : 'y'}</p>
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Priority</button>
       </div>
       {creating && (
-        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] p-4 space-y-3">
+        <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Label"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. Critical" className={inputCls} /></FormField>
             <FormField label="SLA Days (optional)"><input type="number" min={1} value={form.sla_days} onChange={(e) => setForm({ ...form, sla_days: e.target.value })} placeholder="Override SLA" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-[#CBD5E1] cursor-pointer" />
+                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
                 <input type="text" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className={inputCls} />
               </div>
             </FormField>
             <FormField label="Order"><input type="number" value={form.order_index} onChange={(e) => setForm({ ...form, order_index: parseInt(e.target.value) || 0 })} className={inputCls} /></FormField>
           </div>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F1F5F9] transition-colors">Cancel</button>
+            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
+            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       )}
-      {items.length === 0 && !creating && <div className="text-center py-12 text-[#475569] text-sm">No priorities yet.</div>}
+      {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-sm">No priorities yet.</div>}
       <div className="space-y-2">
         {items.map((item) => (
-          <div key={item.id} className="bg-white border border-[#E2E8F0] rounded-[8px] px-4 py-3 flex items-center gap-3">
+          <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
             <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-            <span className="flex-1 text-sm font-semibold text-[#0F172A]">{item.label}</span>
-            {item.sla_days && <span className="text-xs text-[#475569]">SLA: {item.sla_days}d</span>}
-            <span className="text-xs text-[#475569]">Order: {item.order_index}</span>
-            <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
-            <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"><Trash2 size={13} /></button>
+            <span className="flex-1 text-sm font-semibold text-text-primary">{item.label}</span>
+            {item.sla_days && <span className="text-xs text-text-secondary">SLA: {item.sla_days}d</span>}
+            <span className="text-xs text-text-secondary">Order: {item.order_index}</span>
+            <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
+            <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
           </div>
         ))}
       </div>
@@ -1276,11 +1276,11 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-[#475569]">{items.length} status{items.length !== 1 ? 'es' : ''}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors"><Plus size={14} /> Add Status</button>
+        <p className="text-sm text-text-secondary">{items.length} status{items.length !== 1 ? 'es' : ''}</p>
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Status</button>
       </div>
       {creating && (
-        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] p-4 space-y-3">
+        <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Label"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. Pending Review" className={inputCls} /></FormField>
             <FormField label="Type">
@@ -1292,31 +1292,31 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
             </FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-[#CBD5E1] cursor-pointer" />
+                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
                 <input type="text" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className={inputCls} />
               </div>
             </FormField>
             <FormField label="Order"><input type="number" value={form.order_index} onChange={(e) => setForm({ ...form, order_index: parseInt(e.target.value) || 0 })} className={inputCls} /></FormField>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={form.is_default} onChange={(e) => setForm({ ...form, is_default: e.target.checked })} className="accent-[#2563EB] w-4 h-4" />
-            <span className="text-sm text-[#1E293B]">Set as default status</span>
+            <input type="checkbox" checked={form.is_default} onChange={(e) => setForm({ ...form, is_default: e.target.checked })} className="accent-primary w-4 h-4" />
+            <span className="text-sm text-text-primary">Set as default status</span>
           </label>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F1F5F9] transition-colors">Cancel</button>
+            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
+            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       )}
-      {items.length === 0 && !creating && <div className="text-center py-12 text-[#475569] text-sm">No statuses yet.</div>}
+      {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-sm">No statuses yet.</div>}
       <div className="space-y-2">
         {items.map((item) => (
-          <div key={item.id} className="bg-white border border-[#E2E8F0] rounded-[8px] px-4 py-3 flex items-center gap-3">
+          <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
             <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-            <span className="flex-1 text-sm font-semibold text-[#0F172A]">{item.label}</span>
-            <span className="text-xs text-[#475569] capitalize">{item.type.replace(/_/g, ' ')}</span>
-            {item.is_default && <span className="text-[11px] font-medium rounded-[999px] px-2 py-0.5 bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">Default</span>}
-            <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
+            <span className="flex-1 text-sm font-semibold text-text-primary">{item.label}</span>
+            <span className="text-xs text-text-secondary capitalize">{item.type.replace(/_/g, ' ')}</span>
+            {item.is_default && <span className="text-[11px] font-medium rounded-[999px] px-2 py-0.5 bg-primary-subtle text-primary-text border border-primary-border">Default</span>}
+            <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
           </div>
         ))}
       </div>
@@ -1419,14 +1419,14 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
     return (
       <div className="space-y-5 max-w-3xl">
         <div className="flex items-center gap-3">
-          <button onClick={closeForm} aria-label="Back to resolver groups" className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] transition-colors shrink-0"><ArrowLeft size={18} /></button>
+          <button onClick={closeForm} aria-label="Back to resolver groups" className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
-            <h2 className="text-[22px] font-semibold text-[#0F172A] leading-tight">{editingId ? 'Edit Resolver Group' : 'New Resolver Group'}</h2>
-            <p className="text-sm text-[#475569]">A pool of people who resolve tickets routed to this group.</p>
+            <h2 className="text-[22px] font-semibold text-text-primary leading-tight">{editingId ? 'Edit Resolver Group' : 'New Resolver Group'}</h2>
+            <p className="text-sm text-text-secondary">A pool of people who resolve tickets routed to this group.</p>
           </div>
         </div>
 
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-4">
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField label="Group Name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. IT Support" className={inputCls} /></FormField>
             <FormField label="Department (optional)">
@@ -1445,9 +1445,9 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               {ASSIGNMENT_STRATEGIES.map((opt) => (
                 <button key={opt.value} type="button" onClick={() => setForm({ ...form, assignment_strategy: opt.value })}
-                  className={`flex flex-col items-start gap-0.5 p-3 rounded-[8px] border-2 text-left transition-all ${form.assignment_strategy === opt.value ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0] hover:border-[#CBD5E1]'}`}>
-                  <span className={`text-sm font-semibold ${form.assignment_strategy === opt.value ? 'text-[#2563EB]' : 'text-[#0F172A]'}`}>{opt.label}</span>
-                  <span className="text-[11px] text-[#475569] leading-snug">{opt.desc}</span>
+                  className={`flex flex-col items-start gap-0.5 p-3 rounded-[8px] border-2 text-left transition-all ${form.assignment_strategy === opt.value ? 'border-primary bg-primary-subtle' : 'border-border-light hover:border-border'}`}>
+                  <span className={`text-sm font-semibold ${form.assignment_strategy === opt.value ? 'text-primary-text' : 'text-text-primary'}`}>{opt.label}</span>
+                  <span className="text-[11px] text-text-secondary leading-snug">{opt.desc}</span>
                 </button>
               ))}
             </div>
@@ -1455,23 +1455,23 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
 
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <label className="block text-sm font-medium text-[#374151]">Members</label>
+              <label className="block text-sm font-medium text-text-secondary">Members</label>
               <CountPill n={form.member_user_ids.length} />
             </div>
-            <div className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
-              <div className="flex items-center gap-2 px-3 py-2 border-b border-[#F1F5F9] bg-[#F8FAFC]">
-                <input value={memberQuery} onChange={(e) => setMemberQuery(e.target.value)} placeholder="Search people…" className="flex-1 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden bg-transparent" />
+            <div className="border border-border-light rounded-[10px] overflow-hidden">
+              <div className="flex items-center gap-2 px-3 py-2 border-b border-border-light bg-surface-sunken">
+                <input value={memberQuery} onChange={(e) => setMemberQuery(e.target.value)} placeholder="Search people…" className="flex-1 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden bg-transparent" />
               </div>
-              <div className="max-h-[280px] overflow-y-auto divide-y divide-[#F1F5F9]">
-                {filteredEmployees.length === 0 && <p className="px-3 py-4 text-sm text-[#94A3B8] text-center">No people found.</p>}
+              <div className="max-h-[280px] overflow-y-auto divide-y divide-surface-control">
+                {filteredEmployees.length === 0 && <p className="px-3 py-4 text-sm text-text-muted text-center">No people found.</p>}
                 {filteredEmployees.map((e) => {
                   const checked = form.member_user_ids.includes(e.user_id)
                   return (
-                    <label key={e.user_id} className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-[#F8FAFC] transition-colors">
-                      <input type="checkbox" checked={checked} onChange={() => toggleMember(e.user_id)} className="accent-[#2563EB] w-4 h-4 shrink-0" />
+                    <label key={e.user_id} className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-surface-sunken transition-colors">
+                      <input type="checkbox" checked={checked} onChange={() => toggleMember(e.user_id)} className="accent-primary w-4 h-4 shrink-0" />
                       <div className="min-w-0">
-                        <p className="text-sm text-[#0F172A] truncate">{e.user?.name ?? 'Unknown'}</p>
-                        <p className="text-[11px] text-[#94A3B8] truncate">{[e.role?.title, e.department?.name].filter(Boolean).join(' · ')}</p>
+                        <p className="text-sm text-text-primary truncate">{e.user?.name ?? 'Unknown'}</p>
+                        <p className="text-[11px] text-text-muted truncate">{[e.role?.title, e.department?.name].filter(Boolean).join(' · ')}</p>
                       </div>
                     </label>
                   )
@@ -1480,10 +1480,10 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
             </div>
           </div>
 
-          {error && <p className="text-sm font-medium text-[#DC2626]">{error}</p>}
+          {error && <p className="text-sm font-medium text-danger">{error}</p>}
           <div className="flex gap-2 pt-1">
-            <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Group'}</button>
-            <button onClick={closeForm} className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F1F5F9] transition-colors">Cancel</button>
+            <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Group'}</button>
+            <button onClick={closeForm} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       </div>
@@ -1493,40 +1493,40 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-[#475569]">{items.length} group{items.length !== 1 ? 's' : ''}</p>
-        <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors"><Plus size={14} /> Add Group</button>
+        <p className="text-sm text-text-secondary">{items.length} group{items.length !== 1 ? 's' : ''}</p>
+        <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Group</button>
       </div>
-      {items.length === 0 && <div className="text-center py-12 text-[#475569] text-sm">No resolver groups yet. Create one to route tickets to a pool of resolvers.</div>}
+      {items.length === 0 && <div className="text-center py-12 text-text-secondary text-sm">No resolver groups yet. Create one to route tickets to a pool of resolvers.</div>}
       <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
         {items.map((g) => {
           const strategy = ASSIGNMENT_STRATEGIES.find((s) => s.value === g.assignment_strategy)
           const deptName = g.department_id ? deptById.get(g.department_id)?.name : null
           return (
-            <div key={g.id} className={['bg-white border rounded-[10px] p-4 transition-all', g.is_active ? 'border-[#E2E8F0] hover:border-[#CBD5E1]' : 'border-dashed border-[#CBD5E1] bg-[#F8FAFC]'].join(' ')}>
+            <div key={g.id} className={['bg-white border rounded-[10px] p-4 transition-all', g.is_active ? 'border-border-light hover:border-border' : 'border-dashed border-border bg-surface-sunken'].join(' ')}>
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className={['text-sm font-semibold leading-snug truncate', g.is_active ? 'text-[#0F172A]' : 'text-[#64748B]'].join(' ')}>{g.name}</p>
+                    <p className={['text-sm font-semibold leading-snug truncate', g.is_active ? 'text-text-primary' : 'text-text-muted'].join(' ')}>{g.name}</p>
                     <CountPill n={g.members.length} />
                   </div>
-                  {g.description && <p className="text-xs text-[#475569] truncate mt-0.5">{g.description}</p>}
+                  {g.description && <p className="text-xs text-text-secondary truncate mt-0.5">{g.description}</p>}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => openEdit(g)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"><Pencil size={13} /></button>
-                  <button onClick={() => handleDelete(g.id)} aria-label="Delete" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"><Trash2 size={13} /></button>
+                  <button onClick={() => openEdit(g)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
+                  <button onClick={() => handleDelete(g.id)} aria-label="Delete" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
                 </div>
               </div>
               <div className="mt-2 max-h-[120px] overflow-y-auto space-y-1">
                 {g.members.length === 0 ? (
-                  <p className="text-xs text-[#94A3B8]">No members yet.</p>
+                  <p className="text-xs text-text-muted">No members yet.</p>
                 ) : g.members.map((m) => (
-                  <p key={m.id} className="text-xs text-[#475569] truncate">{empByUserId.get(m.user_id)?.user?.name ?? 'Unknown'}</p>
+                  <p key={m.id} className="text-xs text-text-secondary truncate">{empByUserId.get(m.user_id)?.user?.name ?? 'Unknown'}</p>
                 ))}
               </div>
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#F1F5F9] flex-wrap">
-                {deptName && <span className="text-[11px] font-medium rounded-[999px] px-2 py-0.5 bg-[#F1F5F9] text-[#475569]">{deptName}</span>}
-                <span className="text-[11px] font-medium rounded-[999px] px-2 py-0.5 bg-[#EFF6FF] text-[#2563EB]">{strategy?.label ?? g.assignment_strategy}</span>
-                <span className={['text-[11px] font-medium rounded-[999px] px-2 py-0.5', g.is_active ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#FEE2E2] text-[#DC2626]'].join(' ')}>{g.is_active ? 'Active' : 'Inactive'}</span>
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border-light flex-wrap">
+                {deptName && <span className="text-[11px] font-medium rounded-[999px] px-2 py-0.5 bg-surface-control text-text-secondary">{deptName}</span>}
+                <span className="text-[11px] font-medium rounded-[999px] px-2 py-0.5 bg-primary-subtle text-primary-text">{strategy?.label ?? g.assignment_strategy}</span>
+                <span className={['text-[11px] font-medium rounded-[999px] px-2 py-0.5', g.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'].join(' ')}>{g.is_active ? 'Active' : 'Inactive'}</span>
               </div>
             </div>
           )
@@ -1684,20 +1684,20 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
     return (
       <div className="space-y-5 max-w-6xl">
         <div className="flex items-center gap-3">
-          <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] transition-colors shrink-0"><ArrowLeft size={18} /></button>
+          <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
-            <h2 className="text-[22px] font-semibold text-[#0F172A] leading-tight">{editingId ? 'Edit Ticket Template' : 'New Ticket Template'}</h2>
-            <p className="text-sm text-[#475569]">Pre-fill ticket fields and choose who can use this template.</p>
+            <h2 className="text-[22px] font-semibold text-text-primary leading-tight">{editingId ? 'Edit Ticket Template' : 'New Ticket Template'}</h2>
+            <p className="text-sm text-text-secondary">Pre-fill ticket fields and choose who can use this template.</p>
           </div>
         </div>
 
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-4">
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <FormField label="Template Name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. VPN Access Request" className={inputCls} /></FormField>
             <FormField label="Type">
               <div className="flex gap-2">
                 {(['simple', 'full'] as TicketTemplateType[]).map((t) => (
-                  <button key={t} type="button" onClick={() => setForm({ ...form, template_type: t })} className={`flex-1 py-[9px] rounded-[8px] text-sm font-semibold border-2 transition-colors ${form.template_type === t ? 'border-[#2563EB] bg-[#EFF6FF] text-[#2563EB]' : 'border-[#E2E8F0] text-[#475569]'}`}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
+                  <button key={t} type="button" onClick={() => setForm({ ...form, template_type: t })} className={`flex-1 py-[9px] rounded-[8px] text-sm font-semibold border-2 transition-colors ${form.template_type === t ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary'}`}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
                 ))}
               </div>
             </FormField>
@@ -1759,13 +1759,13 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
             <FormField label="Response SLA (hours, optional)"><input type="number" min={1} value={form.response_sla_hours} onChange={(e) => setForm({ ...form, response_sla_hours: e.target.value })} placeholder="Inherits from type/category" className={inputCls} /></FormField>
           </div>
 
-          <div className={`flex items-start gap-3 p-3 rounded-[8px] border-2 cursor-pointer transition-all ${form.lock_priority ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0]'}`} onClick={() => setForm({ ...form, lock_priority: !form.lock_priority })}>
-            <div className={`relative w-9 h-5 rounded-full mt-0.5 shrink-0 transition-colors duration-200 ${form.lock_priority ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'}`}>
+          <div className={`flex items-start gap-3 p-3 rounded-[8px] border-2 cursor-pointer transition-all ${form.lock_priority ? 'border-primary bg-primary-subtle' : 'border-border-light'}`} onClick={() => setForm({ ...form, lock_priority: !form.lock_priority })}>
+            <div className={`relative w-9 h-5 rounded-full mt-0.5 shrink-0 transition-colors duration-200 ${form.lock_priority ? 'bg-primary' : 'bg-surface-control-pressed'}`}>
               <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-xs transition-transform duration-200 ${form.lock_priority ? 'translate-x-4' : 'translate-x-0'}`} />
             </div>
             <div>
-              <p className={`text-sm font-semibold ${form.lock_priority ? 'text-[#2563EB]' : 'text-[#0F172A]'}`}>Lock priority</p>
-              <p className="text-xs text-[#475569] mt-0.5">The raiser can&apos;t change the priority when using this template.</p>
+              <p className={`text-sm font-semibold ${form.lock_priority ? 'text-primary-text' : 'text-text-primary'}`}>Lock priority</p>
+              <p className="text-xs text-text-secondary mt-0.5">The raiser can&apos;t change the priority when using this template.</p>
             </div>
           </div>
 
@@ -1774,19 +1774,19 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
             <textarea value={form.description_template} onChange={(e) => setForm({ ...form, description_template: e.target.value })} rows={2} placeholder="Pre-filled description..." className={`${inputCls} resize-none`} />
           </FormField>
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Checklist Items</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Checklist Items</label>
             {checklistItems.map((item, idx) => (
               <div key={idx} className="flex gap-2 mb-2 max-w-xl">
                 <input type="text" value={item} onChange={(e) => setChecklistItems((prev) => prev.map((v, i) => i === idx ? e.target.value : v))} placeholder={`Item ${idx + 1}`} className={inputCls} />
-                <button onClick={() => setChecklistItems((prev) => prev.filter((_, i) => i !== idx))} className="w-8 h-[38px] flex items-center justify-center text-[#94A3B8] hover:text-[#DC2626] transition-colors"><X size={14} /></button>
+                <button onClick={() => setChecklistItems((prev) => prev.filter((_, i) => i !== idx))} className="w-8 h-[38px] flex items-center justify-center text-text-muted hover:text-danger transition-colors"><X size={14} /></button>
               </div>
             ))}
-            <button onClick={() => setChecklistItems((prev) => [...prev, ''])} className="flex items-center gap-1.5 text-sm font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors mt-1"><Plus size={13} /> Add item</button>
+            <button onClick={() => setChecklistItems((prev) => [...prev, ''])} className="flex items-center gap-1.5 text-sm font-medium text-primary-text hover:text-primary-text transition-colors mt-1"><Plus size={13} /> Add item</button>
           </div>
         </div>
 
         {/* Access rules — who can pick this template when raising a ticket */}
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5">
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5">
           <ChecklistAccessEditor
             mode={accessMode}
             rules={accessRules}
@@ -1798,10 +1798,10 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
           />
         </div>
 
-        {error && <p className="text-sm font-medium text-[#DC2626]">{error}</p>}
+        {error && <p className="text-sm font-medium text-danger">{error}</p>}
         <div className="flex gap-2 pt-1">
-          <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Template'}</button>
-          <button onClick={closeForm} className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F1F5F9] transition-colors">Cancel</button>
+          <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Template'}</button>
+          <button onClick={closeForm} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
         </div>
       </div>
     )
@@ -1823,34 +1823,34 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-[#475569]">{items.length} template{items.length !== 1 ? 's' : ''}</p>
-        <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors"><Plus size={14} /> Add Template</button>
+        <p className="text-sm text-text-secondary">{items.length} template{items.length !== 1 ? 's' : ''}</p>
+        <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Template</button>
       </div>
-      {items.length === 0 && <div className="text-center py-12 text-[#475569] text-sm">No templates yet.</div>}
+      {items.length === 0 && <div className="text-center py-12 text-text-secondary text-sm">No templates yet.</div>}
       {sections.map((section) => (
         <div key={section.label} className="space-y-2">
           <div className="flex items-center gap-2 pt-1">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">{section.label}</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">{section.label}</h3>
             <CountPill n={section.templates.length} />
           </div>
           {section.templates.map((item) => (
-            <div key={item.id} className="bg-white border border-[#E2E8F0] rounded-[8px] px-4 py-3 flex items-center gap-3">
+            <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                  <p className="text-sm font-semibold text-[#0F172A]">{item.name}</p>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${item.template_type === 'full' ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]' : 'bg-[#F8FAFC] text-[#475569] border-[#E2E8F0]'}`}>{item.template_type}</span>
-                  {item.resolver_group?.name && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#F1F5F9] text-[#475569]">{item.resolver_group.name}</span>}
-                  {item.lock_priority && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309]">Priority locked</span>}
+                  <p className="text-sm font-semibold text-text-primary">{item.name}</p>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${item.template_type === 'full' ? 'bg-primary-subtle text-primary-text border-primary-border' : 'bg-surface-sunken text-text-secondary border-border-light'}`}>{item.template_type}</span>
+                  {item.resolver_group?.name && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-surface-control text-text-secondary">{item.resolver_group.name}</span>}
+                  {item.lock_priority && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-warning-bg text-warning">Priority locked</span>}
                 </div>
-                <p className="text-xs text-[#94A3B8] truncate">{item.title_template}</p>
+                <p className="text-xs text-text-muted truncate">{item.title_template}</p>
               </div>
-              <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${(item.access_mode ?? 'everyone') === 'restricted' ? 'bg-[#FEF3C7] text-[#B45309]' : 'bg-[#F1F5F9] text-[#475569]'}`}>{accessSummary(item)}</span>
-              {item.checklist_items.length > 0 && <span className="text-xs text-[#475569]">{item.checklist_items.length} items</span>}
-              <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>{item.is_active ? 'Active' : 'Archived'}</span>
+              <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${(item.access_mode ?? 'everyone') === 'restricted' ? 'bg-warning-bg text-warning' : 'bg-surface-control text-text-secondary'}`}>{accessSummary(item)}</span>
+              {item.checklist_items.length > 0 && <span className="text-xs text-text-secondary">{item.checklist_items.length} items</span>}
+              <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Archived'}</span>
               <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => openEdit(item)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"><Pencil size={13} /></button>
+                <button onClick={() => openEdit(item)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
                 {item.is_active && (
-                  <Tooltip label="Archive"><button onClick={() => handleArchive(item.id)} aria-label="Archive" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"><Trash2 size={13} /></button></Tooltip>
+                  <Tooltip label="Archive"><button onClick={() => handleArchive(item.id)} aria-label="Archive" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button></Tooltip>
                 )}
               </div>
             </div>
@@ -1913,7 +1913,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
       onClick={onChange}
       className={[
         'inline-flex items-center w-9 h-5 rounded-full px-0.5 transition-colors shrink-0',
-        on ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]',
+        on ? 'bg-primary' : 'bg-surface-control-pressed',
       ].join(' ')}
     >
       <span
@@ -1937,7 +1937,7 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
   }, [orgId])
 
   if (loading) return <Spinner />
-  if (!master) return <p className="text-sm text-[#475569]">Could not load notification settings.</p>
+  if (!master) return <p className="text-sm text-text-secondary">Could not load notification settings.</p>
 
   const toggles = master.event_toggles ?? {}
   const isOn = (event: string) => toggles[event] !== false // absent ⇒ on
@@ -1968,32 +1968,32 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <p className="text-sm text-[#475569]">
+      <p className="text-sm text-text-secondary">
         Switch individual notifications on or off for everyone in this organization.
       </p>
 
       {modules.map((mod) => (
-        <div key={mod} className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
-          <div className="px-4 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-            <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider">{NOTIF_MODULE_LABELS[mod]}</p>
+        <div key={mod} className="border border-border-light rounded-[10px] overflow-hidden">
+          <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
+            <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{NOTIF_MODULE_LABELS[mod]}</p>
           </div>
-          <div className="divide-y divide-[#F1F5F9]">
+          <div className="divide-y divide-surface-control">
             {(catalog[mod] ?? []).map((event) => (
               <div key={event} className="flex items-center justify-between px-4 py-2.5 gap-4">
-                <span className="text-sm text-[#0F172A]">{NOTIF_EVENT_LABELS[event] ?? event}</span>
+                <span className="text-sm text-text-primary">{NOTIF_EVENT_LABELS[event] ?? event}</span>
                 <Toggle on={isOn(event)} onChange={() => flip(event)} />
               </div>
             ))}
             {mod === 'tasks' && (
-              <div className="flex items-center justify-between px-4 py-2.5 gap-4 bg-[#FFFBEB]/50">
-                <span className="text-sm text-[#0F172A]">Overdue follow-up after (days)</span>
+              <div className="flex items-center justify-between px-4 py-2.5 gap-4 bg-warning-bg/50">
+                <span className="text-sm text-text-primary">Overdue follow-up after (days)</span>
                 <input
                   type="number"
                   min={1}
                   max={365}
                   value={master.overdue_followup_days}
                   onChange={(e) => setMaster({ ...master, overdue_followup_days: parseInt(e.target.value) || 1 })}
-                  className="w-20 border border-[#CBD5E1] rounded-[8px] px-2 py-1.5 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-hidden bg-white text-center"
+                  className="w-20 border border-border rounded-[8px] px-2 py-1.5 text-sm text-text-primary focus:border-primary focus:outline-hidden bg-white text-center"
                 />
               </div>
             )}
@@ -2002,7 +2002,7 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
       ))}
 
       <button onClick={handleSave} disabled={saving}
-        className="flex items-center gap-2 px-5 py-[10px] text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors">
+        className="flex items-center gap-2 px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
         <Save size={15} />
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Notification Settings'}
       </button>
@@ -2084,14 +2084,14 @@ export default function MastersPage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-[#0F172A]">No organization found</p>
+        <p className="font-semibold text-text-primary">No organization found</p>
       </div>
     )
   }
 
   if (permsLoading) {
     return (
-      <div className="flex items-center justify-center h-64 text-[#64748B]">
+      <div className="flex items-center justify-center h-64 text-text-muted">
         <Loader2 size={20} className="animate-spin" />
       </div>
     )
@@ -2115,8 +2115,8 @@ export default function MastersPage() {
   if (availableSections.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
-        <p className="font-semibold text-[#0F172A]">No access to task configuration</p>
-        <p className="mt-1 text-sm text-[#64748B]">
+        <p className="font-semibold text-text-primary">No access to task configuration</p>
+        <p className="mt-1 text-sm text-text-muted">
           You don&apos;t have permission to configure task masters. Contact an administrator.
         </p>
       </div>
@@ -2139,12 +2139,12 @@ export default function MastersPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">Work Settings</h1>
-        <p className="mt-1 text-[15px] text-[#475569]">Configure system settings for tasks and tickets.</p>
+        <h1 className="text-[28px] font-bold text-text-primary leading-tight">Work Settings</h1>
+        <p className="mt-1 text-[15px] text-text-secondary">Configure system settings for tasks and tickets.</p>
       </div>
 
       {/* Top-level switcher */}
-      <div className="flex gap-2 p-1 bg-[#F1F5F9] rounded-[10px] w-fit">
+      <div className="flex gap-2 p-1 bg-surface-control rounded-[10px] w-fit">
         {availableSections.map(([key, label]) => (
           <button
             key={key}
@@ -2155,7 +2155,7 @@ export default function MastersPage() {
             }}
             className={[
               'px-4 py-2 rounded-[8px] text-sm font-semibold transition-colors',
-              effectiveSection === key ? 'bg-white text-[#0F172A] shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-[#475569] hover:text-[#0F172A]',
+              effectiveSection === key ? 'bg-white text-text-primary shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-text-secondary hover:text-text-primary',
             ].join(' ')}
           >
             {label}
@@ -2163,9 +2163,9 @@ export default function MastersPage() {
         ))}
       </div>
 
-      <div className="flex flex-col min-h-[calc(100vh-17rem)] bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <div className="flex flex-col min-h-[calc(100vh-17rem)] bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
         {/* Tab bar */}
-        <div className="flex-none flex border-b border-[#E2E8F0] overflow-x-auto">
+        <div className="flex-none flex border-b border-border-light overflow-x-auto">
           {activeTabs.map((t) => (
             <button
               key={t.key}
@@ -2181,8 +2181,8 @@ export default function MastersPage() {
               className={[
                 'flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors whitespace-nowrap border-b-2',
                 (effectiveSection === 'tasks' ? effectiveTaskTab : effectiveSection === 'tickets' ? ticketTab : 'config') === t.key
-                  ? 'text-[#2563EB] border-[#2563EB]'
-                  : 'text-[#475569] border-transparent hover:text-[#0F172A]',
+                  ? 'text-primary-text border-primary'
+                  : 'text-text-secondary border-transparent hover:text-text-primary',
               ].join(' ')}
             >
               {t.icon}

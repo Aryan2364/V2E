@@ -19,7 +19,7 @@ import type {
 
 // ─── Shared visual helpers (mirror AssigneeSelector) ─────────────────────────────
 
-const avatarColors = ['bg-[#2563EB]', 'bg-[#7C3AED]', 'bg-[#059669]', 'bg-[#D97706]', 'bg-[#DC2626]', 'bg-[#0891B2]']
+const avatarColors = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary']
 function avatarColor(name: string): string {
   let h = 0
   for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
@@ -48,7 +48,7 @@ function ReasonChip({ reason }: { reason: AssigneeReason }) {
   return (
     <span
       className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
-        r.manual ? 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]' : 'bg-[#F1F5F9] text-[#475569]'
+        r.manual ? 'bg-primary-subtle text-primary-text border border-primary-border' : 'bg-surface-control text-text-secondary'
       }`}
     >
       {r.label}
@@ -329,25 +329,25 @@ export default function EmployeeAssigneeEditor({
     <div className="space-y-4">
       {/* Search bar (filters the employee list) */}
       <div className="relative">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, role or department…"
-          className="w-full pl-10 pr-3 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] bg-white border border-[#CBD5E1] rounded-[8px] focus:outline-hidden focus:border-[#2563EB] focus:border-2"
+          className="w-full pl-10 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted bg-white border border-border rounded-[8px] focus:outline-hidden focus:border-primary focus:border-2"
         />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-4">
         {/* ── Left: employees by department ── */}
-        <div className="lg:w-[320px] shrink-0 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
-          <div className="max-h-[560px] overflow-y-auto divide-y divide-[#F1F5F9]">
-            {leftGroups.length === 0 && <p className="px-4 py-6 text-sm text-[#475569] text-center">No employees found.</p>}
+        <div className="lg:w-[320px] shrink-0 bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+          <div className="max-h-[560px] overflow-y-auto divide-y divide-surface-control">
+            {leftGroups.length === 0 && <p className="px-4 py-6 text-sm text-text-secondary text-center">No employees found.</p>}
             {leftGroups.map((g) => (
               <div key={g.id}>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F8FAFC] border-b border-[#F1F5F9] sticky top-0">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-sunken border-b border-border-light sticky top-0">
                   <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorOf(g.id) }} />
-                  <span className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wide truncate">{g.name}</span>
+                  <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wide truncate">{g.name}</span>
                 </div>
                 {g.users.map((e) => (
                   <button
@@ -355,15 +355,15 @@ export default function EmployeeAssigneeEditor({
                     type="button"
                     onClick={() => selectEmployee(e.user_id)}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                      selectedId === e.user_id ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+                      selectedId === e.user_id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                     }`}
                   >
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${avatarColor(e.name)}`}>
                       {getInitials(e.name)}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#0F172A] truncate">{e.name}</p>
-                      <p className="text-xs text-[#64748B] truncate">{e.role_title}</p>
+                      <p className="text-sm font-medium text-text-primary truncate">{e.name}</p>
+                      <p className="text-xs text-text-muted truncate">{e.role_title}</p>
                     </div>
                   </button>
                 ))}
@@ -373,33 +373,33 @@ export default function EmployeeAssigneeEditor({
         </div>
 
         {/* ── Right: resolved Assignees & CC list + editor ── */}
-        <div className="flex-1 min-w-0 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+        <div className="flex-1 min-w-0 bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
           {!selectedId ? (
             <div className="flex flex-col items-center justify-center text-center py-20 px-6">
-              <Users size={28} className="text-[#94A3B8]" />
-              <p className="mt-3 text-[15px] font-semibold text-[#0F172A]">Pick an employee</p>
-              <p className="mt-1 text-sm text-[#475569]">Select someone on the left to see exactly who they can assign to, and why.</p>
+              <Users size={28} className="text-text-muted" />
+              <p className="mt-3 text-[15px] font-semibold text-text-primary">Pick an employee</p>
+              <p className="mt-1 text-sm text-text-secondary">Select someone on the left to see exactly who they can assign to, and why.</p>
             </div>
           ) : loadingPreview && !preview ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="animate-spin text-[#2563EB]" />
+              <Loader2 className="animate-spin text-primary-text" />
             </div>
           ) : preview ? (
             <div className="flex flex-col max-h-[640px]">
               {/* Header */}
-              <div className="px-4 py-3 border-b border-[#E2E8F0] flex items-center gap-3">
+              <div className="px-4 py-3 border-b border-border-light flex items-center gap-3">
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${avatarColor(preview.employee.name)}`}>
                   {getInitials(preview.employee.name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[15px] font-semibold text-[#0F172A] truncate">{preview.employee.name}</p>
-                  <div className="flex items-center gap-1.5 text-xs text-[#475569]">
+                  <p className="text-[15px] font-semibold text-text-primary truncate">{preview.employee.name}</p>
+                  <div className="flex items-center gap-1.5 text-xs text-text-secondary">
                     <span className="truncate">
                       {preview.employee.role_title}
                       {preview.employee.department_name ? ` · ${preview.employee.department_name}` : ''}
                     </span>
                     <Tooltip label={`Can assign to ${memberCount} of ${totalActive}`}>
-                      <span className="shrink-0 font-semibold text-[#0F172A] tabular-nums">
+                      <span className="shrink-0 font-semibold text-text-primary tabular-nums">
                         · {memberCount}/{totalActive}
                       </span>
                     </Tooltip>
@@ -409,7 +409,7 @@ export default function EmployeeAssigneeEditor({
                 <button
                   type="button"
                   onClick={() => setShowWhy(true)}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#0891B2] hover:text-[#0369A1] transition-colors shrink-0"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-text-secondary hover:text-text-secondary transition-colors shrink-0"
                 >
                   <HelpCircle size={15} /> Why?
                 </button>
@@ -420,7 +420,7 @@ export default function EmployeeAssigneeEditor({
                   disabled={!dirty || saving}
                   aria-label="Save"
                   className={`w-9 h-9 flex items-center justify-center rounded-[8px] transition-colors shrink-0 ${
-                    !dirty || saving ? 'bg-[#E2E8F0] text-[#94A3B8] cursor-not-allowed' : 'bg-[#2563EB] text-white hover:bg-[#1D4ED8]'
+                    !dirty || saving ? 'bg-surface-control-pressed text-text-muted cursor-not-allowed' : 'bg-primary text-white hover:bg-primary-hover'
                   }`}
                 >
                   {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={18} strokeWidth={3} />}
@@ -429,40 +429,40 @@ export default function EmployeeAssigneeEditor({
               </div>
 
               {/* Controls */}
-              <div className="px-4 py-2.5 border-b border-[#F1F5F9] flex items-center gap-3 flex-wrap">
+              <div className="px-4 py-2.5 border-b border-border-light flex items-center gap-3 flex-wrap">
                 <div className="relative" ref={addRef}>
                   <button
                     type="button"
                     onClick={() => setShowAdd((v) => !v)}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-text hover:text-primary-text transition-colors"
                   >
                     <UserPlus size={15} /> Add / remove people
                   </button>
                   {showAdd && (
-                    <div className="absolute z-30 mt-2 w-[300px] max-w-[80vw] bg-white border border-[#CBD5E1] rounded-[10px] shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden">
-                      <div className="relative border-b border-[#E2E8F0]">
-                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+                    <div className="absolute z-30 mt-2 w-[300px] max-w-[80vw] bg-white border border-border rounded-[10px] shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden">
+                      <div className="relative border-b border-border-light">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
                         <input
                           value={addQuery}
                           onChange={(e) => setAddQuery(e.target.value)}
                           placeholder="Search people…"
-                          className="w-full pl-9 pr-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
+                          className="w-full pl-9 pr-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
                         />
                       </div>
-                      <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#F1F5F9] bg-[#F8FAFC]">
-                        <label className="flex items-center gap-2 text-xs font-semibold text-[#0F172A] cursor-pointer">
-                          <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center ${allSelected ? 'bg-[#2563EB] border-[#2563EB]' : 'border-[#CBD5E1]'}`}>
+                      <div className="flex items-center justify-between px-3 py-1.5 border-b border-border-light bg-surface-sunken">
+                        <label className="flex items-center gap-2 text-xs font-semibold text-text-primary cursor-pointer">
+                          <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center ${allSelected ? 'bg-primary border-primary' : 'border-border'}`}>
                             {allSelected && <Check size={11} className="text-white" strokeWidth={3} />}
                           </span>
                           <input type="checkbox" className="sr-only" checked={allSelected} onChange={() => (allSelected ? removeAll() : selectAll())} />
                           Select all
                         </label>
-                        <button type="button" onClick={resetToRules} className="text-xs font-semibold text-[#475569] hover:text-[#0F172A] transition-colors">
+                        <button type="button" onClick={resetToRules} className="text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors">
                           Reset to rules
                         </button>
                       </div>
-                      <div className="max-h-56 overflow-y-auto divide-y divide-[#F1F5F9]">
-                        {addCandidates.length === 0 && <p className="px-3 py-3 text-xs text-[#475569]">No people found.</p>}
+                      <div className="max-h-56 overflow-y-auto divide-y divide-surface-control">
+                        {addCandidates.length === 0 && <p className="px-3 py-3 text-xs text-text-secondary">No people found.</p>}
                         {addCandidates.map((e) => {
                           const on = memberIds.has(e.user_id)
                           return (
@@ -470,13 +470,13 @@ export default function EmployeeAssigneeEditor({
                               key={e.user_id}
                               type="button"
                               onClick={() => toggleMember(e.user_id)}
-                              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors ${on ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'}`}
+                              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors ${on ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'}`}
                             >
-                              <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 ${on ? 'bg-[#2563EB] border-[#2563EB]' : 'border-[#CBD5E1]'}`}>
+                              <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 ${on ? 'bg-primary border-primary' : 'border-border'}`}>
                                 {on && <Check size={11} className="text-white" strokeWidth={3} />}
                               </span>
-                              <span className="text-[#0F172A] truncate">{e.name}</span>
-                              <span className="text-xs text-[#64748B] truncate ml-auto">{e.department_name}</span>
+                              <span className="text-text-primary truncate">{e.name}</span>
+                              <span className="text-xs text-text-muted truncate ml-auto">{e.department_name}</span>
                             </button>
                           )
                         })}
@@ -484,37 +484,37 @@ export default function EmployeeAssigneeEditor({
                     </div>
                   )}
                 </div>
-                <button type="button" onClick={resetToRules} className="inline-flex items-center gap-1.5 text-sm font-medium text-[#475569] hover:text-[#0F172A] transition-colors">
+                <button type="button" onClick={resetToRules} className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">
                   <RotateCcw size={14} /> Reset to rules
                 </button>
-                <button type="button" onClick={removeAll} className="inline-flex items-center gap-1.5 text-sm font-medium text-[#DC2626] hover:text-[#B91C1C] transition-colors ml-auto">
+                <button type="button" onClick={removeAll} className="inline-flex items-center gap-1.5 text-sm font-medium text-danger hover:text-danger transition-colors ml-auto">
                   <Trash2 size={14} /> Remove all
                 </button>
               </div>
 
               {/* Removed band — prominent, at the top */}
               {removedRows.length > 0 && (
-                <div className="border-b border-[#FEE2E2] bg-[#FEF2F2]">
+                <div className="border-b border-danger-border bg-danger-bg">
                   <div className="flex items-center justify-between px-3 py-2">
-                    <span className="text-[11px] font-semibold text-[#B91C1C] uppercase tracking-wide">Removed ({removedRows.length})</span>
-                    <button type="button" onClick={resetToRules} className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors">
+                    <span className="text-[11px] font-semibold text-danger uppercase tracking-wide">Removed ({removedRows.length})</span>
+                    <button type="button" onClick={resetToRules} className="inline-flex items-center gap-1 text-xs font-semibold text-primary-text hover:text-primary-text transition-colors">
                       <RotateCcw size={13} /> Restore all
                     </button>
                   </div>
                   {removedRows.length > 12 ? (
-                    <p className="px-3 pb-2 text-xs text-[#B91C1C]">{removedRows.length} people removed — “Restore all” or “Reset to rules” to bring them back.</p>
+                    <p className="px-3 pb-2 text-xs text-danger">{removedRows.length} people removed — “Restore all” or “Reset to rules” to bring them back.</p>
                   ) : (
                     <div className="max-h-40 overflow-y-auto">
                       {removedRows.map((r) => (
                         <div key={r.user_id} className="flex items-center gap-3 px-3 py-1.5">
-                          <span className="text-sm font-medium text-[#94A3B8] line-through truncate flex-1">{r.name}</span>
-                          <span className="text-xs text-[#94A3B8] truncate">
+                          <span className="text-sm font-medium text-text-muted line-through truncate flex-1">{r.name}</span>
+                          <span className="text-xs text-text-muted truncate">
                             {r.would_be_reason ? `was: ${REASON[r.would_be_reason]?.label ?? r.would_be_reason}` : 'not in rules either'}
                           </span>
                           <button
                             type="button"
                             onClick={() => addMember(r.user_id)}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors shrink-0"
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-primary-text hover:text-primary-text transition-colors shrink-0"
                           >
                             <RotateCcw size={12} /> Restore
                           </button>
@@ -526,14 +526,14 @@ export default function EmployeeAssigneeEditor({
               )}
 
               {/* Resolved list */}
-              <div className="flex-1 overflow-y-auto divide-y divide-[#F1F5F9]">
+              <div className="flex-1 overflow-y-auto divide-y divide-surface-control">
                 {memberGroups.length === 0 && (
-                  <p className="px-4 py-6 text-sm text-[#475569] text-center">Assigns to no one but themselves.</p>
+                  <p className="px-4 py-6 text-sm text-text-secondary text-center">Assigns to no one but themselves.</p>
                 )}
                 {memberGroups.map((g) => (
                   <div key={g.department_id}>
-                    <div className="px-3 py-1.5 bg-[#F8FAFC] border-b border-[#F1F5F9]">
-                      <span className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wide">{g.department_name}</span>
+                    <div className="px-3 py-1.5 bg-surface-sunken border-b border-border-light">
+                      <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wide">{g.department_name}</span>
                     </div>
                     {g.users.map((u) => (
                       <Row
@@ -556,12 +556,12 @@ export default function EmployeeAssigneeEditor({
 
       {/* Discard-changes confirm (in-app, not browser) */}
       <Modal isOpen={pendingSelect !== null} onClose={() => setPendingSelect(null)} title="Discard unsaved changes?" size="sm">
-        <p className="text-sm text-[#475569]">You have unsaved changes for this employee. Switch anyway and lose them?</p>
+        <p className="text-sm text-text-secondary">You have unsaved changes for this employee. Switch anyway and lose them?</p>
         <div className="flex gap-2 justify-end mt-5">
           <button
             type="button"
             onClick={() => setPendingSelect(null)}
-            className="px-4 py-2 text-sm font-semibold text-[#0F172A] bg-[#F1F5F9] hover:bg-[#E2E8F0] rounded-[8px] transition-colors"
+            className="px-4 py-2 text-sm font-semibold text-text-primary bg-surface-control hover:bg-surface-control-pressed rounded-[8px] transition-colors"
           >
             Keep editing
           </button>
@@ -572,7 +572,7 @@ export default function EmployeeAssigneeEditor({
               setPendingSelect(null)
               proceedSelect(id)
             }}
-            className="px-4 py-2 text-sm font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] rounded-[8px] transition-colors"
+            className="px-4 py-2 text-sm font-semibold text-white bg-danger hover:bg-danger-hover rounded-[8px] transition-colors"
           >
             Discard
           </button>
@@ -582,22 +582,22 @@ export default function EmployeeAssigneeEditor({
       {/* "Why this list?" breakdown */}
       <Modal isOpen={showWhy} onClose={() => setShowWhy(false)} title={`Why ${preview?.employee.name ?? 'this person'} sees this list`} size="md">
         <div className="space-y-4">
-          <p className="text-sm text-[#475569]">
+          <p className="text-sm text-text-secondary">
             {memberCount} of {totalActive} people, built from the rules below (most-granular per-employee edits applied on top).
           </p>
           <div className="space-y-3">
             {whyGroups.map((grp) => (
-              <div key={grp.reason} className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-2 bg-[#F8FAFC] border-b border-[#F1F5F9]">
-                  <span className="text-sm font-semibold text-[#0F172A]">{REASON[grp.reason]?.label ?? grp.reason}</span>
-                  <span className="text-xs font-medium text-[#475569]">{grp.names.length}</span>
+              <div key={grp.reason} className="border border-border-light rounded-[10px] overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2 bg-surface-sunken border-b border-border-light">
+                  <span className="text-sm font-semibold text-text-primary">{REASON[grp.reason]?.label ?? grp.reason}</span>
+                  <span className="text-xs font-medium text-text-secondary">{grp.names.length}</span>
                 </div>
-                <p className="px-3 py-2 text-sm text-[#1E293B]">{grp.names.join(', ')}</p>
+                <p className="px-3 py-2 text-sm text-text-primary">{grp.names.join(', ')}</p>
               </div>
             ))}
           </div>
-          <div className="rounded-[10px] bg-[#E0F2FE] border border-[#BAE6FD] p-3 space-y-1.5 text-[13px] text-[#0369A1]">
-            <p className="font-semibold text-[#0369A1]">Rules in effect</p>
+          <div className="rounded-[10px] bg-surface-control border border-border-light p-3 space-y-1.5 text-[13px] text-text-secondary">
+            <p className="font-semibold text-text-secondary">Rules in effect</p>
             {ownDept ? (
               <p>
                 Department <span className="font-semibold">{ownDept.name}</span> — assigning up the chain is{' '}
@@ -646,23 +646,23 @@ function Row({
         {getInitials(name)}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[#0F172A] truncate">
+        <p className="text-sm font-medium text-text-primary truncate">
           {name}
-          {isSelf && <span className="ml-1.5 text-xs font-normal text-[#475569]">(themselves)</span>}
+          {isSelf && <span className="ml-1.5 text-xs font-normal text-text-secondary">(themselves)</span>}
         </p>
-        <p className="text-xs text-[#64748B] truncate">{role}</p>
+        <p className="text-xs text-text-muted truncate">{role}</p>
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
         {badges?.on_leave_today && (
-          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#92400E]">On leave</span>
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-warning-bg text-warning">On leave</span>
         )}
         {badges?.is_frequent && (
-          <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#EFF6FF] text-[#2563EB]">
+          <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary-subtle text-primary-text">
             <Zap size={9} /> Frequent
           </span>
         )}
         {badges && (
-          <span className="flex items-center gap-0.5 text-[10px] font-medium text-[#64748B] bg-[#F1F5F9] px-1.5 py-0.5 rounded-full">
+          <span className="flex items-center gap-0.5 text-[10px] font-medium text-text-muted bg-surface-control px-1.5 py-0.5 rounded-full">
             <Briefcase size={9} /> {badges.active_task_count}
           </span>
         )}
@@ -672,7 +672,7 @@ function Row({
             type="button"
             onClick={onRemove}
             aria-label={`Remove ${name}`}
-            className="w-6 h-6 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#F1F5F9] transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-surface-control transition-colors"
           >
             <X size={14} />
           </button>

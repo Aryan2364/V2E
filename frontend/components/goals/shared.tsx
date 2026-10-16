@@ -55,9 +55,9 @@ export function daysLeftLabel(days: number | null | undefined): {
 }
 
 export const DAYS_TONE: Record<'ok' | 'soon' | 'late', string> = {
-  ok: 'text-[#475569]',
-  soon: 'text-[#CA8A04]',
-  late: 'text-[#DC2626]',
+  ok: 'text-text-secondary',
+  soon: 'text-warning',
+  late: 'text-danger',
 }
 
 // ─── Badges ──────────────────────────────────────────────────────────────────
@@ -160,7 +160,7 @@ export function GoalStatusPicker({
       {open && (
         <div
           role="listbox"
-          className="absolute left-0 top-full mt-1.5 z-30 w-[228px] bg-white border border-[#E2E8F0] rounded-[10px] shadow-[0_8px_24px_rgba(15,23,42,0.14)] py-1"
+          className="absolute left-0 top-full mt-1.5 z-30 w-[228px] bg-white border border-border-light rounded-[10px] shadow-[0_8px_24px_rgba(15,23,42,0.14)] py-1"
         >
           {options.map((s) => {
             const om = STATUS_META[s]
@@ -175,16 +175,16 @@ export function GoalStatusPicker({
                 disabled={isCheckIn}
                 onClick={() => pick(s)}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left transition-colors ${
-                  isCheckIn ? 'cursor-default text-[#475569]' : 'text-[#0F172A] hover:bg-[#F1F5F9]'
+                  isCheckIn ? 'cursor-default text-text-secondary' : 'text-text-primary hover:bg-surface-control'
                 }`}
               >
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: om.dot }} />
                 <span className="flex-1 truncate font-medium">{om.label}</span>
-                {isCurrent && <Check size={14} className="text-[#2563EB] shrink-0" />}
+                {isCurrent && <Check size={14} className="text-primary-text shrink-0" />}
               </button>
             )
           })}
-          <p className="text-[11px] text-[#475569] leading-snug px-3 pt-2 pb-1 mt-1 border-t border-[#F1F5F9]">
+          <p className="text-[11px] text-text-secondary leading-snug px-3 pt-2 pb-1 mt-1 border-t border-border-light">
             On track / At risk / Off track come from check-ins. On hold pauses check-in
             reminders without closing the goal.
           </p>
@@ -237,16 +237,16 @@ export function ValueAgainstTarget({
   size?: 'sm' | 'md' | 'lg'
 }) {
   if (target === null || target === undefined) {
-    return <span className="text-[13px] text-[#475569]">No target number</span>
+    return <span className="text-[13px] text-text-secondary">No target number</span>
   }
   const cls =
     size === 'lg' ? 'text-[24px]' : size === 'sm' ? 'text-[13px]' : 'text-[15px]'
   return (
     <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
-      <span className={`${cls} font-bold text-[#0F172A] tabular-nums`}>
+      <span className={`${cls} font-bold text-text-primary tabular-nums`}>
         {current === null ? '—' : current.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
       </span>
-      <span className="text-[13px] text-[#475569]">of {formatValue(target, unit)}</span>
+      <span className="text-[13px] text-text-secondary">of {formatValue(target, unit)}</span>
     </span>
   )
 }
@@ -256,7 +256,7 @@ export function ValueAgainstTarget({
 export function CountBadge({ count }: { count: number }) {
   if (!count) return null
   return (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
       {count}
     </span>
   )
@@ -277,11 +277,11 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center text-center gap-3 py-16 px-6">
-      <div className="w-14 h-14 rounded-[16px] bg-[#EFF6FF] flex items-center justify-center text-[#2563EB]">
+      <div className="w-14 h-14 rounded-[16px] bg-primary-subtle flex items-center justify-center text-primary-text">
         {icon}
       </div>
-      <h3 className="text-[18px] font-semibold text-[#0F172A]">{title}</h3>
-      <p className="text-sm text-[#475569] max-w-sm">{subtitle}</p>
+      <h3 className="text-[18px] font-semibold text-text-primary">{title}</h3>
+      <p className="text-sm text-text-secondary max-w-sm">{subtitle}</p>
       {action}
     </div>
   )
@@ -362,7 +362,7 @@ export function PermissionsUnavailable({ onRetry }: { onRetry: () => void }) {
       action={
         <button
           onClick={onRetry}
-          className="mt-1 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold transition-colors"
+          className="mt-1 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-semibold transition-colors"
         >
           <RefreshCw size={15} /> Try again
         </button>

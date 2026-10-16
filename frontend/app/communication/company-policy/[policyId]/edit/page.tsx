@@ -30,19 +30,19 @@ export default function EditPolicyPage() {
   useEffect(() => { load() }, [load])
 
   if (status === 'loading') {
-    return <div className="flex justify-center py-20"><div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" /></div>
+    return <div className="flex justify-center py-20"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
   }
 
   if (status === 'failed' || !policy) {
     return (
       <div className="max-w-3xl">
         <PolicyBreadcrumb trail={[{ label: 'Company Policy', href: POLICY_BASE }, { label: 'Edit policy' }]} />
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-8 flex flex-col items-center text-center gap-2">
-          <p className="text-sm font-semibold text-[#0F172A]">This policy could not be loaded</p>
-          <p className="text-sm text-[#475569]">It may have been deleted, or the connection dropped.</p>
+        <div className="bg-white border border-border-light rounded-[12px] p-8 flex flex-col items-center text-center gap-2">
+          <p className="text-sm font-semibold text-text-primary">This policy could not be loaded</p>
+          <p className="text-sm text-text-secondary">It may have been deleted, or the connection dropped.</p>
           <div className="flex gap-3 mt-2">
-            <button type="button" onClick={load} className="px-4 py-2 text-sm font-semibold text-[#2563EB] border-2 border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors">Retry</button>
-            <Link href={POLICY_BASE} className="px-4 py-2 text-sm font-semibold text-[#475569] hover:text-[#0F172A] transition-colors">All policies</Link>
+            <button type="button" onClick={load} className="px-4 py-2 text-sm font-semibold text-primary-text border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors">Retry</button>
+            <Link href={POLICY_BASE} className="px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors">All policies</Link>
           </div>
         </div>
       </div>
@@ -58,7 +58,7 @@ export default function EditPolicyPage() {
           { label: 'Edit' },
         ]}
       />
-      <h1 className="text-[22px] sm:text-[28px] font-bold text-[#0F172A] mb-6 leading-tight">Edit Policy</h1>
+      <h1 className="text-[22px] sm:text-[28px] font-bold text-text-primary mb-6 leading-tight">Edit Policy</h1>
       <PolicyForm
         initial={{ title: policy.title, description: policy.description ?? '' }}
         submitLabel="Save changes"

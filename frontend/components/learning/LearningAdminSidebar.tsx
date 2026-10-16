@@ -39,7 +39,7 @@ export default function LearningAdminSidebar({ collapsed, onToggle }: LearningAd
     >
       <div className="h-12 flex items-center border-b border-white/10 shrink-0 px-2">
         {!collapsed && (
-          <span className="flex-1 px-2 text-xs font-semibold text-[#94A3B8] uppercase tracking-widest whitespace-nowrap">
+          <span className="flex-1 px-2 text-xs font-semibold text-text-muted uppercase tracking-widest whitespace-nowrap">
             Learning
           </span>
         )}
@@ -47,7 +47,7 @@ export default function LearningAdminSidebar({ collapsed, onToggle }: LearningAd
           <button
             onClick={onToggle}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-white hover:bg-[#1E293B] transition-colors shrink-0"
+            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-text-muted hover:text-white hover:bg-[#1E293B] transition-colors shrink-0"
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
@@ -65,7 +65,7 @@ export default function LearningAdminSidebar({ collapsed, onToggle }: LearningAd
                 'flex items-center rounded-[8px] py-2.5 text-sm font-medium transition-colors duration-150 whitespace-nowrap',
                 collapsed ? 'justify-center px-2' : 'gap-3 px-3',
                 active
-                  ? 'bg-[#2563EB] text-white'
+                  ? 'bg-primary text-white'
                   : 'text-[#CBD5E1] hover:bg-[#1E293B] hover:text-[#F1F5F9]',
               ].join(' ')}
             >

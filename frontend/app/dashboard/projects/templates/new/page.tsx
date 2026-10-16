@@ -61,22 +61,22 @@ export default function NewTemplatePage() {
       <div>
         <Link
           href="/dashboard/projects/templates"
-          className="inline-flex items-center gap-1.5 text-sm text-[#475569] hover:text-[#0F172A] transition-colors mb-3"
+          className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors mb-3"
         >
           <ChevronLeft size={15} />
           Back to Templates
         </Link>
-        <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">New Template</h1>
-        <p className="mt-1 text-[15px] text-[#475569]">Define a reusable project structure.</p>
+        <h1 className="text-[28px] font-bold text-text-primary leading-tight">New Template</h1>
+        <p className="mt-1 text-[15px] text-text-secondary">Define a reusable project structure.</p>
       </div>
 
       {error && (
-        <div className="px-4 py-3 rounded-[8px] border border-[#FECACA] bg-[#FEF2F2] text-sm text-[#DC2626]">
+        <div className="px-4 py-3 rounded-[8px] border border-danger-border bg-danger-bg text-sm text-danger">
           {error}
         </div>
       )}
 
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <div className="bg-white border border-border-light rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
         <TemplateBuilder
           name={name}
           description={description}
@@ -94,7 +94,7 @@ export default function NewTemplatePage() {
           type="button"
           disabled={saving}
           onClick={handleSave}
-          className="h-10 px-6 rounded-[8px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors flex items-center gap-2"
+          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-semibold disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
         >
           {saving && <Loader2 size={14} className="animate-spin" />}
           {saving ? 'Saving...' : 'Save Template'}

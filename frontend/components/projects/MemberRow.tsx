@@ -17,13 +17,13 @@ export default function MemberRow({ member, currentUserId, canEdit, onRoleChange
   const isSelf = member.user_id === currentUserId
 
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-[#E2E8F0] last:border-0">
-      <div className="w-8 h-8 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center shrink-0">
-        <span className="text-xs font-semibold text-[#2563EB]">{member.user_id.charAt(0).toUpperCase()}</span>
+    <div className="flex items-center gap-3 py-2.5 border-b border-border-light last:border-0">
+      <div className="w-8 h-8 rounded-full bg-primary-subtle border border-primary-border flex items-center justify-center shrink-0">
+        <span className="text-xs font-semibold text-primary-text">{member.user_id.charAt(0).toUpperCase()}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[#0F172A] truncate">{member.user_id}</p>
-        {isSelf && <p className="text-[11px] text-[#94A3B8]">You</p>}
+        <p className="text-sm font-medium text-text-primary truncate">{member.user_id}</p>
+        {isSelf && <p className="text-[11px] text-text-muted">You</p>}
       </div>
       {canEdit && !isSelf ? (
         <>
@@ -51,15 +51,15 @@ export default function MemberRow({ member, currentUserId, canEdit, onRoleChange
           <button
             type="button"
             onClick={() => onRemove(member.user_id)}
-            className="p-1.5 rounded-[6px] hover:bg-[#FEE2E2] text-[#DC2626] transition-colors"
+            className="p-1.5 rounded-[6px] hover:bg-danger-bg text-danger transition-colors"
           >
             <Trash2 size={14} />
           </button>
         </>
       ) : (
         <div className="flex items-center gap-2">
-          <span className="text-xs px-2 py-0.5 rounded-full border border-[#E2E8F0] text-[#475569] capitalize">{member.role}</span>
-          <span className="text-xs text-[#94A3B8]">{member.task_visibility === 'all_member_tasks' ? 'All tasks' : 'Own tasks'}</span>
+          <span className="text-xs px-2 py-0.5 rounded-full border border-border-light text-text-secondary capitalize">{member.role}</span>
+          <span className="text-xs text-text-muted">{member.task_visibility === 'all_member_tasks' ? 'All tasks' : 'Own tasks'}</span>
         </div>
       )}
     </div>

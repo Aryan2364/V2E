@@ -44,9 +44,9 @@ export default function LeaveWarningBadge({ availability, deadline, today }: Pro
   if (onDeadline.length === 0 && before.length === 0) return null
 
   return (
-    <div className="flex items-start gap-2 mt-1.5 px-3 py-2 rounded-[8px] bg-[#FEF3C7] border border-[#FCD34D]">
-      <CalendarOff size={14} className="text-[#92400E] shrink-0 mt-0.5" />
-      <div className="text-xs text-[#92400E] font-medium space-y-0.5">
+    <div className="flex items-start gap-2 mt-1.5 px-3 py-2 rounded-[8px] bg-warning-bg border border-warning-border">
+      <CalendarOff size={14} className="text-warning shrink-0 mt-0.5" />
+      <div className="text-xs text-warning font-medium space-y-0.5">
         {onDeadline.length > 0 && (
           <p>
             On the deadline: <span className="font-semibold">{onDeadline.join(', ')}</span>
@@ -59,7 +59,7 @@ export default function LeaveWarningBadge({ availability, deadline, today }: Pro
             {before.length === 1 ? ' is' : ' are'} on leave for part of the window.
           </p>
         )}
-        <p className="font-normal text-[#B45309]">
+        <p className="font-normal text-warning">
           {anyPending ? 'Some leave is still pending approval. ' : ''}You can still assign — this is just a heads-up.
         </p>
       </div>

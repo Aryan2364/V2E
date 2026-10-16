@@ -92,7 +92,7 @@ export default function DepartmentSelect({
   }
 
   const triggerCls =
-    'w-full flex items-center gap-2.5 border border-[#CBD5E1] rounded-[8px] px-3 py-2.5 text-[15px] text-left bg-[#F8FAFC] hover:bg-white hover:border-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors'
+    'w-full flex items-center gap-2.5 border border-border rounded-[8px] px-3 py-2.5 text-[15px] text-left bg-surface-sunken hover:bg-white hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
 
   const lockOf = (id: string) => (id === value ? null : lockedReason?.(id) ?? null)
   const allLocked =
@@ -108,8 +108,8 @@ export default function DepartmentSelect({
     >
       <span className="w-2.5 h-2.5 rounded-full shrink-0 opacity-40" style={{ backgroundColor: colorFor(dept.id) }} />
       <span className="flex-1 min-w-0">
-        <span className="block text-sm font-medium text-[#94A3B8] truncate">{dept.name}</span>
-        <span className="block text-[11px] text-[#94A3B8] truncate">{sub ? `${reason} · ${sub}` : reason}</span>
+        <span className="block text-sm font-medium text-text-muted truncate">{dept.name}</span>
+        <span className="block text-[11px] text-text-muted truncate">{sub ? `${reason} · ${sub}` : reason}</span>
       </span>
       <Lock size={13} className="text-[#CBD5E1] shrink-0" />
     </div>
@@ -120,20 +120,20 @@ export default function DepartmentSelect({
   // portal and inline render paths.
   const panelBody = (
     <>
-      <div className="relative border-b border-[#E2E8F0] shrink-0">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+      <div className="relative border-b border-border-light shrink-0">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search departments…"
-          className="w-full pl-9 pr-8 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
+          className="w-full pl-9 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
           autoFocus
         />
         {query && (
           <button
             type="button"
             onClick={() => setQuery('')}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569]"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
             aria-label="Clear search"
           >
             <X size={14} />
@@ -143,36 +143,36 @@ export default function DepartmentSelect({
 
       <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
         {allLocked && !q && (
-          <p className="px-3 pt-2 pb-1 text-[11px] text-[#94A3B8]">Every department is already covered by another rule.</p>
+          <p className="px-3 pt-2 pb-1 text-[11px] text-text-muted">Every department is already covered by another rule.</p>
         )}
         {allLabel && !q && (
           <button
             type="button"
             onClick={() => pick('')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-              !value ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+              !value ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full shrink-0 border border-[#CBD5E1]" />
+            <span className="w-2.5 h-2.5 rounded-full shrink-0 border border-border" />
             <span
               className={`flex-1 min-w-0 truncate text-sm font-medium ${
-                !value ? 'text-[#2563EB]' : 'text-[#0F172A]'
+                !value ? 'text-primary-text' : 'text-text-primary'
               }`}
             >
               {allLabel}
             </span>
-            {!value && <Check size={15} className="text-[#2563EB] shrink-0" />}
+            {!value && <Check size={15} className="text-primary-text shrink-0" />}
           </button>
         )}
 
         {departments.length === 0 ? (
           <div className="flex flex-col items-center gap-1 py-8 text-center">
             <Building2 size={22} className="text-[#CBD5E1]" />
-            <p className="text-xs text-[#94A3B8]">No departments yet.</p>
+            <p className="text-xs text-text-muted">No departments yet.</p>
           </div>
         ) : q ? (
           filtered.length === 0 ? (
-            <p className="px-3 py-6 text-center text-sm text-[#94A3B8]">No departments found.</p>
+            <p className="px-3 py-6 text-center text-sm text-text-muted">No departments found.</p>
           ) : (
             filtered.map((d) => {
               const path = ancestorsOf(departments, d.id)
@@ -188,7 +188,7 @@ export default function DepartmentSelect({
                   type="button"
                   onClick={() => pick(d.id)}
                   className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                    isSel ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+                    isSel ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                   }`}
                 >
                   <span
@@ -196,14 +196,14 @@ export default function DepartmentSelect({
                     style={{ backgroundColor: colorFor(d.id) }}
                   />
                   <span className="flex-1 min-w-0">
-                    <span className="block text-sm font-medium text-[#0F172A] truncate">
+                    <span className="block text-sm font-medium text-text-primary truncate">
                       {d.name}
                     </span>
                     {path && (
-                      <span className="block text-xs text-[#94A3B8] truncate">{path}</span>
+                      <span className="block text-xs text-text-muted truncate">{path}</span>
                     )}
                   </span>
-                  {isSel && <Check size={15} className="text-[#2563EB] shrink-0" />}
+                  {isSel && <Check size={15} className="text-primary-text shrink-0" />}
                 </button>
               )
             })
@@ -220,7 +220,7 @@ export default function DepartmentSelect({
                 onClick={() => pick(dept.id)}
                 style={{ paddingLeft: 12 + depth * 16 }}
                 className={`w-full flex items-center gap-2.5 pr-3 py-2 text-left transition-colors ${
-                  isSel ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+                  isSel ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                 }`}
               >
                 <span
@@ -229,12 +229,12 @@ export default function DepartmentSelect({
                 />
                 <span
                   className={`flex-1 min-w-0 truncate text-sm font-medium ${
-                    isSel ? 'text-[#2563EB]' : 'text-[#0F172A]'
+                    isSel ? 'text-primary-text' : 'text-text-primary'
                   }`}
                 >
                   {dept.name}
                 </span>
-                {isSel && <Check size={15} className="text-[#2563EB] shrink-0" />}
+                {isSel && <Check size={15} className="text-primary-text shrink-0" />}
               </button>
             )
           })
@@ -252,22 +252,22 @@ export default function DepartmentSelect({
               className="w-2.5 h-2.5 rounded-full shrink-0"
               style={{ backgroundColor: colorFor(selected.id) }}
             />
-            <span className="flex-1 min-w-0 truncate text-[#0F172A]">{selected.name}</span>
+            <span className="flex-1 min-w-0 truncate text-text-primary">{selected.name}</span>
           </>
         ) : allLabel ? (
-          <span className="flex-1 min-w-0 truncate text-[#0F172A]">{allLabel}</span>
+          <span className="flex-1 min-w-0 truncate text-text-primary">{allLabel}</span>
         ) : (
-          <span className="flex-1 text-[#94A3B8]">{placeholder}</span>
+          <span className="flex-1 text-text-muted">{placeholder}</span>
         )}
         <ChevronDown
           size={16}
-          className={`shrink-0 text-[#94A3B8] transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-text-muted transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
       {/* Inline mode: in-flow panel that scrolls with the page (no drift). */}
       {open && inline && (
-        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 flex flex-col max-h-[300px] border border-[#E2E8F0] rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden">
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 flex flex-col max-h-[300px] border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden">
           {panelBody}
         </div>
       )}
@@ -280,7 +280,7 @@ export default function DepartmentSelect({
           <div
             ref={panelRef}
             style={style}
-            className="z-80 flex flex-col border border-[#E2E8F0] rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden"
+            className="z-80 flex flex-col border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden"
           >
             {panelBody}
           </div>,

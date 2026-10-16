@@ -9,8 +9,8 @@ import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 
 const inputClass =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
-const labelClass = 'block text-sm font-medium text-[#374151] mb-1'
+  'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
 
 interface Props {
   isOpen: boolean
@@ -68,7 +68,7 @@ export default function AddGoalTaskModal({ isOpen, onClose, orgId, goalId, emplo
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add a task to this goal" size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <p className="text-sm text-[#475569] -mt-1">
+        <p className="text-sm text-text-secondary -mt-1">
           This creates a real task in the Tasks module, linked to this goal.
         </p>
         <div>
@@ -89,7 +89,7 @@ export default function AddGoalTaskModal({ isOpen, onClose, orgId, goalId, emplo
           <label className={labelClass}>Deadline</label>
           <DatePicker value={deadline} onChange={setDeadline} placeholder="Select date" />
         </div>
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E2E8F0]">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-light">
           <Button variant="secondary" type="button" onClick={onClose}>
             Cancel
           </Button>

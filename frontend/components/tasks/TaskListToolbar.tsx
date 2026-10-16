@@ -44,20 +44,20 @@ export default function TaskListToolbar({
     <div className="space-y-3">
       <div className="flex items-center gap-2 flex-wrap">
       <div className="relative flex-1 min-w-[220px]">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
         <input
           type="text"
           value={search}
           onChange={(e) => onSearch(e.target.value)}
           placeholder="Search tasks by title, tag, category or person"
-          className="w-full h-[38px] pl-9 pr-9 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] focus:bg-white transition-colors"
+          className="w-full h-[38px] pl-9 pr-9 rounded-[8px] border border-border bg-surface-sunken text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white transition-colors"
         />
         {search && (
           <button
             type="button"
             onClick={() => onSearch('')}
             aria-label="Clear search"
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
           >
             <X size={15} />
           </button>

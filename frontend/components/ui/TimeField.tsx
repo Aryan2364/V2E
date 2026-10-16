@@ -29,19 +29,19 @@ export default function TimeField({
 
   const vpad = compact ? "py-1.5" : "py-2.5";
   const fsize = compact ? "text-[13px]" : "text-[15px]";
-  const triggerCls = `w-full flex items-center gap-0 rounded-[8px] border bg-[#F8FAFC] text-left ${fsize} transition-colors ${
+  const triggerCls = `w-full flex items-center gap-0 rounded-[8px] border bg-surface-sunken text-left ${fsize} transition-colors ${
     disabled
-      ? "border-[#E2E8F0] cursor-not-allowed opacity-70"
-      : "border-[#CBD5E1] cursor-pointer hover:bg-white hover:border-[#94A3B8]"
-  } ${open ? "bg-white! border-[#2563EB]! ring-1 ring-[#2563EB]" : ""}`;
+      ? "border-border-light cursor-not-allowed opacity-70"
+      : "border-border cursor-pointer hover:bg-white hover:border-border-strong"
+  } ${open ? "bg-white! border-primary! ring-1 ring-primary" : ""}`;
 
   return (
     <>
       <button type="button" disabled={disabled} onClick={() => setOpen(true)} className={triggerCls}>
-        <span className={`flex items-center px-2.5 ${vpad} border-r border-[#E2E8F0] rounded-l-[8px] text-[#64748B]`}>
+        <span className={`flex items-center px-2.5 ${vpad} border-r border-border-light rounded-l-[8px] text-text-muted`}>
           <Clock size={15} />
         </span>
-        <span className={`flex-1 px-3 ${vpad} truncate ${value ? "text-[#0F172A]" : "text-[#94A3B8]"}`}>
+        <span className={`flex-1 px-3 ${vpad} truncate ${value ? "text-text-primary" : "text-text-muted"}`}>
           {value || placeholder}
         </span>
       </button>

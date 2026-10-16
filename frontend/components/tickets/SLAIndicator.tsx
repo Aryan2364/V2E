@@ -21,7 +21,7 @@ export default function SLAIndicator({ sla_due_at, sla_breached, status_type, cr
   if (sla_breached || due < now) {
     const daysAgo = Math.floor((now.getTime() - due.getTime()) / (1000 * 60 * 60 * 24))
     return (
-      <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#DC2626] border border-[#FECACA]">
+      <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-danger-bg text-danger border border-danger-border">
         Breached {daysAgo > 0 ? `${daysAgo}d ago` : 'today'}
       </span>
     )
@@ -34,14 +34,14 @@ export default function SLAIndicator({ sla_due_at, sla_breached, status_type, cr
 
   if (pct >= 80) {
     return (
-      <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#FEF9C3] text-[#D97706] border border-[#FDE68A]">
+      <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning-bg text-warning border border-warning-border">
         Due in {daysLeft}d
       </span>
     )
   }
 
   return (
-    <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]">
+    <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-success-bg text-success border border-success-border">
       Due in {daysLeft}d
     </span>
   )

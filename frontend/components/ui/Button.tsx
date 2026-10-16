@@ -18,13 +18,13 @@ interface ButtonProps {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]',
+    'bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted',
   secondary:
-    'bg-white text-[#2563EB] border-2 border-[#2563EB] hover:bg-[#EFF6FF] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:border-[#E2E8F0]',
+    'bg-white text-primary-text border-2 border-primary hover:bg-primary-subtle disabled:bg-surface-control-pressed disabled:text-text-muted disabled:border-border-light',
   danger:
-    'bg-[#DC2626] text-white hover:bg-[#B91C1C] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]',
+    'bg-danger text-white hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted',
   ghost:
-    'bg-transparent text-[#475569] hover:bg-[#F1F5F9] disabled:text-[#94A3B8]',
+    'bg-transparent text-text-secondary hover:bg-surface-control disabled:text-text-muted',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -75,7 +75,7 @@ export default function Button({
       onClick={onClick}
       disabled={isDisabled}
       className={[
-        'inline-flex items-center justify-center gap-2 rounded-[8px] font-semibold transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2',
+        'inline-flex items-center justify-center gap-2 rounded-[8px] font-semibold transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         variantClasses[variant],
         sizeClasses[size],
         isDisabled ? 'cursor-not-allowed opacity-100' : 'cursor-pointer',

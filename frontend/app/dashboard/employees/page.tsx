@@ -28,13 +28,13 @@ function getInitials(name: string): string {
 }
 
 const avatarColors = [
-  'bg-[#2563EB]',
-  'bg-[#7C3AED]',
-  'bg-[#059669]',
-  'bg-[#D97706]',
-  'bg-[#DC2626]',
-  'bg-[#0891B2]',
-  'bg-[#BE185D]',
+  'bg-primary',
+  'bg-text-secondary',
+  'bg-success',
+  'bg-warning',
+  'bg-danger',
+  'bg-text-secondary',
+  'bg-text-secondary',
 ]
 
 function avatarColor(name: string): string {
@@ -46,8 +46,8 @@ function avatarColor(name: string): string {
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
 const statusConfig: Record<EmployeeStatus, { bg: string; text: string; label: string }> = {
-  active: { bg: 'bg-[#DCFCE7]', text: 'text-[#16A34A]', label: 'Active' },
-  inactive: { bg: 'bg-[#FEE2E2]', text: 'text-[#DC2626]', label: 'Inactive' },
+  active: { bg: 'bg-success-bg', text: 'text-success', label: 'Active' },
+  inactive: { bg: 'bg-danger-bg', text: 'text-danger', label: 'Inactive' },
 }
 
 function StatusBadge({ status }: { status: EmployeeStatus }) {
@@ -77,14 +77,14 @@ function Avatar({ name }: { name: string }) {
 
 function EmptyState({ filtered }: { filtered: boolean }) {
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-14 h-14 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-        <Users size={24} className="text-[#94A3B8]" />
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
+      <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
+        <Users size={24} className="text-text-muted" />
       </div>
-      <p className="font-semibold text-[#0F172A]">
+      <p className="font-semibold text-text-primary">
         {filtered ? 'No employees match your filter' : 'No employees yet'}
       </p>
-      <p className="text-[#475569] text-sm mt-1">
+      <p className="text-text-secondary text-sm mt-1">
         {filtered
           ? 'Try adjusting your search or department filter.'
           : 'Employees will appear here once added.'}
@@ -324,7 +324,7 @@ export default function EmployeesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -345,8 +345,8 @@ export default function EmployeesPage() {
           <div className="flex items-center gap-3">
             <Avatar name={name} />
             <div className="min-w-0">
-              <p className="font-medium text-[#0F172A] truncate">{name}</p>
-              <p className="text-xs text-[#475569] truncate">{email}</p>
+              <p className="font-medium text-text-primary truncate">{name}</p>
+              <p className="text-xs text-text-secondary truncate">{email}</p>
             </div>
           </div>
         )
@@ -356,7 +356,7 @@ export default function EmployeesPage() {
       key: 'role',
       header: 'Role',
       desktopHiddenBelow: 'md',
-      cellClassName: 'px-6 py-4 text-[#475569]',
+      cellClassName: 'px-6 py-4 text-text-secondary',
       headerClassName: 'px-6 py-3.5',
       render: (emp) => emp.role?.title ?? '—',
     },
@@ -364,7 +364,7 @@ export default function EmployeesPage() {
       key: 'department',
       header: 'Department',
       desktopHiddenBelow: 'lg',
-      cellClassName: 'px-6 py-4 text-[#475569]',
+      cellClassName: 'px-6 py-4 text-text-secondary',
       headerClassName: 'px-6 py-3.5',
       render: (emp) => emp.department?.name ?? '—',
     },
@@ -388,7 +388,7 @@ export default function EmployeesPage() {
             e.stopPropagation()
             markNavigating()
           }}
-          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-[#2563EB] text-xs font-medium hover:text-[#1D4ED8] transition-colors rounded-[6px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-primary-text text-xs font-medium hover:text-primary-text transition-colors rounded-[6px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
         >
           View
           <ChevronRight size={13} />
@@ -404,8 +404,8 @@ export default function EmployeesPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">Employees</h1>
-          <p className="mt-1 text-[15px] text-[#475569]">
+          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Employees</h1>
+          <p className="mt-1 text-[15px] text-text-secondary">
             Browse and manage all employee profiles.
           </p>
         </div>
@@ -413,14 +413,14 @@ export default function EmployeesPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowImport(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-[#2563EB] bg-white border-2 border-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               <Upload size={16} />
               Import
             </button>
             <button
               onClick={() => setShowAdd(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
             >
               <UserPlus size={16} />
               Add Employee
@@ -431,12 +431,12 @@ export default function EmployeesPage() {
 
       {/* Profile setup warning banner */}
       {user && !user.isSuperAdmin && !hasProfile && !loading && (
-        <div className="bg-[#FFFBEB] border border-[#FDE68A] rounded-[12px] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+        <div className="bg-warning-bg border border-warning-border rounded-[12px] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
           <div className="flex items-start gap-3">
-            <AlertTriangle size={20} className="text-[#D97706] shrink-0 mt-0.5" />
+            <AlertTriangle size={20} className="text-warning shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-[#92400E]">Profile Setup Required</p>
-              <p className="text-xs text-[#B45309] mt-0.5">
+              <p className="text-sm font-semibold text-warning">Profile Setup Required</p>
+              <p className="text-xs text-warning mt-0.5">
                 You do not have an employee profile in the directory yet. Set up your profile to assign yourself to a department, role, and enable full task assignments.
               </p>
             </div>
@@ -447,7 +447,7 @@ export default function EmployeesPage() {
               setPrefillSelf(true)
               setShowAdd(true)
             }}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-[8px] text-xs font-bold text-white bg-[#D97706] hover:bg-[#B45309] transition-colors whitespace-nowrap self-start sm:self-center"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-[8px] text-xs font-bold text-white bg-warning hover:bg-warning transition-colors whitespace-nowrap self-start sm:self-center"
           >
             Setup Profile
           </button>
@@ -459,14 +459,14 @@ export default function EmployeesPage() {
         <div className="relative flex-1 max-w-xs">
           <Search
             size={15}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
           />
           <input
             type="text"
             placeholder="Search by name or email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-[10px] text-sm rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A] placeholder:text-[#94A3B8]"
+            className="w-full pl-9 pr-3 py-[10px] text-sm rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted"
           />
         </div>
         <div className="w-full sm:w-60">
@@ -481,7 +481,7 @@ export default function EmployeesPage() {
 
       {/* Count + view toggle */}
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-[#475569]">
+        <p className="text-sm text-text-secondary">
           {filtered.length} employee{filtered.length !== 1 ? 's' : ''}
         </p>
         <ViewToggle value={view} onChange={setView} />

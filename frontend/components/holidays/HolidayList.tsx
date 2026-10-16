@@ -10,12 +10,12 @@ import Tooltip from '@/components/ui/Tooltip'
 type AnyHoliday = OrgHoliday | DepartmentHoliday | IndividualHoliday
 
 const TYPE_COLORS: Record<HolidayType, string> = {
-  national: 'bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]',
-  company: 'bg-[#F3E8FF] text-[#7C3AED] border-[#E9D5FF]',
-  regional: 'bg-[#FEF9C3] text-[#CA8A04] border-[#FDE68A]',
-  team: 'bg-[#DCFCE7] text-[#16A34A] border-[#BBF7D0]',
-  personal: 'bg-[#FFE4E6] text-[#BE123C] border-[#FECDD3]',
-  leave: 'bg-[#FEE2E2] text-[#DC2626] border-[#FECACA]',
+  national: 'bg-surface-control text-text-secondary border-border-light',
+  company: 'bg-surface-control text-text-secondary border-border-light',
+  regional: 'bg-warning-bg text-warning border-warning-border',
+  team: 'bg-success-bg text-success border-success-border',
+  personal: 'bg-danger-bg text-danger border-danger-border',
+  leave: 'bg-danger-bg text-danger border-danger-border',
 }
 
 interface EditState {
@@ -52,11 +52,11 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
   }
 
   if (holidays.length === 0) {
-    return <p className="text-sm text-[#94A3B8] py-3 text-center">{emptyText}</p>
+    return <p className="text-sm text-text-muted py-3 text-center">{emptyText}</p>
   }
 
   return (
-    <div className="divide-y divide-[#E2E8F0]">
+    <div className="divide-y divide-surface-control-pressed">
       {holidays.map((h) => {
         const isEditing = editing?.id === h.id
         const isDeleting = deleting === h.id
@@ -76,46 +76,46 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
                 <input
                   value={editing.name}
                   onChange={(e) => setEditing((s) => s ? { ...s, name: e.target.value } : s)}
-                  className="flex-1 h-8 px-2 rounded-[6px] border border-[#CBD5E1] text-sm text-[#0F172A] bg-white focus:border-[#2563EB] outline-hidden"
+                  className="flex-1 h-8 px-2 rounded-[6px] border border-border text-sm text-text-primary bg-white focus:border-primary outline-hidden"
                 />
                 <button
                   type="button"
                   onClick={saveEdit}
-                  className="p-1.5 rounded-[6px] bg-[#DCFCE7] text-[#16A34A] hover:bg-[#BBF7D0] transition-colors"
+                  className="p-1.5 rounded-[6px] bg-success-bg text-success hover:bg-success-bg transition-colors"
                 >
                   <Check size={14} />
                 </button>
                 <button
                   type="button"
                   onClick={() => setEditing(null)}
-                  className="p-1.5 rounded-[6px] bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0] transition-colors"
+                  className="p-1.5 rounded-[6px] bg-surface-control text-text-secondary hover:bg-surface-control-pressed transition-colors"
                 >
                   <X size={14} />
                 </button>
               </>
             ) : (
               <>
-                <span className="w-28 shrink-0 text-sm text-[#475569]">{dateDisplay}</span>
-                <span className="flex-1 text-sm font-medium text-[#0F172A] truncate">{h.name}</span>
+                <span className="w-28 shrink-0 text-sm text-text-secondary">{dateDisplay}</span>
+                <span className="flex-1 text-sm font-medium text-text-primary truncate">{h.name}</span>
                 <span className={`shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full border ${TYPE_COLORS[h.type]}`}>
                   {h.type}
                 </span>
                 {h.status === 'pending_review' && (
-                  <span className="shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-[#FEF9C3] text-[#CA8A04] border-[#FDE68A]">
+                  <span className="shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-warning-bg text-warning border-warning-border">
                     pending
                   </span>
                 )}
                 {h.is_recurring_yearly && (
                   <Tooltip label="Repeats yearly">
                     <span aria-label="Repeats yearly" className="shrink-0">
-                      <RefreshCw size={13} className="text-[#94A3B8]" />
+                      <RefreshCw size={13} className="text-text-muted" />
                     </span>
                   </Tooltip>
                 )}
                 <button
                   type="button"
                   onClick={() => startEdit(h)}
-                  className="p-1.5 rounded-[6px] hover:bg-[#F1F5F9] text-[#475569] transition-colors shrink-0"
+                  className="p-1.5 rounded-[6px] hover:bg-surface-control text-text-secondary transition-colors shrink-0"
                 >
                   <Pencil size={13} />
                 </button>
@@ -123,7 +123,7 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
                   type="button"
                   disabled={isDeleting}
                   onClick={() => confirmDelete(h.id)}
-                  className="p-1.5 rounded-[6px] hover:bg-[#FEE2E2] text-[#DC2626] transition-colors shrink-0"
+                  className="p-1.5 rounded-[6px] hover:bg-danger-bg text-danger transition-colors shrink-0"
                 >
                   <Trash2 size={13} />
                 </button>

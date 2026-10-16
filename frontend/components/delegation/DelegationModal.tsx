@@ -12,9 +12,9 @@ import { delegationsApi, type Delegation, type DelegationInput } from '@/lib/api
 // Base has NO width utility — callers add `w-full` (most fields) or a flex sizing
 // (the criteria row) so `w-full` never fights `w-28`/`flex-1` and overflows the row.
 const fieldBase =
-  'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+  'border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 const inputClass = `w-full ${fieldBase}`
-const labelClass = 'block text-sm font-medium text-[#374151] mb-1'
+const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
 
 interface EmployeeOption {
   user_id: string
@@ -176,7 +176,7 @@ export default function DelegationModal({
           <div>
             <label className={labelClass}>First check-in</label>
             <DatePicker value={firstCheckIn} onChange={setFirstCheckIn} placeholder="First review date" />
-            <p className="text-xs text-[#64748B] mt-1">A review task is created for you on this date.</p>
+            <p className="text-xs text-text-muted mt-1">A review task is created for you on this date.</p>
           </div>
         </div>
 
@@ -184,20 +184,20 @@ export default function DelegationModal({
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className={`${labelClass} mb-0 flex items-center gap-1.5`}>
-              <Target size={14} className="text-[#2563EB]" /> Success criteria
+              <Target size={14} className="text-primary-text" /> Success criteria
             </label>
             <Tooltip label="Add criterion">
             <button
               type="button"
               onClick={() => setCriteria((r) => [...r, emptyRow()])}
               aria-label="Add criterion"
-              className="w-7 h-7 flex items-center justify-center rounded-[8px] bg-[#2563EB] text-white hover:bg-[#1D4ED8] transition-colors"
+              className="w-7 h-7 flex items-center justify-center rounded-[8px] bg-primary text-white hover:bg-primary-hover transition-colors"
             >
               <Plus size={15} />
             </button>
             </Tooltip>
           </div>
-          <p className="text-xs text-[#64748B] mb-2">What does “done” look like — measurably?</p>
+          <p className="text-xs text-text-muted mb-2">What does “done” look like — measurably?</p>
           <div className="flex flex-col gap-2">
             {criteria.map((row, i) => (
               <div key={i} className="flex items-start gap-2">
@@ -220,7 +220,7 @@ export default function DelegationModal({
                   type="button"
                   onClick={() => setCriteria((r) => (r.length > 1 ? r.filter((_, idx) => idx !== i) : [emptyRow()]))}
                   aria-label="Remove"
-                  className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors shrink-0"
+                  className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors shrink-0"
                 >
                   <Trash2 size={15} />
                 </button>
@@ -231,12 +231,12 @@ export default function DelegationModal({
         </div>
 
         {/* Footer — X handles cancel (no duplicate Cancel button per design rules) */}
-        <div className="flex justify-end pt-2 border-t border-[#F1F5F9]">
+        <div className="flex justify-end pt-2 border-t border-border-light">
           <button
             type="button"
             onClick={handleSubmit}
             disabled={!canSubmit || saving}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
           >
             {saving && <Loader2 size={15} className="animate-spin" />}
             {isEdit ? 'Save changes' : 'Create delegation'}

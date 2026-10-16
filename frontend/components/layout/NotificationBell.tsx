@@ -15,28 +15,28 @@ import type { AppNotification } from '@/lib/api/notifications'
 import Tooltip from '@/components/ui/Tooltip'
 
 const MODULE_COLORS: Record<string, string> = {
-  tasks: 'bg-[#EFF6FF] text-[#2563EB]',
-  projects: 'bg-[#F5F3FF] text-[#7C3AED]',
-  workflows: 'bg-[#ECFDF5] text-[#059669]',
-  tickets: 'bg-[#FFF7ED] text-[#D97706]',
-  meetings: 'bg-[#F0FDF4] text-[#16A34A]',
-  communication: 'bg-[#FDF2F8] text-[#BE185D]',
-  system: 'bg-[#F1F5F9] text-[#475569]',
+  tasks: 'bg-primary-subtle text-primary-text',
+  projects: 'bg-surface-control text-text-secondary',
+  workflows: 'bg-success-bg text-success',
+  tickets: 'bg-warning-bg text-warning',
+  meetings: 'bg-success-bg text-success',
+  communication: 'bg-danger-bg text-text-secondary',
+  system: 'bg-surface-control text-text-secondary',
 }
 
 // A glanceable icon + tint per notification type, keyed loosely on the event so you
 // can scan the list by shape (comment vs status vs file …) instead of reading each one.
 function eventVisual(eventType: string, moduleKey: string): { Icon: LucideIcon; className: string } {
   const e = eventType || ''
-  if (e.includes('comment')) return { Icon: MessageSquare, className: 'bg-[#EFF6FF] text-[#2563EB]' }
-  if (e.includes('status')) return { Icon: ArrowRightLeft, className: 'bg-[#EEF2FF] text-[#4F46E5]' }
-  if (e.includes('attachment')) return { Icon: Paperclip, className: 'bg-[#F0F9FF] text-[#0EA5E9]' }
-  if (e.includes('completed')) return { Icon: CheckCircle2, className: 'bg-[#F0FDF4] text-[#16A34A]' }
-  if (e.includes('reopen')) return { Icon: RotateCcw, className: 'bg-[#FFFBEB] text-[#D97706]' }
-  if (e.includes('unassigned')) return { Icon: UserMinus, className: 'bg-[#FEF2F2] text-[#DC2626]' }
-  if (e.includes('assigned')) return { Icon: UserPlus, className: 'bg-[#EFF6FF] text-[#2563EB]' }
-  if (e.includes('overdue') || e.includes('escalat') || e.includes('breach')) return { Icon: AlertTriangle, className: 'bg-[#FEF2F2] text-[#DC2626]' }
-  if (e.includes('recurring') || e.includes('reminder')) return { Icon: RefreshCw, className: 'bg-[#F1F5F9] text-[#475569]' }
+  if (e.includes('comment')) return { Icon: MessageSquare, className: 'bg-primary-subtle text-primary-text' }
+  if (e.includes('status')) return { Icon: ArrowRightLeft, className: 'bg-primary-subtle text-text-secondary' }
+  if (e.includes('attachment')) return { Icon: Paperclip, className: 'bg-primary-subtle text-text-secondary' }
+  if (e.includes('completed')) return { Icon: CheckCircle2, className: 'bg-success-bg text-success' }
+  if (e.includes('reopen')) return { Icon: RotateCcw, className: 'bg-warning-bg text-warning' }
+  if (e.includes('unassigned')) return { Icon: UserMinus, className: 'bg-danger-bg text-danger' }
+  if (e.includes('assigned')) return { Icon: UserPlus, className: 'bg-primary-subtle text-primary-text' }
+  if (e.includes('overdue') || e.includes('escalat') || e.includes('breach')) return { Icon: AlertTriangle, className: 'bg-danger-bg text-danger' }
+  if (e.includes('recurring') || e.includes('reminder')) return { Icon: RefreshCw, className: 'bg-surface-control text-text-secondary' }
   return { Icon: Bell, className: MODULE_COLORS[moduleKey] ?? MODULE_COLORS.system }
 }
 
@@ -125,7 +125,7 @@ export default function NotificationBell() {
         >
           {unreadCount > 0 ? <BellRing size={18} /> : <Bell size={18} />}
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-[#DC2626] text-white text-[11px] font-bold flex items-center justify-center border-2 border-white tabular-nums">
+            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-danger text-white text-[11px] font-bold flex items-center justify-center border-2 border-white tabular-nums">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
@@ -133,14 +133,14 @@ export default function NotificationBell() {
       </Tooltip>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] w-[calc(100vw-1.5rem)] max-w-[380px] bg-white rounded-[10px] border border-[#E2E8F0] shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden z-50">
+        <div className="absolute right-0 top-[calc(100%+8px)] w-[calc(100vw-1.5rem)] max-w-[380px] bg-white rounded-[10px] border border-border-light shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden z-50">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#F1F5F9]">
-            <p className="text-sm font-semibold text-[#0F172A]">Notifications</p>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border-light">
+            <p className="text-sm font-semibold text-text-primary">Notifications</p>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllRead()}
-                className="flex items-center gap-1 text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8]"
+                className="flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text"
               >
                 <CheckCheck size={13} /> Mark all read
               </button>
@@ -152,7 +152,7 @@ export default function NotificationBell() {
             {latest.length === 0 ? (
               <div className="py-10 text-center">
                 <Bell size={22} className="mx-auto text-[#CBD5E1] mb-2" />
-                <p className="text-sm text-[#64748B]">No notifications yet</p>
+                <p className="text-sm text-text-muted">No notifications yet</p>
               </div>
             ) : (
               latest.map((n) => (
@@ -160,8 +160,8 @@ export default function NotificationBell() {
                   key={n.id}
                   onClick={() => handleItemClick(n)}
                   className={[
-                    'w-full text-left px-4 py-3 border-b border-[#F8FAFC] transition-colors hover:bg-[#F8FAFC]',
-                    n.is_read ? '' : 'bg-[#EFF6FF]/40',
+                    'w-full text-left px-4 py-3 border-b border-border-light transition-colors hover:bg-surface-sunken',
+                    n.is_read ? '' : 'bg-primary-subtle/40',
                   ].join(' ')}
                 >
                   {(() => {
@@ -174,8 +174,8 @@ export default function NotificationBell() {
                         </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-[13px] font-semibold text-[#0F172A] truncate">{n.title}</p>
-                            {!n.is_read && <span className="w-2 h-2 rounded-full bg-[#2563EB] shrink-0" />}
+                            <p className="text-[13px] font-semibold text-text-primary truncate">{n.title}</p>
+                            {!n.is_read && <span className="w-2 h-2 rounded-full bg-primary shrink-0" />}
                             <span
                               className={`ml-auto shrink-0 inline-flex rounded-[999px] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${MODULE_COLORS[n.module] ?? MODULE_COLORS.system}`}
                             >
@@ -183,8 +183,8 @@ export default function NotificationBell() {
                             </span>
                           </div>
                           {/* Body may carry a second "on <task>" line — keep the break. */}
-                          <p className="text-xs text-[#475569] mt-0.5 line-clamp-3 whitespace-pre-line">{n.body}</p>
-                          <p className="text-[11px] text-[#94A3B8] mt-1">{timeAgo(n.created_at)}</p>
+                          <p className="text-xs text-text-secondary mt-0.5 line-clamp-3 whitespace-pre-line">{n.body}</p>
+                          <p className="text-[11px] text-text-muted mt-1">{timeAgo(n.created_at)}</p>
                         </div>
                       </div>
                     )
@@ -195,16 +195,16 @@ export default function NotificationBell() {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-[#F1F5F9]">
+          <div className="border-t border-border-light">
             {pushStatus === 'enabled' ? (
               // Connected: confirm the state clearly, with Disable as a distinct action.
               <div className="flex items-center gap-2 px-4 py-2.5 text-xs">
-                <CheckCircle2 size={14} className="shrink-0 text-[#16A34A]" />
-                <span className="flex-1 font-medium text-[#15803D]">Device notifications on</span>
+                <CheckCircle2 size={14} className="shrink-0 text-success" />
+                <span className="flex-1 font-medium text-success">Device notifications on</span>
                 <button
                   onClick={togglePush}
                   disabled={pushBusy}
-                  className="shrink-0 font-medium text-[#64748B] hover:text-[#DC2626] disabled:opacity-60 transition-colors"
+                  className="shrink-0 font-medium text-text-muted hover:text-danger disabled:opacity-60 transition-colors"
                 >
                   {pushBusy ? 'Disabling…' : 'Disable'}
                 </button>
@@ -213,7 +213,7 @@ export default function NotificationBell() {
               <button
                 onClick={togglePush}
                 disabled={pushBusy || pushStatus === 'denied'}
-                className="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-[#64748B] hover:bg-[#F8FAFC] disabled:opacity-60 transition-colors"
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-text-muted hover:bg-surface-sunken disabled:opacity-60 transition-colors"
               >
                 <Monitor size={13} />
                 {pushStatus === 'denied'
@@ -228,7 +228,7 @@ export default function NotificationBell() {
                 setOpen(false)
                 router.push('/dashboard/notifications')
               }}
-              className="w-full px-4 py-2.5 text-center text-sm font-medium text-[#2563EB] hover:bg-[#EFF6FF] border-t border-[#F1F5F9] transition-colors"
+              className="w-full px-4 py-2.5 text-center text-sm font-medium text-primary-text hover:bg-primary-subtle border-t border-border-light transition-colors"
             >
               View all notifications
             </button>

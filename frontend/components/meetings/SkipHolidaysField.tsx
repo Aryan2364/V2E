@@ -49,33 +49,33 @@ export default function SkipHolidaysField({
   }, [orgId, value, JSON.stringify(sched)])
 
   return (
-    <div className="mt-3 pt-3 border-t border-[#E2E8F0]">
-      <label className="inline-flex items-center gap-2 text-sm font-medium text-[#374151] cursor-pointer select-none">
-        <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} className="w-4 h-4 accent-[#2563EB]" />
+    <div className="mt-3 pt-3 border-t border-border-light">
+      <label className="inline-flex items-center gap-2 text-sm font-medium text-text-secondary cursor-pointer select-none">
+        <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} className="w-4 h-4 accent-primary" />
         Skip company holidays
-        <button type="button" onClick={() => setShowInfo((v) => !v)} className="text-[#94A3B8] hover:text-[#2563EB]" aria-label="What does this do?">
+        <button type="button" onClick={() => setShowInfo((v) => !v)} className="text-text-muted hover:text-primary-text" aria-label="What does this do?">
           <Info size={14} />
         </button>
       </label>
 
       {showInfo && (
-        <p className="text-[11px] text-[#475569] mt-1.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] px-3 py-2 leading-relaxed">
+        <p className="text-[11px] text-text-secondary mt-1.5 bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2 leading-relaxed">
           When on, any occurrence that lands on a company/department holiday is <b>skipped</b> — the meeting is not moved to another day, and for “after N times” a skipped holiday does <b>not</b> use up one of your N. Employee leaves are not considered. Turn off to hold the meeting on the holiday anyway.
         </p>
       )}
 
       {value && (loading || preview.length > 0) && (
         <div className="mt-2">
-          <p className="text-xs text-[#475569] font-medium mb-1">
+          <p className="text-xs text-text-secondary font-medium mb-1">
             {loading ? 'Checking holidays…' : `${preview.length} upcoming occurrence${preview.length === 1 ? '' : 's'} will be skipped:`}
           </p>
           {!loading && (
             <div className="flex flex-col gap-1 max-h-[128px] overflow-y-auto pr-1">
               {preview.map((p) => (
                 <div key={p.date} className="flex items-center gap-2 text-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] shrink-0" />
-                  <span className="text-[#0F172A]">{new Date(`${p.date}T00:00`).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                  <span className="text-[#64748B] truncate">· {p.name}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-warning shrink-0" />
+                  <span className="text-text-primary">{new Date(`${p.date}T00:00`).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                  <span className="text-text-muted truncate">· {p.name}</span>
                 </div>
               ))}
             </div>

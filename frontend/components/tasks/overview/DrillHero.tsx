@@ -30,7 +30,7 @@ export default function DrillHero({
   onBack: () => void
 }) {
   return (
-    <div className="rounded-[12px] p-5 sm:p-6 bg-[#2563EB] text-white shadow-[0_2px_8px_rgba(37,99,235,0.25)]">
+    <div className="rounded-[12px] p-5 sm:p-6 bg-primary text-white shadow-[0_2px_8px_rgba(37,99,235,0.25)]">
       <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold mb-3 text-white/85 hover:text-white transition-colors">
         <ChevronLeft size={14} /> Back
       </button>

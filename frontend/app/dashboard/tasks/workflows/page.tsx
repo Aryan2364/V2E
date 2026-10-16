@@ -155,10 +155,10 @@ function WorkflowsList() {
   return (
     <div className="flex flex-col gap-5">
       {/* Header + filters stay pinned while the grid scrolls. */}
-      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-4 bg-[#F8FAFC] border-b border-[#E2E8F0]">
+      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-4 bg-surface-sunken border-b border-border-light">
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <h1 className="flex items-center gap-1.5 text-[22px] sm:text-[28px] font-bold text-[#0F172A] leading-tight">
+            <h1 className="flex items-center gap-1.5 text-[22px] sm:text-[28px] font-bold text-text-primary leading-tight">
               Workflows <InfoTip label="Workflows" text="Steps that become tasks, in order. Run one by hand or on a schedule; each run is an instance." />
             </h1>
           </div>
@@ -167,27 +167,27 @@ function WorkflowsList() {
 
         <div className="mt-4 flex items-center gap-3 flex-wrap">
           <div className="relative w-full sm:w-[280px]">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#475569] pointer-events-none" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" />
             <input
               type="text"
               aria-label="Search workflows"
               placeholder="Search workflows"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-9 py-2 min-h-[44px] sm:min-h-[38px] text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+              className="w-full pl-9 pr-9 py-2 min-h-[44px] sm:min-h-[38px] text-base sm:text-sm border border-border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {search && (
               <button
                 type="button"
                 aria-label="Clear search"
                 onClick={() => setSearch('')}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-[6px] text-[#475569] hover:bg-[#F1F5F9]"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-[6px] text-text-secondary hover:bg-surface-control"
               >
                 <X size={14} />
               </button>
             )}
           </div>
-          <div role="tablist" aria-label="Show" className="inline-flex items-center rounded-[8px] border border-[#CBD5E1] bg-white p-0.5">
+          <div role="tablist" aria-label="Show" className="inline-flex items-center rounded-[8px] border border-border bg-white p-0.5">
             {SHOWS.map((s) => {
               const active = show === s.value
               return (
@@ -198,7 +198,7 @@ function WorkflowsList() {
                   type="button"
                   onClick={() => setShow(s.value)}
                   className={`px-3 min-h-[40px] sm:min-h-[32px] rounded-[6px] text-[13px] font-medium transition-colors ${
-                    active ? 'bg-[#0F172A] text-white' : 'text-[#334155] hover:text-[#0F172A]'
+                    active ? 'bg-[#0F172A] text-white' : 'text-text-secondary hover:text-text-primary'
                   }`}
                 >
                   {s.label}
@@ -220,14 +220,14 @@ function WorkflowsList() {
                   onClick={() => setFilter(f.value)}
                   className={[
                     'inline-flex items-center gap-2 px-3 min-h-[44px] sm:min-h-[36px] rounded-[8px] text-[13px] font-medium transition-colors',
-                    active ? 'bg-[#2563EB] text-white' : 'bg-white text-[#334155] border border-[#CBD5E1] hover:border-[#2563EB] hover:text-[#2563EB]',
+                    active ? 'bg-primary text-white' : 'bg-white text-text-secondary border border-border hover:border-primary hover:text-primary-text',
                   ].join(' ')}
                 >
                   {f.label}
                   {status === 'ready' && (
                     <span
                       className={`min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-semibold flex items-center justify-center ${
-                        active ? 'bg-white text-[#2563EB]' : 'bg-[#2563EB] text-white'
+                        active ? 'bg-white text-primary-text' : 'bg-primary text-white'
                       }`}
                     >
                       {n > 99 ? '99+' : n}
@@ -250,7 +250,7 @@ function WorkflowsList() {
             instances={workingShown}
             loading={workingStatus !== 'ready'}
             emptyState={
-              <div className="bg-white border border-[#E2E8F0] rounded-[12px]">
+              <div className="bg-white border border-border-light rounded-[12px]">
                 <EmptyState icon={UserCheck} title="Nothing to work on" text="Instances where you have a step appear here." />
               </div>
             }

@@ -111,21 +111,21 @@ function LinkList({
   return (
     // Fixed height with an internally scrolling body — DESIGN_RULES Part 2, so
     // the two columns stay aligned however many links each side has.
-    <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card flex flex-col h-[340px]">
-      <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-[#F1F5F9] shrink-0">
+    <section className="bg-white border border-border-light rounded-[12px] shadow-card flex flex-col h-[340px]">
+      <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-border-light shrink-0">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-[16px] font-semibold text-[#0F172A]">{heading}</h3>
+            <h3 className="text-[16px] font-semibold text-text-primary">{heading}</h3>
             <CountBadge count={links.length} />
           </div>
-          <p className="text-[12px] text-[#475569] mt-0.5">{hint}</p>
+          <p className="text-[12px] text-text-secondary mt-0.5">{hint}</p>
         </div>
         {canEdit && (
           <button
             onClick={onAdd}
             aria-label={heading}
             title={`Add to “${heading}”`}
-            className="w-7 h-7 shrink-0 rounded-[8px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white flex items-center justify-center transition-colors"
+            className="w-7 h-7 shrink-0 rounded-[8px] bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-colors"
           >
             <Plus size={16} />
           </button>
@@ -134,7 +134,7 @@ function LinkList({
 
       <div className="table-scroll flex-1 overflow-y-auto px-5 py-3">
         {links.length === 0 ? (
-          <p className="text-[13px] text-[#475569] py-6">{emptyText}</p>
+          <p className="text-[13px] text-text-secondary py-6">{emptyText}</p>
         ) : (
           <ul className="space-y-2.5">
             {links.map((l) => (
@@ -208,7 +208,7 @@ function LinkRow({
   }
 
   return (
-    <li className="rounded-[10px] border border-[#E2E8F0] bg-white hover:border-[#CBD5E1] transition-colors">
+    <li className="rounded-[10px] border border-border-light bg-white hover:border-border transition-colors">
       <div className="px-3 py-2.5">
         <div className="flex items-start justify-between gap-2">
           <button
@@ -216,12 +216,12 @@ function LinkRow({
             className="group text-left min-w-0 flex-1"
           >
             <span className="flex items-center gap-1.5">
-              <span className="text-[14px] font-semibold text-[#0F172A] group-hover:text-[#2563EB] transition-colors truncate">
+              <span className="text-[14px] font-semibold text-text-primary group-hover:text-primary-text transition-colors truncate">
                 {g.title}
               </span>
               <ArrowUpRight
                 size={13}
-                className="text-[#94A3B8] group-hover:text-[#2563EB] shrink-0 transition-colors"
+                className="text-text-muted group-hover:text-primary-text shrink-0 transition-colors"
               />
             </span>
           </button>
@@ -231,7 +231,7 @@ function LinkRow({
                 onClick={() => setEditingNote((v) => !v)}
                 title={link.note ? 'Edit why' : 'Say why this link exists'}
                 aria-label="Edit link note"
-                className="w-6 h-6 rounded-[6px] flex items-center justify-center text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+                className="w-6 h-6 rounded-[6px] flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-control transition-colors"
               >
                 <Pencil size={13} />
               </button>
@@ -239,7 +239,7 @@ function LinkRow({
                 onClick={() => setUnlinkOpen(true)}
                 title="Unlink"
                 aria-label="Unlink goal"
-                className="w-6 h-6 rounded-[6px] flex items-center justify-center text-[#475569] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"
+                className="w-6 h-6 rounded-[6px] flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
               >
                 <Link2Off size={13} />
               </button>
@@ -249,13 +249,13 @@ function LinkRow({
 
         <div className="flex items-center flex-wrap gap-x-2.5 gap-y-1 mt-1.5">
           <GoalStatusBadge status={g.status} />
-          <span className="text-[12px] text-[#475569]">{g.owner?.name ?? '—'}</span>
+          <span className="text-[12px] text-text-secondary">{g.owner?.name ?? '—'}</span>
           <span className="text-[#CBD5E1]">·</span>
-          <span className="text-[12px] text-[#475569]">due {formatDate(g.due_date)}</span>
+          <span className="text-[12px] text-text-secondary">due {formatDate(g.due_date)}</span>
           {g.target_value !== null && g.target_value !== undefined && (
             <>
               <span className="text-[#CBD5E1]">·</span>
-              <span className="text-[12px] text-[#475569] tabular-nums">
+              <span className="text-[12px] text-text-secondary tabular-nums">
                 {g.current_value === null || g.current_value === undefined ? '—' : g.current_value}
                 {' of '}
                 {formatValue(g.target_value, g.unit)}
@@ -268,7 +268,7 @@ function LinkRow({
         {beyond > 0 && (
           <button
             onClick={() => router.push(`/goals/${g.id}`)}
-            className="inline-flex items-center gap-1 mt-1.5 text-[11px] text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
+            className="inline-flex items-center gap-1 mt-1.5 text-[11px] text-primary-text hover:text-primary-text transition-colors"
           >
             <CornerDownRight size={11} />
             {beyond} more {beyond === 1 ? 'goal' : 'goals'} behind this
@@ -277,7 +277,7 @@ function LinkRow({
 
         {/* A deadline that doesn't add up is a permanent condition, not a toast. */}
         {link.deadline_warning && (
-          <p className="flex items-start gap-1.5 mt-2 rounded-[6px] bg-[#FFFBEB] border border-[#FDE68A] px-2 py-1.5 text-[11px] text-[#92400E]">
+          <p className="flex items-start gap-1.5 mt-2 rounded-[6px] bg-warning-bg border border-warning-border px-2 py-1.5 text-[11px] text-warning">
             <AlertTriangle size={12} className="shrink-0 mt-0.5" />
             {direction === 'supported_by'
               ? `This is due ${formatDate(g.due_date)} — after the goal it supports.`
@@ -301,7 +301,7 @@ function LinkRow({
               <button
                 onClick={saveNote}
                 disabled={savingNote}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[6px] bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] text-white text-[12px] font-semibold transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[6px] bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted text-white text-[12px] font-semibold transition-colors"
               >
                 {savingNote ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                 Save
@@ -312,7 +312,7 @@ function LinkRow({
                   setEditingNote(false)
                 }}
                 disabled={savingNote}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-[6px] text-[#475569] hover:bg-[#F1F5F9] text-[12px] font-medium transition-colors"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-[6px] text-text-secondary hover:bg-surface-control text-[12px] font-medium transition-colors"
               >
                 <X size={12} /> Cancel
               </button>
@@ -320,7 +320,7 @@ function LinkRow({
           </div>
         ) : (
           link.note && (
-            <p className="mt-2 rounded-[6px] bg-[#F8FAFC] border-l-2 border-[#CBD5E1] px-2.5 py-1.5 text-[12px] text-[#1E293B] italic">
+            <p className="mt-2 rounded-[6px] bg-surface-sunken border-l-2 border-border px-2.5 py-1.5 text-[12px] text-text-primary italic">
               “{link.note}”
             </p>
           )

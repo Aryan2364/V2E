@@ -55,11 +55,11 @@ import {
   type PlannedDates,
 } from './timingPlan'
 
-const LABEL = 'block text-sm font-medium text-[#374151] mb-2'
-const SUB = 'block text-[13px] font-medium text-[#374151] mb-1.5'
-const NOTE = 'mt-1.5 flex flex-wrap items-center gap-1 text-[13px] text-[#334155]'
+const LABEL = 'block text-sm font-medium text-text-secondary mb-2'
+const SUB = 'block text-[13px] font-medium text-text-secondary mb-1.5'
+const NOTE = 'mt-1.5 flex flex-wrap items-center gap-1 text-[13px] text-text-secondary'
 const INPUT =
-  'px-3 py-2.5 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F8FAFC] disabled:text-[#334155] disabled:cursor-not-allowed'
+  'px-3 py-2.5 text-base sm:text-sm border border-border rounded-[8px] bg-white text-text-primary focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface-sunken disabled:text-text-secondary disabled:cursor-not-allowed'
 
 // ─── Small fields ────────────────────────────────────────────────────────────
 
@@ -104,7 +104,7 @@ function DaysInput({
         setError(true)
         setText(String(value ?? min))
       }}
-      className={`${INPUT} w-20 text-right tabular-nums ${error || invalid ? 'border-[#DC2626]!' : ''}`}
+      className={`${INPUT} w-20 text-right tabular-nums ${error || invalid ? 'border-danger!' : ''}`}
     />
   )
 }
@@ -120,7 +120,7 @@ function TimeAt({ value, onChange, disabled, label, fallback }: { value?: string
 /** A soft note under a pick: worth knowing, never an error. */
 function SoftNote({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mt-1.5 flex items-start gap-1.5 rounded-[8px] border border-[#BFDBFE] bg-[#EFF6FF] px-2.5 py-1.5 text-[13px] text-[#1E3A8A]" role="status">
+    <p className="mt-1.5 flex items-start gap-1.5 rounded-[8px] border border-primary-border bg-primary-subtle px-2.5 py-1.5 text-[13px] text-primary-text" role="status">
       <Info size={14} className="shrink-0 mt-0.5" aria-hidden />
       <span>{children}</span>
     </p>
@@ -218,7 +218,7 @@ function RuleParams<R extends StartRule | DueRule>({
       return (
         <div className="flex flex-wrap items-center gap-2">
           <DaysInput value={rule.days} min={min} onChange={(d) => set({ days: d })} disabled={disabled} label={`${word}: number of days`} invalid={invalid} />
-          <span className="text-sm text-[#1E293B]">
+          <span className="text-sm text-text-primary">
             {n === 1 ? 'day' : 'days'} {tail}
           </span>
           {time}
@@ -232,14 +232,14 @@ function RuleParams<R extends StartRule | DueRule>({
       return (
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-[#1E293B]">At</span>
+            <span className="text-sm text-text-primary">At</span>
             {time}
             {rs?.type === 'daily' && <InfoTip label="Time" text={`Not before the instance starts (${runStartShort(rs)}).`} />}
           </div>
           {landsNext && (
             <p className={NOTE}>
               <span>
-                Lands on <span className="font-semibold text-[#0F172A]">{`${fmtTime(rule.time)} (${nextWord})`}</span>
+                Lands on <span className="font-semibold text-text-primary">{`${fmtTime(rule.time)} (${nextWord})`}</span>
               </span>
               <InfoTip label="Next cycle" text={`It’s before ${previous}, so it moves to the ${nextWord}.`} />
             </p>
@@ -249,7 +249,7 @@ function RuleParams<R extends StartRule | DueRule>({
     }
     default: {
       const cal = ctx.cal
-      if (!cal) return <div className="flex flex-wrap items-center gap-2"><span className="text-sm text-[#1E293B]">At</span>{time}</div>
+      if (!cal) return <div className="flex flex-wrap items-center gap-2"><span className="text-sm text-text-primary">At</span>{time}</div>
       const unit = unitOf(rule.kind)
       const sameUnit = (f.type === 'weekly' && unit === 'Week') || (f.type === 'monthly' && unit === 'Month') || (f.type === 'yearly' && unit === 'Year')
       const maxCycle = sameUnit ? maxCycleOf(f) : EXPLICIT_CYCLE_LIMIT[unit === 'Week' ? 'weekly' : unit === 'Month' ? 'monthly' : 'yearly']
@@ -291,7 +291,7 @@ function RuleParams<R extends StartRule | DueRule>({
             {cal.note}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-[#1E293B]">At</span>
+            <span className="text-sm text-text-primary">At</span>
             {time}
           </div>
         </div>
@@ -302,7 +302,7 @@ function RuleParams<R extends StartRule | DueRule>({
 
 function ProblemLine({ message }: { message: string }) {
   return (
-    <p className="mt-1.5 flex items-start gap-1.5 text-[13px] text-[#B91C1C]" role="alert">
+    <p className="mt-1.5 flex items-start gap-1.5 text-[13px] text-danger" role="alert">
       <AlertTriangle size={14} className="shrink-0 mt-0.5" />
       <span>{message.charAt(0).toUpperCase() + message.slice(1)}</span>
     </p>
@@ -453,7 +453,7 @@ export default function StepTiming({
 
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="flex items-center gap-1 text-sm font-semibold text-[#0F172A]">
+      <h3 className="flex items-center gap-1 text-sm font-semibold text-text-primary">
         Timing <InfoTip label="Timing" text={frequencyNote(f)} />
       </h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-6">
@@ -474,7 +474,7 @@ export default function StepTiming({
                 }
               />
             </span>
-            <div aria-labelledby={`${idPrefix}-starts-label`} className={startProblem && !startKinds.includes(startValue as StartRuleKind) ? 'rounded-[8px] ring-1 ring-[#DC2626]' : ''}>
+            <div aria-labelledby={`${idPrefix}-starts-label`} className={startProblem && !startKinds.includes(startValue as StartRuleKind) ? 'rounded-[8px] ring-1 ring-danger' : ''}>
               <StyledSelect
                 value={startValue}
                 onChange={(v) => {
@@ -518,7 +518,7 @@ export default function StepTiming({
               }
             />
           </span>
-          <div aria-labelledby={`${idPrefix}-due-label`} className={dueProblem && !dueKinds.includes(dueValue as DueRuleKind) ? 'rounded-[8px] ring-1 ring-[#DC2626]' : ''}>
+          <div aria-labelledby={`${idPrefix}-due-label`} className={dueProblem && !dueKinds.includes(dueValue as DueRuleKind) ? 'rounded-[8px] ring-1 ring-danger' : ''}>
             <StyledSelect
               value={dueValue}
               onChange={(v) => {

@@ -56,22 +56,22 @@ export default function HolidayCalendar({ orgId, deptId, userId, refreshKey }: P
   while (cells.length % 7 !== 0) cells.push(null)
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-4 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+    <div className="bg-white border border-border-light rounded-[12px] p-4 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
       <div className="flex items-center justify-between mb-4">
         <button
           type="button"
           onClick={prev}
-          className="p-1.5 rounded-[6px] hover:bg-[#F1F5F9] text-[#475569] transition-colors"
+          className="p-1.5 rounded-[6px] hover:bg-surface-control text-text-secondary transition-colors"
         >
           <ChevronLeft size={16} />
         </button>
-        <span className="text-sm font-semibold text-[#0F172A]">
+        <span className="text-sm font-semibold text-text-primary">
           {MONTHS[month]} {year}
         </span>
         <button
           type="button"
           onClick={next}
-          className="p-1.5 rounded-[6px] hover:bg-[#F1F5F9] text-[#475569] transition-colors"
+          className="p-1.5 rounded-[6px] hover:bg-surface-control text-text-secondary transition-colors"
         >
           <ChevronRight size={16} />
         </button>
@@ -79,7 +79,7 @@ export default function HolidayCalendar({ orgId, deptId, userId, refreshKey }: P
 
       <div className="grid grid-cols-7 gap-0.5 mb-1">
         {DOW.map((d) => (
-          <div key={d} className="text-center text-[11px] font-semibold text-[#94A3B8] py-1">{d}</div>
+          <div key={d} className="text-center text-[11px] font-semibold text-text-muted py-1">{d}</div>
         ))}
       </div>
 
@@ -94,13 +94,13 @@ export default function HolidayCalendar({ orgId, deptId, userId, refreshKey }: P
               <div
                 className={[
                   'relative flex items-center justify-center h-8 rounded-[6px] text-xs cursor-default transition-colors',
-                  nw ? 'bg-[#FEE2E2] text-[#DC2626] font-medium' : 'text-[#475569] hover:bg-[#F8FAFC]',
-                  isToday ? 'ring-2 ring-[#2563EB] ring-inset' : '',
+                  nw ? 'bg-danger-bg text-danger font-medium' : 'text-text-secondary hover:bg-surface-sunken',
+                  isToday ? 'ring-2 ring-primary ring-inset' : '',
                 ].join(' ')}
               >
                 {day}
                 {nw && (
-                  <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#DC2626]" />
+                  <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-danger" />
                 )}
               </div>
             </Tooltip>
@@ -108,13 +108,13 @@ export default function HolidayCalendar({ orgId, deptId, userId, refreshKey }: P
         })}
       </div>
 
-      <div className="mt-3 flex items-center gap-3 text-[11px] text-[#475569]">
+      <div className="mt-3 flex items-center gap-3 text-[11px] text-text-secondary">
         <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#FEE2E2] border border-[#FECACA]" />
+          <span className="w-2.5 h-2.5 rounded-full bg-danger-bg border border-danger-border" />
           Non-working
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-full border-2 border-[#2563EB]" />
+          <span className="w-2.5 h-2.5 rounded-full border-2 border-primary" />
           Today
         </span>
       </div>

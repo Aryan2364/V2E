@@ -632,7 +632,7 @@ function Inner({
             )}
             {canEdit && onDeleteNodes && (
               <button onClick={() => setConfirmDelMany(true)}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-[6px] bg-[#DC2626] hover:bg-[#B91C1C] font-semibold transition-colors">
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-[6px] bg-danger hover:bg-danger-hover font-semibold transition-colors">
                 <Trash2 size={12} /> Delete
               </button>
             )}
@@ -650,7 +650,7 @@ function Inner({
           {!swimlane && topAreas.length > 0 && (
             <Tooltip label={anyExpanded ? 'Collapse all areas' : 'Unfold all areas in place'}>
               <button onClick={toggleAll} aria-pressed={anyExpanded}
-                className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium rounded-[8px] border shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 ${anyExpanded ? 'bg-[#EFF6FF] border-[#2563EB] text-[#2563EB]' : 'bg-white border-[#E2E8F0] text-[#475569] hover:text-[#0F172A] hover:border-[#CBD5E1]'}`}>
+                className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium rounded-[8px] border shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${anyExpanded ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-white border-border-light text-text-secondary hover:text-text-primary hover:border-border'}`}>
                 {anyExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />} <span className="hidden md:inline">{anyExpanded ? 'Grouped' : 'Whole'}</span>
               </button>
             </Tooltip>
@@ -662,23 +662,23 @@ function Inner({
       {/* Connection editor popover */}
       {edgeEdit && (
         <div
-          className="fixed z-80 w-60 bg-white border border-[#E2E8F0] rounded-[10px] shadow-[0_8px_28px_rgba(0,0,0,0.16)] p-3"
+          className="fixed z-80 w-60 bg-white border border-border-light rounded-[10px] shadow-[0_8px_28px_rgba(0,0,0,0.16)] p-3"
           style={{ left: Math.min(edgeEdit.x, window.innerWidth - 260), top: Math.min(edgeEdit.y, window.innerHeight - 210) }}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[12px] font-semibold text-[#0F172A]">Connection</span>
-            <button onClick={() => setEdgeEdit(null)} aria-label="Close" className="text-[#94A3B8] hover:text-[#0F172A]"><X size={14} /></button>
+            <span className="text-[12px] font-semibold text-text-primary">Connection</span>
+            <button onClick={() => setEdgeEdit(null)} aria-label="Close" className="text-text-muted hover:text-text-primary"><X size={14} /></button>
           </div>
-          <label className="block text-[11px] font-medium text-[#475569] mb-1">Label</label>
+          <label className="block text-[11px] font-medium text-text-secondary mb-1">Label</label>
           <input
             value={edgeEdit.label}
             onChange={(e) => setEdgeEdit({ ...edgeEdit, label: e.target.value })}
             placeholder="e.g. Approved"
-            className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden mb-2"
+            className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden mb-2"
           />
           {edgeFromDecision && (
             <div className="mb-2">
-              <label className="block text-[11px] font-medium text-[#475569] mb-1">Branch</label>
+              <label className="block text-[11px] font-medium text-text-secondary mb-1">Branch</label>
               <StyledSelect
                 value={edgeEdit.conn.condition_kind}
                 onChange={(v) => {
@@ -703,14 +703,14 @@ function Inner({
                 onUpdateConnection?.(edgeEdit.conn.id, { label: edgeEdit.label.trim(), condition_kind: edgeEdit.conn.condition_kind })
                 setEdgeEdit(null)
               }}
-              className="flex-1 inline-flex items-center justify-center px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+              className="flex-1 inline-flex items-center justify-center px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-primary text-white hover:bg-primary-hover"
             >
               Save
             </button>
             <button
               onClick={() => { onDeleteConnection?.(edgeEdit.conn.id); setEdgeEdit(null) }}
               aria-label="Delete connection"
-              className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-[8px] border border-[#FECACA] text-[#DC2626] hover:bg-[#FEF2F2]"
+              className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-[8px] border border-danger-border text-danger hover:bg-danger-bg"
             >
               <Trash2 size={14} />
             </button>

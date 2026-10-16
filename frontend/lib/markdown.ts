@@ -21,7 +21,7 @@ export function renderMarkdown(src: string): string {
     s
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/`(.+?)`/g, '<code class="bg-[#F1F5F9] px-1 rounded-sm text-[13px]">$1</code>')
+      .replace(/`(.+?)`/g, '<code class="bg-surface-control px-1 rounded-sm text-[13px]">$1</code>')
 
   for (const raw of lines) {
     const line = raw.trimEnd()
@@ -30,7 +30,7 @@ export function renderMarkdown(src: string): string {
       const level = line.match(/^#+/)![0].length
       const text = inline(line.replace(/^#+\s+/, ''))
       const size = level === 1 ? 'text-[18px]' : level === 2 ? 'text-[16px]' : 'text-[15px]'
-      html.push(`<p class="${size} font-semibold text-[#0F172A] mt-3 mb-1">${text}</p>`)
+      html.push(`<p class="${size} font-semibold text-text-primary mt-3 mb-1">${text}</p>`)
     } else if (/^[-*]\s+/.test(line)) {
       if (!inList) {
         html.push('<ul class="list-disc pl-5 my-1 flex flex-col gap-0.5">')

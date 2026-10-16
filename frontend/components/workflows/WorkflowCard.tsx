@@ -108,13 +108,13 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
   const steps = w._count?.steps ?? w.steps?.length ?? 0
 
   return (
-    <div className="group relative h-full bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:border-[#93C5FD] hover:shadow-[0_4px_14px_rgba(15,23,42,0.08)] transition-[box-shadow,border-color] duration-150 p-5 flex flex-col gap-3 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-[#2563EB]">
+    <div className="group relative h-full bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:border-primary-border hover:shadow-[0_4px_14px_rgba(15,23,42,0.08)] transition-[box-shadow,border-color] duration-150 p-5 flex flex-col gap-3 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-primary">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-[10px] bg-[#EFF6FF] flex items-center justify-center shrink-0">
-          <WorkflowIcon size={18} className="text-[#2563EB]" />
+        <div className="w-10 h-10 rounded-[10px] bg-primary-subtle flex items-center justify-center shrink-0">
+          <WorkflowIcon size={18} className="text-primary-text" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-[16px] font-semibold text-[#0F172A] leading-snug">
+          <h3 className="text-[16px] font-semibold text-text-primary leading-snug">
             {/* Stretched link: the whole card opens the workflow; the menu sits above it. */}
             <Link
               href={workflowHref(w.id)}
@@ -132,28 +132,28 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
         </div>
       </div>
 
-      <p className="text-[14px] text-[#475569] line-clamp-2 min-h-[42px] wrap-break-word">
-        {w.description || <span className="text-[#64748B]">No description</span>}
+      <p className="text-[14px] text-text-secondary line-clamp-2 min-h-[42px] wrap-break-word">
+        {w.description || <span className="text-text-muted">No description</span>}
       </p>
 
-      <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-[13px] text-[#334155]">
+      <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-[13px] text-text-secondary">
         {/* A limited card (you run it or work in it, but can't see its design) has no step count. */}
         {w.view !== 'limited' && (
           <span className="inline-flex items-center gap-1.5">
-            <ListChecks size={14} className="text-[#475569]" />
+            <ListChecks size={14} className="text-text-secondary" />
             {plural(steps, 'step')}
           </span>
         )}
         <span className="inline-flex items-center gap-1.5">
-          <History size={14} className="text-[#475569]" />
+          <History size={14} className="text-text-secondary" />
           {/* A limited card counts only the caller's own instances (ran / works in). */}
           {running > 0 ? `${running} running` : plural(w._count?.instances ?? 0, 'instance')}
           {w.view === 'limited' ? ' · yours' : ''}
         </span>
         {(w.schedules ?? []).length > 0 && (
           <Tooltip label={`Starts: ${startsSummary(w)}`}>
-            <span tabIndex={0} className="relative z-10 inline-flex items-center gap-1.5 rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]">
-              <CalendarClock size={14} className="text-[#475569]" />
+            <span tabIndex={0} className="relative z-10 inline-flex items-center gap-1.5 rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary">
+              <CalendarClock size={14} className="text-text-secondary" />
               {/* The schedule, said once: how it repeats, then when it next runs. */}
               {recurrenceLabel(w) ?? 'On a schedule'}
               {w.next_run_at ? ` · next ${fmtDateTime(w.next_run_at)}` : w.status === 'paused' ? ' · paused' : ''}
@@ -162,9 +162,9 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
         )}
       </div>
 
-      <div className="mt-auto pt-3 border-t border-[#F1F5F9] flex items-center justify-between gap-3 text-[13px] text-[#475569]">
+      <div className="mt-auto pt-3 border-t border-border-light flex items-center justify-between gap-3 text-[13px] text-text-secondary">
         <Tooltip label="Editors">
-          <span tabIndex={0} className="relative z-10 inline-flex items-center gap-1.5 min-w-0 rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]">
+          <span tabIndex={0} className="relative z-10 inline-flex items-center gap-1.5 min-w-0 rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary">
             <Users size={14} className="shrink-0" />
             <span className="truncate">{namesSummary(editors)}</span>
           </span>
@@ -177,17 +177,17 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
 
 export function WorkflowCardSkeleton() {
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-5 flex flex-col gap-3 animate-pulse motion-reduce:animate-none h-[228px]">
+    <div className="bg-white border border-border-light rounded-[12px] p-5 flex flex-col gap-3 animate-pulse motion-reduce:animate-none h-[228px]">
       <div className="flex gap-3">
-        <div className="w-10 h-10 rounded-[10px] bg-[#F1F5F9]" />
+        <div className="w-10 h-10 rounded-[10px] bg-surface-control" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 bg-[#F1F5F9] rounded-xs w-2/3" />
-          <div className="h-4 bg-[#F1F5F9] rounded-xs w-1/3" />
+          <div className="h-4 bg-surface-control rounded-xs w-2/3" />
+          <div className="h-4 bg-surface-control rounded-xs w-1/3" />
         </div>
       </div>
-      <div className="h-3 bg-[#F1F5F9] rounded-xs w-full" />
-      <div className="h-3 bg-[#F1F5F9] rounded-xs w-4/5" />
-      <div className="mt-auto h-4 bg-[#F1F5F9] rounded-xs w-1/2" />
+      <div className="h-3 bg-surface-control rounded-xs w-full" />
+      <div className="h-3 bg-surface-control rounded-xs w-4/5" />
+      <div className="mt-auto h-4 bg-surface-control rounded-xs w-1/2" />
     </div>
   )
 }

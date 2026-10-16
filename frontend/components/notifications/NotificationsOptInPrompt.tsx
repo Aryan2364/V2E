@@ -80,22 +80,22 @@ export default function NotificationsOptInPrompt() {
 
   return (
     <div className="fixed bottom-4 right-4 left-4 sm:left-auto z-60 sm:w-[360px]">
-      <div className="relative rounded-[12px] border border-[#E2E8F0] bg-white p-4 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+      <div className="relative rounded-[12px] border border-border-light bg-white p-4 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
         <button
           onClick={dismiss}
           aria-label="Dismiss"
-          className="absolute right-3 top-3 text-[#94A3B8] transition-colors hover:text-[#475569]"
+          className="absolute right-3 top-3 text-text-muted transition-colors hover:text-text-secondary"
         >
           <X size={16} />
         </button>
 
         <div className="flex items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[#2563EB]">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary-text">
             <Bell size={18} />
           </span>
           <div className="min-w-0 pr-4">
-            <p className="text-[15px] font-semibold text-[#0F172A]">Turn on notifications</p>
-            <p className="mt-0.5 text-[13px] leading-snug text-[#475569]">
+            <p className="text-[15px] font-semibold text-text-primary">Turn on notifications</p>
+            <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">
               Get alerts for tasks, tickets and mentions on this device — even when V2E isn&apos;t open.
             </p>
           </div>
@@ -105,14 +105,14 @@ export default function NotificationsOptInPrompt() {
           <button
             onClick={dismiss}
             disabled={busy}
-            className="rounded-[8px] px-3 py-2 text-[13px] font-medium text-[#475569] transition-colors hover:bg-[#F1F5F9] disabled:opacity-60"
+            className="rounded-[8px] px-3 py-2 text-[13px] font-medium text-text-secondary transition-colors hover:bg-surface-control disabled:opacity-60"
           >
             Not now
           </button>
           <button
             onClick={turnOn}
             disabled={busy}
-            className="rounded-[8px] bg-[#2563EB] px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]"
+            className="rounded-[8px] bg-primary px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
           >
             {busy ? 'Enabling…' : 'Turn on'}
           </button>

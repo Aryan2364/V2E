@@ -145,7 +145,7 @@ export default function ReportsToSelect({
   }
 
   const triggerCls =
-    'w-full flex items-center gap-2.5 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-left bg-white hover:border-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors'
+    'w-full flex items-center gap-2.5 border border-border rounded-[8px] px-3 py-2 text-[15px] text-left bg-white hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
 
   const PersonRow = ({ p }: { p: EmployeeProfile }) => {
     const isSel = p.user_id === value
@@ -154,32 +154,32 @@ export default function ReportsToSelect({
         type="button"
         onClick={() => pick(p.user_id)}
         className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-          isSel ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+          isSel ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
         }`}
       >
         <Avatar name={p.user?.name} color={colorFor(p.department_id)} />
         <span className="flex-1 min-w-0">
-          <span className="block text-sm font-medium text-[#0F172A] truncate">
+          <span className="block text-sm font-medium text-text-primary truncate">
             {p.user?.name ?? 'Unknown'}
           </span>
-          <span className="block text-xs text-[#64748B] truncate">
+          <span className="block text-xs text-text-muted truncate">
             {p.role?.title ?? 'No role'}
             {p.department?.name ? ` · ${p.department.name}` : ''}
           </span>
         </span>
-        {isSel && <Check size={15} className="text-[#2563EB] shrink-0" />}
+        {isSel && <Check size={15} className="text-primary-text shrink-0" />}
       </button>
     )
   }
 
   const Group = ({ g }: { g: DeptGroup }) => (
     <div>
-      <div className="sticky top-0 z-1 flex items-center gap-2 px-3 py-1.5 bg-[#F1F5F9] border-y border-[#E2E8F0]">
+      <div className="sticky top-0 z-1 flex items-center gap-2 px-3 py-1.5 bg-surface-control border-y border-border-light">
         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: colorFor(g.dept.id) }} />
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-[#475569] truncate">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary truncate">
           {g.dept.name}
         </span>
-        <span className="ml-auto text-[11px] text-[#94A3B8]">{g.people.length}</span>
+        <span className="ml-auto text-[11px] text-text-muted">{g.people.length}</span>
       </div>
       {g.people.map((p) => (
         <PersonRow key={p.id} p={p} />
@@ -199,10 +199,10 @@ export default function ReportsToSelect({
           <>
             <Avatar name={selected.user?.name} color={colorFor(selected.department_id)} />
             <span className="flex-1 min-w-0">
-              <span className="block text-sm font-medium text-[#0F172A] truncate">
+              <span className="block text-sm font-medium text-text-primary truncate">
                 {selected.user?.name ?? 'Unknown'}
               </span>
-              <span className="block text-xs text-[#64748B] truncate">
+              <span className="block text-xs text-text-muted truncate">
                 {selected.role?.title ?? 'No role'}
                 {selected.department?.name ? ` · ${selected.department.name}` : ''}
               </span>
@@ -210,20 +210,20 @@ export default function ReportsToSelect({
           </>
         ) : touched ? (
           <>
-            <span className="w-7 h-7 shrink-0 rounded-full inline-flex items-center justify-center bg-[#F1F5F9] text-[#94A3B8]">
+            <span className="w-7 h-7 shrink-0 rounded-full inline-flex items-center justify-center bg-surface-control text-text-muted">
               <UserX size={14} />
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block text-sm font-medium text-[#0F172A] truncate">No manager</span>
-              <span className="block text-xs text-[#64748B] truncate">Reports to no one</span>
+              <span className="block text-sm font-medium text-text-primary truncate">No manager</span>
+              <span className="block text-xs text-text-muted truncate">Reports to no one</span>
             </span>
           </>
         ) : (
-          <span className="flex-1 text-[#94A3B8]">Select manager</span>
+          <span className="flex-1 text-text-muted">Select manager</span>
         )}
         <ChevronDown
           size={16}
-          className={`shrink-0 text-[#94A3B8] transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-text-muted transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
@@ -233,23 +233,23 @@ export default function ReportsToSelect({
           <div
             ref={panelRef}
             style={style}
-            className="z-80 flex flex-col border border-[#E2E8F0] rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden"
+            className="z-80 flex flex-col border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden"
           >
             {/* Search */}
-            <div className="relative border-b border-[#E2E8F0] shrink-0">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+            <div className="relative border-b border-border-light shrink-0">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search people…"
-              className="w-full pl-9 pr-8 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
+              className="w-full pl-9 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
               autoFocus
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569]"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
                 aria-label="Clear search"
               >
                 <X size={14} />
@@ -263,21 +263,21 @@ export default function ReportsToSelect({
                 type="button"
                 onClick={() => pick('')}
                 className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                  touched && !value ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+                  touched && !value ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                 }`}
               >
-                <span className="w-7 h-7 shrink-0 rounded-full inline-flex items-center justify-center bg-[#F1F5F9] text-[#94A3B8]">
+                <span className="w-7 h-7 shrink-0 rounded-full inline-flex items-center justify-center bg-surface-control text-text-muted">
                   <UserX size={14} />
                 </span>
                 <span className="flex-1 min-w-0">
-                  <span className="block text-sm font-medium text-[#475569]">No manager</span>
-                  <span className="block text-xs text-[#94A3B8]">Reports to no one</span>
+                  <span className="block text-sm font-medium text-text-secondary">No manager</span>
+                  <span className="block text-xs text-text-muted">Reports to no one</span>
                 </span>
-                {touched && !value && <Check size={15} className="text-[#2563EB] shrink-0" />}
+                {touched && !value && <Check size={15} className="text-primary-text shrink-0" />}
               </button>
 
               {fSuggested.length > 0 && (
-              <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#2563EB]">
+              <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-primary-text">
                 Reporting line
               </div>
             )}
@@ -286,7 +286,7 @@ export default function ReportsToSelect({
             ))}
 
             {fOthers.length > 0 && (
-              <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
+              <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-text-muted">
                 Other departments
               </div>
             )}
@@ -295,7 +295,7 @@ export default function ReportsToSelect({
             ))}
 
             {noResults && (
-              <p className="px-3 py-6 text-center text-sm text-[#94A3B8]">No people found.</p>
+              <p className="px-3 py-6 text-center text-sm text-text-muted">No people found.</p>
             )}
             </div>
           </div>,

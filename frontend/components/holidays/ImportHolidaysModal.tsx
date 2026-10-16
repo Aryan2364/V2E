@@ -126,11 +126,11 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="relative w-full max-w-3xl bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-[#E2E8F0] max-h-[92vh] flex flex-col">
+      <div className="relative w-full max-w-3xl bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-[#E2E8F0] shrink-0">
-          <h2 className="text-[20px] font-semibold text-[#0F172A]">Import Holidays</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border-light shrink-0">
+          <h2 className="text-[20px] font-semibold text-text-primary">Import Holidays</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -141,7 +141,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
             <button
               type="button"
               onClick={downloadTemplate}
-              className="flex items-center gap-2 h-9 px-4 rounded-[8px] text-sm font-medium text-[#475569] border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] transition-colors"
+              className="flex items-center gap-2 h-9 px-4 rounded-[8px] text-sm font-medium text-text-secondary border border-border bg-white hover:bg-surface-sunken transition-colors"
             >
               <Download size={14} />
               Download Template
@@ -149,18 +149,18 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="flex items-center gap-2 h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+              className="flex items-center gap-2 h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
             >
               <Upload size={14} />
               {rows.length > 0 ? 'Replace CSV' : 'Upload CSV'}
             </button>
             <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={handleFile} className="hidden" />
-            <p className="text-xs text-[#94A3B8]">Columns: Name, Date (YYYY-MM-DD), Type, Recurring Yearly (yes/no), Description</p>
+            <p className="text-xs text-text-muted">Columns: Name, Date (YYYY-MM-DD), Type, Recurring Yearly (yes/no), Description</p>
           </div>
 
           {/* Error summary */}
           {errorCount > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-[#FEF2F2] border border-[#FECACA] rounded-[8px] text-sm text-[#DC2626]">
+            <div className="flex items-center gap-2 px-3 py-2 bg-danger-bg border border-danger-border rounded-[8px] text-sm text-danger">
               <AlertCircle size={14} className="shrink-0" />
               {errorCount} row{errorCount !== 1 ? 's' : ''} have errors and will be skipped. Fix in your CSV and re-upload.
             </div>
@@ -168,7 +168,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
 
           {/* Result */}
           {result && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-[#F0FDF4] border border-[#BBF7D0] rounded-[8px] text-sm text-[#16A34A]">
+            <div className="flex items-center gap-2 px-3 py-2 bg-success-bg border border-success-border rounded-[8px] text-sm text-success">
               <CheckCircle2 size={14} className="shrink-0" />
               {result.imported} imported, {result.skipped} skipped (duplicates or invalid dates).
             </div>
@@ -176,46 +176,46 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
 
           {/* Preview table */}
           {rows.length > 0 && (
-            <div className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
+            <div className="border border-border-light rounded-[10px] overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
+                <thead className="bg-surface-sunken border-b border-border-light">
                   <tr>
                     <th className="w-10 px-3 py-2.5 text-left">
                       <input
                         type="checkbox"
                         checked={selected.size === rows.filter((r) => !r._error).length && rows.some((r) => !r._error)}
                         onChange={(e) => setSelected(e.target.checked ? new Set(rows.map((_, i) => i).filter((i) => !rows[i]._error)) : new Set())}
-                        className="accent-[#2563EB]"
+                        className="accent-primary"
                       />
                     </th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-[#64748B] uppercase tracking-wide">Name</th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-[#64748B] uppercase tracking-wide">Date</th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-[#64748B] uppercase tracking-wide">Type</th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-[#64748B] uppercase tracking-wide">Recurring</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wide">Name</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wide">Date</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wide">Type</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-text-muted uppercase tracking-wide">Recurring</th>
                     <th className="w-8 px-2 py-2.5"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#F1F5F9]">
+                <tbody className="divide-y divide-surface-control">
                   {rows.map((row, i) => (
-                    <tr key={i} className={row._error ? 'bg-[#FFF5F5]' : selected.has(i) ? 'bg-[#F8FBFF]' : 'bg-white'}>
+                    <tr key={i} className={row._error ? 'bg-danger-bg' : selected.has(i) ? 'bg-surface-sunken' : 'bg-white'}>
                       <td className="px-3 py-2">
                         <input
                           type="checkbox"
                           checked={selected.has(i) && !row._error}
                           disabled={!!row._error}
                           onChange={() => toggleRow(i)}
-                          className="accent-[#2563EB] disabled:opacity-40"
+                          className="accent-primary disabled:opacity-40"
                         />
                       </td>
-                      <td className="px-3 py-2 font-medium text-[#0F172A]">
+                      <td className="px-3 py-2 font-medium text-text-primary">
                         {row.name}
-                        {row._error && <p className="text-[11px] text-[#DC2626] mt-0.5">{row._error}</p>}
+                        {row._error && <p className="text-[11px] text-danger mt-0.5">{row._error}</p>}
                       </td>
-                      <td className="px-3 py-2 text-[#475569]">{row.date}</td>
-                      <td className="px-3 py-2 text-[#475569] capitalize">{row.type}</td>
-                      <td className="px-3 py-2 text-[#475569]">{row.is_recurring_yearly ? 'Yes' : 'No'}</td>
+                      <td className="px-3 py-2 text-text-secondary">{row.date}</td>
+                      <td className="px-3 py-2 text-text-secondary capitalize">{row.type}</td>
+                      <td className="px-3 py-2 text-text-secondary">{row.is_recurring_yearly ? 'Yes' : 'No'}</td>
                       <td className="px-2 py-2">
-                        <button type="button" onClick={() => removeRow(i)} className="text-[#94A3B8] hover:text-[#DC2626] transition-colors">
+                        <button type="button" onClick={() => removeRow(i)} className="text-text-muted hover:text-danger transition-colors">
                           <Trash2 size={13} />
                         </button>
                       </td>
@@ -227,21 +227,21 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
           )}
 
           {rows.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-[#E2E8F0] rounded-[12px]">
+            <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-border-light rounded-[12px]">
               <Upload size={28} className="text-[#CBD5E1] mb-3" />
-              <p className="text-sm font-medium text-[#0F172A]">Upload a CSV file to preview holidays</p>
-              <p className="text-xs text-[#475569] mt-1">Download the template above to get started</p>
+              <p className="text-sm font-medium text-text-primary">Upload a CSV file to preview holidays</p>
+              <p className="text-xs text-text-secondary mt-1">Download the template above to get started</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 border-t border-[#E2E8F0]">
-          <p className="text-sm text-[#475569]">
-            {rows.length > 0 ? <><span className="font-semibold text-[#0F172A]">{validSelected}</span> of {rows.length} rows selected</> : 'No file uploaded'}
+        <div className="shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 border-t border-border-light">
+          <p className="text-sm text-text-secondary">
+            {rows.length > 0 ? <><span className="font-semibold text-text-primary">{validSelected}</span> of {rows.length} rows selected</> : 'No file uploaded'}
           </p>
           <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
-            <button type="button" onClick={onClose} className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-[#2563EB] border-2 border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors">
+            <button type="button" onClick={onClose} className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-primary-text border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors">
               {result ? 'Close' : 'Cancel'}
             </button>
             {!result && (
@@ -249,7 +249,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
                 type="button"
                 onClick={handleImport}
                 disabled={importing || validSelected === 0}
-                className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
               >
                 {importing ? 'Importing...' : `Import ${validSelected} Holiday${validSelected !== 1 ? 's' : ''}`}
               </button>

@@ -43,18 +43,18 @@ export default function ConfirmDialog({
       <div className="bg-white rounded-[16px] w-full max-w-sm p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start gap-3 mb-4">
           {danger && (
-            <div className="w-10 h-10 rounded-full bg-[#FEE2E2] flex items-center justify-center shrink-0">
-              <AlertTriangle size={20} className="text-[#DC2626]" />
+            <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
+              <AlertTriangle size={20} className="text-danger" />
             </div>
           )}
           <div className="min-w-0">
-            <h3 className="text-[18px] font-semibold text-[#0F172A]">{title}</h3>
-            {message && <p className="text-sm text-[#475569] mt-1">{message}</p>}
+            <h3 className="text-[18px] font-semibold text-text-primary">{title}</h3>
+            {message && <p className="text-sm text-text-secondary mt-1">{message}</p>}
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-[8px] border border-[#FECACA] bg-[#FEF2F2] px-3 py-2 text-sm text-[#B91C1C]">
+          <div className="mb-4 rounded-[8px] border border-danger-border bg-danger-bg px-3 py-2 text-sm text-danger">
             {error}
           </div>
         )}
@@ -63,7 +63,7 @@ export default function ConfirmDialog({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="px-4 py-2.5 text-sm font-semibold text-[#475569] hover:text-[#0F172A] transition-colors disabled:opacity-60"
+            className="px-4 py-2.5 text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors disabled:opacity-60"
           >
             {cancelLabel}
           </button>
@@ -71,8 +71,8 @@ export default function ConfirmDialog({
             onClick={onConfirm}
             disabled={loading}
             className={[
-              'flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-[8px] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed',
-              danger ? 'bg-[#DC2626] hover:bg-[#B91C1C]' : 'bg-[#2563EB] hover:bg-[#1D4ED8]',
+              'flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed',
+              danger ? 'bg-danger hover:bg-danger-hover' : 'bg-primary hover:bg-primary-hover',
             ].join(' ')}
           >
             {loading && <Loader2 size={15} className="animate-spin" />}

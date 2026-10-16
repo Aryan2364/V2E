@@ -58,24 +58,24 @@ export default function AddMaterialBar({
           type="button"
           disabled={!!busy}
           onClick={() => fileInput.current?.click()}
-          className={`${btn} text-white bg-[#2563EB] border-[#2563EB] hover:bg-[#1D4ED8]`}
+          className={`${btn} text-white bg-primary border-primary hover:bg-primary-hover`}
         >
           {busy === 'file' ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
           Upload files
         </button>
         <button type="button" disabled={!!busy} onClick={() => run('url')}
-          className={`${btn} text-[#475569] bg-white border-[#CBD5E1] hover:border-[#2563EB] hover:text-[#2563EB]`}>
+          className={`${btn} text-text-secondary bg-white border-border hover:border-primary hover:text-primary-text`}>
           <Link2 size={15} /> Add link
         </button>
         <button type="button" disabled={!!busy} onClick={() => run('article')}
-          className={`${btn} text-[#475569] bg-white border-[#CBD5E1] hover:border-[#2563EB] hover:text-[#2563EB]`}>
+          className={`${btn} text-text-secondary bg-white border-border hover:border-primary hover:text-primary-text`}>
           <FileText size={15} /> Write article
         </button>
       </div>
-      <p className="text-[11px] text-[#475569] mt-2">
+      <p className="text-[11px] text-text-secondary mt-2">
         Pick one or several files at once — each becomes its own material. PDF, images and video/audio play in-app · up to 25 MB each. For slides, export PowerPoint to PDF so it plays in-app (Office files upload but open by download).
       </p>
-      {err && <p className="text-xs text-[#DC2626] mt-1">{err}</p>}
+      {err && <p className="text-xs text-danger mt-1">{err}</p>}
       <input
         ref={fileInput}
         type="file"

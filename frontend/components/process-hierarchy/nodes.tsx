@@ -66,7 +66,7 @@ function EditButton({ data }: { data: ProcessNodeData }) {
         type="button"
         onClick={(e) => { e.stopPropagation(); data.onEdit!() }}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); data.onEdit!() } }}
-        className="nodrag absolute top-1 right-1 w-5 h-5 inline-flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+        className="nodrag absolute top-1 right-1 w-5 h-5 inline-flex items-center justify-center rounded-[6px] text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
         aria-label={`Edit ${data.name}`}
       >
         <Pencil size={12} />
@@ -94,7 +94,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
           <Tooltip label="Expand in place">
             <button type="button" onClick={(e) => { e.stopPropagation(); data.onToggleExpand?.() }}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); data.onToggleExpand?.() } }}
-              className="nodrag absolute top-1 right-7 w-5 h-5 inline-flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+              className="nodrag absolute top-1 right-7 w-5 h-5 inline-flex items-center justify-center rounded-[6px] text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors"
               aria-label="Expand in place">
               <Maximize2 size={11} />
             </button>
@@ -102,10 +102,10 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
         )}
         <div className={`flex items-start gap-1.5 ${data.canExpand ? 'pr-11' : canOpen ? 'pr-5' : ''}`}>
           <span style={{ color: '#2563EB' }} className="shrink-0 mt-0.5">{KIND_META[data.kind].icon}</span>
-          <span className="flex-1 min-w-0 text-[13px] font-medium text-[#0F172A] leading-snug wrap-break-word">{data.name}</span>
+          <span className="flex-1 min-w-0 text-[13px] font-medium text-text-primary leading-snug wrap-break-word">{data.name}</span>
         </div>
         {data.linkedMapName && data.linkedMapName !== data.name && (
-          <div className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-[#2563EB]">
+          <div className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-primary-text">
             <ExternalLink size={10} /> <span className="truncate">{data.linkedMapName}</span>
           </div>
         )}
@@ -114,13 +114,13 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
             {!!data.docCount && (
               <Tooltip label={`${data.docCount} document${data.docCount > 1 ? 's' : ''}`}>
                 <button onClick={(e) => { e.stopPropagation(); data.onEdit?.() }}
-                  className="nodrag inline-flex items-center gap-0.5 text-[10px] font-semibold text-[#475569] hover:text-[#2563EB]">
+                  className="nodrag inline-flex items-center gap-0.5 text-[10px] font-semibold text-text-secondary hover:text-primary-text">
                   <FileText size={11} /> {data.docCount}
                 </button>
               </Tooltip>
             )}
             {canOpen && (
-              <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] font-semibold text-[#2563EB]">
+              <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] font-semibold text-primary-text">
                 {data.childCount ? `${data.childCount} inside` : 'Open'} <ChevronRight size={11} />
               </span>
             )}
@@ -128,10 +128,10 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
         )}
         {/* Checklist — a line under the box; the chevron loads the items onto the canvas. */}
         {checks.length > 0 && (
-          <div className="mt-1 border-t border-[#F1F5F9] pt-1">
+          <div className="mt-1 border-t border-border-light pt-1">
             <Tooltip label={showChecks ? 'Hide checklist' : 'Show checklist'}>
               <button type="button" onClick={(e) => { e.stopPropagation(); setShowChecks((v) => !v) }}
-                className="nodrag inline-flex items-center gap-1 text-[10px] font-semibold text-[#475569] hover:text-[#2563EB]"
+                className="nodrag inline-flex items-center gap-1 text-[10px] font-semibold text-text-secondary hover:text-primary-text"
                 aria-expanded={showChecks}>
                 <ChevronRight size={11} className={`transition-transform ${showChecks ? 'rotate-90' : ''}`} />
                 <ListChecks size={11} /> {checks.length} checklist item{checks.length !== 1 ? 's' : ''}
@@ -140,8 +140,8 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
             {showChecks && (
               <ul className="mt-1 space-y-0.5">
                 {checks.map((c) => (
-                  <li key={c.id} className="flex items-start gap-1 text-[10px] leading-snug text-[#334155]">
-                    <Square size={9} className="shrink-0 mt-0.5 text-[#94A3B8]" />
+                  <li key={c.id} className="flex items-start gap-1 text-[10px] leading-snug text-text-secondary">
+                    <Square size={9} className="shrink-0 mt-0.5 text-text-muted" />
                     <span className="wrap-break-word">{c.text}</span>
                   </li>
                 ))}
@@ -171,7 +171,7 @@ function DecisionNode({ data }: NodeProps<ProcessNodeData>) {
         }}
       />
       <div className="absolute inset-0 flex items-center justify-center px-3 text-center">
-        <span className="line-clamp-3 text-[10px] font-medium text-[#0F172A] leading-tight">{data.name}</span>
+        <span className="line-clamp-3 text-[10px] font-medium text-text-primary leading-tight">{data.name}</span>
       </div>
     </div>
   )
@@ -207,14 +207,14 @@ function EventNode({ data }: NodeProps<ProcessNodeData>) {
 // which render as child nodes inside it (ReactFlow parent/extent). ────────────
 function BandNode({ data }: NodeProps<ProcessNodeData>) {
   return (
-    <div className="w-full h-full rounded-[12px] border-2 border-[#3B82F6] bg-[#EFF6FF]/40 shadow-xs">
+    <div className="w-full h-full rounded-[12px] border-2 border-primary-ring bg-primary-subtle/40 shadow-xs">
       <Handle type="target" position={Position.Left} style={handleStyle} />
-      <div className="absolute top-0 left-0 right-0 h-7 flex items-center gap-1.5 px-2 bg-[#EFF6FF] border-b border-[#BFDBFE] rounded-t-[10px]">
-        <Folder size={13} className="text-[#2563EB] shrink-0" />
-        <span className="flex-1 min-w-0 truncate text-[12px] font-semibold text-[#0F172A]">{data.name}</span>
+      <div className="absolute top-0 left-0 right-0 h-7 flex items-center gap-1.5 px-2 bg-primary-subtle border-b border-primary-border rounded-t-[10px]">
+        <Folder size={13} className="text-primary-text shrink-0" />
+        <span className="flex-1 min-w-0 truncate text-[12px] font-semibold text-text-primary">{data.name}</span>
         <Tooltip label="Collapse">
           <button type="button" onClick={(e) => { e.stopPropagation(); data.onToggleExpand?.() }}
-            className="nodrag shrink-0 w-5 h-5 inline-flex items-center justify-center rounded-xs text-[#64748B] hover:text-[#0F172A] hover:bg-white"
+            className="nodrag shrink-0 w-5 h-5 inline-flex items-center justify-center rounded-xs text-text-muted hover:text-text-primary hover:bg-white"
             aria-label="Collapse"><Minimize2 size={12} /></button>
         </Tooltip>
       </div>
@@ -228,15 +228,15 @@ function BandNode({ data }: NodeProps<ProcessNodeData>) {
 function NoteNode({ data }: NodeProps<ProcessNodeData>) {
   return (
     <div
-      className={`relative rounded-[6px] px-3 py-2.5 shadow-xs ${data.selected ? 'ring-2 ring-[#2563EB]' : ''}`}
+      className={`relative rounded-[6px] px-3 py-2.5 shadow-xs ${data.selected ? 'ring-2 ring-primary' : ''}`}
       style={{ width: 190, minHeight: 96, background: '#FEF9C3', border: '1px solid #FDE68A' }}
     >
-      <div className="flex items-center gap-1 mb-1 text-[#B45309]">
+      <div className="flex items-center gap-1 mb-1 text-warning">
         <StickyNote size={12} className="shrink-0" />
         <span className="text-[10px] font-semibold uppercase tracking-wide">Note</span>
-        {data.onEdit && <Pencil size={11} className="ml-auto text-[#CA8A04]" />}
+        {data.onEdit && <Pencil size={11} className="ml-auto text-warning" />}
       </div>
-      <p className="text-[12px] leading-snug text-[#713F12] whitespace-pre-wrap wrap-break-word">
+      <p className="text-[12px] leading-snug text-warning whitespace-pre-wrap wrap-break-word">
         {data.name || 'Empty note — click to write'}
       </p>
     </div>
@@ -270,7 +270,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
               aria-label={isPool ? 'Reorder pool' : 'Reorder lane'}
               onPointerDown={(e) => { e.stopPropagation(); data.onReorderStart!(e) }}
               onClick={(e) => e.stopPropagation()}
-              className="nodrag inline-flex items-center justify-center rounded-xs text-[#64748B] hover:text-[#2563EB] hover:bg-[#EFF6FF] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+              className="nodrag inline-flex items-center justify-center rounded-xs text-text-muted hover:text-primary-text hover:bg-primary-subtle focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
               style={{ pointerEvents: 'auto', cursor: 'grab', width: 20, height: 20, touchAction: 'none' }}
             >
               <GripVertical size={14} />
@@ -284,7 +284,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); data.onRename!() }}
-              className="nodrag text-[11px] font-bold text-[#1E293B] whitespace-nowrap hover:text-[#2563EB] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-xs"
+              className="nodrag text-[11px] font-bold text-text-primary whitespace-nowrap hover:text-primary-text focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
               style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', pointerEvents: 'auto' }}
             >
               {data.label}
@@ -292,7 +292,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
           </Tooltip>
         ) : (
           <span
-            className="text-[11px] font-bold text-[#1E293B] whitespace-nowrap"
+            className="text-[11px] font-bold text-text-primary whitespace-nowrap"
             style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
             {data.label}
@@ -309,7 +309,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
             onClick={(e) => { e.stopPropagation(); data.onAdd!() }}
             aria-label="Add a step to this lane"
             style={{ pointerEvents: 'auto' }}
-            className="nodrag absolute top-2 right-2 w-6 h-6 inline-flex items-center justify-center rounded-[6px] text-[#2563EB] hover:bg-[#EFF6FF] transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+            className="nodrag absolute top-2 right-2 w-6 h-6 inline-flex items-center justify-center rounded-[6px] text-primary-text hover:bg-primary-subtle transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Plus size={16} />
           </button>
@@ -349,11 +349,11 @@ function DocNode({ data }: NodeProps<DocNodeData>) {
           type="button"
           onClick={(e) => { e.stopPropagation(); data.onOpen() }}
           style={{ width: DOC_CHIP_W, height: DOC_CHIP_H }}
-          className="nodrag group flex items-center gap-1.5 px-2 rounded-[7px] border border-dashed border-[#CBD5E1] bg-white shadow-xs text-left transition-colors hover:border-[#2563EB]"
+          className="nodrag group flex items-center gap-1.5 px-2 rounded-[7px] border border-dashed border-border bg-white shadow-xs text-left transition-colors hover:border-primary"
         >
           <span className="w-[3px] self-stretch my-1 rounded-full shrink-0" style={{ background: isInput ? '#0EA5E9' : '#8B5CF6' }} />
           <Icon size={13} className="shrink-0" style={{ color: isInput ? '#0EA5E9' : '#8B5CF6' }} />
-          <span className="flex-1 min-w-0 truncate text-[11px] font-medium text-[#334155] group-hover:text-[#0F172A]">{data.name}</span>
+          <span className="flex-1 min-w-0 truncate text-[11px] font-medium text-text-secondary group-hover:text-text-primary">{data.name}</span>
         </button>
       </Tooltip>
     </>

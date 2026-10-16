@@ -141,10 +141,10 @@ export function todayIso(): string {
 const BADGE = 'inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[12px] font-medium'
 
 export const TEMPLATE_STATUS: Record<WorkflowTemplateStatus, { cls: string; dot: string; label: string }> = {
-  active: { cls: 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]', dot: 'bg-[#16A34A]', label: 'Live' },
-  paused: { cls: 'bg-[#FEF9C3] text-[#854D0E] border-[#FDE68A]', dot: 'bg-[#CA8A04]', label: 'Paused' },
-  draft: { cls: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]', dot: 'bg-[#94A3B8]', label: 'Draft' },
-  archived: { cls: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]', dot: 'bg-[#94A3B8]', label: 'Archived' },
+  active: { cls: 'bg-success-bg text-success border-success-border', dot: 'bg-success', label: 'Live' },
+  paused: { cls: 'bg-warning-bg text-warning border-warning-border', dot: 'bg-warning', label: 'Paused' },
+  draft: { cls: 'bg-surface-control text-text-secondary border-border-light', dot: 'bg-[#94A3B8]', label: 'Draft' },
+  archived: { cls: 'bg-surface-control text-text-secondary border-border-light', dot: 'bg-[#94A3B8]', label: 'Archived' },
 }
 
 /** Draft / Live / Paused / Archived. */
@@ -164,12 +164,12 @@ export function TemplateStatusBadge({ status }: { status: WorkflowTemplateStatus
  * under way is neither good nor bad yet).
  */
 export const RUN_STATUS: Record<RunDisplayStatus, { cls: string; label: string; Icon: LucideIcon }> = {
-  running: { cls: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]', label: 'Running', Icon: PlayCircle },
-  falling_behind: { cls: 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]', label: 'Falling behind', Icon: Clock },
-  waiting_for_info: { cls: 'bg-[#F5F3FF] text-[#5B21B6] border-[#DDD6FE]', label: 'Waiting for info', Icon: Undo2 },
-  needs_attention: { cls: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]', label: 'Needs attention', Icon: AlertTriangle },
-  completed: { cls: 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]', label: 'Completed', Icon: CheckCircle2 },
-  cancelled: { cls: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]', label: 'Cancelled', Icon: XCircle },
+  running: { cls: 'bg-primary-subtle text-primary-text border-primary-border', label: 'Running', Icon: PlayCircle },
+  falling_behind: { cls: 'bg-warning-bg text-warning border-warning-border', label: 'Falling behind', Icon: Clock },
+  waiting_for_info: { cls: 'bg-surface-control text-text-secondary border-border-light', label: 'Waiting for info', Icon: Undo2 },
+  needs_attention: { cls: 'bg-danger-bg text-danger border-danger-border', label: 'Needs attention', Icon: AlertTriangle },
+  completed: { cls: 'bg-success-bg text-success border-success-border', label: 'Completed', Icon: CheckCircle2 },
+  cancelled: { cls: 'bg-surface-control text-text-secondary border-border-light', label: 'Cancelled', Icon: XCircle },
 }
 
 /** The server's display status, or the same rules applied here for an older response. */
@@ -195,19 +195,19 @@ export function RunStatusBadge({ run }: { run: Pick<WorkflowInstance, 'status' |
 }
 
 export const STEP_STATUS: Record<WorkflowStepStatus, { cls: string; label: string }> = {
-  pending: { cls: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]', label: 'Not started' },
-  active: { cls: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]', label: 'In progress' },
-  completed: { cls: 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]', label: 'Done' },
-  overdue: { cls: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]', label: 'Overdue' },
-  skipped: { cls: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]', label: 'Skipped' },
-  branched: { cls: 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]', label: 'Follow-up started' },
-  sent_back: { cls: 'bg-[#F5F3FF] text-[#5B21B6] border-[#DDD6FE]', label: 'Waiting for info' },
-  moved_on: { cls: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FECACA]', label: 'Overdue, continued' },
+  pending: { cls: 'bg-surface-control text-text-secondary border-border-light', label: 'Not started' },
+  active: { cls: 'bg-primary-subtle text-primary-text border-primary-border', label: 'In progress' },
+  completed: { cls: 'bg-success-bg text-success border-success-border', label: 'Done' },
+  overdue: { cls: 'bg-danger-bg text-danger border-danger-border', label: 'Overdue' },
+  skipped: { cls: 'bg-surface-control text-text-secondary border-border-light', label: 'Skipped' },
+  branched: { cls: 'bg-warning-bg text-warning border-warning-border', label: 'Follow-up started' },
+  sent_back: { cls: 'bg-surface-control text-text-secondary border-border-light', label: 'Waiting for info' },
+  moved_on: { cls: 'bg-danger-bg text-danger border-danger-border', label: 'Overdue, continued' },
 }
 
 /** `waiting` = pending with a start time: the steps before it are done, its time has not come. */
 export function StepStatusBadge({ status, waiting = false }: { status: WorkflowStepStatus; waiting?: boolean }) {
-  if (waiting && status === 'pending') return <span className={`${BADGE} bg-[#EFF6FF] text-[#1E3A8A] border-[#BFDBFE]`}>Waiting to start</span>
+  if (waiting && status === 'pending') return <span className={`${BADGE} bg-primary-subtle text-primary-text border-primary-border`}>Waiting to start</span>
   const c = STEP_STATUS[status] ?? STEP_STATUS.pending
   return <span className={`${BADGE} ${c.cls}`}>{c.label}</span>
 }
@@ -249,14 +249,14 @@ export function useNarrowScreen(): boolean {
 // ─── Buttons ─────────────────────────────────────────────────────────────────
 
 const BTN_BASE =
-  'inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-semibold transition-colors duration-150 min-h-[44px] sm:min-h-[38px] px-4 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 disabled:cursor-not-allowed whitespace-nowrap'
+  'inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-semibold transition-colors duration-150 min-h-[44px] sm:min-h-[38px] px-4 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed whitespace-nowrap'
 
 export const BTN = {
-  primary: `${BTN_BASE} bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#64748B]`,
-  secondary: `${BTN_BASE} bg-white text-[#2563EB] border-2 border-[#2563EB] hover:bg-[#EFF6FF] disabled:bg-[#F1F5F9] disabled:text-[#64748B] disabled:border-[#E2E8F0]`,
-  danger: `${BTN_BASE} bg-[#DC2626] text-white hover:bg-[#B91C1C] disabled:bg-[#E2E8F0] disabled:text-[#64748B]`,
-  quiet: `${BTN_BASE} bg-white text-[#334155] border border-[#CBD5E1] hover:bg-[#F1F5F9] disabled:bg-[#F1F5F9] disabled:text-[#64748B]`,
-  icon: 'inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:text-[#94A3B8] disabled:hover:bg-transparent disabled:cursor-not-allowed shrink-0',
+  primary: `${BTN_BASE} bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted`,
+  secondary: `${BTN_BASE} bg-white text-primary-text border-2 border-primary hover:bg-primary-subtle disabled:bg-surface-control disabled:text-text-muted disabled:border-border-light`,
+  danger: `${BTN_BASE} bg-danger text-white hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted`,
+  quiet: `${BTN_BASE} bg-white text-text-secondary border border-border hover:bg-surface-control disabled:bg-surface-control disabled:text-text-muted`,
+  icon: 'inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:text-text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed shrink-0',
 } as const
 
 /**
@@ -323,7 +323,7 @@ export function InfoTip({ label, text, className = '' }: { label: string; text: 
             e.preventDefault()
             e.stopPropagation()
           }}
-          className={`relative inline-flex items-center justify-center w-6 h-6 -my-1 align-middle shrink-0 rounded-full text-[#475569] hover:text-[#1D4ED8] hover:bg-[#EFF6FF] transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] after:absolute after:-inset-2.5 after:content-[''] ${className}`}
+          className={`relative inline-flex items-center justify-center w-6 h-6 -my-1 align-middle shrink-0 rounded-full text-text-secondary hover:text-primary-text hover:bg-primary-subtle transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary after:absolute after:-inset-2.5 after:content-[''] ${className}`}
         >
           <Info size={14} aria-hidden />
           {/* Inside the (relative) button: an sr-only span is position:absolute, and one
@@ -359,7 +359,7 @@ export function AddStepBar({
         type="button"
         onClick={onClick}
         disabled={allowed !== true}
-        className="w-full inline-flex items-center justify-center gap-2 min-h-[48px] rounded-[12px] border-2 border-dashed border-[#93C5FD] bg-white text-sm font-semibold text-[#1D4ED8] hover:bg-[#EFF6FF] hover:border-[#2563EB] transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:border-[#E2E8F0] disabled:text-[#64748B]"
+        className="w-full inline-flex items-center justify-center gap-2 min-h-[48px] rounded-[12px] border-2 border-dashed border-primary-border bg-white text-sm font-semibold text-primary-text hover:bg-primary-subtle hover:border-primary transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:border-border-light disabled:text-text-muted"
       >
         <Plus size={16} /> {children}
       </button>
@@ -418,19 +418,19 @@ export function Reveal({
 
 export function WorkflowBreadcrumb({ trail }: { trail: { label: string; href?: string }[] }) {
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center flex-wrap gap-1.5 text-[13px] text-[#475569] mb-2 sm:mb-3 min-w-0">
+    <nav aria-label="Breadcrumb" className="flex items-center flex-wrap gap-1.5 text-[13px] text-text-secondary mb-2 sm:mb-3 min-w-0">
       {trail.map((c, i) => (
         <Fragment key={i}>
-          {i > 0 && <span className="text-[#64748B]" aria-hidden>›</span>}
+          {i > 0 && <span className="text-text-muted" aria-hidden>›</span>}
           {c.href ? (
             <Link
               href={c.href}
-              className="font-medium text-[#475569] hover:text-[#2563EB] hover:underline transition-colors rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] truncate max-w-[40vw]"
+              className="font-medium text-text-secondary hover:text-primary-text hover:underline transition-colors rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary truncate max-w-[40vw]"
             >
               {c.label}
             </Link>
           ) : (
-            <span className="font-semibold text-[#0F172A] truncate max-w-[60vw]" aria-current="page">
+            <span className="font-semibold text-text-primary truncate max-w-[60vw]" aria-current="page">
               {c.label}
             </span>
           )}
@@ -442,7 +442,7 @@ export function WorkflowBreadcrumb({ trail }: { trail: { label: string; href?: s
 
 // ─── People ──────────────────────────────────────────────────────────────────
 
-const AVATAR_COLORS = ['bg-[#2563EB]', 'bg-[#7C3AED]', 'bg-[#047857]', 'bg-[#B45309]', 'bg-[#B91C1C]', 'bg-[#0E7490]']
+const AVATAR_COLORS = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger-hover', 'bg-text-secondary']
 
 export function initials(name: string): string {
   return name.trim().split(/\s+/).map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
@@ -490,10 +490,10 @@ export function CompletionChip({ mode, count }: { mode: string | null | undefine
   const Icon = all ? Users : UserCheck
   return (
     <span
-      className={`${BADGE} bg-[#F8FAFC] text-[#334155] border-[#CBD5E1]`}
+      className={`${BADGE} bg-surface-sunken text-text-secondary border-border`}
       title={all ? 'Done when everyone completes their part.' : 'Done when one person completes it.'}
     >
-      <Icon size={12} aria-hidden className="shrink-0 text-[#475569]" />
+      <Icon size={12} aria-hidden className="shrink-0 text-text-secondary" />
       {all ? 'All must complete' : 'Anyone can complete'}
     </span>
   )
@@ -514,11 +514,11 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-14 px-4">
-      <div className="w-14 h-14 rounded-[14px] bg-[#EFF6FF] flex items-center justify-center mb-4">
-        <Icon size={22} className="text-[#2563EB]" />
+      <div className="w-14 h-14 rounded-[14px] bg-primary-subtle flex items-center justify-center mb-4">
+        <Icon size={22} className="text-primary-text" />
       </div>
-      <h3 className="text-[17px] font-semibold text-[#0F172A] mb-1">{title}</h3>
-      <p className="text-sm text-[#475569] max-w-md">{text}</p>
+      <h3 className="text-[17px] font-semibold text-text-primary mb-1">{title}</h3>
+      <p className="text-sm text-text-secondary max-w-md">{text}</p>
       {action && <div className="mt-5">{action}</div>}
     </div>
   )
@@ -527,11 +527,11 @@ export function EmptyState({
 export function ErrorState({ title, message, onRetry }: { title: string; message: string; onRetry?: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-14 px-4">
-      <div className="w-14 h-14 rounded-[14px] bg-[#FEE2E2] flex items-center justify-center mb-4">
-        <AlertTriangle size={22} className="text-[#B91C1C]" />
+      <div className="w-14 h-14 rounded-[14px] bg-danger-bg flex items-center justify-center mb-4">
+        <AlertTriangle size={22} className="text-danger" />
       </div>
-      <h3 className="text-[17px] font-semibold text-[#0F172A] mb-1">{title}</h3>
-      <p className="text-sm text-[#475569] max-w-md">{message}</p>
+      <h3 className="text-[17px] font-semibold text-text-primary mb-1">{title}</h3>
+      <p className="text-sm text-text-secondary max-w-md">{message}</p>
       {onRetry && (
         <button type="button" onClick={onRetry} className={`${BTN.secondary} mt-5`}>
           <RefreshCw size={15} /> Try again
@@ -544,11 +544,11 @@ export function ErrorState({ title, message, onRetry }: { title: string; message
 export function NotFoundState({ what, backHref, backLabel }: { what: string; backHref: string; backLabel: string }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-20 px-4">
-      <div className="w-14 h-14 rounded-[14px] bg-[#F1F5F9] flex items-center justify-center mb-4">
-        <SearchX size={22} className="text-[#475569]" />
+      <div className="w-14 h-14 rounded-[14px] bg-surface-control flex items-center justify-center mb-4">
+        <SearchX size={22} className="text-text-secondary" />
       </div>
-      <h2 className="text-[18px] font-semibold text-[#0F172A] mb-1">{what} not found</h2>
-      <p className="text-sm text-[#475569] max-w-md">It may have been removed, or you may not have access.</p>
+      <h2 className="text-[18px] font-semibold text-text-primary mb-1">{what} not found</h2>
+      <p className="text-sm text-text-secondary max-w-md">It may have been removed, or you may not have access.</p>
       <Link href={backHref} className={`${BTN.primary} mt-5`}>
         {backLabel}
       </Link>
@@ -560,11 +560,11 @@ export function NotFoundState({ what, backHref, backLabel }: { what: string; bac
 export function NoAccessState({ title, text, backHref, backLabel }: { title: string; text: string; backHref: string; backLabel: string }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-20 px-4">
-      <div className="w-14 h-14 rounded-[14px] bg-[#F1F5F9] flex items-center justify-center mb-4">
-        <Lock size={22} className="text-[#475569]" />
+      <div className="w-14 h-14 rounded-[14px] bg-surface-control flex items-center justify-center mb-4">
+        <Lock size={22} className="text-text-secondary" />
       </div>
-      <h2 className="text-[18px] font-semibold text-[#0F172A] mb-1">{title}</h2>
-      <p className="text-sm text-[#475569] max-w-md">{text}</p>
+      <h2 className="text-[18px] font-semibold text-text-primary mb-1">{title}</h2>
+      <p className="text-sm text-text-secondary max-w-md">{text}</p>
       <Link href={backHref} className={`${BTN.primary} mt-5`}>
         {backLabel}
       </Link>
@@ -573,17 +573,17 @@ export function NoAccessState({ title, text, backHref, backLabel }: { title: str
 }
 
 export function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`bg-[#E2E8F0]/70 rounded-[8px] animate-pulse motion-reduce:animate-none ${className}`} />
+  return <div className={`bg-surface-control-pressed/70 rounded-[8px] animate-pulse motion-reduce:animate-none ${className}`} />
 }
 
 /** One-line danger banner with the server's reason (kit §7.5). */
 export function ErrorBanner({ message, onClose }: { message: string; onClose?: () => void }) {
   return (
-    <div role="alert" className="flex items-start gap-2.5 rounded-[10px] border border-[#FECACA] bg-[#FEF2F2] px-3.5 py-2.5 text-sm text-[#991B1B]">
+    <div role="alert" className="flex items-start gap-2.5 rounded-[10px] border border-danger-border bg-danger-bg px-3.5 py-2.5 text-sm text-danger">
       <AlertTriangle size={16} className="shrink-0 mt-0.5" />
       <span className="flex-1 min-w-0 wrap-break-word">{message}</span>
       {onClose && (
-        <button type="button" onClick={onClose} className="text-[#991B1B] hover:underline text-[13px] font-medium shrink-0">
+        <button type="button" onClick={onClose} className="text-danger hover:underline text-[13px] font-medium shrink-0">
           Close
         </button>
       )}
@@ -599,18 +599,18 @@ export function SaveIndicator({ state, error, onRetry }: { state: SaveState; err
   if (state === 'idle') return null
   if (state === 'saving')
     return (
-      <span className="inline-flex items-center gap-1 text-[12px] text-[#475569]" aria-live="polite">
+      <span className="inline-flex items-center gap-1 text-[12px] text-text-secondary" aria-live="polite">
         <Loader2 size={12} className="animate-spin" /> Saving…
       </span>
     )
   if (state === 'saved')
     return (
-      <span className="inline-flex items-center gap-1 text-[12px] text-[#15803D]" aria-live="polite">
+      <span className="inline-flex items-center gap-1 text-[12px] text-success" aria-live="polite">
         <CheckCircle2 size={12} /> Saved
       </span>
     )
   return (
-    <span className="inline-flex items-center gap-1.5 text-[12px] text-[#B91C1C] min-w-0" role="alert">
+    <span className="inline-flex items-center gap-1.5 text-[12px] text-danger min-w-0" role="alert">
       <AlertTriangle size={12} className="shrink-0" />
       <span className="truncate max-w-[260px]">{error || 'Not saved'}</span>
       {onRetry && (

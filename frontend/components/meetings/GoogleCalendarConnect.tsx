@@ -99,7 +99,7 @@ export default function GoogleCalendarConnect({
         <Tooltip label={connected ? 'Google Calendar — connected' : 'Connect Google Calendar'}>
         <button
           onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-[#475569] border border-[#E2E8F0] rounded-[8px] hover:bg-[#F8FAFC]"
+          className="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken"
         >
           <span
             className="w-2 h-2 rounded-full shrink-0"
@@ -124,22 +124,22 @@ export default function GoogleCalendarConnect({
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-[10px] bg-[#EFF6FF] flex items-center justify-center text-[#2563EB]">
+                  <div className="w-9 h-9 rounded-[10px] bg-primary-subtle flex items-center justify-center text-primary-text">
                     <Calendar size={18} />
                   </div>
                   <div>
-                    <h3 className="text-[16px] font-semibold text-[#0F172A] leading-tight">Google Calendar</h3>
-                    <p className="text-xs text-[#64748B] mt-0.5">
+                    <h3 className="text-[16px] font-semibold text-text-primary leading-tight">Google Calendar</h3>
+                    <p className="text-xs text-text-muted mt-0.5">
                       {connected ? 'Connected — syncing both ways' : 'Not connected'}
                     </p>
                   </div>
                 </div>
-                <button onClick={() => !busy && setOpen(false)} className="text-[#94A3B8] hover:text-[#475569]">
+                <button onClick={() => !busy && setOpen(false)} className="text-text-muted hover:text-text-secondary">
                   <X size={18} />
                 </button>
               </div>
 
-              <p className="text-sm text-[#475569] leading-relaxed mb-4">
+              <p className="text-sm text-text-secondary leading-relaxed mb-4">
                 {connected ? (
                   <>
                     Your meetings are mirrored to your Google Calendar, and attendees receive Google invites.
@@ -155,14 +155,14 @@ export default function GoogleCalendarConnect({
 
               {connected ? (
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[#16A34A]">
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
                     <Check size={16} /> Connected
                   </span>
                   <div className="flex-1" />
                   <button
                     onClick={disconnect}
                     disabled={busy}
-                    className="px-3 py-2 text-sm font-medium text-[#B91C1C] border border-[#FECACA] rounded-[8px] hover:bg-[#FEF2F2] disabled:opacity-50"
+                    className="px-3 py-2 text-sm font-medium text-danger border border-danger-border rounded-[8px] hover:bg-danger-bg disabled:opacity-50"
                   >
                     {busy ? <Loader2 size={15} className="animate-spin" /> : 'Disconnect'}
                   </button>
@@ -171,7 +171,7 @@ export default function GoogleCalendarConnect({
                 <button
                   onClick={connect}
                   disabled={busy}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] disabled:opacity-50"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50"
                 >
                   {busy ? (
                     <>

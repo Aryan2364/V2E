@@ -92,7 +92,7 @@ export default function RolesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -104,8 +104,8 @@ export default function RolesPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">Job Roles</h1>
-          <p className="mt-1 text-[15px] text-[#475569]">
+          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Job Roles</h1>
+          <p className="mt-1 text-[15px] text-text-secondary">
             Every job role across the organisation, with its KRAs and KPIs.
           </p>
         </div>
@@ -113,14 +113,14 @@ export default function RolesPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowImport(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-[#2563EB] bg-white border-2 border-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               <Upload size={16} />
               Import
             </button>
             <button
               onClick={() => setFormTarget({ mode: 'create' })}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
             >
               <Plus size={16} />
               Add Job Role
@@ -130,12 +130,12 @@ export default function RolesPage() {
       </div>
 
       {noDepartments ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-14 h-14 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-            <Building2 size={24} className="text-[#94A3B8]" />
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
+            <Building2 size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-[#0F172A]">No departments yet</p>
-          <p className="text-[#475569] text-sm mt-1">
+          <p className="font-semibold text-text-primary">No departments yet</p>
+          <p className="text-text-secondary text-sm mt-1">
             Create departments in the org chart first — job roles live inside them.
           </p>
         </div>
@@ -144,20 +144,20 @@ export default function RolesPage() {
           {/* Search */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 max-w-xs">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
               <input
                 type="text"
                 placeholder="Search job roles, levels, departments…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-[10px] text-sm rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A] placeholder:text-[#94A3B8]"
+                className="w-full pl-9 pr-3 py-[10px] text-sm rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted"
               />
             </div>
           </div>
 
           {/* Count + view toggle */}
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-[#475569]">
+            <p className="text-sm text-text-secondary">
               {query.trim()
                 ? `${matchCount} of ${roles.length} job roles`
                 : `${roles.length} job role${roles.length !== 1 ? 's' : ''}`}

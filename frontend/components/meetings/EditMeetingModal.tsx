@@ -12,9 +12,9 @@ import type { Meeting, MeetingType } from '@/lib/types/meetings'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
 import { DurationField } from './shared'
 
-const labelClass = 'block text-sm font-medium text-[#334155] mb-1.5'
+const labelClass = 'block text-sm font-medium text-text-secondary mb-1.5'
 const inputClass =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2.5 text-[15px] text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+  'w-full border border-border rounded-[8px] px-3 py-2.5 text-[15px] text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 function timeToMin(hhmm: string): number {
@@ -132,14 +132,14 @@ export default function EditMeetingModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Edit meeting" size="lg" closeOnEscape={false}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
         {isOccurrence && (
-          <div className="flex items-start gap-2 text-xs text-[#1D4ED8] bg-[#EFF6FF] border border-[#BFDBFE] rounded-[8px] px-3 py-2">
+          <div className="flex items-start gap-2 text-xs text-primary-text bg-primary-subtle border border-primary-border rounded-[8px] px-3 py-2">
             <CalendarClock size={15} className="mt-0.5 shrink-0" />
             <span>You’re editing <b>this occurrence only</b>. The rest of the series is unchanged. It updates just this event on Google Calendar too.</span>
           </div>
         )}
 
         <div>
-          <label className={labelClass}>Title <span className="text-[#DC2626]">*</span></label>
+          <label className={labelClass}>Title <span className="text-danger">*</span></label>
           <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
         </div>
 
@@ -160,7 +160,7 @@ export default function EditMeetingModal({
           )}
           {type !== 'offline' && (
             <div>
-              <label className={labelClass}>Password <span className="text-[#94A3B8] font-normal">(optional)</span></label>
+              <label className={labelClass}>Password <span className="text-text-muted font-normal">(optional)</span></label>
               <input className={inputClass} value={onlinePassword} onChange={(e) => setOnlinePassword(e.target.value)} />
             </div>
           )}
@@ -174,7 +174,7 @@ export default function EditMeetingModal({
 
         <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-3">
           <div>
-            <label className={labelClass}>Date <span className="text-[#DC2626]">*</span></label>
+            <label className={labelClass}>Date <span className="text-danger">*</span></label>
             <DatePicker value={date} onChange={setDate} placeholder="Select date" />
           </div>
           <div>
@@ -195,14 +195,14 @@ export default function EditMeetingModal({
         <div>
           <label className={labelClass}>Attendees</label>
           <MeetingAttendeeSelector options={people} value={attendees} onChange={setAttendees} optional={optional} onToggleOptional={toggleOptional} />
-          <p className="text-xs text-[#64748B] mt-1">Everyone is on it by default. Toggle who’s optional.</p>
+          <p className="text-xs text-text-muted mt-1">Everyone is on it by default. Toggle who’s optional.</p>
         </div>
 
-        {error && <p className="text-sm text-[#DC2626]">{error}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
 
-        <div className="flex items-center justify-end gap-2 pt-1 border-t border-[#E2E8F0] mt-1">
-          <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-[#475569] border border-[#E2E8F0] rounded-[8px] hover:bg-[#F8FAFC]">Cancel</button>
-          <button type="submit" disabled={saving} className="px-4 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] disabled:opacity-50">
+        <div className="flex items-center justify-end gap-2 pt-1 border-t border-border-light mt-1">
+          <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken">Cancel</button>
+          <button type="submit" disabled={saving} className="px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50">
             {saving ? 'Saving…' : 'Save changes'}
           </button>
         </div>

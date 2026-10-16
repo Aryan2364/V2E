@@ -116,20 +116,20 @@ export default function EditGoalModal({
         />
 
         {clearingTarget && (
-          <p className="mt-4 rounded-[8px] border border-[#FDE68A] bg-[#FFFBEB] px-3 py-2 text-[13px] text-[#92400E]">
+          <p className="mt-4 rounded-[8px] border border-warning-border bg-warning-bg px-3 py-2 text-[13px] text-warning">
             Removing the target also clears this goal’s recorded number. The check-in history stays
             exactly as it is.
           </p>
         )}
 
-        <div className="flex items-center justify-between pt-5 mt-5 border-t border-[#E2E8F0]">
+        <div className="flex items-center justify-between pt-5 mt-5 border-t border-border-light">
           {/* Destructive action on the left, opposite the primary — DESIGN_RULES Part 4. */}
           {canDelete && onRequestDelete ? (
             <button
               type="button"
               onClick={onRequestDelete}
               disabled={saving}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-[#DC2626] hover:text-[#B91C1C] disabled:text-[#94A3B8] transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-danger hover:text-danger disabled:text-text-muted transition-colors"
             >
               <Trash2 size={15} /> Delete goal
             </button>

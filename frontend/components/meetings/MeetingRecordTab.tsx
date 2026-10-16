@@ -34,12 +34,12 @@ export default function MeetingRecordTab({ orgId, meeting, canEdit, onSaved }: {
     }
   }
 
-  const labelCls = 'block text-sm font-medium text-[#374151] mb-1.5'
+  const labelCls = 'block text-sm font-medium text-text-secondary mb-1.5'
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-6 flex flex-col gap-4">
+    <div className="bg-white border border-border-light rounded-[12px] p-6 flex flex-col gap-4">
       {meeting.status === 'closed' && (
-        <div className="flex items-center gap-2 text-sm text-[#475569] bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] px-3 py-2">
+        <div className="flex items-center gap-2 text-sm text-text-secondary bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2">
           <Lock size={14} /> This meeting is closed — the record is the official, locked version.
         </div>
       )}
@@ -56,7 +56,7 @@ export default function MeetingRecordTab({ orgId, meeting, canEdit, onSaved }: {
 
       {!locked && (
         <div className="flex justify-end items-center gap-3">
-          {saved && <span className="inline-flex items-center gap-1 text-sm font-medium text-[#16A34A]"><Check size={15} /> Saved</span>}
+          {saved && <span className="inline-flex items-center gap-1 text-sm font-medium text-success"><Check size={15} /> Saved</span>}
           <Button variant="primary" onClick={save} isLoading={saving} disabled={saving}>Save record</Button>
         </div>
       )}

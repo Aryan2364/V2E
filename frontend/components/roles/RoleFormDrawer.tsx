@@ -49,13 +49,13 @@ type RoleFormValues = z.infer<typeof roleSchema>
 // ─── Shared styles ──────────────────────────────────────────────────────────────
 
 const inputCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors'
+  'w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
 const smInputCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-2.5 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors'
+  'w-full rounded-[8px] border border-border bg-white px-2.5 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
 const textareaCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors resize-none'
-const labelCls = 'text-sm font-medium text-[#374151] mb-1.5 block'
-const fieldLabelCls = 'text-[11px] font-semibold text-[#64748B] uppercase tracking-wide mb-1 block'
+  'w-full rounded-[8px] border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors resize-none'
+const labelCls = 'text-sm font-medium text-text-secondary mb-1.5 block'
+const fieldLabelCls = 'text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-1 block'
 
 const EMPTY: RoleFormValues = {
   department_id: '',
@@ -207,15 +207,15 @@ export default function RoleFormDrawer({
       {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
 
       <div
-        className={`fixed inset-y-0 right-0 z-70 w-full max-w-lg bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-70 w-full max-w-lg bg-white border-l border-border-light shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2E8F0]">
-          <h3 className="font-semibold text-[#0F172A]">{isEdit ? 'Edit Job Role' : 'Add Job Role'}</h3>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light">
+          <h3 className="font-semibold text-text-primary">{isEdit ? 'Edit Job Role' : 'Add Job Role'}</h3>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
             aria-label="Close"
           >
             <X size={16} />
@@ -243,7 +243,7 @@ export default function RoleFormDrawer({
                   )}
                 />
                 {errors.department_id && (
-                  <p className="text-xs text-[#DC2626] mt-1">{errors.department_id.message}</p>
+                  <p className="text-xs text-danger mt-1">{errors.department_id.message}</p>
                 )}
               </div>
             )}
@@ -259,7 +259,7 @@ export default function RoleFormDrawer({
                   autoFocus
                 />
                 {errors.title && (
-                  <p className="text-xs text-[#DC2626] mt-1">{errors.title.message}</p>
+                  <p className="text-xs text-danger mt-1">{errors.title.message}</p>
                 )}
               </div>
               <div>
@@ -289,27 +289,27 @@ export default function RoleFormDrawer({
             </div>
 
             {/* KRA builder */}
-            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[10px] p-4">
+            <div className="bg-surface-sunken border border-border-light rounded-[10px] p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-bold text-[#0F172A]">Key Result Areas (KRA)</h4>
+                <h4 className="text-sm font-bold text-text-primary">Key Result Areas (KRA)</h4>
                 <button
                   type="button"
                   onClick={() => kraArray.append({ title: '', description: '' })}
-                  className="inline-flex items-center gap-1 text-xs text-[#2563EB] font-medium hover:text-[#1D4ED8]"
+                  className="inline-flex items-center gap-1 text-xs text-primary-text font-medium hover:text-primary-text"
                 >
                   <Plus size={13} /> Add KRA
                 </button>
               </div>
               <div className="flex flex-col gap-3">
                 {kraArray.fields.length === 0 && (
-                  <p className="text-xs text-[#94A3B8] text-center py-3">No KRAs added yet.</p>
+                  <p className="text-xs text-text-muted text-center py-3">No KRAs added yet.</p>
                 )}
                 {kraArray.fields.map((field, i) => (
                   <div
                     key={field.id}
-                    className="bg-white border border-[#E2E8F0] rounded-[8px] p-3 flex gap-3"
+                    className="bg-white border border-border-light rounded-[8px] p-3 flex gap-3"
                   >
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-xs font-bold text-[#2563EB]">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-xs font-bold text-primary-text">
                       {i + 1}
                     </span>
                     <div className="flex-1 flex flex-col gap-2">
@@ -328,7 +328,7 @@ export default function RoleFormDrawer({
                     <button
                       type="button"
                       onClick={() => kraArray.remove(i)}
-                      className="text-[#94A3B8] hover:text-[#DC2626] self-start p-1 rounded-xs transition-colors"
+                      className="text-text-muted hover:text-danger self-start p-1 rounded-xs transition-colors"
                       aria-label="Remove KRA"
                     >
                       <Trash2 size={14} />
@@ -339,27 +339,27 @@ export default function RoleFormDrawer({
             </div>
 
             {/* KPI builder */}
-            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[10px] p-4">
+            <div className="bg-surface-sunken border border-border-light rounded-[10px] p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-bold text-[#0F172A]">Key Performance Indicators (KPI)</h4>
+                <h4 className="text-sm font-bold text-text-primary">Key Performance Indicators (KPI)</h4>
                 <button
                   type="button"
                   onClick={() => kpiArray.append({ title: '', metric: '', target: '', unit: '' })}
-                  className="inline-flex items-center gap-1 text-xs text-[#2563EB] font-medium hover:text-[#1D4ED8]"
+                  className="inline-flex items-center gap-1 text-xs text-primary-text font-medium hover:text-primary-text"
                 >
                   <Plus size={13} /> Add KPI
                 </button>
               </div>
               <div className="flex flex-col gap-3">
                 {kpiArray.fields.length === 0 && (
-                  <p className="text-xs text-[#94A3B8] text-center py-3">No KPIs added yet.</p>
+                  <p className="text-xs text-text-muted text-center py-3">No KPIs added yet.</p>
                 )}
                 {kpiArray.fields.map((field, i) => (
                   <div
                     key={field.id}
-                    className="bg-white border border-[#E2E8F0] rounded-[8px] p-3 flex gap-3"
+                    className="bg-white border border-border-light rounded-[8px] p-3 flex gap-3"
                   >
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-xs font-bold text-[#2563EB]">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-xs font-bold text-primary-text">
                       {i + 1}
                     </span>
                     <div className="flex-1 flex flex-col gap-2.5">
@@ -401,7 +401,7 @@ export default function RoleFormDrawer({
                     <button
                       type="button"
                       onClick={() => kpiArray.remove(i)}
-                      className="text-[#94A3B8] hover:text-[#DC2626] self-start p-1 rounded-xs transition-colors"
+                      className="text-text-muted hover:text-danger self-start p-1 rounded-xs transition-colors"
                       aria-label="Remove KPI"
                     >
                       <Trash2 size={14} />
@@ -412,17 +412,17 @@ export default function RoleFormDrawer({
             </div>
 
             {formError && (
-              <p className="text-sm text-[#DC2626] rounded-[8px] bg-[#FEF2F2] border border-[#FECACA] px-4 py-3">
+              <p className="text-sm text-danger rounded-[8px] bg-danger-bg border border-danger-border px-4 py-3">
                 {formError}
               </p>
             )}
 
             {/* Delete (edit mode) */}
             {isEdit && (
-              <div className="border-t border-[#F1F5F9] pt-4">
+              <div className="border-t border-border-light pt-4">
                 {confirmDelete ? (
                   <div className="flex items-center gap-3">
-                    <p className="text-sm text-[#475569] flex-1">Delete this job role permanently?</p>
+                    <p className="text-sm text-text-secondary flex-1">Delete this job role permanently?</p>
                     <Button variant="danger" size="sm" isLoading={deleting} onClick={handleDelete}>
                       Confirm delete
                     </Button>
@@ -439,7 +439,7 @@ export default function RoleFormDrawer({
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(true)}
-                    className="inline-flex items-center gap-1.5 text-sm text-[#DC2626] font-medium hover:text-[#B91C1C] transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm text-danger font-medium hover:text-danger transition-colors"
                   >
                     <Trash2 size={14} /> Delete job role
                   </button>
@@ -448,7 +448,7 @@ export default function RoleFormDrawer({
             )}
           </div>
 
-          <div className="px-5 pt-4 pb-12 border-t border-[#E2E8F0] flex gap-3">
+          <div className="px-5 pt-4 pb-12 border-t border-border-light flex gap-3">
             <Button type="submit" variant="primary" isLoading={isSubmitting}>
               {isEdit ? 'Save' : 'Add Job Role'}
             </Button>

@@ -28,28 +28,28 @@ const kpiColumns: ResponsiveColumn<Kpi>[] = [
     key: 'title',
     header: 'Title',
     primary: true,
-    cellClassName: 'px-0! py-3! pr-4! font-medium text-[#0F172A]',
+    cellClassName: 'px-0! py-3! pr-4! font-medium text-text-primary',
     headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.title,
   },
   {
     key: 'metric',
     header: 'Metric',
-    cellClassName: 'px-0! py-3! pr-4! text-[#475569]',
+    cellClassName: 'px-0! py-3! pr-4! text-text-secondary',
     headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.metric,
   },
   {
     key: 'target',
     header: 'Target',
-    cellClassName: 'px-0! py-3! pr-4! text-[#475569]',
+    cellClassName: 'px-0! py-3! pr-4! text-text-secondary',
     headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.target,
   },
   {
     key: 'unit',
     header: 'Unit',
-    cellClassName: 'px-0! py-3! text-[#475569]',
+    cellClassName: 'px-0! py-3! text-text-secondary',
     headerClassName: 'px-0! py-2.5!',
     render: (kpi) => kpi.unit,
   },
@@ -62,8 +62,8 @@ function getInitials(name: string): string {
 }
 
 const avatarColors = [
-  'bg-[#2563EB]', 'bg-[#7C3AED]', 'bg-[#059669]',
-  'bg-[#D97706]', 'bg-[#DC2626]', 'bg-[#0891B2]', 'bg-[#BE185D]',
+  'bg-primary', 'bg-text-secondary', 'bg-success',
+  'bg-warning', 'bg-danger', 'bg-text-secondary', 'bg-text-secondary',
 ]
 
 function avatarColor(name: string): string {
@@ -82,8 +82,8 @@ function formatDate(dateStr?: string): string {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 const statusConfig: Record<EmployeeStatus, { bg: string; text: string; label: string }> = {
-  active: { bg: 'bg-[#DCFCE7]', text: 'text-[#16A34A]', label: 'Active' },
-  inactive: { bg: 'bg-[#FEE2E2]', text: 'text-[#DC2626]', label: 'Inactive' },
+  active: { bg: 'bg-success-bg', text: 'text-success', label: 'Active' },
+  inactive: { bg: 'bg-danger-bg', text: 'text-danger', label: 'Inactive' },
 }
 
 function StatusBadge({ status }: { status: EmployeeStatus }) {
@@ -98,16 +98,16 @@ function StatusBadge({ status }: { status: EmployeeStatus }) {
 function InfoCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-sm text-[#1E293B] font-medium">{value ?? '—'}</p>
+      <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-sm text-text-primary font-medium">{value ?? '—'}</p>
     </div>
   )
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
-      <h2 className="text-base font-semibold text-[#0F172A] mb-4 pb-3 border-b border-[#F1F5F9]">{title}</h2>
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+      <h2 className="text-base font-semibold text-text-primary mb-4 pb-3 border-b border-border-light">{title}</h2>
       {children}
     </div>
   )
@@ -124,7 +124,7 @@ function ReportingChain({ emp, allEmployees }: { emp: EmployeeProfile; allEmploy
     current = manager
     depth++
   }
-  if (chain.length === 0) return <p className="text-sm text-[#94A3B8] italic">No reporting chain found.</p>
+  if (chain.length === 0) return <p className="text-sm text-text-muted italic">No reporting chain found.</p>
   return (
     <div className="space-y-2">
       {chain.map((mgr, i) => {
@@ -135,13 +135,13 @@ function ReportingChain({ emp, allEmployees }: { emp: EmployeeProfile; allEmploy
               <div className={`w-8 h-8 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
                 {getInitials(name)}
               </div>
-              {i < chain.length - 1 && <div className="w-px h-4 bg-[#E2E8F0] mt-1" />}
+              {i < chain.length - 1 && <div className="w-px h-4 bg-surface-control-pressed mt-1" />}
             </div>
             <div className="pt-1">
-              <Link href={`/settings/organization/employees/${mgr.id}`} className="text-sm font-semibold text-[#0F172A] hover:text-[#2563EB] transition-colors">
+              <Link href={`/settings/organization/employees/${mgr.id}`} className="text-sm font-semibold text-text-primary hover:text-primary-text transition-colors">
                 {name}
               </Link>
-              <p className="text-xs text-[#475569]">{mgr.role?.title ?? 'N/A'}</p>
+              <p className="text-xs text-text-secondary">{mgr.role?.title ?? 'N/A'}</p>
             </div>
           </div>
         )
@@ -348,9 +348,9 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
     }
   }
 
-  const inputClass = 'w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+  const inputClass = 'w-full px-3 py-2.5 border border-border rounded-[8px] text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
   const selectClass = inputClass
-  const labelClass = 'block text-sm font-medium text-[#374151] mb-1.5'
+  const labelClass = 'block text-sm font-medium text-text-secondary mb-1.5'
 
   const otherEmployees = allEmployees.filter((e) => e.id !== employee.id)
 
@@ -360,9 +360,9 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
     <div className="fixed inset-0 z-60 flex items-center justify-center px-4 py-4 bg-black/40">
       <div className="bg-white rounded-[16px] w-full max-w-lg shadow-xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] shrink-0">
-          <h2 className="text-lg font-bold text-[#0F172A]">Edit Employee</h2>
-          <button onClick={onClose} className="p-1.5 text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-[6px] transition-colors">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light shrink-0">
+          <h2 className="text-lg font-bold text-text-primary">Edit Employee</h2>
+          <button onClick={onClose} className="p-1.5 text-text-muted hover:text-text-primary hover:bg-surface-control rounded-[6px] transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -370,14 +370,14 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
         {/* Body */}
         <div className="overflow-y-auto px-6 py-5 flex flex-col gap-4 flex-1 min-h-0">
           {error && (
-            <div className="text-sm text-[#DC2626] bg-[#FEE2E2] border border-[#FECACA] rounded-[8px] px-4 py-3">
+            <div className="text-sm text-danger bg-danger-bg border border-danger-border rounded-[8px] px-4 py-3">
               {error}
             </div>
           )}
 
           {/* Cross-firm notice — this person's login is shared across firms. */}
           {orgCount !== null && orgCount > 1 && (
-            <div className="flex items-start gap-2 rounded-[8px] bg-[#FFFBEB] border border-[#FDE68A] px-4 py-3 text-sm text-[#92400E]">
+            <div className="flex items-start gap-2 rounded-[8px] bg-warning-bg border border-warning-border px-4 py-3 text-sm text-warning">
               <Users size={16} className="shrink-0 mt-0.5" />
               <p>
                 This person also works in {orgCount - 1} other {orgCount - 1 === 1 ? 'firm' : 'firms'}.
@@ -413,7 +413,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
           {/* Phone — a login identity. Editable here so a wrong number can be fixed
               or removed; clearing it removes phone sign-in (email still works). */}
           <div>
-            <label className={labelClass}>Phone number <span className="font-normal text-[#64748B]">— used to sign in</span></label>
+            <label className={labelClass}>Phone number <span className="font-normal text-text-muted">— used to sign in</span></label>
             <div className="flex gap-2">
               <CountryCodeSelect
                 value={form.country_code}
@@ -433,7 +433,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                 className={`${inputClass} flex-1`}
               />
             </div>
-            <p className="mt-1 text-xs text-[#94A3B8]">
+            <p className="mt-1 text-xs text-text-muted">
               They can sign in with this number. Leave it empty to remove phone sign-in. Changing it updates their login everywhere they work.
             </p>
           </div>
@@ -451,7 +451,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -523,7 +523,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                 <option value="inactive">Inactive</option>
               </select>
               {(isPrimaryAdmin || isSelf) && (
-                <p className="text-[11px] text-[#94A3B8] mt-1">
+                <p className="text-[11px] text-text-muted mt-1">
                   {isPrimaryAdmin ? 'Primary administrator cannot be deactivated.' : 'You cannot deactivate your own account.'}
                 </p>
               )}
@@ -587,33 +587,33 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col gap-3 px-6 py-4 border-t border-[#E2E8F0] shrink-0">
+        <div className="flex flex-col gap-3 px-6 py-4 border-t border-border-light shrink-0">
           {confirmDelete ? (
-            <div className="rounded-[8px] border border-[#FECACA] bg-[#FEF2F2] p-3">
+            <div className="rounded-[8px] border border-danger-border bg-danger-bg p-3">
               {deleteBlocked ? (
                 <>
-                  <p className="text-sm text-[#991B1B] mb-2.5">
+                  <p className="text-sm text-danger mb-2.5">
                     Deleting <span className="font-semibold">{employee.user?.name}</span> would
                     leave these behind. You can clear them and delete anyway — both are allowed
                     states, and you can set them again later.
                   </p>
                   <div className="flex flex-col gap-2 mb-3">
                     {deleteBlocked.blockers.reports.length > 0 && (
-                      <div className="rounded-[6px] bg-white border border-[#FECACA] px-3 py-2">
-                        <p className="text-xs font-semibold text-[#991B1B] uppercase tracking-wide mb-1">
+                      <div className="rounded-[6px] bg-white border border-danger-border px-3 py-2">
+                        <p className="text-xs font-semibold text-danger uppercase tracking-wide mb-1">
                           Left without a manager
                         </p>
-                        <p className="text-sm text-[#7F1D1D]">
+                        <p className="text-sm text-danger">
                           {deleteBlocked.blockers.reports.map((r) => r.name).join(', ')}
                         </p>
                       </div>
                     )}
                     {deleteBlocked.blockers.departments.length > 0 && (
-                      <div className="rounded-[6px] bg-white border border-[#FECACA] px-3 py-2">
-                        <p className="text-xs font-semibold text-[#991B1B] uppercase tracking-wide mb-1">
+                      <div className="rounded-[6px] bg-white border border-danger-border px-3 py-2">
+                        <p className="text-xs font-semibold text-danger uppercase tracking-wide mb-1">
                           Left without a head
                         </p>
-                        <p className="text-sm text-[#7F1D1D]">
+                        <p className="text-sm text-danger">
                           {deleteBlocked.blockers.departments.map((d) => d.name).join(', ')}
                         </p>
                       </div>
@@ -623,7 +623,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     <button
                       onClick={() => handleDelete(true)}
                       disabled={deleting}
-                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] rounded-[8px] transition-colors disabled:opacity-60"
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-danger hover:bg-danger-hover rounded-[8px] transition-colors disabled:opacity-60"
                     >
                       {deleting && <Loader2 size={14} className="animate-spin" />}
                       Clear links and delete
@@ -631,7 +631,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     <button
                       onClick={() => { setConfirmDelete(false); setDeleteBlocked(null) }}
                       disabled={deleting}
-                      className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F8FAFC] transition-colors"
+                      className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-sunken transition-colors"
                     >
                       Cancel
                     </button>
@@ -639,7 +639,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-[#991B1B] mb-2.5">
+                  <p className="text-sm text-danger mb-2.5">
                     Delete <span className="font-semibold">{employee.user?.name}</span> permanently?
                     This removes them from the organization and can’t be undone. If they have any
                     history, use <span className="font-semibold">Inactive</span> instead.
@@ -648,7 +648,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     <button
                       onClick={() => handleDelete()}
                       disabled={deleting}
-                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] rounded-[8px] transition-colors disabled:opacity-60"
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-danger hover:bg-danger-hover rounded-[8px] transition-colors disabled:opacity-60"
                     >
                       {deleting && <Loader2 size={14} className="animate-spin" />}
                       Delete employee
@@ -656,7 +656,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     <button
                       onClick={() => setConfirmDelete(false)}
                       disabled={deleting}
-                      className="px-4 py-2 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#F8FAFC] transition-colors"
+                      className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-sunken transition-colors"
                     >
                       Cancel
                     </button>
@@ -671,7 +671,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
               {!isSelf && !isPrimaryAdmin ? (
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="flex items-center gap-1.5 text-sm font-semibold text-[#DC2626] hover:text-[#B91C1C] transition-colors"
+                  className="flex items-center gap-1.5 text-sm font-semibold text-danger hover:text-danger transition-colors"
                 >
                   <Trash2 size={15} /> Delete
                 </button>
@@ -681,7 +681,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 {saving && <Loader2 size={15} className="animate-spin" />}
                 Save Changes
@@ -695,10 +695,10 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
       {showPwWarning && (
         <div className="fixed inset-0 z-70 flex items-center justify-center px-4 bg-black/50">
           <div className="bg-white w-full max-w-md rounded-[12px] shadow-xl p-6">
-            <h3 className="text-[17px] font-semibold text-[#0F172A]">
+            <h3 className="text-[17px] font-semibold text-text-primary">
               Change {employee.user?.name ?? 'this person'}’s password?
             </h3>
-            <p className="mt-2 text-sm text-[#475569] leading-relaxed">
+            <p className="mt-2 text-sm text-text-secondary leading-relaxed">
               {orgCount && orgCount > 1 ? (
                 <>
                   This is their <strong>one login password</strong> for{' '}
@@ -716,14 +716,14 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
             <div className="mt-5 flex items-center justify-end gap-3">
               <button
                 onClick={() => setShowPwWarning(false)}
-                className="px-4 py-2 text-sm font-semibold text-[#475569] hover:text-[#0F172A] transition-colors"
+                className="px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={doSave}
                 disabled={saving}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted"
               >
                 {saving && <Loader2 size={15} className="animate-spin" />}
                 {orgCount && orgCount > 1 ? 'Change password everywhere' : 'Change password'}
@@ -793,7 +793,7 @@ export default function EmployeeDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -801,8 +801,8 @@ export default function EmployeeDetailPage() {
   if (error || !employee) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <Users size={36} className="text-[#94A3B8] mb-3" />
-        <p className="text-lg font-semibold text-[#0F172A]">Employee not found</p>
+        <Users size={36} className="text-text-muted mb-3" />
+        <p className="text-lg font-semibold text-text-primary">Employee not found</p>
         <Link href="/settings/organization/employees" className="mt-4">
           <Button variant="secondary" size="sm"><ArrowLeft size={14} /> Back to employees</Button>
         </Link>
@@ -821,37 +821,37 @@ export default function EmployeeDetailPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <button onClick={handleBack} className="inline-flex items-center gap-1.5 text-sm text-[#475569] hover:text-[#0F172A] transition-colors">
+      <button onClick={handleBack} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
         <ArrowLeft size={15} />
         Back
       </button>
 
       {/* Profile header */}
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
           <div className={`w-20 h-20 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-2xl font-bold shrink-0`}>
             {getInitials(name)}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">{name}</h1>
+            <h1 className="text-[28px] font-bold text-text-primary leading-tight">{name}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-1.5">
-              {employee.role?.title && <span className="text-sm text-[#475569] font-medium">{employee.role.title}</span>}
+              {employee.role?.title && <span className="text-sm text-text-secondary font-medium">{employee.role.title}</span>}
               {employee.department?.name && (
                 <>
                   <span className="text-[#CBD5E1]">·</span>
-                  <span className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-xs font-medium bg-[#EFF6FF] text-[#1D4ED8]">
+                  <span className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-xs font-medium bg-primary-subtle text-primary-text">
                     {employee.department.name}
                   </span>
                 </>
               )}
               <StatusBadge status={employee.status} />
             </div>
-            {email && <p className="text-sm text-[#475569] mt-1">{email}</p>}
+            {email && <p className="text-sm text-text-secondary mt-1">{email}</p>}
           </div>
           {isHR && (
             <button
               onClick={() => setShowEdit(true)}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] hover:border-[#2563EB] hover:text-[#2563EB] transition-colors shrink-0"
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:border-primary hover:text-primary-text transition-colors shrink-0"
             >
               <Pencil size={15} />
               Edit
@@ -879,8 +879,8 @@ export default function EmployeeDetailPage() {
               {getInitials(employee.reporting_to.name)}
             </div>
             <div>
-              <p className="font-semibold text-[#0F172A] text-sm">{employee.reporting_to.name}</p>
-              <p className="text-xs text-[#475569]">{employee.reporting_to.email}</p>
+              <p className="font-semibold text-text-primary text-sm">{employee.reporting_to.name}</p>
+              <p className="text-xs text-text-secondary">{employee.reporting_to.email}</p>
             </div>
           </div>
         </Section>
@@ -894,15 +894,15 @@ export default function EmployeeDetailPage() {
         <Section title="Role">
           <div className="space-y-3">
             <div className="flex items-center gap-3 flex-wrap">
-              <h3 className="font-semibold text-[#0F172A]">{employee.role.title}</h3>
+              <h3 className="font-semibold text-text-primary">{employee.role.title}</h3>
               {employee.role.level && (
-                <span className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-xs font-medium bg-[#DBEAFE] text-[#1D4ED8]">
+                <span className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-xs font-medium bg-primary-subtle text-primary-text">
                   {employee.role.level.charAt(0).toUpperCase() + employee.role.level.slice(1)}
                 </span>
               )}
             </div>
-            {jdPreview && <p className="text-sm text-[#475569] leading-relaxed">{jdPreview}</p>}
-            <Link href={`/settings/organization/roles/${employee.role_id}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors">
+            {jdPreview && <p className="text-sm text-text-secondary leading-relaxed">{jdPreview}</p>}
+            <Link href={`/settings/organization/roles/${employee.role_id}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-text hover:text-primary-text transition-colors">
               View full role
               <ChevronDown size={12} className="-rotate-90" />
             </Link>
@@ -915,10 +915,10 @@ export default function EmployeeDetailPage() {
           <ol className="space-y-3">
             {employee.role.kra.map((kra, i) => (
               <li key={i} className="flex gap-3">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-[#EFF6FF] flex items-center justify-center text-xs font-bold text-[#2563EB]">{i + 1}</span>
+                <span className="shrink-0 w-6 h-6 rounded-full bg-primary-subtle flex items-center justify-center text-xs font-bold text-primary-text">{i + 1}</span>
                 <div>
-                  <p className="font-semibold text-[#0F172A] text-sm">{kra.title}</p>
-                  {kra.description && <p className="text-xs text-[#475569] mt-0.5 leading-relaxed">{kra.description}</p>}
+                  <p className="font-semibold text-text-primary text-sm">{kra.title}</p>
+                  {kra.description && <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{kra.description}</p>}
                 </div>
               </li>
             ))}

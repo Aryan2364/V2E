@@ -65,7 +65,7 @@ function daysLateCell(e: TaskEntryRow): string {
 function DueDateNote({ e }: { e: TaskEntryRow }) {
   if (e.deadline_revision_count === 0) return null
   return (
-    <span className="block text-[11px] font-medium text-[#B45309]" title={`Graded against the original due date, ${fmt(e.original_deadline)}`}>
+    <span className="block text-[11px] font-medium text-warning" title={`Graded against the original due date, ${fmt(e.original_deadline)}`}>
       revised {e.deadline_revision_count}× · was {fmt(e.original_deadline)}
     </span>
   )
@@ -83,7 +83,7 @@ function WithdrawnTag({ e }: { e: TaskEntryRow }) {
   const late = e.handover?.days_late_at_handover
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-medium bg-[#F1F5F9] text-[#475569]"
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-medium bg-surface-control text-text-secondary"
       title={
         `Taken off this task on ${fmt(e.handover?.at ?? null)}` +
         (e.is_withdrawn
@@ -103,10 +103,10 @@ function WithdrawnTag({ e }: { e: TaskEntryRow }) {
 /** A plain KPI count / rate tile. Colour is passed in only when it carries meaning. */
 function Tile({ label, value, accent = INK, sub }: { label: string; value: React.ReactNode; accent?: string; sub?: string }) {
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
-      <p className="text-[12px] font-medium text-[#64748B] uppercase tracking-wide">{label}</p>
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
+      <p className="text-[12px] font-medium text-text-muted uppercase tracking-wide">{label}</p>
       <p className="mt-1 text-[22px] font-bold tabular-nums leading-tight" style={{ color: accent }}>{value}</p>
-      {sub && <p className="mt-0.5 text-[12px] text-[#94A3B8]">{sub}</p>}
+      {sub && <p className="mt-0.5 text-[12px] text-text-muted">{sub}</p>}
     </div>
   )
 }
@@ -118,11 +118,11 @@ function TimingFigure({ label, days, color, olderIsWorse = true }: { label: stri
   const unit = days === null ? '' : days < 0 ? 'days early' : days === 0 ? '' : 'days late'
   return (
     <div className="flex-1 min-w-[150px]">
-      <p className="text-[12px] font-medium text-[#64748B]">{label}</p>
+      <p className="text-[12px] font-medium text-text-muted">{label}</p>
       <p className="mt-0.5 text-[20px] font-bold tabular-nums leading-tight" style={{ color }}>
         {big}{unit && <span className="text-[13px] font-semibold ml-1">{unit}</span>}
       </p>
-      {days !== null && <p className="text-[11px] text-[#94A3B8]">{phrase}</p>}
+      {days !== null && <p className="text-[11px] text-text-muted">{phrase}</p>}
     </div>
   )
 }
@@ -200,56 +200,56 @@ export default function ScorecardDetailPage() {
   if (denied) {
     return (
       <div className="flex flex-col items-center justify-center h-72 text-center">
-        <div className="w-14 h-14 rounded-full bg-[#FEE2E2] flex items-center justify-center mb-4"><Lock size={24} className="text-[#DC2626]" /></div>
-        <p className="font-semibold text-[#0F172A] text-base">This person is outside your scope</p>
-        <p className="text-[#475569] text-sm mt-1 max-w-sm">You can only open scorecards for people within your visibility.</p>
-        <button onClick={() => router.push('/dashboard/tasks/reports-new/person-scorecard')} className="mt-4 px-4 py-2 rounded-[8px] border border-[#E2E8F0] text-sm font-medium text-[#475569] hover:bg-[#F1F5F9]">Back to roster</button>
+        <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
+        <p className="font-semibold text-text-primary text-base">This person is outside your scope</p>
+        <p className="text-text-secondary text-sm mt-1 max-w-sm">You can only open scorecards for people within your visibility.</p>
+        <button onClick={() => router.push('/dashboard/tasks/reports-new/person-scorecard')} className="mt-4 px-4 py-2 rounded-[8px] border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-control">Back to roster</button>
       </div>
     )
   }
 
   return (
     <div className="space-y-5">
-      <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm text-[#475569] hover:text-[#0F172A] transition-colors">
+      <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
         <ArrowLeft size={15} /> Back
       </button>
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4 min-w-0">
-          <div className="w-14 h-14 rounded-full bg-[#2563EB] text-white text-lg font-bold flex items-center justify-center shrink-0">
+          <div className="w-14 h-14 rounded-full bg-primary text-white text-lg font-bold flex items-center justify-center shrink-0">
             {card ? initials(card.employee.name) : '…'}
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-[24px] font-bold text-[#0F172A] leading-tight truncate">{card?.employee.name ?? 'Loading…'}</h1>
+              <h1 className="text-[24px] font-bold text-text-primary leading-tight truncate">{card?.employee.name ?? 'Loading…'}</h1>
               {m && <GradePill grade={m.grade} />}
             </div>
-            <p className="text-[14px] text-[#475569] truncate">
+            <p className="text-[14px] text-text-secondary truncate">
               {[card?.employee.role_title, card?.employee.department_name].filter(Boolean).join(' · ') || card?.employee.email || ''}
             </p>
-            {m && <p className="mt-1 text-[13px] text-[#334155]">{gradeReason(m)}</p>}
+            {m && <p className="mt-1 text-[13px] text-text-secondary">{gradeReason(m)}</p>}
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <DateRangePicker from={fromDate} to={toDate} onChange={(f, t) => { setFromDate(f); setToDate(t) }} placeholder="All time" />
-          <button onClick={download} disabled={!card} className="flex items-center gap-1.5 px-3.5 py-[7px] bg-[#2563EB] text-white rounded-[8px] text-sm font-semibold hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors">
+          <button onClick={download} disabled={!card} className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover disabled:opacity-60 transition-colors">
             <Download size={15} /> Download
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" /></div>
+        <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : !card || !m ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] py-14 text-center text-[#94A3B8]">Could not load this scorecard.</div>
+        <div className="bg-white border border-border-light rounded-[12px] py-14 text-center text-text-muted">Could not load this scorecard.</div>
       ) : (
         <>
           {/* Warning strip — recurring tasks never once completed since they started */}
           {neverCompleted.length > 0 && (
-            <div className="flex items-start gap-3 bg-[#FFFBEB] border border-[#FDE68A] rounded-[12px] px-4 py-3">
-              <AlertTriangle size={18} className="text-[#B45309] shrink-0 mt-0.5" />
-              <p className="text-[13.5px] text-[#92400E] leading-relaxed">
+            <div className="flex items-start gap-3 bg-warning-bg border border-warning-border rounded-[12px] px-4 py-3">
+              <AlertTriangle size={18} className="text-warning shrink-0 mt-0.5" />
+              <p className="text-[13.5px] text-warning leading-relaxed">
                 <span className="font-semibold">{neverCompleted.length} recurring {neverCompleted.length === 1 ? 'task has' : 'tasks have'} never been completed</span>
                 {earliestNeverStart ? ` since ${neverCompleted.length === 1 ? 'it' : 'the earliest one'} started on ${fmt(earliestNeverStart)}` : ''}
                 {` (${neverCompleted.map((r) => r.title).slice(0, 3).join(', ')}${neverCompleted.length > 3 ? '…' : ''}). `}
@@ -269,15 +269,15 @@ export default function ScorecardDetailPage() {
 
           {/* Timing — completed delay and pending age kept strictly separate */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
-              <p className="text-[13px] font-semibold text-[#0F172A] mb-3">Completed work — how late it finished</p>
+            <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
+              <p className="text-[13px] font-semibold text-text-primary mb-3">Completed work — how late it finished</p>
               <div className="flex gap-4">
                 <TimingFigure label="Average delay" days={m.avg_delay_days} color={completedDelayColor(m.avg_delay_days)} />
                 <TimingFigure label="Longest delay" days={m.longest_delay_days} color={completedDelayColor(m.longest_delay_days)} />
               </div>
             </div>
-            <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
-              <p className="text-[13px] font-semibold text-[#0F172A] mb-3">Pending work — how old it is now</p>
+            <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
+              <p className="text-[13px] font-semibold text-text-primary mb-3">Pending work — how old it is now</p>
               <div className="flex gap-4">
                 <TimingFigure label="Average age" days={m.avg_pending_age_days} color={pendingAgeColor(m.avg_pending_age_days)} />
                 <TimingFigure label="Oldest pending" days={m.longest_pending_age_days} color={pendingAgeColor(m.longest_pending_age_days)} />
@@ -286,7 +286,7 @@ export default function ScorecardDetailPage() {
           </div>
 
           {/* Period line */}
-          <p className="text-[13px] text-[#64748B]">
+          <p className="text-[13px] text-text-muted">
             Showing {m.total_given.toLocaleString()} {m.total_given === 1 ? 'entry' : 'entries'}, {windowLabel(fromDate, toDate)}, {m.different_tasks} different {m.different_tasks === 1 ? 'task' : 'tasks'}.
             {m.completed_no_date > 0 && ` ${m.completed_no_date.toLocaleString()} completed ${m.completed_no_date === 1 ? 'task has' : 'tasks have'} no completion date entered, so ${m.completed_no_date === 1 ? 'it is' : 'they are'} kept out of the on-time and delay figures.`}
             {/* Say plainly what the numbers above did and did not count. Withdrawn work is
@@ -298,16 +298,16 @@ export default function ScorecardDetailPage() {
           </p>
 
           {/* Recurring tasks held */}
-          <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-[#E2E8F0]">
-              <RotateCcw size={16} className="text-[#7C3AED]" />
-              <h2 className="text-[15px] font-semibold text-[#0F172A]">Recurring tasks held</h2>
-              <span className="text-[12px] text-[#94A3B8]">({card.recurring_tasks.length})</span>
+          <section className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-border-light">
+              <RotateCcw size={16} className="text-text-secondary" />
+              <h2 className="text-[15px] font-semibold text-text-primary">Recurring tasks held</h2>
+              <span className="text-[12px] text-text-muted">({card.recurring_tasks.length})</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm whitespace-nowrap">
                 <thead>
-                  <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#475569] text-left">
+                  <tr className="bg-surface-sunken border-b border-border-light text-text-secondary text-left">
                     <th className="px-4 py-2.5 font-semibold">Task</th>
                     <th className="px-4 py-2.5 font-semibold">Cadence</th>
                     <th className="px-4 py-2.5 font-semibold">Start</th>
@@ -322,14 +322,14 @@ export default function ScorecardDetailPage() {
                 </thead>
                 <tbody>
                   {card.recurring_tasks.map((r) => (
-                    <tr key={r.template_id} className="border-b border-[#F1F5F9] last:border-0">
-                      <td className="px-4 py-2.5 font-medium text-[#0F172A]">{r.title}</td>
-                      <td className="px-4 py-2.5 text-[#475569]">{r.cadence_label}</td>
-                      <td className="px-4 py-2.5 text-[#475569]">{fmt(r.start_date)}</td>
-                      <td className="px-4 py-2.5 text-[#475569]">{fmt(r.next_run)}</td>
-                      <td className="px-4 py-2.5 text-center tabular-nums text-[#475569]">{r.fired}</td>
+                    <tr key={r.template_id} className="border-b border-border-light last:border-0">
+                      <td className="px-4 py-2.5 font-medium text-text-primary">{r.title}</td>
+                      <td className="px-4 py-2.5 text-text-secondary">{r.cadence_label}</td>
+                      <td className="px-4 py-2.5 text-text-secondary">{fmt(r.start_date)}</td>
+                      <td className="px-4 py-2.5 text-text-secondary">{fmt(r.next_run)}</td>
+                      <td className="px-4 py-2.5 text-center tabular-nums text-text-secondary">{r.fired}</td>
                       <td className="px-4 py-2.5 text-center tabular-nums" style={{ color: r.fired > 0 && r.done === 0 ? RED : INK }}>{r.done}</td>
-                      <td className="px-4 py-2.5 text-center tabular-nums">{r.on_time_rate === null ? <span className="text-[#94A3B8]">—</span> : `${r.on_time_rate}%`}</td>
+                      <td className="px-4 py-2.5 text-center tabular-nums">{r.on_time_rate === null ? <span className="text-text-muted">—</span> : `${r.on_time_rate}%`}</td>
                       <td className="px-4 py-2.5 text-center tabular-nums" style={{ color: r.withdrawn ? '#64748B' : '#CBD5E1' }}>{r.withdrawn}</td>
                     <td className="px-4 py-2.5 text-center tabular-nums" style={{ color: r.handed_over ? '#475569' : '#CBD5E1' }}>{r.handed_over}</td>
                       <td className="px-4 py-2.5">
@@ -349,7 +349,7 @@ export default function ScorecardDetailPage() {
                     </tr>
                   ))}
                   {card.recurring_tasks.length === 0 && (
-                    <tr><td colSpan={9} className="px-4 py-8 text-center text-[#94A3B8]">No recurring tasks held.</td></tr>
+                    <tr><td colSpan={9} className="px-4 py-8 text-center text-text-muted">No recurring tasks held.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -357,31 +357,31 @@ export default function ScorecardDetailPage() {
           </section>
 
           {/* Task entries — grouped by task by default, with a flat toggle + filter */}
-          <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-[#E2E8F0] flex-wrap">
-              <ListChecks size={16} className="text-[#0891B2]" />
-              <h2 className="text-[15px] font-semibold text-[#0F172A]">Task entries</h2>
-              <span className="text-[12px] text-[#94A3B8]">({filtered.length})</span>
+          <section className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-border-light flex-wrap">
+              <ListChecks size={16} className="text-text-secondary" />
+              <h2 className="text-[15px] font-semibold text-text-primary">Task entries</h2>
+              <span className="text-[12px] text-text-muted">({filtered.length})</span>
               <div className="ml-auto flex items-center gap-2 flex-wrap">
                 {/* Filter */}
-                <div className="inline-flex rounded-[8px] border border-[#E2E8F0] overflow-hidden text-[13px]">
+                <div className="inline-flex rounded-[8px] border border-border-light overflow-hidden text-[13px]">
                   {(['all', 'pending', 'completed'] as const).map((f) => (
                     <button
                       key={f}
                       onClick={() => setListFilter(f)}
-                      className={`px-3 py-1.5 font-medium capitalize transition-colors ${listFilter === f ? 'bg-[#2563EB] text-white' : 'bg-white text-[#475569] hover:bg-[#F1F5F9]'}`}
+                      className={`px-3 py-1.5 font-medium capitalize transition-colors ${listFilter === f ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-surface-control'}`}
                     >
                       {f}
                     </button>
                   ))}
                 </div>
                 {/* View */}
-                <div className="inline-flex rounded-[8px] border border-[#E2E8F0] overflow-hidden text-[13px]">
+                <div className="inline-flex rounded-[8px] border border-border-light overflow-hidden text-[13px]">
                   {(['grouped', 'flat'] as const).map((v) => (
                     <button
                       key={v}
                       onClick={() => setListView(v)}
-                      className={`px-3 py-1.5 font-medium capitalize transition-colors ${listView === v ? 'bg-[#0F172A] text-white' : 'bg-white text-[#475569] hover:bg-[#F1F5F9]'}`}
+                      className={`px-3 py-1.5 font-medium capitalize transition-colors ${listView === v ? 'bg-[#0F172A] text-white' : 'bg-white text-text-secondary hover:bg-surface-control'}`}
                     >
                       {v === 'grouped' ? 'Grouped by task' : 'Flat list'}
                     </button>
@@ -391,13 +391,13 @@ export default function ScorecardDetailPage() {
             </div>
 
             {filtered.length === 0 ? (
-              <div className="px-4 py-10 text-center text-[#94A3B8]">No task entries in this view.</div>
+              <div className="px-4 py-10 text-center text-text-muted">No task entries in this view.</div>
             ) : listView === 'grouped' ? (
               /* ── Grouped view ─────────────────────────────────────────────── */
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#475569] text-left whitespace-nowrap">
+                    <tr className="bg-surface-sunken border-b border-border-light text-text-secondary text-left whitespace-nowrap">
                       <th className="px-4 py-2.5 font-semibold">Task name</th>
                       <th className="px-3 py-2.5 font-semibold">Frequency</th>
                       <th className="px-3 py-2.5 font-semibold text-center">Total entries</th>
@@ -411,27 +411,27 @@ export default function ScorecardDetailPage() {
                       const open = expanded.has(g.title)
                       return (
                         <React.Fragment key={g.title}>
-                          <tr onClick={() => toggle(g.title)} className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] cursor-pointer whitespace-nowrap">
-                            <td className="px-4 py-2.5 font-medium text-[#0F172A]">
+                          <tr onClick={() => toggle(g.title)} className="border-b border-border-light hover:bg-surface-sunken cursor-pointer whitespace-nowrap">
+                            <td className="px-4 py-2.5 font-medium text-text-primary">
                               <span className="inline-flex items-center gap-1.5">
-                                {open ? <ChevronDown size={15} className="text-[#94A3B8]" /> : <ChevronRight size={15} className="text-[#94A3B8]" />}
+                                {open ? <ChevronDown size={15} className="text-text-muted" /> : <ChevronRight size={15} className="text-text-muted" />}
                                 {g.title}
                               </span>
                             </td>
-                            <td className="px-3 py-2.5 text-[#475569]">{g.frequency}</td>
-                            <td className="px-3 py-2.5 text-center tabular-nums text-[#0F172A] font-semibold">{g.total}</td>
-                            <td className="px-3 py-2.5 text-center tabular-nums text-[#475569]">{g.completed}</td>
+                            <td className="px-3 py-2.5 text-text-secondary">{g.frequency}</td>
+                            <td className="px-3 py-2.5 text-center tabular-nums text-text-primary font-semibold">{g.total}</td>
+                            <td className="px-3 py-2.5 text-center tabular-nums text-text-secondary">{g.completed}</td>
                             <td className="px-3 py-2.5 text-center tabular-nums" style={{ color: g.pending > 0 ? RED : MUTE }}>{g.pending}</td>
                             <td className="px-3 py-2.5 text-center tabular-nums font-semibold" style={{ color: g.oldest === null ? MUTE : pendingAgeColor(g.oldest) }}>
                               {g.oldest === null ? '—' : `${g.oldest}`}
                             </td>
                           </tr>
                           {open && (
-                            <tr className="bg-[#FBFCFE]">
+                            <tr className="bg-surface-sunken">
                               <td colSpan={6} className="px-4 py-2">
                                 <table className="w-full text-[13px]">
                                   <thead>
-                                    <tr className="text-[#94A3B8] text-left whitespace-nowrap">
+                                    <tr className="text-text-muted text-left whitespace-nowrap">
                                       <th className="px-2 py-1 font-medium">Due date</th>
                                       <th className="px-2 py-1 font-medium">Stage</th>
                                       <th className="px-2 py-1 font-medium">Standing</th>
@@ -442,14 +442,14 @@ export default function ScorecardDetailPage() {
                                   </thead>
                                   <tbody>
                                     {g.rows.map((e, i) => (
-                                      <tr key={`${e.task_id}-${i}`} className="border-t border-[#EEF2F7] whitespace-nowrap">
-                                        <td className="px-2 py-1.5 text-[#475569]">{fmt(e.due_date)}<DueDateNote e={e} /></td>
-                                        <td className="px-2 py-1.5 text-[#475569]">{e.status ?? '—'}</td>
+                                      <tr key={`${e.task_id}-${i}`} className="border-t border-border-light whitespace-nowrap">
+                                        <td className="px-2 py-1.5 text-text-secondary">{fmt(e.due_date)}<DueDateNote e={e} /></td>
+                                        <td className="px-2 py-1.5 text-text-secondary">{e.status ?? '—'}</td>
                                         <td className="px-2 py-1.5">
                                           {e.date_status === 'handed_over' ? <WithdrawnTag e={e} /> : <DateStatusTag status={e.date_status} daysLate={e.days_late} />}
                                         </td>
                                         <td className="px-2 py-1.5 tabular-nums" style={{ color: e.days_late == null || e.date_status === 'handed_over' ? MUTE : e.date_status === 'overdue' ? pendingAgeColor(e.days_late) : completedDelayColor(e.days_late) }}>{daysLateCell(e)}</td>
-                                        {!pendingView && <td className="px-2 py-1.5 text-[#475569]">{fmt(e.completion_date)}</td>}
+                                        {!pendingView && <td className="px-2 py-1.5 text-text-secondary">{fmt(e.completion_date)}</td>}
                                         {!pendingView && <td className="px-2 py-1.5 font-medium" style={{ color: e.on_time === 'Yes' ? '#15803D' : e.on_time === 'No' ? RED : MUTE }}>{e.on_time || '—'}</td>}
                                       </tr>
                                     ))}
@@ -469,7 +469,7 @@ export default function ScorecardDetailPage() {
               <div className="overflow-x-auto max-h-[560px] overflow-y-auto">
                 <table className="w-full text-sm whitespace-nowrap">
                   <thead className="sticky top-0 z-10">
-                    <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#475569] text-left">
+                    <tr className="bg-surface-sunken border-b border-border-light text-text-secondary text-left">
                       <th className="px-4 py-2.5 font-semibold">Task</th>
                       <th className="px-3 py-2.5 font-semibold">Frequency</th>
                       <th className="px-3 py-2.5 font-semibold">Due date</th>
@@ -482,16 +482,16 @@ export default function ScorecardDetailPage() {
                   </thead>
                   <tbody>
                     {filtered.map((e, i) => (
-                      <tr key={`${e.task_id}-${i}`} className="border-b border-[#F1F5F9] last:border-0">
-                        <td className="px-4 py-2 font-medium text-[#0F172A]">{e.title}</td>
-                        <td className="px-3 py-2 text-[#475569]">{e.frequency}</td>
-                        <td className="px-3 py-2 text-[#475569]">{fmt(e.due_date)}<DueDateNote e={e} /></td>
-                        <td className="px-3 py-2 text-[#475569]">{e.status ?? '—'}</td>
+                      <tr key={`${e.task_id}-${i}`} className="border-b border-border-light last:border-0">
+                        <td className="px-4 py-2 font-medium text-text-primary">{e.title}</td>
+                        <td className="px-3 py-2 text-text-secondary">{e.frequency}</td>
+                        <td className="px-3 py-2 text-text-secondary">{fmt(e.due_date)}<DueDateNote e={e} /></td>
+                        <td className="px-3 py-2 text-text-secondary">{e.status ?? '—'}</td>
                         <td className="px-3 py-2">
                           {e.date_status === 'handed_over' ? <WithdrawnTag e={e} /> : <DateStatusTag status={e.date_status} daysLate={e.days_late} />}
                         </td>
                         <td className="px-3 py-2 tabular-nums" style={{ color: e.days_late == null || e.date_status === 'handed_over' ? MUTE : e.date_status === 'overdue' ? pendingAgeColor(e.days_late) : completedDelayColor(e.days_late) }}>{daysLateCell(e)}</td>
-                        {!pendingView && <td className="px-3 py-2 text-[#475569]">{fmt(e.completion_date)}</td>}
+                        {!pendingView && <td className="px-3 py-2 text-text-secondary">{fmt(e.completion_date)}</td>}
                         {!pendingView && <td className="px-3 py-2 text-center font-medium" style={{ color: e.on_time === 'Yes' ? '#15803D' : e.on_time === 'No' ? RED : MUTE }}>{e.on_time || '—'}</td>}
                       </tr>
                     ))}

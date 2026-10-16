@@ -47,16 +47,16 @@ export default function GoalProjectsSection({
   const hidden = goal.hidden_project_count ?? 0
 
   return (
-    <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card flex flex-col max-h-[420px]">
-      <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-[#F1F5F9] shrink-0">
+    <section className="bg-white border border-border-light rounded-[12px] shadow-card flex flex-col max-h-[420px]">
+      <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-border-light shrink-0">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="flex items-center gap-2 text-[16px] font-semibold text-[#0F172A]">
-              <FolderKanban size={16} className="text-[#475569]" /> Projects
+            <h2 className="flex items-center gap-2 text-[16px] font-semibold text-text-primary">
+              <FolderKanban size={16} className="text-text-secondary" /> Projects
             </h2>
             <CountBadge count={projects.length} />
           </div>
-          <p className="text-[12px] text-[#475569] mt-0.5">
+          <p className="text-[12px] text-text-secondary mt-0.5">
             {projects.length === 0
               ? 'Bigger bodies of work behind this goal.'
               : 'Projects from Work, linked to this goal.'}
@@ -67,7 +67,7 @@ export default function GoalProjectsSection({
             onClick={() => setLinkOpen(true)}
             aria-label="Link a project"
             title="Link a project to this goal"
-            className="w-7 h-7 shrink-0 rounded-[8px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white flex items-center justify-center transition-colors"
+            className="w-7 h-7 shrink-0 rounded-[8px] bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-colors"
           >
             <Plus size={16} />
           </button>
@@ -76,12 +76,12 @@ export default function GoalProjectsSection({
 
       <div className="table-scroll flex-1 overflow-y-auto px-5 py-3">
         {projects.length === 0 ? (
-          <p className="text-[13px] text-[#475569] py-4">
+          <p className="text-[13px] text-text-secondary py-4">
             No projects linked. Link one when the work behind this goal is big enough to need
             milestones and a plan of its own.
           </p>
         ) : (
-          <ul className="divide-y divide-[#F1F5F9]">
+          <ul className="divide-y divide-surface-control">
             {projects.map((p) => (
               <ProjectRow
                 key={p.id}
@@ -97,7 +97,7 @@ export default function GoalProjectsSection({
 
         {/* Honest about what was withheld rather than quietly showing a short list. */}
         {hidden > 0 && (
-          <p className="flex items-start gap-1.5 mt-3 rounded-[6px] bg-[#F8FAFC] border border-[#E2E8F0] px-2.5 py-2 text-[12px] text-[#475569]">
+          <p className="flex items-start gap-1.5 mt-3 rounded-[6px] bg-surface-sunken border border-border-light px-2.5 py-2 text-[12px] text-text-secondary">
             <Lock size={12} className="shrink-0 mt-0.5" />
             {hidden} more linked {hidden === 1 ? 'project is' : 'projects are'} hidden — you’re not
             on {hidden === 1 ? 'it' : 'them'}. Ask a project manager to add you.
@@ -161,12 +161,12 @@ function ProjectRow({
     <li className="flex items-start justify-between gap-3 py-2.5">
       <Link href={`/dashboard/projects/${project.id}`} className="group min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
-          <span className="text-[14px] font-medium text-[#0F172A] group-hover:text-[#2563EB] transition-colors truncate">
+          <span className="text-[14px] font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
             {project.name}
           </span>
           <ArrowUpRight
             size={13}
-            className="text-[#94A3B8] group-hover:text-[#2563EB] shrink-0 transition-colors"
+            className="text-text-muted group-hover:text-primary-text shrink-0 transition-colors"
           />
         </span>
         <span className="flex items-center gap-2 flex-wrap mt-1">
@@ -176,13 +176,13 @@ function ProjectRow({
           >
             {meta.label}
           </span>
-          <span className="text-[12px] text-[#475569] tabular-nums">
+          <span className="text-[12px] text-text-secondary tabular-nums">
             {project.completed_tasks}/{project.total_tasks} tasks
           </span>
           {project.end_date && (
             <>
               <span className="text-[#CBD5E1]">·</span>
-              <span className="text-[12px] text-[#475569]">ends {formatDate(project.end_date)}</span>
+              <span className="text-[12px] text-text-secondary">ends {formatDate(project.end_date)}</span>
             </>
           )}
         </span>
@@ -193,7 +193,7 @@ function ProjectRow({
           onClick={() => setUnlinkOpen(true)}
           title="Unlink from this goal"
           aria-label="Unlink project"
-          className="w-6 h-6 shrink-0 rounded-[6px] flex items-center justify-center text-[#475569] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"
+          className="w-6 h-6 shrink-0 rounded-[6px] flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
         >
           <Link2Off size={13} />
         </button>
@@ -266,23 +266,23 @@ function LinkProjectModal({
   return (
     <Modal isOpen onClose={() => !saving && onClose()} title="Link a project" size="md">
       <form onSubmit={submit} className="space-y-4">
-        <div className="rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-2.5">
-          <p className="text-[13px] text-[#475569]">Linking to</p>
-          <p className="text-[15px] font-semibold text-[#0F172A] leading-snug">{goal.title}</p>
+        <div className="rounded-[10px] bg-surface-sunken border border-border-light px-3 py-2.5">
+          <p className="text-[13px] text-text-secondary">Linking to</p>
+          <p className="text-[15px] font-semibold text-text-primary leading-snug">{goal.title}</p>
         </div>
 
         {loading ? (
-          <div className="flex items-center gap-2 text-sm text-[#475569] py-2">
+          <div className="flex items-center gap-2 text-sm text-text-secondary py-2">
             <Loader2 size={15} className="animate-spin" /> Loading projects…
           </div>
         ) : options.length === 0 ? (
-          <p className="text-sm text-[#475569]">
+          <p className="text-sm text-text-secondary">
             There are no more projects you can link. Create one in Work first, then come back — or
             set the goal on it while creating it.
           </p>
         ) : (
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">Project *</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Project *</label>
             <StyledSelect
               value={selected}
               onChange={setSelected}
@@ -290,18 +290,18 @@ function LinkProjectModal({
               options={options.map((p) => ({ value: p.id, label: p.name }))}
               disabled={saving}
             />
-            <p className="text-[11px] text-[#475569] mt-1">
+            <p className="text-[11px] text-text-secondary mt-1">
               A project can serve several goals — linking it here doesn’t remove it from any
               others. Only projects you’re on are listed.
             </p>
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-3 pt-4 border-t border-[#E2E8F0]">
+        <div className="flex items-center justify-between gap-3 pt-4 border-t border-border-light">
           <button
             type="button"
             onClick={() => router.push('/dashboard/projects/new')}
-            className="text-sm font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
+            className="text-sm font-medium text-primary-text hover:text-primary-text transition-colors"
           >
             Create a project in Work
           </button>

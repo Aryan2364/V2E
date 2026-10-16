@@ -22,10 +22,10 @@ export default function MonthlyTrendChart({
   const empty = data.every((d) => d.due === 0 && d.completed === 0)
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col h-[320px]">
-      <h3 className="text-[15px] font-semibold text-[#0F172A] mb-3 shrink-0">Monthly trend · due vs completed</h3>
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col h-[320px]">
+      <h3 className="text-[15px] font-semibold text-text-primary mb-3 shrink-0">Monthly trend · due vs completed</h3>
       {empty ? (
-        <p className="text-sm text-[#475569] flex-1 grid place-items-center">No activity in this window.</p>
+        <p className="text-sm text-text-secondary flex-1 grid place-items-center">No activity in this window.</p>
       ) : (
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">

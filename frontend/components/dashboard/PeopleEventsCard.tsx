@@ -9,8 +9,8 @@ import type { PeopleEvent, PeopleEventsResponse } from '@/lib/types'
 // ─── Avatar helpers ────────────────────────────────────────────────────────────
 
 const avatarColors = [
-  'bg-[#2563EB]', 'bg-[#7C3AED]', 'bg-[#DB2777]',
-  'bg-[#D97706]', 'bg-[#16A34A]', 'bg-[#0891B2]',
+  'bg-primary', 'bg-text-secondary', 'bg-text-secondary',
+  'bg-warning', 'bg-success', 'bg-text-secondary',
 ]
 
 function avatarColor(name: string): string {
@@ -43,7 +43,7 @@ const TABS: TabConfig[] = [
     eventType: 'birthday',
     label: 'Birthdays',
     icon: <Gift size={13} />,
-    dot: 'bg-[#2563EB]',
+    dot: 'bg-primary',
     emptyText: 'No upcoming birthdays in the next 30 days',
   },
   {
@@ -51,7 +51,7 @@ const TABS: TabConfig[] = [
     eventType: 'anniversary',
     label: 'Anniversary',
     icon: <Heart size={13} />,
-    dot: 'bg-[#DB2777]',
+    dot: 'bg-text-secondary',
     emptyText: 'No upcoming anniversaries in the next 30 days',
   },
   {
@@ -59,7 +59,7 @@ const TABS: TabConfig[] = [
     eventType: 'new_hiring',
     label: 'New Hiring',
     icon: <UserPlus size={13} />,
-    dot: 'bg-[#16A34A]',
+    dot: 'bg-success',
     emptyText: 'No new hires in the last 30 days',
   },
   {
@@ -67,7 +67,7 @@ const TABS: TabConfig[] = [
     eventType: 'work_anniversary',
     label: 'Work Anniv.',
     icon: <Award size={13} />,
-    dot: 'bg-[#D97706]',
+    dot: 'bg-warning',
     emptyText: 'No upcoming work anniversaries in the next 30 days',
   },
 ]
@@ -86,19 +86,19 @@ function EventRow({
   onWish: (ev: PeopleEvent, type: EventType) => void
 }) {
   return (
-    <div className="h-14 flex items-center gap-3 px-4 border-b border-[#F1F5F9] last:border-b-0">
+    <div className="h-14 flex items-center gap-3 px-4 border-b border-border-light last:border-b-0">
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${avatarColor(event.name)}`}
       >
         {getInitials(event.name)}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-[#0F172A] truncate">{event.name}</p>
-        <p className="text-[11px] text-[#475569] truncate">{event.label}</p>
+        <p className="text-[13px] font-semibold text-text-primary truncate">{event.name}</p>
+        <p className="text-[11px] text-text-secondary truncate">{event.label}</p>
       </div>
       <button
         onClick={() => onWish(event, eventType)}
-        className="shrink-0 px-3 py-1 text-[11px] font-semibold text-[#2563EB] border border-[#2563EB] rounded-full hover:bg-[#EFF6FF] transition-colors"
+        className="shrink-0 px-3 py-1 text-[11px] font-semibold text-primary-text border border-primary rounded-full hover:bg-primary-subtle transition-colors"
       >
         Wish
       </button>
@@ -159,23 +159,23 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
 
   return (
     <>
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
         {/* Card header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2E8F0]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[8px] bg-[#FEF3C7] flex items-center justify-center text-[#D97706]">
+            <div className="w-8 h-8 rounded-[8px] bg-warning-bg flex items-center justify-center text-warning">
               <Gift size={16} />
             </div>
             <div>
-              <h3 className="text-[15px] font-semibold text-[#0F172A] leading-tight">People Events</h3>
+              <h3 className="text-[15px] font-semibold text-text-primary leading-tight">People Events</h3>
               {totalCount > 0 && (
-                <p className="text-[11px] text-[#475569]">{totalCount} event{totalCount !== 1 ? 's' : ''} upcoming</p>
+                <p className="text-[11px] text-text-secondary">{totalCount} event{totalCount !== 1 ? 's' : ''} upcoming</p>
               )}
             </div>
           </div>
           <Link
             href="/settings/organization/employees"
-            className="flex items-center gap-1 text-[12px] font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
+            className="flex items-center gap-1 text-[12px] font-medium text-primary-text hover:text-primary-text transition-colors"
           >
             View all
             <ArrowRight size={12} />
@@ -183,7 +183,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-[#E2E8F0] bg-[#F8FAFC]">
+        <div className="flex border-b border-border-light bg-surface-sunken">
           {TABS.map((tab) => {
             const count = data[tab.key]?.length ?? 0
             const isActive = activeTab === tab.key
@@ -194,8 +194,8 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
                 className={[
                   'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-semibold transition-colors relative',
                   isActive
-                    ? 'text-[#2563EB] bg-white'
-                    : 'text-[#475569] hover:text-[#0F172A] hover:bg-white/60',
+                    ? 'text-primary-text bg-white'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-white/60',
                 ].join(' ')}
               >
                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${tab.dot}`} />
@@ -203,7 +203,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
                 {count > 0 && (
                   <span
                     className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${
-                      isActive ? 'bg-[#EFF6FF] text-[#2563EB]' : 'bg-[#E2E8F0] text-[#475569]'
+                      isActive ? 'bg-primary-subtle text-primary-text' : 'bg-surface-control-pressed text-text-secondary'
                     }`}
                   >
                     {count}
@@ -211,7 +211,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
                 )}
                 {/* Active underline */}
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2563EB]" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
                 )}
               </button>
             )
@@ -224,7 +224,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
             <div className={`w-8 h-8 rounded-full ${activeConfig.dot} opacity-20 flex items-center justify-center text-white mb-2`}>
               {activeConfig.icon}
             </div>
-            <p className="text-[13px] text-[#475569]">{activeConfig.emptyText}</p>
+            <p className="text-[13px] text-text-secondary">{activeConfig.emptyText}</p>
           </div>
         ) : (
           <div

@@ -370,9 +370,9 @@ function PathName({
     <>
       <span className="min-w-0 flex-1 truncate">
         {name ? (
-          <span className="text-[14px] font-medium text-[#0F172A]">· {name}</span>
+          <span className="text-[14px] font-medium text-text-primary">· {name}</span>
         ) : hint ? (
-          <span className="text-[13px] text-[#475569]">· {hint}</span>
+          <span className="text-[13px] text-text-secondary">· {hint}</span>
         ) : null}
       </span>
       <IconAction label="Rename path" icon={Pencil} onClick={() => setEditing(true)} allowed={allowed} reason={reason} />
@@ -1240,22 +1240,22 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
 
   const note =
     w && caps?.can_edit === false ? (
-      <div className="flex items-start gap-2.5 rounded-[10px] border border-[#CBD5E1] bg-white px-3.5 py-2.5 text-sm text-[#334155]">
-        <Eye size={16} className="shrink-0 mt-0.5 text-[#475569]" />
+      <div className="flex items-start gap-2.5 rounded-[10px] border border-border bg-white px-3.5 py-2.5 text-sm text-text-secondary">
+        <Eye size={16} className="shrink-0 mt-0.5 text-text-secondary" />
         <span>View only. {REASONS.edit}</span>
       </div>
     ) : archived ? (
-      <div className="flex items-start gap-2.5 rounded-[10px] border border-[#CBD5E1] bg-white px-3.5 py-2.5 text-sm text-[#334155]">
-        <Archive size={16} className="shrink-0 mt-0.5 text-[#475569]" />
+      <div className="flex items-start gap-2.5 rounded-[10px] border border-border bg-white px-3.5 py-2.5 text-sm text-text-secondary">
+        <Archive size={16} className="shrink-0 mt-0.5 text-text-secondary" />
         <span>This workflow is archived. Restore it to edit it again as a draft.</span>
       </div>
     ) : w?.status === 'paused' ? (
-      <div className="flex items-start gap-2.5 rounded-[10px] border border-[#FDE68A] bg-[#FEFCE8] px-3.5 py-2.5 text-sm text-[#713F12]">
+      <div className="flex items-start gap-2.5 rounded-[10px] border border-warning-border bg-warning-bg px-3.5 py-2.5 text-sm text-warning">
         <Pause size={16} className="shrink-0 mt-0.5" />
         <span>This workflow is paused. Instances in progress continue. Resume it to run it again.</span>
       </div>
     ) : w?.status === 'active' && edit.allowed === true ? (
-      <div className="flex items-start gap-2.5 rounded-[10px] border border-[#BFDBFE] bg-[#EFF6FF] px-3.5 py-2.5 text-sm text-[#1E3A8A]">
+      <div className="flex items-start gap-2.5 rounded-[10px] border border-primary-border bg-primary-subtle px-3.5 py-2.5 text-sm text-primary-text">
         <Info size={16} className="shrink-0 mt-0.5" />
         <span>This workflow is live. Changes apply to new instances only.</span>
       </div>
@@ -1376,12 +1376,12 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     const header = multiTrack ? (
       <div
         className={`flex flex-col gap-1.5 rounded-[12px] border px-3.5 py-2.5 ${
-          issue ? 'border-[#FCA5A5] bg-[#FEF2F2]' : 'border-[#E2E8F0] bg-white'
+          issue ? 'border-danger-border bg-danger-bg' : 'border-border-light bg-white'
         }`}
       >
         <div className="flex items-center gap-2 min-w-0">
-          <span className="inline-flex items-center gap-1.5 shrink-0 text-[14px] font-semibold text-[#0F172A]">
-            <GitBranch size={15} className="text-[#2563EB]" aria-hidden />
+          <span className="inline-flex items-center gap-1.5 shrink-0 text-[14px] font-semibold text-text-primary">
+            <GitBranch size={15} className="text-primary-text" aria-hidden />
             {trackBaseLabel(t.key)}
           </span>
           {t.key !== MAIN_TRACK && (
@@ -1399,8 +1399,8 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             </GatedButton>
           )}
         </div>
-        {headerHint && <p className="text-[13px] text-[#475569]">{headerHint}</p>}
-        {issue && <p className="text-[13px] font-medium text-[#B91C1C]">{issue}</p>}
+        {headerHint && <p className="text-[13px] text-text-secondary">{headerHint}</p>}
+        {issue && <p className="text-[13px] font-medium text-danger">{issue}</p>}
       </div>
     ) : null
 
@@ -1480,17 +1480,17 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   )
 
   const saveState = dirty ? (
-    <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#92400E]" aria-live="polite">
-      <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-[#D97706]" /> Unsaved changes
+    <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-warning" aria-live="polite">
+      <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-warning" /> Unsaved changes
     </span>
   ) : w ? (
-    <span className="text-[12px] text-[#475569]">All changes saved</span>
+    <span className="text-[12px] text-text-secondary">All changes saved</span>
   ) : null
 
   return (
     <div className="flex flex-col gap-6 pb-10">
       {/* Pinned header: title, state and the save actions. One row on a phone. */}
-      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-3 bg-[#F8FAFC] border-b border-[#E2E8F0]">
+      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-3 bg-surface-sunken border-b border-border-light">
         <WorkflowBreadcrumb
           trail={
             w
@@ -1500,12 +1500,12 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         />
         <div className="flex items-center justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:wrap-break-word">
+            <h1 className="text-[18px] sm:text-[28px] font-bold text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">
               {work.name.trim() || w?.name || 'New workflow'}
             </h1>
             <div className="hidden sm:flex items-center gap-2 flex-wrap mt-1.5 min-h-[24px]">
               <TemplateStatusBadge status={w?.status ?? 'draft'} />
-              <span className="text-[13px] text-[#475569]">{plural(steps.length, 'step')}</span>
+              <span className="text-[13px] text-text-secondary">{plural(steps.length, 'step')}</span>
               {saveState}
             </div>
           </div>
@@ -1523,7 +1523,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         {/* Phone: status and save state on one slim line under the title row. */}
         <div className="flex sm:hidden items-center gap-2 mt-1.5 min-w-0 text-[12px]">
           <TemplateStatusBadge status={w?.status ?? 'draft'} />
-          <span className="text-[#475569] whitespace-nowrap">{plural(steps.length, 'step')}</span>
+          <span className="text-text-secondary whitespace-nowrap">{plural(steps.length, 'step')}</span>
           <span className="truncate">{saveState}</span>
         </div>
       </div>
@@ -1541,14 +1541,14 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       {note}
 
       {/* Details */}
-      <section aria-labelledby="details-heading" className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-5">
-        <h2 id="details-heading" className="text-[18px] font-semibold text-[#0F172A]">
+      <section aria-labelledby="details-heading" className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-5">
+        <h2 id="details-heading" className="text-[18px] font-semibold text-text-primary">
           Details
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 gap-y-5">
           <div className="lg:col-span-6">
             <label htmlFor="wf-name" className={LABEL_CLS}>
-              Workflow name <span className="text-[#DC2626]">*</span>
+              Workflow name <span className="text-danger">*</span>
             </label>
             <input
               id="wf-name"
@@ -1564,9 +1564,9 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
               }}
               onBlur={() => !work.name.trim() && w && setNameError('Enter a workflow name.')}
               placeholder="e.g. New joiner onboarding"
-              className={`${INPUT_CLS} ${nameError ? 'border-[#DC2626]! focus:ring-[#DC2626]!' : ''}`}
+              className={`${INPUT_CLS} ${nameError ? 'border-danger! focus:ring-danger!' : ''}`}
             />
-            {nameError && <p className="mt-1.5 text-[13px] text-[#B91C1C]">{nameError}</p>}
+            {nameError && <p className="mt-1.5 text-[13px] text-danger">{nameError}</p>}
           </div>
           <div className="lg:col-span-12">
             <label htmlFor="wf-desc" className={LABEL_CLS}>
@@ -1590,7 +1590,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       </section>
 
       {lookups.failed.length > 0 && (
-        <div className="flex items-center gap-2 text-[13px] text-[#92400E]">
+        <div className="flex items-center gap-2 text-[13px] text-warning">
           <span>Some lists didn’t load ({lookups.failed.join(', ')}). Choices may be missing.</span>
           <button type="button" onClick={lookups.reload} className="font-semibold underline">
             Try again
@@ -1621,7 +1621,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       <section aria-labelledby="steps-heading" className="flex flex-col gap-3 scroll-mt-40">
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <h2 id="steps-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A] scroll-mt-40">
+            <h2 id="steps-heading" className="flex items-center gap-1 text-[18px] font-semibold text-text-primary scroll-mt-40">
               Steps <InfoTip label="Steps" text="Each step becomes a task. Parallel paths run at the same time." />
             </h2>
           </div>
@@ -1633,20 +1633,20 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         </div>
 
         {steps.length >= 1 && (
-          <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
             <button
               type="button"
               aria-expanded={flowOpen}
               aria-controls="flow-preview"
               onClick={() => setFlowOpen((v) => !v)}
-              className="w-full flex items-center gap-2 px-4 py-3 text-left rounded-[12px] hover:bg-[#F8FAFC] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+              className="w-full flex items-center gap-2 px-4 py-3 text-left rounded-[12px] hover:bg-surface-sunken focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <GitBranch size={16} className="text-[#2563EB]" />
-              <span className="text-[15px] font-semibold text-[#0F172A]">Flow</span>
-              <ChevronDown size={16} className={`ml-auto shrink-0 text-[#475569] transition-transform duration-200 ${flowOpen ? 'rotate-180' : ''}`} />
+              <GitBranch size={16} className="text-primary-text" />
+              <span className="text-[15px] font-semibold text-text-primary">Flow</span>
+              <ChevronDown size={16} className={`ml-auto shrink-0 text-text-secondary transition-transform duration-200 ${flowOpen ? 'rotate-180' : ''}`} />
             </button>
             <Reveal open={flowOpen} id="flow-preview">
-              <div className="px-4 pb-4 pt-1 border-t border-[#F1F5F9]">
+              <div className="px-4 pb-4 pt-1 border-t border-border-light">
                 <StepFlow steps={steps} tracks={work.tracks} memberName={memberName} onOpen={(s) => focusStep(s.id)} frequency={frequency} schedules={timingSchedules} compact />
               </div>
             </Reveal>
@@ -1654,7 +1654,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         )}
 
         {timingIssues.length > 0 && (
-          <div role="status" className="flex flex-col gap-1.5 rounded-[10px] border border-[#FECACA] bg-[#FEF2F2] px-3.5 py-2.5 text-sm text-[#991B1B]">
+          <div role="status" className="flex flex-col gap-1.5 rounded-[10px] border border-danger-border bg-danger-bg px-3.5 py-2.5 text-sm text-danger">
             <span className="flex items-start gap-2">
               <AlertTriangle size={16} className="shrink-0 mt-0.5" />
               <span>
@@ -1686,7 +1686,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         )}
 
         {steps.length === 0 && !adding && (
-          <div id="steps-empty" className="bg-white border border-dashed border-[#CBD5E1] rounded-[12px]">
+          <div id="steps-empty" className="bg-white border border-dashed border-border rounded-[12px]">
             <EmptyState
               icon={ListChecks}
               title="No steps yet"

@@ -87,10 +87,10 @@ interface CreateTaskModalProps {
 //   { value: 'Q4', label: 'Q4', sublabel: 'Not Urgent + Not Important' },
 // ]
 // const quadrantColors: Record<TaskQuadrant, { bg: string; text: string; border: string; activeBg: string }> = {
-//   Q1: { bg: 'bg-[#FEE2E2]', text: 'text-[#DC2626]', border: 'border-[#FECACA]', activeBg: 'bg-[#DC2626]' },
-//   Q2: { bg: 'bg-[#EFF6FF]', text: 'text-[#2563EB]', border: 'border-[#BFDBFE]', activeBg: 'bg-[#2563EB]' },
-//   Q3: { bg: 'bg-[#FEF9C3]', text: 'text-[#D97706]', border: 'border-[#FDE68A]', activeBg: 'bg-[#D97706]' },
-//   Q4: { bg: 'bg-[#F3F4F6]', text: 'text-[#6B7280]', border: 'border-[#E5E7EB]', activeBg: 'bg-[#6B7280]' },
+//   Q1: { bg: 'bg-danger-bg', text: 'text-danger', border: 'border-danger-border', activeBg: 'bg-danger' },
+//   Q2: { bg: 'bg-primary-subtle', text: 'text-primary-text', border: 'border-primary-border', activeBg: 'bg-primary' },
+//   Q3: { bg: 'bg-warning-bg', text: 'text-warning', border: 'border-warning-border', activeBg: 'bg-warning' },
+//   Q4: { bg: 'bg-surface-control', text: 'text-text-muted', border: 'border-border-light', activeBg: 'bg-text-secondary' },
 // }
 
 export default function CreateTaskModal({
@@ -488,19 +488,19 @@ export default function CreateTaskModal({
         role="dialog"
         aria-modal="true"
       >
-        <div className="relative w-full max-w-md bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-[#E2E8F0] p-6">
+        <div className="relative w-full max-w-md bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light p-6">
           <div className="flex flex-col items-center text-center">
-            <div className="w-14 h-14 rounded-full bg-[#DCFCE7] flex items-center justify-center mb-4">
-              <CheckCircle2 size={28} className="text-[#16A34A]" />
+            <div className="w-14 h-14 rounded-full bg-success-bg flex items-center justify-center mb-4">
+              <CheckCircle2 size={28} className="text-success" />
             </div>
-            <h2 className="text-[20px] font-semibold text-[#0F172A]">Recurring task created</h2>
-            <p className="text-sm text-[#475569] mt-2">
-              <span className="font-medium text-[#0F172A]">“{createdRecurring.title}”</span> now lives in the{' '}
-              <span className="font-medium text-[#2563EB]">Recurring</span> tab under Work. New task instances will be
+            <h2 className="text-[20px] font-semibold text-text-primary">Recurring task created</h2>
+            <p className="text-sm text-text-secondary mt-2">
+              <span className="font-medium text-text-primary">“{createdRecurring.title}”</span> now lives in the{' '}
+              <span className="font-medium text-primary-text">Recurring</span> tab under Work. New task instances will be
               created automatically on schedule — with these attachments included each time.
             </p>
             {error && (
-              <div className="w-full mt-4 bg-[#FEE2E2] border border-[#FECACA] rounded-[8px] px-4 py-3 text-sm text-[#DC2626]">
+              <div className="w-full mt-4 bg-danger-bg border border-danger-border rounded-[8px] px-4 py-3 text-sm text-danger">
                 {error}
               </div>
             )}
@@ -508,14 +508,14 @@ export default function CreateTaskModal({
               <button
                 type="button"
                 onClick={() => { onCreated(); handleClose() }}
-                className="w-full sm:flex-1 px-5 py-[10px] text-sm font-semibold text-[#2563EB] bg-white border-2 border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors"
+                className="w-full sm:flex-1 px-5 py-[10px] text-sm font-semibold text-primary-text bg-white border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
               >
                 Done
               </button>
               <button
                 type="button"
                 onClick={() => { onCreated(); handleClose(); router.push('/dashboard/tasks/recurring') }}
-                className="w-full sm:flex-1 px-5 py-[10px] text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] transition-colors"
+                className="w-full sm:flex-1 px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"
               >
                 Go to Recurring
               </button>
@@ -537,15 +537,15 @@ export default function CreateTaskModal({
       {/* When the Bulk-upload tab exists, the card is a FIXED size so switching tabs only
           swaps the inner content — the frame never resizes (no width/height glitch). The
           recurring/lock-mode modal (no bulk tab) keeps its natural content-driven height. */}
-      <div className={`relative w-full bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-[#E2E8F0] flex flex-col ${showBulkTab ? 'max-w-3xl h-[88vh]' : 'max-w-2xl max-h-[92vh]'}`}>
+      <div className={`relative w-full bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light flex flex-col ${showBulkTab ? 'max-w-3xl h-[88vh]' : 'max-w-2xl max-h-[92vh]'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#E2E8F0] shrink-0">
-          <h2 className="text-[22px] font-semibold text-[#0F172A]">
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-light shrink-0">
+          <h2 className="text-[22px] font-semibold text-text-primary">
             {lockMode && mode === 'recurring' ? 'Create Recurring Task' : 'Create Task'}
           </h2>
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
             aria-label="Close"
           >
             <X size={18} />
@@ -555,7 +555,7 @@ export default function CreateTaskModal({
         {/* Single task | Bulk upload — bulk swaps the whole body to the Excel import flow. */}
         {showBulkTab && (
           <div className="shrink-0 px-6 pt-4">
-            <div className="grid grid-cols-2 gap-1 p-1 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0]">
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-[10px] bg-surface-sunken border border-border-light">
               {([
                 { value: 'single' as const, label: 'Single task', icon: FilePlus2 },
                 { value: 'bulk' as const, label: 'Bulk upload', icon: Table },
@@ -570,10 +570,10 @@ export default function CreateTaskModal({
                     aria-pressed={active}
                     className={[
                       'flex items-center justify-center gap-2 px-3 py-2 rounded-[8px] text-sm font-semibold transition-colors',
-                      active ? 'bg-white text-[#0F172A] shadow-xs border border-[#E2E8F0]' : 'text-[#475569] hover:text-[#0F172A]',
+                      active ? 'bg-white text-text-primary shadow-xs border border-border-light' : 'text-text-secondary hover:text-text-primary',
                     ].join(' ')}
                   >
-                    <Icon size={16} className={active ? 'text-[#2563EB]' : 'text-[#94A3B8]'} />
+                    <Icon size={16} className={active ? 'text-primary-text' : 'text-text-muted'} />
                     {opt.label}
                   </button>
                 )
@@ -595,8 +595,8 @@ export default function CreateTaskModal({
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">
-              Title <span className="text-[#DC2626]">*</span>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">
+              Title <span className="text-danger">*</span>
             </label>
             <div className="relative">
               <input
@@ -605,10 +605,10 @@ export default function CreateTaskModal({
                 onChange={(e) => setTitle(e.target.value.slice(0, 50))}
                 maxLength={50}
                 placeholder="Task title..."
-                className="w-full border border-[#CBD5E1] rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white"
+                className="w-full border border-border rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white"
               />
               {/* Count lives inside the field, right-aligned */}
-              <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-[#DC2626]' : 'text-[#94A3B8]'}`}>
+              <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
                 {title.length}/50
               </span>
             </div>
@@ -616,19 +616,19 @@ export default function CreateTaskModal({
 
           {/* Assignees & CC */}
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Assignees & CC</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Assignees & CC</label>
             <AssigneeSelector
               orgId={orgId}
               value={assignees}
               onChange={setAssignees}
               currentUser={user ? { user_id: user.id, name: user.name } : undefined}
             />
-            <p className="text-[11px] text-[#475569] mt-1">Add people · click their badge to toggle between Assignee and CC</p>
+            <p className="text-[11px] text-text-secondary mt-1">Add people · click their badge to toggle between Assignee and CC</p>
           </div>
 
           {/* Completion mode — only relevant when multiple assignees are selected */}
           {primaryAssigneeCount > 1 && <div>
-            <label className="block text-sm font-medium text-[#374151] mb-2">Completion Mode</label>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Completion Mode</label>
             <div className="flex gap-3">
               {(['any_can_complete', 'all_must_complete'] as CompletionMode[]).map((mode) => (
                 <label
@@ -641,9 +641,9 @@ export default function CreateTaskModal({
                     value={mode}
                     checked={completionMode === mode}
                     onChange={() => setCompletionMode(mode)}
-                    className="accent-[#2563EB]"
+                    className="accent-primary"
                   />
-                  <span className="text-sm text-[#1E293B]">
+                  <span className="text-sm text-text-primary">
                     {mode === 'any_can_complete' ? 'Any assignee can complete' : 'All assignees must complete'}
                   </span>
                 </label>
@@ -654,8 +654,8 @@ export default function CreateTaskModal({
           {/* Schedule mode — one-time (single deadline) vs recurring (auto-spawns).
               Hidden when the host page locks the mode (e.g. the Recurring page). */}
           {!lockMode && <div>
-            <label className="block text-sm font-medium text-[#374151] mb-2">Schedule</label>
-            <div className="grid grid-cols-2 gap-1 p-1 rounded-[10px] bg-[#F1F5F9] border border-[#E2E8F0]">
+            <label className="block text-sm font-medium text-text-secondary mb-2">Schedule</label>
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-[10px] bg-surface-control border border-border-light">
               {([
                 { value: 'one_time' as TaskMode, label: 'One-time', icon: Calendar },
                 { value: 'recurring' as TaskMode, label: 'Recurring', icon: RotateCcw },
@@ -669,7 +669,7 @@ export default function CreateTaskModal({
                     onClick={() => { setMode(opt.value); setError(null) }}
                     className={[
                       'flex items-center justify-center gap-2 px-3 py-2 rounded-[8px] text-sm font-medium transition-colors',
-                      active ? 'bg-[#2563EB] text-white shadow-xs' : 'text-[#475569] hover:bg-white',
+                      active ? 'bg-primary text-white shadow-xs' : 'text-text-secondary hover:bg-white',
                     ].join(' ')}
                     aria-pressed={active}
                   >
@@ -679,7 +679,7 @@ export default function CreateTaskModal({
                 )
               })}
             </div>
-            <p className="text-[11px] text-[#475569] mt-1.5">
+            <p className="text-[11px] text-text-secondary mt-1.5">
               {mode === 'one_time'
                 ? 'A single task with a fixed deadline.'
                 : 'Auto-creates task instances on a schedule. Managed in the Recurring tab; attachments repeat on every instance.'}
@@ -690,12 +690,12 @@ export default function CreateTaskModal({
           /* Deadline */
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-[#374151]">Deadline <span className="text-[#DC2626]">*</span></label>
+              <label className="text-sm font-medium text-text-secondary">Deadline <span className="text-danger">*</span></label>
               {deadlineDate && (
                 <button
                   type="button"
                   onClick={() => { setDeadlineDate(''); setDeadlineTime(''); setRemindersOpen(false) }}
-                  className="flex items-center gap-1 text-[11px] text-[#475569] hover:text-[#DC2626] transition-colors"
+                  className="flex items-center gap-1 text-[11px] text-text-secondary hover:text-danger transition-colors"
                 >
                   <X size={10} />
                   Clear
@@ -738,8 +738,8 @@ export default function CreateTaskModal({
           ) : (
           /* Recurring schedule — reuses the recurring engine's schedule builder */
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-2">
-              Recurrence <span className="text-[#DC2626]">*</span>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Recurrence <span className="text-danger">*</span>
             </label>
             <ScheduleEntryList entries={scheduleEntries} onChange={setScheduleEntries} />
           </div>
@@ -760,7 +760,7 @@ export default function CreateTaskModal({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Description</label>
             <div className="relative">
               <textarea
                 value={description}
@@ -768,10 +768,10 @@ export default function CreateTaskModal({
                 maxLength={2000}
                 placeholder="Add a description..."
                 rows={3}
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 pt-[10px] pb-6 text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white resize-none"
+                className="w-full border border-border rounded-[8px] px-3 pt-[10px] pb-6 text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white resize-none"
               />
               {/* Count lives inside the field, bottom-right */}
-              <span className={`pointer-events-none absolute right-3 bottom-2 text-[11px] ${description.length >= 2000 ? 'text-[#DC2626]' : 'text-[#94A3B8]'}`}>
+              <span className={`pointer-events-none absolute right-3 bottom-2 text-[11px] ${description.length >= 2000 ? 'text-danger' : 'text-text-muted'}`}>
                 {description.length}/2000
               </span>
             </div>
@@ -779,7 +779,7 @@ export default function CreateTaskModal({
 
           {/* Quadrant — hidden */}
           {/* <div>
-            <label className="block text-sm font-medium text-[#374151] mb-2">Quadrant</label>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Quadrant</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {quadrants.map((q) => {
                 const cfg = quadrantColors[q.value]
@@ -810,7 +810,7 @@ export default function CreateTaskModal({
               is not shown here (set automatically). */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1.5">Priority</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1.5">Priority</label>
               <StyledSelect
                 value={priorityId}
                 onChange={setPriorityId}
@@ -822,7 +822,7 @@ export default function CreateTaskModal({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1.5">Category</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1.5">Category</label>
               <StyledSelect
                 value={categoryId}
                 onChange={setCategoryId}
@@ -838,7 +838,7 @@ export default function CreateTaskModal({
           {/* Tags — full width, directly under Category/Priority. On a recurring task
               they are copied onto every spawned instance. */}
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Tags</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Tags</label>
             <TagPicker orgId={orgId} value={tagIds} onChange={setTagIds} disabled={submitting} />
           </div>
 
@@ -869,24 +869,24 @@ export default function CreateTaskModal({
               header expands the full dropzone. Applies to both one-time and recurring
               (a recurring template's attachments repeat on every spawned instance). */}
           <div>
-            <div className="rounded-[12px] border border-[#E2E8F0] bg-white overflow-hidden">
+            <div className="rounded-[12px] border border-border-light bg-white overflow-hidden">
               {/* Card header — click anywhere to toggle; + button on the right */}
               <button
                 type="button"
                 onClick={() => setAttachmentsOpen((v) => !v)}
                 aria-expanded={attachmentsOpen}
-                className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-[#F8FAFC] transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-surface-sunken transition-colors"
               >
-                <label className="text-sm font-medium text-[#374151] cursor-pointer">Attachments</label>
-                <span className="text-xs font-normal text-[#475569]">Optional</span>
+                <label className="text-sm font-medium text-text-secondary cursor-pointer">Attachments</label>
+                <span className="text-xs font-normal text-text-secondary">Optional</span>
                 {attachmentFiles.length > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
                     {attachmentFiles.length}
                   </span>
                 )}
                 <span
                   className={[
-                    'ml-auto flex items-center justify-center w-6 h-6 rounded-[6px] text-[#2563EB] transition-transform',
+                    'ml-auto flex items-center justify-center w-6 h-6 rounded-[6px] text-primary-text transition-transform',
                     attachmentsOpen ? 'rotate-45' : '',
                   ].join(' ')}
                   aria-hidden
@@ -937,9 +937,9 @@ export default function CreateTaskModal({
         {/* Footer — no Cancel button; the header X closes the modal (see DESIGN_RULES).
             The error lives here (not at the top of the scrollable body) so it's
             always visible right next to Save — never hidden above the fold. */}
-        <div className="shrink-0 px-6 py-4 border-t border-[#E2E8F0] space-y-3">
+        <div className="shrink-0 px-6 py-4 border-t border-border-light space-y-3">
           {error && (
-            <div className="bg-[#FEE2E2] border border-[#FECACA] rounded-[8px] px-4 py-3 text-sm text-[#DC2626]">
+            <div className="bg-danger-bg border border-danger-border rounded-[8px] px-4 py-3 text-sm text-danger">
               {error}
             </div>
           )}
@@ -948,7 +948,7 @@ export default function CreateTaskModal({
               type="button"
               onClick={handleSubmit}
               disabled={submitting || (mode === 'one_time' && holidayCheck?.action === 'skip_create' && !holidayCheck.is_working_day && !holidayOverride)}
-              className="w-full sm:w-auto px-5 py-[10px] text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {submitting ? 'Creating...' : mode === 'recurring' ? 'Create Recurring Task' : 'Create Task'}
             </button>

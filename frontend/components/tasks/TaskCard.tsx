@@ -31,14 +31,14 @@ interface TaskCardProps {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function deadlineClass(deadline?: string): string {
-  if (!deadline) return 'text-[#475569]'
+  if (!deadline) return 'text-text-secondary'
   const d = new Date(deadline)
   const now = getNow()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const dl = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-  if (dl < today) return 'text-[#DC2626] font-medium'
-  if (dl.getTime() === today.getTime()) return 'text-[#D97706] font-medium'
-  return 'text-[#475569]'
+  if (dl < today) return 'text-danger font-medium'
+  if (dl.getTime() === today.getTime()) return 'text-warning font-medium'
+  return 'text-text-secondary'
 }
 
 function formatDeadline(deadline: string): string {
@@ -134,7 +134,7 @@ export function StatusControl({
       {open && (
         <div
           role="listbox"
-          className="absolute right-0 top-full mt-1 z-50 w-52 max-h-64 overflow-y-auto rounded-[10px] border border-[#E2E8F0] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)] py-1"
+          className="absolute right-0 top-full mt-1 z-50 w-52 max-h-64 overflow-y-auto rounded-[10px] border border-border-light bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)] py-1"
         >
           {onChange && ordered.map((s) => {
             const active = s.id === status.id
@@ -146,12 +146,12 @@ export function StatusControl({
                 aria-selected={active}
                 onClick={() => pick(s.id)}
                 className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${
-                  active ? 'bg-[#F1F5F9]' : 'hover:bg-[#F8FAFC]'
+                  active ? 'bg-surface-control' : 'hover:bg-surface-sunken'
                 }`}
               >
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
-                <span className="flex-1 truncate text-[#0F172A]">{s.label}</span>
-                {active && <Check size={14} className="text-[#2563EB] shrink-0" />}
+                <span className="flex-1 truncate text-text-primary">{s.label}</span>
+                {active && <Check size={14} className="text-primary-text shrink-0" />}
               </button>
             )
           })}
@@ -160,13 +160,13 @@ export function StatusControl({
               real completion gate (checklist/proof); Incomplete needs a reason. The
               divider only shows when the status list sits above them. */}
           {onChange && (onComplete || onMarkIncomplete) && (
-            <div className="my-1 border-t border-[#E2E8F0]" />
+            <div className="my-1 border-t border-border-light" />
           )}
           {onComplete && (
             <button
               type="button"
               onClick={() => { setOpen(false); onComplete() }}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-[#15803D] hover:bg-[#F0FDF4] transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-success hover:bg-success-bg transition-colors"
             >
               <CheckCircle2 size={14} className="shrink-0" />
               <span className="flex-1">Mark Complete</span>
@@ -176,7 +176,7 @@ export function StatusControl({
             <button
               type="button"
               onClick={() => { setOpen(false); onMarkIncomplete() }}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-[#DC2626] hover:bg-[#FEF2F2] transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-danger hover:bg-danger-bg transition-colors"
             >
               <XCircle size={14} className="shrink-0" />
               <span className="flex-1">Mark Incomplete</span>
@@ -229,11 +229,11 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
   return (
     <div
       onClick={onClick}
-      className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-5 py-4 flex items-center gap-4 cursor-pointer hover:border-[#2563EB] hover:shadow-md transition-all duration-150 group"
+      className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-5 py-4 flex items-center gap-4 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group"
     >
       {/* Title + Category + Priority */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-[#0F172A] truncate group-hover:text-[#2563EB] transition-colors">
+        <p className="text-sm font-semibold text-text-primary truncate group-hover:text-primary-text transition-colors">
           {task.title}
         </p>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -252,7 +252,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
           {/* Tags sit with the category as one classification fact (two chips + "+N"). */}
           <TagList tags={task.tags} max={2} />
           {!wf && task.workflow_step?.show_on_card && (
-            <span className="inline-flex items-center gap-0.5 rounded-[999px] px-2 py-0.5 text-[10px] font-semibold bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
+            <span className="inline-flex items-center gap-0.5 rounded-[999px] px-2 py-0.5 text-[10px] font-semibold bg-primary-subtle text-primary-text border border-primary-border">
               <GitBranch size={9} />
               {task.workflow_step.template_name} — Step {task.workflow_step.step_order}
             </span>
@@ -271,24 +271,24 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
               : `${commentCount} comment${commentCount !== 1 ? 's' : ''}${unread > 0 ? ` · ${unread} unread` : ''}`
           }
         >
-          <div className="flex items-center gap-2 text-xs text-[#64748B]">
+          <div className="flex items-center gap-2 text-xs text-text-muted">
             <span className="relative inline-flex shrink-0">
-              <MessageSquare size={14} className={unread > 0 ? 'text-[#2563EB]' : ''} />
+              <MessageSquare size={14} className={unread > 0 ? 'text-primary-text' : ''} />
               {unread > 0 && (
-                <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-[#2563EB] text-white text-[9px] font-bold leading-none ring-2 ring-white">
+                <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-white text-[9px] font-bold leading-none ring-2 ring-white">
                   {unread > 9 ? '9+' : unread}
                 </span>
               )}
             </span>
-            <span className={unread > 0 ? 'font-semibold text-[#2563EB]' : ''}>{commentCount}</span>
+            <span className={unread > 0 ? 'font-semibold text-primary-text' : ''}>{commentCount}</span>
           </div>
         </Tooltip>
 
         {/* Attachments — shows "None" when there are no files */}
         <Tooltip label={attachmentCount === 0 ? 'No attachments' : `${attachmentCount} attachment${attachmentCount !== 1 ? 's' : ''}`}>
-          <div className="flex items-center gap-1 text-xs text-[#64748B]">
+          <div className="flex items-center gap-1 text-xs text-text-muted">
             <Paperclip size={14} className={attachmentCount === 0 ? 'text-[#CBD5E1]' : ''} />
-            {attachmentCount === 0 ? <span className="text-[#94A3B8]">None</span> : <span>{attachmentCount}</span>}
+            {attachmentCount === 0 ? <span className="text-text-muted">None</span> : <span>{attachmentCount}</span>}
           </div>
         </Tooltip>
       </div>
@@ -299,7 +299,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
         {wf && <WorkflowTaskBadge workflow={wf} />}
         {showAssigner && (
           <Tooltip label={`Assigned by ${assignerName}`}>
-            <span className="text-[11px] text-[#94A3B8] truncate max-w-[120px]">
+            <span className="text-[11px] text-text-muted truncate max-w-[120px]">
               by {assignerName}
             </span>
           </Tooltip>
@@ -307,7 +307,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
         {otherPeople.length > 0 ? (
           <AssigneeAvatars people={otherPeople} max={3} size="sm" />
         ) : !showAssigner && !wf ? (
-          <span className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[11px] font-medium bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
+          <span className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[11px] font-medium bg-primary-subtle text-primary-text border border-primary-border">
             Self
           </span>
         ) : null}
@@ -325,7 +325,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
           open. Orthogonal to status, so it rides alongside the status pill. */}
       {task.is_overdue && (
         <div className="shrink-0">
-          <span className="inline-flex items-center gap-1 rounded-[999px] px-2 py-0.5 text-[11px] font-medium bg-[#FEE2E2] text-[#DC2626] border border-[#FECACA]">
+          <span className="inline-flex items-center gap-1 rounded-[999px] px-2 py-0.5 text-[11px] font-medium bg-danger-bg text-danger border border-danger-border">
             <AlertTriangle size={11} />
             Overdue
           </span>

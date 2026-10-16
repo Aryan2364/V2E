@@ -71,13 +71,13 @@ export default function WorkflowTaskBanner({
   const instanceName = ctx?.instance_name ?? fallback?.instance_name
 
   return (
-    <div className="flex flex-col gap-3 rounded-[10px] border border-[#BFDBFE] bg-[#EFF6FF] px-4 py-3 shrink-0">
+    <div className="flex flex-col gap-3 rounded-[10px] border border-primary-border bg-primary-subtle px-4 py-3 shrink-0">
       {/* Sent back: why this step was reopened (or why it is waiting), first. */}
       {ctx?.send_back && <SendBackNote sendBack={ctx.send_back} variant={ctx.send_back.role === 'target' ? 'banner' : 'panel'} />}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex items-start gap-2.5 min-w-0 flex-1">
-          <WorkflowIcon size={18} className="shrink-0 mt-0.5 text-[#1D4ED8]" />
-          <div className="min-w-0 text-sm text-[#1E3A8A]">
+          <WorkflowIcon size={18} className="shrink-0 mt-0.5 text-primary-text" />
+          <div className="min-w-0 text-sm text-primary-text">
             <p className="font-semibold wrap-break-word">{stepLabel}</p>
             <p className="wrap-break-word">
               {instanceName && <span className="font-medium">{instanceName}</span>}
@@ -120,7 +120,7 @@ export default function WorkflowTaskBanner({
         </div>
       </div>
 
-      <StepNotes notes={ctx?.notes ?? []} headingId="task-step-notes" className="border-t border-[#BFDBFE] pt-3" />
+      <StepNotes notes={ctx?.notes ?? []} headingId="task-step-notes" className="border-t border-primary-border pt-3" />
 
       {ctx && (
         <SendBackDialog

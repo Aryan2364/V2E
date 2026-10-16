@@ -37,7 +37,7 @@ export default function LevelSelect({ value, onChange, showHead = true }: Props)
     setOpen(false)
   }
 
-  const triggerCls = `w-full flex items-center gap-2.5 border rounded-[8px] px-3 py-2.5 text-[15px] text-left transition-colors bg-[#F8FAFC] border-[#CBD5E1] hover:bg-white hover:border-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]`
+  const triggerCls = `w-full flex items-center gap-2.5 border rounded-[8px] px-3 py-2.5 text-[15px] text-left transition-colors bg-surface-sunken border-border hover:bg-white hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary`
 
   return (
     <div>
@@ -47,10 +47,10 @@ export default function LevelSelect({ value, onChange, showHead = true }: Props)
         onClick={() => setOpen((o) => !o)}
         className={triggerCls}
       >
-        <span className="flex-1 min-w-0 truncate text-[#0F172A]">{selected.label}</span>
+        <span className="flex-1 min-w-0 truncate text-text-primary">{selected.label}</span>
         <ChevronDown
           size={16}
-          className={`shrink-0 text-[#94A3B8] transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-text-muted transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
@@ -60,7 +60,7 @@ export default function LevelSelect({ value, onChange, showHead = true }: Props)
           <div
             ref={panelRef}
             style={style}
-            className="z-80 flex flex-col border border-[#E2E8F0] rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden py-1"
+            className="z-80 flex flex-col border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden py-1"
           >
             <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
               {options.map((l) => {
@@ -71,17 +71,17 @@ export default function LevelSelect({ value, onChange, showHead = true }: Props)
                     type="button"
                     onClick={() => pick(l.value)}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                      isSel ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+                      isSel ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                     }`}
                   >
                     <span
                       className={`flex-1 min-w-0 truncate text-sm font-medium ${
-                        isSel ? 'text-[#2563EB]' : 'text-[#0F172A]'
+                        isSel ? 'text-primary-text' : 'text-text-primary'
                       }`}
                     >
                       {l.label}
                     </span>
-                    {isSel && <Check size={15} className="text-[#2563EB] shrink-0" />}
+                    {isSel && <Check size={15} className="text-primary-text shrink-0" />}
                   </button>
                 )
               })}

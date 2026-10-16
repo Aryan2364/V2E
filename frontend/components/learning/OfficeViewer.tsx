@@ -66,20 +66,20 @@ export default function OfficeViewer({
 
   if (status === 'loading') {
     return (
-      <div className="flex items-center justify-center gap-2 py-16 text-sm text-[#475569]">
-        <Loader2 size={18} className="animate-spin text-[#2563EB]" /> Loading document…
+      <div className="flex items-center justify-center gap-2 py-16 text-sm text-text-secondary">
+        <Loader2 size={18} className="animate-spin text-primary-text" /> Loading document…
       </div>
     )
   }
   if (status === 'error') {
     return (
       <div className="flex flex-col items-center gap-3 py-14 text-center">
-        <FileWarning size={24} className="text-[#94A3B8]" />
-        <p className="text-sm font-medium text-[#0F172A]">Couldn’t render this document</p>
+        <FileWarning size={24} className="text-text-muted" />
+        <p className="text-sm font-medium text-text-primary">Couldn’t render this document</p>
         {onDownload && (
           <button
             onClick={onDownload}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
           >
             <Download size={15} /> Download to open it
           </button>
@@ -91,7 +91,7 @@ export default function OfficeViewer({
   if (kind === 'text') {
     return (
       <div className="overflow-auto p-4" style={{ maxHeight }}>
-        <pre className="whitespace-pre-wrap text-sm text-[#1E293B] font-mono leading-relaxed">{text}</pre>
+        <pre className="whitespace-pre-wrap text-sm text-text-primary font-mono leading-relaxed">{text}</pre>
       </div>
     )
   }
@@ -101,7 +101,7 @@ export default function OfficeViewer({
     <div className="office-html overflow-auto p-5" style={{ maxHeight }}>
       <style>{OFFICE_CSS}</style>
       <div
-        className={kind === 'docx' ? 'prose prose-sm max-w-none text-[#1E293B]' : ''}
+        className={kind === 'docx' ? 'prose prose-sm max-w-none text-text-primary' : ''}
         // Sanitize the library output (Mammoth/SheetJS) before injecting — strips any
         // script/event-handler/javascript: URI that could ride in via a crafted file.
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}

@@ -50,19 +50,19 @@ export default function MaterialViewer({
         <div className="flex justify-end mb-3">
           <button
             onClick={onDownload}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors"
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
           >
             <Download size={15} /> Download
           </button>
         </div>
       )}
       {viewOnly && (
-        <div className="flex items-center gap-1.5 mb-3 text-xs text-[#64748B]">
+        <div className="flex items-center gap-1.5 mb-3 text-xs text-text-muted">
           <Lock size={13} /> View-only — downloading is disabled for this material.
         </div>
       )}
 
-      <div className="relative rounded-[10px] overflow-hidden border border-[#E2E8F0] bg-[#F8FAFC]">
+      <div className="relative rounded-[10px] overflow-hidden border border-border-light bg-surface-sunken">
         <MaterialBody data={data} viewOnly={viewOnly} pdfLoader={pdfLoader} fullscreen={fullscreen} onDownload={onDownload} />
         {viewOnly && watermark && <WatermarkOverlay text={watermark} />}
       </div>
@@ -83,15 +83,15 @@ function MaterialBody({ data, viewOnly, pdfLoader, fullscreen, onDownload }: { d
       <div className="flex flex-col items-center justify-center text-center py-16 px-6">
         {preparing ? (
           <>
-            <Loader2 size={26} className="text-[#2563EB] animate-spin mb-3" />
-            <p className="text-sm font-medium text-[#0F172A]">Preparing preview…</p>
-            <p className="text-xs text-[#64748B] mt-1">This document is being converted for in-app viewing.</p>
+            <Loader2 size={26} className="text-primary-text animate-spin mb-3" />
+            <p className="text-sm font-medium text-text-primary">Preparing preview…</p>
+            <p className="text-xs text-text-muted mt-1">This document is being converted for in-app viewing.</p>
           </>
         ) : (
           <>
-            <FileWarning size={26} className="text-[#94A3B8] mb-3" />
-            <p className="text-sm font-medium text-[#0F172A]">Preview not available for this file type</p>
-            <p className="text-xs text-[#64748B] mt-1">
+            <FileWarning size={26} className="text-text-muted mb-3" />
+            <p className="text-sm font-medium text-text-primary">Preview not available for this file type</p>
+            <p className="text-xs text-text-muted mt-1">
               {viewOnly ? 'This material can only be viewed in-app.' : 'Use the Download button to open it.'}
             </p>
           </>
@@ -207,14 +207,14 @@ function PdfCanvas({ url, loader, fullscreen }: { url: string | null; loader?: (
   return (
     <div className="overflow-y-auto p-4" style={{ maxHeight: fullscreen ? 'calc(100vh - 110px)' : '72vh' }}>
       {status === 'loading' && (
-        <div className="flex items-center justify-center gap-2 py-16 text-sm text-[#475569]">
-          <Loader2 size={18} className="animate-spin text-[#2563EB]" /> Loading document…
+        <div className="flex items-center justify-center gap-2 py-16 text-sm text-text-secondary">
+          <Loader2 size={18} className="animate-spin text-primary-text" /> Loading document…
         </div>
       )}
       {status === 'error' && (
         <div className="flex flex-col items-center py-16 text-center">
-          <FileWarning size={24} className="text-[#94A3B8] mb-2" />
-          <p className="text-sm font-medium text-[#0F172A]">Couldn’t render this document</p>
+          <FileWarning size={24} className="text-text-muted mb-2" />
+          <p className="text-sm font-medium text-text-primary">Couldn’t render this document</p>
         </div>
       )}
       <div ref={containerRef} className={status === 'ready' ? '' : 'hidden'} />

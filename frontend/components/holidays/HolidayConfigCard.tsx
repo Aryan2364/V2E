@@ -20,7 +20,7 @@ export default function HolidayConfigCard({ action, onActionChange, disabled }: 
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm font-semibold text-[#0F172A] mb-2">When a deadline falls on a holiday…</p>
+        <p className="text-sm font-semibold text-text-primary mb-2">When a deadline falls on a holiday…</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {ACTIONS.map((a) => (
             <button
@@ -32,21 +32,21 @@ export default function HolidayConfigCard({ action, onActionChange, disabled }: 
                 'rounded-[10px] border px-3 py-3 text-left transition-colors',
                 disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
                 action === a.value
-                  ? 'border-[#2563EB] bg-[#EFF6FF]'
-                  : 'border-[#E2E8F0] bg-white hover:border-[#2563EB]/40',
+                  ? 'border-primary bg-primary-subtle'
+                  : 'border-border-light bg-white hover:border-primary/40',
               ].join(' ')}
             >
-              <p className={`text-sm font-semibold ${action === a.value ? 'text-[#2563EB]' : 'text-[#0F172A]'}`}>{a.label}</p>
-              <p className="text-xs text-[#475569] mt-0.5">{a.desc}</p>
+              <p className={`text-sm font-semibold ${action === a.value ? 'text-primary-text' : 'text-text-primary'}`}>{a.label}</p>
+              <p className="text-xs text-text-secondary mt-0.5">{a.desc}</p>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="flex items-start gap-2.5 rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-        <Info size={16} className="text-[#2563EB] mt-0.5 shrink-0" />
-        <p className="text-sm text-[#475569]">
-          Holidays now cascade automatically: <span className="font-medium text-[#0F172A]">org holidays apply to every department and employee</span>,
+      <div className="flex items-start gap-2.5 rounded-[8px] bg-surface-sunken border border-border-light p-3">
+        <Info size={16} className="text-primary-text mt-0.5 shrink-0" />
+        <p className="text-sm text-text-secondary">
+          Holidays now cascade automatically: <span className="font-medium text-text-primary">org holidays apply to every department and employee</span>,
           departments and individuals add their own on top, and any level can remove the ones it doesn&apos;t observe.
           There is no priority setting to configure.
         </p>

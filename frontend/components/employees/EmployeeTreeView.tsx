@@ -59,8 +59,8 @@ interface HiddenInfo {
 }
 
 const statusDot: Record<EmployeeStatus, string> = {
-  active: 'bg-[#16A34A]',
-  inactive: 'bg-[#DC2626]',
+  active: 'bg-success',
+  inactive: 'bg-danger',
 }
 
 // Don't let the auto-fit / "Fit" zoom out past this — below it node text is
@@ -123,10 +123,10 @@ function useIsDesktop() {
 
 function FrLabelNode({ data }: { data: { label: string; color: string } }) {
   return (
-    <div className="inline-flex items-center gap-1.5 rounded-[999px] bg-white border border-[#E2E8F0] px-2.5 py-1 shadow-xs">
-      <Zap size={11} className="text-[#CA8A04]" />
+    <div className="inline-flex items-center gap-1.5 rounded-[999px] bg-white border border-border-light px-2.5 py-1 shadow-xs">
+      <Zap size={11} className="text-warning" />
       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: data.color }} />
-      <span className="text-[11px] font-semibold text-[#475569]">Unlinked · {data.label}</span>
+      <span className="text-[11px] font-semibold text-text-secondary">Unlinked · {data.label}</span>
     </div>
   )
 }
@@ -256,7 +256,7 @@ function Flow({
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#E2E8F0" />
       <Panel position="bottom-center">
         <div
-          className={`pointer-events-none select-none rounded-[999px] border border-[#E2E8F0] bg-white/85 px-3 py-1 text-[11px] font-medium text-[#94A3B8] shadow-xs backdrop-blur transition-opacity duration-500 ${
+          className={`pointer-events-none select-none rounded-[999px] border border-border-light bg-white/85 px-3 py-1 text-[11px] font-medium text-text-muted shadow-xs backdrop-blur transition-opacity duration-500 ${
             interacted ? 'opacity-0' : 'opacity-100'
           }`}
         >
@@ -296,7 +296,7 @@ function EmpCard({
       onClick={() => onOpen(emp.id)}
       style={{ borderLeft: `4px solid ${color}` }}
       className={`relative w-full flex items-center gap-2.5 bg-white rounded-[10px] border px-3 py-2.5 text-left hover:shadow-xs transition-shadow ${
-        freeRadical ? 'border-dashed border-[#CBD5E1]' : 'border-[#E2E8F0]'
+        freeRadical ? 'border-dashed border-border' : 'border-border-light'
       }`}
     >
       {hidden?.hiddenManager && (
@@ -324,10 +324,10 @@ function EmpCard({
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot[emp.status]}`} />
-          <span className="block text-sm font-semibold text-[#0F172A] truncate">{name}</span>
+          <span className="block text-sm font-semibold text-text-primary truncate">{name}</span>
         </span>
         <span className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-xs text-[#64748B] truncate">{emp.role?.title ?? 'No role'}</span>
+          <span className="text-xs text-text-muted truncate">{emp.role?.title ?? 'No role'}</span>
           {emp.role?.level && (
             <span
               className={`inline-flex items-center rounded-[999px] px-1.5 py-px text-[10px] font-semibold capitalize shrink-0 ${levelColors[emp.role.level]}`}
@@ -361,7 +361,7 @@ function MobileBranch({
     <div>
       <EmpCard emp={emp} color={colorFor(emp.department_id)} onOpen={onOpen} hidden={hiddenOf(emp.id)} />
       {kids.length > 0 && (
-        <div className="ml-4 mt-2 pl-3 border-l border-[#E2E8F0] flex flex-col gap-2">
+        <div className="ml-4 mt-2 pl-3 border-l border-border-light flex flex-col gap-2">
           {kids.map((k) => (
             <MobileBranch
               key={k.id}
@@ -497,9 +497,9 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
 
   if (employees.length === 0) {
     return (
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] flex flex-col items-center justify-center py-16 text-center">
+      <div className="bg-white border border-border-light rounded-[12px] flex flex-col items-center justify-center py-16 text-center">
         <Users size={26} className="text-[#CBD5E1] mb-2" />
-        <p className="text-sm text-[#94A3B8]">No employees to chart.</p>
+        <p className="text-sm text-text-muted">No employees to chart.</p>
       </div>
     )
   }
@@ -509,8 +509,8 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
   return (
     <div className="space-y-3">
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[#475569]">
-        <span className="font-semibold text-[#64748B]">Departments:</span>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-text-secondary">
+        <span className="font-semibold text-text-muted">Departments:</span>
         {legend.map((d) => (
           <span key={d.id} className="inline-flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colorFor(d.id) }} />
@@ -518,23 +518,23 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
           </span>
         ))}
         {forest.freeRadicals.length > 0 && (
-          <span className="inline-flex items-center gap-1 text-[#94A3B8]">
-            <Zap size={12} className="text-[#CA8A04]" /> unlinked = no manager &amp; no reports
+          <span className="inline-flex items-center gap-1 text-text-muted">
+            <Zap size={12} className="text-warning" /> unlinked = no manager &amp; no reports
           </span>
         )}
         {hasHiddenNeighbours && (
-          <span className="inline-flex items-center gap-1.5 text-[#94A3B8]">
+          <span className="inline-flex items-center gap-1.5 text-text-muted">
             <span className="w-2 h-2 rounded-full bg-[#94A3B8] border border-white shadow-xs" />
             dot = connection hidden by filter (above = manager, below = reports)
           </span>
         )}
         {isDesktop && (
           <span className="ml-auto hidden items-center gap-3 md:inline-flex">
-            <span className="text-[#94A3B8]">Drag to pan · Ctrl/⌘ + scroll or pinch to zoom</span>
+            <span className="text-text-muted">Drag to pan · Ctrl/⌘ + scroll or pinch to zoom</span>
             <button
               type="button"
               onClick={() => fitRef.current?.()}
-              className="inline-flex items-center gap-1.5 rounded-[8px] border border-[#E2E8F0] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#475569] transition-colors hover:bg-[#F8FAFC] hover:text-[#0F172A]"
+              className="inline-flex items-center gap-1.5 rounded-[8px] border border-border-light bg-white px-2.5 py-1 text-[11px] font-semibold text-text-secondary transition-colors hover:bg-surface-sunken hover:text-text-primary"
             >
               <Maximize2 size={12} /> Fit
             </button>
@@ -544,7 +544,7 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
 
       {isDesktop ? (
         <div
-          className="rounded-[12px] border border-[#E2E8F0] overflow-hidden bg-[#FAFBFC]"
+          className="rounded-[12px] border border-border-light overflow-hidden bg-surface-sunken"
           style={{ height: 640 }}
         >
           <ReactFlowProvider>
@@ -554,7 +554,7 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
       ) : (
         <div className="space-y-5">
           {forest.connectedRoots.map((root) => (
-            <div key={root.id} className="bg-[#FAFBFC] border border-[#E2E8F0] rounded-[12px] p-3">
+            <div key={root.id} className="bg-surface-sunken border border-border-light rounded-[12px] p-3">
               <MobileBranch
                 emp={root}
                 forest={forest}
@@ -568,13 +568,13 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
 
           {freeRadicalClusters.length > 0 && (
             <div>
-              <div className="flex items-center gap-1.5 mb-2 text-xs font-semibold text-[#64748B]">
-                <Zap size={13} className="text-[#CA8A04]" /> Free radicals (no manager &amp; no reports)
+              <div className="flex items-center gap-1.5 mb-2 text-xs font-semibold text-text-muted">
+                <Zap size={13} className="text-warning" /> Free radicals (no manager &amp; no reports)
               </div>
               <div className="space-y-4">
                 {freeRadicalClusters.map((c) => (
                   <div key={c.dept?.id ?? 'none'}>
-                    <div className="flex items-center gap-1.5 mb-1.5 text-xs text-[#475569]">
+                    <div className="flex items-center gap-1.5 mb-1.5 text-xs text-text-secondary">
                       <span
                         className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: c.dept ? colorFor(c.dept.id) : '#94A3B8' }}

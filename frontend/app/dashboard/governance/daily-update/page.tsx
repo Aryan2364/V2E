@@ -49,10 +49,10 @@ interface NoteDraft {
   description: string
 }
 
-const cardCls = 'bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
+const cardCls = 'bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
 const inputCls =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden'
-const labelCls = 'text-sm font-medium text-[#374151]'
+  'w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary bg-white placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden'
+const labelCls = 'text-sm font-medium text-text-secondary'
 
 export default function DailyUpdatePage() {
   const { user } = useAuth()
@@ -141,14 +141,14 @@ export default function DailyUpdatePage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0F172A]">Daily Update</h1>
-          <p className="text-sm text-[#475569] mt-0.5">Log your work, blockers, decisions, and tomorrow&apos;s plan.</p>
+          <h1 className="text-[28px] font-bold text-text-primary">Daily Update</h1>
+          <p className="text-sm text-text-secondary mt-0.5">Log your work, blockers, decisions, and tomorrow&apos;s plan.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setDate((d) => shiftDate(d, -1))}
-            className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9]"
+            className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-border-light text-text-secondary hover:bg-surface-control"
             aria-label="Previous day"
           >
             <ChevronLeft size={18} />
@@ -158,7 +158,7 @@ export default function DailyUpdatePage() {
             type="button"
             onClick={() => setDate((d) => (d < today ? shiftDate(d, 1) : d))}
             disabled={date >= today}
-            className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] disabled:text-[#CBD5E1] disabled:cursor-not-allowed"
+            className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-border-light text-text-secondary hover:bg-surface-control disabled:text-[#CBD5E1] disabled:cursor-not-allowed"
             aria-label="Next day"
           >
             <ChevronRight size={18} />
@@ -170,28 +170,28 @@ export default function DailyUpdatePage() {
         {/* ─── Sidebar: day context ─── */}
         <aside className="lg:w-72 shrink-0 space-y-4">
           <div className={`${cardCls} p-4`}>
-            <h3 className="text-sm font-semibold text-[#0F172A] flex items-center gap-2 mb-3">
-              <ListChecks size={15} className="text-[#2563EB]" /> Tasks due {date === today ? 'today' : 'this day'}
+            <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-3">
+              <ListChecks size={15} className="text-primary-text" /> Tasks due {date === today ? 'today' : 'this day'}
             </h3>
             {context && context.tasks.length > 0 ? (
               <ul className="space-y-2">
                 {context.tasks.map((t) => (
                   <li key={t.id} className="text-sm">
-                    <Link href={`/dashboard/tasks/${t.id}`} className="text-[#1E293B] hover:text-[#2563EB] line-clamp-2">
+                    <Link href={`/dashboard/tasks/${t.id}`} className="text-text-primary hover:text-primary-text line-clamp-2">
                       {t.title}
                     </Link>
-                    {t.status && <span className="block text-xs text-[#64748B]">{t.status.label}</span>}
+                    {t.status && <span className="block text-xs text-text-muted">{t.status.label}</span>}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-[#94A3B8]">No tasks due.</p>
+              <p className="text-xs text-text-muted">No tasks due.</p>
             )}
           </div>
 
           <div className={`${cardCls} p-4`}>
-            <h3 className="text-sm font-semibold text-[#0F172A] flex items-center gap-2 mb-3">
-              <TicketIcon size={15} className="text-[#2563EB]" /> Tickets this day
+            <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-3">
+              <TicketIcon size={15} className="text-primary-text" /> Tickets this day
             </h3>
             {context && context.tickets.length > 0 ? (
               <ul className="space-y-2">
@@ -200,20 +200,20 @@ export default function DailyUpdatePage() {
                     <span
                       className={`mt-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${
                         t.direction === 'by_me'
-                          ? 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]'
-                          : 'bg-[#FEF9C3] text-[#CA8A04] border border-[#FDE68A]'
+                          ? 'bg-primary-subtle text-primary-text border border-primary-border'
+                          : 'bg-warning-bg text-warning border border-warning-border'
                       }`}
                     >
                       {t.direction === 'by_me' ? 'By me' : 'To me'}
                     </span>
-                    <Link href={`/dashboard/tickets/${t.id}`} className="text-[#1E293B] hover:text-[#2563EB] line-clamp-2">
+                    <Link href={`/dashboard/tickets/${t.id}`} className="text-text-primary hover:text-primary-text line-clamp-2">
                       {t.title}
                     </Link>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-[#94A3B8]">No tickets.</p>
+              <p className="text-xs text-text-muted">No tickets.</p>
             )}
           </div>
         </aside>
@@ -221,23 +221,23 @@ export default function DailyUpdatePage() {
         {/* ─── Main body ─── */}
         <div className="flex-1 min-w-0 space-y-5">
           {loading ? (
-            <div className={`${cardCls} p-8 text-center text-sm text-[#94A3B8]`}>Loading…</div>
+            <div className={`${cardCls} p-8 text-center text-sm text-text-muted`}>Loading…</div>
           ) : (
             <>
-              <p className="text-sm font-medium text-[#475569]">{prettyDate(date)}</p>
+              <p className="text-sm font-medium text-text-secondary">{prettyDate(date)}</p>
 
               {/* Carry-forward */}
               {view?.previous_planning_tomorrow && (
-                <div className="border border-[#BAE6FD] bg-[#E0F2FE] rounded-[12px] p-4">
-                  <h3 className="text-sm font-semibold text-[#0369A1] flex items-center gap-2 mb-1">
+                <div className="border border-border-light bg-surface-control rounded-[12px] p-4">
+                  <h3 className="text-sm font-semibold text-text-secondary flex items-center gap-2 mb-1">
                     <CalendarClock size={15} /> Yesterday&apos;s plan for today
                   </h3>
-                  <p className="text-sm text-[#0F172A] whitespace-pre-wrap">{view.previous_planning_tomorrow}</p>
+                  <p className="text-sm text-text-primary whitespace-pre-wrap">{view.previous_planning_tomorrow}</p>
                 </div>
               )}
 
               {isSubmitted && (
-                <div className="flex items-center gap-2 text-sm text-[#16A34A] font-medium">
+                <div className="flex items-center gap-2 text-sm text-success font-medium">
                   <CheckCircle2 size={16} /> Submitted{view?.daily_update?.submitted_at ? ` · still editable` : ''}
                 </div>
               )}
@@ -245,18 +245,18 @@ export default function DailyUpdatePage() {
               {/* Notes */}
               <div className={`${cardCls} p-6`}>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-[18px] font-semibold text-[#0F172A]">Work notes</h2>
+                  <h2 className="text-[18px] font-semibold text-text-primary">Work notes</h2>
                   <button
                     type="button"
                     onClick={() => setNotes((n) => [...n, { title: '', description: '' }])}
-                    className="flex items-center gap-1.5 text-sm font-medium text-[#2563EB] hover:text-[#1D4ED8]"
+                    className="flex items-center gap-1.5 text-sm font-medium text-primary-text hover:text-primary-text"
                   >
                     <Plus size={15} /> Add note
                   </button>
                 </div>
                 <div className="space-y-4">
                   {notes.map((note, i) => (
-                    <div key={i} className="border border-[#E2E8F0] rounded-[10px] p-4 bg-[#F8FAFC] space-y-2">
+                    <div key={i} className="border border-border-light rounded-[10px] p-4 bg-surface-sunken space-y-2">
                       <div className="flex items-center gap-2">
                         <input
                           value={note.title}
@@ -270,7 +270,7 @@ export default function DailyUpdatePage() {
                           <button
                             type="button"
                             onClick={() => setNotes((n) => n.filter((_, j) => j !== i))}
-                            className="w-9 h-9 shrink-0 flex items-center justify-center rounded-[8px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2]"
+                            className="w-9 h-9 shrink-0 flex items-center justify-center rounded-[8px] text-text-muted hover:text-danger hover:bg-danger-bg"
                             aria-label="Remove note"
                           >
                             <Trash2 size={15} />
@@ -294,22 +294,22 @@ export default function DailyUpdatePage() {
               {/* Folded daily demands */}
               {view && view.folded_demands.length > 0 && (
                 <div className={`${cardCls} p-6`}>
-                  <h2 className="text-[18px] font-semibold text-[#0F172A] flex items-center gap-2 mb-1">
-                    <Inbox size={17} className="text-[#2563EB]" /> Demanded daily logs
+                  <h2 className="text-[18px] font-semibold text-text-primary flex items-center gap-2 mb-1">
+                    <Inbox size={17} className="text-primary-text" /> Demanded daily logs
                   </h2>
-                  <p className="text-sm text-[#475569] mb-4">These were demanded from you — submit them with your update.</p>
+                  <p className="text-sm text-text-secondary mb-4">These were demanded from you — submit them with your update.</p>
                   <div className="space-y-4">
                     {view.folded_demands.map((f) => (
-                      <div key={f.submission_id} className="border border-[#E2E8F0] rounded-[10px] p-4 bg-[#F8FAFC]">
+                      <div key={f.submission_id} className="border border-border-light rounded-[10px] p-4 bg-surface-sunken">
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-sm font-semibold text-[#0F172A]">{f.title}</span>
+                          <span className="text-sm font-semibold text-text-primary">{f.title}</span>
                           {f.status === 'submitted' && (
-                            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]">
+                            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-success-bg text-success border border-success-border">
                               Submitted
                             </span>
                           )}
                         </div>
-                        {f.description && <p className="text-xs text-[#475569] mb-2">{f.description}</p>}
+                        {f.description && <p className="text-xs text-text-secondary mb-2">{f.description}</p>}
                         <textarea
                           value={foldedBodies[f.submission_id] ?? ''}
                           onChange={(e) =>
@@ -333,7 +333,7 @@ export default function DailyUpdatePage() {
                 </div>
                 <div>
                   <label className={`${labelCls} flex items-center gap-1.5`}>
-                    <Lightbulb size={14} className="text-[#D97706]" /> Decisions I took today
+                    <Lightbulb size={14} className="text-warning" /> Decisions I took today
                   </label>
                   <textarea value={decisions} onChange={(e) => setDecisions(e.target.value)} rows={2} className={`${inputCls} mt-1.5`} />
                 </div>
@@ -343,7 +343,7 @@ export default function DailyUpdatePage() {
                 </div>
                 <div>
                   <label className={`${labelCls} flex items-center gap-1.5`}>
-                    <CalendarClock size={14} className="text-[#2563EB]" /> Planning for tomorrow
+                    <CalendarClock size={14} className="text-primary-text" /> Planning for tomorrow
                   </label>
                   <textarea value={planning} onChange={(e) => setPlanning(e.target.value)} rows={2} className={`${inputCls} mt-1.5`} />
                 </div>
@@ -351,12 +351,12 @@ export default function DailyUpdatePage() {
 
               {/* Actions */}
               <div className="flex items-center justify-end gap-3">
-                {savedFlash && <span className="text-sm text-[#16A34A] font-medium">Saved</span>}
+                {savedFlash && <span className="text-sm text-success font-medium">Saved</span>}
                 <button
                   type="button"
                   onClick={() => save(false)}
                   disabled={saving}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-[#2563EB] bg-white border-2 border-[#2563EB] hover:bg-[#EFF6FF] disabled:opacity-60"
+                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle disabled:opacity-60"
                 >
                   <Save size={15} /> Save draft
                 </button>
@@ -364,7 +364,7 @@ export default function DailyUpdatePage() {
                   type="button"
                   onClick={() => save(true)}
                   disabled={saving}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]"
+                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
                 >
                   <Send size={15} /> {isSubmitted ? 'Update' : 'Submit'}
                 </button>

@@ -41,21 +41,21 @@ export default function EntityAuditHistory({ orgId, resource, entityId, title = 
       .finally(() => setLoading(false))
   }, [orgId, resource, entityId])
 
-  if (loading) return <p className="text-sm text-[#94A3B8] py-4">Loading history…</p>
-  if (items.length === 0) return <p className="text-sm text-[#94A3B8] text-center py-6">No activity yet.</p>
+  if (loading) return <p className="text-sm text-text-muted py-4">Loading history…</p>
+  if (items.length === 0) return <p className="text-sm text-text-muted text-center py-6">No activity yet.</p>
 
   return (
     <div>
       {title && (
-        <h3 className="flex items-center gap-2 text-[15px] font-semibold text-[#0F172A] mb-3">
-          <History size={16} className="text-[#2563EB]" /> {title}
+        <h3 className="flex items-center gap-2 text-[15px] font-semibold text-text-primary mb-3">
+          <History size={16} className="text-primary-text" /> {title}
         </h3>
       )}
       <div className="flex flex-col">
         {items.map((e) => {
           const open = expanded === e.id && hasChanges(e)
           return (
-            <div key={e.id} className="border-b border-[#F1F5F9] last:border-0">
+            <div key={e.id} className="border-b border-border-light last:border-0">
               <button
                 type="button"
                 onClick={() => hasChanges(e) && setExpanded((c) => (c === e.id ? null : e.id))}
@@ -73,11 +73,11 @@ export default function EntityAuditHistory({ orgId, resource, entityId, title = 
                       </span>
                     )}
                   </div>
-                  <div className="mt-1 text-xs text-[#475569] flex items-center gap-1.5">
+                  <div className="mt-1 text-xs text-text-secondary flex items-center gap-1.5">
                     <ActorCell entry={e} />
                   </div>
                 </div>
-                <span className="shrink-0 text-xs text-[#94A3B8] whitespace-nowrap">{fmtDateTime(e.occurred_at)}</span>
+                <span className="shrink-0 text-xs text-text-muted whitespace-nowrap">{fmtDateTime(e.occurred_at)}</span>
               </button>
               {open && (
                 <div className="pb-3">

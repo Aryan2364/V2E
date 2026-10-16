@@ -37,7 +37,7 @@ export default function HolidayConfigurationsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 size={24} className="animate-spin text-[#94A3B8]" />
+        <Loader2 size={24} className="animate-spin text-text-muted" />
       </div>
     )
   }
@@ -47,12 +47,12 @@ export default function HolidayConfigurationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-bold text-[#0F172A]">Configurations</h1>
-        <p className="text-[15px] text-[#475569] mt-1">Configure how deadlines across tasks, recurring tasks, workflows and tickets behave when they fall on a holiday.</p>
+        <h1 className="text-[28px] font-bold text-text-primary">Configurations</h1>
+        <p className="text-[15px] text-text-secondary mt-1">Configure how deadlines across tasks, recurring tasks, workflows and tickets behave when they fall on a holiday.</p>
       </div>
 
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-        <h2 className="text-[18px] font-semibold text-[#0F172A] mb-4">Behavior</h2>
+      <div className="bg-white border border-border-light rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+        <h2 className="text-[18px] font-semibold text-text-primary mb-4">Behavior</h2>
 
         <HolidayConfigCard
           action={config.holiday_on_task_action}
@@ -66,7 +66,7 @@ export default function HolidayConfigurationsPage() {
               type="button"
               disabled={saving}
               onClick={save}
-              className="flex items-center gap-2 h-10 px-5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors"
+              className="flex items-center gap-2 h-10 px-5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
             >
               <Save size={15} />
               {saving ? 'Saving...' : 'Save Settings'}

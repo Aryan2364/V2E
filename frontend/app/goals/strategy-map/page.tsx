@@ -68,27 +68,27 @@ export default function StrategyMapPage() {
       {/* Breadcrumb — the way back out of the canvas, always visible. */}
       <nav
         aria-label="Breadcrumb"
-        className="flex items-center gap-1.5 text-[13px] text-[#64748B] shrink-0"
+        className="flex items-center gap-1.5 text-[13px] text-text-muted shrink-0"
       >
         <button
           onClick={() => router.push('/goals/list')}
-          className="font-medium text-[#475569] hover:text-[#2563EB] transition-colors rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+          className="font-medium text-text-secondary hover:text-primary-text transition-colors rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
         >
           Goals
         </button>
         <span className="text-[#CBD5E1]">›</span>
-        <span className="font-semibold text-[#0F172A]" aria-current="page">
+        <span className="font-semibold text-text-primary" aria-current="page">
           Strategic Map
         </span>
       </nav>
 
       <div className="shrink-0">
         <div className="min-w-0">
-          <h1 className="text-[26px] font-bold text-[#0F172A] leading-tight">Strategic Map</h1>
-          <p className="text-sm text-[#475569] mt-1">
+          <h1 className="text-[26px] font-bold text-text-primary leading-tight">Strategic Map</h1>
+          <p className="text-sm text-text-secondary mt-1">
             Every goal in its band, with a line to the goals it supports.{' '}
             {!loading && (
-              <span className="text-[#64748B]">
+              <span className="text-text-muted">
                 {map.goals.length} goal{map.goals.length === 1 ? '' : 's'} · {linkCount} connection
                 {linkCount === 1 ? '' : 's'}
                 {linkCount > 0 && ' · click a goal to keep its links traced, double-click to open it'}
@@ -99,15 +99,15 @@ export default function StrategyMapPage() {
       </div>
 
       {loading ? (
-        <div className="flex-1 min-h-0 rounded-[12px] border border-[#E2E8F0] bg-white flex items-center justify-center gap-2 text-sm text-[#475569]">
+        <div className="flex-1 min-h-0 rounded-[12px] border border-border-light bg-white flex items-center justify-center gap-2 text-sm text-text-secondary">
           <Loader2 size={16} className="animate-spin" /> Loading the map…
         </div>
       ) : error ? (
-        <div className="flex-1 min-h-0 rounded-[12px] border border-[#E2E8F0] bg-white flex flex-col items-center justify-center gap-3 text-center px-6">
-          <p className="text-sm text-[#475569]">The map couldn&apos;t be loaded.</p>
+        <div className="flex-1 min-h-0 rounded-[12px] border border-border-light bg-white flex flex-col items-center justify-center gap-3 text-center px-6">
+          <p className="text-sm text-text-secondary">The map couldn&apos;t be loaded.</p>
           <button
             onClick={() => void load()}
-            className="inline-flex items-center gap-2 h-9 px-4 rounded-[8px] bg-[#2563EB] text-white text-[13px] font-semibold hover:bg-[#1D4ED8] transition-colors"
+            className="inline-flex items-center gap-2 h-9 px-4 rounded-[8px] bg-primary text-white text-[13px] font-semibold hover:bg-primary-hover transition-colors"
           >
             <RefreshCw size={14} /> Try again
           </button>

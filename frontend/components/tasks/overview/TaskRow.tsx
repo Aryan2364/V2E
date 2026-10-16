@@ -11,14 +11,14 @@ import WorkflowTaskBadge, { taskWorkflow } from '@/components/tasks/WorkflowTask
 // ─── Deadline helpers (mirror TaskCard) ─────────────────────────────────────────
 
 function deadlineClass(deadline?: string): string {
-  if (!deadline) return 'text-[#475569]'
+  if (!deadline) return 'text-text-secondary'
   const d = new Date(deadline)
   const now = getNow()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const dl = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-  if (dl < today) return 'text-[#DC2626] font-medium'
-  if (dl.getTime() === today.getTime()) return 'text-[#D97706] font-medium'
-  return 'text-[#475569]'
+  if (dl < today) return 'text-danger font-medium'
+  if (dl.getTime() === today.getTime()) return 'text-warning font-medium'
+  return 'text-text-secondary'
 }
 
 function formatDeadline(deadline: string): string {
@@ -79,13 +79,13 @@ export default function TaskRow({
   return (
     <div
       onClick={onClick}
-      className={`bg-white border rounded-[10px] px-4 py-3 flex items-center gap-3 sm:gap-4 cursor-pointer hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-150 group ${selected ? 'border-[#2563EB] ring-1 ring-[#2563EB]' : 'border-[#E2E8F0] hover:border-[#2563EB]'}`}
+      className={`bg-white border rounded-[10px] px-4 py-3 flex items-center gap-3 sm:gap-4 cursor-pointer hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-150 group ${selected ? 'border-primary ring-1 ring-primary' : 'border-border-light hover:border-primary'}`}
     >
       {/* Selection checkbox */}
       {selectable && (
         <button
           onClick={(e) => { e.stopPropagation(); onToggleSelect?.() }}
-          className={`w-[18px] h-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors ${selected ? 'bg-[#2563EB] border-[#2563EB]' : 'border-[#CBD5E1] hover:border-[#2563EB] bg-white'}`}
+          className={`w-[18px] h-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors ${selected ? 'bg-primary border-primary' : 'border-border hover:border-primary bg-white'}`}
           aria-label={selected ? 'Deselect' : 'Select'}
         >
           {selected && <Check size={12} className="text-white" />}
@@ -101,11 +101,11 @@ export default function TaskRow({
       {/* Title + meta */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 min-w-0">
-          <p className="text-sm font-semibold text-[#0F172A] truncate group-hover:text-[#2563EB] transition-colors">
+          <p className="text-sm font-semibold text-text-primary truncate group-hover:text-primary-text transition-colors">
             {task.title}
           </p>
           {task.type === 'recurring' && (
-            <Repeat size={12} className="text-[#0891B2] shrink-0" />
+            <Repeat size={12} className="text-text-secondary shrink-0" />
           )}
         </div>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -115,10 +115,10 @@ export default function TaskRow({
           <TagList tags={task.tags} max={2} />
           {wf && <WorkflowTaskBadge workflow={wf} />}
           {assigner && (
-            <span className="inline-flex items-center gap-1 text-[11px] text-[#475569]">
-              <span className="text-[#94A3B8]">by</span>
-              <span className="font-medium text-[#334155]">{assigner}</span>
-              <ArrowRight size={10} className="text-[#94A3B8]" />
+            <span className="inline-flex items-center gap-1 text-[11px] text-text-secondary">
+              <span className="text-text-muted">by</span>
+              <span className="font-medium text-text-secondary">{assigner}</span>
+              <ArrowRight size={10} className="text-text-muted" />
             </span>
           )}
         </div>

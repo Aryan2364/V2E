@@ -54,53 +54,53 @@ export default function AccessHiddenState({
       : `Your access role doesn't include permission to view ${label}.`
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] px-6 py-12 flex flex-col items-center text-center">
-      <div className="w-14 h-14 rounded-[16px] bg-[#FEE2E2] flex items-center justify-center text-[#DC2626]">
+    <div className="bg-white border border-border-light rounded-[12px] px-6 py-12 flex flex-col items-center text-center">
+      <div className="w-14 h-14 rounded-[16px] bg-danger-bg flex items-center justify-center text-danger">
         <Lock size={26} />
       </div>
 
-      <h3 className="text-[18px] font-semibold text-[#0F172A] mt-4">You don&apos;t have access to {label}</h3>
+      <h3 className="text-[18px] font-semibold text-text-primary mt-4">You don&apos;t have access to {label}</h3>
 
       {count > 0 && (
-        <p className="text-[15px] text-[#1E293B] mt-2">
-          <span className="font-semibold text-[#0F172A]">
+        <p className="text-[15px] text-text-primary mt-2">
+          <span className="font-semibold text-text-primary">
             {count} {count === 1 ? 'item is' : 'items are'}
           </span>{' '}
           assigned to you here, but hidden by your permissions.
         </p>
       )}
 
-      <p className="text-sm text-[#475569] max-w-md mt-1.5">{lead}</p>
+      <p className="text-sm text-text-secondary max-w-md mt-1.5">{lead}</p>
 
       {/* How to get access — concrete, followable steps */}
-      <div className="w-full max-w-md mt-5 border border-[#E2E8F0] rounded-[10px] bg-[#F8FAFC] p-4 text-left">
-        <p className="flex items-center gap-1.5 text-sm font-semibold text-[#0F172A] mb-2">
-          <ShieldCheck size={15} className="text-[#2563EB]" />
+      <div className="w-full max-w-md mt-5 border border-border-light rounded-[10px] bg-surface-sunken p-4 text-left">
+        <p className="flex items-center gap-1.5 text-sm font-semibold text-text-primary mb-2">
+          <ShieldCheck size={15} className="text-primary-text" />
           {isAdmin ? 'How to grant access' : 'How to get access'}
         </p>
-        <ol className="flex flex-col gap-1.5 text-sm text-[#475569] list-decimal list-inside">
+        <ol className="flex flex-col gap-1.5 text-sm text-text-secondary list-decimal list-inside">
           {!isAdmin && (
-            <li className="marker:text-[#94A3B8]">
+            <li className="marker:text-text-muted">
               Ask an administrator to open{' '}
-              <span className="font-medium text-[#0F172A]">Settings → System Configuration → Access Rights</span>.
+              <span className="font-medium text-text-primary">Settings → System Configuration → Access Rights</span>.
             </li>
           )}
           {isAdmin && (
-            <li className="marker:text-[#94A3B8]">
-              Open <span className="font-medium text-[#0F172A]">Access Rights → Roles &amp; Permissions</span>.
+            <li className="marker:text-text-muted">
+              Open <span className="font-medium text-text-primary">Access Rights → Roles &amp; Permissions</span>.
             </li>
           )}
-          <li className="marker:text-[#94A3B8]">
+          <li className="marker:text-text-muted">
             Pick a role (or create one) and enable{' '}
-            <span className="font-medium text-[#0F172A]">{label} → View</span> (set the Data Scope: Own / My Team /
+            <span className="font-medium text-text-primary">{label} → View</span> (set the Data Scope: Own / My Team /
             Company).
           </li>
-          <li className="marker:text-[#94A3B8]">
+          <li className="marker:text-text-muted">
             {reason === 'no_system_role'
               ? 'Assign that role to the user'
               : 'Make sure your role has it enabled'}
             {' '}— or grant just one person via their profile&apos;s{' '}
-            <span className="font-medium text-[#0F172A]">Access &amp; Permissions → {label} → Read → Grant</span>.
+            <span className="font-medium text-text-primary">Access &amp; Permissions → {label} → Read → Grant</span>.
           </li>
         </ol>
       </div>
@@ -108,12 +108,12 @@ export default function AccessHiddenState({
       {isAdmin ? (
         <Link
           href="/settings/system/access-rights"
-          className="inline-flex items-center gap-1.5 mt-5 px-4 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px]"
+          className="inline-flex items-center gap-1.5 mt-5 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px]"
         >
           Open Access Rights <ArrowRight size={15} />
         </Link>
       ) : (
-        <p className="text-xs text-[#94A3B8] mt-5">
+        <p className="text-xs text-text-muted mt-5">
           {loading ? 'Checking your access…' : 'Contact your administrator to be granted access.'}
         </p>
       )}

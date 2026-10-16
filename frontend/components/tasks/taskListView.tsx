@@ -207,11 +207,11 @@ export function GroupedTaskList({
       <div className="space-y-5">
         {groups.map((g) => (
           <div key={g.key}>
-            <p className="mb-1.5 px-1 text-[12px] font-medium text-[#64748B]">
+            <p className="mb-1.5 px-1 text-[12px] font-medium text-text-muted">
               {g.label}
-              <span className="text-[#94A3B8]"> · {g.tasks.length}</span>
+              <span className="text-text-muted"> · {g.tasks.length}</span>
             </p>
-            <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] divide-y divide-[#E2E8F0]">
+            <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] divide-y divide-surface-control-pressed">
               {g.tasks.map((task) => renderRow(task, 'time'))}
             </div>
           </div>
@@ -220,7 +220,7 @@ export function GroupedTaskList({
     )
   }
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] divide-y divide-[#E2E8F0]">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] divide-y divide-surface-control-pressed">
       {sortedTasks.map((task) => renderRow(task, 'date'))}
     </div>
   )

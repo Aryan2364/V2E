@@ -32,7 +32,7 @@ export default function DepartmentsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 size={24} className="animate-spin text-[#94A3B8]" />
+        <Loader2 size={24} className="animate-spin text-text-muted" />
       </div>
     )
   }
@@ -40,22 +40,22 @@ export default function DepartmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-bold text-[#0F172A]">Department Calendars</h1>
-        <p className="text-[15px] text-[#475569] mt-1">Override working days and add department-specific holidays.</p>
+        <h1 className="text-[28px] font-bold text-text-primary">Department Calendars</h1>
+        <p className="text-[15px] text-text-secondary mt-1">Override working days and add department-specific holidays.</p>
       </div>
 
       {departments.length === 0 ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-8 text-center shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-          <p className="text-[#94A3B8] text-sm">No departments found. Create departments first in Org Chart.</p>
+        <div className="bg-white border border-border-light rounded-[12px] p-8 text-center shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+          <p className="text-text-muted text-sm">No departments found. Create departments first in Org Chart.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
           {/* Dept list */}
-          <div className="bg-white border border-[#E2E8F0] rounded-[12px] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-            <div className="px-4 py-3 border-b border-[#E2E8F0] bg-[#F8FAFC]">
-              <p className="text-xs font-semibold text-[#475569] uppercase tracking-wide">Departments</p>
+          <div className="bg-white border border-border-light rounded-[12px] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+            <div className="px-4 py-3 border-b border-border-light bg-surface-sunken">
+              <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Departments</p>
             </div>
-            <div className="divide-y divide-[#E2E8F0] max-h-[calc(100vh-260px)] overflow-y-auto">
+            <div className="divide-y divide-surface-control-pressed max-h-[calc(100vh-260px)] overflow-y-auto">
               {flat.map(({ dept, depth }) => (
                 <button
                   key={dept.id}
@@ -65,8 +65,8 @@ export default function DepartmentsPage() {
                   className={[
                     'w-full flex items-center justify-between gap-2 pr-4 py-3 text-sm text-left transition-colors',
                     selected?.id === dept.id
-                      ? 'bg-[#EFF6FF] text-[#2563EB] font-semibold'
-                      : 'text-[#0F172A] hover:bg-[#F8FAFC]',
+                      ? 'bg-primary-subtle text-primary-text font-semibold'
+                      : 'text-text-primary hover:bg-surface-sunken',
                   ].join(' ')}
                 >
                   <span className="flex items-center gap-2 min-w-0">
@@ -76,7 +76,7 @@ export default function DepartmentsPage() {
                     />
                     <span className="truncate">{dept.name}</span>
                   </span>
-                  <ChevronRight size={14} className="shrink-0 text-[#94A3B8]" />
+                  <ChevronRight size={14} className="shrink-0 text-text-muted" />
                 </button>
               ))}
             </div>

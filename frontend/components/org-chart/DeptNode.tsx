@@ -28,7 +28,7 @@ function DeptNode({ data, selected }: { data: DeptNodeData; selected: boolean })
   return (
     <div
       className={`group relative flex flex-col rounded-xl border-2 p-4 w-[200px] h-[120px] shadow-xs transition-all ${
-        data.highlighted ? 'ring-2 ring-[#FCD34D]' : selected ? 'ring-2 ring-[#2563EB]/40' : ''
+        data.highlighted ? 'ring-2 ring-warning-border' : selected ? 'ring-2 ring-primary/40' : ''
       }`}
       style={{ backgroundColor: fill, color: text, borderColor: border }}
     >

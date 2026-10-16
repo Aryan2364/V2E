@@ -8,13 +8,13 @@ import { notificationsApi, type AppNotification } from '@/lib/api/notifications'
 import { useNotifications } from '@/lib/notifications/NotificationsProvider'
 
 const MODULE_COLORS: Record<string, string> = {
-  tasks: 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]',
-  projects: 'bg-[#F5F3FF] text-[#7C3AED] border-[#DDD6FE]',
-  workflows: 'bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]',
-  tickets: 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]',
-  meetings: 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]',
-  communication: 'bg-[#FDF2F8] text-[#BE185D] border-[#FBCFE8]',
-  system: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]',
+  tasks: 'bg-primary-subtle text-primary-text border-primary-border',
+  projects: 'bg-surface-control text-text-secondary border-border-light',
+  workflows: 'bg-success-bg text-success border-success-border',
+  tickets: 'bg-warning-bg text-warning border-warning-border',
+  meetings: 'bg-success-bg text-success border-success-border',
+  communication: 'bg-danger-bg text-text-secondary border-danger-border',
+  system: 'bg-surface-control text-text-secondary border-border-light',
 }
 
 const MODULE_FILTERS = ['all', 'tasks', 'projects', 'workflows', 'tickets', 'meetings'] as const
@@ -87,7 +87,7 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -97,15 +97,15 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">Notifications</h1>
-          <p className="mt-1 text-[15px] text-[#475569]">
+          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Notifications</h1>
+          <p className="mt-1 text-[15px] text-text-secondary">
             {unread > 0 ? `${unread} unread notification${unread !== 1 ? 's' : ''}` : 'You’re all caught up.'}
           </p>
         </div>
         {unread > 0 && (
           <button
             onClick={handleMarkAll}
-            className="flex items-center gap-2 px-4 py-[9px] text-sm font-semibold text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] rounded-[8px] hover:bg-[#DBEAFE] transition-colors shrink-0"
+            className="flex items-center gap-2 px-4 py-[9px] text-sm font-semibold text-primary-text bg-primary-subtle border border-primary-border rounded-[8px] hover:bg-primary-subtle transition-colors shrink-0"
           >
             <CheckCheck size={15} /> Mark all read
           </button>
@@ -121,8 +121,8 @@ export default function NotificationsPage() {
             className={[
               'px-3 py-1.5 rounded-[999px] text-xs font-semibold capitalize transition-colors',
               moduleFilter === m
-                ? 'bg-[#2563EB] text-white'
-                : 'bg-white border border-[#E2E8F0] text-[#475569] hover:border-[#CBD5E1]',
+                ? 'bg-primary text-white'
+                : 'bg-white border border-border-light text-text-secondary hover:border-border',
             ].join(' ')}
           >
             {m === 'all' ? 'All' : m}
@@ -132,37 +132,37 @@ export default function NotificationsPage() {
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
-          <div className="w-14 h-14 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-            <Bell size={24} className="text-[#94A3B8]" />
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
+          <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
+            <Bell size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-[#0F172A]">No notifications</p>
-          <p className="text-sm text-[#475569] mt-1">Activity on your tasks and projects will appear here.</p>
+          <p className="font-semibold text-text-primary">No notifications</p>
+          <p className="text-sm text-text-secondary mt-1">Activity on your tasks and projects will appear here.</p>
         </div>
       ) : (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] divide-y divide-[#F1F5F9] overflow-hidden">
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] divide-y divide-surface-control overflow-hidden">
           {filtered.map((n) => (
             <button
               key={n.id}
               onClick={() => handleClick(n)}
               className={[
-                'w-full text-left px-5 py-4 transition-colors hover:bg-[#F8FAFC]',
-                n.is_read ? '' : 'bg-[#EFF6FF]/40',
+                'w-full text-left px-5 py-4 transition-colors hover:bg-surface-sunken',
+                n.is_read ? '' : 'bg-primary-subtle/40',
               ].join(' ')}
             >
               <div className="flex items-start gap-3">
-                {!n.is_read && <span className="mt-2 w-2 h-2 rounded-full bg-[#2563EB] shrink-0" />}
+                {!n.is_read && <span className="mt-2 w-2 h-2 rounded-full bg-primary shrink-0" />}
                 <div className={`flex-1 min-w-0 ${n.is_read ? 'pl-5' : ''}`}>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-[#0F172A]">{n.title}</p>
+                    <p className="text-sm font-semibold text-text-primary">{n.title}</p>
                     <span
                       className={`inline-flex rounded-[999px] border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${MODULE_COLORS[n.module] ?? MODULE_COLORS.system}`}
                     >
                       {n.module}
                     </span>
                   </div>
-                  <p className="text-sm text-[#475569] mt-0.5 whitespace-pre-line">{n.body}</p>
-                  <p className="text-xs text-[#94A3B8] mt-1.5">{formatWhen(n.created_at)}</p>
+                  <p className="text-sm text-text-secondary mt-0.5 whitespace-pre-line">{n.body}</p>
+                  <p className="text-xs text-text-muted mt-1.5">{formatWhen(n.created_at)}</p>
                 </div>
               </div>
             </button>
@@ -174,7 +174,7 @@ export default function NotificationsPage() {
         <button
           onClick={loadMore}
           disabled={loadingMore}
-          className="w-full py-2.5 text-sm font-medium text-[#2563EB] bg-white border border-[#E2E8F0] rounded-[10px] hover:bg-[#F8FAFC] disabled:opacity-60 transition-colors"
+          className="w-full py-2.5 text-sm font-medium text-primary-text bg-white border border-border-light rounded-[10px] hover:bg-surface-sunken disabled:opacity-60 transition-colors"
         >
           {loadingMore ? 'Loading…' : 'Load older notifications'}
         </button>

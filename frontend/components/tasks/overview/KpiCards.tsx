@@ -33,17 +33,17 @@ function Card({
         <span className="w-8 h-8 rounded-[8px] flex items-center justify-center" style={{ backgroundColor: iconColor + '18', color: iconColor }}>
           {icon}
         </span>
-        {onClick && <span className="text-[#94A3B8] text-sm">›</span>}
+        {onClick && <span className="text-text-muted text-sm">›</span>}
       </div>
       <p className="text-2xl font-bold leading-none tabular-nums" style={{ color: valueColor }}>{value}</p>
-      <p className="text-[13px] mt-1.5 text-[#475569]">{label}</p>
+      <p className="text-[13px] mt-1.5 text-text-secondary">{label}</p>
       {delta != null && (
         <p className="text-[12px] mt-1 font-medium flex items-center gap-1" style={{ color: delta >= 0 ? '#16A34A' : '#DC2626' }}>
           {delta >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-          {Math.abs(delta)} pts <span className="text-[#94A3B8] font-normal">vs last month</span>
+          {Math.abs(delta)} pts <span className="text-text-muted font-normal">vs last month</span>
         </p>
       )}
-      {sub && delta == null && <p className="text-[12px] mt-1 text-[#94A3B8]">{sub}</p>}
+      {sub && delta == null && <p className="text-[12px] mt-1 text-text-muted">{sub}</p>}
     </button>
   )
 }

@@ -54,31 +54,31 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
 
   if (loading) {
     return (
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center justify-center h-20">
-        <Loader2 size={18} className="animate-spin text-[#94A3B8]" />
+      <div className="bg-white border border-border-light rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center justify-center h-20">
+        <Loader2 size={18} className="animate-spin text-text-muted" />
       </div>
     )
   }
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+    <div className="bg-white border border-border-light rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
       <div className="flex items-center gap-2 mb-1">
-        <h2 className="text-[18px] font-semibold text-[#0F172A]">Department sync</h2>
+        <h2 className="text-[18px] font-semibold text-text-primary">Department sync</h2>
         {rows.length > 0 && (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-[#FEF9C3] text-[#CA8A04] border-[#FDE68A]">
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-warning-bg text-warning border-warning-border">
             <AlertTriangle size={11} /> {rows.length} out of sync
           </span>
         )}
       </div>
-      <p className="text-sm text-[#475569] mb-4">Departments that have removed one or more org holidays from their calendar.</p>
+      <p className="text-sm text-text-secondary mb-4">Departments that have removed one or more org holidays from their calendar.</p>
 
       {rows.length === 0 ? (
-        <div className="flex items-center gap-2 text-sm text-[#16A34A] py-3">
+        <div className="flex items-center gap-2 text-sm text-success py-3">
           <CheckCircle2 size={16} />
           All departments are in sync with the org calendar.
         </div>
       ) : (
-        <div className="divide-y divide-[#E2E8F0]">
+        <div className="divide-y divide-surface-control-pressed">
           {rows.map((d) => {
             const isOpen = expanded.has(d.department_id)
             const allIds = d.removed.map((r) => r.org_holiday_id)
@@ -88,18 +88,18 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                   <button
                     type="button"
                     onClick={() => toggle(d.department_id)}
-                    className="flex items-center gap-1.5 text-sm font-medium text-[#0F172A] hover:text-[#2563EB]"
+                    className="flex items-center gap-1.5 text-sm font-medium text-text-primary hover:text-primary-text"
                   >
                     {isOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                     {d.department_name}
-                    <span className="text-[#94A3B8] font-normal">— {d.removed.length} removed</span>
+                    <span className="text-text-muted font-normal">— {d.removed.length} removed</span>
                   </button>
                   {isAdmin && (
                     <button
                       type="button"
                       onClick={() => reEnforce(d.department_id, allIds)}
                       disabled={busy === `${d.department_id}:${allIds.join(',')}`}
-                      className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-medium text-[#2563EB] hover:bg-[#EFF6FF] transition-colors disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
                     >
                       <RotateCcw size={13} /> Re-enforce all
                     </button>
@@ -109,10 +109,10 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                 {isOpen && (
                   <div className="mt-2 ml-6 space-y-1.5">
                     {d.removed.map((r) => (
-                      <div key={r.org_holiday_id} className="flex items-center gap-3 py-1.5 px-2 rounded-[8px] bg-[#F8FAFC]">
+                      <div key={r.org_holiday_id} className="flex items-center gap-3 py-1.5 px-2 rounded-[8px] bg-surface-sunken">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-[#1E293B] truncate">{r.name}</p>
-                          <p className="text-[11px] text-[#94A3B8]">
+                          <p className="text-sm text-text-primary truncate">{r.name}</p>
+                          <p className="text-[11px] text-text-muted">
                             {r.date ? parseLocalDate(r.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
                             {r.applies_to_subtree ? ' · applied to sub-departments' : ''}
                             {r.opted_out_by_name ? ` · by ${r.opted_out_by_name}` : ''}
@@ -123,7 +123,7 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                             type="button"
                             onClick={() => reEnforce(d.department_id, [r.org_holiday_id])}
                             disabled={busy === `${d.department_id}:${r.org_holiday_id}`}
-                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-medium text-[#2563EB] hover:bg-[#EFF6FF] transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
                           >
                             <RotateCcw size={13} /> Re-enforce
                           </button>

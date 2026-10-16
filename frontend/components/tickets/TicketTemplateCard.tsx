@@ -17,17 +17,17 @@ export default function TicketTemplateCard({ template, selected, onSelect }: Pro
       className={[
         'w-full text-left p-4 rounded-[12px] border-2 transition-all',
         selected
-          ? 'border-[#2563EB] bg-[#EFF6FF]'
-          : 'border-[#E2E8F0] bg-white hover:border-[#93C5FD] hover:shadow-xs',
+          ? 'border-primary bg-primary-subtle'
+          : 'border-border-light bg-white hover:border-primary-border hover:shadow-xs',
       ].join(' ')}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <p className="text-sm font-semibold text-[#0F172A]">{template.name}</p>
+        <p className="text-sm font-semibold text-text-primary">{template.name}</p>
         <span
           className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
             template.template_type === 'full'
-              ? 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]'
-              : 'bg-[#F8FAFC] text-[#475569] border border-[#E2E8F0]'
+              ? 'bg-primary-subtle text-primary-text border border-primary-border'
+              : 'bg-surface-sunken text-text-secondary border border-border-light'
           }`}
         >
           {template.template_type === 'full' ? 'Full' : 'Simple'}
@@ -45,10 +45,10 @@ export default function TicketTemplateCard({ template, selected, onSelect }: Pro
         )}
       </div>
       {template.description_template && (
-        <p className="text-xs text-[#475569] line-clamp-2">{template.description_template}</p>
+        <p className="text-xs text-text-secondary line-clamp-2">{template.description_template}</p>
       )}
       {template.checklist_items.length > 0 && (
-        <p className="text-[10px] text-[#94A3B8] mt-1.5">
+        <p className="text-[10px] text-text-muted mt-1.5">
           {template.checklist_items.length} checklist item{template.checklist_items.length !== 1 ? 's' : ''}
         </p>
       )}

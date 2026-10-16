@@ -116,29 +116,29 @@ export default function EscalationLevelsField({ orgId, value, onChange, assigner
 
   return (
     <div>
-      <div className="rounded-[12px] border border-[#E2E8F0] bg-white overflow-visible">
+      <div className="rounded-[12px] border border-border-light bg-white overflow-visible">
         {/* Card header — click anywhere to toggle; + button on the right */}
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-[#F8FAFC] transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-surface-sunken transition-colors"
         >
-          <label className="text-sm font-medium text-[#374151] cursor-pointer shrink-0">Escalation</label>
-          <span className="text-xs font-normal text-[#475569] shrink-0">Optional</span>
+          <label className="text-sm font-medium text-text-secondary cursor-pointer shrink-0">Escalation</label>
+          <span className="text-xs font-normal text-text-secondary shrink-0">Optional</span>
           {filledCount > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold shrink-0">
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold shrink-0">
               {filledCount}
             </span>
           )}
           {!open && filledCount > 0 && (
-            <span className="min-w-0 flex-1 truncate text-xs text-[#475569]">
+            <span className="min-w-0 flex-1 truncate text-xs text-text-secondary">
               {filledCount} level{filledCount !== 1 ? 's' : ''} set
             </span>
           )}
           <span
             className={[
-              'ml-auto flex items-center justify-center w-6 h-6 rounded-[6px] text-[#2563EB] transition-transform shrink-0',
+              'ml-auto flex items-center justify-center w-6 h-6 rounded-[6px] text-primary-text transition-transform shrink-0',
               open ? 'rotate-45' : '',
             ].join(' ')}
             aria-hidden
@@ -149,8 +149,8 @@ export default function EscalationLevelsField({ orgId, value, onChange, assigner
 
         {open && (
           <div className="px-3 pb-3 pt-0 space-y-2">
-            <p className="text-xs text-[#475569] flex items-start gap-1.5">
-              <TrendingUp size={13} className="mt-0.5 shrink-0 text-[#94A3B8]" />
+            <p className="text-xs text-text-secondary flex items-start gap-1.5">
+              <TrendingUp size={13} className="mt-0.5 shrink-0 text-text-muted" />
               If the task goes past its deadline, these people are alerted one level at a time — Level 1 first,
               then the next level an hour later if it stays open.
             </p>
@@ -158,13 +158,13 @@ export default function EscalationLevelsField({ orgId, value, onChange, assigner
               const isAssigner = !!assignerId && uid === assignerId
               return (
                 <div key={idx} className="flex items-center gap-2">
-                  <span className="shrink-0 w-14 text-xs font-semibold text-[#475569]">Level {idx + 1}</span>
+                  <span className="shrink-0 w-14 text-xs font-semibold text-text-secondary">Level {idx + 1}</span>
                   <div className="flex-1 min-w-0">
                     {isAssigner ? (
-                      <div className="flex items-center gap-2 h-[42px] px-3 rounded-[8px] border border-[#BFDBFE] bg-[#EFF6FF]">
-                        <ShieldAlert size={14} className="text-[#2563EB] shrink-0" />
-                        <span className="text-sm font-medium text-[#0F172A]">You (assigner)</span>
-                        <span className="text-[11px] font-medium text-[#2563EB] bg-white border border-[#BFDBFE] rounded-full px-1.5 py-0.5">Default</span>
+                      <div className="flex items-center gap-2 h-[42px] px-3 rounded-[8px] border border-primary-border bg-primary-subtle">
+                        <ShieldAlert size={14} className="text-primary-text shrink-0" />
+                        <span className="text-sm font-medium text-text-primary">You (assigner)</span>
+                        <span className="text-[11px] font-medium text-primary-text bg-white border border-primary-border rounded-full px-1.5 py-0.5">Default</span>
                       </div>
                     ) : (
                       <EmployeePicker
@@ -179,7 +179,7 @@ export default function EscalationLevelsField({ orgId, value, onChange, assigner
                   <button
                     type="button"
                     onClick={() => removeLevel(idx)}
-                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"
+                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"
                     aria-label={`Remove level ${idx + 1}`}
                   >
                     <X size={14} />
@@ -187,12 +187,12 @@ export default function EscalationLevelsField({ orgId, value, onChange, assigner
                 </div>
               )
             })}
-            {rowError && <p className="text-xs text-[#DC2626]">{rowError}</p>}
+            {rowError && <p className="text-xs text-danger">{rowError}</p>}
             {rows.length < MAX_LEVELS && (
               <button
                 type="button"
                 onClick={addLevel}
-                className="flex items-center justify-center gap-1.5 w-full px-3 py-2 text-sm font-medium text-[#2563EB] border border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors"
+                className="flex items-center justify-center gap-1.5 w-full px-3 py-2 text-sm font-medium text-primary-text border border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
               >
                 <Plus size={14} /> Add escalation level
               </button>

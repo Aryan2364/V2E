@@ -130,12 +130,12 @@ export default function QuickCreateProjectModal({
           </div>
         </div>
 
-        <p className="text-[12px] text-[#475569]">
+        <p className="text-[12px] text-text-secondary">
           Members, budget and milestones are set up in Work once the project exists. It’ll be linked
           to this goal automatically.
         </p>
 
-        <div className="flex justify-end pt-4 border-t border-[#E2E8F0]">
+        <div className="flex justify-end pt-4 border-t border-border-light">
           <Button type="submit" disabled={saving}>
             {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
             {saving ? 'Creating…' : 'Create & link'}

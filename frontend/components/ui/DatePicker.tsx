@@ -140,13 +140,13 @@ export default function DatePicker({
   const fsize = compact ? 'text-[13px]' : 'text-[15px]'
   const triggerCls = bare
     ? `inline-flex items-center gap-1.5 rounded-[6px] px-2 py-1 ${fsize} font-semibold transition-colors ${
-        disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-[#F1F5F9]'
+        disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-surface-control'
       }`
-    : `w-full flex items-center gap-0 rounded-[8px] border bg-[#F8FAFC] text-left ${fsize} transition-colors ${
+    : `w-full flex items-center gap-0 rounded-[8px] border bg-surface-sunken text-left ${fsize} transition-colors ${
         disabled
-          ? 'border-[#E2E8F0] cursor-not-allowed opacity-70'
-          : 'border-[#CBD5E1] cursor-pointer hover:bg-white hover:border-[#94A3B8]'
-      } ${open ? 'bg-white! border-[#2563EB]! ring-1 ring-[#2563EB]' : ''}`
+          ? 'border-border-light cursor-not-allowed opacity-70'
+          : 'border-border cursor-pointer hover:bg-white hover:border-border-strong'
+      } ${open ? 'bg-white! border-primary! ring-1 ring-primary' : ''}`
 
   return (
     <div ref={wrapRef}>
@@ -159,17 +159,17 @@ export default function DatePicker({
       >
         {bare ? (
           <>
-            <Calendar size={15} className="text-[#64748B]" />
-            <span className={`truncate ${selected ? 'text-[#0F172A]' : 'text-[#94A3B8]'}`}>
+            <Calendar size={15} className="text-text-muted" />
+            <span className={`truncate ${selected ? 'text-text-primary' : 'text-text-muted'}`}>
               {selected ? formatDisplay(value) : placeholder}
             </span>
           </>
         ) : (
           <>
-            <span className={`flex items-center px-2.5 ${vpad} border-r border-[#E2E8F0] rounded-l-[8px] text-[#64748B]`}>
+            <span className={`flex items-center px-2.5 ${vpad} border-r border-border-light rounded-l-[8px] text-text-muted`}>
               <Calendar size={15} />
             </span>
-            <span className={`flex-1 px-3 ${vpad} truncate ${selected ? 'text-[#0F172A]' : 'text-[#94A3B8]'}`}>
+            <span className={`flex-1 px-3 ${vpad} truncate ${selected ? 'text-text-primary' : 'text-text-muted'}`}>
               {selected ? formatDisplay(value) : placeholder}
             </span>
             {selected && !disabled && !hideClear && (
@@ -181,7 +181,7 @@ export default function DatePicker({
                   e.stopPropagation()
                   onChange('')
                 }}
-                className="flex items-center px-2.5 text-[#94A3B8] hover:text-[#DC2626]"
+                className="flex items-center px-2.5 text-text-muted hover:text-danger"
               >
                 <X size={14} />
               </span>
@@ -196,14 +196,14 @@ export default function DatePicker({
           onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
           <div
-            className="w-[320px] max-w-full rounded-[12px] border border-[#E2E8F0] bg-white shadow-[0_12px_40px_rgba(0,0,0,0.20)] p-3"
+            className="w-[320px] max-w-full rounded-[12px] border border-border-light bg-white shadow-[0_12px_40px_rgba(0,0,0,0.20)] p-3"
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-2">
               <button
                 type="button"
                 onClick={() => (mode === 'days' ? shiftMonth(-1) : setView((v) => new Date(v.getFullYear() - 12, v.getMonth(), 1)))}
-                className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#475569] hover:bg-[#F1F5F9]"
+                className="w-8 h-8 rounded-[8px] flex items-center justify-center text-text-secondary hover:bg-surface-control"
                 aria-label="Previous"
               >
                 <ChevronLeft size={17} />
@@ -211,14 +211,14 @@ export default function DatePicker({
               <button
                 type="button"
                 onClick={() => setMode((m) => (m === 'days' ? 'years' : 'days'))}
-                className="px-3 py-1.5 rounded-[8px] text-sm font-semibold text-[#0F172A] hover:bg-[#F1F5F9]"
+                className="px-3 py-1.5 rounded-[8px] text-sm font-semibold text-text-primary hover:bg-surface-control"
               >
                 {mode === 'days' ? `${MONTHS[view.getMonth()]} ${view.getFullYear()}` : `${yearBase} – ${yearBase + 11}`}
               </button>
               <button
                 type="button"
                 onClick={() => (mode === 'days' ? shiftMonth(1) : setView((v) => new Date(v.getFullYear() + 12, v.getMonth(), 1)))}
-                className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#475569] hover:bg-[#F1F5F9]"
+                className="w-8 h-8 rounded-[8px] flex items-center justify-center text-text-secondary hover:bg-surface-control"
                 aria-label="Next"
               >
                 <ChevronRight size={17} />
@@ -230,7 +230,7 @@ export default function DatePicker({
                 {/* Weekday labels */}
                 <div className="grid grid-cols-7 mb-1">
                   {WEEKDAYS.map((w) => (
-                    <div key={w} className="text-center text-[11px] font-semibold text-[#94A3B8] py-1">
+                    <div key={w} className="text-center text-[11px] font-semibold text-text-muted py-1">
                       {w}
                     </div>
                   ))}
@@ -254,17 +254,17 @@ export default function DatePicker({
                           off
                             ? 'text-[#CBD5E1] cursor-not-allowed'
                             : isSel
-                              ? 'bg-[#2563EB] text-white font-semibold'
+                              ? 'bg-primary text-white font-semibold'
                               : inMonth
-                                ? 'text-[#0F172A] hover:bg-[#EFF6FF]'
-                                : 'text-[#CBD5E1] hover:bg-[#F1F5F9]',
-                          !isSel && isToday && !off ? 'ring-1 ring-inset ring-[#2563EB]' : '',
+                                ? 'text-text-primary hover:bg-primary-subtle'
+                                : 'text-[#CBD5E1] hover:bg-surface-control',
+                          !isSel && isToday && !off ? 'ring-1 ring-inset ring-primary' : '',
                         ].join(' ')}
                       >
                         {d.getDate()}
                         {marked && (
                           <span
-                            className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${isSel ? 'bg-white' : 'bg-[#D97706]'}`}
+                            className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${isSel ? 'bg-white' : 'bg-warning'}`}
                           />
                         )}
                       </button>
@@ -289,8 +289,8 @@ export default function DatePicker({
                       className={[
                         'h-10 rounded-[8px] text-sm flex items-center justify-center transition-colors',
                         isSel
-                          ? 'bg-[#2563EB] text-white font-semibold'
-                          : 'text-[#0F172A] hover:bg-[#EFF6FF]',
+                          ? 'bg-primary text-white font-semibold'
+                          : 'text-text-primary hover:bg-primary-subtle',
                       ].join(' ')}
                     >
                       {yr}
@@ -301,7 +301,7 @@ export default function DatePicker({
             )}
 
             {/* Footer */}
-            <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#F1F5F9]">
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-border-light">
               <button
                 type="button"
                 onClick={() => {
@@ -310,7 +310,7 @@ export default function DatePicker({
                   setOpen(false)
                 }}
                 disabled={isDisabledDay(today)}
-                className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] disabled:text-[#CBD5E1] disabled:cursor-not-allowed px-2 py-1"
+                className="text-xs font-semibold text-primary-text hover:text-primary-text disabled:text-[#CBD5E1] disabled:cursor-not-allowed px-2 py-1"
               >
                 Today
               </button>
@@ -320,7 +320,7 @@ export default function DatePicker({
                   onChange('')
                   setOpen(false)
                 }}
-                className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A] px-2 py-1"
+                className="text-xs font-semibold text-text-muted hover:text-text-primary px-2 py-1"
               >
                 Clear
               </button>

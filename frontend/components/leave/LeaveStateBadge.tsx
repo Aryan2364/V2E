@@ -6,16 +6,16 @@ import type { Leave } from '@/lib/types/leave'
 // status palette. "Effective" leaves (counted as on-leave) read amber/green; rejected
 // and cancelled read red/gray.
 function describe(l: Pick<Leave, 'state' | 'origin' | 'overridden'>): { label: string; cls: string } {
-  if (l.state === 'cancelled') return { label: 'Cancelled', cls: 'bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]' }
+  if (l.state === 'cancelled') return { label: 'Cancelled', cls: 'bg-surface-control text-text-secondary border-border-light' }
   if (l.state === 'rejected') {
     return l.overridden
-      ? { label: 'Taken despite rejection', cls: 'bg-[#F5F3FF] text-[#7C3AED] border-[#DDD6FE]' }
-      : { label: 'Rejected', cls: 'bg-[#FEE2E2] text-[#DC2626] border-[#FECACA]' }
+      ? { label: 'Taken despite rejection', cls: 'bg-surface-control text-text-secondary border-border-light' }
+      : { label: 'Rejected', cls: 'bg-danger-bg text-danger border-danger-border' }
   }
-  if (l.state === 'pending') return { label: 'Pending', cls: 'bg-[#FEF9C3] text-[#CA8A04] border-[#FDE68A]' }
+  if (l.state === 'pending') return { label: 'Pending', cls: 'bg-warning-bg text-warning border-warning-border' }
   // approved
-  if (l.origin === 'self_declared') return { label: 'Self-declared', cls: 'bg-[#FEF3C7] text-[#92400E] border-[#FCD34D]' }
-  return { label: 'Approved', cls: 'bg-[#DCFCE7] text-[#16A34A] border-[#BBF7D0]' }
+  if (l.origin === 'self_declared') return { label: 'Self-declared', cls: 'bg-warning-bg text-warning border-warning-border' }
+  return { label: 'Approved', cls: 'bg-success-bg text-success border-success-border' }
 }
 
 export default function LeaveStateBadge({ leave }: { leave: Pick<Leave, 'state' | 'origin' | 'overridden'> }) {

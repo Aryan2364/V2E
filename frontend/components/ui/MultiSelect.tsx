@@ -296,15 +296,15 @@ export default function MultiSelect(props: Props) {
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-disabled={disabled || undefined}
-        className={`w-full flex items-center gap-2 min-h-[42px] rounded-[8px] border px-3 py-1.5 text-left focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors ${
+        className={`w-full flex items-center gap-2 min-h-[42px] rounded-[8px] border px-3 py-1.5 text-left focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors ${
           disabled
-            ? 'border-[#CBD5E1] bg-[#F1F5F9] text-[#94A3B8] cursor-not-allowed'
-            : 'border-[#CBD5E1] bg-[#F8FAFC] hover:bg-white hover:border-[#94A3B8] cursor-pointer'
+            ? 'border-border bg-surface-control text-text-muted cursor-not-allowed'
+            : 'border-border bg-surface-sunken hover:bg-white hover:border-border-strong cursor-pointer'
         }`}
       >
         <span className="flex-1 min-w-0 flex flex-wrap items-center gap-1.5 py-0.5">
           {selectedOptions.length === 0 ? (
-            <span className="text-[15px] text-[#94A3B8]">{placeholder}</span>
+            <span className="text-[15px] text-text-muted">{placeholder}</span>
           ) : (
             selectedOptions.map((o) =>
               renderChip ? (
@@ -314,7 +314,7 @@ export default function MultiSelect(props: Props) {
               ) : (
                 <span
                   key={o.value}
-                  className="inline-flex items-center gap-1 max-w-full rounded-[6px] border border-[#BFDBFE] bg-[#EFF6FF] pl-2 pr-1 py-0.5 text-[13px] font-medium text-[#1D4ED8]"
+                  className="inline-flex items-center gap-1 max-w-full rounded-[6px] border border-primary-border bg-primary-subtle pl-2 pr-1 py-0.5 text-[13px] font-medium text-primary-text"
                 >
                   <span className="truncate">{o.label}</span>
                   {/* A chip's × is a control inside the field, so it must not
@@ -328,7 +328,7 @@ export default function MultiSelect(props: Props) {
                       removeValue(o.value)
                     }}
                     onKeyDown={(e) => e.stopPropagation()}
-                    className="shrink-0 w-4 h-4 rounded-[4px] flex items-center justify-center text-[#2563EB] hover:bg-[#DBEAFE] hover:text-[#1D4ED8] cursor-pointer disabled:cursor-not-allowed"
+                    className="shrink-0 w-4 h-4 rounded-[4px] flex items-center justify-center text-primary-text hover:bg-primary-subtle hover:text-primary-text cursor-pointer disabled:cursor-not-allowed"
                   >
                     <X size={11} />
                   </button>
@@ -339,7 +339,7 @@ export default function MultiSelect(props: Props) {
         </span>
         <ChevronDown
           size={16}
-          className={`shrink-0 text-[#94A3B8] transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-text-muted transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </div>
 
@@ -347,11 +347,11 @@ export default function MultiSelect(props: Props) {
         <div
           className={`absolute left-0 right-0 ${
             dropUp ? 'bottom-[calc(100%+6px)]' : 'top-[calc(100%+6px)]'
-          } z-50 flex flex-col border border-[#E2E8F0] rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden`}
+          } z-50 flex flex-col border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden`}
           style={{ maxHeight: panelMaxH }}
         >
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-[#F1F5F9] shrink-0">
-            <Search size={14} className="text-[#94A3B8] shrink-0" />
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-border-light shrink-0">
+            <Search size={14} className="text-text-muted shrink-0" />
             <input
               autoFocus
               value={query}
@@ -359,13 +359,13 @@ export default function MultiSelect(props: Props) {
               onKeyDown={onSearchKeyDown}
               placeholder={searchPlaceholder}
               aria-label={searchPlaceholder}
-              className="flex-1 min-w-0 text-[14px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden bg-transparent"
+              className="flex-1 min-w-0 text-[14px] text-text-primary placeholder:text-text-muted focus:outline-hidden bg-transparent"
             />
             {value.length > 0 && (
               <button
                 type="button"
                 onClick={() => onChange([])}
-                className="text-[12px] font-medium text-[#475569] hover:text-[#0F172A] shrink-0"
+                className="text-[12px] font-medium text-text-secondary hover:text-text-primary shrink-0"
               >
                 Clear
               </button>
@@ -373,14 +373,14 @@ export default function MultiSelect(props: Props) {
           </div>
 
           {atMax && (
-            <p className="shrink-0 px-3 py-1.5 border-b border-[#F1F5F9] bg-[#F8FAFC] text-[12px] text-[#475569]">
+            <p className="shrink-0 px-3 py-1.5 border-b border-border-light bg-surface-sunken text-[12px] text-text-secondary">
               {maxSelectedHint ?? `Up to ${maxSelected} selected`}
             </p>
           )}
 
           <div ref={listRef} role="listbox" aria-multiselectable className="relative flex-1 overflow-y-auto overscroll-contain min-h-0 py-1">
             {filtered.length === 0 && !showCreate ? (
-              <p className="px-3 py-6 text-center text-sm text-[#475569]">
+              <p className="px-3 py-6 text-center text-sm text-text-secondary">
                 {options.length === 0 ? emptyText : 'No matches.'}
               </p>
             ) : (
@@ -405,20 +405,20 @@ export default function MultiSelect(props: Props) {
                     } ${
                       checked
                         ? isActive
-                          ? 'bg-[#DBEAFE]'
-                          : 'bg-[#EFF6FF]'
+                          ? 'bg-primary-subtle'
+                          : 'bg-primary-subtle'
                         : isActive && !off
-                          ? 'bg-[#F1F5F9]'
+                          ? 'bg-surface-control'
                           : ''
                     }`}
                   >
                     <span
                       className={`mt-0.5 shrink-0 w-4 h-4 rounded-[4px] border flex items-center justify-center ${
                         checked
-                          ? 'bg-[#2563EB] border-[#2563EB] text-white'
+                          ? 'bg-primary border-primary text-white'
                           : off
-                            ? 'border-[#E2E8F0] bg-[#F8FAFC]'
-                            : 'border-[#CBD5E1] bg-white'
+                            ? 'border-border-light bg-surface-sunken'
+                            : 'border-border bg-white'
                       }`}
                     >
                       {checked && <Check size={11} />}
@@ -434,11 +434,11 @@ export default function MultiSelect(props: Props) {
                       )
                     )}
                     <span className="min-w-0 flex-1">
-                      <span className={`block text-[14px] truncate ${off ? 'text-[#94A3B8]' : 'text-[#0F172A]'}`}>
+                      <span className={`block text-[14px] truncate ${off ? 'text-text-muted' : 'text-text-primary'}`}>
                         {o.label}
                       </span>
                       {o.hint && (
-                        <span className="block text-[12px] text-[#475569] truncate">{o.hint}</span>
+                        <span className="block text-[12px] text-text-secondary truncate">{o.hint}</span>
                       )}
                     </span>
                   </button>
@@ -447,7 +447,7 @@ export default function MultiSelect(props: Props) {
             )}
 
             {showCreate && (
-              <div className={filtered.length > 0 ? 'mt-1 border-t border-[#F1F5F9] pt-1' : ''}>
+              <div className={filtered.length > 0 ? 'mt-1 border-t border-border-light pt-1' : ''}>
                 <PermissionTooltip allowed={createAllowed} reason={createDisabledReason} className="flex w-full">
                   <button
                     type="button"
@@ -459,12 +459,12 @@ export default function MultiSelect(props: Props) {
                       if (active !== createIndex) setActive(createIndex)
                     }}
                     className={`w-full flex items-start gap-2.5 px-3 py-2 text-left transition-colors disabled:cursor-not-allowed ${
-                      active === createIndex && createReady ? 'bg-[#F1F5F9]' : ''
+                      active === createIndex && createReady ? 'bg-surface-control' : ''
                     }`}
                   >
                     <span
                       className={`mt-0.5 shrink-0 w-4 h-4 rounded-[4px] flex items-center justify-center ${
-                        createReady ? 'text-[#2563EB]' : 'text-[#94A3B8]'
+                        createReady ? 'text-primary-text' : 'text-text-muted'
                       }`}
                     >
                       <Plus size={14} />
@@ -472,13 +472,13 @@ export default function MultiSelect(props: Props) {
                     <span className="min-w-0 flex-1">
                       <span
                         className={`block text-[14px] truncate ${
-                          createReady || creating ? 'text-[#1D4ED8] font-medium' : 'text-[#94A3B8]'
+                          createReady || creating ? 'text-primary-text font-medium' : 'text-text-muted'
                         }`}
                       >
                         {createRowLabel}
                       </span>
                       {createHint && (
-                        <span className="block text-[12px] text-[#475569] truncate">{createHint}</span>
+                        <span className="block text-[12px] text-text-secondary truncate">{createHint}</span>
                       )}
                     </span>
                   </button>

@@ -50,8 +50,8 @@ export default function WorkingWeekStrip({ value, onSave, disabled }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-4 bg-white border border-[#E2E8F0] rounded-[12px] px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-      <span className="text-sm font-semibold text-[#0F172A] shrink-0">Working Days</span>
+    <div className="flex items-center gap-4 bg-white border border-border-light rounded-[12px] px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <span className="text-sm font-semibold text-text-primary shrink-0">Working Days</span>
       <div className="flex items-center gap-1.5">
         {DAY_PILLS.map((label, index) => {
           const active = days.includes(index)
@@ -66,8 +66,8 @@ export default function WorkingWeekStrip({ value, onSave, disabled }: Props) {
                   'h-8 w-8 rounded-full text-xs font-semibold border transition-colors duration-150',
                   disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
                   active
-                    ? 'bg-[#2563EB] text-white border-[#2563EB]'
-                    : 'bg-white text-[#94A3B8] border-[#E2E8F0] hover:border-[#2563EB] hover:text-[#2563EB]',
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-white text-text-muted border-border-light hover:border-primary hover:text-primary-text',
                 ].join(' ')}
               >
                 {label}
@@ -78,14 +78,14 @@ export default function WorkingWeekStrip({ value, onSave, disabled }: Props) {
       </div>
 
       {/* Auto-save status */}
-      <span className="ml-auto text-xs text-[#94A3B8] min-w-[60px]">
+      <span className="ml-auto text-xs text-text-muted min-w-[60px]">
         {status === 'saving' && (
-          <span className="flex items-center gap-1 text-[#475569]">
+          <span className="flex items-center gap-1 text-text-secondary">
             <Loader2 size={12} className="animate-spin" /> Saving…
           </span>
         )}
         {status === 'saved' && (
-          <span className="flex items-center gap-1 text-[#16A34A]">
+          <span className="flex items-center gap-1 text-success">
             <Check size={12} /> Saved
           </span>
         )}

@@ -20,9 +20,9 @@ import FindTimeDialog from './FindTimeDialog'
 import { DurationField } from './shared'
 
 const inputClass =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
-const labelClass = 'block text-sm font-medium text-[#374151] mb-1'
-const sectionLabel = 'text-[13px] font-semibold text-[#475569]'
+  'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
+const sectionLabel = 'text-[13px] font-semibold text-text-secondary'
 
 interface Props {
   isOpen: boolean
@@ -258,14 +258,14 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
   // Segmented control button
   const seg = (active: boolean) =>
     ['px-3.5 py-1.5 text-sm font-medium inline-flex items-center gap-1.5 transition-colors',
-      active ? 'bg-[#2563EB] text-white' : 'bg-white text-[#475569] hover:bg-[#F8FAFC]'].join(' ')
+      active ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-surface-sunken'].join(' ')
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="New meeting" size="lg" closeOnEscape={false}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
         {/* Title */}
         <div>
-          <label className={labelClass}>Title <span className="text-[#DC2626]">*</span></label>
+          <label className={labelClass}>Title <span className="text-danger">*</span></label>
           <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Meeting title" autoFocus />
         </div>
 
@@ -273,12 +273,12 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
         <div>
           <label className={labelClass}>Attendees</label>
           <MeetingAttendeeSelector options={people} value={attendees} onChange={setAttendees} optional={optional} onToggleOptional={toggleOptional} placeholder="Add attendees" hostId={hostId} hostLabel="You" ineligibleReasons={ineligibleReasons} />
-          <p className="text-xs text-[#64748B] mt-1.5">You’re the host — always in the meeting. Everyone you add is attending; they can mark “can’t make it” with a reason. Toggle who’s optional.</p>
+          <p className="text-xs text-text-muted mt-1.5">You’re the host — always in the meeting. Everyone you add is attending; they can mark “can’t make it” with a reason. Toggle who’s optional.</p>
           {callMode === 'fixed' && recurMode === 'one_time' && attendees.length > 0 && (
             <button
               type="button"
               onClick={openFinder}
-              className="mt-2.5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
+              className="mt-2.5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-text hover:text-primary-text"
             >
               <Sparkles size={15} /> Find a time that works for everyone →
             </button>
@@ -286,10 +286,10 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
         </div>
 
         {/* Schedule */}
-        <div className="border-t border-[#E2E8F0] pt-4 flex flex-col gap-3">
+        <div className="border-t border-border-light pt-4 flex flex-col gap-3">
           <span className={sectionLabel}>Schedule</span>
 
-          <div className="inline-flex w-fit rounded-[8px] border border-[#CBD5E1] overflow-hidden">
+          <div className="inline-flex w-fit rounded-[8px] border border-border overflow-hidden">
             <button type="button" onClick={() => setCallMode('fixed')} className={seg(callMode === 'fixed')}>Pick a time</button>
             <button type="button" onClick={() => setCallMode('log_past')} className={seg(callMode === 'log_past')}>Log a past meeting</button>
           </div>
@@ -299,7 +299,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
               <DurationField value={durationMin} onChange={applyDuration} />
 
               {/* One-time vs recurring — recurring reuses the SAME editor as recurring tasks */}
-              <div className="inline-flex w-fit rounded-[8px] border border-[#CBD5E1] overflow-hidden">
+              <div className="inline-flex w-fit rounded-[8px] border border-border overflow-hidden">
                 <button type="button" onClick={() => setRecurring('one_time')} className={seg(recurMode === 'one_time')}>One-time</button>
                 <button type="button" onClick={() => setRecurring('recurring')} className={seg(recurMode === 'recurring')}>Recurring</button>
               </div>
@@ -308,7 +308,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
                 <>
                   <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-3">
                     <div>
-                      <label className={labelClass}>Date <span className="text-[#DC2626]">*</span></label>
+                      <label className={labelClass}>Date <span className="text-danger">*</span></label>
                       <DatePicker value={date} onChange={setDate} min={todayStr()} placeholder="Select date" />
                     </div>
                     <div>
@@ -325,7 +325,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
                   )}
                 </>
               ) : (
-                <div className="border border-[#E2E8F0] rounded-[10px] p-4 bg-[#FBFCFE]">
+                <div className="border border-border-light rounded-[10px] p-4 bg-surface-sunken">
                   <ScheduleEntryRow
                     entry={sched}
                     index={0}
@@ -334,7 +334,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
                     canDelete={false}
                   />
                   <SkipHolidaysField orgId={orgId} sched={sched} value={skipHolidays} onChange={setSkipHolidays} />
-                  <p className="text-[11px] text-[#64748B] mt-3">Creates a rhythm — occurrences spawn automatically.</p>
+                  <p className="text-[11px] text-text-muted mt-3">Creates a rhythm — occurrences spawn automatically.</p>
                 </div>
               )}
             </>
@@ -343,7 +343,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
           {callMode === 'log_past' && (
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className={labelClass}>Date <span className="text-[#DC2626]">*</span></label>
+                <label className={labelClass}>Date <span className="text-danger">*</span></label>
                 <DatePicker value={actualDate} onChange={setActualDate} max={todayStr()} placeholder="Select date" />
               </div>
               <div>
@@ -363,16 +363,16 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
         </div>
 
         {/* Format */}
-        <div className="border-t border-[#E2E8F0] pt-4 flex flex-col gap-3">
+        <div className="border-t border-border-light pt-4 flex flex-col gap-3">
           <span className={sectionLabel}>Format</span>
-          <div className="inline-flex w-fit rounded-[8px] border border-[#CBD5E1] overflow-hidden">
+          <div className="inline-flex w-fit rounded-[8px] border border-border overflow-hidden">
             <button type="button" onClick={() => setType('online')} className={seg(type === 'online')}><Video size={14} /> Online</button>
             <button type="button" onClick={() => setType('offline')} className={seg(type === 'offline')}><MapPin size={14} /> In person</button>
           </div>
           {type === 'online' ? (
             <div>
               <input className={inputClass} value={onlineLink} onChange={(e) => setOnlineLink(e.target.value)} placeholder="https://…" />
-              <p className="text-[11px] text-[#64748B] mt-1.5">Leave blank to auto-generate a link.</p>
+              <p className="text-[11px] text-text-muted mt-1.5">Leave blank to auto-generate a link.</p>
             </div>
           ) : (
             <div>
@@ -382,24 +382,24 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
         </div>
 
         {/* Agenda */}
-        <div className="border-t border-[#E2E8F0] pt-4">
+        <div className="border-t border-border-light pt-4">
           <label className={labelClass}>{callMode === 'log_past' ? 'Agenda (what was planned)' : 'Agenda'}</label>
           <textarea className={`${inputClass} resize-none`} rows={3} value={agenda} onChange={(e) => setAgenda(e.target.value)} placeholder="Agenda (markdown supported)" />
         </div>
 
         {/* Quiet actions: link (left) · reminder (right) */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <button type="button" onClick={() => setShowLinker((v) => !v)} className="inline-flex items-center gap-1.5 text-xs text-[#475569] hover:text-[#0F172A]">
+          <button type="button" onClick={() => setShowLinker((v) => !v)} className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary">
             <Link2 size={14} /> Link to a goal, task, or ticket
           </button>
-          <label className="inline-flex items-center gap-2 text-xs text-[#475569] cursor-pointer select-none">
-            <input type="checkbox" checked={remind} onChange={(e) => setRemind(e.target.checked)} className="w-4 h-4 accent-[#2563EB]" />
+          <label className="inline-flex items-center gap-2 text-xs text-text-secondary cursor-pointer select-none">
+            <input type="checkbox" checked={remind} onChange={(e) => setRemind(e.target.checked)} className="w-4 h-4 accent-primary" />
             <Bell size={14} /> Remind 15 min before
           </label>
         </div>
 
         {showLinker && (
-          <div className="border border-[#E2E8F0] rounded-[8px] p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="border border-border-light rounded-[8px] p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>Link to</label>
               <StyledSelect
@@ -435,7 +435,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E2E8F0]">
+        <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-light">
           <Button variant="secondary" type="button" onClick={onClose}>Cancel</Button>
           <Button variant="primary" type="submit" isLoading={saving} disabled={saving}>Create meeting</Button>
         </div>
@@ -513,18 +513,18 @@ function ClashNudge({
 
   if (hard.length === 0 && soft.length === 0) {
     return (
-      <p className="inline-flex items-center gap-1.5 text-xs text-[#16A34A]">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" /> Everyone looks free at this time.
+      <p className="inline-flex items-center gap-1.5 text-xs text-success">
+        <span className="w-1.5 h-1.5 rounded-full bg-success" /> Everyone looks free at this time.
       </p>
     )
   }
   return (
-    <div className="flex items-start gap-1.5 text-xs bg-[#FFFBEB] border border-[#FDE68A] rounded-[8px] px-3 py-2">
-      <AlertTriangle size={13} className="mt-0.5 shrink-0 text-[#D97706]" />
-      <span className="text-[#475569]">
-        {hard.length > 0 && <span className="text-[#B45309] font-medium">{hard.join(', ')} {hard.length === 1 ? 'is' : 'are'} busy then.</span>}
+    <div className="flex items-start gap-1.5 text-xs bg-warning-bg border border-warning-border rounded-[8px] px-3 py-2">
+      <AlertTriangle size={13} className="mt-0.5 shrink-0 text-warning" />
+      <span className="text-text-secondary">
+        {hard.length > 0 && <span className="text-warning font-medium">{hard.join(', ')} {hard.length === 1 ? 'is' : 'are'} busy then.</span>}
         {hard.length > 0 && soft.length > 0 ? ' ' : ''}
-        {soft.length > 0 && <span className="text-[#64748B]">{soft.join(', ')} (optional) busy.</span>}
+        {soft.length > 0 && <span className="text-text-muted">{soft.join(', ')} (optional) busy.</span>}
         {' '}You can still book — they’ll be notified.
       </span>
     </div>

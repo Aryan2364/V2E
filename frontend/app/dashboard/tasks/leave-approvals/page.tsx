@@ -126,13 +126,13 @@ export default function LeaveApprovalsPage() {
       key: 'employee',
       header: 'Employee',
       primary: true,
-      render: (l) => <span className="font-medium text-[#0F172A]">{l.applicant_name ?? 'Employee'}</span>,
+      render: (l) => <span className="font-medium text-text-primary">{l.applicant_name ?? 'Employee'}</span>,
     },
     {
       key: 'dates',
       header: 'Dates',
       render: (l) => (
-        <span className="text-[#1E293B] whitespace-nowrap">
+        <span className="text-text-primary whitespace-nowrap">
           {fmt(l.start_date)} → {fmt(l.end_date)}
         </span>
       ),
@@ -141,7 +141,7 @@ export default function LeaveApprovalsPage() {
       key: 'days',
       header: 'Days',
       align: 'right',
-      render: (l) => <span className="text-[#1E293B] tabular-nums">{dayCount(l)}</span>,
+      render: (l) => <span className="text-text-primary tabular-nums">{dayCount(l)}</span>,
     },
     {
       key: 'reason',
@@ -149,16 +149,16 @@ export default function LeaveApprovalsPage() {
       desktopHiddenBelow: 'lg',
       render: (l) =>
         l.reason ? (
-          <span className="text-[#475569] wrap-break-word">{l.reason}</span>
+          <span className="text-text-secondary wrap-break-word">{l.reason}</span>
         ) : (
-          <span className="text-[#475569] italic">No reason given</span>
+          <span className="text-text-secondary italic">No reason given</span>
         ),
     },
     {
       key: 'requested',
       header: 'Requested',
       desktopHiddenBelow: 'xl',
-      render: (l) => <span className="text-[#475569] whitespace-nowrap">{fmt(l.created_at)}</span>,
+      render: (l) => <span className="text-text-secondary whitespace-nowrap">{fmt(l.created_at)}</span>,
     },
     {
       key: 'actions',
@@ -171,7 +171,7 @@ export default function LeaveApprovalsPage() {
             type="button"
             disabled={busy === l.id || readOnly}
             onClick={() => approve(l)}
-            className="flex items-center gap-1 text-xs font-semibold text-white bg-[#16A34A] rounded-[6px] px-3 py-1.5 min-h-[36px] hover:bg-[#15803D] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1 text-xs font-semibold text-white bg-success rounded-[6px] px-3 py-1.5 min-h-[36px] hover:bg-success disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
           >
             {busy === l.id ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Approve
           </button>
@@ -179,7 +179,7 @@ export default function LeaveApprovalsPage() {
             type="button"
             disabled={busy === l.id || readOnly}
             onClick={() => openReject(l)}
-            className="flex items-center gap-1 text-xs font-semibold text-[#DC2626] border border-[#FECACA] bg-white rounded-[6px] px-3 py-1.5 min-h-[36px] hover:bg-[#FEF2F2] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:border-[#E2E8F0] disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1 text-xs font-semibold text-danger border border-danger-border bg-white rounded-[6px] px-3 py-1.5 min-h-[36px] hover:bg-danger-bg disabled:bg-surface-control-pressed disabled:text-text-muted disabled:border-border-light disabled:cursor-not-allowed transition-colors"
           >
             <X size={13} /> Reject
           </button>
@@ -191,24 +191,24 @@ export default function LeaveApprovalsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-[22px] sm:text-[28px] font-bold text-[#0F172A] leading-tight">Leave Approvals</h1>
-        <p className="text-sm text-[#475569] mt-0.5">Leave requests waiting for your decision.</p>
+        <h1 className="text-[22px] sm:text-[28px] font-bold text-text-primary leading-tight">Leave Approvals</h1>
+        <p className="text-sm text-text-secondary mt-0.5">Leave requests waiting for your decision.</p>
       </div>
 
       {status === 'loading' ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-5 space-y-3">
-          {[0, 1, 2].map((i) => <div key={i} className="h-10 rounded-[8px] bg-[#F1F5F9] animate-pulse" />)}
+        <div className="bg-white border border-border-light rounded-[12px] p-5 space-y-3">
+          {[0, 1, 2].map((i) => <div key={i} className="h-10 rounded-[8px] bg-surface-control animate-pulse" />)}
         </div>
       ) : status === 'failed' ? (
         <StateCard
-          icon={<RefreshCw size={22} className="text-[#475569]" />}
+          icon={<RefreshCw size={22} className="text-text-secondary" />}
           title="Leave requests could not be loaded"
           line="Check your connection and try again."
           action={
             <button
               type="button"
               onClick={() => { setStatus('loading'); load() }}
-              className="px-4 py-2 text-sm font-semibold text-[#2563EB] border-2 border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors"
+              className="px-4 py-2 text-sm font-semibold text-primary-text border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
             >
               Retry
             </button>
@@ -216,13 +216,13 @@ export default function LeaveApprovalsPage() {
         />
       ) : status === 'not-approver' ? (
         <StateCard
-          icon={<UserX size={22} className="text-[#475569]" />}
+          icon={<UserX size={22} className="text-text-secondary" />}
           title="You don't approve leave"
           line="Leave requests go to each person's manager or to the approvers named in your organization's leave rules. Your own leave is on your profile."
           action={
             <Link
               href="/dashboard/profile?tab=leave"
-              className="px-4 py-2 text-sm font-semibold text-[#2563EB] border-2 border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors"
+              className="px-4 py-2 text-sm font-semibold text-primary-text border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
             >
               Go to my leave
             </Link>
@@ -230,7 +230,7 @@ export default function LeaveApprovalsPage() {
         />
       ) : pending.length === 0 ? (
         <StateCard
-          icon={<Inbox size={22} className="text-[#475569]" />}
+          icon={<Inbox size={22} className="text-text-secondary" />}
           title="No pending requests"
           line="Leave requests you can approve will appear here."
         />
@@ -241,12 +241,12 @@ export default function LeaveApprovalsPage() {
       <Modal isOpen={!!rejectTarget} onClose={closeReject} title="Reject leave" size="sm" closeOnEscape={!rejecting}>
         {rejectTarget && (
           <div className="space-y-4">
-            <p className="text-sm text-[#1E293B]">
+            <p className="text-sm text-text-primary">
               <span className="font-semibold">{rejectTarget.applicant_name ?? 'This employee'}</span> asked for leave from{' '}
               {fmt(rejectTarget.start_date)} to {fmt(rejectTarget.end_date)}. They will be told it was rejected, with your reason.
             </p>
             <div>
-              <label htmlFor="reject-note" className="block text-sm font-medium text-[#374151] mb-1.5">
+              <label htmlFor="reject-note" className="block text-sm font-medium text-text-secondary mb-1.5">
                 Reason (optional)
               </label>
               <textarea
@@ -257,18 +257,18 @@ export default function LeaveApprovalsPage() {
                 maxLength={500}
                 autoFocus
                 placeholder="e.g. Quarter-end close needs full team"
-                className="w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none"
+                className="w-full px-3 py-2.5 border border-border rounded-[8px] text-base sm:text-sm text-text-primary placeholder:text-text-muted bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-none"
               />
             </div>
             {rejectError && (
-              <div className="rounded-[8px] border border-[#FECACA] bg-[#FEF2F2] px-3 py-2 text-sm text-[#B91C1C]">{rejectError}</div>
+              <div className="rounded-[8px] border border-danger-border bg-danger-bg px-3 py-2 text-sm text-danger">{rejectError}</div>
             )}
             <div className="flex justify-end">
               <button
                 type="button"
                 onClick={confirmReject}
                 disabled={rejecting}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] rounded-[8px] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-semibold text-white bg-danger hover:bg-danger-hover rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 {rejecting && <Loader2 size={15} className="animate-spin" />}
                 Reject leave
@@ -283,10 +283,10 @@ export default function LeaveApprovalsPage() {
 
 function StateCard({ icon, title, line, action }: { icon: React.ReactNode; title: string; line: string; action?: React.ReactNode }) {
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center text-center gap-2 px-6 py-12">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center text-center gap-2 px-6 py-12">
       {icon}
-      <p className="text-sm text-[#0F172A] font-semibold">{title}</p>
-      <p className="text-sm text-[#475569] max-w-md">{line}</p>
+      <p className="text-sm text-text-primary font-semibold">{title}</p>
+      <p className="text-sm text-text-secondary max-w-md">{line}</p>
       {action && <div className="mt-2">{action}</div>}
     </div>
   )

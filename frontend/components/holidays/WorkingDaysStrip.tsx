@@ -39,8 +39,8 @@ export default function WorkingDaysStrip({
   const pillsDisabled = disabled || !override
 
   return (
-    <div className="flex items-center gap-4 flex-wrap bg-white border border-[#E2E8F0] rounded-[12px] px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-      <span className="text-sm font-semibold text-[#0F172A] shrink-0">Working Days</span>
+    <div className="flex items-center gap-4 flex-wrap bg-white border border-border-light rounded-[12px] px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <span className="text-sm font-semibold text-text-primary shrink-0">Working Days</span>
 
       <div className="flex items-center gap-1.5">
         {DAY_PILLS.map((label, index) => {
@@ -57,9 +57,9 @@ export default function WorkingDaysStrip({
                   pillsDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
                   active
                     ? pillsDisabled
-                      ? 'bg-[#BFDBFE] text-white border-[#BFDBFE]'
-                      : 'bg-[#2563EB] text-white border-[#2563EB]'
-                    : 'bg-white text-[#94A3B8] border-[#E2E8F0] ' + (pillsDisabled ? '' : 'hover:border-[#2563EB] hover:text-[#2563EB]'),
+                      ? 'bg-[#BFDBFE] text-white border-primary-border'
+                      : 'bg-primary text-white border-primary'
+                    : 'bg-white text-text-muted border-border-light ' + (pillsDisabled ? '' : 'hover:border-primary hover:text-primary-text'),
                 ].join(' ')}
               >
                 {label}
@@ -76,20 +76,20 @@ export default function WorkingDaysStrip({
           checked={override}
           disabled={disabled}
           onChange={(e) => onToggleOverride(e.target.checked)}
-          className="w-4 h-4 accent-[#2563EB]"
+          className="w-4 h-4 accent-primary"
         />
-        <span className="text-sm text-[#475569]">{overrideLabel}</span>
+        <span className="text-sm text-text-secondary">{overrideLabel}</span>
       </label>
 
-      <span className="ml-auto text-xs text-[#94A3B8] min-w-[60px]">
+      <span className="ml-auto text-xs text-text-muted min-w-[60px]">
         {status === 'saving' && (
-          <span className="flex items-center gap-1 text-[#475569]"><Loader2 size={12} className="animate-spin" /> Saving…</span>
+          <span className="flex items-center gap-1 text-text-secondary"><Loader2 size={12} className="animate-spin" /> Saving…</span>
         )}
         {status === 'saved' && (
-          <span className="flex items-center gap-1 text-[#16A34A]"><Check size={12} /> Saved</span>
+          <span className="flex items-center gap-1 text-success"><Check size={12} /> Saved</span>
         )}
         {status === 'idle' && !override && (
-          <span className="text-[#94A3B8]">{followingLabel}</span>
+          <span className="text-text-muted">{followingLabel}</span>
         )}
       </span>
     </div>

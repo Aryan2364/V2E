@@ -117,22 +117,22 @@ export default function ScorecardRosterPage() {
   if (redirecting) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-7 h-7 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
     <div className="space-y-5">
-      <button onClick={() => router.push('/dashboard/tasks/reports-new')} className="inline-flex items-center gap-1.5 text-sm text-[#475569] hover:text-[#0F172A] transition-colors">
+      <button onClick={() => router.push('/dashboard/tasks/reports-new')} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
         <ArrowLeft size={15} /> Reports
       </button>
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="min-w-0">
-          <h1 className="text-[26px] font-bold text-[#0F172A] leading-tight">Person Scorecard</h1>
-          <p className="mt-1 text-[15px] text-[#475569]">
+          <h1 className="text-[26px] font-bold text-text-primary leading-tight">Person Scorecard</h1>
+          <p className="mt-1 text-[15px] text-text-secondary">
             Open a person to see their unique tasks and performance — or download everyone you can see.
           </p>
         </div>
@@ -145,7 +145,7 @@ export default function ScorecardRosterPage() {
           <button
             onClick={downloadAll}
             disabled={downloading || filtered.length === 0}
-            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-[#2563EB] text-white rounded-[8px] text-sm font-semibold hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover disabled:opacity-60 transition-colors"
           >
             <Download size={15} /> {downloading ? 'Preparing…' : 'Download all'}
           </button>
@@ -155,12 +155,12 @@ export default function ScorecardRosterPage() {
       {/* Toolbar */}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[220px]">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search people…"
-            className="w-full rounded-[8px] border border-[#CBD5E1] bg-white pl-9 pr-3 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+            className="w-full rounded-[8px] border border-border bg-white pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>
         <div className="w-[230px]">
@@ -171,20 +171,20 @@ export default function ScorecardRosterPage() {
 
       {/* Roster */}
       {loading ? (
-        <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" /></div>
+        <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : people.length === 0 ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] py-16 flex flex-col items-center text-center">
-          <div className="w-14 h-14 rounded-full bg-[#FEE2E2] flex items-center justify-center mb-4"><Lock size={24} className="text-[#DC2626]" /></div>
-          <p className="font-semibold text-[#0F172A]">No people in your scope</p>
-          <p className="text-sm text-[#475569] mt-1 max-w-sm">You can only see scorecards for people within your visibility.</p>
+        <div className="bg-white border border-border-light rounded-[12px] py-16 flex flex-col items-center text-center">
+          <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
+          <p className="font-semibold text-text-primary">No people in your scope</p>
+          <p className="text-sm text-text-secondary mt-1 max-w-sm">You can only see scorecards for people within your visibility.</p>
         </div>
       ) : (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#475569] text-left whitespace-nowrap">
-                  <th className="px-4 py-3 font-semibold sticky left-0 bg-[#F8FAFC]">Person</th>
+                <tr className="bg-surface-sunken border-b border-border-light text-text-secondary text-left whitespace-nowrap">
+                  <th className="px-4 py-3 font-semibold sticky left-0 bg-surface-sunken">Person</th>
                   <th className="px-3 py-3 font-semibold text-center" title="How many different task names this person is responsible for — their real scope of work.">Different tasks</th>
                   <th className="px-3 py-3 font-semibold text-center" title="Every time those tasks came up in the period (each recurring occurrence + each one-time task).">Total entries</th>
                   <th className="px-3 py-3 font-semibold text-center">Completed</th>
@@ -207,26 +207,26 @@ export default function ScorecardRosterPage() {
                   <tr
                     key={p.user_id}
                     onClick={() => router.push(`/dashboard/tasks/reports-new/person-scorecard/${p.user_id}`)}
-                    className="group border-b border-[#F1F5F9] last:border-0 hover:bg-[#F8FAFC] cursor-pointer transition-colors whitespace-nowrap"
+                    className="group border-b border-border-light last:border-0 hover:bg-surface-sunken cursor-pointer transition-colors whitespace-nowrap"
                   >
-                    <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-[#F8FAFC]">
+                    <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-surface-sunken">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center shrink-0">{initials(p.name)}</div>
+                        <div className="w-9 h-9 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center shrink-0">{initials(p.name)}</div>
                         <div className="min-w-0">
-                          <p className="font-semibold text-[#0F172A] truncate">{p.name}</p>
-                          {p.role_title && <p className="text-[12px] text-[#94A3B8] truncate">{p.role_title}</p>}
+                          <p className="font-semibold text-text-primary truncate">{p.name}</p>
+                          {p.role_title && <p className="text-[12px] text-text-muted truncate">{p.role_title}</p>}
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center font-semibold text-[#7C3AED] tabular-nums">{p.different_tasks}</td>
-                    <td className="px-3 py-3 text-center font-semibold text-[#0F172A] tabular-nums">{num(p.total_given)}</td>
-                    <td className="px-3 py-3 text-center text-[#475569] tabular-nums">{num(p.completed)}</td>
+                    <td className="px-3 py-3 text-center font-semibold text-text-secondary tabular-nums">{p.different_tasks}</td>
+                    <td className="px-3 py-3 text-center font-semibold text-text-primary tabular-nums">{num(p.total_given)}</td>
+                    <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{num(p.completed)}</td>
                     <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.pending > 0 ? '#DC2626' : '#94A3B8' }}>{num(p.pending)}</td>
-                    <td className="px-3 py-3 text-center text-[#475569] tabular-nums">{pct(p.completion_pct)}</td>
-                    <td className="px-3 py-3 text-center text-[#475569] tabular-nums">{num(p.completed_on_time)}</td>
+                    <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{pct(p.completion_pct)}</td>
+                    <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{num(p.completed_on_time)}</td>
                     <td className="px-3 py-3 text-center tabular-nums font-semibold" style={{ color: onTimeColor(p.on_time_pct) }}>{pct(p.on_time_pct)}</td>
-                    <td className="px-3 py-3 text-center text-[#475569] tabular-nums">{p.avg_delay_days ?? '—'}</td>
-                    <td className="px-3 py-3 text-center text-[#475569] tabular-nums">{p.longest_delay_days ?? '—'}</td>
+                    <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{p.avg_delay_days ?? '—'}</td>
+                    <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{p.longest_delay_days ?? '—'}</td>
                     <td className="px-3 py-3"><GradePill grade={p.grade} /></td>
                     <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.withdrawn ? '#64748B' : '#CBD5E1' }}>{num(p.withdrawn)}</td>
                     <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.handed_over ? '#475569' : '#CBD5E1' }}>{num(p.handed_over)}</td>
@@ -235,13 +235,13 @@ export default function ScorecardRosterPage() {
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={14} className="px-4 py-10 text-center text-[#94A3B8]"><UserSquare2 size={22} className="mx-auto mb-2" />No people match your search.</td></tr>
+                  <tr><td colSpan={14} className="px-4 py-10 text-center text-text-muted"><UserSquare2 size={22} className="mx-auto mb-2" />No people match your search.</td></tr>
                 )}
               </tbody>
               {totals && filtered.length > 0 && selectedDeptIds.length === 0 && !search.trim() && (
                 <tfoot>
-                  <tr className="bg-[#F8FAFC] border-t-2 border-[#E2E8F0] font-semibold text-[#0F172A] whitespace-nowrap">
-                    <td className="px-4 py-3 sticky left-0 bg-[#F8FAFC]">Total / Overall <span className="text-[#94A3B8] font-normal">· {people.length} people</span></td>
+                  <tr className="bg-surface-sunken border-t-2 border-border-light font-semibold text-text-primary whitespace-nowrap">
+                    <td className="px-4 py-3 sticky left-0 bg-surface-sunken">Total / Overall <span className="text-text-muted font-normal">· {people.length} people</span></td>
                     <td className="px-3 py-3 text-center tabular-nums">{totals.different_tasks}</td>
                     <td className="px-3 py-3 text-center tabular-nums">{num(totals.total_given)}</td>
                     <td className="px-3 py-3 text-center tabular-nums">{num(totals.completed)}</td>

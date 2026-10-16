@@ -120,11 +120,11 @@ export default function StartWorkflowModal({
   return (
     <Modal isOpen={!!workflow} onClose={() => !busy && onClose()} title="Run workflow" size="md" closeOnEscape={!busy}>
       <form onSubmit={run} noValidate className="flex flex-col gap-5">
-        <p className="text-[15px] text-[#1E293B] leading-relaxed">
-          Creates a new instance of <span className="font-semibold text-[#0F172A]">{workflow?.name}</span>.{' '}
+        <p className="text-[15px] text-text-primary leading-relaxed">
+          Creates a new instance of <span className="font-semibold text-text-primary">{workflow?.name}</span>.{' '}
           {nowSteps.length === 1 ? (
             <>
-              <span className="font-semibold text-[#0F172A]">
+              <span className="font-semibold text-text-primary">
                 {nowSteps[0].number_label ? `Step ${nowSteps[0].number_label} ` : ''}“{nowSteps[0].title}”
               </span>{' '}
               starts now.
@@ -143,8 +143,8 @@ export default function StartWorkflowModal({
         </p>
 
         <div>
-          <label htmlFor="instance-name" className="block text-sm font-medium text-[#374151] mb-2">
-            Instance name <span className="text-[#DC2626]">*</span>{' '}
+          <label htmlFor="instance-name" className="block text-sm font-medium text-text-secondary mb-2">
+            Instance name <span className="text-danger">*</span>{' '}
             <InfoTip label="Instance name" text="Shown on every task of this instance. Each instance of a workflow needs its own name." />
           </label>
           <input
@@ -162,16 +162,16 @@ export default function StartWorkflowModal({
             }}
             onBlur={() => clean && setTouched(true)}
             placeholder="e.g. ACME Ltd onboarding"
-            className={`w-full px-3 py-2.5 text-base sm:text-sm border rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:ring-1 ${
-              shownNameError ? 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-[#2563EB]'
+            className={`w-full px-3 py-2.5 text-base sm:text-sm border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:ring-1 ${
+              shownNameError ? 'border-danger focus:border-danger focus:ring-danger' : 'border-border focus:border-primary focus:ring-primary'
             }`}
           />
           {shownNameError ? (
-            <p id="instance-name-error" role="alert" className="mt-1.5 text-[13px] text-[#B91C1C]">
+            <p id="instance-name-error" role="alert" className="mt-1.5 text-[13px] text-danger">
               {shownNameError}
             </p>
           ) : (
-            <p id="instance-name-help" className="mt-1.5 text-[13px] text-[#475569]">
+            <p id="instance-name-help" className="mt-1.5 text-[13px] text-text-secondary">
               {clean.length}/{NAME_MAX}
             </p>
           )}

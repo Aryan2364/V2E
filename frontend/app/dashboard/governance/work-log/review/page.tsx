@@ -8,7 +8,7 @@ import WorkLogRemarkThread from '@/components/work-logs/WorkLogRemarkThread'
 import Tooltip from '@/components/ui/Tooltip'
 import type { DailyUpdate, ReadableWriter, WorkLogRemark, WorkLogSubmission } from '@/lib/types/workLogs'
 
-const cardCls = 'bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
+const cardCls = 'bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
 
 type SelectedLog =
   | { kind: 'daily'; daily: DailyUpdate }
@@ -83,13 +83,13 @@ export default function WorkLogReviewPage() {
       {/* Writers */}
       <aside className="lg:w-64 shrink-0">
         <div className={`${cardCls} p-3`}>
-          <h3 className="text-sm font-semibold text-[#0F172A] flex items-center gap-2 px-1 mb-2">
-            <Users size={15} className="text-[#2563EB]" /> People below me
+          <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2 px-1 mb-2">
+            <Users size={15} className="text-primary-text" /> People below me
           </h3>
           {loadingWriters ? (
-            <p className="text-xs text-[#94A3B8] px-1 py-2">Loading…</p>
+            <p className="text-xs text-text-muted px-1 py-2">Loading…</p>
           ) : writers.length === 0 ? (
-            <p className="text-xs text-[#475569] px-1 py-2">No one&apos;s logs are shared with you yet.</p>
+            <p className="text-xs text-text-secondary px-1 py-2">No one&apos;s logs are shared with you yet.</p>
           ) : (
             <ul className="space-y-0.5">
               {writers.map((w) => (
@@ -98,11 +98,11 @@ export default function WorkLogReviewPage() {
                     type="button"
                     onClick={() => loadWriter(w.user_id)}
                     className={`w-full text-left px-2.5 py-2 rounded-[8px] transition-colors ${
-                      writerId === w.user_id ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+                      writerId === w.user_id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                     }`}
                   >
-                    <span className="block text-sm font-medium text-[#0F172A]">{w.name}</span>
-                    {w.role_title && <span className="block text-xs text-[#64748B]">{w.role_title}</span>}
+                    <span className="block text-sm font-medium text-text-primary">{w.name}</span>
+                    {w.role_title && <span className="block text-xs text-text-muted">{w.role_title}</span>}
                   </button>
                 </li>
               ))}
@@ -116,14 +116,14 @@ export default function WorkLogReviewPage() {
         {!writerId ? (
           <div className={`${cardCls} p-8 text-center`}>
             <FileText size={28} className="text-[#CBD5E1] mx-auto mb-2" />
-            <p className="text-sm text-[#475569]">Pick a person to review their logs.</p>
+            <p className="text-sm text-text-secondary">Pick a person to review their logs.</p>
           </div>
         ) : (
           <div className="space-y-4">
             <div className={`${cardCls} p-3`}>
-              <h4 className="text-xs font-semibold text-[#64748B] uppercase tracking-wide px-1 mb-2">Daily updates</h4>
+              <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wide px-1 mb-2">Daily updates</h4>
               {dailies.length === 0 ? (
-                <p className="text-xs text-[#94A3B8] px-1 py-1">No daily updates.</p>
+                <p className="text-xs text-text-muted px-1 py-1">No daily updates.</p>
               ) : (
                 <ul className="space-y-0.5">
                   {dailies.map((d) => (
@@ -132,11 +132,11 @@ export default function WorkLogReviewPage() {
                         type="button"
                         onClick={() => setSelected({ kind: 'daily', daily: d })}
                         className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-[8px] text-left transition-colors ${
-                          selected?.kind === 'daily' && selected.daily.id === d.id ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+                          selected?.kind === 'daily' && selected.daily.id === d.id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                         }`}
                       >
-                        <span className="text-sm text-[#0F172A]">{prettyDate(d.log_date)}</span>
-                        {d.submitted_at && <Tooltip label="Submitted"><span className="w-2 h-2 rounded-full bg-[#16A34A] shrink-0" aria-label="Submitted" /></Tooltip>}
+                        <span className="text-sm text-text-primary">{prettyDate(d.log_date)}</span>
+                        {d.submitted_at && <Tooltip label="Submitted"><span className="w-2 h-2 rounded-full bg-success shrink-0" aria-label="Submitted" /></Tooltip>}
                       </button>
                     </li>
                   ))}
@@ -146,7 +146,7 @@ export default function WorkLogReviewPage() {
 
             {submissions.length > 0 && (
               <div className={`${cardCls} p-3`}>
-                <h4 className="text-xs font-semibold text-[#64748B] uppercase tracking-wide px-1 mb-2">Demanded logs</h4>
+                <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wide px-1 mb-2">Demanded logs</h4>
                 <ul className="space-y-0.5">
                   {submissions.map((s) => (
                     <li key={s.id}>
@@ -154,15 +154,15 @@ export default function WorkLogReviewPage() {
                         type="button"
                         onClick={() => setSelected({ kind: 'submission', submission: s })}
                         className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-[8px] text-left transition-colors ${
-                          selected?.kind === 'submission' && selected.submission.id === s.id ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+                          selected?.kind === 'submission' && selected.submission.id === s.id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                         }`}
                       >
-                        <span className="text-sm text-[#0F172A] truncate">{s.demand?.title ?? s.period_label}</span>
+                        <span className="text-sm text-text-primary truncate">{s.demand?.title ?? s.period_label}</span>
                         <span
                           className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${
                             s.status === 'submitted'
-                              ? 'bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]'
-                              : 'bg-[#FEF9C3] text-[#CA8A04] border border-[#FDE68A]'
+                              ? 'bg-success-bg text-success border border-success-border'
+                              : 'bg-warning-bg text-warning border border-warning-border'
                           }`}
                         >
                           {s.status}
@@ -182,18 +182,18 @@ export default function WorkLogReviewPage() {
         {!selected ? (
           <div className={`${cardCls} p-8 text-center`}>
             <ChevronRight size={28} className="text-[#CBD5E1] mx-auto mb-2" />
-            <p className="text-sm text-[#475569]">Select a log to read it and leave remarks.</p>
+            <p className="text-sm text-text-secondary">Select a log to read it and leave remarks.</p>
           </div>
         ) : selected.kind === 'daily' ? (
           <div className="space-y-5">
             <div className={`${cardCls} p-6`}>
-              <h2 className="text-[18px] font-semibold text-[#0F172A] mb-4">{prettyDate(selected.daily.log_date)}</h2>
+              <h2 className="text-[18px] font-semibold text-text-primary mb-4">{prettyDate(selected.daily.log_date)}</h2>
               {(selected.daily.notes ?? []).length > 0 && (
                 <div className="space-y-3 mb-4">
                   {(selected.daily.notes ?? []).map((n) => (
-                    <div key={n.id} className="border border-[#E2E8F0] rounded-[10px] p-3 bg-[#F8FAFC]">
-                      <p className="text-sm font-semibold text-[#0F172A]">{n.title}</p>
-                      {n.description && <p className="text-sm text-[#1E293B] whitespace-pre-wrap mt-0.5">{n.description}</p>}
+                    <div key={n.id} className="border border-border-light rounded-[10px] p-3 bg-surface-sunken">
+                      <p className="text-sm font-semibold text-text-primary">{n.title}</p>
+                      {n.description && <p className="text-sm text-text-primary whitespace-pre-wrap mt-0.5">{n.description}</p>}
                     </div>
                   ))}
                 </div>
@@ -205,8 +205,8 @@ export default function WorkLogReviewPage() {
             </div>
 
             <div className={`${cardCls} p-6`}>
-              <h3 className="text-sm font-semibold text-[#0F172A] flex items-center gap-2 mb-2">
-                <MessageSquare size={15} className="text-[#2563EB]" /> Remarks
+              <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-2">
+                <MessageSquare size={15} className="text-primary-text" /> Remarks
               </h3>
               <WorkLogRemarkThread remarks={remarks} currentUserId={myId} onAdd={addRemark} onDelete={deleteRemark} />
             </div>
@@ -214,18 +214,18 @@ export default function WorkLogReviewPage() {
         ) : (
           <div className="space-y-5">
             <div className={`${cardCls} p-6`}>
-              <h2 className="text-[18px] font-semibold text-[#0F172A]">{selected.submission.demand?.title}</h2>
-              <p className="text-xs text-[#64748B] mb-4">{selected.submission.period_label}</p>
+              <h2 className="text-[18px] font-semibold text-text-primary">{selected.submission.demand?.title}</h2>
+              <p className="text-xs text-text-muted mb-4">{selected.submission.period_label}</p>
               {selected.submission.body ? (
-                <p className="text-sm text-[#1E293B] whitespace-pre-wrap">{selected.submission.body}</p>
+                <p className="text-sm text-text-primary whitespace-pre-wrap">{selected.submission.body}</p>
               ) : (
-                <p className="text-sm text-[#94A3B8]">Not yet submitted.</p>
+                <p className="text-sm text-text-muted">Not yet submitted.</p>
               )}
             </div>
 
             <div className={`${cardCls} p-6`}>
-              <h3 className="text-sm font-semibold text-[#0F172A] flex items-center gap-2 mb-2">
-                <MessageSquare size={15} className="text-[#2563EB]" /> Remarks
+              <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-2">
+                <MessageSquare size={15} className="text-primary-text" /> Remarks
               </h3>
               <WorkLogRemarkThread remarks={remarks} currentUserId={myId} onAdd={addRemark} onDelete={deleteRemark} />
             </div>
@@ -240,8 +240,8 @@ function Field({ label, value }: { label: string; value: string | null }) {
   if (!value) return null
   return (
     <div className="mb-3">
-      <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wide">{label}</p>
-      <p className="text-sm text-[#1E293B] whitespace-pre-wrap mt-0.5">{value}</p>
+      <p className="text-xs font-semibold text-text-muted uppercase tracking-wide">{label}</p>
+      <p className="text-sm text-text-primary whitespace-pre-wrap mt-0.5">{value}</p>
     </div>
   )
 }

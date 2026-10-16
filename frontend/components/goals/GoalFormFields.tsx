@@ -16,8 +16,8 @@ import {
 } from '@/lib/types/goals'
 
 export const inputClass =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
-export const labelClass = 'block text-sm font-medium text-[#374151] mb-1'
+  'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+export const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
 
 const todayISO = () => {
   const d = new Date()
@@ -131,7 +131,7 @@ export default function GoalFormFields({
           ]}
           disabled={disabled}
         />
-        <p className="text-[11px] text-[#475569] mt-1">
+        <p className="text-[11px] text-text-secondary mt-1">
           Which part of the business this goal moves. One only — it’s what lets you see whether the
           company is starving one area.
         </p>
@@ -148,7 +148,7 @@ export default function GoalFormFields({
             placeholder="Who is accountable for this?"
             disabled={disabled}
           />
-          <p className="text-[11px] text-[#475569] mt-1">
+          <p className="text-[11px] text-text-secondary mt-1">
             One accountable person — who gets asked for the check-in. It doesn’t change who can see
             or edit the goal.
           </p>
@@ -184,7 +184,7 @@ export default function GoalFormFields({
             options={CADENCE_OPTIONS.map((c) => ({ value: c, label: CADENCE_META[c].label }))}
             disabled={disabled}
           />
-          <p className="text-[11px] text-[#475569] mt-1">
+          <p className="text-[11px] text-text-secondary mt-1">
             {state.cadence === 'none'
               ? 'No rhythm — the owner is nudged only after a month of silence.'
               : 'The owner is reminded each time a check-in comes due.'}
@@ -200,7 +200,7 @@ export default function GoalFormFields({
               placeholder="Select a date"
               disabled={disabled}
             />
-            <p className="text-[11px] text-[#475569] mt-1">
+            <p className="text-[11px] text-text-secondary mt-1">
               After that, the next one falls{' '}
               {CADENCE_META[state.cadence].label.toLowerCase()} from each check-in.
             </p>
@@ -210,9 +210,9 @@ export default function GoalFormFields({
 
       {/* Optional target number. A goal with no number is normal — its check-in
           is just the traffic light and the note. */}
-      <div className="rounded-[10px] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-        <p className="text-sm font-medium text-[#374151]">Target number (optional)</p>
-        <p className="text-[11px] text-[#475569] mt-0.5 mb-3">
+      <div className="rounded-[10px] border border-border-light bg-surface-sunken p-4">
+        <p className="text-sm font-medium text-text-secondary">Target number (optional)</p>
+        <p className="text-[11px] text-text-secondary mt-0.5 mb-3">
           Leave blank if this goal isn’t measured by a number. Values are always typed in by a
           person at each check-in — nothing is pulled from anywhere.
         </p>
@@ -260,7 +260,7 @@ export default function GoalFormFields({
             }))}
             disabled={disabled}
           />
-          <p className="text-[11px] text-[#475569] mt-1">
+          <p className="text-[11px] text-text-secondary mt-1">
             On track / At risk / Off track are set by check-ins, not here. On hold pauses
             check-in reminders without closing the goal.
           </p>

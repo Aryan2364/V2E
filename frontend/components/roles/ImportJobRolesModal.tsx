@@ -449,20 +449,20 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
     <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-[12px] rounded-t-[16px] shadow-xl max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
           <div className="flex items-center gap-3">
             {phase === 'history' && (
               <Tooltip label="Back to upload">
               <button
                 onClick={() => setPhase('upload')}
                 aria-label="Back to upload"
-                className="p-1 hover:bg-[#F1F5F9] rounded-xs transition-colors text-[#64748B] hover:text-[#0F172A]"
+                className="p-1 hover:bg-surface-control rounded-xs transition-colors text-text-muted hover:text-text-primary"
               >
                 <ArrowLeft size={16} />
               </button>
               </Tooltip>
             )}
-            <h2 className="text-[18px] font-semibold text-[#0F172A]">Import Job Roles</h2>
+            <h2 className="text-[18px] font-semibold text-text-primary">Import Job Roles</h2>
           </div>
           <div className="flex items-center gap-2.5">
             {phase === 'upload' && !result && (
@@ -471,14 +471,14 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
                   setPhase('history')
                   loadHistory()
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-semibold text-[#475569] bg-[#F1F5F9] hover:bg-[#E2E8F0] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-semibold text-text-secondary bg-surface-control hover:bg-surface-control-pressed transition-colors"
               >
                 <History size={14} /> Import History
               </button>
             )}
             <button
               onClick={onClose}
-              className="p-1.5 rounded-[6px] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors"
+              className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
               aria-label="Close"
             >
               <X size={18} />
@@ -498,54 +498,54 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
           ) : result ? (
             <div className="space-y-4">
               <div className="flex items-center gap-4 flex-wrap">
-                <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-[#DCFCE7] border border-[#BBF7D0]">
-                  <CheckCircle2 size={16} className="text-[#16A34A]" />
-                  <span className="text-sm font-semibold text-[#166534]">{result.created} imported</span>
+                <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-success-bg border border-success-border">
+                  <CheckCircle2 size={16} className="text-success" />
+                  <span className="text-sm font-semibold text-success">{result.created} imported</span>
                 </div>
                 {result.failed > 0 && (
-                  <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-[#FEE2E2] border border-[#FECACA]">
-                    <AlertCircle size={16} className="text-[#DC2626]" />
-                    <span className="text-sm font-semibold text-[#991B1B]">{result.failed} failed</span>
+                  <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-danger-bg border border-danger-border">
+                    <AlertCircle size={16} className="text-danger" />
+                    <span className="text-sm font-semibold text-danger">{result.failed} failed</span>
                   </div>
                 )}
               </div>
 
               {failedRows.length > 0 && (
-                <div className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
-                  <div className="px-4 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-                    <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
+                <div className="border border-border-light rounded-[10px] overflow-hidden">
+                  <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
+                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
                       Rows that need fixing
                     </p>
                   </div>
-                  <div className="max-h-64 overflow-y-auto divide-y divide-[#F1F5F9]">
+                  <div className="max-h-64 overflow-y-auto divide-y divide-surface-control">
                     {failedRows.map((r) => (
                       <div key={r.row} className="px-4 py-2.5">
-                        <p className="text-sm font-medium text-[#0F172A]">
+                        <p className="text-sm font-medium text-text-primary">
                           Row {r.row}
                           {r.title ? ` · ${r.title}` : ''}
                         </p>
-                        <p className="text-sm text-[#DC2626] mt-0.5">{r.error}</p>
+                        <p className="text-sm text-danger mt-0.5">{r.error}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <p className="text-[13px] text-[#475569]">
+              <p className="text-[13px] text-text-secondary">
                 KRAs and KPIs aren&apos;t part of the import — open a job role and use{' '}
-                <span className="font-semibold text-[#0F172A]">Edit</span> to add them.
+                <span className="font-semibold text-text-primary">Edit</span> to add them.
               </p>
 
               <div className="flex gap-3">
                 <button
                   onClick={reset}
-                  className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-[#2563EB] bg-white border-2 border-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+                  className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
                 >
                   Import another file
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+                  className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
                 >
                   Done
                 </button>
@@ -554,14 +554,14 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
           ) : (
             <>
               {/* Step 1 — template */}
-              <div className="flex items-start gap-3 p-4 rounded-[10px] bg-[#EFF6FF] border border-[#BFDBFE]">
-                <FileText size={18} className="text-[#2563EB] mt-0.5 shrink-0" />
+              <div className="flex items-start gap-3 p-4 rounded-[10px] bg-primary-subtle border border-primary-border">
+                <FileText size={18} className="text-primary-text mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-[#0F172A]">
+                  <p className="text-sm font-semibold text-text-primary">
                     Step 1 — Download the Excel template
                   </p>
-                  <p className="text-[13px] text-[#475569] mt-0.5">
-                    Required columns (<span className="font-semibold text-[#2563EB]">blue header, marked&nbsp;*</span>):
+                  <p className="text-[13px] text-text-secondary mt-0.5">
+                    Required columns (<span className="font-semibold text-primary-text">blue header, marked&nbsp;*</span>):
                     title and department. The <strong>department</strong> and <strong>level</strong>{' '}
                     columns are <strong>dropdowns</strong>. Level defaults to{' '}
                     <strong>mid</strong> when left blank.
@@ -569,7 +569,7 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
                   <button
                     onClick={downloadTemplate}
                     disabled={building}
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors"
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                   >
                     {building ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
                     {building ? 'Building…' : 'Download Excel template'}
@@ -579,16 +579,16 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
 
               {/* Step 2 — upload */}
               <div>
-                <p className="text-sm font-semibold text-[#0F172A] mb-2">
+                <p className="text-sm font-semibold text-text-primary mb-2">
                   Step 2 — Upload the filled file
                 </p>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-[10px] border-2 border-dashed border-[#CBD5E1] hover:border-[#2563EB] hover:bg-[#F8FAFC] transition-colors"
+                  className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-[10px] border-2 border-dashed border-border hover:border-primary hover:bg-surface-sunken transition-colors"
                 >
-                  <UploadCloud size={26} className="text-[#94A3B8]" />
-                  <span className="text-sm font-medium text-[#475569]">
+                  <UploadCloud size={26} className="text-text-muted" />
+                  <span className="text-sm font-medium text-text-secondary">
                     {fileName || 'Click to choose an .xlsx or .csv file'}
                   </span>
                 </button>
@@ -605,13 +605,13 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
               </div>
 
               {parseError && (
-                <div className="p-3 bg-[#FEF2F2] border border-[#FECACA] rounded-[8px] text-sm text-[#DC2626]">
+                <div className="p-3 bg-danger-bg border border-danger-border rounded-[8px] text-sm text-danger">
                   {parseError}
                 </div>
               )}
 
               {rows.length > 0 && !parseError && (
-                <div className="p-3 bg-[#F0FDF4] border border-[#BBF7D0] rounded-[8px] text-sm text-[#166534]">
+                <div className="p-3 bg-success-bg border border-success-border rounded-[8px] text-sm text-success">
                   Ready to import <span className="font-semibold">{rows.length}</span> job role
                   {rows.length !== 1 ? 's' : ''} from{' '}
                   <span className="font-semibold">{fileName}</span>.
@@ -623,11 +623,11 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
 
         {/* Footer */}
         {!result && phase !== 'history' && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#E2E8F0]">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-[#2563EB] bg-white border-2 border-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+              className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               Cancel
             </button>
@@ -635,7 +635,7 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
               type="button"
               onClick={handleImport}
               disabled={rows.length === 0 || importing}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {importing && <Loader2 size={15} className="animate-spin" />}
               {importing ? 'Importing…' : `Import${rows.length > 0 ? ` ${rows.length}` : ''}`}
@@ -650,8 +650,8 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
 
 function UndoSummary({ undoResult }: { undoResult: any }) {
   return (
-    <div className="border border-[#E2E8F0] rounded-[10px] p-4 space-y-2">
-      <p className="text-sm font-semibold text-[#0F172A]">
+    <div className="border border-border-light rounded-[10px] p-4 space-y-2">
+      <p className="text-sm font-semibold text-text-primary">
         Removed {undoResult.undone} job role{undoResult.undone !== 1 ? 's' : ''}.
       </p>
     </div>
@@ -670,22 +670,22 @@ function HistoryView({
   undoResult: any | null
 }) {
   if (batches.length === 0) {
-    return <p className="text-sm text-[#94A3B8] py-8 text-center">No imports yet.</p>
+    return <p className="text-sm text-text-muted py-8 text-center">No imports yet.</p>
   }
   return (
     <div className="space-y-3">
       {undoResult && <UndoSummary undoResult={undoResult} />}
-      <div className="border border-[#E2E8F0] rounded-[10px] divide-y divide-[#F1F5F9]">
+      <div className="border border-border-light rounded-[10px] divide-y divide-surface-control">
         {batches.map((b) => (
           <div key={b.id} className="px-4 py-3 flex items-center gap-3">
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[#0F172A] truncate">
+              <p className="text-sm font-medium text-text-primary truncate">
                 {b.file_name || 'Untitled import'}
                 {b.status !== 'committed' && (
-                  <span className="ml-2 text-[11px] font-semibold text-[#94A3B8] uppercase">{b.status.replace('_', ' ')}</span>
+                  <span className="ml-2 text-[11px] font-semibold text-text-muted uppercase">{b.status.replace('_', ' ')}</span>
                 )}
               </p>
-              <p className="text-xs text-[#64748B] mt-0.5">
+              <p className="text-xs text-text-muted mt-0.5">
                 {new Date(b.created_at).toLocaleString()} · by {b.imported_by} · {b.created_count} created
                 {b.failed_count > 0 ? `, ${b.failed_count} failed` : ''} · {b.remaining} still present
               </p>
@@ -694,13 +694,13 @@ function HistoryView({
               <button
                 onClick={() => onUndo(b.id)}
                 disabled={undoingId === b.id}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-semibold text-[#B91C1C] bg-white border border-[#FECACA] hover:bg-[#FEF2F2] disabled:opacity-60 transition-colors shrink-0"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-semibold text-danger bg-white border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors shrink-0"
               >
                 {undoingId === b.id ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />}
                 Undo
               </button>
             ) : (
-              <span className="text-[11px] text-[#94A3B8] shrink-0">
+              <span className="text-[11px] text-text-muted shrink-0">
                 {b.status === 'undone' ? 'Undone' : 'Cannot Undo'}
               </span>
             )}

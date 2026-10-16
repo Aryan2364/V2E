@@ -15,7 +15,7 @@ function getInitials(name: string) {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
-const avatarColors = ['bg-[#2563EB]', 'bg-[#7C3AED]', 'bg-[#059669]', 'bg-[#D97706]', 'bg-[#DC2626]', 'bg-[#0891B2]']
+const avatarColors = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary']
 function avatarColor(name: string) {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i)
@@ -30,10 +30,10 @@ export default function TicketCard({ ticket, onClick }: Props) {
   return (
     <div
       onClick={onClick}
-      className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-5 py-3.5 flex items-center gap-4 cursor-pointer hover:border-[#2563EB] hover:shadow-md transition-all duration-150 group"
+      className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-5 py-3.5 flex items-center gap-4 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group"
     >
       {/* Ticket number */}
-      <span className="shrink-0 font-mono text-xs text-[#94A3B8] w-[76px]">{ticket.ticket_number}</span>
+      <span className="shrink-0 font-mono text-xs text-text-muted w-[76px]">{ticket.ticket_number}</span>
 
       {/* Type badge */}
       {ticket.ticket_type && (
@@ -44,7 +44,7 @@ export default function TicketCard({ ticket, onClick }: Props) {
 
       {/* Title + category */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-[#0F172A] truncate group-hover:text-[#2563EB] transition-colors">
+        <p className="text-sm font-semibold text-text-primary truncate group-hover:text-primary-text transition-colors">
           {ticket.title}
         </p>
         {ticket.category && (
@@ -78,8 +78,8 @@ export default function TicketCard({ ticket, onClick }: Props) {
             {getInitials(ticket.assigned_to_user_id.slice(0, 4))}
           </div>
         ) : (
-          <div className="w-6 h-6 rounded-full bg-[#F1F5F9] flex items-center justify-center">
-            <User size={11} className="text-[#94A3B8]" />
+          <div className="w-6 h-6 rounded-full bg-surface-control flex items-center justify-center">
+            <User size={11} className="text-text-muted" />
           </div>
         )}
       </div>
@@ -102,7 +102,7 @@ export default function TicketCard({ ticket, onClick }: Props) {
       )}
 
       {/* Created date */}
-      <div className="shrink-0 hidden lg:flex items-center gap-1 text-xs text-[#475569]">
+      <div className="shrink-0 hidden lg:flex items-center gap-1 text-xs text-text-secondary">
         <Calendar size={11} />
         <span>{formatDate(ticket.created_at)}</span>
       </div>

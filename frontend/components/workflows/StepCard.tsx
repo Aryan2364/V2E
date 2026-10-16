@@ -41,10 +41,10 @@ export interface StepPlanInput {
 }
 
 export const INPUT_CLS =
-  'w-full px-3 py-2.5 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F8FAFC] disabled:text-[#334155] disabled:cursor-not-allowed'
-export const LABEL_CLS = 'block text-sm font-medium text-[#374151] mb-2'
-const SUB_LABEL = 'block text-[13px] font-medium text-[#374151] mb-1.5'
-const HELP = 'text-[13px] text-[#475569]'
+  'w-full px-3 py-2.5 text-base sm:text-sm border border-border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface-sunken disabled:text-text-secondary disabled:cursor-not-allowed'
+export const LABEL_CLS = 'block text-sm font-medium text-text-secondary mb-2'
+const SUB_LABEL = 'block text-[13px] font-medium text-text-secondary mb-1.5'
+const HELP = 'text-[13px] text-text-secondary'
 
 /** Same limit as a task title — a step becomes a task. */
 export const STEP_TITLE_MAX = 50
@@ -176,7 +176,7 @@ function ChoiceCards<V extends string>({
           <div
             key={o.value}
             className={`relative flex items-center rounded-[10px] border transition-colors ${
-              on ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#CBD5E1] bg-white hover:bg-[#F8FAFC]'
+              on ? 'border-primary bg-primary-subtle' : 'border-border bg-white hover:bg-surface-sunken'
             }`}
           >
             <button
@@ -185,17 +185,17 @@ function ChoiceCards<V extends string>({
               aria-checked={on}
               disabled={disabled}
               onClick={() => !on && onChange(o.value)}
-              className={`flex-1 min-w-0 flex items-center gap-2 text-left rounded-[10px] pl-3 py-2.5 min-h-[44px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed ${
+              className={`flex-1 min-w-0 flex items-center gap-2 text-left rounded-[10px] pl-3 py-2.5 min-h-[44px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed ${
                 o.tip ? 'pr-1' : 'pr-3'
               }`}
             >
               <span
                 aria-hidden
-                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${on ? 'border-[#2563EB]' : 'border-[#94A3B8]'}`}
+                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${on ? 'border-primary' : 'border-border-strong'}`}
               >
-                {on && <span className="w-2 h-2 rounded-full bg-[#2563EB]" />}
+                {on && <span className="w-2 h-2 rounded-full bg-primary" />}
               </span>
-              <span className={`text-sm font-semibold ${on ? 'text-[#1D4ED8]' : 'text-[#0F172A]'}`}>{o.label}</span>
+              <span className={`text-sm font-semibold ${on ? 'text-primary-text' : 'text-text-primary'}`}>{o.label}</span>
             </button>
             {o.tip && <InfoTip label={o.label} text={o.tip} className="mr-2.5" />}
           </div>
@@ -231,8 +231,8 @@ export function IconAction({
         e.stopPropagation()
         onClick()
       }}
-      className={`inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:text-[#94A3B8] disabled:hover:bg-transparent disabled:cursor-not-allowed ${
-        danger ? 'text-[#475569] hover:text-[#B91C1C] hover:bg-[#FEF2F2]' : 'text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9]'
+      className={`inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:text-text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed ${
+        danger ? 'text-text-secondary hover:text-danger hover:bg-danger-bg' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
       }`}
     >
       <Icon size={16} />
@@ -250,13 +250,13 @@ function MergeChip({ label, redundant, onRemove, disabled }: { label: string; re
   return (
     <span
       className={`inline-flex items-center gap-1 max-w-full rounded-[6px] border pl-2 pr-1 py-0.5 text-[13px] ${
-        redundant ? 'border-[#E2E8F0] bg-[#F8FAFC] text-[#475569]' : 'border-[#BFDBFE] bg-[#EFF6FF] font-medium text-[#1D4ED8]'
+        redundant ? 'border-border-light bg-surface-sunken text-text-secondary' : 'border-primary-border bg-primary-subtle font-medium text-primary-text'
       }`}
     >
       <span className="truncate">
         {redundant ? (
           <>
-            <span className="font-medium text-[#334155]">{label}</span> · Already waits for this through After
+            <span className="font-medium text-text-secondary">{label}</span> · Already waits for this through After
           </>
         ) : (
           label
@@ -273,7 +273,7 @@ function MergeChip({ label, redundant, onRemove, disabled }: { label: string; re
         }}
         onKeyDown={(e) => e.stopPropagation()}
         className={`shrink-0 w-4 h-4 rounded-[4px] flex items-center justify-center cursor-pointer disabled:cursor-not-allowed ${
-          redundant ? 'text-[#475569] hover:bg-[#E2E8F0] hover:text-[#0F172A]' : 'text-[#2563EB] hover:bg-[#DBEAFE] hover:text-[#1D4ED8]'
+          redundant ? 'text-text-secondary hover:bg-surface-control-pressed hover:text-text-primary' : 'text-primary-text hover:bg-primary-subtle hover:text-primary-text'
         }`}
       >
         <X size={11} />
@@ -490,15 +490,15 @@ export default function StepCard(props: EditProps | CreateProps) {
     const unavailable = st ? !st.active : !offered && lookups.status !== 'loading'
     if (unavailable) {
       return (
-        <p className="flex items-start gap-1.5 text-[13px] text-[#92400E]">
+        <p className="flex items-start gap-1.5 text-[13px] text-warning">
           <AlertTriangle size={14} className="shrink-0 mt-0.5" />
           <span>Template no longer available. Instances use the saved copy.</span>
         </p>
       )
     }
     return (
-      <p className="flex items-start gap-1.5 text-[13px] text-[#475569]">
-        <Link2 size={14} className="shrink-0 mt-0.5 text-[#1D4ED8]" />
+      <p className="flex items-start gap-1.5 text-[13px] text-text-secondary">
+        <Link2 size={14} className="shrink-0 mt-0.5 text-primary-text" />
         <span>
           Linked. New instances use its latest items.
           {st?.accessible === false ? ' You can’t add this template, so it can’t be re-added once removed.' : ''}
@@ -634,7 +634,7 @@ export default function StepCard(props: EditProps | CreateProps) {
         {/* Title */}
         <div className="lg:col-span-7">
           <label htmlFor={`${idPrefix}-title`} className={LABEL_CLS}>
-            Step title <span className="text-[#DC2626]">*</span>
+            Step title <span className="text-danger">*</span>
           </label>
           <div className="relative">
             <input
@@ -652,23 +652,23 @@ export default function StepCard(props: EditProps | CreateProps) {
                 }
               }}
               placeholder="e.g. Collect signed offer letter"
-              className={`${INPUT_CLS} pr-14 ${titleError ? 'border-[#DC2626]!' : ''}`}
+              className={`${INPUT_CLS} pr-14 ${titleError ? 'border-danger!' : ''}`}
             />
             <span
               className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] tabular-nums ${
-                draft.title.length >= STEP_TITLE_MAX ? 'text-[#B91C1C]' : 'text-[#475569]'
+                draft.title.length >= STEP_TITLE_MAX ? 'text-danger' : 'text-text-secondary'
               }`}
             >
               {draft.title.length}/{STEP_TITLE_MAX}
             </span>
           </div>
-          {titleError && <p className="mt-1.5 text-[13px] text-[#B91C1C]">{titleError}</p>}
+          {titleError && <p className="mt-1.5 text-[13px] text-danger">{titleError}</p>}
         </div>
 
         {/* Assigned to */}
         <div className="lg:col-span-12">
           <span className={LABEL_CLS}>
-            Assigned to <span className="text-[#DC2626]">*</span>{' '}
+            Assigned to <span className="text-danger">*</span>{' '}
             <InfoTip label="Assigned to" text="Click a badge to switch assignee and CC. CCs only follow along." />
           </span>
           <fieldset disabled={disabled || creating} className="min-w-0 border-0 p-0 m-0">
@@ -709,7 +709,7 @@ export default function StepCard(props: EditProps | CreateProps) {
                 {placement && (
                   <div>
                     <span className={LABEL_CLS}>After</span>
-                    <p className="text-sm text-[#1E293B]">{placement}</p>
+                    <p className="text-sm text-text-primary">{placement}</p>
                   </div>
                 )}
                 {showMerge ? (
@@ -762,7 +762,7 @@ export default function StepCard(props: EditProps | CreateProps) {
           <ChoiceCards name="Escalate to" value={draft.escalation_mode} options={ESCALATION} onChange={setEscalationMode} disabled={disabled || creating} />
           {draft.escalation_mode === 'manager' && step?.escalation_contacts && step.escalation_contacts.length > 0 && (
             <p className={HELP}>
-              Currently: <span className="text-[#0F172A] font-medium">{step.escalation_contacts.map((p) => p.name).join(', ')}</span>
+              Currently: <span className="text-text-primary font-medium">{step.escalation_contacts.map((p) => p.name).join(', ')}</span>
               {step.escalation_resolved_from === 'owners_fallback' ? ' (editors, no manager set)' : ''}
             </p>
           )}
@@ -771,7 +771,7 @@ export default function StepCard(props: EditProps | CreateProps) {
               <div className="flex flex-col gap-2">
                 {escRows.map((uid, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="shrink-0 w-16 text-[13px] font-medium text-[#334155]">Level {i + 1}</span>
+                    <span className="shrink-0 w-16 text-[13px] font-medium text-text-secondary">Level {i + 1}</span>
                     <div className="flex-1 min-w-0">
                       <EmployeePicker
                         value={uid}
@@ -797,7 +797,7 @@ export default function StepCard(props: EditProps | CreateProps) {
                     <Plus size={16} /> Add level
                   </button>
                 )}
-                {escError && <p className="text-[13px] text-[#B91C1C]">{escError}</p>}
+                {escError && <p className="text-[13px] text-danger">{escError}</p>}
               </div>
             </Reveal>
           )}
@@ -805,18 +805,18 @@ export default function StepCard(props: EditProps | CreateProps) {
       </div>
 
       {/* More options */}
-      <div className="border-t border-[#F1F5F9] pt-4">
+      <div className="border-t border-border-light pt-4">
         <button
           type="button"
           aria-expanded={moreOpen}
           aria-controls={`${idPrefix}-more`}
           onClick={() => setMoreOpen((v) => !v)}
-          className="inline-flex items-center gap-2 min-h-[44px] sm:min-h-[36px] px-2 -mx-2 rounded-[8px] text-sm font-semibold text-[#1D4ED8] hover:bg-[#EFF6FF] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+          className="inline-flex items-center gap-2 min-h-[44px] sm:min-h-[36px] px-2 -mx-2 rounded-[8px] text-sm font-semibold text-primary-text hover:bg-primary-subtle focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
         >
           <SlidersHorizontal size={16} />
           More options
           {extrasSet > 0 && (
-            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold flex items-center justify-center">
+            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold flex items-center justify-center">
               {extrasSet}
             </span>
           )}
@@ -903,7 +903,7 @@ export default function StepCard(props: EditProps | CreateProps) {
       {props.mode === 'create' && (
         <>
           {createError && <ErrorBanner message={createError} />}
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-[#F1F5F9]">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border-light">
             <button type="button" onClick={props.onCancel} disabled={creating} className={BTN.quiet}>
               Cancel
             </button>
@@ -925,15 +925,15 @@ export default function StepCard(props: EditProps | CreateProps) {
       <div
         ref={rootRef}
         className={`bg-white border rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] scroll-mt-40 scroll-mb-24 ${
-          props.mode === 'create' ? 'border-[#93C5FD] ring-1 ring-[#BFDBFE]' : issue ? 'border-[#FCA5A5] ring-1 ring-[#FECACA]' : 'border-[#E2E8F0]'
+          props.mode === 'create' ? 'border-primary-border ring-1 ring-primary-border' : issue ? 'border-danger-border ring-1 ring-danger-border' : 'border-border-light'
         }`}
       >
         {/* Header — the whole row toggles the card */}
         <div
-          className={`flex items-center gap-3 px-3 sm:px-4 py-2.5 ${expanded ? 'border-b border-[#E2E8F0]' : ''} ${edit ? 'cursor-pointer' : ''}`}
+          className={`flex items-center gap-3 px-3 sm:px-4 py-2.5 ${expanded ? 'border-b border-border-light' : ''} ${edit ? 'cursor-pointer' : ''}`}
           onClick={edit ? edit.onToggle : undefined}
         >
-          <span className="min-w-[28px] h-7 px-1.5 rounded-full text-[12px] font-semibold flex items-center justify-center shrink-0 bg-[#2563EB] text-white">
+          <span className="min-w-[28px] h-7 px-1.5 rounded-full text-[12px] font-semibold flex items-center justify-center shrink-0 bg-primary text-white">
             {props.mode === 'create' ? createBadge ?? label : label}
           </span>
           <div className="flex-1 min-w-0">
@@ -946,15 +946,15 @@ export default function StepCard(props: EditProps | CreateProps) {
                   e.stopPropagation()
                   edit.onToggle()
                 }}
-                className="block max-w-full text-left text-[15px] font-semibold text-[#0F172A] truncate rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+                className="block max-w-full text-left text-[15px] font-semibold text-text-primary truncate rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {draft.title || 'Untitled step'}
               </button>
             ) : (
-              <span className="block text-[15px] font-semibold text-[#0F172A] truncate">New step</span>
+              <span className="block text-[15px] font-semibold text-text-primary truncate">New step</span>
             )}
             {edit && (
-              <p className={`text-[13px] truncate ${hasProblem ? 'text-[#B91C1C]' : 'text-[#475569]'}`}>
+              <p className={`text-[13px] truncate ${hasProblem ? 'text-danger' : 'text-text-secondary'}`}>
                 {hasProblem && <AlertTriangle size={12} className="inline -mt-0.5 mr-1" aria-hidden />}
                 {assigneeText}
                 {completionText} · {timingSummary(draft.start_rule, draft.due_rule, frequency, waits, nextFlags)}

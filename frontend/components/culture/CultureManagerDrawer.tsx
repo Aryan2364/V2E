@@ -39,9 +39,9 @@ function InlineForm({
   const [error, setError] = useState<string | null>(null)
 
   const isExpected = type === 'expected_behavior'
-  const accentBorder = isExpected ? 'focus:border-[#16A34A]' : 'focus:border-[#DC2626]'
-  const inputCls = `w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 ${accentBorder} transition-colors`
-  const textareaCls = `w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 ${accentBorder} transition-colors resize-none`
+  const accentBorder = isExpected ? 'focus:border-success' : 'focus:border-danger'
+  const inputCls = `w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 ${accentBorder} transition-colors`
+  const textareaCls = `w-full rounded-[8px] border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 ${accentBorder} transition-colors resize-none`
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -66,10 +66,10 @@ function InlineForm({
   }
 
   return (
-    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[10px] p-4 flex flex-col gap-3 mt-2">
+    <div className="bg-surface-sunken border border-border-light rounded-[10px] p-4 flex flex-col gap-3 mt-2">
       <div>
-        <label className="text-xs font-semibold text-[#374151] mb-1 block">
-          Title <span className="text-[#DC2626]">*</span>
+        <label className="text-xs font-semibold text-text-secondary mb-1 block">
+          Title <span className="text-danger">*</span>
         </label>
         <input
           value={title}
@@ -80,8 +80,8 @@ function InlineForm({
         />
       </div>
       <div>
-        <label className="text-xs font-semibold text-[#374151] mb-1 block">
-          Description <span className="text-[#DC2626]">*</span>
+        <label className="text-xs font-semibold text-text-secondary mb-1 block">
+          Description <span className="text-danger">*</span>
         </label>
         <textarea
           value={description}
@@ -91,12 +91,12 @@ function InlineForm({
           className={textareaCls}
         />
       </div>
-      {error && <p className="text-xs text-[#DC2626]">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
       <div className="flex gap-2">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] bg-[#2563EB] text-white text-xs font-semibold hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] bg-primary text-white text-xs font-semibold hover:bg-primary-hover disabled:opacity-60 transition-colors"
         >
           {saving ? (
             <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -108,7 +108,7 @@ function InlineForm({
         <button
           onClick={onCancel}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-[#CBD5E1] text-[#475569] text-xs font-semibold hover:bg-[#F1F5F9] transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-border text-text-secondary text-xs font-semibold hover:bg-surface-control transition-colors"
         >
           <X size={13} /> Cancel
         </button>
@@ -127,24 +127,24 @@ function CultureCard({
   onDelete: () => void
 }) {
   return (
-    <div className="group bg-white border border-[#E2E8F0] rounded-[10px] p-4 flex gap-3 transition-shadow hover:shadow-xs">
+    <div className="group bg-white border border-border-light rounded-[10px] p-4 flex gap-3 transition-shadow hover:shadow-xs">
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm text-[#0F172A]">{standard.title}</p>
+        <p className="font-semibold text-sm text-text-primary">{standard.title}</p>
         {standard.description && (
-          <p className="text-sm text-[#475569] mt-1 leading-relaxed">{standard.description}</p>
+          <p className="text-sm text-text-secondary mt-1 leading-relaxed">{standard.description}</p>
         )}
       </div>
       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
         <button
           onClick={onEdit}
-          className="w-7 h-7 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+          className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors"
           aria-label="Edit"
         >
           <Pencil size={14} />
         </button>
         <button
           onClick={onDelete}
-          className="w-7 h-7 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"
+          className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"
           aria-label="Delete"
         >
           <Trash2 size={14} />
@@ -172,9 +172,9 @@ function Column({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
-  const headerBg = isExpected ? 'bg-[#F0FDF4] border-[#BBF7D0]' : 'bg-[#FEF2F2] border-[#FECACA]'
-  const headerText = isExpected ? 'text-[#16A34A]' : 'text-[#DC2626]'
-  const dotColor = isExpected ? 'bg-[#16A34A]' : 'bg-[#DC2626]'
+  const headerBg = isExpected ? 'bg-success-bg border-success-border' : 'bg-danger-bg border-danger-border'
+  const headerText = isExpected ? 'text-success' : 'text-danger'
+  const dotColor = isExpected ? 'bg-success' : 'bg-danger'
 
   const handleAdd = async (t: string, d: string) => {
     await createCultureStandard(orgId, { title: t, description: d, type })
@@ -214,7 +214,7 @@ function Column({
         )}
       </div>
 
-      <div className="border border-[#E2E8F0] rounded-b-[12px] bg-[#FAFAFA] flex flex-col">
+      <div className="border border-border-light rounded-b-[12px] bg-surface-sunken flex flex-col">
         {/* Add form sits below the fixed header so it stays visible while typing */}
         {showForm && (
           <div className="px-3 pt-3">
@@ -242,18 +242,18 @@ function Column({
             ) : (
               <div key={item.id}>
                 {confirmDeleteId === item.id ? (
-                  <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-[10px] p-3 flex items-center justify-between gap-3">
-                    <p className="text-xs text-[#7F1D1D]">Delete &quot;{item.title}&quot;?</p>
+                  <div className="bg-danger-bg border border-danger-border rounded-[10px] p-3 flex items-center justify-between gap-3">
+                    <p className="text-xs text-danger">Delete &quot;{item.title}&quot;?</p>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="px-2.5 py-1 rounded-[6px] bg-[#DC2626] text-white text-xs font-semibold hover:bg-[#B91C1C]"
+                        className="px-2.5 py-1 rounded-[6px] bg-danger text-white text-xs font-semibold hover:bg-danger-hover"
                       >
                         Delete
                       </button>
                       <button
                         onClick={() => setConfirmDeleteId(null)}
-                        className="px-2.5 py-1 rounded-[6px] border border-[#CBD5E1] text-xs font-semibold"
+                        className="px-2.5 py-1 rounded-[6px] border border-border text-xs font-semibold"
                       >
                         Cancel
                       </button>
@@ -325,15 +325,15 @@ export default function CultureManagerDrawer({
       {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
 
       <div
-        className={`fixed inset-y-0 right-0 z-70 w-full max-w-2xl bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-70 w-full max-w-2xl bg-white border-l border-border-light shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2E8F0]">
-          <h3 className="font-semibold text-[#0F172A]">Manage Culture Standards</h3>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light">
+          <h3 className="font-semibold text-text-primary">Manage Culture Standards</h3>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
             aria-label="Close"
           >
             <X size={16} />
@@ -345,7 +345,7 @@ export default function CultureManagerDrawer({
           {loading ? (
             <div className="flex gap-4">
               {[1, 2].map((i) => (
-                <div key={i} className="flex-1 h-48 rounded-[12px] bg-[#E2E8F0] animate-pulse" />
+                <div key={i} className="flex-1 h-48 rounded-[12px] bg-surface-control-pressed animate-pulse" />
               ))}
             </div>
           ) : (
@@ -368,7 +368,7 @@ export default function CultureManagerDrawer({
           )}
           </div>
 
-          <div className="px-5 pt-4 pb-12 border-t border-[#E2E8F0] flex gap-3">
+          <div className="px-5 pt-4 pb-12 border-t border-border-light flex gap-3">
             <Button variant="primary" onClick={onClose}>
               Done
             </Button>

@@ -40,14 +40,14 @@ export function CreatorChip({ person }: { person: PersonRef }) {
       <span
         tabIndex={0}
         aria-label={`${person.name}, creator. ${CREATOR_TIP}.`}
-        className="inline-flex items-center gap-1.5 bg-[#EFF6FF] border border-[#BFDBFE] rounded-[8px] pl-1.5 pr-2 py-1 max-w-[220px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+        className="inline-flex items-center gap-1.5 bg-primary-subtle border border-primary-border rounded-[8px] pl-1.5 pr-2 py-1 max-w-[220px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
       >
-        <span aria-hidden className="w-5 h-5 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-[9px] font-bold shrink-0">
+        <span aria-hidden className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-[9px] font-bold shrink-0">
           {initials(person.name)}
         </span>
-        <span className="text-xs font-medium text-[#0F172A] truncate">{person.name}</span>
-        <span className="text-[10px] font-semibold text-[#1D4ED8] shrink-0">Creator</span>
-        <Info size={12} aria-hidden className="text-[#1D4ED8] shrink-0" />
+        <span className="text-xs font-medium text-text-primary truncate">{person.name}</span>
+        <span className="text-[10px] font-semibold text-primary-text shrink-0">Creator</span>
+        <Info size={12} aria-hidden className="text-primary-text shrink-0" />
       </span>
     </Tooltip>
   )
@@ -94,16 +94,16 @@ export default function PeopleSection({
   return (
     <section
       aria-labelledby="people-heading"
-      className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-5"
+      className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-5"
     >
       <div className="min-w-0">
-        <h2 id="people-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+        <h2 id="people-heading" className="flex items-center gap-1 text-[18px] font-semibold text-text-primary">
           People <InfoTip label="People" text="Only editors, viewers and admins can see this workflow. People in an instance see that instance." />
         </h2>
       </div>
 
       {allowed === false && (
-        <p className="text-[13px] text-[#334155] rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-2">{reason}</p>
+        <p className="text-[13px] text-text-secondary rounded-[8px] bg-surface-sunken border border-border-light px-3 py-2">{reason}</p>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -111,7 +111,7 @@ export default function PeopleSection({
           const isEditors = r.key === 'editorIds'
           return (
             <div key={r.key} className="min-w-0">
-              <span className="block text-sm font-medium text-[#374151] mb-2">
+              <span className="block text-sm font-medium text-text-secondary mb-2">
                 {r.label} <InfoTip label={r.label} text={r.tip} />
               </span>
               <PeoplePicker

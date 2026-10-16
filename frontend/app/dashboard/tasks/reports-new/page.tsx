@@ -64,8 +64,8 @@ export default function ReportsIndexPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">Reports</h1>
-        <p className="mt-1 text-[15px] text-[#475569]">
+        <h1 className="text-[28px] font-bold text-text-primary leading-tight">Reports</h1>
+        <p className="mt-1 text-[15px] text-text-secondary">
           Pick a report. What you can see is scoped to your visibility — your own work, your team, or the whole organization.
         </p>
       </div>
@@ -75,7 +75,7 @@ export default function ReportsIndexPage() {
           <button
             key={r.key}
             onClick={() => router.push(r.href)}
-            className="group text-left bg-white border border-[#E2E8F0] rounded-[14px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-5 hover:border-[#2563EB] hover:shadow-[0_4px_16px_rgba(37,99,235,0.10)] transition-all"
+            className="group text-left bg-white border border-border-light rounded-[14px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-5 hover:border-primary hover:shadow-[0_4px_16px_rgba(37,99,235,0.10)] transition-all"
           >
             <div className="flex items-start gap-4">
               <div
@@ -86,18 +86,18 @@ export default function ReportsIndexPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-[17px] font-semibold text-[#0F172A]">{r.title}</h2>
+                  <h2 className="text-[17px] font-semibold text-text-primary">{r.title}</h2>
                   {r.badge && (
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] rounded-full px-2 py-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
                       {r.badge}
                     </span>
                   )}
                 </div>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-[#475569]">{r.blurb}</p>
+                <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">{r.blurb}</p>
               </div>
               <ArrowRight
                 size={18}
-                className="text-[#94A3B8] group-hover:text-[#2563EB] group-hover:translate-x-0.5 transition-all shrink-0 mt-1"
+                className="text-text-muted group-hover:text-primary-text group-hover:translate-x-0.5 transition-all shrink-0 mt-1"
               />
             </div>
           </button>

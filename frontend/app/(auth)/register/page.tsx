@@ -25,8 +25,8 @@ const schema = z
 type FormValues = z.infer<typeof schema>
 
 const inputCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors'
-const labelCls = 'block text-sm font-medium text-[#374151] mb-1.5'
+  'w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
+const labelCls = 'block text-sm font-medium text-text-secondary mb-1.5'
 
 function RegisterForm() {
   const router = useRouter()
@@ -70,28 +70,28 @@ function RegisterForm() {
 
   return (
     <div className="w-full max-w-[420px]">
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-8">
+      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-8">
         {/* Brand */}
         <div className="mb-7 text-center">
-          <div className="inline-flex items-center justify-center w-10 h-10 bg-[#2563EB] rounded-[10px] mb-3">
+          <div className="inline-flex items-center justify-center w-10 h-10 bg-primary rounded-[10px] mb-3">
             <span className="text-white font-bold text-sm">OS</span>
           </div>
-          <h1 className="text-[22px] font-bold text-[#0F172A]">Create your account</h1>
-          <p className="text-sm text-[#475569] mt-1">
+          <h1 className="text-[22px] font-bold text-text-primary">Create your account</h1>
+          <p className="text-sm text-text-secondary mt-1">
             Set up your V2E account.
           </p>
         </div>
 
         {/* Access notice */}
-        <div className="mb-5 bg-[#FEF9C3] border border-[#FDE68A] rounded-[8px] px-4 py-3">
-          <p className="text-xs font-medium text-[#92400E]">
+        <div className="mb-5 bg-warning-bg border border-warning-border rounded-[8px] px-4 py-3">
+          <p className="text-xs font-medium text-warning">
             Creating an account doesn&apos;t join an organization on its own. Once your account exists, your organization admin adds you to it.
           </p>
         </div>
 
         {serverError && (
-          <div className="mb-5 bg-[#FEE2E2] border border-[#FECACA] rounded-[8px] px-4 py-3">
-            <p className="text-sm text-[#DC2626]">{serverError}</p>
+          <div className="mb-5 bg-danger-bg border border-danger-border rounded-[8px] px-4 py-3">
+            <p className="text-sm text-danger">{serverError}</p>
           </div>
         )}
 
@@ -106,7 +106,7 @@ function RegisterForm() {
               className={inputCls}
             />
             {errors.name && (
-              <p className="mt-1 text-xs text-[#DC2626]">{errors.name.message}</p>
+              <p className="mt-1 text-xs text-danger">{errors.name.message}</p>
             )}
           </div>
 
@@ -119,10 +119,10 @@ function RegisterForm() {
               placeholder="you@company.com"
               autoComplete="email"
               readOnly={!!inviteEmail}
-              className={[inputCls, inviteEmail ? 'bg-[#F8FAFC] text-[#475569]' : ''].join(' ')}
+              className={[inputCls, inviteEmail ? 'bg-surface-sunken text-text-secondary' : ''].join(' ')}
             />
             {errors.email && (
-              <p className="mt-1 text-xs text-[#DC2626]">{errors.email.message}</p>
+              <p className="mt-1 text-xs text-danger">{errors.email.message}</p>
             )}
           </div>
 
@@ -141,14 +141,14 @@ function RegisterForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
             {errors.password && (
-              <p className="mt-1 text-xs text-[#DC2626]">{errors.password.message}</p>
+              <p className="mt-1 text-xs text-danger">{errors.password.message}</p>
             )}
           </div>
 
@@ -167,14 +167,14 @@ function RegisterForm() {
               <button
                 type="button"
                 onClick={() => setShowConfirm((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
                 tabIndex={-1}
               >
                 {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
             {errors.confirmPassword && (
-              <p className="mt-1 text-xs text-[#DC2626]">{errors.confirmPassword.message}</p>
+              <p className="mt-1 text-xs text-danger">{errors.confirmPassword.message}</p>
             )}
           </div>
 
@@ -183,9 +183,9 @@ function RegisterForm() {
           </Button>
         </form>
 
-        <p className="mt-5 text-center text-sm text-[#475569]">
+        <p className="mt-5 text-center text-sm text-text-secondary">
           Already have an account?{' '}
-          <a href="/login" className="font-semibold text-[#2563EB] hover:underline">
+          <a href="/login" className="font-semibold text-primary-text hover:underline">
             Sign in
           </a>
         </p>
@@ -197,7 +197,7 @@ function RegisterForm() {
 export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <Suspense fallback={<div className="w-full max-w-[420px] h-[600px] bg-white border border-[#E2E8F0] rounded-[12px] animate-pulse" />}>
+      <Suspense fallback={<div className="w-full max-w-[420px] h-[600px] bg-white border border-border-light rounded-[12px] animate-pulse" />}>
         <RegisterForm />
       </Suspense>
     </div>

@@ -38,8 +38,8 @@ interface Props {
   canDelete: boolean
 }
 
-const inputCls = 'border border-[#CBD5E1] rounded-[8px] px-3 py-[8px] text-sm text-[#0F172A] bg-white focus:border-2 focus:border-[#2563EB] focus:outline-hidden'
-const labelCls = 'text-sm font-medium text-[#374151]'
+const inputCls = 'border border-border rounded-[8px] px-3 py-[8px] text-sm text-text-primary bg-white focus:border-2 focus:border-primary focus:outline-hidden'
+const labelCls = 'text-sm font-medium text-text-secondary'
 
 export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, canDelete }: Props) {
   const [isCustom, setIsCustom] = useState(() => entry.every > 1)
@@ -91,7 +91,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider">Entry #{index + 1}</span>
+        <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Entry #{index + 1}</span>
         <Tooltip label={canDelete ? 'Remove entry' : 'Cannot remove last entry'}>
         <button
           type="button"
@@ -101,7 +101,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
           className={[
             'w-7 h-7 rounded-[6px] flex items-center justify-center transition-colors',
             canDelete
-              ? 'text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2]'
+              ? 'text-text-muted hover:text-danger hover:bg-danger-bg'
               : 'text-[#CBD5E1] cursor-not-allowed',
           ].join(' ')}
         >
@@ -123,12 +123,12 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 onUpdate({ every: 1 })
               }
             }}
-            className="text-xs font-semibold text-[#2563EB] hover:underline"
+            className="text-xs font-semibold text-primary-text hover:underline"
           >
             {isCustom ? 'Use standard interval' : 'Set custom interval...'}
           </button>
         </div>
-        <div className="flex items-center border border-[#E2E8F0] rounded-[8px] p-0.5 gap-0.5">
+        <div className="flex items-center border border-border-light rounded-[8px] p-0.5 gap-0.5">
           {TYPES.map((t) => (
             <button
               key={t.value}
@@ -151,8 +151,8 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
               className={[
                 'flex-1 py-1.5 text-sm font-medium rounded-[6px] transition-colors',
                 entry.schedule_type === t.value
-                  ? 'bg-[#2563EB] text-white'
-                  : 'text-[#475569] hover:bg-[#F1F5F9]',
+                  ? 'bg-primary text-white'
+                  : 'text-text-secondary hover:bg-surface-control',
               ].join(' ')}
             >
               {t.label}
@@ -173,7 +173,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
             onChange={(e) => onUpdate({ every: Math.max(1, Number(e.target.value)) })}
             className={`w-20 text-center ${inputCls}`}
           />
-          <span className="text-sm text-[#475569]">day{entry.every !== 1 ? 's' : ''}</span>
+          <span className="text-sm text-text-secondary">day{entry.every !== 1 ? 's' : ''}</span>
         </div>
       )}
 
@@ -191,7 +191,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 onChange={(e) => onUpdate({ every: Math.max(1, Number(e.target.value)) })}
                 className={`w-20 text-center ${inputCls}`}
               />
-              <span className="text-sm text-[#475569]">week{entry.every !== 1 ? 's' : ''} on</span>
+              <span className="text-sm text-text-secondary">week{entry.every !== 1 ? 's' : ''} on</span>
             </div>
           )}
           {!isCustom && (
@@ -206,8 +206,8 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 className={[
                   'px-3 py-1.5 text-sm font-medium rounded-[8px] border transition-colors',
                   entry.days.includes(d)
-                    ? 'bg-[#2563EB] text-white border-[#2563EB]'
-                    : 'bg-white text-[#475569] border-[#CBD5E1] hover:border-[#2563EB] hover:text-[#2563EB]',
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-white text-text-secondary border-border hover:border-primary hover:text-primary-text',
                 ].join(' ')}
               >
                 {label}
@@ -231,7 +231,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 onChange={(e) => onUpdate({ every: Math.max(1, Number(e.target.value)) })}
                 className={`w-20 text-center ${inputCls}`}
               />
-              <span className="text-sm text-[#475569]">month{entry.every !== 1 ? 's' : ''} on day(s)</span>
+              <span className="text-sm text-text-secondary">month{entry.every !== 1 ? 's' : ''} on day(s)</span>
             </div>
           )}
           {!isCustom && (
@@ -246,8 +246,8 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 className={[
                   'h-8 w-full text-xs font-medium rounded-[6px] border transition-colors',
                   isMonthDaySelected(d)
-                    ? 'bg-[#2563EB] text-white border-[#2563EB]'
-                    : 'bg-white text-[#475569] border-[#CBD5E1] hover:border-[#2563EB] hover:text-[#2563EB]',
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-white text-text-secondary border-border hover:border-primary hover:text-primary-text',
                 ].join(' ')}
               >
                 {d}
@@ -262,8 +262,8 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
             const show29 = isMonthDaySelected(29) && !show31 && !show30
 
             return (
-              <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] text-[12px] text-[#475569] space-y-3">
-                <p className="font-semibold text-[#0F172A] flex items-center gap-1">
+              <div className="p-3 bg-surface-sunken border border-border-light rounded-[8px] text-[12px] text-text-secondary space-y-3">
+                <p className="font-semibold text-text-primary flex items-center gap-1">
                   <span>📅</span> Month-End Adjustment Options:
                 </p>
                 
@@ -275,14 +275,14 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                           type="checkbox"
                           checked={entry.month_days.includes(-29)}
                           onChange={(e) => toggleFallback(29, e.target.checked)}
-                          className="mt-0.5 accent-[#2563EB]"
+                          className="mt-0.5 accent-primary"
                         />
                         <div>
-                          <span className="font-medium text-[#1E293B]">Automatically run on February 28th in non-leap years</span>
+                          <span className="font-medium text-text-primary">Automatically run on February 28th in non-leap years</span>
                         </div>
                       </label>
                       {!entry.month_days.includes(-29) && (
-                        <p className="text-[11px] text-[#DC2626] pl-5">
+                        <p className="text-[11px] text-danger pl-5">
                           ⚠️ Note: If not selected, this task will be missed in February during non-leap years.
                         </p>
                       )}
@@ -296,14 +296,14 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                           type="checkbox"
                           checked={entry.month_days.includes(-30)}
                           onChange={(e) => toggleFallback(30, e.target.checked)}
-                          className="mt-0.5 accent-[#2563EB]"
+                          className="mt-0.5 accent-primary"
                         />
                         <div>
-                          <span className="font-medium text-[#1E293B]">Automatically run on the last day of February</span>
+                          <span className="font-medium text-text-primary">Automatically run on the last day of February</span>
                         </div>
                       </label>
                       {!entry.month_days.includes(-30) && (
-                        <p className="text-[11px] text-[#DC2626] pl-5">
+                        <p className="text-[11px] text-danger pl-5">
                           ⚠️ Note: If not selected, this task will be missed in February.
                         </p>
                       )}
@@ -317,17 +317,17 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                           type="checkbox"
                           checked={entry.month_days.includes(-31)}
                           onChange={(e) => toggleFallback(31, e.target.checked)}
-                          className="mt-0.5 accent-[#2563EB]"
+                          className="mt-0.5 accent-primary"
                         />
                         <div>
-                          <span className="font-medium text-[#1E293B]">Automatically run on the last day of shorter months</span>
-                          <p className="text-[10px] text-[#64748B] mt-0.5">
+                          <span className="font-medium text-text-primary">Automatically run on the last day of shorter months</span>
+                          <p className="text-[10px] text-text-muted mt-0.5">
                             (Applies to February, April, June, September, and November)
                           </p>
                         </div>
                       </label>
                       {!entry.month_days.includes(-31) && (
-                        <p className="text-[11px] text-[#DC2626] pl-5">
+                        <p className="text-[11px] text-danger pl-5">
                           ⚠️ Note: If not selected, this task will be missed in February, April, June, September, and November.
                         </p>
                       )}
@@ -354,7 +354,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 onChange={(e) => onUpdate({ every: Math.max(1, Number(e.target.value)) })}
                 className={`w-20 text-center ${inputCls}`}
               />
-              <span className="text-sm text-[#475569]">year{entry.every !== 1 ? 's' : ''} on date(s)</span>
+              <span className="text-sm text-text-secondary">year{entry.every !== 1 ? 's' : ''} on date(s)</span>
             </div>
           )}
           {!isCustom && (
@@ -373,7 +373,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                   <button
                     type="button"
                     onClick={() => removeYearlyDate(i)}
-                    className="w-7 h-7 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors"
+                    className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"
                   >
                     <X size={14} />
                   </button>
@@ -383,7 +383,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
             <button
               type="button"
               onClick={addYearlyDate}
-              className="text-sm text-[#2563EB] hover:underline font-medium"
+              className="text-sm text-primary-text hover:underline font-medium"
             >
               + Add date
             </button>
@@ -412,7 +412,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
       {/* End condition */}
       <div>
         <label className={`${labelCls} block mb-1.5`}>Ends</label>
-        <div className="flex items-center border border-[#E2E8F0] rounded-[8px] p-0.5 gap-0.5 mb-3">
+        <div className="flex items-center border border-border-light rounded-[8px] p-0.5 gap-0.5 mb-3">
           {(['never', 'on_date', 'after_n'] as RecurringEndCondition[]).map((v) => (
             <button
               key={v}
@@ -421,8 +421,8 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
               className={[
                 'flex-1 py-1.5 text-sm font-medium rounded-[6px] transition-colors',
                 entry.end_condition === v
-                  ? 'bg-[#2563EB] text-white'
-                  : 'text-[#475569] hover:bg-[#F1F5F9]',
+                  ? 'bg-primary text-white'
+                  : 'text-text-secondary hover:bg-surface-control',
               ].join(' ')}
             >
               {v === 'never' ? 'Never' : v === 'on_date' ? 'On date' : 'After N'}
@@ -445,7 +445,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
               onChange={(e) => onUpdate({ end_after: Math.max(1, Number(e.target.value)) })}
               className={`w-24 text-center ${inputCls}`}
             />
-            <span className="text-sm text-[#475569]">occurrences</span>
+            <span className="text-sm text-text-secondary">occurrences</span>
           </div>
         )}
       </div>

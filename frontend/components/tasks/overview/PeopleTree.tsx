@@ -51,22 +51,22 @@ function Row({ node, depth }: { node: TreeNode; depth: number }) {
   return (
     <div>
       <div
-        className="flex items-center gap-2 py-2 pr-2 rounded-[8px] hover:bg-[#F8FAFC] transition-colors"
+        className="flex items-center gap-2 py-2 pr-2 rounded-[8px] hover:bg-surface-sunken transition-colors"
         style={{ paddingLeft: depth * 18 + 4 }}
       >
         <button
           onClick={() => hasChildren && setOpen((v) => !v)}
-          className={`w-5 h-5 flex items-center justify-center rounded-[4px] shrink-0 ${hasChildren ? 'text-[#475569] hover:bg-[#E2E8F0]' : 'opacity-0 pointer-events-none'}`}
+          className={`w-5 h-5 flex items-center justify-center rounded-[4px] shrink-0 ${hasChildren ? 'text-text-secondary hover:bg-surface-control-pressed' : 'opacity-0 pointer-events-none'}`}
         >
           {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </button>
-        <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+        <div className="w-7 h-7 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center shrink-0">
           {initials(node.name)}
         </div>
         <button onClick={() => router.push(`/dashboard/tasks/people/${node.user_id}`)} className="min-w-0 flex-1 text-left group">
-          <p className="text-[14px] font-medium text-[#0F172A] truncate group-hover:text-[#2563EB] transition-colors">{node.name}</p>
+          <p className="text-[14px] font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">{node.name}</p>
           {(node.role_title || node.department_name) && (
-            <p className="text-[12px] text-[#94A3B8] truncate">{[node.role_title, node.department_name].filter(Boolean).join(' · ')}</p>
+            <p className="text-[12px] text-text-muted truncate">{[node.role_title, node.department_name].filter(Boolean).join(' · ')}</p>
           )}
         </button>
         <div className="flex items-center gap-3 shrink-0 pl-2">
@@ -77,7 +77,7 @@ function Row({ node, depth }: { node: TreeNode; depth: number }) {
         </div>
       </div>
       {open && hasChildren && (
-        <div className="border-l border-[#E2E8F0]" style={{ marginLeft: depth * 18 + 14 }}>
+        <div className="border-l border-border-light" style={{ marginLeft: depth * 18 + 14 }}>
           {node.children.map((c) => <Row key={c.user_id} node={c} depth={depth + 1} />)}
         </div>
       )}
@@ -93,17 +93,17 @@ function Row({ node, depth }: { node: TreeNode; depth: number }) {
 export default function PeopleTree({ data }: { data: PeopleTreeData }) {
   const forest = useMemo(() => buildForest(data.nodes, data.root_user_id), [data])
   if (!data.nodes.length) {
-    return <p className="text-[13px] text-[#94A3B8] py-6 text-center">No people in this view.</p>
+    return <p className="text-[13px] text-text-muted py-6 text-center">No people in this view.</p>
   }
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-3 flex flex-col h-[420px]">
-      <div className="flex items-center justify-between px-1 pb-2 mb-1 border-b border-[#F1F5F9] shrink-0">
-        <p className="text-[13px] font-semibold text-[#0F172A]">Reporting tree · workload</p>
-        <p className="text-[11px] text-[#94A3B8] hidden sm:flex items-center gap-3">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-3 flex flex-col h-[420px]">
+      <div className="flex items-center justify-between px-1 pb-2 mb-1 border-b border-border-light shrink-0">
+        <p className="text-[13px] font-semibold text-text-primary">Reporting tree · workload</p>
+        <p className="text-[11px] text-text-muted hidden sm:flex items-center gap-3">
           <span className="inline-flex items-center gap-1"><Users size={11} /> assigned</span>
-          <span className="inline-flex items-center gap-1 text-[#DC2626]"><AlertTriangle size={11} /> overdue</span>
-          <span className="inline-flex items-center gap-1 text-[#16A34A]"><CheckCircle2 size={11} /> done</span>
-          <span className="inline-flex items-center gap-1 text-[#0891B2]"><Send size={11} /> delegated</span>
+          <span className="inline-flex items-center gap-1 text-danger"><AlertTriangle size={11} /> overdue</span>
+          <span className="inline-flex items-center gap-1 text-success"><CheckCircle2 size={11} /> done</span>
+          <span className="inline-flex items-center gap-1 text-text-secondary"><Send size={11} /> delegated</span>
         </p>
       </div>
       <div className="flex-1 overflow-y-auto pr-1 -mr-1">

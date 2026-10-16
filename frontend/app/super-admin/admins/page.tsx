@@ -176,15 +176,15 @@ export default function AdminsPage() {
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0F172A]">Admin Users</h1>
-          <p className="text-[15px] text-[#475569] mt-1">
-            Manage who can access the Admin Portal at <span className="font-medium text-[#0F172A]">/admin</span>.
+          <h1 className="text-[28px] font-bold text-text-primary">Admin Users</h1>
+          <p className="text-[15px] text-text-secondary mt-1">
+            Manage who can access the Admin Portal at <span className="font-medium text-text-primary">/admin</span>.
           </p>
         </div>
         <button
           type="button"
           onClick={() => { setShowAdd(true); setEditingAdmin(null) }}
-          className="flex items-center gap-2 h-10 px-4 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+          className="flex items-center gap-2 h-10 px-4 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
         >
           <Plus size={15} />
           Add Admin
@@ -193,13 +193,13 @@ export default function AdminsPage() {
 
       {/* Add form */}
       {showAdd && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+        <div className="bg-white border border-border-light rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[18px] font-semibold text-[#0F172A]">New Super Admin</h2>
+            <h2 className="text-[18px] font-semibold text-text-primary">New Super Admin</h2>
             <button
               type="button"
               onClick={resetForm}
-              className="p-1.5 rounded-[6px] hover:bg-[#F1F5F9] text-[#475569] transition-colors"
+              className="p-1.5 rounded-[6px] hover:bg-surface-control text-text-secondary transition-colors"
             >
               <X size={16} />
             </button>
@@ -207,59 +207,59 @@ export default function AdminsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1.5">Full name</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1.5">Full name</label>
               <input
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Jane Smith"
-                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
+                className="w-full h-10 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1.5">Email address</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1.5">Email address</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                 placeholder="jane@company.com"
-                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
+                className="w-full h-10 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
               />
             </div>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Password</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Password</label>
             <div className="relative max-w-sm">
               <input
                 type={form.showPassword ? 'text' : 'password'}
                 value={form.password}
                 onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                 placeholder="Min. 8 characters"
-                className="w-full h-10 px-3 pr-10 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
+                className="w-full h-10 px-3 pr-10 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
               />
               <button
                 type="button"
                 tabIndex={-1}
                 onClick={() => setForm((f) => ({ ...f, showPassword: !f.showPassword }))}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
               >
                 {form.showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
-            <p className="text-xs text-[#64748B] mt-1">
+            <p className="text-xs text-text-muted mt-1">
               If the email already exists in the system, that user will be promoted to super admin — no new account is created.
             </p>
           </div>
 
           {formError && (
-            <p className="text-sm text-[#DC2626] mb-3">{formError}</p>
+            <p className="text-sm text-danger mb-3">{formError}</p>
           )}
 
           <div className="flex gap-2">
             <button
               type="button"
               onClick={resetForm}
-              className="h-9 px-4 rounded-[8px] border-2 border-[#2563EB] text-sm font-semibold text-[#2563EB] bg-white hover:bg-[#EFF6FF] transition-colors"
+              className="h-9 px-4 rounded-[8px] border-2 border-primary text-sm font-semibold text-primary-text bg-white hover:bg-primary-subtle transition-colors"
             >
               Cancel
             </button>
@@ -267,7 +267,7 @@ export default function AdminsPage() {
               type="button"
               disabled={saving}
               onClick={handleAdd}
-              className="h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors flex items-center gap-2"
+              className="h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
             >
               {saving && <Loader2 size={13} className="animate-spin" />}
               {saving ? 'Adding...' : 'Add Admin'}
@@ -278,13 +278,13 @@ export default function AdminsPage() {
 
       {/* Edit form */}
       {editingAdmin && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+        <div className="bg-white border border-border-light rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[18px] font-semibold text-[#0F172A]">Edit Super Admin ({editingAdmin.name})</h2>
+            <h2 className="text-[18px] font-semibold text-text-primary">Edit Super Admin ({editingAdmin.name})</h2>
             <button
               type="button"
               onClick={resetEditForm}
-              className="p-1.5 rounded-[6px] hover:bg-[#F1F5F9] text-[#475569] transition-colors"
+              className="p-1.5 rounded-[6px] hover:bg-surface-control text-text-secondary transition-colors"
             >
               <X size={16} />
             </button>
@@ -292,59 +292,59 @@ export default function AdminsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1.5">Full name</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1.5">Full name</label>
               <input
                 value={editForm.name}
                 onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Jane Smith"
-                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
+                className="w-full h-10 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1.5">Email address (Required)</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1.5">Email address (Required)</label>
               <input
                 type="email"
                 value={editForm.email}
                 onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
                 placeholder="jane@company.com"
-                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
+                className="w-full h-10 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
               />
             </div>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">New Password (Required)</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">New Password (Required)</label>
             <div className="relative max-w-sm">
               <input
                 type={editForm.showPassword ? 'text' : 'password'}
                 value={editForm.password}
                 onChange={(e) => setEditForm((f) => ({ ...f, password: e.target.value }))}
                 placeholder="Min. 8 characters"
-                className="w-full h-10 px-3 pr-10 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
+                className="w-full h-10 px-3 pr-10 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
               />
               <button
                 type="button"
                 tabIndex={-1}
                 onClick={() => setEditForm((f) => ({ ...f, showPassword: !f.showPassword }))}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
               >
                 {editForm.showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
-            <p className="text-xs text-[#64748B] mt-1">
+            <p className="text-xs text-text-muted mt-1">
               For security, you must specify a new password (min. 8 characters) to save changes.
             </p>
           </div>
 
           {editError && (
-            <p className="text-sm text-[#DC2626] mb-3">{editError}</p>
+            <p className="text-sm text-danger mb-3">{editError}</p>
           )}
 
           <div className="flex gap-2">
             <button
               type="button"
               onClick={resetEditForm}
-              className="h-9 px-4 rounded-[8px] border-2 border-[#2563EB] text-sm font-semibold text-[#2563EB] bg-white hover:bg-[#EFF6FF] transition-colors"
+              className="h-9 px-4 rounded-[8px] border-2 border-primary text-sm font-semibold text-primary-text bg-white hover:bg-primary-subtle transition-colors"
             >
               Cancel
             </button>
@@ -352,7 +352,7 @@ export default function AdminsPage() {
               type="button"
               disabled={saving}
               onClick={handleEdit}
-              className="h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors flex items-center gap-2"
+              className="h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
             >
               {saving && <Loader2 size={13} className="animate-spin" />}
               {saving ? 'Saving...' : 'Save Changes'}
@@ -362,15 +362,15 @@ export default function AdminsPage() {
       )}
 
       {/* Admin list */}
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <Loader2 size={22} className="animate-spin text-[#94A3B8]" />
+            <Loader2 size={22} className="animate-spin text-text-muted" />
           </div>
         ) : admins.length === 0 ? (
           <div className="p-8 text-center">
             <ShieldCheck size={32} className="text-[#CBD5E1] mx-auto mb-2" />
-            <p className="text-sm text-[#94A3B8]">No admin users found.</p>
+            <p className="text-sm text-text-muted">No admin users found.</p>
           </div>
         ) : (
           <ResponsiveTable<AdminUser>
@@ -384,14 +384,14 @@ export default function AdminsPage() {
                   const isSelf = admin.id === currentUserId
                   return (
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center shrink-0">
-                        <span className="text-xs font-semibold text-[#2563EB]">
+                      <div className="w-8 h-8 rounded-full bg-primary-subtle border border-primary-border flex items-center justify-center shrink-0">
+                        <span className="text-xs font-semibold text-primary-text">
                           {admin.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div>
-                        <p className="font-medium text-[#0F172A]">{admin.name}</p>
-                        {isSelf && <p className="text-[11px] text-[#94A3B8]">You</p>}
+                        <p className="font-medium text-text-primary">{admin.name}</p>
+                        {isSelf && <p className="text-[11px] text-text-muted">You</p>}
                       </div>
                     </div>
                   )
@@ -400,7 +400,7 @@ export default function AdminsPage() {
               {
                 key: 'email',
                 header: 'Email',
-                render: (admin) => <span className="text-[#475569]">{admin.email}</span>,
+                render: (admin) => <span className="text-text-secondary">{admin.email}</span>,
               },
               {
                 key: 'status',
@@ -409,8 +409,8 @@ export default function AdminsPage() {
                   <span className={[
                     'text-[11px] font-medium px-2.5 py-0.5 rounded-full border',
                     admin.is_active
-                      ? 'bg-[#DCFCE7] text-[#16A34A] border-[#BBF7D0]'
-                      : 'bg-[#FEE2E2] text-[#DC2626] border-[#FECACA]',
+                      ? 'bg-success-bg text-success border-success-border'
+                      : 'bg-danger-bg text-danger border-danger-border',
                   ].join(' ')}>
                     {admin.is_active ? 'Active' : 'Inactive'}
                   </span>
@@ -420,7 +420,7 @@ export default function AdminsPage() {
                 key: 'added',
                 header: 'Added',
                 render: (admin) => (
-                  <span className="text-[#94A3B8] text-xs whitespace-nowrap">
+                  <span className="text-text-muted text-xs whitespace-nowrap">
                     {new Date(admin.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                 ),
@@ -440,7 +440,7 @@ export default function AdminsPage() {
                           disabled={busy}
                           onClick={() => handleToggle(admin)}
                           aria-label={admin.is_active ? 'Deactivate' : 'Activate'}
-                          className="p-1.5 rounded-[6px] hover:bg-[#F1F5F9] text-[#475569] disabled:opacity-40 transition-colors"
+                          className="p-1.5 rounded-[6px] hover:bg-surface-control text-text-secondary disabled:opacity-40 transition-colors"
                         >
                           {busy ? <Loader2 size={14} className="animate-spin" /> : admin.is_active ? <PowerOff size={14} /> : <Power size={14} />}
                         </button>
@@ -452,7 +452,7 @@ export default function AdminsPage() {
                         disabled={busy}
                         onClick={() => openEdit(admin)}
                         aria-label="Edit admin"
-                        className="p-1.5 rounded-[6px] hover:bg-[#EFF6FF] text-[#2563EB] disabled:opacity-40 transition-colors"
+                        className="p-1.5 rounded-[6px] hover:bg-primary-subtle text-primary-text disabled:opacity-40 transition-colors"
                       >
                         <Pencil size={14} />
                       </button>
@@ -475,7 +475,7 @@ export default function AdminsPage() {
                               ? 'At least one super administrator account is required'
                               : 'Remove admin access'
                         }
-                        className="p-1.5 rounded-[6px] hover:bg-[#FEE2E2] text-[#DC2626] disabled:opacity-40 disabled:hover:bg-transparent disabled:text-[#CBD5E1] transition-colors"
+                        className="p-1.5 rounded-[6px] hover:bg-danger-bg text-danger disabled:opacity-40 disabled:hover:bg-transparent disabled:text-[#CBD5E1] transition-colors"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -491,9 +491,9 @@ export default function AdminsPage() {
         )}
       </div>
 
-      <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-[12px] px-5 py-4">
-        <p className="text-sm font-semibold text-[#1D4ED8] mb-1">Admin Portal credentials</p>
-        <p className="text-sm text-[#1E40AF]">
+      <div className="bg-primary-subtle border border-primary-border rounded-[12px] px-5 py-4">
+        <p className="text-sm font-semibold text-primary-text mb-1">Admin Portal credentials</p>
+        <p className="text-sm text-primary-text">
           Login URL: <span className="font-medium">/admin</span> — Only users with super admin access can sign in here.
           Regular org accounts (even with the same email) use <span className="font-medium">/login</span> and land in their organization.
         </p>

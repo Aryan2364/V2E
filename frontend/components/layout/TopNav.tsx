@@ -175,7 +175,7 @@ export default function TopNav() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-14 bg-[#2563EB] border-b border-[#1D4ED8] flex items-center z-50">
+    <header className="fixed top-0 left-0 right-0 h-14 bg-primary border-b border-primary-hover flex items-center z-50">
       {/* Hamburger — only below lg, where the horizontal nav is collapsed */}
       <button
         onClick={() => setDrawerOpen((v) => !v)}
@@ -210,7 +210,7 @@ export default function TopNav() {
             >
               {item.label}
               {isPreview(item.module) && (
-                <span className="rounded-[999px] bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] text-[10px] font-semibold px-1.5 py-px leading-none">
+                <span className="rounded-[999px] bg-warning-bg text-warning border border-warning-border text-[10px] font-semibold px-1.5 py-px leading-none">
                   Preview
                 </span>
               )}
@@ -255,27 +255,27 @@ export default function TopNav() {
 
             {/* Onboarding Spotlight Popover */}
             {showSpotlight && (
-              <div className="absolute right-0 mt-3 w-80 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_10px_25px_rgba(0,0,0,0.1)] p-5 z-9999 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute right-0 mt-3 w-80 bg-white border border-border-light rounded-[12px] shadow-[0_10px_25px_rgba(0,0,0,0.1)] p-5 z-9999 animate-in fade-in slide-in-from-top-2 duration-200">
                 {/* Arrow pointer */}
-                <div className="absolute right-3.5 -top-1.5 w-3 h-3 bg-white border-t border-l border-[#E2E8F0] rotate-45" />
+                <div className="absolute right-3.5 -top-1.5 w-3 h-3 bg-white border-t border-l border-border-light rotate-45" />
 
                 <div className="flex flex-col gap-2">
-                  <p className="text-sm font-semibold text-[#0F172A]">Configure Workspace</p>
-                  <p className="text-xs text-[#475569] leading-relaxed">
-                    Welcome, <span className="font-medium text-[#0F172A]">{user?.name ? user.name.split(' ')[0] : 'Admin'}</span>! Let&apos;s get your workspace configured. Click the Settings icon to define your vision, departments, and add employees.
+                  <p className="text-sm font-semibold text-text-primary">Configure Workspace</p>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    Welcome, <span className="font-medium text-text-primary">{user?.name ? user.name.split(' ')[0] : 'Admin'}</span>! Let&apos;s get your workspace configured. Click the Settings icon to define your vision, departments, and add employees.
                   </p>
                   <div className="flex items-center gap-2 mt-3 justify-end">
                     <button
                       type="button"
                       onClick={handleDismiss}
-                      className="text-xs font-medium text-[#64748B] hover:text-[#0F172A] px-3 py-1.5 rounded-[6px] hover:bg-[#F1F5F9] transition-colors"
+                      className="text-xs font-medium text-text-muted hover:text-text-primary px-3 py-1.5 rounded-[6px] hover:bg-surface-control transition-colors"
                     >
                       Dismiss
                     </button>
                     <Link
                       href="/settings/organization/company"
                       onClick={handleDismiss}
-                      className="text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] px-3.5 py-1.5 rounded-[6px] transition-colors"
+                      className="text-xs font-semibold text-white bg-primary hover:bg-primary-hover px-3.5 py-1.5 rounded-[6px] transition-colors"
                     >
                       Start Setup
                     </Link>
@@ -300,7 +300,7 @@ export default function TopNav() {
                 aria-expanded={open}
                 className="flex items-center gap-1 rounded-[8px] pl-1 pr-0.5 py-1 hover:bg-white/15 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#2563EB] text-xs font-bold shrink-0">
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary-text text-xs font-bold shrink-0">
                   {initials}
                 </div>
                 <ChevronDown
@@ -322,20 +322,20 @@ export default function TopNav() {
 
             {/* Dropdown */}
             {open && (
-              <div className="absolute right-0 top-[calc(100%+6px)] w-80 bg-white rounded-[10px] border border-[#E2E8F0] shadow-lg overflow-hidden z-50">
+              <div className="absolute right-0 top-[calc(100%+6px)] w-80 bg-white rounded-[10px] border border-border-light shadow-lg overflow-hidden z-50">
                 {/* User identity. Organization + role for a firm user live in the
                     "Current Organization" block below (kept parallel with the Switch To
                     rows), so they aren't repeated here — except for a super admin, whose
                     org block is hidden and would otherwise never show a role. */}
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-[#F1F5F9]">
-                  <div className="w-10 h-10 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-sm font-bold shrink-0">
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-border-light">
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold shrink-0">
                     {initials}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[#0F172A] truncate">{user.name}</p>
-                    <p className="text-xs text-[#475569] truncate">{user.email}</p>
+                    <p className="text-sm font-semibold text-text-primary truncate">{user.name}</p>
+                    <p className="text-xs text-text-secondary truncate">{user.email}</p>
                     {user.isSuperAdmin && (
-                      <span className="inline-block mt-1 rounded-[999px] bg-[#EFF6FF] text-[#2563EB] text-[10px] font-semibold px-2 py-px leading-[16px]">
+                      <span className="inline-block mt-1 rounded-[999px] bg-primary-subtle text-primary-text text-[10px] font-semibold px-2 py-px leading-[16px]">
                         {roleLabel}
                       </span>
                     )}
@@ -344,13 +344,13 @@ export default function TopNav() {
 
                 {/* My Profile — universal, available to every user */}
                 {!user.isSuperAdmin && (
-                  <div className="p-2 border-b border-[#F1F5F9]">
+                  <div className="p-2 border-b border-border-light">
                     <Link
                       href="/dashboard/profile"
                       onClick={() => setOpen(false)}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-[6px] text-sm font-medium text-[#1E293B] hover:bg-[#F8FAFC] transition-colors"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-[6px] text-sm font-medium text-text-primary hover:bg-surface-sunken transition-colors"
                     >
-                      <UserCircle size={15} className="text-[#64748B]" />
+                      <UserCircle size={15} className="text-text-muted" />
                       My Profile
                     </Link>
                   </div>
@@ -361,13 +361,13 @@ export default function TopNav() {
                   <>
                     {/* Current org */}
                     <div className="px-4 pt-3 pb-1">
-                      <p className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider mb-1.5">
+                      <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5">
                         Current Organization
                       </p>
                       {orgs === null ? (
                         <div className="flex items-center gap-2 py-1.5">
-                          <div className="w-4 h-4 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
-                          <span className="text-xs text-[#64748B]">Loading…</span>
+                          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                          <span className="text-xs text-text-muted">Loading…</span>
                         </div>
                       ) : currentOrg ? (
                         canAccessSettings ? (
@@ -375,28 +375,28 @@ export default function TopNav() {
                           <Link
                             href="/settings/organization/company"
                             onClick={() => setOpen(false)}
-                            className="flex items-center gap-2.5 py-1.5 -mx-1 px-1 rounded-[6px] hover:bg-[#F8FAFC] transition-colors"
+                            className="flex items-center gap-2.5 py-1.5 -mx-1 px-1 rounded-[6px] hover:bg-surface-sunken transition-colors"
                           >
-                            <div className="w-6 h-6 rounded-[5px] bg-[#EFF6FF] flex items-center justify-center shrink-0">
-                              <Building2 size={13} className="text-[#2563EB]" />
+                            <div className="w-6 h-6 rounded-[5px] bg-primary-subtle flex items-center justify-center shrink-0">
+                              <Building2 size={13} className="text-primary-text" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-[#0F172A] truncate">{currentOrg.organization.name}</p>
-                              <p className="text-xs text-[#64748B]">{currentOrg.is_admin ? 'Administrator' : 'Member'}</p>
+                              <p className="text-sm font-medium text-text-primary truncate">{currentOrg.organization.name}</p>
+                              <p className="text-xs text-text-muted">{currentOrg.is_admin ? 'Administrator' : 'Member'}</p>
                             </div>
-                            <Settings size={14} className="text-[#94A3B8] shrink-0" />
+                            <Settings size={14} className="text-text-muted shrink-0" />
                           </Link>
                           </Tooltip>
                         ) : (
                           <div className="flex items-center gap-2.5 py-1">
-                            <div className="w-6 h-6 rounded-[5px] bg-[#EFF6FF] flex items-center justify-center shrink-0">
-                              <Building2 size={13} className="text-[#2563EB]" />
+                            <div className="w-6 h-6 rounded-[5px] bg-primary-subtle flex items-center justify-center shrink-0">
+                              <Building2 size={13} className="text-primary-text" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-[#0F172A] truncate">{currentOrg.organization.name}</p>
-                              <p className="text-xs text-[#64748B]">{currentOrg.is_admin ? 'Administrator' : 'Member'}</p>
+                              <p className="text-sm font-medium text-text-primary truncate">{currentOrg.organization.name}</p>
+                              <p className="text-xs text-text-muted">{currentOrg.is_admin ? 'Administrator' : 'Member'}</p>
                             </div>
-                            <Check size={14} className="text-[#2563EB] shrink-0" />
+                            <Check size={14} className="text-primary-text shrink-0" />
                           </div>
                         )
                       ) : null}
@@ -404,8 +404,8 @@ export default function TopNav() {
 
                     {/* Other orgs */}
                     {otherOrgs.length > 0 && (
-                      <div className="px-4 pt-2 pb-1 border-t border-[#F1F5F9] mt-1">
-                        <p className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider mb-1.5">
+                      <div className="px-4 pt-2 pb-1 border-t border-border-light mt-1">
+                        <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5">
                           Switch To
                         </p>
                         {otherOrgs.map((m) => {
@@ -415,17 +415,17 @@ export default function TopNav() {
                               key={m.organization_id}
                               onClick={() => handleSwitch(m.organization_id)}
                               disabled={!!switching}
-                              className="w-full flex items-center gap-2.5 py-2 rounded-[6px] hover:bg-[#F8FAFC] disabled:opacity-50 transition-colors text-left px-1"
+                              className="w-full flex items-center gap-2.5 py-2 rounded-[6px] hover:bg-surface-sunken disabled:opacity-50 transition-colors text-left px-1"
                             >
-                              <div className="w-6 h-6 rounded-[5px] bg-[#F1F5F9] flex items-center justify-center shrink-0">
-                                <Building2 size={13} className="text-[#64748B]" />
+                              <div className="w-6 h-6 rounded-[5px] bg-surface-control flex items-center justify-center shrink-0">
+                                <Building2 size={13} className="text-text-muted" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-[#0F172A] truncate">{m.organization.name}</p>
-                                <p className="text-xs text-[#64748B]">{m.is_admin ? 'Administrator' : 'Member'}</p>
+                                <p className="text-sm font-medium text-text-primary truncate">{m.organization.name}</p>
+                                <p className="text-xs text-text-muted">{m.is_admin ? 'Administrator' : 'Member'}</p>
                               </div>
                               {isLoading && (
-                                <div className="w-3.5 h-3.5 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin shrink-0" />
+                                <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin shrink-0" />
                               )}
                             </button>
                           )
@@ -440,10 +440,10 @@ export default function TopNav() {
                     the contextual "manage current org" shortcut above. */}
 
                 {/* Sign out */}
-                <div className="border-t border-[#F1F5F9] p-2">
+                <div className="border-t border-border-light p-2">
                   <button
                     onClick={logout}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-[6px] text-sm text-[#64748B] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-[6px] text-sm text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"
                   >
                     <LogOut size={14} />
                     Sign out
@@ -464,7 +464,7 @@ export default function TopNav() {
             onClick={() => setDrawerOpen(false)}
           />
           {/* Panel */}
-          <nav className="lg:hidden absolute top-14 left-0 right-0 bg-white border-b border-[#E2E8F0] shadow-lg z-50 py-2 max-h-[calc(100vh-3.5rem)] overflow-y-auto">
+          <nav className="lg:hidden absolute top-14 left-0 right-0 bg-white border-b border-border-light shadow-lg z-50 py-2 max-h-[calc(100vh-3.5rem)] overflow-y-auto">
             {visibleNav.map((item) => {
               const active = isActive(item.href)
               return (
@@ -475,13 +475,13 @@ export default function TopNav() {
                   className={[
                     'flex items-center gap-2 min-h-[44px] px-5 text-[15px] font-medium border-l-[3px] transition-colors',
                     active
-                      ? 'text-[#2563EB] border-[#2563EB] bg-[#EFF6FF]'
-                      : 'text-[#1E293B] border-transparent hover:bg-[#F1F5F9]',
+                      ? 'text-primary-text border-primary bg-primary-subtle'
+                      : 'text-text-primary border-transparent hover:bg-surface-control',
                   ].join(' ')}
                 >
                   {item.label}
                   {isPreview(item.module) && (
-                    <span className="rounded-[999px] bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] text-[10px] font-semibold px-1.5 py-px leading-none">
+                    <span className="rounded-[999px] bg-warning-bg text-warning border border-warning-border text-[10px] font-semibold px-1.5 py-px leading-none">
                       Preview
                     </span>
                   )}

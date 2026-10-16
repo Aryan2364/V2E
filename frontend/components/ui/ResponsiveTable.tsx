@@ -80,15 +80,15 @@ export default function ResponsiveTable<T>({
   renderExpanded,
   maxBodyHeight,
   scrollContainerRef,
-  headerRowClassName = 'bg-[#F8FAFC] border-b border-[#E2E8F0]',
-  headerCellClassName = 'text-[#475569] bg-[#F8FAFC]',
+  headerRowClassName = 'bg-surface-sunken border-b border-border-light',
+  headerCellClassName = 'text-text-secondary bg-surface-sunken',
   minTableWidth,
 }: ResponsiveTableProps<T>) {
   const primaryIdx = Math.max(0, columns.findIndex((c) => c.primary))
   const primary = columns[primaryIdx]
   const cardColumns = columns.filter((c) => !c.hideOnMobile)
   const card =
-    'bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden'
+    'bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden'
   const bodyMaxHeight =
     maxBodyHeight == null
       ? undefined
@@ -103,7 +103,7 @@ export default function ResponsiveTable<T>({
   return (
     <div className={`${card} ${className}`}>
       {toolbar && (
-        <div className="flex items-center justify-between gap-3 px-4 md:px-5 py-3 border-b border-[#E2E8F0]">
+        <div className="flex items-center justify-between gap-3 px-4 md:px-5 py-3 border-b border-border-light">
           {toolbar}
         </div>
       )}
@@ -140,13 +140,13 @@ export default function ResponsiveTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#F1F5F9]">
+          <tbody className="divide-y divide-surface-control">
             {loading
               ? Array.from({ length: skeletonRows }).map((_, r) => (
                   <tr key={r}>
                     {columns.map((col) => (
                       <td key={col.key} className="px-4 py-4">
-                        <div className="h-4 rounded-md bg-[#F1F5F9] animate-pulse" />
+                        <div className="h-4 rounded-md bg-surface-control animate-pulse" />
                       </td>
                     ))}
                   </tr>
@@ -157,13 +157,13 @@ export default function ResponsiveTable<T>({
                     <React.Fragment key={rowKey(row, i)}>
                       <tr
                         onClick={onRowClick ? () => onRowClick(row, i) : undefined}
-                        className={`transition-colors hover:bg-[#F8FAFC] ${onRowClick ? 'cursor-pointer' : ''} ${expanded ? 'bg-[#F8FAFC]' : ''}`}
+                        className={`transition-colors hover:bg-surface-sunken ${onRowClick ? 'cursor-pointer' : ''} ${expanded ? 'bg-surface-sunken' : ''}`}
                       >
                         {columns.map((col) => (
                           <td
                             key={col.key}
                             className={[
-                              'px-4 py-3.5 text-[#1E293B]',
+                              'px-4 py-3.5 text-text-primary',
                               alignClass[col.align ?? 'left'],
                               col.desktopHiddenBelow ? desktopHideClass[col.desktopHiddenBelow] : '',
                               col.cellClassName ?? '',
@@ -174,8 +174,8 @@ export default function ResponsiveTable<T>({
                         ))}
                       </tr>
                       {expanded && renderExpanded && (
-                        <tr className="bg-[#F8FAFC]">
-                          <td colSpan={columns.length} className="px-4 pb-4 pt-0 border-b border-[#E2E8F0]">
+                        <tr className="bg-surface-sunken">
+                          <td colSpan={columns.length} className="px-4 pb-4 pt-0 border-b border-border-light">
                             {renderExpanded(row, i)}
                           </td>
                         </tr>
@@ -189,33 +189,33 @@ export default function ResponsiveTable<T>({
 
       {/* Mobile: stacked cards (below md) */}
       <div
-        className={`md:hidden divide-y divide-[#E2E8F0] ${bodyMaxHeight ? 'overflow-auto' : ''}`}
+        className={`md:hidden divide-y divide-surface-control-pressed ${bodyMaxHeight ? 'overflow-auto' : ''}`}
         style={bodyMaxHeight ? { maxHeight: bodyMaxHeight } : undefined}
       >
         {loading
           ? Array.from({ length: skeletonRows }).map((_, r) => (
               <div key={r} className="p-4 space-y-2">
-                <div className="h-5 w-1/2 rounded-md bg-[#F1F5F9] animate-pulse" />
-                <div className="h-4 w-3/4 rounded-md bg-[#F1F5F9] animate-pulse" />
+                <div className="h-5 w-1/2 rounded-md bg-surface-control animate-pulse" />
+                <div className="h-4 w-3/4 rounded-md bg-surface-control animate-pulse" />
               </div>
             ))
           : rows.map((row, i) => (
               <div
                 key={rowKey(row, i)}
                 onClick={onRowClick ? () => onRowClick(row, i) : undefined}
-                className={`p-4 min-h-[44px] ${onRowClick ? 'cursor-pointer active:bg-[#F1F5F9] hover:bg-[#F8FAFC] transition-colors' : ''}`}
+                className={`p-4 min-h-[44px] ${onRowClick ? 'cursor-pointer active:bg-surface-control hover:bg-surface-sunken transition-colors' : ''}`}
               >
-                <div className="text-[15px] font-semibold text-[#0F172A] mb-2">
+                <div className="text-[15px] font-semibold text-text-primary mb-2">
                   {primary.render(row, i)}
                 </div>
                 <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
                   {cardColumns.map((col) =>
                     col === primary ? null : (
                       <React.Fragment key={col.key}>
-                        <dt className="text-xs font-medium text-[#64748B] uppercase tracking-wide self-center">
+                        <dt className="text-xs font-medium text-text-muted uppercase tracking-wide self-center">
                           {col.mobileLabel ?? col.header}
                         </dt>
-                        <dd className="text-sm text-[#1E293B] min-w-0 text-right">
+                        <dd className="text-sm text-text-primary min-w-0 text-right">
                           {col.render(row, i)}
                         </dd>
                       </React.Fragment>

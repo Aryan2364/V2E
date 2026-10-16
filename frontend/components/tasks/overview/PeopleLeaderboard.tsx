@@ -80,50 +80,50 @@ export default function PeopleLeaderboard({
   }, [drillUserId, childrenOf, stat])
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex flex-col h-[460px]">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex flex-col h-[460px]">
       <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0">
-        <h3 className="text-[15px] font-semibold text-[#0F172A]">People · personal vs team</h3>
-        <span className="text-xs text-[#94A3B8]">click a manager to drill in</span>
+        <h3 className="text-[15px] font-semibold text-text-primary">People · personal vs team</h3>
+        <span className="text-xs text-text-muted">click a manager to drill in</span>
       </div>
       <div className="flex-1 overflow-y-auto px-4 space-y-2">
         {rows.length === 0 ? (
-          <p className="text-sm text-[#475569] py-10 text-center">No people in this view.</p>
+          <p className="text-sm text-text-secondary py-10 text-center">No people in this view.</p>
         ) : (
           rows.map((s) => (
-            <div key={s.user_id} className="rounded-[10px] border border-[#E2E8F0] px-3.5 py-2.5 hover:border-[#CBD5E1] transition-colors">
+            <div key={s.user_id} className="rounded-[10px] border border-border-light px-3.5 py-2.5 hover:border-border transition-colors">
               <div className="flex items-center justify-between gap-3 mb-1.5">
                 <button
                   onClick={() => (s.isManager ? onDrill(s.user_id) : onOpenReport(s.user_id))}
                   className="flex items-center gap-2 min-w-0 group text-left"
                 >
-                  <span className="font-semibold text-sm text-[#0F172A] truncate group-hover:text-[#2563EB]">{s.name}</span>
+                  <span className="font-semibold text-sm text-text-primary truncate group-hover:text-primary-text">{s.name}</span>
                   {s.isManager ? (
-                    <span className="text-[11px] font-semibold rounded-full px-2 py-0.5 bg-[#EFF6FF] text-[#2563EB] shrink-0">team of {s.teamSize}</span>
+                    <span className="text-[11px] font-semibold rounded-full px-2 py-0.5 bg-primary-subtle text-primary-text shrink-0">team of {s.teamSize}</span>
                   ) : (
-                    <span className="text-[11px] font-medium rounded-full px-2 py-0.5 bg-[#F1F5F9] text-[#475569] shrink-0">individual</span>
+                    <span className="text-[11px] font-medium rounded-full px-2 py-0.5 bg-surface-control text-text-secondary shrink-0">individual</span>
                   )}
-                  {s.isManager && <ChevronRight size={14} className="text-[#94A3B8] group-hover:text-[#2563EB] shrink-0" />}
+                  {s.isManager && <ChevronRight size={14} className="text-text-muted group-hover:text-primary-text shrink-0" />}
                 </button>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: s.teamOverdueRate >= 25 ? '#DC2626' : '#475569' }}>
                     <span className="font-bold">{s.teamOverdueRate}%</span> overdue{s.isManager ? ' (team)' : ''}
                   </span>
                   <Tooltip label="Open report">
-                    <button onClick={() => onOpenReport(s.user_id)} aria-label="Open report" className="text-[#94A3B8] hover:text-[#2563EB]">
+                    <button onClick={() => onOpenReport(s.user_id)} aria-label="Open report" className="text-text-muted hover:text-primary-text">
                       <ExternalLink size={13} />
                     </button>
                   </Tooltip>
                 </div>
               </div>
               <div className="grid items-center gap-x-2.5 gap-y-1" style={{ gridTemplateColumns: '58px 1fr auto' }}>
-                <span className="text-xs text-[#94A3B8]">Personal</span>
+                <span className="text-xs text-text-muted">Personal</span>
                 <TimingMiniBar timing={s.personal} />
-                <span className="text-xs tabular-nums text-[#475569]">{s.personalTotal}</span>
+                <span className="text-xs tabular-nums text-text-secondary">{s.personalTotal}</span>
                 {s.isManager && (
                   <>
-                    <span className="text-xs font-medium text-[#2563EB]">Team</span>
+                    <span className="text-xs font-medium text-primary-text">Team</span>
                     <TimingMiniBar timing={s.team} />
-                    <span className="text-xs tabular-nums font-semibold text-[#0F172A]">{s.teamTotal}</span>
+                    <span className="text-xs tabular-nums font-semibold text-text-primary">{s.teamTotal}</span>
                   </>
                 )}
               </div>
@@ -131,7 +131,7 @@ export default function PeopleLeaderboard({
           ))
         )}
       </div>
-      <div className="px-4 py-3 border-t border-[#F1F5F9] shrink-0">
+      <div className="px-4 py-3 border-t border-border-light shrink-0">
         <TimingLegend />
       </div>
     </div>

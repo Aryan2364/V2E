@@ -36,11 +36,11 @@ type FormValues = {
   values: Array<{ title: string; description?: string }>
 }
 
-const labelCls = 'block text-sm font-semibold text-[#374151] mb-1.5'
+const labelCls = 'block text-sm font-semibold text-text-secondary mb-1.5'
 const textareaCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors resize-none'
+  'w-full rounded-[8px] border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors resize-none'
 const inputCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors'
+  'w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
 
 /**
  * Edit organization identity (vision, mission, purpose, values) from
@@ -104,15 +104,15 @@ export default function IdentityFormDrawer({
       {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
 
       <div
-        className={`fixed inset-y-0 right-0 z-70 w-full max-w-xl bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-70 w-full max-w-xl bg-white border-l border-border-light shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2E8F0]">
-          <h3 className="font-semibold text-[#0F172A]">Edit Organization Identity</h3>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light">
+          <h3 className="font-semibold text-text-primary">Edit Organization Identity</h3>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
             aria-label="Close"
           >
             <X size={16} />
@@ -153,27 +153,27 @@ export default function IdentityFormDrawer({
             </div>
 
             {/* Values */}
-            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[10px] p-4">
+            <div className="bg-surface-sunken border border-border-light rounded-[10px] p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-bold text-[#0F172A]">Organizational Values</h4>
+                <h4 className="text-sm font-bold text-text-primary">Organizational Values</h4>
                 <button
                   type="button"
                   onClick={() => append({ title: '', description: '' })}
-                  className="inline-flex items-center gap-1 text-xs text-[#2563EB] font-medium hover:text-[#1D4ED8]"
+                  className="inline-flex items-center gap-1 text-xs text-primary-text font-medium hover:text-primary-text"
                 >
                   <Plus size={13} /> Add Value
                 </button>
               </div>
               <div className="flex flex-col gap-3 max-h-[340px] overflow-y-auto pr-1">
                 {fields.length === 0 && (
-                  <p className="text-xs text-[#94A3B8] text-center py-3">No values added yet.</p>
+                  <p className="text-xs text-text-muted text-center py-3">No values added yet.</p>
                 )}
                 {fields.map((field, index) => (
                   <div
                     key={field.id}
-                    className="bg-white border border-[#E2E8F0] rounded-[8px] p-3 flex gap-3"
+                    className="bg-white border border-border-light rounded-[8px] p-3 flex gap-3"
                   >
-                    <div className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
+                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
                       {index + 1}
                     </div>
                     <div className="flex-1 flex flex-col gap-2">
@@ -184,7 +184,7 @@ export default function IdentityFormDrawer({
                           className={inputCls}
                         />
                         {errors.values?.[index]?.title && (
-                          <p className="text-xs text-[#DC2626] mt-1">
+                          <p className="text-xs text-danger mt-1">
                             {errors.values[index]?.title?.message}
                           </p>
                         )}
@@ -199,7 +199,7 @@ export default function IdentityFormDrawer({
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="text-[#94A3B8] hover:text-[#DC2626] self-start p-1 rounded-xs transition-colors"
+                      className="text-text-muted hover:text-danger self-start p-1 rounded-xs transition-colors"
                       aria-label="Remove value"
                     >
                       <Trash2 size={14} />
@@ -210,13 +210,13 @@ export default function IdentityFormDrawer({
             </div>
 
             {formError && (
-              <p className="text-sm text-[#DC2626] rounded-[8px] bg-[#FEF2F2] border border-[#FECACA] px-4 py-3">
+              <p className="text-sm text-danger rounded-[8px] bg-danger-bg border border-danger-border px-4 py-3">
                 {formError}
               </p>
             )}
           </div>
 
-          <div className="px-5 pt-4 pb-12 border-t border-[#E2E8F0] flex gap-3">
+          <div className="px-5 pt-4 pb-12 border-t border-border-light flex gap-3">
             <Button type="submit" variant="primary" isLoading={isSubmitting}>
               Save
             </Button>

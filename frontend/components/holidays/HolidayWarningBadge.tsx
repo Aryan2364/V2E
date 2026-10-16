@@ -29,9 +29,9 @@ export default function HolidayWarningBadge({ check, overridden = false, onToggl
   if (overridden && canOverride) {
     return (
       <div className="mt-1.5">
-        <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-[#DBEAFE] border border-[#BFDBFE]">
-          <CheckCircle2 size={14} className="text-[#2563EB] shrink-0 mt-0.5" />
-          <p className="text-xs text-[#2563EB] font-medium">
+        <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-primary-subtle border border-primary-border">
+          <CheckCircle2 size={14} className="text-primary-text shrink-0 mt-0.5" />
+          <p className="text-xs text-primary-text font-medium">
             {reason ? `${reason} — ` : ''}Keeping your chosen date. The system’s suggestion has been overridden.
           </p>
         </div>
@@ -42,9 +42,9 @@ export default function HolidayWarningBadge({ check, overridden = false, onToggl
 
   if (action === 'create_anyway') {
     return (
-      <div className="flex items-start gap-2 mt-1.5 px-3 py-2 rounded-[8px] bg-[#FEF9C3] border border-[#FDE68A]">
-        <Info size={14} className="text-[#CA8A04] shrink-0 mt-0.5" />
-        <p className="text-xs text-[#CA8A04] font-medium">
+      <div className="flex items-start gap-2 mt-1.5 px-3 py-2 rounded-[8px] bg-warning-bg border border-warning-border">
+        <Info size={14} className="text-warning shrink-0 mt-0.5" />
+        <p className="text-xs text-warning font-medium">
           {reason ? `${reason} — ` : ''}This is a non-working day, but the task will still be created.
         </p>
       </div>
@@ -54,9 +54,9 @@ export default function HolidayWarningBadge({ check, overridden = false, onToggl
   if (action === 'skip_create') {
     return (
       <div className="mt-1.5">
-        <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-[#FEE2E2] border border-[#FECACA]">
-          <XCircle size={14} className="text-[#DC2626] shrink-0 mt-0.5" />
-          <p className="text-xs text-[#DC2626] font-medium">
+        <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-danger-bg border border-danger-border">
+          <XCircle size={14} className="text-danger shrink-0 mt-0.5" />
+          <p className="text-xs text-danger font-medium">
             {reason ? `${reason} — ` : ''}Your organization normally blocks tasks on this date. Change the deadline, or keep it anyway below.
           </p>
         </div>
@@ -72,9 +72,9 @@ export default function HolidayWarningBadge({ check, overridden = false, onToggl
 
   return (
     <div className="mt-1.5">
-      <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-[#FEF9C3] border border-[#FDE68A]">
-        <AlertTriangle size={14} className="text-[#D97706] shrink-0 mt-0.5" />
-        <p className="text-xs text-[#D97706] font-medium">
+      <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-warning-bg border border-warning-border">
+        <AlertTriangle size={14} className="text-warning shrink-0 mt-0.5" />
+        <p className="text-xs text-warning font-medium">
           {reason ? `${reason} — ` : ''}Suggested: deadline {label}
           {formattedDate ? ` to ${formattedDate}` : ''}.
         </p>
@@ -98,9 +98,9 @@ function OverrideToggle({
         type="checkbox"
         checked={overridden}
         onChange={(e) => onToggleOverride(e.target.checked)}
-        className="h-3.5 w-3.5 rounded-xs border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB] cursor-pointer"
+        className="h-3.5 w-3.5 rounded-xs border-border text-primary-text focus:ring-primary cursor-pointer"
       />
-      <span className="text-xs text-[#475569]">Keep my chosen date (override the suggestion)</span>
+      <span className="text-xs text-text-secondary">Keep my chosen date (override the suggestion)</span>
     </label>
   )
 }

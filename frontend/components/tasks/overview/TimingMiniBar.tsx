@@ -20,10 +20,10 @@ export default function TimingMiniBar({
 }) {
   const total = TIMINGS.reduce((s, t) => s + (timing[t] || 0), 0)
   if (!total) {
-    return <div className={`text-[12px] text-[#94A3B8] ${className}`} style={{ height }}>No tasks</div>
+    return <div className={`text-[12px] text-text-muted ${className}`} style={{ height }}>No tasks</div>
   }
   return (
-    <div className={`flex w-full rounded-full overflow-hidden bg-[#F1F5F9] ${className}`} style={{ height }}>
+    <div className={`flex w-full rounded-full overflow-hidden bg-surface-control ${className}`} style={{ height }}>
       {TIMINGS.map((t) =>
         timing[t] > 0 ? (
           <Tooltip key={t} label={`${TIMING_META[t].label}: ${timing[t]}`}>

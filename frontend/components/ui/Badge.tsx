@@ -12,23 +12,23 @@ const statusConfig: Record<
   { bg: string; text: string; defaultLabel: string }
 > = {
   active: {
-    bg: 'bg-[#DCFCE7]',
-    text: 'text-[#16A34A]',
+    bg: 'bg-success-bg',
+    text: 'text-success',
     defaultLabel: 'Active',
   },
   inactive: {
-    bg: 'bg-[#FEE2E2]',
-    text: 'text-[#DC2626]',
+    bg: 'bg-danger-bg',
+    text: 'text-danger',
     defaultLabel: 'Inactive',
   },
   pending: {
-    bg: 'bg-[#FEF9C3]',
-    text: 'text-[#CA8A04]',
+    bg: 'bg-warning-bg',
+    text: 'text-warning',
     defaultLabel: 'Pending',
   },
   info: {
-    bg: 'bg-[#DBEAFE]',
-    text: 'text-[#1D4ED8]',
+    bg: 'bg-primary-subtle',
+    text: 'text-primary-text',
     defaultLabel: 'Info',
   },
 }

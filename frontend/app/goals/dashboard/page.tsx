@@ -57,7 +57,7 @@ export default function GoalsDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-[#475569] py-16 justify-center">
+      <div className="flex items-center gap-2 text-sm text-text-secondary py-16 justify-center">
         <Loader2 size={16} className="animate-spin" /> Loading…
       </div>
     )
@@ -70,7 +70,7 @@ export default function GoalsDashboardPage() {
         title="Couldn’t load the dashboard"
         subtitle="Something went wrong fetching the numbers."
         action={
-          <button onClick={load} className="mt-1 text-sm font-semibold text-[#2563EB] hover:text-[#1D4ED8]">
+          <button onClick={load} className="mt-1 text-sm font-semibold text-primary-text hover:text-primary-text">
             Try again
           </button>
         }
@@ -81,8 +81,8 @@ export default function GoalsDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[26px] font-bold text-[#0F172A] leading-tight">Dashboard</h1>
-        <p className="text-sm text-[#475569] mt-1">
+        <h1 className="text-[26px] font-bold text-text-primary leading-tight">Dashboard</h1>
+        <p className="text-sm text-text-secondary mt-1">
           {data.total} goal{data.total === 1 ? '' : 's'} · as on {formatDate(data.as_on)}
         </p>
       </div>
@@ -97,13 +97,13 @@ export default function GoalsDashboardPage() {
             <button
               key={s}
               onClick={() => router.push(`/goals/list?status=${s}`)}
-              className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card p-4 text-left hover:border-[#CBD5E1] transition-colors"
+              className="bg-white border border-border-light rounded-[12px] shadow-card p-4 text-left hover:border-border transition-colors"
             >
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: m.dot }} />
-                <span className="text-[12px] font-medium text-[#475569] truncate">{m.label}</span>
+                <span className="text-[12px] font-medium text-text-secondary truncate">{m.label}</span>
               </span>
-              <p className="text-[28px] font-bold text-[#0F172A] tabular-nums leading-none mt-2">{n}</p>
+              <p className="text-[28px] font-bold text-text-primary tabular-nums leading-none mt-2">{n}</p>
             </button>
           )
         })}
@@ -161,37 +161,37 @@ function GoalPanel({
   return (
     // Fixed height + internal scroll so the three panels stay the same size
     // however lopsided the data is (DESIGN_RULES Part 2 / Part 3).
-    <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card flex flex-col h-[400px]">
-      <header className="px-5 py-4 border-b border-[#F1F5F9] shrink-0">
+    <section className="bg-white border border-border-light rounded-[12px] shadow-card flex flex-col h-[400px]">
+      <header className="px-5 py-4 border-b border-border-light shrink-0">
         <div className="flex items-center gap-2">
-          <h2 className="flex items-center gap-2 text-[16px] font-semibold text-[#0F172A]">
-            <span className="text-[#475569]">{icon}</span>
+          <h2 className="flex items-center gap-2 text-[16px] font-semibold text-text-primary">
+            <span className="text-text-secondary">{icon}</span>
             {title}
           </h2>
           <CountBadge count={goals.length} />
         </div>
-        <p className="text-[12px] text-[#475569] mt-0.5">{hint}</p>
+        <p className="text-[12px] text-text-secondary mt-0.5">{hint}</p>
       </header>
       <div className="table-scroll flex-1 overflow-y-auto px-5 py-2">
         {goals.length === 0 ? (
-          <p className="text-[13px] text-[#475569] py-6">{empty}</p>
+          <p className="text-[13px] text-text-secondary py-6">{empty}</p>
         ) : (
-          <ul className="divide-y divide-[#F1F5F9]">
+          <ul className="divide-y divide-surface-control">
             {goals.map((g) => (
               <li key={g.id}>
                 <button
                   onClick={() => router.push(`/goals/${g.id}`)}
                   className="w-full text-left py-2.5 group"
                 >
-                  <p className="text-[14px] font-medium text-[#0F172A] group-hover:text-[#2563EB] transition-colors truncate">
+                  <p className="text-[14px] font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
                     {g.title}
                   </p>
                   <div className="flex items-center gap-2 flex-wrap mt-1">
                     <GoalStatusBadge status={g.status} />
-                    <span className="text-[12px] text-[#475569]">{meta(g)}</span>
+                    <span className="text-[12px] text-text-secondary">{meta(g)}</span>
                   </div>
                   {g.target_value !== null && g.target_value !== undefined && (
-                    <p className="text-[12px] text-[#475569] mt-0.5 tabular-nums">
+                    <p className="text-[12px] text-text-secondary mt-0.5 tabular-nums">
                       {g.current_value === null || g.current_value === undefined ? '—' : g.current_value}
                       {' of '}
                       {formatValue(g.target_value, g.unit)}

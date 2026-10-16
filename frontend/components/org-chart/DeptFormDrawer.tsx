@@ -27,8 +27,8 @@ interface DeptFormDrawerProps {
 }
 
 const inputCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors'
-const labelCls = 'text-sm font-medium text-[#374151] mb-1.5 block'
+  'w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
+const labelCls = 'text-sm font-medium text-text-secondary mb-1.5 block'
 
 /**
  * Create or edit a department from a right-hand drawer. In edit mode the form is
@@ -164,17 +164,17 @@ export default function DeptFormDrawer({
       {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
 
       <div
-        className={`fixed inset-y-0 right-0 z-70 w-full max-w-sm bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-70 w-full max-w-sm bg-white border-l border-border-light shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2E8F0]">
-          <h3 className="font-semibold text-[#0F172A]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light">
+          <h3 className="font-semibold text-text-primary">
             {isEdit ? 'Edit Department' : 'Add Department'}
           </h3>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
             aria-label="Close"
           >
             <X size={16} />
@@ -200,7 +200,7 @@ export default function DeptFormDrawer({
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Optional description…"
-              className="w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors resize-none"
+              className="w-full rounded-[8px] border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors resize-none"
             />
           </div>
           <div>
@@ -233,8 +233,8 @@ export default function DeptFormDrawer({
                 onClick={() => setColor(null)}
                 className={`h-7 px-2.5 rounded-[7px] text-xs font-medium border transition-colors ${
                   color === null
-                    ? 'border-[#2563EB] bg-[#EFF6FF] text-[#2563EB]'
-                    : 'border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
+                    ? 'border-primary bg-primary-subtle text-primary-text'
+                    : 'border-border text-text-secondary hover:bg-surface-sunken'
                 }`}
               >
                 Default
@@ -256,14 +256,14 @@ export default function DeptFormDrawer({
                 </Tooltip>
               ))}
             </div>
-            <p className="text-xs text-[#94A3B8] mt-1.5">
+            <p className="text-xs text-text-muted mt-1.5">
               Default inherits the branch hue (lighter further down the tree).
             </p>
           </div>
-          {error && <p className="text-xs text-[#DC2626]">{error}</p>}
+          {error && <p className="text-xs text-danger">{error}</p>}
           </div>
 
-          <div className="px-5 pt-4 pb-12 border-t border-[#E2E8F0] flex flex-col gap-3">
+          <div className="px-5 pt-4 pb-12 border-t border-border-light flex flex-col gap-3">
             <div className="flex gap-3">
               <Button variant="primary" isLoading={saving} onClick={handleSave}>
                 {isEdit ? 'Save' : 'Add Department'}
@@ -287,8 +287,8 @@ export default function DeptFormDrawer({
                 disabled={!canDelete}
                 className={`flex items-center gap-1.5 text-sm font-medium self-start transition-colors ${
                   canDelete
-                    ? 'text-[#DC2626] hover:text-[#B91C1C]'
-                    : 'text-[#94A3B8] cursor-not-allowed'
+                    ? 'text-danger hover:text-danger'
+                    : 'text-text-muted cursor-not-allowed'
                 }`}
               >
                 <Trash2 size={14} /> Delete department
@@ -297,15 +297,15 @@ export default function DeptFormDrawer({
             )}
 
             {isEdit && !canDelete && (
-              <p className="text-xs text-[#94A3B8] -mt-1">
+              <p className="text-xs text-text-muted -mt-1">
                 A department with {blockers.join(', ')} can’t be deleted. Reassign or
                 remove them first.
               </p>
             )}
 
             {isEdit && confirmDelete && (
-              <div className="rounded-[8px] border border-[#FECACA] bg-[#FEF2F2] p-3">
-                <p className="text-sm text-[#991B1B] mb-2.5">
+              <div className="rounded-[8px] border border-danger-border bg-danger-bg p-3">
+                <p className="text-sm text-danger mb-2.5">
                   Delete <span className="font-semibold">{editing?.name}</span>? This can’t
                   be undone.
                 </p>

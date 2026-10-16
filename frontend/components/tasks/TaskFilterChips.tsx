@@ -109,14 +109,14 @@ export default function TaskFilterChips({
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className="inline-flex items-center gap-1.5 text-[12px] pl-2.5 pr-1.5 py-1 rounded-[999px] bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]"
+          className="inline-flex items-center gap-1.5 text-[12px] pl-2.5 pr-1.5 py-1 rounded-[999px] bg-primary-subtle text-primary-text border border-primary-border"
         >
           {chip.label}
           <button
             type="button"
             onClick={chip.onRemove}
             aria-label={`Remove ${chip.label} filter`}
-            className="inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#DBEAFE] transition-colors"
+            className="inline-flex items-center justify-center rounded-full p-0.5 hover:bg-primary-subtle transition-colors"
           >
             <X size={12} />
           </button>
@@ -125,7 +125,7 @@ export default function TaskFilterChips({
       <button
         type="button"
         onClick={() => onChange({ ...EMPTY_TASK_FILTERS })}
-        className="text-[12px] font-medium text-[#475569] hover:text-[#0F172A] px-1.5 py-1 transition-colors"
+        className="text-[12px] font-medium text-text-secondary hover:text-text-primary px-1.5 py-1 transition-colors"
       >
         Reset
       </button>

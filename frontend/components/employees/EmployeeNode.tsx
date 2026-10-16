@@ -23,8 +23,8 @@ export interface EmployeeNodeData {
 }
 
 const statusDot: Record<EmployeeStatus, string> = {
-  active: 'bg-[#16A34A]',
-  inactive: 'bg-[#DC2626]',
+  active: 'bg-success',
+  inactive: 'bg-danger',
 }
 
 function initials(name: string): string {
@@ -37,7 +37,7 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
   return (
     <div
       className={`group relative rounded-[12px] bg-white border shadow-[0_1px_3px_rgba(0,0,0,0.08)] ${
-        freeRadical ? 'border-dashed border-[#CBD5E1]' : 'border-[#E2E8F0]'
+        freeRadical ? 'border-dashed border-border' : 'border-border-light'
       }`}
       style={{ width: NODE_W, borderLeft: `4px solid ${color}` }}
     >
@@ -63,15 +63,15 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
       )}
 
       {/* Hover details card */}
-      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-[220px] -translate-x-1/2 scale-95 rounded-[10px] border border-[#E2E8F0] bg-white p-3 opacity-0 shadow-[0_8px_24px_rgba(15,23,42,0.14)] transition-all duration-150 group-hover:scale-100 group-hover:opacity-100">
+      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-[220px] -translate-x-1/2 scale-95 rounded-[10px] border border-border-light bg-white p-3 opacity-0 shadow-[0_8px_24px_rgba(15,23,42,0.14)] transition-all duration-150 group-hover:scale-100 group-hover:opacity-100">
         <div className="flex items-center gap-1.5">
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot[status]}`} />
-          <p className="text-sm font-semibold text-[#0F172A]">{name}</p>
+          <p className="text-sm font-semibold text-text-primary">{name}</p>
         </div>
         <dl className="mt-2 space-y-1.5 text-xs">
           <div className="flex items-start gap-2">
-            <dt className="w-20 shrink-0 text-[#94A3B8]">Department</dt>
-            <dd className="flex-1 font-medium text-[#475569]">
+            <dt className="w-20 shrink-0 text-text-muted">Department</dt>
+            <dd className="flex-1 font-medium text-text-secondary">
               <span className="inline-flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
                 {department ?? '—'}
@@ -79,12 +79,12 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
             </dd>
           </div>
           <div className="flex items-start gap-2">
-            <dt className="w-20 shrink-0 text-[#94A3B8]">Role</dt>
-            <dd className="flex-1 font-medium text-[#475569]">{roleTitle ?? 'No role'}</dd>
+            <dt className="w-20 shrink-0 text-text-muted">Role</dt>
+            <dd className="flex-1 font-medium text-text-secondary">{roleTitle ?? 'No role'}</dd>
           </div>
           {level && (
             <div className="flex items-start gap-2">
-              <dt className="w-20 shrink-0 text-[#94A3B8]">Level</dt>
+              <dt className="w-20 shrink-0 text-text-muted">Level</dt>
               <dd className="flex-1">
                 <span
                   className={`inline-flex items-center rounded-[999px] px-1.5 py-px text-[10px] font-semibold capitalize ${levelColors[level]}`}
@@ -107,10 +107,10 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot[status]}`} />
-            <p className="text-sm font-semibold text-[#0F172A] truncate">{name}</p>
+            <p className="text-sm font-semibold text-text-primary truncate">{name}</p>
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <p className="text-xs text-[#64748B] truncate">{roleTitle ?? 'No role'}</p>
+            <p className="text-xs text-text-muted truncate">{roleTitle ?? 'No role'}</p>
             {level && (
               <span
                 className={`inline-flex items-center rounded-[999px] px-1.5 py-px text-[10px] font-semibold capitalize shrink-0 ${levelColors[level]}`}
@@ -123,8 +123,8 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
       </div>
 
       {freeRadical && (
-        <span className="absolute -top-2 -right-2 inline-flex items-center gap-0.5 rounded-[999px] bg-[#F1F5F9] border border-[#E2E8F0] px-1.5 py-px text-[10px] font-semibold text-[#64748B]">
-          <Zap size={10} className="text-[#CA8A04]" /> unlinked
+        <span className="absolute -top-2 -right-2 inline-flex items-center gap-0.5 rounded-[999px] bg-surface-control border border-border-light px-1.5 py-px text-[10px] font-semibold text-text-muted">
+          <Zap size={10} className="text-warning" /> unlinked
         </span>
       )}
 

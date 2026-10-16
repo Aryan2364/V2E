@@ -74,7 +74,7 @@ function StartChoice({
   return (
     <div
       className={`w-full flex items-center rounded-[10px] border transition-colors ${
-        invalid ? 'border-[#FCA5A5]' : checked ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#CBD5E1] bg-white hover:bg-[#F8FAFC]'
+        invalid ? 'border-danger-border' : checked ? 'border-primary bg-primary-subtle' : 'border-border bg-white hover:bg-surface-sunken'
       }`}
     >
       <button
@@ -83,17 +83,17 @@ function StartChoice({
         aria-checked={checked}
         disabled={disabled}
         onClick={() => onChange(!checked)}
-        className="flex-1 min-w-0 text-left flex items-center gap-3 rounded-[10px] pl-3.5 pr-1 py-3 min-h-[44px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed"
+        className="flex-1 min-w-0 text-left flex items-center gap-3 rounded-[10px] pl-3.5 pr-1 py-3 min-h-[44px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed"
       >
         <span
           aria-hidden
           className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center shrink-0 transition-colors ${
-            checked ? 'bg-[#2563EB] border-[#2563EB]' : 'bg-white border-[#64748B]'
+            checked ? 'bg-primary border-primary' : 'bg-white border-border-strong'
           }`}
         >
           {checked && <Check size={12} strokeWidth={3} className="text-white" />}
         </span>
-        <span className={`flex items-center gap-1.5 text-sm font-semibold ${checked ? 'text-[#1D4ED8]' : 'text-[#0F172A]'}`}>
+        <span className={`flex items-center gap-1.5 text-sm font-semibold ${checked ? 'text-primary-text' : 'text-text-primary'}`}>
           <Icon size={15} aria-hidden /> {label}
         </span>
       </button>
@@ -167,8 +167,8 @@ export default function StartsSection({
           />
           <Reveal open={value.manual}>
             <div className="pl-1">
-              <span className="block text-sm font-medium text-[#374151] mb-2">
-                Who can start it <span className="text-[#DC2626]">*</span>{' '}
+              <span className="block text-sm font-medium text-text-secondary mb-2">
+                Who can start it <span className="text-danger">*</span>{' '}
                 <InfoTip label="Who can start it" text="Only the people listed here can run it by hand." />
               </span>
               <PeoplePicker
@@ -203,16 +203,16 @@ export default function StartsSection({
             <ScheduleEntryList entries={value.schedules} onChange={(entries) => set({ schedules: entries as ScheduleDraft[] })} />
           </fieldset>
           {errorScheduleIndex !== null && value.schedules[errorScheduleIndex] && (
-            <p className="text-[13px] text-[#B91C1C]">Check schedule #{errorScheduleIndex + 1}.</p>
+            <p className="text-[13px] text-danger">Check schedule #{errorScheduleIndex + 1}.</p>
           )}
-          <div className="rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] px-3.5 py-2.5 text-[13px] text-[#334155] flex flex-col gap-1">
+          <div className="rounded-[10px] bg-surface-sunken border border-border-light px-3.5 py-2.5 text-[13px] text-text-secondary flex flex-col gap-1">
             {value.schedules.map((d, i) => (
               <span key={d.id ?? `new-${i}`}>
-                <span className="font-medium text-[#0F172A]">#{i + 1}</span> {describeSchedule(d)}
+                <span className="font-medium text-text-primary">#{i + 1}</span> {describeSchedule(d)}
               </span>
             ))}
             {(live ? nextRuns.length > 0 : true) && (
-              <span className="text-[#475569]">
+              <span className="text-text-secondary">
                 {live ? `Next start: ${fmtDateTime(nextRuns.map((s) => s.next_fire_at!).sort()[0])}` : 'Runs only while the workflow is live.'}
               </span>
             )}
@@ -227,16 +227,16 @@ export default function StartsSection({
       id="starts-section"
       aria-labelledby="starts-heading"
       className={`bg-white border rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-4 scroll-mt-40 ${
-        error ? 'border-[#FCA5A5] ring-1 ring-[#FECACA]' : 'border-[#E2E8F0]'
+        error ? 'border-danger-border ring-1 ring-danger-border' : 'border-border-light'
       }`}
     >
       <div>
-        <h2 id="starts-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+        <h2 id="starts-heading" className="flex items-center gap-1 text-[18px] font-semibold text-text-primary">
           How it starts <InfoTip label="How it starts" text="Choose one or both. Times use your organisation’s time zone." />
         </h2>
       </div>
       {editable === false && reason && (
-        <p className="text-[13px] text-[#334155] rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-2">{reason}</p>
+        <p className="text-[13px] text-text-secondary rounded-[8px] bg-surface-sunken border border-border-light px-3 py-2">{reason}</p>
       )}
       {body}
     </section>

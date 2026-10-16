@@ -43,7 +43,7 @@ export default function ScheduleEntryList({ entries, onChange }: Props) {
       {entries.map((entry, index) => (
         <div
           key={index}
-          className="border border-[#E2E8F0] rounded-[10px] p-4 bg-[#F8FAFC] space-y-4"
+          className="border border-border-light rounded-[10px] p-4 bg-surface-sunken space-y-4"
         >
           <ScheduleEntryRow
             entry={entry}
@@ -58,7 +58,7 @@ export default function ScheduleEntryList({ entries, onChange }: Props) {
       <button
         type="button"
         onClick={addEntry}
-        className="flex items-center gap-2 text-sm font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
+        className="flex items-center gap-2 text-sm font-medium text-primary-text hover:text-primary-text transition-colors"
       >
         <Plus size={15} />
         Add schedule entry

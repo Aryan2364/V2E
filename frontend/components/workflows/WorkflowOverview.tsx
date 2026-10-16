@@ -323,16 +323,16 @@ export default function WorkflowOverview({ id }: { id: string }) {
     <>
       <div className="flex items-center gap-2 flex-wrap">
         {!narrow && <TemplateStatusBadge status={w.status} />}
-        <span className="text-[13px] text-[#475569]">
+        <span className="text-[13px] text-text-secondary">
           {narrow ? '' : `${plural(steps.length, 'step')} · `}Editors: {namesSummary(editors, 3)} · Updated {fmtDate(w.updated_at)}
         </span>
       </div>
-      <p className="mt-1.5 text-[13px] text-[#334155] wrap-break-word">
-        <span className="font-medium text-[#0F172A]">Starts:</span> {startsSummary(w, noStarters ? 'no one can start it yet' : undefined)}
+      <p className="mt-1.5 text-[13px] text-text-secondary wrap-break-word">
+        <span className="font-medium text-text-primary">Starts:</span> {startsSummary(w, noStarters ? 'no one can start it yet' : undefined)}
         {w.next_run_at ? (
           <>
             {' '}
-            · <span className="font-medium text-[#0F172A]">Next start:</span> {fmtDateTime(w.next_run_at)}
+            · <span className="font-medium text-text-primary">Next start:</span> {fmtDateTime(w.next_run_at)}
           </>
         ) : w.status === 'paused' && schedules.length > 0 ? (
           ' · Schedule paused'
@@ -346,11 +346,11 @@ export default function WorkflowOverview({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-6 pb-10">
-      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-[#F8FAFC] border-b border-[#E2E8F0]">
+      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-surface-sunken border-b border-border-light">
         <WorkflowBreadcrumb trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }, { label: w.name }]} />
         <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{w.name}</h1>
+            <h1 className="text-[18px] sm:text-[28px] font-bold text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{w.name}</h1>
             {!narrow && <div className="mt-1.5">{meta}</div>}
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -378,7 +378,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
         </div>
         {/* Phone: the status on one slim line; the rest of the meta sits under the header. */}
         {narrow && (
-          <div className="flex items-center gap-2 mt-1.5 min-w-0 text-[12px] text-[#475569]">
+          <div className="flex items-center gap-2 mt-1.5 min-w-0 text-[12px] text-text-secondary">
             <TemplateStatusBadge status={w.status} />
             <span className="whitespace-nowrap">{plural(steps.length, 'step')}</span>
           </div>
@@ -399,7 +399,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
         }
         headerExtra={
           steps.length > 0 ? (
-            <div role="tablist" aria-label="Show steps as" className="inline-flex rounded-[8px] border border-[#CBD5E1] bg-white p-0.5">
+            <div role="tablist" aria-label="Show steps as" className="inline-flex rounded-[8px] border border-border bg-white p-0.5">
               {(
                 [
                   ['flow', 'Flow', GitBranch],
@@ -412,8 +412,8 @@ export default function WorkflowOverview({ id }: { id: string }) {
                   role="tab"
                   aria-selected={view === v}
                   onClick={() => setView(v)}
-                  className={`inline-flex items-center gap-1.5 px-3 min-h-[44px] sm:min-h-[32px] rounded-[6px] text-[13px] font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
-                    view === v ? 'bg-[#EFF6FF] text-[#1D4ED8]' : 'text-[#334155] hover:bg-[#F1F5F9]'
+                  className={`inline-flex items-center gap-1.5 px-3 min-h-[44px] sm:min-h-[32px] rounded-[6px] text-[13px] font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
+                    view === v ? 'bg-primary-subtle text-primary-text' : 'text-text-secondary hover:bg-surface-control'
                   }`}
                 >
                   <Icon size={14} /> {label}
@@ -446,12 +446,12 @@ export default function WorkflowOverview({ id }: { id: string }) {
               return (
                 <div key={lane.key} className="flex flex-col">
                   {lanes.length > 1 && (
-                    <p className="flex items-baseline gap-2 pb-1.5 border-b border-[#E2E8F0]">
-                      <span className="text-[14px] font-semibold text-[#0F172A]">{lane.label}</span>
-                      {lane.hint && <span className="text-[13px] text-[#475569]">{lane.hint}</span>}
+                    <p className="flex items-baseline gap-2 pb-1.5 border-b border-border-light">
+                      <span className="text-[14px] font-semibold text-text-primary">{lane.label}</span>
+                      {lane.hint && <span className="text-[13px] text-text-secondary">{lane.hint}</span>}
                     </p>
                   )}
-                  <ol className="flex flex-col divide-y divide-[#F1F5F9]">
+                  <ol className="flex flex-col divide-y divide-surface-control">
                     {list.map((s) => {
                       const deps = layout.deps.get(s.id) ?? []
                       const merges = layout.merges.get(s.id) ?? []
@@ -461,18 +461,18 @@ export default function WorkflowOverview({ id }: { id: string }) {
                       const meta = [also.length ? `Also waits for ${also.join(', ')}` : null, s.if_late === 'move_on' ? 'If late: continue' : 'If late: wait'].filter(Boolean).join(' · ')
                       return (
                         <li key={s.id} className="py-3 flex items-start gap-3">
-                          <span className="mt-0.5 min-w-[26px] h-[26px] px-1 rounded-full bg-[#2563EB] text-white text-[12px] font-semibold flex items-center justify-center shrink-0">
+                          <span className="mt-0.5 min-w-[26px] h-[26px] px-1 rounded-full bg-primary text-white text-[12px] font-semibold flex items-center justify-center shrink-0">
                             {layout.labels.get(s.id)}
                           </span>
                           <div className="min-w-0 flex-1">
                             <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                              <span className="text-[15px] font-semibold text-[#0F172A] wrap-break-word min-w-0">{s.title || 'Untitled step'}</span>
+                              <span className="text-[15px] font-semibold text-text-primary wrap-break-word min-w-0">{s.title || 'Untitled step'}</span>
                               <CompletionChip mode={s.completion_mode} count={names.length} />
                             </p>
-                            <p className="text-[13px] text-[#334155]">
+                            <p className="text-[13px] text-text-secondary">
                               {namesSummary(names.map((name) => ({ name })), 3)} · {timingSummary(startRuleOf(s), dueRuleOf(s), frequency, deps.length > 0, nextFlags.get(s.id))}
                             </p>
-                            <p className="text-[13px] text-[#475569]">{meta}</p>
+                            <p className="text-[13px] text-text-secondary">{meta}</p>
                           </div>
                         </li>
                       )
@@ -496,15 +496,15 @@ export default function WorkflowOverview({ id }: { id: string }) {
         }
       >
         {involved.length === 0 ? (
-          <p className="text-sm text-[#475569]">No one yet.</p>
+          <p className="text-sm text-text-secondary">No one yet.</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {involved.map((p) => (
               <li key={p.id} className="flex items-start gap-2.5 min-w-0">
                 <Avatar name={p.name} size="md" />
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-[#0F172A] truncate">{p.name}</p>
-                  <p className="text-[12px] text-[#475569]">{roleWords(p.id === creator?.id && !p.roles.includes('creator') ? ['creator', ...p.roles] : p.roles)}</p>
+                  <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
+                  <p className="text-[12px] text-text-secondary">{roleWords(p.id === creator?.id && !p.roles.includes('creator') ? ['creator', ...p.roles] : p.roles)}</p>
                 </div>
               </li>
             ))}
@@ -516,8 +516,8 @@ export default function WorkflowOverview({ id }: { id: string }) {
       <section id="instances" aria-labelledby="instances-heading" className="flex flex-col gap-3 scroll-mt-40">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <History size={18} className="text-[#475569]" />
-            <h2 id="instances-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+            <History size={18} className="text-text-secondary" />
+            <h2 id="instances-heading" className="flex items-center gap-1 text-[18px] font-semibold text-text-primary">
               Instances <InfoTip label="Instances" text="Each time the workflow is run — by hand or on a schedule — it creates an instance." />
             </h2>
           </div>
@@ -533,15 +533,15 @@ export default function WorkflowOverview({ id }: { id: string }) {
                 aria-selected={active}
                 type="button"
                 onClick={() => setFilter(f.value)}
-                className={`inline-flex items-center gap-2 px-3 min-h-[44px] sm:min-h-[36px] rounded-[8px] text-[13px] font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
-                  active ? 'bg-[#2563EB] text-white' : 'bg-white text-[#334155] border border-[#CBD5E1] hover:border-[#2563EB] hover:text-[#2563EB]'
+                className={`inline-flex items-center gap-2 px-3 min-h-[44px] sm:min-h-[36px] rounded-[8px] text-[13px] font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
+                  active ? 'bg-primary text-white' : 'bg-white text-text-secondary border border-border hover:border-primary hover:text-primary-text'
                 }`}
               >
                 {f.label}
                 {runsStatus === 'ready' && (
                   <span
                     className={`min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-semibold flex items-center justify-center ${
-                      active ? 'bg-white text-[#2563EB]' : 'bg-[#2563EB] text-white'
+                      active ? 'bg-white text-primary-text' : 'bg-primary text-white'
                     }`}
                   >
                     {n > 99 ? '99+' : n}
@@ -559,7 +559,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
             instances={shownRuns}
             loading={runsStatus === 'loading'}
             emptyState={
-              <div className="bg-white border border-[#E2E8F0] rounded-[12px]">
+              <div className="bg-white border border-border-light rounded-[12px]">
                 {filter !== 'all' && runs.length > 0 ? (
                   <EmptyState
                     icon={History}
@@ -618,7 +618,7 @@ function Description({ text }: { text: string }) {
   return (
     <div className="mt-1.5 max-w-4xl">
       <p
-        className={`text-[14px] text-[#1E293B] whitespace-pre-wrap wrap-break-word ${
+        className={`text-[14px] text-text-primary whitespace-pre-wrap wrap-break-word ${
           long && !open ? 'line-clamp-2' : open ? 'max-h-[30vh] overflow-y-auto' : ''
         }`}
       >
@@ -629,7 +629,7 @@ function Description({ text }: { text: string }) {
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
-          className="mt-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 text-[13px] font-semibold text-[#2563EB] hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-xs"
+          className="mt-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 text-[13px] font-semibold text-primary-text hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
         >
           {open ? 'Show less' : 'Show more'}
         </button>
@@ -669,11 +669,11 @@ function MyInstancesView({
   const start = workflow ? startGate(workflow, writable) : null
   return (
     <div className="flex flex-col gap-6 pb-10">
-      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-[#F8FAFC] border-b border-[#E2E8F0]">
+      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-surface-sunken border-b border-border-light">
         <WorkflowBreadcrumb trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }, { label: name }]} />
         <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{name}</h1>
+            <h1 className="text-[18px] sm:text-[28px] font-bold text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{name}</h1>
             {workflow && (
               <div className="mt-1.5">
                 <TemplateStatusBadge status={workflow.status} />
@@ -690,8 +690,8 @@ function MyInstancesView({
 
       <section id="instances" aria-labelledby="my-instances-heading" className="flex flex-col gap-3 scroll-mt-40">
         <div className="flex items-center gap-2">
-          <History size={18} className="text-[#475569]" />
-          <h2 id="my-instances-heading" className="flex items-center gap-1 text-[18px] font-semibold text-[#0F172A]">
+          <History size={18} className="text-text-secondary" />
+          <h2 id="my-instances-heading" className="flex items-center gap-1 text-[18px] font-semibold text-text-primary">
             My instances of this workflow{' '}
             <InfoTip label="My instances of this workflow" text="The instances you work in. Only its editors and viewers see the whole workflow." />
           </h2>
@@ -704,7 +704,7 @@ function MyInstancesView({
             instances={runs}
             loading={runsStatus === 'loading'}
             emptyState={
-              <div className="bg-white border border-[#E2E8F0] rounded-[12px]">
+              <div className="bg-white border border-border-light rounded-[12px]">
                 <EmptyState icon={History} title="No instances yet" text="Instances you work in appear here." />
               </div>
             }

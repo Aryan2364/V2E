@@ -10,11 +10,11 @@ import { governanceItemForPath } from '@/lib/governance-nav'
 function LineItemDisabled({ label }: { label: string }) {
   return (
     <div className="flex flex-col items-center text-center gap-3 py-24 px-6">
-      <div className="w-14 h-14 rounded-[16px] bg-[#FEE2E2] flex items-center justify-center text-[#DC2626]">
+      <div className="w-14 h-14 rounded-[16px] bg-danger-bg flex items-center justify-center text-danger">
         <Lock size={24} />
       </div>
-      <h2 className="text-[18px] font-semibold text-[#0F172A]">{label} isn’t enabled</h2>
-      <p className="text-sm text-[#475569] max-w-sm">
+      <h2 className="text-[18px] font-semibold text-text-primary">{label} isn’t enabled</h2>
+      <p className="text-sm text-text-secondary max-w-sm">
         {label} is not part of your organization’s plan. Contact your administrator if you think this
         is a mistake.
       </p>

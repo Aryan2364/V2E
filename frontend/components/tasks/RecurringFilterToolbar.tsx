@@ -84,7 +84,7 @@ function Pill({ active, onClick, color, dotClassName, children }: { active: bool
       type="button"
       onClick={onClick}
       className={`inline-flex items-center gap-1.5 text-[12px] px-2.5 py-1 rounded-[999px] border transition-colors ${
-        active ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE] font-medium' : 'bg-white text-[#475569] border-[#E2E8F0] hover:border-[#94A3B8]'
+        active ? 'bg-primary-subtle text-primary-text border-primary-border font-medium' : 'bg-white text-text-secondary border-border-light hover:border-border-strong'
       }`}
     >
       {color && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />}
@@ -96,9 +96,9 @@ function Pill({ active, onClick, color, dotClassName, children }: { active: bool
 
 function Section({ title, right, children }: { title: string; right?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="px-3.5 py-2 border-b border-[#E2E8F0] last:border-b-0">
+    <div className="px-3.5 py-2 border-b border-border-light last:border-b-0">
       <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[12px] font-medium text-[#475569]">{title}</p>
+        <p className="text-[12px] font-medium text-text-secondary">{title}</p>
         {right}
       </div>
       {children}
@@ -108,15 +108,15 @@ function Section({ title, right, children }: { title: string; right?: React.Reac
 
 type TickState = 'all' | 'some' | 'none'
 function Tick({ state }: { state: TickState }) {
-  if (state === 'all') return <SquareCheck size={16} className="text-[#2563EB] shrink-0" />
-  if (state === 'some') return <SquareMinus size={16} className="text-[#2563EB] shrink-0" />
+  if (state === 'all') return <SquareCheck size={16} className="text-primary-text shrink-0" />
+  if (state === 'some') return <SquareMinus size={16} className="text-primary-text shrink-0" />
   return <Square size={16} className="text-[#CBD5E1] shrink-0" />
 }
 function CheckToggle({ state, label, onClick }: { state: TickState; label: string; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} className="flex items-center gap-1.5 group">
       <Tick state={state} />
-      <span className="text-[11px] font-semibold uppercase tracking-wide text-[#64748B] group-hover:text-[#475569] transition-colors">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">{label}</span>
     </button>
   )
 }
@@ -265,13 +265,13 @@ function RecurringFilterPopover({
         aria-haspopup="dialog"
         aria-expanded={open}
         className={`flex items-center gap-2 h-[38px] px-3 rounded-[8px] border text-sm font-medium transition-colors ${
-          activeCount > 0 || open ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]' : 'bg-[#F8FAFC] text-[#475569] border-[#CBD5E1] hover:border-[#94A3B8]'
+          activeCount > 0 || open ? 'bg-primary-subtle text-primary-text border-primary-border' : 'bg-surface-sunken text-text-secondary border-border hover:border-border-strong'
         }`}
       >
         <Filter size={16} />
         Filters
         {activeCount > 0 && (
-          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">{activeCount}</span>
+          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[11px] font-semibold">{activeCount}</span>
         )}
       </button>
 
@@ -279,27 +279,27 @@ function RecurringFilterPopover({
         <div
           role="dialog"
           style={{ maxHeight: panelMaxH }}
-          className={`absolute right-0 ${dropUp ? 'bottom-[calc(100%+6px)]' : 'top-[calc(100%+6px)]'} z-50 w-[340px] max-w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain rounded-[12px] border border-[#E2E8F0] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)]`}
+          className={`absolute right-0 ${dropUp ? 'bottom-[calc(100%+6px)]' : 'top-[calc(100%+6px)]'} z-50 w-[340px] max-w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain rounded-[12px] border border-border-light bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)]`}
         >
-          <div className="sticky top-0 z-10 px-3.5 py-2.5 border-b border-[#E2E8F0] bg-white">
+          <div className="sticky top-0 z-10 px-3.5 py-2.5 border-b border-border-light bg-white">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] font-semibold text-[#0F172A]">Filters</span>
+              <span className="text-[13px] font-semibold text-text-primary">Filters</span>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={clearAll} className="text-[12px] font-medium text-[#475569] hover:text-[#0F172A]">Clear all</button>
+                <button type="button" onClick={clearAll} className="text-[12px] font-medium text-text-secondary hover:text-text-primary">Clear all</button>
                 <button
                   type="button"
                   onClick={apply}
                   disabled={empties.length > 0}
-                  className="text-[12px] font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#CBD5E1] disabled:cursor-not-allowed rounded-[7px] px-3 py-1 transition-colors"
+                  className="text-[12px] font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:cursor-not-allowed rounded-[7px] px-3 py-1 transition-colors"
                 >
                   Apply
                 </button>
               </div>
             </div>
             {empties.length > 0 && (
-              <div className="mt-2 flex items-start gap-1.5 rounded-[8px] bg-[#FEF9C3] border border-[#FDE68A] px-2.5 py-1.5">
-                <AlertTriangle size={13} className="text-[#CA8A04] shrink-0 mt-0.5" />
-                <p className="text-[11px] text-[#854D0E]">Select at least one in {empties.join(', ')} to apply.</p>
+              <div className="mt-2 flex items-start gap-1.5 rounded-[8px] bg-warning-bg border border-warning-border px-2.5 py-1.5">
+                <AlertTriangle size={13} className="text-warning shrink-0 mt-0.5" />
+                <p className="text-[11px] text-warning">Select at least one in {empties.join(', ')} to apply.</p>
               </div>
             )}
           </div>
@@ -420,14 +420,14 @@ function RecurringFilterChips({
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className="inline-flex items-center gap-1.5 text-[12px] pl-2.5 pr-1.5 py-1 rounded-[999px] bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]"
+          className="inline-flex items-center gap-1.5 text-[12px] pl-2.5 pr-1.5 py-1 rounded-[999px] bg-primary-subtle text-primary-text border border-primary-border"
         >
           {chip.label}
           <button
             type="button"
             onClick={chip.onRemove}
             aria-label={`Remove ${chip.label} filter`}
-            className="inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#DBEAFE] transition-colors"
+            className="inline-flex items-center justify-center rounded-full p-0.5 hover:bg-primary-subtle transition-colors"
           >
             <X size={12} />
           </button>
@@ -436,7 +436,7 @@ function RecurringFilterChips({
       <button
         type="button"
         onClick={() => onChange({ ...EMPTY_RECURRING_FILTERS })}
-        className="text-[12px] font-medium text-[#475569] hover:text-[#0F172A] px-1.5 py-1 transition-colors"
+        className="text-[12px] font-medium text-text-secondary hover:text-text-primary px-1.5 py-1 transition-colors"
       >
         Clear all
       </button>
@@ -478,20 +478,20 @@ export default function RecurringFilterToolbar({
     <div className="space-y-3">
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[220px]">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Search templates by title, tag, category or person"
-            className="w-full h-[38px] pl-9 pr-9 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] focus:bg-white transition-colors"
+            className="w-full h-[38px] pl-9 pr-9 rounded-[8px] border border-border bg-surface-sunken text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white transition-colors"
           />
           {search && (
             <button
               type="button"
               onClick={() => onSearch('')}
               aria-label="Clear search"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
             >
               <X size={15} />
             </button>

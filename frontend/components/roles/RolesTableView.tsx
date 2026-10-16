@@ -68,7 +68,7 @@ export default function RolesTableView({
       primary: true,
       cellClassName: 'px-5 py-3.5',
       headerClassName: 'px-5 py-3.5',
-      render: (r) => <span className="font-medium text-[#0F172A]">{r.title}</span>,
+      render: (r) => <span className="font-medium text-text-primary">{r.title}</span>,
     },
     {
       key: 'level',
@@ -96,7 +96,7 @@ export default function RolesTableView({
         const dept = deptById.get(r.department_id)
         const base = colors[r.department_id]?.base ?? '#94A3B8'
         return (
-          <span className="inline-flex items-center gap-2 text-[#475569]">
+          <span className="inline-flex items-center gap-2 text-text-secondary">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: base }} />
             {dept?.name ?? '—'}
           </span>
@@ -110,7 +110,7 @@ export default function RolesTableView({
       desktopHiddenBelow: 'lg',
       cellClassName: 'px-5 py-3.5',
       headerClassName: 'px-5 py-3.5',
-      render: (r) => <span className="text-[#475569]">{r.kra?.length ?? 0}</span>,
+      render: (r) => <span className="text-text-secondary">{r.kra?.length ?? 0}</span>,
     },
     {
       key: 'kpi',
@@ -119,7 +119,7 @@ export default function RolesTableView({
       desktopHiddenBelow: 'lg',
       cellClassName: 'px-5 py-3.5',
       headerClassName: 'px-5 py-3.5',
-      render: (r) => <span className="text-[#475569]">{r.kpi?.length ?? 0}</span>,
+      render: (r) => <span className="text-text-secondary">{r.kpi?.length ?? 0}</span>,
     },
     {
       key: 'actions',
@@ -137,7 +137,7 @@ export default function RolesTableView({
                 e.stopPropagation()
                 onEdit(r)
               }}
-              className="p-1.5 rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+              className="p-1.5 rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
               aria-label={`Edit ${r.title}`}
             >
               <Pencil size={14} />
@@ -156,14 +156,14 @@ export default function RolesTableView({
       rowKey={(r) => r.id}
       onRowClick={(r) => onSelect(r)}
       emptyState={
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-14 h-14 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-            <Briefcase size={24} className="text-[#94A3B8]" />
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
+            <Briefcase size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-[#0F172A]">
+          <p className="font-semibold text-text-primary">
             {query.trim() ? 'No job roles match your search' : 'No job roles yet'}
           </p>
-          <p className="text-[#475569] text-sm mt-1">
+          <p className="text-text-secondary text-sm mt-1">
             {query.trim() ? 'Try a different name, level, or department.' : 'Add a job role to get started.'}
           </p>
         </div>

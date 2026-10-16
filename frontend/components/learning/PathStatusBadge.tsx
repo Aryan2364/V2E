@@ -3,15 +3,15 @@ import type { LearningPathStatus } from '@/lib/types/learning'
 const CONFIG: Record<LearningPathStatus, { label: string; classes: string }> = {
   draft: {
     label: 'Draft',
-    classes: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]',
+    classes: 'bg-surface-control text-text-secondary border border-border',
   },
   published: {
     label: 'Published',
-    classes: 'bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]',
+    classes: 'bg-success-bg text-success border border-success-border',
   },
   archived: {
     label: 'Archived',
-    classes: 'bg-[#FEE2E2] text-[#DC2626] border border-[#FECACA]',
+    classes: 'bg-danger-bg text-danger border border-danger-border',
   },
 }
 

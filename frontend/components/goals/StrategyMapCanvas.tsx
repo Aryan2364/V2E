@@ -158,7 +158,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
     // max-h-full, not flex-1: the card hugs its bands (no dead white space
     // below the last one) and only starts scrolling once the map is taller
     // than the room available.
-    <div className="max-h-full rounded-[12px] border border-[#E2E8F0] bg-white overflow-auto shadow-card">
+    <div className="max-h-full rounded-[12px] border border-border-light bg-white overflow-auto shadow-card">
       {/* The click-to-clear handler lives on this CONTENT row, not on the scroll
           box above it: a click on the scroll box's own scrollbar targets that
           box, so it can never reach here and can never drop the pin. */}
@@ -168,7 +168,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
         onClick={() => pin(null)}
       >
         {/* ── Band labels: pinned to the left edge of the scroll box ───────── */}
-        <div className="sticky left-0 z-20 shrink-0 border-r border-[#E2E8F0] w-[152px] md:w-[240px]">
+        <div className="sticky left-0 z-20 shrink-0 border-r border-border-light w-[152px] md:w-[240px]">
           {layout.bands.map((band) => {
             const m = BAND_META[band.key]
             return (
@@ -217,7 +217,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                   )}
                 </div>
                 {band.key === 'untagged' && (
-                  <p className="text-[11px] text-[#64748B] leading-snug">
+                  <p className="text-[11px] text-text-muted leading-snug">
                     Edit a goal to place it in a band.
                   </p>
                 )}
@@ -249,7 +249,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
               >
                 {band.nodes.length === 0 && (
                   <span
-                    className="absolute top-1/2 -translate-y-1/2 text-[12.5px] text-[#64748B] whitespace-nowrap"
+                    className="absolute top-1/2 -translate-y-1/2 text-[12.5px] text-text-muted whitespace-nowrap"
                     style={{ left: X_PAD }}
                   >
                     No goals in this band yet.
@@ -359,7 +359,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                 className={[
                   'absolute rounded-full flex items-center justify-center text-center px-4',
                   'transition-[opacity,box-shadow,transform,background-color] duration-200 ease-out',
-                  'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2',
+                  'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
                   hot || isPinned ? 'z-10' : 'z-1',
                   hot ? '-translate-y-0.5' : '',
                 ].join(' ')}

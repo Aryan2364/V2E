@@ -67,14 +67,14 @@ export default function RolesTreeView({
 
   if (blocks.length === 0) {
     return (
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-14 h-14 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-          <Briefcase size={24} className="text-[#94A3B8]" />
+      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
+        <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
+          <Briefcase size={24} className="text-text-muted" />
         </div>
-        <p className="font-semibold text-[#0F172A]">
+        <p className="font-semibold text-text-primary">
           {q ? 'No job roles match your search' : 'No job roles yet'}
         </p>
-        <p className="text-[#475569] text-sm mt-1">
+        <p className="text-text-secondary text-sm mt-1">
           {q ? 'Try a different name, level, or department.' : 'Add a job role to get started.'}
         </p>
       </div>
@@ -82,25 +82,25 @@ export default function RolesTreeView({
   }
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden divide-y divide-[#F1F5F9]">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden divide-y divide-surface-control">
       {blocks.map(({ dept, depth, roles: deptRoles }) => {
         const base = colors[dept.id]?.base ?? '#94A3B8'
         return (
           <div key={dept.id}>
             {/* Department header */}
             <div
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#F8FAFC]"
+              className="flex items-center gap-2 px-4 py-2.5 bg-surface-sunken"
               style={{ paddingLeft: 16 + depth * 18 }}
             >
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: base }} />
-              <span className="text-sm font-semibold text-[#0F172A] truncate">{dept.name}</span>
-              <span className="text-xs text-[#94A3B8]">
+              <span className="text-sm font-semibold text-text-primary truncate">{dept.name}</span>
+              <span className="text-xs text-text-muted">
                 {deptRoles.length} job role{deptRoles.length !== 1 ? 's' : ''}
               </span>
               {canEdit && (
                 <button
                   onClick={() => onAddRole(dept.id)}
-                  className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
+                  className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text transition-colors"
                 >
                   <Plus size={13} /> Add job role
                 </button>
@@ -110,7 +110,7 @@ export default function RolesTreeView({
             {/* Roles in this department */}
             {deptRoles.length === 0 ? (
               <p
-                className="text-xs text-[#94A3B8] italic py-2.5"
+                className="text-xs text-text-muted italic py-2.5"
                 style={{ paddingLeft: 16 + (depth + 1) * 18 + 18 }}
               >
                 No job roles in this department.
@@ -121,9 +121,9 @@ export default function RolesTreeView({
                   key={role.id}
                   onClick={() => onSelect(role)}
                   style={{ paddingLeft: 16 + (depth + 1) * 18 + 18 }}
-                  className="group w-full flex items-center gap-3 pr-4 py-2.5 text-left hover:bg-[#F8FAFC] transition-colors"
+                  className="group w-full flex items-center gap-3 pr-4 py-2.5 text-left hover:bg-surface-sunken transition-colors"
                 >
-                  <span className="font-medium text-sm text-[#0F172A] truncate">{role.title}</span>
+                  <span className="font-medium text-sm text-text-primary truncate">{role.title}</span>
                   <span
                     className={[
                       'inline-flex items-center rounded-[999px] px-2 py-0.5 text-[10px] font-semibold capitalize shrink-0',
@@ -132,7 +132,7 @@ export default function RolesTreeView({
                   >
                     {role.level}
                   </span>
-                  <span className="text-xs text-[#94A3B8] shrink-0 hidden sm:inline">
+                  <span className="text-xs text-text-muted shrink-0 hidden sm:inline">
                     {role.kra?.length ?? 0} KRA · {role.kpi?.length ?? 0} KPI
                   </span>
                   <span className="ml-auto flex items-center gap-1 shrink-0">
@@ -144,7 +144,7 @@ export default function RolesTreeView({
                           e.stopPropagation()
                           onEdit(role)
                         }}
-                        className="p-1.5 rounded-[6px] text-[#94A3B8] opacity-0 group-hover:opacity-100 hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-all"
+                        className="p-1.5 rounded-[6px] text-text-muted opacity-0 group-hover:opacity-100 hover:text-text-primary hover:bg-surface-control transition-all"
                         aria-label={`Edit ${role.title}`}
                       >
                         <Pencil size={13} />

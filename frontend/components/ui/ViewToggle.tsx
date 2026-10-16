@@ -17,7 +17,7 @@ const segments: { value: ViewMode; label: string; icon: typeof Table2 }[] = [
 /** Segmented Table / Tree switcher, shared by the Employees and Department pages. */
 export default function ViewToggle({ value, onChange }: Props) {
   return (
-    <div className="inline-flex items-center rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] p-0.5">
+    <div className="inline-flex items-center rounded-[8px] border border-border bg-surface-sunken p-0.5">
       {segments.map(({ value: v, label, icon: Icon }) => {
         const active = v === value
         return (
@@ -27,8 +27,8 @@ export default function ViewToggle({ value, onChange }: Props) {
             onClick={() => onChange(v)}
             className={`inline-flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-xs font-semibold transition-colors ${
               active
-                ? 'bg-[#2563EB] text-white shadow-xs'
-                : 'text-[#475569] hover:text-[#0F172A]'
+                ? 'bg-primary text-white shadow-xs'
+                : 'text-text-secondary hover:text-text-primary'
             }`}
             aria-pressed={active}
           >

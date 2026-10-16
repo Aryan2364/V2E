@@ -85,18 +85,18 @@ export default function MaterialPreviewModal({
         ].join(' ')}
       >
         {/* Title bar */}
-        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[#E2E8F0] shrink-0 bg-white">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border-light shrink-0 bg-white">
           <div className="min-w-0 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[8px] bg-[#F1F5F9] flex items-center justify-center shrink-0">
-              <TypeIcon size={15} className="text-[#2563EB]" />
+            <div className="w-8 h-8 rounded-[8px] bg-surface-control flex items-center justify-center shrink-0">
+              <TypeIcon size={15} className="text-primary-text" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-[#0F172A] truncate">{item.title}</h3>
+                <h3 className="text-sm font-semibold text-text-primary truncate">{item.title}</h3>
                 <ItemTypeBadge type={item.content_type} />
               </div>
               {item.file_name && (
-                <p className="text-xs text-[#64748B] truncate">{item.file_name}</p>
+                <p className="text-xs text-text-muted truncate">{item.file_name}</p>
               )}
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function MaterialPreviewModal({
             {canDownload && (
               <button
                 onClick={() => downloadAdminItem(orgId, pathId, item.id)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 mr-1 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 mr-1 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
               >
                 <Download size={14} /> Download
               </button>
@@ -114,7 +114,7 @@ export default function MaterialPreviewModal({
               <button
                 onClick={() => setMaximized((m) => !m)}
                 aria-label={maximized ? 'Restore' : 'Maximize'}
-                className="p-2 text-[#475569] hover:text-[#2563EB] hover:bg-[#EFF6FF] rounded-[8px] transition-colors"
+                className="p-2 text-text-secondary hover:text-primary-text hover:bg-primary-subtle rounded-[8px] transition-colors"
               >
                 {maximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </button>
@@ -123,7 +123,7 @@ export default function MaterialPreviewModal({
               <button
                 onClick={onClose}
                 aria-label="Close (Esc)"
-                className="p-2 text-[#475569] hover:text-[#DC2626] hover:bg-[#FEE2E2] rounded-[8px] transition-colors"
+                className="p-2 text-text-secondary hover:text-danger hover:bg-danger-bg rounded-[8px] transition-colors"
               >
                 <X size={16} />
               </button>
@@ -132,16 +132,16 @@ export default function MaterialPreviewModal({
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#F8FAFC]">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-surface-sunken">
           {item.description && (
-            <p className="text-sm text-[#475569] mb-4">{item.description}</p>
+            <p className="text-sm text-text-secondary mb-4">{item.description}</p>
           )}
 
           {/* File materials — inline document/media viewer */}
           {item.content_type === 'file' && (
             fileLoading ? (
-              <div className="flex items-center justify-center gap-2 py-20 text-sm text-[#475569]">
-                <Loader2 size={18} className="animate-spin text-[#2563EB]" /> Loading material…
+              <div className="flex items-center justify-center gap-2 py-20 text-sm text-text-secondary">
+                <Loader2 size={18} className="animate-spin text-primary-text" /> Loading material…
               </div>
             ) : fileView ? (
               <MaterialViewer
@@ -153,14 +153,14 @@ export default function MaterialPreviewModal({
                 fullscreen={maximized}
               />
             ) : (
-              <p className="text-sm text-[#94A3B8] text-center py-16">Couldn’t load this material.</p>
+              <p className="text-sm text-text-muted text-center py-16">Couldn’t load this material.</p>
             )
           )}
 
           {/* Article — inline text body */}
           {item.content_type === 'article' && (
-            <div className="bg-white border border-[#E2E8F0] rounded-[10px] p-5">
-              <div className="prose prose-sm max-w-none text-[#1E293B] whitespace-pre-wrap">
+            <div className="bg-white border border-border-light rounded-[10px] p-5">
+              <div className="prose prose-sm max-w-none text-text-primary whitespace-pre-wrap">
                 {item.content_body ?? 'No content available.'}
               </div>
             </div>
@@ -181,16 +181,16 @@ export default function MaterialPreviewModal({
 
           {/* URL / document — open externally */}
           {['url', 'document'].includes(item.content_type) && item.content_url && (
-            <div className="bg-white border border-[#E2E8F0] rounded-[10px] p-8 flex flex-col items-center text-center gap-4">
-              <div className="w-12 h-12 rounded-[12px] bg-[#EFF6FF] flex items-center justify-center">
-                <TypeIcon size={22} className="text-[#2563EB]" />
+            <div className="bg-white border border-border-light rounded-[10px] p-8 flex flex-col items-center text-center gap-4">
+              <div className="w-12 h-12 rounded-[12px] bg-primary-subtle flex items-center justify-center">
+                <TypeIcon size={22} className="text-primary-text" />
               </div>
-              <p className="text-sm text-[#475569] break-all max-w-lg">{item.content_url}</p>
+              <p className="text-sm text-text-secondary break-all max-w-lg">{item.content_url}</p>
               <a
                 href={item.content_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors"
               >
                 <ExternalLink size={15} />
                 Open {item.content_type === 'document' ? 'Document' : 'Link'}
@@ -202,7 +202,7 @@ export default function MaterialPreviewModal({
           {item.content_type !== 'file'
             && !item.content_body
             && !item.content_url && (
-            <p className="text-sm text-[#94A3B8] text-center py-16">No content available for this material.</p>
+            <p className="text-sm text-text-muted text-center py-16">No content available for this material.</p>
           )}
         </div>
       </div>

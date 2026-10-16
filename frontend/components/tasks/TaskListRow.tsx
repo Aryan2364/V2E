@@ -105,7 +105,7 @@ export default function TaskListRow({
     const d = new Date(task.deadline)
     if (task.is_overdue) {
       deadlineNode = (
-        <span className="text-[13px] font-medium text-[#DC2626] whitespace-nowrap">
+        <span className="text-[13px] font-medium text-danger whitespace-nowrap">
           Overdue {overdueDays(task.deadline)}d
         </span>
       )
@@ -113,7 +113,7 @@ export default function TaskListRow({
       const dueToday = startOfDay(d) === startOfDay(getNow())
       const text = deadlineDisplay === 'time' ? timeLabel(d) : `${dateLabel(d)}, ${timeLabel(d)}`
       deadlineNode = (
-        <span className={`text-[13px] whitespace-nowrap ${dueToday ? 'text-[#D97706] font-medium' : 'text-[#475569]'}`}>
+        <span className={`text-[13px] whitespace-nowrap ${dueToday ? 'text-warning font-medium' : 'text-text-secondary'}`}>
           {text}
         </span>
       )
@@ -123,7 +123,7 @@ export default function TaskListRow({
   return (
     <div
       onClick={onClick}
-      className="group flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-[#F8FAFC] first:rounded-t-[11px] last:rounded-b-[11px]"
+      className="group flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-surface-sunken first:rounded-t-[11px] last:rounded-b-[11px]"
     >
       {/* Urgency accent */}
       <span className="w-[3px] shrink-0 self-stretch rounded-full" style={{ backgroundColor: accent }} />
@@ -131,7 +131,7 @@ export default function TaskListRow({
       <div className="flex-1 min-w-0">
         {/* Line 1 — title + deadline */}
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-[15px] font-medium text-[#0F172A] truncate group-hover:text-[#2563EB] transition-colors">
+          <span className="text-[15px] font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
             {task.title}
           </span>
           {deadlineNode}
@@ -139,7 +139,7 @@ export default function TaskListRow({
 
         {/* Line 2 — meta cluster + status */}
         <div className="flex items-center justify-between gap-3 mt-1.5">
-          <div className="flex items-center gap-2.5 flex-wrap min-w-0 text-[12px] text-[#475569]">
+          <div className="flex items-center gap-2.5 flex-wrap min-w-0 text-[12px] text-text-secondary">
             {priority && (
               <span
                 className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[11px] font-medium"
@@ -163,7 +163,7 @@ export default function TaskListRow({
             {wf && <WorkflowTaskBadge workflow={wf} />}
             {showAssigner && (
               <Tooltip label={`Assigned by ${assignerName}`}>
-                <span className="text-[11px] text-[#94A3B8] truncate max-w-[130px]">
+                <span className="text-[11px] text-text-muted truncate max-w-[130px]">
                   by {assignerName}
                 </span>
               </Tooltip>
@@ -171,7 +171,7 @@ export default function TaskListRow({
             {otherPeople.length > 0 ? (
               <AssigneeAvatars people={otherPeople} max={3} size="sm" />
             ) : !showAssigner && !wf ? (
-              <span className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[11px] font-medium bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
+              <span className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[11px] font-medium bg-primary-subtle text-primary-text border border-primary-border">
                 Self
               </span>
             ) : null}
@@ -180,14 +180,14 @@ export default function TaskListRow({
               <Tooltip label={`${commentCount} comment${commentCount !== 1 ? 's' : ''}${unread > 0 ? ` · ${unread} unread` : ''}`}>
               <span className="inline-flex items-center gap-1">
                 <span className="relative inline-flex shrink-0">
-                  <MessageSquare size={14} className={unread > 0 ? 'text-[#2563EB]' : ''} />
+                  <MessageSquare size={14} className={unread > 0 ? 'text-primary-text' : ''} />
                   {unread > 0 && (
-                    <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-[#2563EB] text-white text-[9px] font-bold leading-none ring-2 ring-white">
+                    <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-white text-[9px] font-bold leading-none ring-2 ring-white">
                       {unread > 9 ? '9+' : unread}
                     </span>
                   )}
                 </span>
-                <span className={unread > 0 ? 'font-semibold text-[#2563EB]' : ''}>{commentCount}</span>
+                <span className={unread > 0 ? 'font-semibold text-primary-text' : ''}>{commentCount}</span>
               </span>
               </Tooltip>
             )}

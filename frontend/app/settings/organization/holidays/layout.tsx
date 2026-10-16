@@ -35,7 +35,7 @@ export default function HolidaysLayout({ children }: { children: React.ReactNode
 
   return (
     <div>
-      <div className="flex items-center gap-0 border-b border-[#E2E8F0] overflow-x-auto mb-6">
+      <div className="flex items-center gap-0 border-b border-border-light overflow-x-auto mb-6">
         {HOLIDAY_TABS.map((t) => {
           if (t.adminOnly && !isAdminOrHR) return null
           const active = isActive(t.href)
@@ -46,8 +46,8 @@ export default function HolidaysLayout({ children }: { children: React.ReactNode
               className={[
                 'px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors',
                 active
-                  ? 'border-[#2563EB] text-[#2563EB]'
-                  : 'border-transparent text-[#475569] hover:text-[#0F172A] hover:border-[#CBD5E1]',
+                  ? 'border-primary text-primary-text'
+                  : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border',
               ].join(' ')}
             >
               {t.label}

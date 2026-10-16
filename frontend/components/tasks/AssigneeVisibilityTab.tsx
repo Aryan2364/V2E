@@ -45,7 +45,7 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: () => void;
       disabled={disabled}
       role="switch"
       aria-checked={on}
-      className={`relative w-9 h-5 rounded-full transition-colors shrink-0 disabled:opacity-50 ${on ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'}`}
+      className={`relative w-9 h-5 rounded-full transition-colors shrink-0 disabled:opacity-50 ${on ? 'bg-primary' : 'bg-surface-control-pressed'}`}
     >
       <span
         className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-xs transition-transform ${on ? 'translate-x-4' : 'translate-x-0'}`}
@@ -55,12 +55,12 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: () => void;
 }
 
 function Chip({ label, active, color = 'blue', onClick }: { label: string; active: boolean; color?: 'blue' | 'red'; onClick: () => void }) {
-  const activeCls = color === 'red' ? 'bg-[#DC2626] text-white border-[#DC2626]' : 'bg-[#2563EB] text-white border-[#2563EB]'
+  const activeCls = color === 'red' ? 'bg-danger text-white border-danger' : 'bg-primary text-white border-primary'
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-[6px] text-xs font-medium border capitalize transition-colors ${active ? activeCls : 'bg-white text-[#475569] border-[#CBD5E1] hover:border-[#2563EB]'}`}
+      className={`px-3 py-1.5 rounded-[6px] text-xs font-medium border capitalize transition-colors ${active ? activeCls : 'bg-white text-text-secondary border-border hover:border-primary'}`}
     >
       {label}
     </button>
@@ -69,7 +69,7 @@ function Chip({ label, active, color = 'blue', onClick }: { label: string; activ
 
 function SegTabs<T extends string>({ value, onChange, tabs }: { value: T; onChange: (v: T) => void; tabs: { value: T; label: string }[] }) {
   return (
-    <div className="inline-flex gap-1 p-1 rounded-[10px] bg-[#2563EB]">
+    <div className="inline-flex gap-1 p-1 rounded-[10px] bg-primary">
       {tabs.map((t) => {
         const active = value === t.value
         return (
@@ -81,8 +81,8 @@ function SegTabs<T extends string>({ value, onChange, tabs }: { value: T; onChan
             className={[
               'px-4 py-1.5 text-sm font-semibold rounded-[7px] transition-colors',
               active
-                ? 'bg-white text-[#2563EB] shadow-xs'
-                : 'bg-transparent text-white hover:bg-[#1D4ED8]',
+                ? 'bg-white text-primary-text shadow-xs'
+                : 'bg-transparent text-white hover:bg-primary-hover',
             ].join(' ')}
           >
             {t.label}
@@ -95,10 +95,10 @@ function SegTabs<T extends string>({ value, onChange, tabs }: { value: T; onChan
 
 function Card({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-4">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-4">
       <div>
-        <h3 className="text-[15px] font-semibold text-[#0F172A]">{title}</h3>
-        {description && <p className="text-[13px] text-[#475569] mt-0.5 leading-relaxed">{description}</p>}
+        <h3 className="text-[15px] font-semibold text-text-primary">{title}</h3>
+        {description && <p className="text-[13px] text-text-secondary mt-0.5 leading-relaxed">{description}</p>}
       </div>
       {children}
     </div>
@@ -181,7 +181,7 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
   if (loading || !view || !settings) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -196,65 +196,65 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
       {/* Default-rules info */}
       <div>
         <div className="flex items-center gap-1.5">
-          <h2 className="text-[18px] font-semibold text-[#0F172A]">Assignee visibility</h2>
+          <h2 className="text-[18px] font-semibold text-text-primary">Assignee visibility</h2>
           <button
             type="button"
             onClick={() => setShowRules((v) => !v)}
             aria-label="How the default assignee list works"
             aria-expanded={showRules}
-            className="w-7 h-7 flex items-center justify-center rounded-full text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-full text-primary-text hover:bg-primary-subtle transition-colors"
           >
             <Info size={16} />
           </button>
-          <span className="ml-auto flex items-center gap-1.5 text-xs text-[#94A3B8]">
+          <span className="ml-auto flex items-center gap-1.5 text-xs text-text-muted">
             {saveState === 'saving' ? (
               <>
                 <Loader2 size={12} className="animate-spin" /> Saving…
               </>
             ) : (
               <>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" /> All changes saved
+                <span className="w-1.5 h-1.5 rounded-full bg-success" /> All changes saved
               </>
             )}
           </span>
         </div>
 
         {showRules && (
-          <div className="mt-2 rounded-[12px] border border-[#BFDBFE] bg-[#EFF6FF] p-4 text-sm">
+          <div className="mt-2 rounded-[12px] border border-primary-border bg-primary-subtle p-4 text-sm">
             <div className="flex items-start justify-between gap-3">
-              <p className="font-semibold text-[#0F172A]">How the default list is built</p>
+              <p className="font-semibold text-text-primary">How the default list is built</p>
               <button
                 type="button"
                 onClick={() => setShowRules(false)}
                 aria-label="Close"
-                className="w-6 h-6 flex items-center justify-center rounded-[6px] text-[#475569] hover:text-[#0F172A] hover:bg-white/60 transition-colors shrink-0"
+                className="w-6 h-6 flex items-center justify-center rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-white/60 transition-colors shrink-0"
               >
                 <X size={15} />
               </button>
             </div>
-            <p className="text-[#475569] mt-1">
+            <p className="text-text-secondary mt-1">
               When no override, bridge, or exception applies, each person&apos;s Assignees &amp; CC list is built from just
               these four things — this is the default for everyone:
             </p>
-            <ol className="mt-2.5 space-y-2 text-[#1E293B]">
+            <ol className="mt-2.5 space-y-2 text-text-primary">
               <li>
-                <span className="font-semibold text-[#0F172A]">1. Themselves.</span> A person can always assign to themselves.
+                <span className="font-semibold text-text-primary">1. Themselves.</span> A person can always assign to themselves.
               </li>
               <li>
-                <span className="font-semibold text-[#0F172A]">2. Everyone below them.</span> Anyone who reports to them —
+                <span className="font-semibold text-text-primary">2. Everyone below them.</span> Anyone who reports to them —
                 directly or further down the chain — in any department.
               </li>
               <li>
-                <span className="font-semibold text-[#0F172A]">3. Their own department.</span> Everyone in the department
+                <span className="font-semibold text-text-primary">3. Their own department.</span> Everyone in the department
                 their profile belongs to. The <span className="font-medium">Upward</span> switch decides whether they also
                 see people <em>above</em> them inside that same department.
               </li>
               <li>
-                <span className="font-semibold text-[#0F172A]">4. Their direct manager.</span> The person they report to is
+                <span className="font-semibold text-text-primary">4. Their direct manager.</span> The person they report to is
                 always included — even when that manager sits in a different (e.g. parent) department.
               </li>
             </ol>
-            <p className="text-[#475569] mt-3">
+            <p className="text-text-secondary mt-3">
               Everything else on this page — master override, full-visibility, bridges, and exceptions —
               only widens or narrows this default.
             </p>
@@ -269,13 +269,13 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
       >
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm">
-            <ShieldAlert size={16} className={overrideOn ? 'text-[#D97706]' : 'text-[#94A3B8]'} />
-            <span className="text-[#1E293B]">{overrideOn ? 'Override is ON — everyone sees everyone.' : 'Override is off.'}</span>
+            <ShieldAlert size={16} className={overrideOn ? 'text-warning' : 'text-text-muted'} />
+            <span className="text-text-primary">{overrideOn ? 'Override is ON — everyone sees everyone.' : 'Override is off.'}</span>
           </div>
           <Toggle on={overrideOn} onChange={() => commitNow({ ...settings, master_override: !overrideOn })} />
         </div>
         {overrideOn && (
-          <div className="flex items-start gap-2 p-3 rounded-[8px] bg-[#FEF3C7] border border-[#FCD34D] text-[13px] text-[#92400E]">
+          <div className="flex items-start gap-2 p-3 rounded-[8px] bg-warning-bg border border-warning-border text-[13px] text-warning">
             <AlertTriangle size={15} className="mt-0.5 shrink-0" />
             <span>While the override is on, exceptions, bridges and the upward switch have no effect — but per-employee manual additions/removals (Employee tab) still apply.</span>
           </div>
@@ -298,7 +298,7 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
             />
           ))}
         </div>
-        <p className="text-xs text-[#94A3B8]">At least one role is required. Saved automatically.</p>
+        <p className="text-xs text-text-muted">At least one role is required. Saved automatically.</p>
       </Card>
 
       {/* Three configuration tabs + body — disabled + dimmed (values preserved) while the master override is on */}
@@ -383,7 +383,7 @@ function UpwardSection({ orgId, view, onChange, apiError }: { orgId: string; vie
   }
   return (
     <Card title="Allow assigning up the reporting line" description="When off, members of that department can assign to their direct manager and below — but not higher up the chain. Departments inside a merged pool ignore this switch.">
-      <div className="max-h-[280px] overflow-y-auto -mr-1 pr-1 divide-y divide-[#F1F5F9]">
+      <div className="max-h-[280px] overflow-y-auto -mr-1 pr-1 divide-y divide-surface-control">
         {rows.map(({ dept, depth }) => {
           const d = byId.get(dept.id)!
           const covered = coveringAncestor(dept.id)
@@ -393,8 +393,8 @@ function UpwardSection({ orgId, view, onChange, apiError }: { orgId: string; vie
                 {depth > 0 && <CornerDownRight size={13} className="shrink-0 text-[#CBD5E1] -mr-0.5" />}
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorOf(dept.id) }} />
                 <div className="min-w-0">
-                  <p className={`text-sm truncate ${covered ? 'text-[#475569]' : 'font-medium text-[#0F172A]'}`}>{dept.name}</p>
-                  <p className="text-xs text-[#94A3B8] truncate">
+                  <p className={`text-sm truncate ${covered ? 'text-text-secondary' : 'font-medium text-text-primary'}`}>{dept.name}</p>
+                  <p className="text-xs text-text-muted truncate">
                     {covered
                       ? `Merged into ${covered.name} — upward not applied`
                       : d.assignee_allow_upward
@@ -404,10 +404,10 @@ function UpwardSection({ orgId, view, onChange, apiError }: { orgId: string; vie
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {busy === dept.id && <Loader2 size={13} className="animate-spin text-[#94A3B8]" />}
+                {busy === dept.id && <Loader2 size={13} className="animate-spin text-text-muted" />}
                 {covered ? (
                   <Tooltip label={`Locked — merged into ${covered.name}`}>
-                    <span className="flex items-center gap-1.5 text-[11px] text-[#94A3B8]">
+                    <span className="flex items-center gap-1.5 text-[11px] text-text-muted">
                       <Lock size={12} />
                       <Toggle on disabled onChange={() => {}} />
                     </span>
@@ -419,7 +419,7 @@ function UpwardSection({ orgId, view, onChange, apiError }: { orgId: string; vie
             </div>
           )
         })}
-        {depts.length === 0 && <p className="text-xs text-[#94A3B8] py-2">No departments configured.</p>}
+        {depts.length === 0 && <p className="text-xs text-text-muted py-2">No departments configured.</p>}
       </div>
     </Card>
   )
@@ -542,9 +542,9 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
   return (
     <Card title="Merge a department with its sub-departments" description="Turn a department on to merge it with everything beneath it into one pool — everyone in the sub-tree can assign to everyone else. Sub-departments are then covered automatically (shown locked under the one you switched on).">
       {depts.length === 0 ? (
-        <p className="text-xs text-[#94A3B8] py-1">No departments configured.</p>
+        <p className="text-xs text-text-muted py-1">No departments configured.</p>
       ) : !anyParent ? (
-        <p className="text-xs text-[#94A3B8] py-1">No departments have sub-departments to unify.</p>
+        <p className="text-xs text-text-muted py-1">No departments have sub-departments to unify.</p>
       ) : (
         <div className="space-y-3">
           {/* Search bar */}
@@ -554,16 +554,16 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
               placeholder="Search departments..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-1.5 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white"
+              className="w-full pl-9 pr-8 py-1.5 border border-border rounded-[8px] text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white"
             />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
               <Search size={14} />
             </span>
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#0F172A]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
               >
                 <X size={14} />
               </button>
@@ -571,9 +571,9 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
           </div>
 
           {filteredRows.length === 0 ? (
-            <p className="text-xs text-[#94A3B8] py-3 text-center">No matching departments found.</p>
+            <p className="text-xs text-text-muted py-3 text-center">No matching departments found.</p>
           ) : (
-            <div className="max-h-[320px] overflow-y-auto -mr-1 pr-1 divide-y divide-[#F1F5F9]">
+            <div className="max-h-[320px] overflow-y-auto -mr-1 pr-1 divide-y divide-surface-control">
               {filteredRows.map(({ dept, depth }) => {
                 const d = byId.get(dept.id)!
                 const covered = coveringAncestor(dept.id)
@@ -585,10 +585,10 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
                       {depth > 0 && <CornerDownRight size={13} className="shrink-0 text-[#CBD5E1] -mr-0.5" />}
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorOf(dept.id) }} />
                       <div className="min-w-0">
-                        <p className={`text-sm truncate ${unified ? 'font-semibold text-[#0F172A]' : covered ? 'text-[#475569]' : parent ? 'font-medium text-[#0F172A]' : 'text-[#64748B]'}`}>
+                        <p className={`text-sm truncate ${unified ? 'font-semibold text-text-primary' : covered ? 'text-text-secondary' : parent ? 'font-medium text-text-primary' : 'text-text-muted'}`}>
                           {dept.name}
                         </p>
-                        <p className="text-xs text-[#94A3B8]">
+                        <p className="text-xs text-text-muted">
                           {covered
                             ? `In ${covered.name}'s pool`
                             : unified
@@ -600,10 +600,10 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {busy === dept.id && <Loader2 size={13} className="animate-spin text-[#94A3B8]" />}
+                      {busy === dept.id && <Loader2 size={13} className="animate-spin text-text-muted" />}
                       {covered ? (
                         <Tooltip label={`Locked — controlled by ${covered.name}`}>
-                          <span className="flex items-center gap-1.5 text-[11px] text-[#94A3B8]">
+                          <span className="flex items-center gap-1.5 text-[11px] text-text-muted">
                             <Lock size={12} />
                             <Toggle on disabled onChange={() => {}} />
                           </span>
@@ -715,7 +715,7 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
     <Card title="Cross-department assignment" description="Let one department assign into another. One-directional by default — turn on “Both ways” on an entry to also open the reverse (B → A).">
       <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end pt-1">
         <div>
-          <label className="block text-xs font-medium text-[#374151] mb-1">From</label>
+          <label className="block text-xs font-medium text-text-secondary mb-1">From</label>
           <DepartmentSelect
             value={from}
             onChange={(id) => { setFrom(id); if (id === to) setTo('') }}
@@ -725,69 +725,69 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#374151] mb-1">Into</label>
+          <label className="block text-xs font-medium text-text-secondary mb-1">Into</label>
           <DepartmentSelect value={to} onChange={setTo} departments={toOptions} placeholder="Select…" inline />
         </div>
-        <button type="button" onClick={add} disabled={!from || !to || adding} className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors h-[38px]">
+        <button type="button" onClick={add} disabled={!from || !to || adding} className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors h-[38px]">
           {adding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Add
         </button>
       </div>
       <div>
-        <label className="block text-xs font-medium text-[#374151] mb-1">Reach into target</label>
+        <label className="block text-xs font-medium text-text-secondary mb-1">Reach into target</label>
         <div className="flex gap-2">
           <Chip label="Whole department" active={depth === 'whole_dept'} onClick={() => setDepth('whole_dept')} />
           <Chip label="Head & senior roles" active={depth === 'head_senior'} onClick={() => setDepth('head_senior')} />
         </div>
       </div>
-      <div className="flex items-center justify-between gap-3 p-3 rounded-[8px] border border-[#E2E8F0] bg-[#F8FAFC]">
+      <div className="flex items-center justify-between gap-3 p-3 rounded-[8px] border border-border-light bg-surface-sunken">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-[#0F172A]">Include sub-departments</p>
-          <p className="text-xs text-[#475569]">Also reach every department beneath the target — adapts automatically as sub-departments change.</p>
+          <p className="text-sm font-medium text-text-primary">Include sub-departments</p>
+          <p className="text-xs text-text-secondary">Also reach every department beneath the target — adapts automatically as sub-departments change.</p>
         </div>
         <Toggle on={includeSub} onChange={() => setIncludeSub((v) => !v)} />
       </div>
       {view.bridges.length > 0 && (
-        <div className="max-h-[300px] overflow-y-auto -mr-1 pr-1 space-y-2 border-t border-[#F1F5F9] pt-4">
+        <div className="max-h-[300px] overflow-y-auto -mr-1 pr-1 space-y-2 border-t border-border-light pt-4">
           {view.bridges.map((b) => {
             const bothWays = !!reverseOf(b)
             // Collapse a bidirectional pair into a single ⇄ row — render only the canonical side.
             if (bothWays && b.from_department_id > b.to_department_id) return null
             return (
-            <div key={b.id} className="flex items-center justify-between gap-3 p-3 rounded-[8px] border border-[#E2E8F0] bg-[#F8FAFC]">
+            <div key={b.id} className="flex items-center justify-between gap-3 p-3 rounded-[8px] border border-border-light bg-surface-sunken">
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-sm font-medium text-[#0F172A] flex-wrap">
+                <div className="flex items-center gap-2 text-sm font-medium text-text-primary flex-wrap">
                   <span>{b.from_department_name ?? deptName(b.from_department_id)}</span>
-                  {bothWays ? <ArrowLeftRight size={14} className="text-[#2563EB]" /> : <ArrowRight size={14} className="text-[#94A3B8]" />}
+                  {bothWays ? <ArrowLeftRight size={14} className="text-primary-text" /> : <ArrowRight size={14} className="text-text-muted" />}
                   <span>{b.to_department_name ?? deptName(b.to_department_id)}</span>
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] rounded-full px-2 py-0.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
                     {b.depth === 'whole_dept' ? 'Whole dept' : 'Head & seniors'}
                   </span>
                   {b.include_sub_departments && (
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-[#7C3AED] bg-[#F5F3FF] border border-[#DDD6FE] rounded-full px-2 py-0.5">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary bg-surface-control border border-border-light rounded-full px-2 py-0.5">
                       + sub-depts
                     </span>
                   )}
                 </div>
                 {b.match_count === 0 ? (
-                  <p className="flex items-center gap-1 text-xs text-[#B45309] mt-1">
+                  <p className="flex items-center gap-1 text-xs text-warning mt-1">
                     <AlertTriangle size={12} /> Matches 0 people — set a department head or a senior role.
                   </p>
                 ) : (
-                  <p className="text-xs text-[#475569] mt-1">Currently reaches {b.match_count} {b.match_count === 1 ? 'person' : 'people'}.</p>
+                  <p className="text-xs text-text-secondary mt-1">Currently reaches {b.match_count} {b.match_count === 1 ? 'person' : 'people'}.</p>
                 )}
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <Tooltip label={bothWays ? 'Both directions open — turn off to remove the reverse entry' : 'One-directional — turn on to also create the reverse entry (B → A)'}>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-medium text-[#475569] hidden sm:inline">Both ways</span>
+                  <span className="text-[11px] font-medium text-text-secondary hidden sm:inline">Both ways</span>
                   {bothBusy === b.id ? (
-                    <Loader2 size={14} className="animate-spin text-[#94A3B8]" />
+                    <Loader2 size={14} className="animate-spin text-text-muted" />
                   ) : (
                     <Toggle on={bothWays} disabled={bothBusy === b.id} onChange={() => setBidirectional(b, !bothWays)} />
                   )}
                 </div>
                 </Tooltip>
-                <button type="button" onClick={() => remove(b)} className="p-1.5 rounded-[6px] text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors">
+                <button type="button" onClick={() => remove(b)} className="p-1.5 rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
                   <Trash2 size={15} />
                 </button>
               </div>

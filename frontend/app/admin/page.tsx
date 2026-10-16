@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
   if (checking) {
     return (
       <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
-        <Loader2 size={28} className="animate-spin text-[#475569]" />
+        <Loader2 size={28} className="animate-spin text-text-secondary" />
       </div>
     )
   }
@@ -67,19 +67,19 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-[400px]">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-[14px] bg-[#1E293B] border border-[#334155] mb-4">
-            <ShieldCheck size={28} className="text-[#2563EB]" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-[14px] bg-[#1E293B] border border-border-strong mb-4">
+            <ShieldCheck size={28} className="text-primary-text" />
           </div>
           <h1 className="text-[26px] font-bold text-white tracking-tight">Admin Portal</h1>
-          <p className="mt-1 text-sm text-[#94A3B8]">Super administrator access only</p>
+          <p className="mt-1 text-sm text-text-muted">Super administrator access only</p>
         </div>
 
         {/* Card */}
-        <div className="bg-[#1E293B] border border-[#334155] rounded-[14px] p-7 shadow-xl">
+        <div className="bg-[#1E293B] border border-border-strong rounded-[14px] p-7 shadow-xl">
           {error && (
             <div
               role="alert"
-              className="mb-5 rounded-[8px] border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-sm text-[#DC2626]"
+              className="mb-5 rounded-[8px] border border-danger-border bg-danger-bg px-4 py-3 text-sm text-danger"
             >
               {error}
             </div>
@@ -109,7 +109,7 @@ export default function AdminLoginPage() {
                   onChange={(e) => setIdentifier(e.target.value)}
                   disabled={loading}
                   placeholder="admin@example.com or mobile number"
-                  className="flex-1 h-11 px-3 rounded-[8px] border border-[#334155] bg-[#0F172A] text-white placeholder:text-[#475569] text-sm focus:border-[#2563EB] focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/20 disabled:opacity-50 transition-colors"
+                  className="flex-1 h-11 px-3 rounded-[8px] border border-border-strong bg-[#0F172A] text-white placeholder:text-text-secondary text-sm focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20 disabled:opacity-50 transition-colors"
                 />
               </div>
             </div>
@@ -128,13 +128,13 @@ export default function AdminLoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
                   placeholder="Enter your password"
-                  className="w-full h-11 px-3 pr-10 rounded-[8px] border border-[#334155] bg-[#0F172A] text-white placeholder:text-[#475569] text-sm focus:border-[#2563EB] focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/20 disabled:opacity-50 transition-colors"
+                  className="w-full h-11 px-3 pr-10 rounded-[8px] border border-border-strong bg-[#0F172A] text-white placeholder:text-text-secondary text-sm focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20 disabled:opacity-50 transition-colors"
                 />
                 <button
                   type="button"
                   tabIndex={-1}
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#475569] hover:text-[#94A3B8] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-muted transition-colors"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -145,7 +145,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-11 mt-2 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#1E293B] disabled:text-[#475569] disabled:border disabled:border-[#334155] disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="w-full h-11 mt-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-[#1E293B] disabled:text-text-secondary disabled:border disabled:border-border-strong disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -159,9 +159,9 @@ export default function AdminLoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-xs text-[#334155] mt-6">
+        <p className="text-center text-xs text-text-secondary mt-6">
           Not an admin?{' '}
-          <a href="/login" className="text-[#475569] hover:text-[#94A3B8] underline transition-colors">
+          <a href="/login" className="text-text-secondary hover:text-text-muted underline transition-colors">
             Go to workspace login
           </a>
         </p>

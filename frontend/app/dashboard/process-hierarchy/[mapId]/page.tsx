@@ -36,7 +36,7 @@ const ProcessCanvas = dynamic(() => import('@/components/process-hierarchy/Proce
   ssr: false,
   loading: () => (
     <div className="h-full flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   ),
 })
@@ -598,7 +598,7 @@ export default function ProcessMapExplorerPage() {
   if (loading || !map || !flow) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -608,52 +608,52 @@ export default function ProcessMapExplorerPage() {
   const addStepControl = canEditHere ? (
     <div className="flex items-center gap-1.5">
       {/* Undo / redo — greyed when there's nothing to step to, or while a restore is in flight. */}
-      <div className="inline-flex h-[30px] rounded-[8px] border border-[#E2E8F0] bg-white overflow-hidden shadow-xs">
+      <div className="inline-flex h-[30px] rounded-[8px] border border-border-light bg-white overflow-hidden shadow-xs">
         <Tooltip label="Undo (Ctrl+Z)">
           <button onClick={history.undo} disabled={!history.canUndo || history.busy} aria-label="Undo (Ctrl+Z)"
-            className="inline-flex items-center px-2 text-[#475569] hover:bg-[#F1F5F9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            className="inline-flex items-center px-2 text-text-secondary hover:bg-surface-control disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             <Undo2 size={15} />
           </button>
         </Tooltip>
-        <span className="w-px bg-[#E2E8F0]" />
+        <span className="w-px bg-surface-control-pressed" />
         <Tooltip label="Redo (Ctrl+Y)">
           <button onClick={history.redo} disabled={!history.canRedo || history.busy} aria-label="Redo (Ctrl+Y)"
-            className="inline-flex items-center px-2 text-[#475569] hover:bg-[#F1F5F9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            className="inline-flex items-center px-2 text-text-secondary hover:bg-surface-control disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             <Redo2 size={15} />
           </button>
         </Tooltip>
       </div>
       <div className="relative">
       <button onClick={() => { setShowAdd((v) => !v); setAddLanePick(false) }}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-[8px] bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-xs transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1">
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-[8px] bg-primary text-white hover:bg-primary-hover shadow-xs transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1">
         <Plus size={14} /> Add step
       </button>
       {showAdd && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => { setShowAdd(false); setAddLanePick(false) }} />
-          <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 max-h-[320px] overflow-y-auto bg-white border border-[#E2E8F0] rounded-[10px] shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
+          <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 max-h-[320px] overflow-y-auto bg-white border border-border-light rounded-[10px] shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
             {addLanePick ? (
               <div className="p-1">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[13px] font-semibold text-[#0F172A]">New swimlane</span>
-                  <button onClick={() => setAddLanePick(false)} className="text-[12px] font-medium text-[#2563EB] hover:underline">‹ Back</button>
+                  <span className="text-[13px] font-semibold text-text-primary">New swimlane</span>
+                  <button onClick={() => setAddLanePick(false)} className="text-[12px] font-medium text-primary-text hover:underline">‹ Back</button>
                 </div>
                 <DepartmentSelect
                   inline value="" departments={departments} onChange={createLane}
                   placeholder="Pick a department"
                   lockedReason={(id) => (flow.lanes.some((l) => l.department_id === id) ? 'Already a lane' : null)}
                 />
-                <p className="text-[11px] text-[#64748B] mt-2">A lane is a department band in the Company pool.</p>
+                <p className="text-[11px] text-text-muted mt-2">A lane is a department band in the Company pool.</p>
               </div>
             ) : (
               <>
                 {ADD_KINDS.map((k) => (
                   <button key={k} onClick={() => addNode(k)}
-                    className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-[#F1F5F9] text-left transition-colors">
-                    <span className="text-[#2563EB] mt-0.5">{KIND_META[k].icon}</span>
+                    className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-surface-control text-left transition-colors">
+                    <span className="text-primary-text mt-0.5">{KIND_META[k].icon}</span>
                     <span className="min-w-0">
-                      <span className="block text-[13px] font-medium text-[#0F172A]">{KIND_META[k].label}</span>
-                      <span className="block text-[11px] text-[#64748B]">{KIND_META[k].hint}</span>
+                      <span className="block text-[13px] font-medium text-text-primary">{KIND_META[k].label}</span>
+                      <span className="block text-[11px] text-text-muted">{KIND_META[k].hint}</span>
                     </span>
                   </button>
                 ))}
@@ -661,41 +661,41 @@ export default function ProcessMapExplorerPage() {
                     holds flow steps, not department lanes. So hide "New swimlane" inside a container. */}
                 {!parentId && (
                   <>
-                    <div className="my-1 border-t border-[#F1F5F9]" />
+                    <div className="my-1 border-t border-border-light" />
                     <button onClick={() => setAddLanePick(true)}
-                      className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-[#F1F5F9] text-left transition-colors">
-                      <span className="text-[#2563EB] mt-0.5"><Rows3 size={14} /></span>
+                      className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-surface-control text-left transition-colors">
+                      <span className="text-primary-text mt-0.5"><Rows3 size={14} /></span>
                       <span className="min-w-0">
-                        <span className="block text-[13px] font-medium text-[#0F172A]">New swimlane</span>
-                        <span className="block text-[11px] text-[#64748B]">Add a department lane (a horizontal band)</span>
+                        <span className="block text-[13px] font-medium text-text-primary">New swimlane</span>
+                        <span className="block text-[11px] text-text-muted">Add a department lane (a horizontal band)</span>
                       </span>
                     </button>
                   </>
                 )}
-                <div className="my-1 border-t border-[#F1F5F9]" />
+                <div className="my-1 border-t border-border-light" />
                 <button onClick={() => { setShowAdd(false); setShowRefPicker(true) }}
-                  className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-[#F1F5F9] text-left transition-colors">
-                  <span className="text-[#2563EB] mt-0.5"><LinkIcon size={14} /></span>
+                  className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-surface-control text-left transition-colors">
+                  <span className="text-primary-text mt-0.5"><LinkIcon size={14} /></span>
                   <span className="min-w-0">
-                    <span className="block text-[13px] font-medium text-[#0F172A]">Reference a map</span>
-                    <span className="block text-[11px] text-[#64748B]">Drop an instance of an existing map</span>
+                    <span className="block text-[13px] font-medium text-text-primary">Reference a map</span>
+                    <span className="block text-[11px] text-text-muted">Drop an instance of an existing map</span>
                   </span>
                 </button>
                 <button onClick={() => addNode('note')}
-                  className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-[#F1F5F9] text-left transition-colors">
-                  <span className="text-[#CA8A04] mt-0.5">{KIND_META.note.icon}</span>
+                  className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-surface-control text-left transition-colors">
+                  <span className="text-warning mt-0.5">{KIND_META.note.icon}</span>
                   <span className="min-w-0">
-                    <span className="block text-[13px] font-medium text-[#0F172A]">Note</span>
-                    <span className="block text-[11px] text-[#64748B]">A free-form sticky annotation</span>
+                    <span className="block text-[13px] font-medium text-text-primary">Note</span>
+                    <span className="block text-[11px] text-text-muted">A free-form sticky annotation</span>
                   </span>
                 </button>
                 {clipboard && (
                   <button onClick={pasteClipboard}
-                    className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-[#F1F5F9] text-left transition-colors">
-                    <span className="text-[#2563EB] mt-0.5"><ClipboardPaste size={14} /></span>
+                    className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-surface-control text-left transition-colors">
+                    <span className="text-primary-text mt-0.5"><ClipboardPaste size={14} /></span>
                     <span className="min-w-0">
-                      <span className="block text-[13px] font-medium text-[#0F172A]">Paste {clipboard.nodeIds.length} item{clipboard.nodeIds.length !== 1 ? 's' : ''}</span>
-                      <span className="block text-[11px] text-[#64748B]">Drop a copy of what you copied here</span>
+                      <span className="block text-[13px] font-medium text-text-primary">Paste {clipboard.nodeIds.length} item{clipboard.nodeIds.length !== 1 ? 's' : ''}</span>
+                      <span className="block text-[11px] text-text-muted">Drop a copy of what you copied here</span>
                     </span>
                   </button>
                 )}
@@ -718,22 +718,22 @@ export default function ProcessMapExplorerPage() {
       <div className="flex flex-wrap items-center gap-2 min-h-[44px] shrink-0">
         {/* Breadcrumb — the last crumb is the title. Scrolls horizontally, never wraps. */}
         <nav aria-label="Breadcrumb"
-          className="flex items-center gap-1.5 min-w-0 flex-1 text-[13px] text-[#64748B] overflow-x-auto whitespace-nowrap scrollbar-none">
+          className="flex items-center gap-1.5 min-w-0 flex-1 text-[13px] text-text-muted overflow-x-auto whitespace-nowrap scrollbar-none">
           <button onClick={() => router.push('/dashboard/process-hierarchy')}
-            className="inline-flex items-center shrink-0 font-medium text-[#475569] hover:text-[#2563EB] rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]">
+            className="inline-flex items-center shrink-0 font-medium text-text-secondary hover:text-primary-text rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary">
             All maps
           </button>
           <span className="text-[#CBD5E1]">›</span>
           <button onClick={() => goTo(null)}
-            className={`shrink-0 font-medium hover:text-[#2563EB] max-w-[180px] truncate rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] ${parentId === null && flow.breadcrumb.length === 0 ? 'text-[#0F172A] font-semibold' : ''}`}>
+            className={`shrink-0 font-medium hover:text-primary-text max-w-[180px] truncate rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${parentId === null && flow.breadcrumb.length === 0 ? 'text-text-primary font-semibold' : ''}`}>
             {map.name}
           </button>
           {flow.breadcrumb.map((c, i) => (
             <span key={c.id} className="flex items-center gap-1.5 shrink-0">
               <span className="text-[#CBD5E1]">›</span>
               {i < flow.breadcrumb.length - 1
-                ? <button onClick={() => goTo(c.id)} className="font-medium hover:text-[#2563EB] max-w-[160px] truncate rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]">{c.name}</button>
-                : <span className="font-semibold text-[#0F172A] max-w-[220px] truncate" aria-current="page">{c.name}</span>}
+                ? <button onClick={() => goTo(c.id)} className="font-medium hover:text-primary-text max-w-[160px] truncate rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary">{c.name}</button>
+                : <span className="font-semibold text-text-primary max-w-[220px] truncate" aria-current="page">{c.name}</span>}
             </span>
           ))}
         </nav>
@@ -741,16 +741,16 @@ export default function ProcessMapExplorerPage() {
         {/* Right controls */}
         <div className="flex items-center gap-1.5 shrink-0">
           {map.can_edit && (
-            <div className="inline-flex h-8 rounded-[8px] border border-[#E2E8F0] overflow-hidden">
+            <div className="inline-flex h-8 rounded-[8px] border border-border-light overflow-hidden">
               <Tooltip label="View">
                 <button onClick={() => setMode('view')}
-                  className={`inline-flex items-center gap-1.5 px-2.5 text-[13px] font-medium focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2563EB] ${mode === 'view' ? 'bg-[#2563EB] text-white' : 'bg-white text-[#475569] hover:bg-[#F1F5F9]'}`}>
+                  className={`inline-flex items-center gap-1.5 px-2.5 text-[13px] font-medium focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${mode === 'view' ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-surface-control'}`}>
                   <Eye size={14} /> <span className="hidden md:inline">View</span>
                 </button>
               </Tooltip>
               <Tooltip label="Edit">
                 <button onClick={() => setMode('edit')}
-                  className={`inline-flex items-center gap-1.5 px-2.5 text-[13px] font-medium focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2563EB] ${mode === 'edit' ? 'bg-[#2563EB] text-white' : 'bg-white text-[#475569] hover:bg-[#F1F5F9]'}`}>
+                  className={`inline-flex items-center gap-1.5 px-2.5 text-[13px] font-medium focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${mode === 'edit' ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-surface-control'}`}>
                   <Pencil size={14} /> <span className="hidden md:inline">Edit</span>
                 </button>
               </Tooltip>
@@ -761,7 +761,7 @@ export default function ProcessMapExplorerPage() {
           <div className="relative">
             <Tooltip label={visible ? `Showing ${visible.size}` : 'View all'}>
               <button onClick={() => setShowFilter((v) => !v)}
-                className={`inline-flex items-center gap-1.5 h-8 px-2.5 text-[13px] font-medium rounded-[8px] border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 ${visible ? 'border-[#2563EB] text-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0] text-[#475569] bg-white hover:bg-[#F1F5F9]'}`}>
+                className={`inline-flex items-center gap-1.5 h-8 px-2.5 text-[13px] font-medium rounded-[8px] border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${visible ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary bg-white hover:bg-surface-control'}`}>
                 <Filter size={14} /> <span className="hidden md:inline">{visible ? `Showing ${visible.size}` : 'Filter'}</span>
               </button>
             </Tooltip>
@@ -774,14 +774,14 @@ export default function ProcessMapExplorerPage() {
           <div className="relative">
             <Tooltip label="More">
               <button onClick={() => setShowMore((v) => !v)}
-                className="inline-flex items-center gap-1.5 h-8 px-2.5 text-[13px] font-medium rounded-[8px] border border-[#E2E8F0] text-[#475569] bg-white hover:bg-[#F1F5F9] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1">
+                className="inline-flex items-center gap-1.5 h-8 px-2.5 text-[13px] font-medium rounded-[8px] border border-border-light text-text-secondary bg-white hover:bg-surface-control focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1">
                 <MoreHorizontal size={14} /> <span className="hidden md:inline">More</span>
               </button>
             </Tooltip>
             {showMore && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowMore(false)} />
-                <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 bg-white border border-[#E2E8F0] rounded-[10px] shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
+                <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 bg-white border border-border-light rounded-[10px] shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
                   <MenuItem icon={<PanelLeft size={15} />} label="Outline" onClick={() => { setShowMore(false); setShowTree(true) }} />
                   {flow.nodes.length > 0 && (
                     <MenuItem icon={<Download size={15} />} label="Export as PNG" onClick={() => { setShowMore(false); exportPngRef.current?.() }} />
@@ -791,7 +791,7 @@ export default function ProcessMapExplorerPage() {
                   <MenuItem icon={<Save size={15} />} label="Save as template" onClick={() => { setShowMore(false); setShowSaveTpl(true) }} />
                   {map.is_owner && (
                     <>
-                      <div className="my-1 h-px bg-[#F1F5F9]" />
+                      <div className="my-1 h-px bg-surface-control" />
                       <MenuItem icon={<Trash2 size={15} />} label="Delete this map" danger onClick={() => { setShowMore(false); setShowDeleteMap(true) }} />
                     </>
                   )}
@@ -815,9 +815,9 @@ export default function ProcessMapExplorerPage() {
           </span>
           <span className="text-[12px] text-white/70">{diff.summary.total_changes} change{diff.summary.total_changes !== 1 ? 's' : ''}</span>
           <span className="flex items-center gap-2 text-[11px]">
-            <span className="inline-flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#16A34A]" /> added</span>
-            <span className="inline-flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#D97706]" /> changed</span>
-            <span className="inline-flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#DC2626]" /> removed</span>
+            <span className="inline-flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-success" /> added</span>
+            <span className="inline-flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-warning" /> changed</span>
+            <span className="inline-flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-danger" /> removed</span>
           </span>
           <button onClick={exitCompare} className="ml-auto inline-flex items-center gap-1 text-[13px] font-semibold text-white/90 hover:text-white">
             <X size={14} /> Exit compare
@@ -827,7 +827,7 @@ export default function ProcessMapExplorerPage() {
 
       {/* Canvas — takes the full remaining area, inset with a light border + rounded corners.
           Everything else (outline, add, hint) floats over it. */}
-      <div className="relative flex-1 min-h-0 mt-2 rounded-[12px] border border-[#E2E8F0] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+      <div className="relative flex-1 min-h-0 mt-2 rounded-[12px] border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
         {/* Show the empty state only when there's genuinely nothing to draw. In swimlane view a
             lane with no steps IS something to show, so render the canvas once any lane exists. */}
         {flow.nodes.length === 0 && !(swimlane && flow.lanes.length > 0) ? (
@@ -835,11 +835,11 @@ export default function ProcessMapExplorerPage() {
             {/* The canvas (which normally hosts Add step) isn't mounted when empty, so float
                 the same control here — otherwise the empty state is a dead end. */}
             {addStepControl && <div className="absolute top-3 right-3 z-10">{addStepControl}</div>}
-            <div className="w-14 h-14 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-3">
+            <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-3">
               {KIND_META.start_event.icon}
             </div>
-            <p className="text-[#0F172A] font-semibold">This level is empty</p>
-            <p className="text-[#475569] text-sm mt-1 max-w-sm">
+            <p className="text-text-primary font-semibold">This level is empty</p>
+            <p className="text-text-secondary text-sm mt-1 max-w-sm">
               {canEditHere
                 ? 'Add your first step with the Add step button, top right — pick a Container, Task, Decision or a Start/End marker.'
                 : 'Nothing has been mapped here yet.'}
@@ -891,7 +891,7 @@ export default function ProcessMapExplorerPage() {
           <>
             <div className="absolute inset-0 z-20" onClick={() => setShowTree(false)} aria-hidden="true" />
             <aside
-              className="absolute z-30 top-3 left-3 bottom-3 right-3 sm:right-auto sm:w-[244px] flex flex-col bg-white/95 backdrop-blur border border-[#E2E8F0] rounded-[12px] shadow-[0_8px_28px_rgba(15,23,42,0.14)] overflow-hidden animate-[slideInLeft_.2s_ease-out]"
+              className="absolute z-30 top-3 left-3 bottom-3 right-3 sm:right-auto sm:w-[244px] flex flex-col bg-white/95 backdrop-blur border border-border-light rounded-[12px] shadow-[0_8px_28px_rgba(15,23,42,0.14)] overflow-hidden animate-[slideInLeft_.2s_ease-out]"
               onClick={(e) => e.stopPropagation()}
               aria-label="Outline"
             >
@@ -940,15 +940,15 @@ export default function ProcessMapExplorerPage() {
           <div className="absolute inset-0 bg-black/40" onClick={cancelBranch} />
           <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-xs p-4 animate-[fadeIn_.15s_ease-out]">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-semibold text-[#0F172A]">What does this branch mean?</h3>
-              <button onClick={cancelBranch} className="text-[#94A3B8] hover:text-[#0F172A]"><X size={18} /></button>
+              <h3 className="text-sm font-semibold text-text-primary">What does this branch mean?</h3>
+              <button onClick={cancelBranch} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
             </div>
-            <p className="text-[12px] text-[#64748B] mb-3">Pick the outcome for this route out of the decision.</p>
+            <p className="text-[12px] text-text-muted mb-3">Pick the outcome for this route out of the decision.</p>
             <div className="flex gap-2">
               <button onClick={() => chooseBranch('yes')}
-                className="flex-1 px-3 py-2 rounded-[8px] text-sm font-semibold text-white bg-[#16A34A] hover:bg-[#15803D]">Yes</button>
+                className="flex-1 px-3 py-2 rounded-[8px] text-sm font-semibold text-white bg-success hover:bg-success">Yes</button>
               <button onClick={() => chooseBranch('no')}
-                className="flex-1 px-3 py-2 rounded-[8px] text-sm font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C]">No</button>
+                className="flex-1 px-3 py-2 rounded-[8px] text-sm font-semibold text-white bg-danger hover:bg-danger-hover">No</button>
             </div>
           </div>
         </div>,
@@ -961,17 +961,17 @@ export default function ProcessMapExplorerPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setLaneRename(null)} />
           <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-sm p-4 animate-[fadeIn_.15s_ease-out]">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-semibold text-[#0F172A]">Change lane&rsquo;s department</h3>
-              <button onClick={() => setLaneRename(null)} className="text-[#94A3B8] hover:text-[#0F172A]"><X size={18} /></button>
+              <h3 className="text-sm font-semibold text-text-primary">Change lane&rsquo;s department</h3>
+              <button onClick={() => setLaneRename(null)} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
             </div>
             {(() => {
               const count = flow?.nodes.filter((n) => n.pool === 'company' && n.department_id === laneRename.deptId).length ?? 0
               return (
                 <>
-                  <p className="text-[12px] text-[#64748B] mb-2.5">
-                    Re-point <span className="font-semibold text-[#0F172A]">{laneRename.name}</span> at another department.{' '}
+                  <p className="text-[12px] text-text-muted mb-2.5">
+                    Re-point <span className="font-semibold text-text-primary">{laneRename.name}</span> at another department.{' '}
                     {count > 0
-                      ? <>All <span className="font-semibold text-[#B45309]">{count} step{count !== 1 ? 's' : ''}</span> in this lane will move to it.</>
+                      ? <>All <span className="font-semibold text-warning">{count} step{count !== 1 ? 's' : ''}</span> in this lane will move to it.</>
                       : <>This lane is empty.</>}
                   </p>
                   <DepartmentSelect
@@ -981,7 +981,7 @@ export default function ProcessMapExplorerPage() {
                   />
                   {count === 0 && (
                     <button onClick={removeLane}
-                      className="mt-3 w-full px-3 py-2 rounded-[8px] text-[13px] font-semibold text-[#DC2626] border border-[#FCA5A5] hover:bg-[#FEF2F2] transition-colors">
+                      className="mt-3 w-full px-3 py-2 rounded-[8px] text-[13px] font-semibold text-danger border border-danger-border hover:bg-danger-bg transition-colors">
                       Remove this empty lane
                     </button>
                   )}
@@ -999,17 +999,17 @@ export default function ProcessMapExplorerPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setLaneAdd(null)} />
           <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-xs p-4 animate-[fadeIn_.15s_ease-out]">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-[#0F172A]">Add to this lane</h3>
-              <button onClick={() => setLaneAdd(null)} className="text-[#94A3B8] hover:text-[#0F172A]"><X size={18} /></button>
+              <h3 className="text-sm font-semibold text-text-primary">Add to this lane</h3>
+              <button onClick={() => setLaneAdd(null)} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
             </div>
             <div className="space-y-0.5">
               {LANE_ADD_KINDS.map((k) => (
                 <button key={k} onClick={() => addLaneKind(k)}
-                  className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-[#F1F5F9] text-left transition-colors">
-                  <span className="text-[#2563EB] mt-0.5">{KIND_META[k].icon}</span>
+                  className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-surface-control text-left transition-colors">
+                  <span className="text-primary-text mt-0.5">{KIND_META[k].icon}</span>
                   <span className="min-w-0">
-                    <span className="block text-[13px] font-medium text-[#0F172A]">{KIND_META[k].label}</span>
-                    <span className="block text-[11px] text-[#64748B]">{KIND_META[k].hint}</span>
+                    <span className="block text-[13px] font-medium text-text-primary">{KIND_META[k].label}</span>
+                    <span className="block text-[11px] text-text-muted">{KIND_META[k].hint}</span>
                   </span>
                 </button>
               ))}
@@ -1051,36 +1051,36 @@ function ReferenceMapModal({ orgId, excludeId, onClose, onPick }: {
     <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md max-h-[80vh] flex flex-col animate-[fadeIn_.15s_ease-out]">
-        <div className="flex items-center gap-2 px-5 py-4 border-b border-[#E2E8F0]">
-          <LinkIcon size={16} className="text-[#2563EB]" />
-          <h3 className="text-base font-semibold text-[#0F172A]">Reference a map</h3>
-          <button onClick={onClose} className="ml-auto text-[#94A3B8] hover:text-[#0F172A]"><X size={18} /></button>
+        <div className="flex items-center gap-2 px-5 py-4 border-b border-border-light">
+          <LinkIcon size={16} className="text-primary-text" />
+          <h3 className="text-base font-semibold text-text-primary">Reference a map</h3>
+          <button onClick={onClose} className="ml-auto text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
         <div className="px-5 pt-3 pb-2">
           <div className="relative">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
             <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search maps…"
-              className="w-full pl-8 pr-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A]" />
+              className="w-full pl-8 pr-3 py-2 text-[14px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white text-text-primary" />
           </div>
         </div>
         <div className="flex-1 overflow-y-auto px-3 pb-3">
           {maps === null ? (
-            <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-[#2563EB]" /></div>
+            <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-primary-text" /></div>
           ) : filtered.length === 0 ? (
-            <p className="text-[13px] text-[#64748B] text-center py-8">No other maps{q ? ' match' : ' yet'}.</p>
+            <p className="text-[13px] text-text-muted text-center py-8">No other maps{q ? ' match' : ' yet'}.</p>
           ) : (
             <div className="space-y-0.5">
               {filtered.map((m) => (
                 <button key={m.id} onClick={() => onPick({ id: m.id, name: m.name })}
-                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-[8px] hover:bg-[#F1F5F9] text-left transition-colors">
-                  <Workflow size={15} className="shrink-0 text-[#2563EB]" />
-                  <span className="truncate text-[14px] text-[#0F172A]">{m.name}</span>
+                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-[8px] hover:bg-surface-control text-left transition-colors">
+                  <Workflow size={15} className="shrink-0 text-primary-text" />
+                  <span className="truncate text-[14px] text-text-primary">{m.name}</span>
                 </button>
               ))}
             </div>
           )}
         </div>
-        <p className="px-5 py-2.5 border-t border-[#E2E8F0] text-[11px] text-[#64748B]">
+        <p className="px-5 py-2.5 border-t border-border-light text-[11px] text-text-muted">
           Drops an instance that opens the chosen map. Edits to that map show wherever it’s referenced.
         </p>
       </div>
@@ -1092,8 +1092,8 @@ function ReferenceMapModal({ orgId, excludeId, onClose, onPick }: {
 function MenuItem({ icon, label, onClick, danger }: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean }) {
   return (
     <button onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-left text-[13px] font-medium transition-colors ${danger ? 'text-[#DC2626] hover:bg-[#FEF2F2]' : 'text-[#0F172A] hover:bg-[#F1F5F9]'}`}>
-      <span className={danger ? 'text-[#DC2626]' : 'text-[#475569]'}>{icon}</span> {label}
+      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-left text-[13px] font-medium transition-colors ${danger ? 'text-danger hover:bg-danger-bg' : 'text-text-primary hover:bg-surface-control'}`}>
+      <span className={danger ? 'text-danger' : 'text-text-secondary'}>{icon}</span> {label}
     </button>
   )
 }
@@ -1122,20 +1122,20 @@ function SaveTemplateModal({ orgId, mapId, mapName, onClose }: {
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md p-6 animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-[#0F172A]">Save as template</h3>
-          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#0F172A]"><X size={18} /></button>
+          <h3 className="text-lg font-semibold text-text-primary">Save as template</h3>
+          <button onClick={onClose} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
         {done ? (
-          <p className="text-[#16A34A] text-sm inline-flex items-center gap-2 py-4"><Check size={16} /> Template saved.</p>
+          <p className="text-success text-sm inline-flex items-center gap-2 py-4"><Check size={16} /> Template saved.</p>
         ) : (
           <>
-            <label className="block text-sm font-medium text-[#374151] mb-1">Template name</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Template name</label>
             <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && save()}
-              className="w-full px-3 py-2.5 text-[15px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden" />
-            <p className="text-[12px] text-[#64748B] mt-1.5">Freezes this map’s current structure so you can spin up new maps from it later.</p>
+              className="w-full px-3 py-2.5 text-[15px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden" />
+            <p className="text-[12px] text-text-muted mt-1.5">Freezes this map’s current structure so you can spin up new maps from it later.</p>
             <div className="flex justify-end mt-5">
               <button onClick={save} disabled={!name.trim() || busy}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]">
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
                 {busy && <Loader2 size={15} className="animate-spin" />} Save template
               </button>
             </div>
@@ -1168,29 +1168,29 @@ function DiffPanel({ diff, onClose, onJump }: {
   }, [onClose])
   return createPortal(
     <div className="fixed inset-0 z-60 pointer-events-none">
-      <div className="absolute right-0 top-0 h-full w-full max-w-[400px] bg-white shadow-xl border-l border-[#E2E8F0] flex flex-col pointer-events-auto animate-[slideInRight_.22s_ease-out]">
-        <div className="flex items-center gap-2 px-5 py-4 border-b border-[#E2E8F0]">
-          <GitCompare size={16} className="text-[#2563EB]" />
-          <span className="text-sm font-semibold text-[#0F172A]">Changes</span>
-          <span className="text-xs text-[#64748B]">{diff.summary.total_changes} total</span>
-          <button onClick={onClose} className="ml-auto text-[#94A3B8] hover:text-[#0F172A]"><X size={18} /></button>
+      <div className="absolute right-0 top-0 h-full w-full max-w-[400px] bg-white shadow-xl border-l border-border-light flex flex-col pointer-events-auto animate-[slideInRight_.22s_ease-out]">
+        <div className="flex items-center gap-2 px-5 py-4 border-b border-border-light">
+          <GitCompare size={16} className="text-primary-text" />
+          <span className="text-sm font-semibold text-text-primary">Changes</span>
+          <span className="text-xs text-text-muted">{diff.summary.total_changes} total</span>
+          <button onClick={onClose} className="ml-auto text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5 text-[13px]">
           {diff.summary.total_changes === 0 && (
-            <p className="text-[#475569] text-center py-8">No differences between these two versions.</p>
+            <p className="text-text-secondary text-center py-8">No differences between these two versions.</p>
           )}
 
           {diff.nodes.length > 0 && (
             <Section title="Nodes">
               {diff.nodes.map((n) => (
                 <button key={n.id} onClick={() => onJump(n.parent_node_id, n.id, n.change === 'removed')}
-                  className="w-full text-left flex items-start gap-2 px-2 py-1.5 rounded-[6px] hover:bg-[#F8FAFC]">
+                  className="w-full text-left flex items-start gap-2 px-2 py-1.5 rounded-[6px] hover:bg-surface-sunken">
                   <span className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: CHANGE_COLOR[n.change] }} />
                   <span className="flex-1 min-w-0">
-                    <span className="text-[#0F172A] font-medium">{n.name}</span>
-                    <span className="text-[11px] text-[#64748B] ml-1.5 capitalize">{n.change}</span>
+                    <span className="text-text-primary font-medium">{n.name}</span>
+                    <span className="text-[11px] text-text-muted ml-1.5 capitalize">{n.change}</span>
                     {n.fields.length > 0 && (
-                      <span className="block text-[11px] text-[#64748B]">{n.fields.map((f) => FIELD_LABEL[f.field] ?? f.field).join(', ')}</span>
+                      <span className="block text-[11px] text-text-muted">{n.fields.map((f) => FIELD_LABEL[f.field] ?? f.field).join(', ')}</span>
                     )}
                   </span>
                 </button>
@@ -1202,10 +1202,10 @@ function DiffPanel({ diff, onClose, onJump }: {
             <Section title="Connections">
               {diff.connections.map((c) => (
                 <button key={c.id} onClick={() => onJump(c.parent_node_id, null, false)}
-                  className="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded-[6px] hover:bg-[#F8FAFC]">
+                  className="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded-[6px] hover:bg-surface-sunken">
                   <span className="w-2 h-2 rounded-full shrink-0" style={{ background: CHANGE_COLOR[c.change] }} />
-                  <span className="text-[#475569] capitalize">{c.change} connection</span>
-                  {c.fields.length > 0 && <span className="text-[11px] text-[#64748B]">({c.fields.map((f) => FIELD_LABEL[f.field] ?? f.field).join(', ')})</span>}
+                  <span className="text-text-secondary capitalize">{c.change} connection</span>
+                  {c.fields.length > 0 && <span className="text-[11px] text-text-muted">({c.fields.map((f) => FIELD_LABEL[f.field] ?? f.field).join(', ')})</span>}
                 </button>
               ))}
             </Section>
@@ -1216,8 +1216,8 @@ function DiffPanel({ diff, onClose, onJump }: {
               {diff.artifacts.map((a) => (
                 <div key={a.id} className="flex items-center gap-2 px-2 py-1.5">
                   <span className="w-2 h-2 rounded-full shrink-0" style={{ background: CHANGE_COLOR[a.change] }} />
-                  <span className="text-[#0F172A]">{a.name}</span>
-                  <span className="text-[11px] text-[#64748B] capitalize">{a.change}</span>
+                  <span className="text-text-primary">{a.name}</span>
+                  <span className="text-[11px] text-text-muted capitalize">{a.change}</span>
                 </div>
               ))}
             </Section>
@@ -1232,7 +1232,7 @@ function DiffPanel({ diff, onClose, onJump }: {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wide mb-1">{title}</p>
+      <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-1">{title}</p>
       <div className="space-y-0.5">{children}</div>
     </div>
   )
@@ -1252,20 +1252,20 @@ function VisibilityPanel({ flow, visible, onChange, onClose }: {
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 bg-white border border-[#E2E8F0] rounded-[10px] shadow-lg p-3 animate-[popIn_.12s_ease-out]">
+      <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 bg-white border border-border-light rounded-[10px] shadow-lg p-3 animate-[popIn_.12s_ease-out]">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[13px] font-semibold text-[#0F172A]">Show nodes</span>
-          <button onClick={() => onChange(null)} className="text-[12px] font-medium text-[#2563EB] hover:underline">View all</button>
+          <span className="text-[13px] font-semibold text-text-primary">Show nodes</span>
+          <button onClick={() => onChange(null)} className="text-[12px] font-medium text-primary-text hover:underline">View all</button>
         </div>
         <div className="max-h-64 overflow-y-auto space-y-0.5">
           {flow.nodes.map((n) => (
             <button key={n.id} onClick={() => toggle(n.id)}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] hover:bg-[#F8FAFC] text-left text-[13px]">
-              <span className={`w-4 h-4 rounded-xs border flex items-center justify-center shrink-0 ${isShown(n.id) ? 'bg-[#2563EB] border-[#2563EB]' : 'border-[#CBD5E1]'}`}>
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] hover:bg-surface-sunken text-left text-[13px]">
+              <span className={`w-4 h-4 rounded-xs border flex items-center justify-center shrink-0 ${isShown(n.id) ? 'bg-primary border-primary' : 'border-border'}`}>
                 {isShown(n.id) && <Check size={12} className="text-white" />}
               </span>
-              <span className="text-[#2563EB] shrink-0">{KIND_META[n.kind].icon}</span>
-              <span className="truncate text-[#0F172A]">{n.name}</span>
+              <span className="text-primary-text shrink-0">{KIND_META[n.kind].icon}</span>
+              <span className="truncate text-text-primary">{n.name}</span>
             </button>
           ))}
         </div>
@@ -1317,28 +1317,28 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-80 bg-white border border-[#E2E8F0] rounded-[10px] shadow-lg p-3 animate-[popIn_.12s_ease-out]">
+      <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-80 bg-white border border-border-light rounded-[10px] shadow-lg p-3 animate-[popIn_.12s_ease-out]">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[13px] font-semibold text-[#0F172A]">Saved versions</span>
-          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#0F172A]"><X size={15} /></button>
+          <span className="text-[13px] font-semibold text-text-primary">Saved versions</span>
+          <button onClick={onClose} className="text-text-muted hover:text-text-primary"><X size={15} /></button>
         </div>
 
         {/* Compare */}
-        <div className="mb-3 pb-3 border-b border-[#F1F5F9]">
-          <p className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wide mb-1.5">Compare (as-is → to-be)</p>
+        <div className="mb-3 pb-3 border-b border-border-light">
+          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-1.5">Compare (as-is → to-be)</p>
           <div className="flex items-center gap-1.5">
             <div className="flex-1 min-w-0">
               <StyledSelect value={baseRef} onChange={setBaseRef} placeholder="From…"
                 options={refOptions} size="sm" />
             </div>
-            <span className="text-[#94A3B8] text-xs shrink-0">→</span>
+            <span className="text-text-muted text-xs shrink-0">→</span>
             <div className="flex-1 min-w-0">
               <StyledSelect value={targetRef} onChange={setTargetRef} placeholder="To…"
                 options={refOptions} size="sm" />
             </div>
           </div>
           <button disabled={!canCompare} onClick={() => onCompare(baseRef, targetRef, labelOf(baseRef), labelOf(targetRef))}
-            className="mt-2 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-[#0F172A] text-white hover:bg-[#1E293B] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]">
+            className="mt-2 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-[#0F172A] text-white hover:bg-[#1E293B] disabled:bg-surface-control-pressed disabled:text-text-muted">
             <GitCompare size={14} /> Compare
           </button>
         </div>
@@ -1347,26 +1347,26 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
           <div className="flex items-center gap-2 mb-3">
             <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. As-Is 2026"
               onKeyDown={(e) => e.key === 'Enter' && create()}
-              className="flex-1 px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden" />
+              className="flex-1 px-2.5 py-1.5 text-[13px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden" />
             <button onClick={create} disabled={!label.trim() || busy} aria-label="Save version"
-              className="shrink-0 w-8 h-8 rounded-[8px] bg-[#2563EB] text-white flex items-center justify-center hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]">
+              className="shrink-0 w-8 h-8 rounded-[8px] bg-primary text-white flex items-center justify-center hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
               {busy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={15} />}
             </button>
           </div>
         )}
         <div className="max-h-64 overflow-y-auto space-y-1">
-          {snaps === null ? <p className="text-[13px] text-[#64748B] py-2">Loading…</p>
-            : snaps.length === 0 ? <p className="text-[13px] text-[#64748B] py-2">No versions saved yet.</p>
+          {snaps === null ? <p className="text-[13px] text-text-muted py-2">Loading…</p>
+            : snaps.length === 0 ? <p className="text-[13px] text-text-muted py-2">No versions saved yet.</p>
             : snaps.map((s) => (
-              <div key={s.id} className="flex items-center gap-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[6px] px-2 py-1.5">
+              <div key={s.id} className="flex items-center gap-2 bg-surface-sunken border border-border-light rounded-[6px] px-2 py-1.5">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium text-[#0F172A] truncate">{s.label}</p>
-                  <p className="text-[11px] text-[#64748B]">{new Date(s.created_at).toLocaleDateString()}</p>
+                  <p className="text-[13px] font-medium text-text-primary truncate">{s.label}</p>
+                  <p className="text-[11px] text-text-muted">{new Date(s.created_at).toLocaleDateString()}</p>
                 </div>
                 {canEdit && (
                   <Tooltip label="Restore this version">
                     <button onClick={() => setConfirmRestore(s)}
-                      className="text-[#475569] hover:text-[#2563EB] shrink-0 inline-flex items-center gap-1 text-[12px] font-medium">
+                      className="text-text-secondary hover:text-primary-text shrink-0 inline-flex items-center gap-1 text-[12px] font-medium">
                       <RotateCcw size={13} /> Restore
                     </button>
                   </Tooltip>

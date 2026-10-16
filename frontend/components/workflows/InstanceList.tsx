@@ -30,22 +30,22 @@ export function ProgressBar({ completed, total, run }: { completed: number; tota
   const ds = runDisplayStatus(run)
   const color =
     ds === 'needs_attention'
-      ? 'bg-[#DC2626]'
+      ? 'bg-danger'
       : ds === 'completed'
-        ? 'bg-[#16A34A]'
+        ? 'bg-success'
         : ds === 'cancelled'
           ? 'bg-[#64748B]'
           : ds === 'falling_behind'
-            ? 'bg-[#D97706]'
+            ? 'bg-warning'
             : ds === 'waiting_for_info'
-              ? 'bg-[#7C3AED]'
-              : 'bg-[#2563EB]'
+              ? 'bg-text-secondary'
+              : 'bg-primary'
   return (
     <div className="flex items-center gap-2 min-w-[120px]">
-      <div className="flex-1 h-2 rounded-full bg-[#E2E8F0] overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={completed} aria-label="Steps done">
+      <div className="flex-1 h-2 rounded-full bg-surface-control-pressed overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={completed} aria-label="Steps done">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[13px] text-[#334155] whitespace-nowrap tabular-nums">
+      <span className="text-[13px] text-text-secondary whitespace-nowrap tabular-nums">
         {completed} of {total}
       </span>
     </div>
@@ -81,12 +81,12 @@ export default function InstanceList({
           <Link
             href={runHref(tid(i), i.id)}
             onClick={(e) => e.stopPropagation()}
-            className="font-medium text-[#0F172A] hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-xs wrap-break-word"
+            className="font-medium text-text-primary hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs wrap-break-word"
           >
             {i.name}
           </Link>
           {(i.instance_number || (showWorkflow && i.template?.name)) && (
-            <p className="text-[13px] text-[#475569] truncate">
+            <p className="text-[13px] text-text-secondary truncate">
               {[i.instance_number ? instanceTitle(i.instance_number) : null, showWorkflow ? i.template?.name : null].filter(Boolean).join(' · ')}
             </p>
           )}
@@ -108,14 +108,14 @@ export default function InstanceList({
       desktopHiddenBelow: 'lg',
       render: (i) => {
         const p = instanceProgress(i)
-        return <span className="block max-w-[260px] truncate text-[#334155]">{i.status === 'running' || i.status === 'stuck' ? p.current ?? '—' : '—'}</span>
+        return <span className="block max-w-[260px] truncate text-text-secondary">{i.status === 'running' || i.status === 'stuck' ? p.current ?? '—' : '—'}</span>
       },
     },
     {
       key: 'started',
       header: 'Started',
       align: 'right',
-      render: (i) => <span className="whitespace-nowrap tabular-nums text-[#334155]">{fmtDateTime(i.started_at)}</span>,
+      render: (i) => <span className="whitespace-nowrap tabular-nums text-text-secondary">{fmtDateTime(i.started_at)}</span>,
     },
   ]
 
@@ -134,7 +134,7 @@ export default function InstanceList({
       />
       {!loading && instances.length > limit && (
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[13px] text-[#475569]">
+          <span className="text-[13px] text-text-secondary">
             1–{rows.length} of {instances.length}
           </span>
           <button type="button" onClick={() => setLimit((l) => l + PAGE)} className={BTN.quiet}>

@@ -68,7 +68,7 @@ export default function EscalatedPage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-[#0F172A]">No organization found</p>
+        <p className="font-semibold text-text-primary">No organization found</p>
       </div>
     )
   }
@@ -76,7 +76,7 @@ export default function EscalatedPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -98,13 +98,13 @@ export default function EscalatedPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">Escalated Tasks</h1>
-        <p className="mt-1 text-[15px] text-[#475569]">
+        <h1 className="text-[28px] font-bold text-text-primary leading-tight">Escalated Tasks</h1>
+        <p className="mt-1 text-[15px] text-text-secondary">
           {openCount} open
           {overdueCount > 0 && (
             <>
               {' · '}
-              <span className="text-[#DC2626] font-medium">{overdueCount} overdue</span>
+              <span className="text-danger font-medium">{overdueCount} overdue</span>
             </>
           )}
         </p>
@@ -126,20 +126,20 @@ export default function EscalatedPage() {
       />
 
       {(isFiltered || search.trim()) && (
-        <p className="text-sm text-[#475569]">
+        <p className="text-sm text-text-secondary">
           Showing {sortedTasks.length} of {tasks.length} escalated task{tasks.length !== 1 ? 's' : ''}
         </p>
       )}
 
       {sortedTasks.length === 0 ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
-          <div className="w-14 h-14 rounded-full bg-[#FEF9C3] flex items-center justify-center mb-4">
-            <AlertTriangle size={24} className="text-[#D97706]" />
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
+          <div className="w-14 h-14 rounded-full bg-warning-bg flex items-center justify-center mb-4">
+            <AlertTriangle size={24} className="text-warning" />
           </div>
-          <p className="font-semibold text-[#0F172A]">
+          <p className="font-semibold text-text-primary">
             {search.trim() ? `No tasks match ‘${search.trim()}’` : isFiltered ? 'No tasks match your filters' : 'No escalated tasks'}
           </p>
-          <p className="text-sm text-[#475569] mt-1">
+          <p className="text-sm text-text-secondary mt-1">
             {search.trim() ? 'Try a different search term.' : isFiltered ? 'Try adjusting your filters.' : 'Tasks flagged for escalation will appear here.'}
           </p>
           <ClearNarrowingButton

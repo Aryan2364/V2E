@@ -53,7 +53,7 @@ export default function ProjectsPage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-[#0F172A]">No organization found</p>
+        <p className="font-semibold text-text-primary">No organization found</p>
       </div>
     )
   }
@@ -61,7 +61,7 @@ export default function ProjectsPage() {
   if (!permsLoading && !can('projects.project.manage', 'read')) {
     return (
       <div className="space-y-6">
-        <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">Projects</h1>
+        <h1 className="text-[28px] font-bold text-text-primary leading-tight">Projects</h1>
         <AccessHiddenState orgId={orgId} leaf="projects.project.manage" moduleLabel="Projects" />
       </div>
     )
@@ -70,7 +70,7 @@ export default function ProjectsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -79,12 +79,12 @@ export default function ProjectsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">Projects</h1>
-          <p className="mt-1 text-[15px] text-[#475569]">All projects across your organization.</p>
+          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Projects</h1>
+          <p className="mt-1 text-[15px] text-text-secondary">All projects across your organization.</p>
         </div>
         <Link
           href="/dashboard/projects/new"
-          className="flex items-center gap-2 px-5 py-[10px] bg-[#2563EB] text-white rounded-[8px] text-sm font-semibold hover:bg-[#1D4ED8] transition-colors shrink-0"
+          className="flex items-center gap-2 px-5 py-[10px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover transition-colors shrink-0"
         >
           <Plus size={16} />
           New Project
@@ -100,39 +100,39 @@ export default function ProjectsPage() {
 
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[180px] max-w-xs">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search projects..."
-            className="w-full h-9 pl-8 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden"
+            className="w-full h-9 pl-8 pr-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as 'all' | ProjectStatus)}
-          className="h-9 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] bg-white focus:border-[#2563EB] focus:outline-hidden"
+          className="h-9 px-3 rounded-[8px] border border-border text-sm text-text-primary bg-white focus:border-primary focus:outline-hidden"
         >
           {STATUS_OPTS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
-        <span className="text-sm text-[#475569]">
+        <span className="text-sm text-text-secondary">
           {filtered.length} project{filtered.length !== 1 ? 's' : ''}
         </span>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
-          <div className="w-14 h-14 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-            <Briefcase size={24} className="text-[#94A3B8]" />
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
+          <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
+            <Briefcase size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-[#0F172A]">No projects found</p>
-          <p className="text-sm text-[#475569] mt-1">
+          <p className="font-semibold text-text-primary">No projects found</p>
+          <p className="text-sm text-text-secondary mt-1">
             {projects.length === 0 ? 'Create your first project to get started.' : 'Try adjusting your filters.'}
           </p>
           {projects.length === 0 && (
             <Link
               href="/dashboard/projects/new"
-              className="mt-4 px-4 py-2 bg-[#2563EB] text-white text-sm font-semibold rounded-[8px] hover:bg-[#1D4ED8] transition-colors"
+              className="mt-4 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-[8px] hover:bg-primary-hover transition-colors"
             >
               New Project
             </Link>

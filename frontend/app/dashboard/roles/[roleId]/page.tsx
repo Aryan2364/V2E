@@ -17,28 +17,28 @@ const kpiColumns: ResponsiveColumn<Kpi>[] = [
     key: 'title',
     header: 'Title',
     primary: true,
-    cellClassName: 'px-0! py-3! pr-4! font-medium text-[#0F172A]',
+    cellClassName: 'px-0! py-3! pr-4! font-medium text-text-primary',
     headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.title,
   },
   {
     key: 'metric',
     header: 'Metric',
-    cellClassName: 'px-0! py-3! pr-4! text-[#475569]',
+    cellClassName: 'px-0! py-3! pr-4! text-text-secondary',
     headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.metric,
   },
   {
     key: 'target',
     header: 'Target',
-    cellClassName: 'px-0! py-3! pr-4! text-[#475569]',
+    cellClassName: 'px-0! py-3! pr-4! text-text-secondary',
     headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.target,
   },
   {
     key: 'unit',
     header: 'Unit',
-    cellClassName: 'px-0! py-3! text-[#475569]',
+    cellClassName: 'px-0! py-3! text-text-secondary',
     headerClassName: 'px-0! py-2.5!',
     render: (kpi) => kpi.unit,
   },
@@ -50,9 +50,9 @@ const levelConfig: Record<
   RoleLevel,
   { label: string; bg: string; text: string }
 > = {
-  junior: { label: 'Junior', bg: 'bg-[#F1F5F9]', text: 'text-[#475569]' },
-  mid: { label: 'Mid', bg: 'bg-[#DBEAFE]', text: 'text-[#1D4ED8]' },
-  senior: { label: 'Senior', bg: 'bg-[#F3E8FF]', text: 'text-[#7C3AED]' },
+  junior: { label: 'Junior', bg: 'bg-surface-control', text: 'text-text-secondary' },
+  mid: { label: 'Mid', bg: 'bg-primary-subtle', text: 'text-primary-text' },
+  senior: { label: 'Senior', bg: 'bg-surface-control', text: 'text-text-secondary' },
   head: { label: 'Head', bg: 'bg-[#1E293B]', text: 'text-[#F1F5F9]' },
 }
 
@@ -71,8 +71,8 @@ function LevelBadge({ level }: { level: RoleLevel }) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
-      <h2 className="text-base font-semibold text-[#0F172A] mb-4 pb-3 border-b border-[#F1F5F9]">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+      <h2 className="text-base font-semibold text-text-primary mb-4 pb-3 border-b border-border-light">
         {title}
       </h2>
       {children}
@@ -107,7 +107,7 @@ export default function RoleDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -115,8 +115,8 @@ export default function RoleDetailPage() {
   if (error || !role) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <Briefcase size={36} className="text-[#94A3B8] mb-3" />
-        <p className="text-lg font-semibold text-[#0F172A]">Job role not found</p>
+        <Briefcase size={36} className="text-text-muted mb-3" />
+        <p className="text-lg font-semibold text-text-primary">Job role not found</p>
         <Link href="/dashboard/roles" className="mt-4">
           <Button variant="secondary" size="sm">
             <ArrowLeft size={14} /> Back to job roles
@@ -131,7 +131,7 @@ export default function RoleDetailPage() {
       {/* Back link */}
       <Link
         href="/settings/organization/roles"
-        className="inline-flex items-center gap-1.5 text-sm text-[#475569] hover:text-[#0F172A] transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
       >
         <ArrowLeft size={15} />
         All Job Roles
@@ -140,10 +140,10 @@ export default function RoleDetailPage() {
       {/* Role header */}
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
-          <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">{role.title}</h1>
+          <h1 className="text-[28px] font-bold text-text-primary leading-tight">{role.title}</h1>
           <div className="flex flex-wrap items-center gap-2">
             {role.department?.name && (
-              <span className="inline-flex items-center rounded-[999px] px-3 py-1 text-xs font-medium bg-[#EFF6FF] text-[#1D4ED8]">
+              <span className="inline-flex items-center rounded-[999px] px-3 py-1 text-xs font-medium bg-primary-subtle text-primary-text">
                 {role.department.name}
               </span>
             )}
@@ -163,7 +163,7 @@ export default function RoleDetailPage() {
       {/* Job Description */}
       {role.job_description && (
         <Section title="Job Description">
-          <p className="text-[#1E293B] leading-relaxed whitespace-pre-wrap text-sm">
+          <p className="text-text-primary leading-relaxed whitespace-pre-wrap text-sm">
             {role.job_description}
           </p>
         </Section>
@@ -175,13 +175,13 @@ export default function RoleDetailPage() {
           <ol className="space-y-4">
             {role.kra.map((kra, i) => (
               <li key={i} className="flex gap-4">
-                <span className="shrink-0 w-7 h-7 rounded-full bg-[#EFF6FF] flex items-center justify-center text-xs font-bold text-[#2563EB]">
+                <span className="shrink-0 w-7 h-7 rounded-full bg-primary-subtle flex items-center justify-center text-xs font-bold text-primary-text">
                   {i + 1}
                 </span>
                 <div>
-                  <p className="font-semibold text-[#0F172A] text-sm">{kra.title}</p>
+                  <p className="font-semibold text-text-primary text-sm">{kra.title}</p>
                   {kra.description && (
-                    <p className="text-[#475569] text-xs mt-1 leading-relaxed">
+                    <p className="text-text-secondary text-xs mt-1 leading-relaxed">
                       {kra.description}
                     </p>
                   )}

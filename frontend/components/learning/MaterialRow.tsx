@@ -118,7 +118,7 @@ export default function MaterialRow({
   const watermark = [user?.name, user?.email].filter(Boolean).join(' · ')
 
   return (
-    <div className="rounded-[10px] border border-[#E2E8F0] bg-white">
+    <div className="rounded-[10px] border border-border-light bg-white">
       <div className="flex items-start gap-3 p-3.5">
         {onGripPointerDown && (
           <Tooltip label="Drag to reorder">
@@ -126,15 +126,15 @@ export default function MaterialRow({
               type="button"
               onPointerDown={onGripPointerDown}
               aria-label="Drag to reorder"
-              className="shrink-0 mt-1.5 p-0.5 -ml-1 text-[#CBD5E1] hover:text-[#64748B] cursor-grab active:cursor-grabbing touch-none"
+              className="shrink-0 mt-1.5 p-0.5 -ml-1 text-[#CBD5E1] hover:text-text-muted cursor-grab active:cursor-grabbing touch-none"
             >
               <GripVertical size={16} />
             </button>
           </Tooltip>
         )}
-        <span className="text-xs text-[#94A3B8] w-5 text-center shrink-0 mt-2">{index + 1}</span>
-        <div className="w-8 h-8 rounded-[8px] bg-[#EFF6FF] flex items-center justify-center shrink-0 mt-0.5">
-          <Icon size={15} className="text-[#2563EB]" />
+        <span className="text-xs text-text-muted w-5 text-center shrink-0 mt-2">{index + 1}</span>
+        <div className="w-8 h-8 rounded-[8px] bg-primary-subtle flex items-center justify-center shrink-0 mt-0.5">
+          <Icon size={15} className="text-primary-text" />
         </div>
 
         <div className="flex-1 min-w-0 flex flex-col gap-2">
@@ -143,7 +143,7 @@ export default function MaterialRow({
             onChange={(e) => setTitle(e.target.value)}
             onBlur={() => title.trim() && title !== item.title && save({ title: title.trim() })}
             placeholder="Material title"
-            className="w-full px-2.5 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm font-medium text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+            className="w-full px-2.5 py-1.5 border border-border rounded-[7px] text-sm font-medium text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
           />
 
           {/* Type-specific editor */}
@@ -161,11 +161,11 @@ export default function MaterialRow({
                 }
               }}
               placeholder="https://… (paste a link, video, or doc)"
-              className="w-full px-2.5 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+              className="w-full px-2.5 py-1.5 border border-border rounded-[7px] text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
             />
           )}
           {item.content_type === 'url' && (
-            <p className="text-[11px] text-[#64748B]">
+            <p className="text-[11px] text-text-muted">
               Shown inside the app if the page allows it, otherwise learners get an open button — decided automatically.
             </p>
           )}
@@ -176,21 +176,21 @@ export default function MaterialRow({
               onBlur={() => body !== (item.content_body ?? '') && save({ content_body: body })}
               rows={3}
               placeholder="Write the article content…"
-              className="w-full px-2.5 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-y"
+              className="w-full px-2.5 py-1.5 border border-border rounded-[7px] text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-y"
             />
           )}
 
           {item.content_type === 'file' && (
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-xs text-[#475569]">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-xs bg-[#F1F5F9] font-semibold text-[#475569] text-[10px]">
+              <div className="flex items-center gap-2 text-xs text-text-secondary">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-xs bg-surface-control font-semibold text-text-secondary text-[10px]">
                   {fileKindLabel(item.file_name ?? '')}
                 </span>
                 <span className="truncate max-w-[220px]">{item.file_name ?? 'No file'}</span>
-                {item.file_size_bytes ? <span className="text-[#94A3B8]">· {formatBytes(item.file_size_bytes)}</span> : null}
+                {item.file_size_bytes ? <span className="text-text-muted">· {formatBytes(item.file_size_bytes)}</span> : null}
                 {item.file_name && (canPreview
-                  ? <span className="text-[#16A34A]">· plays in-app</span>
-                  : <span className="text-[#D97706]">· download to open</span>)}
+                  ? <span className="text-success">· plays in-app</span>
+                  : <span className="text-warning">· download to open</span>)}
               </div>
 
               {/* Previewable → the creator chooses download vs view-only.
@@ -203,21 +203,21 @@ export default function MaterialRow({
                     className={[
                       'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors',
                       item.allow_download ?? true
-                        ? 'bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]'
-                        : 'bg-[#FEF9C3] text-[#CA8A04] border border-[#FDE68A]',
+                        ? 'bg-success-bg text-success border border-success-border'
+                        : 'bg-warning-bg text-warning border border-warning-border',
                     ].join(' ')}
                   >
                     {item.allow_download ?? true ? <Download size={12} /> : <Ban size={12} />}
                     {item.allow_download ?? true ? 'Download allowed' : 'View-only'}
                   </button>
-                  <span className="text-[11px] text-[#64748B]">Tap to switch</span>
+                  <span className="text-[11px] text-text-muted">Tap to switch</span>
                 </div>
               ) : item.file_name ? (
                 <div className="flex flex-col gap-1">
-                  <span className="inline-flex w-fit items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]">
+                  <span className="inline-flex w-fit items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success-bg text-success border border-success-border">
                     <Download size={12} /> Download only
                   </span>
-                  {convertHint && <span className="text-[11px] text-[#D97706]">{convertHint}</span>}
+                  {convertHint && <span className="text-[11px] text-warning">{convertHint}</span>}
                 </div>
               ) : null}
             </div>
@@ -226,7 +226,7 @@ export default function MaterialRow({
 
         {/* Actions */}
         <div className="flex items-center gap-1 shrink-0">
-          {saving && <Loader2 size={13} className="animate-spin text-[#94A3B8]" />}
+          {saving && <Loader2 size={13} className="animate-spin text-text-muted" />}
           {item.content_type === 'file' && item.file_name && (
             <>
               <Tooltip label="Preview">
@@ -234,7 +234,7 @@ export default function MaterialRow({
                   onClick={openPreview}
                   disabled={previewLoading}
                   aria-label="Preview"
-                  className="p-1.5 text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] rounded-[6px] transition-colors"
+                  className="p-1.5 text-text-muted hover:text-primary-text hover:bg-primary-subtle rounded-[6px] transition-colors"
                 >
                   {previewLoading ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
                 </button>
@@ -242,7 +242,7 @@ export default function MaterialRow({
               <Tooltip label="Replace file">
                 <label
                   aria-label="Replace file"
-                  className="p-1.5 text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] rounded-[6px] transition-colors cursor-pointer"
+                  className="p-1.5 text-text-muted hover:text-primary-text hover:bg-primary-subtle rounded-[6px] transition-colors cursor-pointer"
                 >
                   {replacing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
                   <input type="file" accept={ACCEPT_ATTR} className="hidden"
@@ -255,7 +255,7 @@ export default function MaterialRow({
             <button
               onClick={handleDelete}
               aria-label="Remove"
-              className="p-1.5 text-[#94A3B8] hover:text-[#DC2626] hover:bg-[#FEE2E2] rounded-[6px] transition-colors"
+              className="p-1.5 text-text-muted hover:text-danger hover:bg-danger-bg rounded-[6px] transition-colors"
             >
               <Trash2 size={14} />
             </button>
@@ -267,12 +267,12 @@ export default function MaterialRow({
       {preview && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-60 flex items-center justify-center px-4 bg-black/50" onClick={() => setPreview(null)}>
           <div className="bg-white rounded-[14px] w-full max-w-4xl max-h-[88vh] overflow-hidden flex flex-col shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-5 py-3 border-b border-[#E2E8F0]">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-border-light">
               <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-[#0F172A] truncate">{item.title}</h3>
-                <p className="text-xs text-[#64748B]">Preview — exactly what learners see</p>
+                <h3 className="text-sm font-semibold text-text-primary truncate">{item.title}</h3>
+                <p className="text-xs text-text-muted">Preview — exactly what learners see</p>
               </div>
-              <button onClick={() => setPreview(null)} className="p-1.5 text-[#475569] hover:bg-[#F1F5F9] rounded-[6px]">
+              <button onClick={() => setPreview(null)} className="p-1.5 text-text-secondary hover:bg-surface-control rounded-[6px]">
                 <X size={18} />
               </button>
             </div>

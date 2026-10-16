@@ -30,25 +30,25 @@ export default function DeptLeaderboard({
   }, [byDept, forest])
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex flex-col h-[460px]">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex flex-col h-[460px]">
       <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0">
-        <h3 className="text-[15px] font-semibold text-[#0F172A]">Reporting units · completion timing</h3>
-        <span className="text-xs text-[#94A3B8]">ordered by attention needed</span>
+        <h3 className="text-[15px] font-semibold text-text-primary">Reporting units · completion timing</h3>
+        <span className="text-xs text-text-muted">ordered by attention needed</span>
       </div>
       <div className="flex-1 overflow-y-auto px-4 space-y-2.5">
         {units.length === 0 ? (
-          <p className="text-sm text-[#475569] py-10 text-center">No departmental work in this view.</p>
+          <p className="text-sm text-text-secondary py-10 text-center">No departmental work in this view.</p>
         ) : (
           units.map((u) => (
             <button
               key={u.id}
               onClick={() => onDrill(u.id)}
-              className="w-full text-left rounded-[10px] border border-[#E2E8F0] px-3.5 py-3 hover:border-[#2563EB] hover:bg-[#F8FAFC] transition-colors group"
+              className="w-full text-left rounded-[10px] border border-border-light px-3.5 py-3 hover:border-primary hover:bg-surface-sunken transition-colors group"
             >
               <div className="flex items-center justify-between gap-3 mb-2">
-                <span className="font-semibold text-sm text-[#0F172A] truncate flex items-center gap-1.5">
+                <span className="font-semibold text-sm text-text-primary truncate flex items-center gap-1.5">
                   {u.name}
-                  <ChevronRight size={14} className="text-[#94A3B8] group-hover:text-[#2563EB]" />
+                  <ChevronRight size={14} className="text-text-muted group-hover:text-primary-text" />
                 </span>
                 <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: u.overdueRate >= 25 ? '#DC2626' : '#475569' }}>
                   <span className="font-bold">{u.overdueRate}%</span> overdue · {u.total} tasks
@@ -59,7 +59,7 @@ export default function DeptLeaderboard({
           ))
         )}
       </div>
-      <div className="px-4 py-3 border-t border-[#F1F5F9] shrink-0">
+      <div className="px-4 py-3 border-t border-border-light shrink-0">
         <TimingLegend />
       </div>
     </div>

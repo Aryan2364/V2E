@@ -223,7 +223,7 @@ export default function TimingCalendar({
   if (rows.length) while (rows[rows.length - 1].length < 7) rows[rows.length - 1].push(null)
 
   const navBtn =
-    'inline-flex items-center justify-center w-11 h-11 rounded-[8px] text-[#334155] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:text-[#CBD5E1] disabled:hover:bg-transparent disabled:cursor-not-allowed'
+    'inline-flex items-center justify-center w-11 h-11 rounded-[8px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:text-[#CBD5E1] disabled:hover:bg-transparent disabled:cursor-not-allowed'
 
   const cellFor = (dayNo: number) => {
     const isSel = selected === dayNo
@@ -251,25 +251,25 @@ export default function TimingCalendar({
           setFocusDay(dayNo)
           setInspect(dayNo)
         }}
-        className={`relative flex flex-col items-stretch ${unit === 'Week' ? 'min-h-[52px]' : 'min-h-[46px]'} pt-1 pb-1 select-none outline-hidden rounded-[6px] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2563EB] ${
-          grey ? 'cursor-not-allowed bg-[#F8FAFC]' : disabled ? 'cursor-default' : 'cursor-pointer hover:bg-[#EFF6FF]'
-        } ${inspect === dayNo && !isSel ? 'bg-[#F1F5F9]' : ''}`}
+        className={`relative flex flex-col items-stretch ${unit === 'Week' ? 'min-h-[52px]' : 'min-h-[46px]'} pt-1 pb-1 select-none outline-hidden rounded-[6px] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${
+          grey ? 'cursor-not-allowed bg-surface-sunken' : disabled ? 'cursor-default' : 'cursor-pointer hover:bg-primary-subtle'
+        } ${inspect === dayNo && !isSel ? 'bg-surface-control' : ''}`}
       >
         {isRun && (
           <Play
             size={9}
             aria-hidden
-            className="absolute top-1 left-1 text-[#0F172A] fill-[#0F172A]"
+            className="absolute top-1 left-1 text-text-primary fill-[#0F172A]"
           />
         )}
         <span className="flex justify-center">
           <span
             className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[13px] tabular-nums ${
               isSel
-                ? 'bg-[#2563EB] text-white font-semibold'
+                ? 'bg-primary text-white font-semibold'
                 : grey
-                  ? 'text-[#64748B] line-through decoration-[#94A3B8]'
-                  : 'text-[#0F172A] font-medium'
+                  ? 'text-text-muted line-through decoration-text-muted'
+                  : 'text-text-primary font-medium'
             }`}
           >
             {d.getUTCDate()}
@@ -295,13 +295,13 @@ export default function TimingCalendar({
 
   return (
     <div className="flex flex-col gap-2 min-w-0">
-      <div className="rounded-[10px] border border-[#E2E8F0] bg-white p-1.5 sm:p-2">
+      <div className="rounded-[10px] border border-border-light bg-white p-1.5 sm:p-2">
         {/* Header: ◀ Month 2 · Dec ▶ */}
         <div className="flex items-center justify-between gap-1 mb-1">
           <button type="button" aria-label={`Previous ${noun}`} onClick={() => go(-1)} disabled={page <= minPage} className={navBtn}>
             <ChevronLeft size={18} />
           </button>
-          <span id={`${uid}-title`} aria-live="polite" className="text-sm font-semibold text-[#0F172A] tabular-nums text-center">
+          <span id={`${uid}-title`} aria-live="polite" className="text-sm font-semibold text-text-primary tabular-nums text-center">
             {title}
           </span>
           <button type="button" aria-label={`Next ${noun}`} onClick={() => go(1)} disabled={page >= maxPage} className={navBtn}>
@@ -321,7 +321,7 @@ export default function TimingCalendar({
         >
           <div role="row" className="grid grid-cols-7">
             {[1, 2, 3, 4, 5, 6, 0].map((w) => (
-              <span key={w} role="columnheader" aria-label={WEEKDAYS_SHORT[w]} className="text-center text-[12px] font-medium text-[#475569] py-1">
+              <span key={w} role="columnheader" aria-label={WEEKDAYS_SHORT[w]} className="text-center text-[12px] font-medium text-text-secondary py-1">
                 {WEEKDAYS_SHORT[w].slice(0, 2)}
               </span>
             ))}
@@ -340,10 +340,10 @@ export default function TimingCalendar({
               aria-pressed={lastDay.selected && selected !== null && pageOf(selected) === page}
               disabled={disabled || (minDay !== null && firstDayOfMonth(page) + daysInMonthIdx(page) - 1 < minDay)}
               onClick={() => lastDay.onPick(cycleOfPage(page))}
-              className={`min-h-[44px] sm:min-h-[36px] px-3 rounded-[8px] border text-[13px] font-medium transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#64748B] disabled:border-[#E2E8F0] ${
+              className={`min-h-[44px] sm:min-h-[36px] px-3 rounded-[8px] border text-[13px] font-medium transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-text-muted disabled:border-border-light ${
                 lastDay.selected && selected !== null && pageOf(selected) === page
-                  ? 'bg-[#2563EB] border-[#2563EB] text-white'
-                  : 'bg-white border-[#CBD5E1] text-[#334155] hover:border-[#2563EB] hover:text-[#1D4ED8]'
+                  ? 'bg-primary border-primary text-white'
+                  : 'bg-white border-border text-text-secondary hover:border-primary hover:text-primary-text'
               }`}
             >
               Last day of {MONTHS_SHORT[page % 12]}
@@ -353,15 +353,15 @@ export default function TimingCalendar({
       </div>
 
       {/* What happens on the day under the pointer / focus (else the picked day). */}
-      <div id={`${uid}-details`} aria-live="polite" className="min-h-[44px] rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-2 text-[13px] text-[#1E293B]">
+      <div id={`${uid}-details`} aria-live="polite" className="min-h-[44px] rounded-[8px] bg-surface-sunken border border-border-light px-3 py-2 text-[13px] text-text-primary">
         {shown === null ? (
-          <span className="text-[#475569]">Point at a day to see what happens then.</span>
+          <span className="text-text-secondary">Point at a day to see what happens then.</span>
         ) : (
           <>
-            <span className="font-semibold text-[#0F172A]">{dayWords(shown, runYear)}</span>
-            {greyed(shown) && minReason && <span className="text-[#475569]"> · {minReason}</span>}
+            <span className="font-semibold text-text-primary">{dayWords(shown, runYear)}</span>
+            {greyed(shown) && minReason && <span className="text-text-secondary"> · {minReason}</span>}
             <ul className="mt-0.5 flex flex-col gap-0.5">
-              {shown === selected && selfText && <li className="font-medium text-[#1D4ED8]">{selfText}</li>}
+              {shown === selected && selfText && <li className="font-medium text-primary-text">{selfText}</li>}
               {shownEvents.map((e, i) => (
                 <li key={i} className="flex items-center gap-1.5 min-w-0">
                   {e.span ? (
@@ -370,21 +370,21 @@ export default function TimingCalendar({
                   <span className="min-w-0 wrap-break-word">{eventText(e, runTime)}</span>
                 </li>
               ))}
-              {shownEvents.length === 0 && !(shown === selected && selfText) && <li className="text-[#475569]">Nothing else planned.</li>}
+              {shownEvents.length === 0 && !(shown === selected && selfText) && <li className="text-text-secondary">Nothing else planned.</li>}
             </ul>
           </>
         )}
       </div>
 
       {/* Legend */}
-      <ul aria-label="Legend" className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[#334155]">
+      <ul aria-label="Legend" className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-text-secondary">
         <li className="inline-flex items-center gap-1">
-          <Play size={9} aria-hidden className="text-[#0F172A] fill-[#0F172A]" /> Instance starts
+          <Play size={9} aria-hidden className="text-text-primary fill-[#0F172A]" /> Instance starts
         </li>
         {spans.map((s) => (
           <li key={s.id} className="inline-flex items-center gap-1 min-w-0 max-w-full">
             <span aria-hidden className="w-3 h-2.5 rounded-[2px] shrink-0" style={{ background: bandFill(s.color, s.waitsFor) }} />
-            <span className={`truncate ${s.waitsFor ? 'font-semibold text-[#0F172A]' : ''}`}>
+            <span className={`truncate ${s.waitsFor ? 'font-semibold text-text-primary' : ''}`}>
               {s.label} {s.title.trim() || 'Untitled step'}
               {s.waitsFor ? ' (waits for)' : ''}
             </span>

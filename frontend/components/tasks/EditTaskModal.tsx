@@ -383,11 +383,11 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
       aria-modal="true"
       aria-labelledby="edit-task-modal-title"
     >
-      <div className="relative w-full max-w-2xl bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-[#E2E8F0] max-h-[92vh] flex flex-col">
+      <div className="relative w-full max-w-2xl bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#E2E8F0] shrink-0">
-          <h2 id="edit-task-modal-title" className="text-[22px] font-semibold text-[#0F172A]">Edit Task</h2>
-          <button onClick={handleCloseAttempt} className="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors">
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-light shrink-0">
+          <h2 id="edit-task-modal-title" className="text-[22px] font-semibold text-text-primary">Edit Task</h2>
+          <button onClick={handleCloseAttempt} className="w-8 h-8 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -396,16 +396,16 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Title <span className="text-[#DC2626]">*</span></label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
             <div className="relative">
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value.slice(0, 50))}
                 maxLength={50}
-                className="w-full border border-[#CBD5E1] rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-[#0F172A] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white"
+                className="w-full border border-border rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-white"
               />
-              <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-[#DC2626]' : 'text-[#94A3B8]'}`}>
+              <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
                 {title.length}/50
               </span>
             </div>
@@ -418,11 +418,11 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {(canReassign || canEditCc) && (
             <div>
               <div className="flex items-center gap-2 mb-1.5">
-                <label className="text-sm font-medium text-[#374151]">
-                  Assignees &amp; CC <span className="text-[#DC2626]">*</span>
+                <label className="text-sm font-medium text-text-secondary">
+                  Assignees &amp; CC <span className="text-danger">*</span>
                 </label>
                 {roster.length > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
                     {roster.length}
                   </span>
                 )}
@@ -434,18 +434,18 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                     {roster.map((a) => (
                       <span
                         key={a.user_id}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] pl-2 pr-2.5 py-1 text-[13px] text-[#1E293B]"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border-light bg-surface-sunken pl-2 pr-2.5 py-1 text-[13px] text-text-primary"
                       >
                         {a.name}
                         {a.is_cc && (
-                          <span className="text-[10px] font-semibold text-[#0369A1] bg-[#E0F2FE] border border-[#BAE6FD] rounded-full px-1.5">
+                          <span className="text-[10px] font-semibold text-text-secondary bg-surface-control border border-border-light rounded-full px-1.5">
                             CC
                           </span>
                         )}
                       </span>
                     ))}
                   </div>
-                  <p className="text-[11px] text-[#475569] mt-1.5">
+                  <p className="text-[11px] text-text-secondary mt-1.5">
                     This task is closed, so its people are a frozen record. Reopen it to change who is on it.
                   </p>
                 </>
@@ -458,7 +458,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                     disabled={submitting}
                     currentUser={user ? { user_id: user.id, name: user.name } : undefined}
                   />
-                  <p className="text-[11px] text-[#475569] mt-1">
+                  <p className="text-[11px] text-text-secondary mt-1">
                     Add or remove people · click their badge to toggle between Assignee and CC
                   </p>
                 </>
@@ -471,7 +471,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                     {primaryAssignees.map((a) => (
                       <span
                         key={a.user_id}
-                        className="inline-flex items-center rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-2.5 py-1 text-[13px] text-[#1E293B]"
+                        className="inline-flex items-center rounded-full border border-border-light bg-surface-sunken px-2.5 py-1 text-[13px] text-text-primary"
                       >
                         {a.name}
                       </span>
@@ -486,7 +486,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                     disabled={submitting}
                     currentUser={user ? { user_id: user.id, name: user.name } : undefined}
                   />
-                  <p className="text-[11px] text-[#475569] mt-1">
+                  <p className="text-[11px] text-text-secondary mt-1">
                     You can CC people in on this task. Changing who it&apos;s assigned to is up to{' '}
                     {task.created_by?.name ?? 'whoever assigned it'}.
                   </p>
@@ -497,12 +497,12 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                   that someone held this task survives, so a person who was already
                   late can't be quietly removed into a clean scorecard. */}
               {(task.removed_assignees?.length ?? 0) > 0 && (
-                <div className="mt-2.5 rounded-[8px] border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2">
-                  <p className="text-[11px] font-semibold text-[#475569] mb-1">Previously on this task</p>
+                <div className="mt-2.5 rounded-[8px] border border-border-light bg-surface-sunken px-3 py-2">
+                  <p className="text-[11px] font-semibold text-text-secondary mb-1">Previously on this task</p>
                   <ul className="space-y-0.5">
                     {task.removed_assignees!.map((a) => (
-                      <li key={a.id} className="text-[12px] text-[#475569]">
-                        <span className="text-[#1E293B]">{a.user?.name ?? a.user_name ?? 'Unknown'}</span>
+                      <li key={a.id} className="text-[12px] text-text-secondary">
+                        <span className="text-text-primary">{a.user?.name ?? a.user_name ?? 'Unknown'}</span>
                         {a.is_cc ? ' (CC)' : ''}
                         {a.removed_at ? ` · removed ${fmtDate(a.removed_at)}` : ''}
                         {a.removed_by?.name ? ` by ${a.removed_by.name}` : ''}
@@ -517,12 +517,12 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {/* Completion mode */}
           {assigneeCount > 1 && (
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-2">Completion Mode</label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Completion Mode</label>
               <div className="flex gap-3">
                 {(['any_can_complete', 'all_must_complete'] as CompletionMode[]).map((mode) => (
                   <label key={mode} className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="completionMode" value={mode} checked={completionMode === mode} onChange={() => setCompletionMode(mode)} className="accent-[#2563EB]" />
-                    <span className="text-sm text-[#1E293B]">{mode === 'any_can_complete' ? 'Any assignee can complete' : 'All assignees must complete'}</span>
+                    <input type="radio" name="completionMode" value={mode} checked={completionMode === mode} onChange={() => setCompletionMode(mode)} className="accent-primary" />
+                    <span className="text-sm text-text-primary">{mode === 'any_can_complete' ? 'Any assignee can complete' : 'All assignees must complete'}</span>
                   </label>
                 ))}
               </div>
@@ -532,9 +532,9 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {/* Deadline */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-[#374151]">Deadline <span className="text-[#DC2626]">*</span></label>
+              <label className="text-sm font-medium text-text-secondary">Deadline <span className="text-danger">*</span></label>
               {deadlineDate && (
-                <button type="button" onClick={() => { setDeadlineDate(''); setDeadlineTime('') }} className="flex items-center gap-1 text-[11px] text-[#94A3B8] hover:text-[#DC2626] transition-colors">
+                <button type="button" onClick={() => { setDeadlineDate(''); setDeadlineTime('') }} className="flex items-center gap-1 text-[11px] text-text-muted hover:text-danger transition-colors">
                   <X size={10} /> Clear
                 </button>
               )}
@@ -578,9 +578,9 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 deadline is allowed and visible, but never rewrites history. Saying so
                 here is the point: it's what stops a revision feeling like a loophole. */}
             {(task.deadline_revision_count ?? 0) > 0 && task.original_deadline && (
-              <div className="mt-2 rounded-[8px] border border-[#FDE68A] bg-[#FEF9C3] px-3 py-2">
+              <div className="mt-2 rounded-[8px] border border-warning-border bg-warning-bg px-3 py-2">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-[12px] text-[#713F12]">
+                  <p className="text-[12px] text-warning">
                     Originally due <strong className="font-semibold">{fmtDate(task.original_deadline)}</strong>
                     {' · '}revised {task.deadline_revision_count}
                     {task.deadline_revision_count === 1 ? ' time' : ' times'}.
@@ -592,7 +592,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                       type="button"
                       onClick={() => setRevisionsOpen((v) => !v)}
                       aria-expanded={revisionsOpen}
-                      className="flex items-center gap-1 shrink-0 text-[11px] font-semibold text-[#713F12] hover:text-[#0F172A] transition-colors"
+                      className="flex items-center gap-1 shrink-0 text-[11px] font-semibold text-warning hover:text-text-primary transition-colors"
                     >
                       <History size={12} />
                       {revisionsOpen ? 'Hide' : 'History'}
@@ -600,9 +600,9 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                   )}
                 </div>
                 {revisionsOpen && (
-                  <ul className="mt-2 space-y-1 border-t border-[#FDE68A] pt-2 max-h-[160px] overflow-y-auto">
+                  <ul className="mt-2 space-y-1 border-t border-warning-border pt-2 max-h-[160px] overflow-y-auto">
                     {task.deadline_revisions!.map((r) => (
-                      <li key={r.id} className="text-[11px] text-[#713F12]">
+                      <li key={r.id} className="text-[11px] text-warning">
                         {r.from_deadline ? fmtDate(r.from_deadline) : 'no deadline'} →{' '}
                         {r.to_deadline ? fmtDate(r.to_deadline) : 'no deadline'}
                         {r.changed_by?.name ? ` · ${r.changed_by.name}` : ''}
@@ -620,8 +620,8 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 an existing one — a note attached to nothing is just noise. */}
             {task.deadline && deadline !== task.deadline && (
               <div className="mt-2">
-                <label className="block text-sm font-medium text-[#374151] mb-1.5">
-                  Why is the deadline changing? <span className="text-[#475569] font-normal">Optional</span>
+                <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                  Why is the deadline changing? <span className="text-text-secondary font-normal">Optional</span>
                 </label>
                 <input
                   type="text"
@@ -629,9 +629,9 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                   onChange={(e) => setDeadlineReason(e.target.value.slice(0, 500))}
                   maxLength={500}
                   placeholder="e.g. client pushed the review to next week"
-                  className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white"
+                  className="w-full border border-border rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white"
                 />
-                <p className="text-[11px] text-[#475569] mt-1">
+                <p className="text-[11px] text-text-secondary mt-1">
                   Recorded against this change, and everyone on the task is told the date moved.
                 </p>
               </div>
@@ -640,16 +640,16 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Description</label>
             <div className="relative">
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value.slice(0, 2000))}
                 maxLength={2000}
                 rows={3}
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 pt-[10px] pb-6 text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white resize-none"
+                className="w-full border border-border rounded-[8px] px-3 pt-[10px] pb-6 text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white resize-none"
               />
-              <span className={`pointer-events-none absolute right-3 bottom-2 text-[11px] ${description.length >= 2000 ? 'text-[#DC2626]' : 'text-[#94A3B8]'}`}>
+              <span className={`pointer-events-none absolute right-3 bottom-2 text-[11px] ${description.length >= 2000 ? 'text-danger' : 'text-text-muted'}`}>
                 {description.length}/2000
               </span>
             </div>
@@ -658,7 +658,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {/* Priority + Category + Status */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1.5">Priority</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1.5">Priority</label>
               <StyledSelect
                 value={priorityId}
                 onChange={(v) => setPriorityId(v)}
@@ -670,7 +670,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1.5">Category</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1.5">Category</label>
               <StyledSelect
                 value={categoryId}
                 onChange={(v) => setCategoryId(v)}
@@ -682,7 +682,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1.5">Status</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1.5">Status</label>
               {taskIsTerminal && currentStatus ? (
                 <div className="flex items-center h-[42px]">
                   <span
@@ -704,7 +704,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
 
           {/* Tags — full width, directly under Priority/Category/Status. */}
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">Tags</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Tags</label>
             <TagPicker orgId={orgId} value={tagIds} onChange={setTagIds} disabled={submitting} knownTags={task.tags} />
           </div>
 
@@ -737,22 +737,22 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
               dropzone to add more. Collapsed by default; the badge counts existing +
               queued. Adding a file uploads on Save; removing one deletes immediately. */}
           <div>
-            <div className="rounded-[12px] border border-[#E2E8F0] bg-white overflow-hidden">
+            <div className="rounded-[12px] border border-border-light bg-white overflow-hidden">
               <button
                 type="button"
                 onClick={() => setAttachmentsOpen((v) => !v)}
                 aria-expanded={attachmentsOpen}
-                className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-[#F8FAFC] transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-surface-sunken transition-colors"
               >
-                <label className="text-sm font-medium text-[#374151] cursor-pointer">Attachments</label>
-                <span className="text-xs font-normal text-[#475569]">Optional</span>
+                <label className="text-sm font-medium text-text-secondary cursor-pointer">Attachments</label>
+                <span className="text-xs font-normal text-text-secondary">Optional</span>
                 {existingAttachments.length + attachmentFiles.length > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
                     {existingAttachments.length + attachmentFiles.length}
                   </span>
                 )}
                 <span
-                  className={['ml-auto flex items-center justify-center w-6 h-6 rounded-[6px] text-[#2563EB] transition-transform', attachmentsOpen ? 'rotate-45' : ''].join(' ')}
+                  className={['ml-auto flex items-center justify-center w-6 h-6 rounded-[6px] text-primary-text transition-transform', attachmentsOpen ? 'rotate-45' : ''].join(' ')}
                   aria-hidden
                 >
                   <Plus size={18} />
@@ -794,16 +794,16 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
         {/* Footer — no Cancel button; the header X / Escape / backdrop close the modal.
             Error sits here so it's always visible next to Save, not hidden above
             the fold when the form is scrolled down. */}
-        <div className="shrink-0 px-6 py-4 border-t border-[#E2E8F0] space-y-3">
+        <div className="shrink-0 px-6 py-4 border-t border-border-light space-y-3">
           {error && (
-            <div className="bg-[#FEE2E2] border border-[#FECACA] rounded-[8px] px-4 py-3 text-sm text-[#DC2626]">{error}</div>
+            <div className="bg-danger-bg border border-danger-border rounded-[8px] px-4 py-3 text-sm text-danger">{error}</div>
           )}
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
             <button
               type="button"
               onClick={handleSubmit}
               disabled={submitting}
-              className="w-full sm:w-auto px-5 py-[10px] text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {submitting ? 'Saving...' : 'Save Changes'}
             </button>

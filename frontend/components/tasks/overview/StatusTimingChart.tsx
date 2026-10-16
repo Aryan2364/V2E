@@ -18,10 +18,10 @@ export default function StatusTimingChart({
     .map((s) => ({ id: s.id, label: s.label, ...s.timing }))
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col h-[320px]">
-      <h3 className="text-[15px] font-semibold text-[#0F172A] mb-3 shrink-0">Status · on track vs slipping</h3>
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col h-[320px]">
+      <h3 className="text-[15px] font-semibold text-text-primary mb-3 shrink-0">Status · on track vs slipping</h3>
       {data.length === 0 ? (
-        <p className="text-sm text-[#475569] flex-1 grid place-items-center">No tasks in this view.</p>
+        <p className="text-sm text-text-secondary flex-1 grid place-items-center">No tasks in this view.</p>
       ) : (
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">

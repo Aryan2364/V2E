@@ -24,13 +24,13 @@ export default function SourceTimingPanel({
   emptyText?: string
 }) {
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col">
       <div className="flex items-center justify-between mb-3 gap-2">
-        <h3 className="text-[15px] font-semibold text-[#0F172A]">{title}</h3>
-        {hint && <span className="text-xs text-[#94A3B8]">{hint}</span>}
+        <h3 className="text-[15px] font-semibold text-text-primary">{title}</h3>
+        {hint && <span className="text-xs text-text-muted">{hint}</span>}
       </div>
       {items.length === 0 ? (
-        <p className="text-sm text-[#475569] py-8 text-center">{emptyText}</p>
+        <p className="text-sm text-text-secondary py-8 text-center">{emptyText}</p>
       ) : (
         <div className="space-y-2.5">
           {items.map((it) => {
@@ -40,10 +40,10 @@ export default function SourceTimingPanel({
               <Row
                 key={it.id}
                 {...(onSelect ? { onClick: () => onSelect(it), type: 'button' as const } : {})}
-                className={`w-full text-left rounded-[10px] border border-[#E2E8F0] px-3.5 py-2.5 transition-colors ${onSelect ? 'hover:border-[#2563EB] hover:bg-[#F8FAFC]' : ''}`}
+                className={`w-full text-left rounded-[10px] border border-border-light px-3.5 py-2.5 transition-colors ${onSelect ? 'hover:border-primary hover:bg-surface-sunken' : ''}`}
               >
                 <div className="flex items-center justify-between gap-3 mb-1.5">
-                  <span className="font-semibold text-sm text-[#0F172A] truncate">{it.label}</span>
+                  <span className="font-semibold text-sm text-text-primary truncate">{it.label}</span>
                   <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: overdueRate >= 25 ? '#DC2626' : '#475569' }}>
                     <span className="font-bold">{overdueRate}%</span> overdue · {it.total}
                   </span>

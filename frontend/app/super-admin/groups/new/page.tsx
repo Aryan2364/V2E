@@ -20,19 +20,19 @@ type FormValues = z.infer<typeof schema>
 function Field({ label, error, required, children }: { label: string; error?: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium text-[#374151]">
-        {label}{required && <span className="text-[#DC2626] ml-0.5">*</span>}
+      <label className="text-sm font-medium text-text-secondary">
+        {label}{required && <span className="text-danger ml-0.5">*</span>}
       </label>
       {children}
-      {error && <p className="text-xs text-[#DC2626]">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
     </div>
   )
 }
 
 const inputCls = (hasError?: boolean) =>
   [
-    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden transition-colors',
-    hasError ? 'border-2 border-[#DC2626]' : 'border border-[#CBD5E1] focus:border-2 focus:border-[#2563EB]',
+    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden transition-colors',
+    hasError ? 'border-2 border-danger' : 'border border-border focus:border-2 focus:border-primary',
   ].join(' ')
 
 export default function NewGroupPage() {
@@ -58,23 +58,23 @@ export default function NewGroupPage() {
       <div>
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center gap-1 text-sm text-[#475569] hover:text-[#0F172A] mb-3 transition-colors"
+          className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary mb-3 transition-colors"
         >
           <ChevronLeft size={16} /> Back
         </button>
-        <h1 className="text-[28px] font-bold text-[#0F172A]">Create Group</h1>
-        <p className="text-sm text-[#475569] mt-1">Groups let you cluster related organizations and share users across them.</p>
+        <h1 className="text-[28px] font-bold text-text-primary">Create Group</h1>
+        <p className="text-sm text-text-secondary mt-1">Groups let you cluster related organizations and share users across them.</p>
       </div>
 
       {serverError && (
-        <div className="rounded-[8px] bg-[#FEE2E2] border border-[#FECACA] px-4 py-3 text-sm text-[#DC2626]">
+        <div className="rounded-[8px] bg-danger-bg border border-danger-border px-4 py-3 text-sm text-danger">
           {serverError}
         </div>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         <Card>
-          <h2 className="text-[16px] font-semibold text-[#0F172A] mb-5 pb-4 border-b border-[#E2E8F0]">Group Details</h2>
+          <h2 className="text-[16px] font-semibold text-text-primary mb-5 pb-4 border-b border-border-light">Group Details</h2>
           <div className="flex flex-col gap-5">
             <Field label="Group Name" error={errors.name?.message} required>
               <input

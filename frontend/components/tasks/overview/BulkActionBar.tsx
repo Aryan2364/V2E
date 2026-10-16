@@ -71,7 +71,7 @@ export default function BulkActionBar({
             disabled={busy}
             onChange={(v) => v && onStatus(v)}
             wrapperClassName="w-[150px]"
-            triggerClassName="bg-[#1E293B]! hover:bg-[#1E293B]! focus:bg-[#1E293B]! border-[#334155]! text-white!"
+            triggerClassName="bg-[#1E293B]! hover:bg-[#1E293B]! focus:bg-[#1E293B]! border-border-strong! text-white!"
             placeholder="Set status…"
             options={[
               { value: '', label: 'Set status…' },
@@ -103,7 +103,7 @@ export default function BulkActionBar({
           <button
             onClick={onComplete}
             disabled={busy}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] bg-[#16A34A] text-white text-sm font-semibold hover:bg-[#15803D] disabled:opacity-60 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] bg-success text-white text-sm font-semibold hover:bg-success disabled:opacity-60 transition-colors"
           >
             <CheckCircle2 size={15} /> Complete
           </button>
@@ -229,7 +229,7 @@ function BulkTagButton({
         aria-haspopup="dialog"
         aria-expanded={open}
         className={`flex items-center gap-1.5 px-3 py-2 rounded-[8px] border text-sm font-semibold disabled:opacity-60 transition-colors ${
-          open ? 'bg-white text-[#0F172A] border-white' : 'bg-[#1E293B] text-white border-[#334155] hover:bg-[#334155]'
+          open ? 'bg-white text-text-primary border-white' : 'bg-[#1E293B] text-white border-border-strong hover:bg-[#334155]'
         }`}
       >
         <TagIcon size={15} /> Tag
@@ -250,13 +250,13 @@ function BulkTagButton({
                 type="button"
                 onClick={() => close(true)}
                 aria-label="Close"
-                className="w-7 h-7 rounded-btn flex items-center justify-center text-secondary hover:bg-[#F1F5F9] hover:text-heading focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+                className="w-7 h-7 rounded-btn flex items-center justify-center text-secondary hover:bg-surface-control hover:text-heading focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <X size={15} />
               </button>
             </div>
 
-            <div role="group" aria-label="Add or remove" className="grid grid-cols-2 gap-1 p-0.5 mb-3 rounded-btn border border-border bg-[#F8FAFC]">
+            <div role="group" aria-label="Add or remove" className="grid grid-cols-2 gap-1 p-0.5 mb-3 rounded-btn border border-border bg-surface-sunken">
               {([['add_tags', 'Add tags'], ['remove_tags', 'Remove tags']] as const).map(([m, label]) => (
                 <button
                   key={m}
@@ -292,7 +292,7 @@ function BulkTagButton({
               <button
                 type="button"
                 onClick={() => close(true)}
-                className="px-3.5 py-2 rounded-btn border border-border text-sm font-medium text-secondary hover:bg-[#F1F5F9] hover:text-heading transition-colors"
+                className="px-3.5 py-2 rounded-btn border border-border text-sm font-medium text-secondary hover:bg-surface-control hover:text-heading transition-colors"
               >
                 Cancel
               </button>

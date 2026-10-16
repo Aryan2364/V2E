@@ -61,8 +61,8 @@ const EMPLOYMENT_TYPES: { value: EmploymentType; label: string }[] = [
 ]
 
 const inputClass =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
-const labelClass = 'block text-sm font-medium text-[#374151] mb-1'
+  'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
 
 export default function AddEmployeeModal({
   orgId,
@@ -330,11 +330,11 @@ export default function AddEmployeeModal({
     <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-[12px] rounded-t-[16px] shadow-xl max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0]">
-          <h2 className="text-[18px] font-semibold text-[#0F172A]">Add Employee</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
+          <h2 className="text-[18px] font-semibold text-text-primary">Add Employee</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-[6px] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors"
+            className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
             aria-label="Close"
           >
             <X size={18} />
@@ -345,7 +345,7 @@ export default function AddEmployeeModal({
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="px-6 py-5 overflow-y-auto space-y-4">
             {error && (
-              <div className="p-3 bg-[#FEF2F2] border border-[#FECACA] rounded-[8px] text-sm text-[#DC2626]">
+              <div className="p-3 bg-danger-bg border border-danger-border rounded-[8px] text-sm text-danger">
                 {error}
               </div>
             )}
@@ -361,11 +361,11 @@ export default function AddEmployeeModal({
                   disabled={prefillSelf || existingAccount}
                 />
                 {existingAccount && (
-                  <p className="mt-1 text-xs text-[#64748B]">Name comes from their existing account.</p>
+                  <p className="mt-1 text-xs text-text-muted">Name comes from their existing account.</p>
                 )}
               </div>
               <div>
-                <label className={labelClass}>Email <span className="font-normal text-[#94A3B8]">or phone</span></label>
+                <label className={labelClass}>Email <span className="font-normal text-text-muted">or phone</span></label>
                 <input
                   type="email"
                   value={form.email}
@@ -402,20 +402,20 @@ export default function AddEmployeeModal({
                     disabled={prefillSelf}
                   />
                 </div>
-                <p className="mt-1 text-xs text-[#94A3B8]">Email or phone — at least one. They can sign in with either.</p>
+                <p className="mt-1 text-xs text-text-muted">Email or phone — at least one. They can sign in with either.</p>
               </div>
               <div className="flex items-start">
                 <div className="w-full">
                   {!prefillSelf && checkingAccount && (
-                    <p className="mt-7 text-xs text-[#94A3B8]">Checking…</p>
+                    <p className="mt-7 text-xs text-text-muted">Checking…</p>
                   )}
                   {!prefillSelf && duplicateInOrg && (
-                    <p className="mt-7 text-xs text-[#DC2626]">
+                    <p className="mt-7 text-xs text-danger">
                       This person is already an employee in this firm.
                     </p>
                   )}
                   {!prefillSelf && existingAccount && !duplicateInOrg && (
-                    <p className="mt-7 text-xs text-[#059669]">
+                    <p className="mt-7 text-xs text-success">
                       Existing V2E account — they’ll use their current login. No password needed here.
                     </p>
                   )}
@@ -438,7 +438,7 @@ export default function AddEmployeeModal({
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -471,9 +471,9 @@ export default function AddEmployeeModal({
                         type="checkbox"
                         checked={form.make_dep_head}
                         onChange={(e) => set('make_dep_head', e.target.checked)}
-                        className="w-4 h-4 rounded-xs border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB]"
+                        className="w-4 h-4 rounded-xs border-border text-primary-text focus:ring-primary"
                       />
-                      <span className="text-xs font-medium text-[#475569]">
+                      <span className="text-xs font-medium text-text-secondary">
                         Make this employee the Head of this department
                       </span>
                     </label>
@@ -483,7 +483,7 @@ export default function AddEmployeeModal({
                   <button
                     type="button"
                     onClick={() => setCreatingDept(true)}
-                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8]"
+                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text"
                   >
                     <Plus size={12} /> New department
                   </button>
@@ -510,7 +510,7 @@ export default function AddEmployeeModal({
                   }}
                 />
                 {isHeadRoleSelected && deptHasHead && (
-                  <p className="mt-1.5 text-xs text-[#CA8A04] bg-[#FEF9C3] border border-[#FDE68A] rounded-[6px] px-2.5 py-1.5 font-medium">
+                  <p className="mt-1.5 text-xs text-warning bg-warning-bg border border-warning-border rounded-[6px] px-2.5 py-1.5 font-medium">
                     Already there is a head here.
                   </p>
                 )}
@@ -521,7 +521,7 @@ export default function AddEmployeeModal({
                   <button
                     type="button"
                     onClick={() => setCreatingRole(true)}
-                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8]"
+                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text"
                   >
                     <Plus size={12} /> New job role
                   </button>
@@ -568,11 +568,11 @@ export default function AddEmployeeModal({
                   onChange={(e) => set('employee_code', e.target.value)}
                   placeholder="EMP-001"
                   className={`${inputClass} ${
-                    codeTaken ? 'border-[#DC2626]! focus:border-[#DC2626]! focus:ring-[#DC2626]!' : ''
+                    codeTaken ? 'border-danger! focus:border-danger! focus:ring-danger!' : ''
                   }`}
                 />
                 {codeTaken && (
-                  <p className="mt-1 text-xs text-[#DC2626]">This code is already in use.</p>
+                  <p className="mt-1 text-xs text-danger">This code is already in use.</p>
                 )}
               </div>
             </div>
@@ -608,11 +608,11 @@ export default function AddEmployeeModal({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end px-6 py-4 border-t border-[#E2E8F0]">
+          <div className="flex items-center justify-end px-6 py-4 border-t border-border-light">
             <button
               type="submit"
               disabled={saving || duplicateInOrg || checkingAccount}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {saving && <Loader2 size={15} className="animate-spin" />}
               {saving ? 'Adding…' : existingAccount ? 'Add to firm' : 'Add Employee'}

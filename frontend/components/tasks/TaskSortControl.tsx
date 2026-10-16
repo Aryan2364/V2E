@@ -59,24 +59,24 @@ export default function TaskSortControl({ sort, onChange }: { sort: TaskSort; on
 
   return (
     <div ref={ref} className="relative shrink-0">
-      <div className="flex items-center h-[38px] rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] hover:border-[#94A3B8] transition-colors">
+      <div className="flex items-center h-[38px] rounded-[8px] border border-border bg-surface-sunken hover:border-border-strong transition-colors">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-haspopup="listbox"
           aria-expanded={open}
-          className="flex items-center gap-1.5 pl-3 pr-2 py-2 text-sm text-[#0F172A]"
+          className="flex items-center gap-1.5 pl-3 pr-2 py-2 text-sm text-text-primary"
         >
-          <ArrowUpDown size={15} className="text-[#475569]" />
+          <ArrowUpDown size={15} className="text-text-secondary" />
           <span className="font-medium">{FIELD_LABEL[sort.field]}</span>
-          <ChevronDown size={14} className={`text-[#94A3B8] transition-transform ${open ? 'rotate-180' : ''}`} />
+          <ChevronDown size={14} className={`text-text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
         <Tooltip label={sort.dir === 'asc' ? 'Ascending' : 'Descending'}>
           <button
             type="button"
             onClick={toggleDir}
             aria-label={sort.dir === 'asc' ? 'Sort ascending — tap to reverse' : 'Sort descending — tap to reverse'}
-            className="flex items-center h-full px-2 border-l border-[#CBD5E1] text-[#475569] hover:text-[#0F172A] hover:bg-white rounded-r-[8px] transition-colors"
+            className="flex items-center h-full px-2 border-l border-border text-text-secondary hover:text-text-primary hover:bg-white rounded-r-[8px] transition-colors"
           >
             {sort.dir === 'asc' ? <ArrowUp size={15} /> : <ArrowDown size={15} />}
           </button>
@@ -86,7 +86,7 @@ export default function TaskSortControl({ sort, onChange }: { sort: TaskSort; on
       {open && (
         <div
           role="listbox"
-          className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 rounded-[10px] border border-[#E2E8F0] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)] py-1"
+          className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 rounded-[10px] border border-border-light bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)] py-1"
         >
           {FIELDS.map((f) => {
             const active = f.value === sort.field
@@ -101,11 +101,11 @@ export default function TaskSortControl({ sort, onChange }: { sort: TaskSort; on
                   setOpen(false)
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${
-                  active ? 'bg-[#EFF6FF] text-[#2563EB] font-medium' : 'text-[#0F172A] hover:bg-[#F8FAFC]'
+                  active ? 'bg-primary-subtle text-primary-text font-medium' : 'text-text-primary hover:bg-surface-sunken'
                 }`}
               >
                 <span className="flex-1">{f.label}</span>
-                {active && <Check size={14} className="text-[#2563EB] shrink-0" />}
+                {active && <Check size={14} className="text-primary-text shrink-0" />}
               </button>
             )
           })}

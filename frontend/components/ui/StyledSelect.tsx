@@ -202,7 +202,7 @@ export default function StyledSelect({
       ? 'gap-2 rounded-full px-2.5 py-1 text-[13px]'
       : 'gap-2.5 rounded-[8px] px-3 py-2.5 text-[15px]'
   const triggerCls =
-    `w-full flex items-center border border-[#CBD5E1] text-left bg-[#F8FAFC] hover:bg-white hover:border-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors disabled:bg-[#F1F5F9] disabled:text-[#94A3B8] disabled:cursor-not-allowed ${sizeCls}`
+    `w-full flex items-center border border-border text-left bg-surface-sunken hover:bg-white hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors disabled:bg-surface-control disabled:text-text-muted disabled:cursor-not-allowed ${sizeCls}`
 
   return (
     <div ref={wrapRef} className={`relative ${wrapperClassName}`}>
@@ -221,25 +221,25 @@ export default function StyledSelect({
                 style={{ backgroundColor: selected.color }}
               />
             )}
-            <span className="flex-1 min-w-0 truncate text-[#0F172A]">{selected.label}</span>
+            <span className="flex-1 min-w-0 truncate text-text-primary">{selected.label}</span>
           </>
         ) : (
-          <span className="flex-1 text-[#94A3B8]">{placeholder}</span>
+          <span className="flex-1 text-text-muted">{placeholder}</span>
         )}
         <ChevronDown
           size={size === 'sm' ? 14 : 16}
-          className={`shrink-0 text-[#94A3B8] transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-text-muted transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
       {open && (
         <div
           style={{ maxHeight: panelMaxH }}
-          className={`absolute left-0 right-0 ${dropUp ? 'bottom-[calc(100%+6px)]' : 'top-[calc(100%+6px)]'} z-50 flex flex-col border border-[#E2E8F0] rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden`}
+          className={`absolute left-0 right-0 ${dropUp ? 'bottom-[calc(100%+6px)]' : 'top-[calc(100%+6px)]'} z-50 flex flex-col border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden`}
         >
           {showSearch && (
-            <div className="shrink-0 flex items-center gap-2 px-2.5 py-2 border-b border-[#E2E8F0] bg-white">
-              <Search size={15} className="shrink-0 text-[#94A3B8]" />
+            <div className="shrink-0 flex items-center gap-2 px-2.5 py-2 border-b border-border-light bg-white">
+              <Search size={15} className="shrink-0 text-text-muted" />
               <input
                 ref={searchRef}
                 value={query}
@@ -248,13 +248,13 @@ export default function StyledSelect({
                   setActive(-1)
                 }}
                 placeholder={searchPlaceholder}
-                className="flex-1 min-w-0 bg-transparent text-[16px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
+                className="flex-1 min-w-0 bg-transparent text-[16px] text-text-primary placeholder:text-text-muted focus:outline-hidden"
               />
             </div>
           )}
           <div ref={listRef} className="flex-1 overflow-y-auto overscroll-contain min-h-0 py-1">
             {shown.length === 0 ? (
-              <p className="px-3 py-6 text-center text-sm text-[#94A3B8]">
+              <p className="px-3 py-6 text-center text-sm text-text-muted">
                 {options.length === 0 ? 'No options.' : 'No match.'}
               </p>
             ) : (
@@ -265,7 +265,7 @@ export default function StyledSelect({
                 return (
                   <div key={o.value}>
                     {/* A divider only means anything in the unfiltered list. */}
-                    {o.divider && !query.trim() && <div className="my-1 border-t border-[#E2E8F0]" />}
+                    {o.divider && !query.trim() && <div className="my-1 border-t border-border-light" />}
                     <button
                       type="button"
                       data-idx={i}
@@ -273,12 +273,12 @@ export default function StyledSelect({
                       onClick={() => pick(o.value)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
                         danger
-                          ? 'bg-transparent hover:bg-[#FEF2F2]'
+                          ? 'bg-transparent hover:bg-danger-bg'
                           : isSel
-                            ? 'bg-[#EFF6FF]'
+                            ? 'bg-primary-subtle'
                             : isActive
-                              ? 'bg-[#F1F5F9]'
-                              : 'hover:bg-[#F8FAFC]'
+                              ? 'bg-surface-control'
+                              : 'hover:bg-surface-sunken'
                       }`}
                     >
                       {o.color && (
@@ -289,12 +289,12 @@ export default function StyledSelect({
                       )}
                       <span
                         className={`flex-1 min-w-0 truncate text-sm font-medium ${
-                          danger ? 'text-[#DC2626]' : isSel ? 'text-[#2563EB]' : 'text-[#0F172A]'
+                          danger ? 'text-danger' : isSel ? 'text-primary-text' : 'text-text-primary'
                         }`}
                       >
                         {o.label}
                       </span>
-                      {isSel && <Check size={15} className="text-[#2563EB] shrink-0" />}
+                      {isSel && <Check size={15} className="text-primary-text shrink-0" />}
                     </button>
                   </div>
                 )

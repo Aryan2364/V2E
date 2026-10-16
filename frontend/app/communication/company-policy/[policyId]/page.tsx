@@ -26,9 +26,9 @@ import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/Responsi
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<PolicyStatus, { bg: string; text: string; label: string }> = {
-  draft:     { bg: 'bg-[#FEF9C3]', text: 'text-[#CA8A04]', label: 'Draft' },
-  published: { bg: 'bg-[#DCFCE7]', text: 'text-[#16A34A]', label: 'Published' },
-  archived:  { bg: 'bg-[#F1F5F9]', text: 'text-[#475569]', label: 'Archived' },
+  draft:     { bg: 'bg-warning-bg', text: 'text-warning', label: 'Draft' },
+  published: { bg: 'bg-success-bg', text: 'text-success', label: 'Published' },
+  archived:  { bg: 'bg-surface-control', text: 'text-text-secondary', label: 'Archived' },
 }
 
 const TYPE_ICONS: Record<PolicyContentType, React.ElementType> = {
@@ -40,15 +40,15 @@ const TYPE_LABELS: Record<PolicyContentType, string> = {
 }
 
 const TYPE_COLORS: Record<PolicyContentType, string> = {
-  video: 'bg-[#FEE2E2] text-[#DC2626]',
-  document: 'bg-[#FEF9C3] text-[#CA8A04]',
-  url: 'bg-[#DBEAFE] text-[#2563EB]',
-  article: 'bg-[#DCFCE7] text-[#16A34A]',
+  video: 'bg-danger-bg text-danger',
+  document: 'bg-warning-bg text-warning',
+  url: 'bg-primary-subtle text-primary-text',
+  article: 'bg-success-bg text-success',
 }
 
 const ASSIGN_STATUS: Record<string, { bg: string; text: string; label: string }> = {
-  not_started: { bg: 'bg-[#F1F5F9]', text: 'text-[#475569]', label: 'Not Started' },
-  acknowledged: { bg: 'bg-[#DCFCE7]', text: 'text-[#16A34A]', label: 'Acknowledged' },
+  not_started: { bg: 'bg-surface-control', text: 'text-text-secondary', label: 'Not Started' },
+  acknowledged: { bg: 'bg-success-bg', text: 'text-success', label: 'Acknowledged' },
 }
 
 function StatusBadge({ status }: { status: PolicyStatus }) {
@@ -89,9 +89,9 @@ function DialogShell({ title, onClose, size, children }: { title: string; onClos
       aria-label={title}
     >
       <div className={`bg-white rounded-t-[16px] sm:rounded-[16px] w-full ${size === 'lg' ? 'sm:max-w-lg' : 'sm:max-w-md'} shadow-xl flex flex-col max-h-[90vh]`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] shrink-0">
-          <h2 className="text-[16px] font-bold text-[#0F172A]">{title}</h2>
-          <button onClick={onClose} aria-label="Close" className="w-9 h-9 flex items-center justify-center text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-[6px] transition-colors">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light shrink-0">
+          <h2 className="text-[16px] font-bold text-text-primary">{title}</h2>
+          <button onClick={onClose} aria-label="Close" className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-control rounded-[6px] transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -109,15 +109,15 @@ const assignmentColumns: ResponsiveColumn<CompanyPolicyAssignment>[] = [
     primary: true,
     render: (a) => (
       <>
-        <p className="font-medium text-[#0F172A]">{a.employee_profile?.user.name ?? '—'}</p>
-        <p className="text-xs text-[#475569]">{a.employee_profile?.user.email ?? ''}</p>
+        <p className="font-medium text-text-primary">{a.employee_profile?.user.name ?? '—'}</p>
+        <p className="text-xs text-text-secondary">{a.employee_profile?.user.email ?? ''}</p>
       </>
     ),
   },
   {
     key: 'role',
     header: 'Role',
-    render: (a) => <span className="text-[#475569]">{a.employee_profile?.role?.title ?? '—'}</span>,
+    render: (a) => <span className="text-text-secondary">{a.employee_profile?.role?.title ?? '—'}</span>,
   },
   {
     key: 'status',
@@ -131,7 +131,7 @@ const assignmentColumns: ResponsiveColumn<CompanyPolicyAssignment>[] = [
     key: 'assigned_on',
     header: 'Assigned On',
     render: (a) => (
-      <span className="text-[#475569] text-xs">{new Date(a.assigned_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+      <span className="text-text-secondary text-xs">{new Date(a.assigned_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
     ),
   },
 ]
@@ -187,17 +187,17 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
     }
   }
 
-  const inputClass = 'w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
-  const labelClass = 'block text-sm font-medium text-[#374151] mb-1.5'
+  const inputClass = 'w-full px-3 py-2.5 border border-border rounded-[8px] text-base sm:text-sm text-text-primary placeholder:text-text-muted bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  const labelClass = 'block text-sm font-medium text-text-secondary mb-1.5'
 
   return (
     <DialogShell title={editing ? 'Edit Item' : 'Add Item'} onClose={onClose} size="lg">
 
         <div className="overflow-y-auto px-6 py-5 flex flex-col gap-4">
-          {error && <div className="text-sm text-[#DC2626] bg-[#FEE2E2] border border-[#FECACA] rounded-[8px] px-4 py-3">{error}</div>}
+          {error && <div className="text-sm text-danger bg-danger-bg border border-danger-border rounded-[8px] px-4 py-3">{error}</div>}
 
           <div>
-            <label className={labelClass}>Title <span className="text-[#DC2626]">*</span></label>
+            <label className={labelClass}>Title <span className="text-danger">*</span></label>
             <input type="text" value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="Item title" className={inputClass} />
           </div>
 
@@ -212,7 +212,7 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
                     key={type}
                     type="button"
                     onClick={() => set('content_type', type)}
-                    className={['flex items-center gap-2 px-3 py-2.5 rounded-[8px] border-2 text-sm font-medium transition-all', active ? 'border-[#2563EB] bg-[#EFF6FF] text-[#2563EB]' : 'border-[#E2E8F0] text-[#475569] hover:border-[#CBD5E1]'].join(' ')}
+                    className={['flex items-center gap-2 px-3 py-2.5 rounded-[8px] border-2 text-sm font-medium transition-all', active ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary hover:border-border'].join(' ')}
                   >
                     <Icon size={15} />
                     {TYPE_LABELS[type]}
@@ -241,16 +241,16 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
           )}
 
           <div>
-            <label className={labelClass}>Description <span className="text-[#475569] font-normal">(optional)</span></label>
+            <label className={labelClass}>Description <span className="text-text-secondary font-normal">(optional)</span></label>
             <textarea value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="Short description…" rows={2} className={`${inputClass} resize-none`} />
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#E2E8F0] shrink-0">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light shrink-0">
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
           >
             {saving && <Loader2 size={15} className="animate-spin" />}
             {editing ? 'Save Changes' : 'Add Item'}
@@ -297,11 +297,11 @@ function AssignModal({ policyId, orgId, onClose, onAssigned }: { policyId: strin
     <DialogShell title="Assign Employees" onClose={onClose} size="md">
         <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
           {loading ? (
-            <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" /></div>
+            <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
           ) : loadFailed ? (
-            <p className="text-sm text-[#475569] text-center py-8">Employees could not be loaded. Close this and try again.</p>
+            <p className="text-sm text-text-secondary text-center py-8">Employees could not be loaded. Close this and try again.</p>
           ) : employees.length === 0 ? (
-            <p className="text-sm text-[#475569] text-center py-8">No employees found</p>
+            <p className="text-sm text-text-secondary text-center py-8">No employees found</p>
           ) : (
             employees.map((emp) => {
               const checked = selected.includes(emp.id)
@@ -310,14 +310,14 @@ function AssignModal({ policyId, orgId, onClose, onAssigned }: { policyId: strin
                 <button
                   key={emp.id}
                   onClick={() => toggle(emp.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F8FAFC] transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-surface-sunken transition-colors text-left"
                 >
-                  <div className={['w-5 h-5 rounded-[4px] border-2 flex items-center justify-center shrink-0 transition-colors', checked ? 'bg-[#2563EB] border-[#2563EB]' : 'border-[#CBD5E1]'].join(' ')}>
+                  <div className={['w-5 h-5 rounded-[4px] border-2 flex items-center justify-center shrink-0 transition-colors', checked ? 'bg-primary border-primary' : 'border-border'].join(' ')}>
                     {checked && <Check size={11} className="text-white" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#0F172A] truncate">{name}</p>
-                    <p className="text-xs text-[#475569] truncate">{emp.role?.title ?? ''}</p>
+                    <p className="text-sm font-medium text-text-primary truncate">{name}</p>
+                    <p className="text-xs text-text-secondary truncate">{emp.role?.title ?? ''}</p>
                   </div>
                 </button>
               )
@@ -325,15 +325,15 @@ function AssignModal({ policyId, orgId, onClose, onAssigned }: { policyId: strin
           )}
         </div>
         {error && (
-          <div className="mx-6 mb-3 text-sm text-[#B91C1C] bg-[#FEF2F2] border border-[#FECACA] rounded-[8px] px-3 py-2">{error}</div>
+          <div className="mx-6 mb-3 text-sm text-danger bg-danger-bg border border-danger-border rounded-[8px] px-3 py-2">{error}</div>
         )}
-        <div className="px-6 py-4 border-t border-[#E2E8F0] flex items-center justify-between shrink-0">
-          <p className="text-sm text-[#475569]">{selected.length} selected</p>
+        <div className="px-6 py-4 border-t border-border-light flex items-center justify-between shrink-0">
+          <p className="text-sm text-text-secondary">{selected.length} selected</p>
           <div className="flex gap-3">
             <button
               onClick={handleAssign}
               disabled={!selected.length || assigning}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
             >
               {assigning && <Loader2 size={13} className="animate-spin" />}
               Assign
@@ -461,17 +461,17 @@ export default function ManagePolicyPage() {
     setEditingItem(null)
   }
 
-  if (status === 'loading') return <div className="flex justify-center py-20"><div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" /></div>
+  if (status === 'loading') return <div className="flex justify-center py-20"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
   if (status === 'failed' || !policy) {
     return (
       <div>
         <PolicyBreadcrumb trail={[{ label: 'Company Policy', href: POLICY_BASE }, { label: 'Policy' }]} />
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-8 flex flex-col items-center text-center gap-2">
-          <p className="text-sm font-semibold text-[#0F172A]">This policy could not be loaded</p>
-          <p className="text-sm text-[#475569]">It may have been deleted, or the connection dropped.</p>
+        <div className="bg-white border border-border-light rounded-[12px] p-8 flex flex-col items-center text-center gap-2">
+          <p className="text-sm font-semibold text-text-primary">This policy could not be loaded</p>
+          <p className="text-sm text-text-secondary">It may have been deleted, or the connection dropped.</p>
           <div className="flex gap-3 mt-2">
-            <button type="button" onClick={load} className="px-4 py-2 text-sm font-semibold text-[#2563EB] border-2 border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors">Retry</button>
-            <Link href={POLICY_BASE} className="px-4 py-2 text-sm font-semibold text-[#475569] hover:text-[#0F172A] transition-colors">All policies</Link>
+            <button type="button" onClick={load} className="px-4 py-2 text-sm font-semibold text-primary-text border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors">Retry</button>
+            <Link href={POLICY_BASE} className="px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors">All policies</Link>
           </div>
         </div>
       </div>
@@ -487,34 +487,34 @@ export default function ManagePolicyPage() {
         ? `"${pendingDelete.item.title}" will be removed from this policy. This cannot be undone.`
         : undefined
 
-  const outlineBtn = 'flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-sm font-semibold rounded-[8px] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:border-[#E2E8F0] disabled:cursor-not-allowed'
+  const outlineBtn = 'flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-sm font-semibold rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:border-border-light disabled:cursor-not-allowed'
 
   return (
     <div className="w-full max-w-[1280px]">
       <PolicyBreadcrumb trail={[{ label: 'Company Policy', href: POLICY_BASE }, { label: policy.title }]} />
 
       {/* Header card */}
-      <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6 mb-5">
+      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6 mb-5">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-0">
-            <h1 className="text-[22px] sm:text-[28px] font-bold text-[#0F172A] leading-snug wrap-break-word">{policy.title}</h1>
+            <h1 className="text-[22px] sm:text-[28px] font-bold text-text-primary leading-snug wrap-break-word">{policy.title}</h1>
             <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
               <StatusBadge status={policy.status} />
             </div>
-            {policy.description && <p className="text-[14px] text-[#475569] mt-2 leading-relaxed wrap-break-word">{policy.description}</p>}
+            {policy.description && <p className="text-[14px] text-text-secondary mt-2 leading-relaxed wrap-break-word">{policy.description}</p>}
           </div>
 
           <div className="flex items-center gap-2 flex-wrap shrink-0">
             {canEdit === true ? (
               <Link
                 href={`${policyHref(policyId)}/edit`}
-                className={`${outlineBtn} text-[#475569] bg-white border border-[#CBD5E1] hover:border-[#2563EB] hover:text-[#2563EB]`}
+                className={`${outlineBtn} text-text-secondary bg-white border border-border hover:border-primary hover:text-primary-text`}
               >
                 <Pencil size={14} /> Edit
               </Link>
             ) : (
               <PermissionTooltip allowed={canEdit} reason={POLICY_REASONS.edit}>
-                <button type="button" disabled className={`${outlineBtn} border border-[#E2E8F0]`}>
+                <button type="button" disabled className={`${outlineBtn} border border-border-light`}>
                   <Pencil size={14} /> Edit
                 </button>
               </PermissionTooltip>
@@ -527,7 +527,7 @@ export default function ManagePolicyPage() {
                 <button
                   onClick={handlePublish}
                   disabled={publishing || canWrite !== true || itemCount === 0}
-                  className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-sm font-semibold text-white bg-[#16A34A] hover:bg-[#15803D] rounded-[8px] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-sm font-semibold text-white bg-success hover:bg-success rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
                 >
                   {publishing && <Loader2 size={13} className="animate-spin" />}
                   Publish
@@ -539,7 +539,7 @@ export default function ManagePolicyPage() {
                 <button
                   onClick={handleArchive}
                   disabled={archiving || canWrite !== true}
-                  className={`${outlineBtn} text-[#B45309] bg-[#FFFBEB] border border-[#FDE68A] hover:bg-[#FEF3C7]`}
+                  className={`${outlineBtn} text-warning bg-warning-bg border border-warning-border hover:bg-warning-bg`}
                 >
                   {archiving && <Loader2 size={13} className="animate-spin" />}
                   Archive
@@ -551,7 +551,7 @@ export default function ManagePolicyPage() {
                 onClick={() => { setDeleteError(null); setPendingDelete({ kind: 'policy' }) }}
                 disabled={canDeletePolicy !== true}
                 aria-label="Delete policy"
-                className="w-10 h-10 flex items-center justify-center text-[#DC2626] bg-white border border-[#E2E8F0] rounded-[8px] hover:bg-[#FEE2E2] hover:border-[#FECACA] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed"
+                className="w-10 h-10 flex items-center justify-center text-danger bg-white border border-border-light rounded-[8px] hover:bg-danger-bg hover:border-danger-border transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 <Trash2 size={15} />
               </button>
@@ -561,13 +561,13 @@ export default function ManagePolicyPage() {
       </div>
 
       {/* Tabs — with the tab's own action on the right of the bar */}
-      <div className="flex items-end justify-between gap-3 border-b border-[#E2E8F0] mb-6 flex-wrap">
+      <div className="flex items-end justify-between gap-3 border-b border-border-light mb-6 flex-wrap">
         <div className="flex gap-0">
           {(showAssignmentsTab ? (['items', 'assignments'] as const) : (['items'] as const)).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={['-mb-px px-5 py-2.5 min-h-[44px] text-sm font-semibold capitalize border-b-2 transition-colors', activeTab === t ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#475569] hover:text-[#0F172A]'].join(' ')}
+              className={['-mb-px px-5 py-2.5 min-h-[44px] text-sm font-semibold capitalize border-b-2 transition-colors', activeTab === t ? 'border-primary text-primary-text' : 'border-transparent text-text-secondary hover:text-text-primary'].join(' ')}
             >
               {t}
             </button>
@@ -579,7 +579,7 @@ export default function ManagePolicyPage() {
               <button
                 onClick={() => { setEditingItem(null); setShowItemModal(true) }}
                 disabled={canWrite !== true}
-                className="flex items-center gap-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold px-4 py-2 rounded-[8px] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed"
+                className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 <Plus size={15} /> Add Item
               </button>
@@ -592,7 +592,7 @@ export default function ManagePolicyPage() {
               <button
                 onClick={() => setShowAssignModal(true)}
                 disabled={canWrite !== true || policy.status !== 'published'}
-                className="flex items-center gap-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold px-4 py-2 rounded-[8px] transition-colors disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed"
+                className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 <Users size={15} /> Assign Employees
               </button>
@@ -605,10 +605,10 @@ export default function ManagePolicyPage() {
       {activeTab === 'items' && (
         <div>
           {!policy.items?.length ? (
-            <div className="text-center py-16 bg-white border border-[#E2E8F0] rounded-[12px] px-4">
-              <FileText size={28} className="text-[#475569] mx-auto mb-3" />
-              <p className="text-sm font-semibold text-[#0F172A]">No items yet</p>
-              <p className="text-xs text-[#475569] mt-1">
+            <div className="text-center py-16 bg-white border border-border-light rounded-[12px] px-4">
+              <FileText size={28} className="text-text-secondary mx-auto mb-3" />
+              <p className="text-sm font-semibold text-text-primary">No items yet</p>
+              <p className="text-xs text-text-secondary mt-1">
                 {canWrite === true ? 'Add articles, videos, documents or links to this policy.' : 'This policy has no content yet.'}
               </p>
             </div>
@@ -617,14 +617,14 @@ export default function ManagePolicyPage() {
               {policy.items.map((item, idx) => {
                 const Icon = TYPE_ICONS[item.content_type]
                 return (
-                  <div key={item.id} className="bg-white border border-[#E2E8F0] rounded-[10px] px-4 py-3.5 flex items-center gap-3 sm:gap-4 hover:border-[#CBD5E1] transition-colors">
-                    <span className="hidden sm:block text-[12px] font-bold text-[#475569] w-5 text-right shrink-0">{idx + 1}</span>
+                  <div key={item.id} className="bg-white border border-border-light rounded-[10px] px-4 py-3.5 flex items-center gap-3 sm:gap-4 hover:border-border transition-colors">
+                    <span className="hidden sm:block text-[12px] font-bold text-text-secondary w-5 text-right shrink-0">{idx + 1}</span>
                     <div className={['w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0', TYPE_COLORS[item.content_type].split(' ')[0]].join(' ')}>
                       <Icon size={15} className={TYPE_COLORS[item.content_type].split(' ')[1]} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold text-[#0F172A] truncate">{item.title}</p>
-                      {item.description && <p className="text-[12px] text-[#475569] truncate">{item.description}</p>}
+                      <p className="text-[14px] font-semibold text-text-primary truncate">{item.title}</p>
+                      {item.description && <p className="text-[12px] text-text-secondary truncate">{item.description}</p>}
                     </div>
                     <span className="hidden sm:inline-flex"><TypeBadge type={item.content_type} /></span>
                     <div className="flex items-center gap-1 shrink-0">
@@ -633,7 +633,7 @@ export default function ManagePolicyPage() {
                           onClick={() => { setEditingItem(item); setShowItemModal(true) }}
                           disabled={canEdit !== true}
                           aria-label={`Edit ${item.title}`}
-                          className="w-9 h-9 flex items-center justify-center text-[#475569] hover:text-[#2563EB] hover:bg-[#EFF6FF] rounded-[6px] transition-colors disabled:text-[#CBD5E1] disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                          className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-primary-text hover:bg-primary-subtle rounded-[6px] transition-colors disabled:text-[#CBD5E1] disabled:hover:bg-transparent disabled:cursor-not-allowed"
                         >
                           <Pencil size={14} />
                         </button>
@@ -643,7 +643,7 @@ export default function ManagePolicyPage() {
                           onClick={() => { setDeleteError(null); setPendingDelete({ kind: 'item', item }) }}
                           disabled={canDeleteItem !== true}
                           aria-label={`Remove ${item.title}`}
-                          className="w-9 h-9 flex items-center justify-center text-[#475569] hover:text-[#DC2626] hover:bg-[#FEE2E2] rounded-[6px] transition-colors disabled:text-[#CBD5E1] disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                          className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg rounded-[6px] transition-colors disabled:text-[#CBD5E1] disabled:hover:bg-transparent disabled:cursor-not-allowed"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -661,18 +661,18 @@ export default function ManagePolicyPage() {
       {activeTab === 'assignments' && (
         <div>
           {assignmentsFailed ? (
-            <div className="text-center py-16 bg-white border border-[#E2E8F0] rounded-[12px] px-4">
-              <p className="text-sm font-semibold text-[#0F172A]">Assignments could not be loaded</p>
-              <p className="text-xs text-[#475569] mt-1 mb-3">Check your connection and try again.</p>
-              <button type="button" onClick={() => setAssignmentsLoaded(false)} className="px-4 py-2 text-sm font-semibold text-[#2563EB] border-2 border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors">Retry</button>
+            <div className="text-center py-16 bg-white border border-border-light rounded-[12px] px-4">
+              <p className="text-sm font-semibold text-text-primary">Assignments could not be loaded</p>
+              <p className="text-xs text-text-secondary mt-1 mb-3">Check your connection and try again.</p>
+              <button type="button" onClick={() => setAssignmentsLoaded(false)} className="px-4 py-2 text-sm font-semibold text-primary-text border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors">Retry</button>
             </div>
           ) : !assignmentsLoaded ? (
-            <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" /></div>
+            <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
           ) : assignments.length === 0 ? (
-            <div className="text-center py-16 bg-white border border-[#E2E8F0] rounded-[12px] px-4">
-              <Users size={28} className="text-[#475569] mx-auto mb-3" />
-              <p className="text-sm font-semibold text-[#0F172A]">No assignments yet</p>
-              <p className="text-xs text-[#475569] mt-1">
+            <div className="text-center py-16 bg-white border border-border-light rounded-[12px] px-4">
+              <Users size={28} className="text-text-secondary mx-auto mb-3" />
+              <p className="text-sm font-semibold text-text-primary">No assignments yet</p>
+              <p className="text-xs text-text-secondary mt-1">
                 {policy.status !== 'published' ? 'Publish this policy first to assign it to employees.' : 'Assign this policy to employees.'}
               </p>
             </div>

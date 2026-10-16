@@ -11,7 +11,7 @@ import { fmtDate } from '@/components/meetings/shared'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import DateRangePicker from '@/components/ui/DateRangePicker'
 
-const inputClass = 'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB]'
+const inputClass = 'border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary'
 
 export default function DecisionLogPage() {
   const { user } = useAuth()
@@ -41,28 +41,28 @@ export default function DecisionLogPage() {
       primary: true,
       render: (d) => (
         <>
-          <p className="text-[15px] text-[#0F172A] font-medium">{d.decision}</p>
-          {d.reason && <p className="text-xs text-[#64748B] mt-0.5">{d.reason}</p>}
+          <p className="text-[15px] text-text-primary font-medium">{d.decision}</p>
+          {d.reason && <p className="text-xs text-text-muted mt-0.5">{d.reason}</p>}
         </>
       ),
     },
     {
       key: 'owner',
       header: 'Owner',
-      render: (d) => <span className="text-sm text-[#1E293B]">{d.owner_user_id ? names.get(d.owner_user_id) ?? '—' : '—'}</span>,
+      render: (d) => <span className="text-sm text-text-primary">{d.owner_user_id ? names.get(d.owner_user_id) ?? '—' : '—'}</span>,
     },
     {
       key: 'date',
       header: 'Date',
       desktopHiddenBelow: 'md',
-      render: (d) => <span className="text-sm text-[#475569]">{fmtDate(d.decided_on)}</span>,
+      render: (d) => <span className="text-sm text-text-secondary">{fmtDate(d.decided_on)}</span>,
     },
     {
       key: 'meeting',
       header: 'Meeting',
       render: (d) =>
         d.meeting ? (
-          <button onClick={() => router.push(`/dashboard/governance/meetings/${d.meeting!.id}`)} className="text-sm text-[#2563EB] hover:underline">{d.meeting.title}</button>
+          <button onClick={() => router.push(`/dashboard/governance/meetings/${d.meeting!.id}`)} className="text-sm text-primary-text hover:underline">{d.meeting.title}</button>
         ) : (
           '—'
         ),
@@ -72,13 +72,13 @@ export default function DecisionLogPage() {
   return (
     <div>
       <div className="mb-5">
-        <h1 className="flex items-center gap-2 text-[26px] font-bold text-[#0F172A] leading-tight"><Gavel size={24} className="text-[#2563EB]" /> Decision Log</h1>
-        <p className="text-sm text-[#475569] mt-1">Every decision recorded across meetings, with a line of sight back to where it was made.</p>
+        <h1 className="flex items-center gap-2 text-[26px] font-bold text-text-primary leading-tight"><Gavel size={24} className="text-primary-text" /> Decision Log</h1>
+        <p className="text-sm text-text-secondary mt-1">Every decision recorded across meetings, with a line of sight back to where it was made.</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="relative flex-1 min-w-[200px]">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input className={`${inputClass} w-full pl-9`} placeholder="Search decisions…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="w-[220px]">
@@ -92,8 +92,8 @@ export default function DecisionLogPage() {
         rowKey={(d) => d.id}
         loading={loading}
         emptyState={
-          <div className="bg-white border border-[#E2E8F0] rounded-[12px] overflow-hidden">
-            <div className="p-10 text-center text-sm text-[#475569]">No decisions logged.</div>
+          <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
+            <div className="p-10 text-center text-sm text-text-secondary">No decisions logged.</div>
           </div>
         }
       />

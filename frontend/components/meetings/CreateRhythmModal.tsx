@@ -15,8 +15,8 @@ import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSel
 import { DurationField } from './shared'
 
 const inputClass =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
-const labelClass = 'block text-sm font-medium text-[#374151] mb-1'
+  'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
 const todayStr = () => new Date().toISOString().slice(0, 10)
 const freshSched = (): ScheduleEntryDraft => ({
   schedule_type: 'weekly', every: 1, days: [new Date().getDay()], month_days: [], yearly_dates: [],
@@ -267,13 +267,13 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
             hostLabel={hostId === user?.id ? 'You' : rhythm?.created_by_name}
             ineligibleReasons={ineligibleReasons}
           />
-          <p className="text-xs text-[#64748B] mt-1">The host is on every occurrence by default. Everyone you add is too — toggle who is optional.</p>
+          <p className="text-xs text-text-muted mt-1">The host is on every occurrence by default. Everyone you add is too — toggle who is optional.</p>
         </div>
 
         {/* Recurrence — the SAME shared editor as recurring tasks and meetings */}
         <div>
-          <label className={labelClass}>Recurrence <span className="text-[#DC2626]">*</span></label>
-          <div className="border border-[#E2E8F0] rounded-[12px] p-4">
+          <label className={labelClass}>Recurrence <span className="text-danger">*</span></label>
+          <div className="border border-border-light rounded-[12px] p-4">
             <ScheduleEntryRow
               entry={sched}
               index={0}
@@ -283,8 +283,8 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
             />
             <SkipHolidaysField orgId={orgId} sched={sched} value={skipHolidays} onChange={setSkipHolidays} />
           </div>
-          <p className="mt-2 flex items-start gap-2 text-sm text-[#1D4ED8] font-medium bg-[#EFF6FF] border border-[#BFDBFE] rounded-[8px] px-3 py-2">
-            <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2563EB] shrink-0" />
+          <p className="mt-2 flex items-start gap-2 text-sm text-primary-text font-medium bg-primary-subtle border border-primary-border rounded-[8px] px-3 py-2">
+            <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
             <span>{recurrenceSummary(sched)}</span>
           </p>
         </div>
@@ -294,7 +294,7 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
           <textarea className={`${inputClass} resize-none`} rows={2} value={agenda} onChange={(e) => setAgenda(e.target.value)} placeholder="Standing agenda, copied to every occurrence" />
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E2E8F0]">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-light">
           <Button variant="secondary" type="button" onClick={onClose}>Cancel</Button>
           <Button variant="primary" type="submit" isLoading={saving} disabled={saving}>Create rhythm</Button>
         </div>

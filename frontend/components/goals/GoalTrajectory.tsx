@@ -42,7 +42,7 @@ export default function GoalTrajectory({
 
   if (target === null || target === undefined) {
     return (
-      <p className="text-[13px] text-[#475569]">
+      <p className="text-[13px] text-text-secondary">
         This goal isn’t measured by a number — its check-ins are the traffic light and the note.
       </p>
     )
@@ -50,7 +50,7 @@ export default function GoalTrajectory({
 
   if (points.length === 0) {
     return (
-      <p className="text-[13px] text-[#475569]">
+      <p className="text-[13px] text-text-secondary">
         No number recorded yet. The first check-in starts the trajectory.
       </p>
     )
@@ -107,11 +107,11 @@ export default function GoalTrajectory({
         ))}
       </svg>
       <div className="flex items-center justify-between mt-1.5 gap-2">
-        <span className="text-[11px] text-[#475569]">{fmtDate(points[0].date)}</span>
-        <span className="text-[11px] font-medium text-[#475569]">
+        <span className="text-[11px] text-text-secondary">{fmtDate(points[0].date)}</span>
+        <span className="text-[11px] font-medium text-text-secondary">
           Target line at {formatValue(target, goal.unit)}
         </span>
-        <span className="text-[11px] text-[#475569]">{fmtDate(latest.date)}</span>
+        <span className="text-[11px] text-text-secondary">{fmtDate(latest.date)}</span>
       </div>
     </div>
   )

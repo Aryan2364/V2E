@@ -65,7 +65,7 @@ export default function LoginPage() {
   if (user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -116,7 +116,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="relative z-1 text-[13px] text-[#94A3B8]">
+        <div className="relative z-1 text-[13px] text-text-muted">
           © 2026 V2E · Secure workspace access
         </div>
       </aside>
@@ -133,17 +133,17 @@ export default function LoginPage() {
             <BrandMark size="sm" tone="light" />
           </div>
 
-          <h1 className="text-[24px] font-semibold tracking-tight text-[#0F172A]">
+          <h1 className="text-[24px] font-semibold tracking-tight text-text-primary">
             Sign in to your workspace
           </h1>
-          <p className="mt-1.5 text-sm text-[#475569]">
+          <p className="mt-1.5 text-sm text-text-secondary">
             Use your email or phone number to continue.
           </p>
 
           {error && (
             <div
               role="alert"
-              className="mt-6 rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm text-[#DC2626]"
+              className="mt-6 rounded-[8px] border border-danger-border bg-danger-bg px-4 py-3 text-sm text-danger"
             >
               {error}
             </div>
@@ -151,7 +151,7 @@ export default function LoginPage() {
 
           <div className="mt-7 flex flex-col gap-5">
             <div className="flex flex-col gap-1">
-              <label htmlFor="identifier" className="text-sm font-medium text-[#374151]">
+              <label htmlFor="identifier" className="text-sm font-medium text-text-secondary">
                 Email address / Phone number
               </label>
               <div className="flex gap-2">
@@ -196,7 +196,7 @@ export default function LoginPage() {
           <div className="mt-2 flex justify-end">
             <a
               href="/forgot-password"
-              className="text-[13.5px] font-medium text-[#2563EB] hover:underline"
+              className="text-[13.5px] font-medium text-primary-text hover:underline"
             >
               Forgot your password?
             </a>

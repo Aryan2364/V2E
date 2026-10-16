@@ -90,6 +90,15 @@ const TEXT = {
   "F59E0B": "text-secondary",
   "FBBF24": "text-secondary",
   "EA580C": "text-secondary",
+  "1E3A8A": "primary-text",
+  "7F1D1D": "danger",
+  "4F46E5": "text-secondary",
+  "2E1065": "text-secondary",
+  // NOT mapped on purpose: CBD5E1 / E2E8F0 / 93C5FD / F1F5F9 as TEXT are the
+  // dark nav sidebar's light-on-dark text (components/layout, D4: nav is
+  // restyled in P4, not P2) - rewriting them against the light-surface
+  // text tokens here would make them unreadable before P4 restyles the
+  // sidebar's ground. Left flagged.
 };
 
 const FILL = {
@@ -147,6 +156,58 @@ const FILL = {
   "EDE9FE": "surface-control",
   "FDF4FF": "surface-control",
   "E9D5FF": "surface-control",
+  // Status SOLID fills (badges/pills/buttons whose bg is the status colour
+  // itself, not a tint) - kit's --success/--warning/--danger double as both
+  // text colour and solid fill (see button.tsx's data-variant="danger").
+  "DC2626": "danger",
+  "B91C1C": "danger-hover",
+  "991B1B": "danger-pressed",
+  "EF4444": "danger",
+  "E11D48": "danger",
+  "BE123C": "danger-pressed",
+  "16A34A": "success",
+  "15803D": "success",
+  "166534": "success",
+  "047857": "success",
+  "059669": "success",
+  "22C55E": "success",
+  "65A30D": "success",
+  "D97706": "warning",
+  "92400E": "warning",
+  "B45309": "warning",
+  "A16207": "warning",
+  "CA8A04": "warning",
+  "9A3412": "warning",
+  "78350F": "warning",
+  "713F12": "warning",
+  "854D0E": "warning",
+  "C2410C": "warning",
+  "FDE68A": "warning-bg",
+  "FECACA": "danger-bg",
+  // decorative SOLID fills (role/category chips outside the tag palette):
+  // collapsed to a neutral medium grey, not the pastel surface-control
+  // above, because they are paired with white/light text (D8 extended).
+  "7C3AED": "text-secondary",
+  "8B5CF6": "text-secondary",
+  "4C1D95": "text-secondary",
+  "5B21B6": "text-secondary",
+  "6D28D9": "text-secondary",
+  "4338CA": "text-secondary",
+  "3730A3": "text-secondary",
+  "9333EA": "text-secondary",
+  "DB2777": "text-secondary",
+  "BE185D": "text-secondary",
+  "EC519E": "text-secondary",
+  "0891B2": "text-secondary",
+  "0E7490": "text-secondary",
+  "0369A1": "text-secondary",
+  "0EA5E9": "text-secondary",
+  "F59E0B": "text-secondary",
+  "FBBF24": "text-secondary",
+  "EA580C": "text-secondary",
+  "FCA5A5": "danger-bg",
+  "93C5FD": "primary-border",
+  "6B7280": "text-secondary",
 };
 
 const BORDER = {
@@ -164,6 +225,30 @@ const BORDER = {
   "FDE68A": "warning-border",
   "FCA5A5": "danger-border",
   "FECACA": "danger-border",
+  "DC2626": "danger",
+  "16A34A": "success",
+  "D97706": "warning",
+  "FEE2E2": "danger-border",
+  "FECDD3": "danger-border",
+  "FBBF24": "warning-border",
+  "F1F5F9": "border-light",
+  "F8FAFC": "border-light",
+  "BAE6FD": "border-light",
+  "DDD6FE": "border-light",
+  "E9D5FF": "border-light",
+  "334155": "border-strong",
+  "FED7AA": "warning-border",
+  "EEF2F7": "border-light",
+  "E5E7EB": "border-light",
+  "B45309": "warning-border",
+  "7C3AED": "border-light",
+  "F59E0B": "warning-border",
+  "FBCFE8": "danger-border",
+  "E9EEF4": "border-light",
+  "DBEAFE": "primary-border",
+  "CA8A04": "warning-border",
+  "A7F3D0": "success-border",
+  "64748B": "border-strong",
 };
 
 // Pure white -> surface for a fill/border; text handled case by case (flag).

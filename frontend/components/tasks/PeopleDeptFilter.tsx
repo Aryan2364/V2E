@@ -19,8 +19,8 @@ export interface DeptGroup {
 
 type TickState = 'all' | 'some' | 'none'
 function Tick({ state }: { state: TickState }) {
-  if (state === 'all') return <SquareCheck size={16} className="text-[#2563EB] shrink-0" />
-  if (state === 'some') return <SquareMinus size={16} className="text-[#2563EB] shrink-0" />
+  if (state === 'all') return <SquareCheck size={16} className="text-primary-text shrink-0" />
+  if (state === 'some') return <SquareMinus size={16} className="text-primary-text shrink-0" />
   return <Square size={16} className="text-[#CBD5E1] shrink-0" />
 }
 
@@ -101,27 +101,27 @@ export default function PeopleDeptFilter({
   if (allIds.length === 0) return null
 
   return (
-    <div className="px-3.5 py-2 border-b border-[#E2E8F0] last:border-b-0">
+    <div className="px-3.5 py-2 border-b border-border-light last:border-b-0">
       <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[12px] font-medium text-[#475569]">{title}</p>
+        <p className="text-[12px] font-medium text-text-secondary">{title}</p>
         <div className="flex items-center gap-2.5">
-          <span className="text-[11px] text-[#94A3B8]">{allIds.length} {allIds.length === 1 ? 'person' : 'people'}</span>
+          <span className="text-[11px] text-text-muted">{allIds.length} {allIds.length === 1 ? 'person' : 'people'}</span>
           <button type="button" onClick={toggleAll} className="flex items-center gap-1.5 group">
             <Tick state={masterState} />
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-[#64748B] group-hover:text-[#475569] transition-colors">All</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">All</span>
           </button>
         </div>
       </div>
 
       {/* Search — matches department, name, or role. */}
-      <div className="flex items-center gap-2 h-[30px] px-2.5 mb-2 rounded-[8px] border border-[#E2E8F0] bg-[#F8FAFC]">
-        <Search size={14} className="text-[#94A3B8] shrink-0" />
+      <div className="flex items-center gap-2 h-[30px] px-2.5 mb-2 rounded-[8px] border border-border-light bg-surface-sunken">
+        <Search size={14} className="text-text-muted shrink-0" />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search department, name or role"
-          className="flex-1 min-w-0 bg-transparent text-[12px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
+          className="flex-1 min-w-0 bg-transparent text-[12px] text-text-primary placeholder:text-text-muted focus:outline-hidden"
         />
       </div>
 
@@ -135,10 +135,10 @@ export default function PeopleDeptFilter({
               className="w-full flex items-center gap-2 px-1 pt-1.5 pb-0.5 group"
             >
               <Tick state={deptState(g.people)} />
-              <span className="flex-1 min-w-0 truncate text-left text-[11px] font-semibold uppercase tracking-wide text-[#64748B] group-hover:text-[#475569] transition-colors">
+              <span className="flex-1 min-w-0 truncate text-left text-[11px] font-semibold uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">
                 {g.department}
               </span>
-              <span className="shrink-0 text-[11px] text-[#94A3B8] tabular-nums">
+              <span className="shrink-0 text-[11px] text-text-muted tabular-nums">
                 {g.people.filter((p) => effective.has(p.id)).length}/{g.people.length}
               </span>
             </button>
@@ -149,21 +149,21 @@ export default function PeopleDeptFilter({
                   key={p.id}
                   type="button"
                   onClick={() => togglePerson(p.id)}
-                  className="w-full flex items-center gap-2 pl-7 pr-1.5 py-1.5 rounded-[6px] text-left hover:bg-[#F8FAFC] transition-colors"
+                  className="w-full flex items-center gap-2 pl-7 pr-1.5 py-1.5 rounded-[6px] text-left hover:bg-surface-sunken transition-colors"
                 >
-                  {checked ? <SquareCheck size={16} className="text-[#2563EB] shrink-0" /> : <Square size={16} className="text-[#CBD5E1] shrink-0" />}
+                  {checked ? <SquareCheck size={16} className="text-primary-text shrink-0" /> : <Square size={16} className="text-[#CBD5E1] shrink-0" />}
                   <span className="flex-1 min-w-0 flex items-center gap-1.5">
-                    <span className={`min-w-0 truncate text-[13px] ${checked ? 'text-[#0F172A] font-medium' : 'text-[#475569]'}`}>{p.name}</span>
-                    {counts && <span className="shrink-0 tabular-nums text-[11px] text-[#94A3B8]">{counts.get(p.id) ?? 0}</span>}
+                    <span className={`min-w-0 truncate text-[13px] ${checked ? 'text-text-primary font-medium' : 'text-text-secondary'}`}>{p.name}</span>
+                    {counts && <span className="shrink-0 tabular-nums text-[11px] text-text-muted">{counts.get(p.id) ?? 0}</span>}
                   </span>
-                  {p.role && <span className="shrink-0 max-w-[38%] truncate text-[11px] text-[#94A3B8]">{p.role}</span>}
+                  {p.role && <span className="shrink-0 max-w-[38%] truncate text-[11px] text-text-muted">{p.role}</span>}
                 </button>
               )
             })}
           </div>
         ))}
         {filteredGroups.length === 0 && (
-          <p className="px-1.5 py-2 text-[12px] text-[#94A3B8]">No people match “{query}”.</p>
+          <p className="px-1.5 py-2 text-[12px] text-text-muted">No people match “{query}”.</p>
         )}
       </div>
     </div>

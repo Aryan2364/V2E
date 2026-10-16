@@ -27,8 +27,8 @@ export default function GroupsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0F172A] leading-tight">Groups</h1>
-          <p className="text-sm text-[#475569] mt-1">Manage organization groups — cluster related companies and share users across them.</p>
+          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Groups</h1>
+          <p className="text-sm text-text-secondary mt-1">Manage organization groups — cluster related companies and share users across them.</p>
         </div>
         <Button variant="primary" onClick={() => router.push('/super-admin/groups/new')}>
           <Plus size={16} />
@@ -37,7 +37,7 @@ export default function GroupsPage() {
       </div>
 
       {!isLoading && error ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] px-6 py-12 text-center text-[#DC2626] text-sm">
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] px-6 py-12 text-center text-danger text-sm">
           {error}
         </div>
       ) : (
@@ -49,12 +49,12 @@ export default function GroupsPage() {
               primary: true,
               render: (g) => (
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-[8px] bg-[#EFF6FF] flex items-center justify-center shrink-0">
-                    <Layers size={16} className="text-[#2563EB]" />
+                  <div className="w-8 h-8 rounded-[8px] bg-primary-subtle flex items-center justify-center shrink-0">
+                    <Layers size={16} className="text-primary-text" />
                   </div>
                   <div>
-                    <p className="font-medium text-[#0F172A]">{g.name}</p>
-                    {g.description && <p className="text-xs text-[#475569] mt-0.5">{g.description}</p>}
+                    <p className="font-medium text-text-primary">{g.name}</p>
+                    {g.description && <p className="text-xs text-text-secondary mt-0.5">{g.description}</p>}
                   </div>
                 </div>
               ),
@@ -63,7 +63,7 @@ export default function GroupsPage() {
               key: 'organizations',
               header: 'Organizations',
               render: (g) => (
-                <div className="flex items-center gap-1.5 text-[#475569] md:justify-start justify-end">
+                <div className="flex items-center gap-1.5 text-text-secondary md:justify-start justify-end">
                   <Building2 size={14} />
                   <span>{g._count?.organizations ?? g.organizations?.length ?? 0}</span>
                 </div>
@@ -75,7 +75,7 @@ export default function GroupsPage() {
               render: (g) => (
                 <button
                   onClick={() => router.push(`/super-admin/groups/${g.id}`)}
-                  className="inline-flex items-center gap-1 text-[#2563EB] text-sm font-medium hover:text-[#1D4ED8] transition-colors"
+                  className="inline-flex items-center gap-1 text-primary-text text-sm font-medium hover:text-primary-text transition-colors"
                 >
                   View <ArrowRight size={14} />
                 </button>
@@ -87,13 +87,13 @@ export default function GroupsPage() {
           loading={isLoading}
           skeletonRows={4}
           emptyState={
-            <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+            <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
               <div className="flex flex-col items-center gap-3 py-16">
-                <div className="w-12 h-12 rounded-full bg-[#F1F5F9] flex items-center justify-center">
-                  <Layers size={22} className="text-[#94A3B8]" />
+                <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center">
+                  <Layers size={22} className="text-text-muted" />
                 </div>
-                <p className="text-[#475569] font-medium">No groups yet</p>
-                <p className="text-[#94A3B8] text-xs">Click "New Group" to create your first organization group.</p>
+                <p className="text-text-secondary font-medium">No groups yet</p>
+                <p className="text-text-muted text-xs">Click "New Group" to create your first organization group.</p>
               </div>
             </div>
           }

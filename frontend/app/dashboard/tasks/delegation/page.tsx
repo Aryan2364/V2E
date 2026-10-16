@@ -30,27 +30,27 @@ function DelegationCard({ d, onClick }: { d: Delegation; onClick: () => void }) 
     <button
       type="button"
       onClick={onClick}
-      className="text-left bg-white border border-[#E2E8F0] rounded-[12px] p-4 hover:border-[#CBD5E1] hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all flex flex-col gap-3"
+      className="text-left bg-white border border-border-light rounded-[12px] p-4 hover:border-border hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all flex flex-col gap-3"
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="text-[15px] font-semibold text-[#0F172A] leading-snug line-clamp-2">{d.title}</h3>
+        <h3 className="text-[15px] font-semibold text-text-primary leading-snug line-clamp-2">{d.title}</h3>
         <StatusPill status={d.status} />
       </div>
-      <p className="text-sm text-[#475569] line-clamp-2">{d.outcome}</p>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[#64748B] mt-auto pt-1">
+      <p className="text-sm text-text-secondary line-clamp-2">{d.outcome}</p>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-text-muted mt-auto pt-1">
         <span className="inline-flex items-center gap-1.5">
-          <User size={13} className="text-[#94A3B8]" />
+          <User size={13} className="text-text-muted" />
           {d.owner?.name ?? 'Unknown'}
         </span>
         {d.first_check_in && (
           <span className="inline-flex items-center gap-1.5">
-            <CalendarClock size={13} className="text-[#94A3B8]" />
+            <CalendarClock size={13} className="text-text-muted" />
             {fmtDate(d.first_check_in)}
           </span>
         )}
         {d.criteria.length > 0 && (
           <span className="inline-flex items-center gap-1.5">
-            <Target size={13} className="text-[#94A3B8]" />
+            <Target size={13} className="text-text-muted" />
             {metCount}/{d.criteria.length}
           </span>
         )}
@@ -165,11 +165,11 @@ export default function DelegationPage() {
   if (!enabled) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <div className="w-16 h-16 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-          <Lock size={26} className="text-[#94A3B8]" />
+        <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
+          <Lock size={26} className="text-text-muted" />
         </div>
-        <h1 className="text-[18px] font-semibold text-[#0F172A] mb-1">Delegation isn’t enabled</h1>
-        <p className="text-sm text-[#475569] max-w-sm">
+        <h1 className="text-[18px] font-semibold text-text-primary mb-1">Delegation isn’t enabled</h1>
+        <p className="text-sm text-text-secondary max-w-sm">
           This module isn’t part of your organization’s plan yet. Contact your administrator to have it turned on.
         </p>
       </div>
@@ -183,11 +183,11 @@ export default function DelegationPage() {
   if (!canDelegate) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <div className="w-16 h-16 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-          <Lock size={26} className="text-[#94A3B8]" />
+        <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
+          <Lock size={26} className="text-text-muted" />
         </div>
-        <h1 className="text-[18px] font-semibold text-[#0F172A] mb-1">Delegation isn’t available to you</h1>
-        <p className="text-sm text-[#475569] max-w-sm">
+        <h1 className="text-[18px] font-semibold text-text-primary mb-1">Delegation isn’t available to you</h1>
+        <p className="text-sm text-text-secondary max-w-sm">
           You don’t have permission to delegate. Contact your administrator if you need it.
         </p>
       </div>
@@ -201,8 +201,8 @@ export default function DelegationPage() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3 shrink-0">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0F172A]">Delegation</h1>
-          <p className="text-sm text-[#475569] mt-0.5">Hand off outcomes and track them to a clear finish.</p>
+          <h1 className="text-[28px] font-bold text-text-primary">Delegation</h1>
+          <p className="text-sm text-text-secondary mt-0.5">Hand off outcomes and track them to a clear finish.</p>
         </div>
         {canDelegate && (
           <button
@@ -211,7 +211,7 @@ export default function DelegationPage() {
               setEditing(null)
               setModalOpen(true)
             }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
           >
             <Plus size={16} /> New delegation
           </button>
@@ -221,7 +221,7 @@ export default function DelegationPage() {
       {/* View tabs — only rendered when there's more than one view to switch
           between. With a single view the strip is noise, so it's hidden. */}
       {tabs.length > 1 && (
-        <div className="flex items-center gap-1 border-b border-[#E2E8F0] mt-5 shrink-0">
+        <div className="flex items-center gap-1 border-b border-border-light mt-5 shrink-0">
           {tabs.map((t) => {
             const active = view === t
             const count = (lists[t] ?? []).length
@@ -232,16 +232,16 @@ export default function DelegationPage() {
                 onClick={() => setView(t)}
                 className={[
                   'relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors',
-                  active ? 'text-[#2563EB]' : 'text-[#64748B] hover:text-[#0F172A]',
+                  active ? 'text-primary-text' : 'text-text-muted hover:text-text-primary',
                 ].join(' ')}
               >
                 {TAB_META[t].label}
                 {count > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-[999px] bg-[#2563EB] text-white text-[11px] font-semibold">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-[999px] bg-primary text-white text-[11px] font-semibold">
                     {count}
                   </span>
                 )}
-                {active && <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-[#2563EB] rounded-t-full" />}
+                {active && <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-primary rounded-t-full" />}
               </button>
             )
           })}
@@ -253,16 +253,16 @@ export default function DelegationPage() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-40 rounded-[12px] bg-[#F1F5F9] animate-pulse" />
+              <div key={i} className="h-40 rounded-[12px] bg-surface-control animate-pulse" />
             ))}
           </div>
         ) : current.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-16 h-16 rounded-full bg-[#EFF6FF] flex items-center justify-center mb-4">
-              <ArrowRightLeft size={28} className="text-[#2563EB]" />
+            <div className="w-16 h-16 rounded-full bg-primary-subtle flex items-center justify-center mb-4">
+              <ArrowRightLeft size={28} className="text-primary-text" />
             </div>
-            <h2 className="text-[18px] font-semibold text-[#0F172A] mb-1">{TAB_META[view].empty}</h2>
-            <p className="text-sm text-[#475569] max-w-xs">
+            <h2 className="text-[18px] font-semibold text-text-primary mb-1">{TAB_META[view].empty}</h2>
+            <p className="text-sm text-text-secondary max-w-xs">
               {canDelegate
                 ? 'Create a delegation to hand an outcome to someone with clear success criteria.'
                 : 'Delegations others hand to you will appear here.'}
@@ -274,7 +274,7 @@ export default function DelegationPage() {
                   setEditing(null)
                   setModalOpen(true)
                 }}
-                className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+                className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
               >
                 <Plus size={16} /> New delegation
               </button>

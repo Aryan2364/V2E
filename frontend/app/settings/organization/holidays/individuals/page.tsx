@@ -256,33 +256,33 @@ export default function IndividualsPage() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><Loader2 size={24} className="animate-spin text-[#94A3B8]" /></div>
+    return <div className="flex items-center justify-center h-64"><Loader2 size={24} className="animate-spin text-text-muted" /></div>
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-bold text-[#0F172A]">Individual Calendars</h1>
-        <p className="text-[15px] text-[#475569] mt-1">Set custom working days and personal holidays per employee.</p>
+        <h1 className="text-[28px] font-bold text-text-primary">Individual Calendars</h1>
+        <p className="text-[15px] text-text-secondary mt-1">Set custom working days and personal holidays per employee.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6">
         {/* Employee search list */}
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-          <div className="px-4 py-3 border-b border-[#E2E8F0]">
-            <div className="flex items-center gap-2 px-2 py-1.5 bg-[#F8FAFC] rounded-[8px] border border-[#E2E8F0]">
-              <Search size={13} className="text-[#94A3B8] shrink-0" />
+        <div className="bg-white border border-border-light rounded-[12px] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+          <div className="px-4 py-3 border-b border-border-light">
+            <div className="flex items-center gap-2 px-2 py-1.5 bg-surface-sunken rounded-[8px] border border-border-light">
+              <Search size={13} className="text-text-muted shrink-0" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search employees..."
-                className="flex-1 bg-transparent text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-hidden"
+                className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-hidden"
               />
             </div>
           </div>
-          <div className="divide-y divide-[#E2E8F0] max-h-[calc(100vh-260px)] overflow-y-auto">
+          <div className="divide-y divide-surface-control-pressed max-h-[calc(100vh-260px)] overflow-y-auto">
             {filtered.length === 0 && (
-              <p className="px-4 py-4 text-sm text-[#94A3B8] text-center">No employees found.</p>
+              <p className="px-4 py-4 text-sm text-text-muted text-center">No employees found.</p>
             )}
             {filtered.map((emp) => (
               <button
@@ -292,16 +292,16 @@ export default function IndividualsPage() {
                 className={[
                   'w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors',
                   selected?.id === emp.id
-                    ? 'bg-[#EFF6FF] text-[#2563EB]'
-                    : 'text-[#0F172A] hover:bg-[#F8FAFC]',
+                    ? 'bg-primary-subtle text-primary-text'
+                    : 'text-text-primary hover:bg-surface-sunken',
                 ].join(' ')}
               >
-                <User size={14} className="shrink-0 text-[#94A3B8]" />
+                <User size={14} className="shrink-0 text-text-muted" />
                 <div className="min-w-0">
-                  <p className={`text-sm font-medium truncate ${selected?.id === emp.id ? 'text-[#2563EB]' : 'text-[#0F172A]'}`}>
+                  <p className={`text-sm font-medium truncate ${selected?.id === emp.id ? 'text-primary-text' : 'text-text-primary'}`}>
                     {emp.user?.name ?? 'Unnamed'}
                   </p>
-                  <p className="text-xs text-[#94A3B8] truncate">
+                  <p className="text-xs text-text-muted truncate">
                     {[emp.department?.name, emp.role?.title].filter(Boolean).join(' · ') || emp.employment_type}
                   </p>
                 </div>
@@ -314,13 +314,13 @@ export default function IndividualsPage() {
         {selected ? (
           empLoading ? (
             <div className="flex items-center justify-center h-48">
-              <Loader2 size={20} className="animate-spin text-[#94A3B8]" />
+              <Loader2 size={20} className="animate-spin text-text-muted" />
             </div>
           ) : (
             <div className="space-y-5">
               <div>
-                <h3 className="text-[18px] font-semibold text-[#0F172A]">{selected.user?.name ?? 'Employee'}</h3>
-                <p className="text-sm text-[#475569] mt-0.5">
+                <h3 className="text-[18px] font-semibold text-text-primary">{selected.user?.name ?? 'Employee'}</h3>
+                <p className="text-sm text-text-secondary mt-0.5">
                   Inherits {hasDept ? 'department and org' : 'org'} holidays; add personal holidays, or remove any this employee doesn&apos;t observe.
                 </p>
               </div>
@@ -339,14 +339,14 @@ export default function IndividualsPage() {
 
               {/* Holidays + calendar, side by side */}
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 items-start lg:items-stretch">
-                <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col">
+                <div className="bg-white border border-border-light rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col">
                   <div className="flex items-center justify-between gap-3 flex-wrap mb-4 shrink-0">
-                    <h2 className="text-[18px] font-semibold text-[#0F172A]">Holidays</h2>
+                    <h2 className="text-[18px] font-semibold text-text-primary">Holidays</h2>
                     {isAdmin && (
                       <button
                         type="button"
                         onClick={() => setShowAddHoliday(true)}
-                        className="flex items-center gap-1.5 h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+                        className="flex items-center gap-1.5 h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
                       >
                         <Plus size={15} />
                         New Holiday
@@ -356,19 +356,19 @@ export default function IndividualsPage() {
 
                   {/* Bulk-selection action bar */}
                   {isAdmin && selectedIds.size > 0 && (
-                    <div className="flex items-center justify-between gap-3 mb-3 px-3 py-2 rounded-[8px] bg-[#EFF6FF] border border-[#BFDBFE] shrink-0">
-                      <span className="text-sm font-medium text-[#1E3A8A]">{selectedIds.size} selected</span>
+                    <div className="flex items-center justify-between gap-3 mb-3 px-3 py-2 rounded-[8px] bg-primary-subtle border border-primary-border shrink-0">
+                      <span className="text-sm font-medium text-primary-text">{selectedIds.size} selected</span>
                       <div className="flex items-center gap-2">
                         {selectedIds.size < inheritedSelectable && (
-                          <button type="button" onClick={selectAll} className="text-sm font-medium text-[#2563EB] hover:underline">
+                          <button type="button" onClick={selectAll} className="text-sm font-medium text-primary-text hover:underline">
                             Select all {inheritedSelectable}
                           </button>
                         )}
-                        <button type="button" onClick={() => setSelectedIds(new Set())} className="text-sm font-medium text-[#475569] hover:underline">Clear</button>
+                        <button type="button" onClick={() => setSelectedIds(new Set())} className="text-sm font-medium text-text-secondary hover:underline">Clear</button>
                         <button
                           type="button"
                           onClick={() => setConfirmOpen(true)}
-                          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] transition-colors"
+                          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-semibold text-white bg-danger hover:bg-danger-hover transition-colors"
                         >
                           <Trash2 size={14} /> Remove selected
                         </button>
@@ -391,11 +391,11 @@ export default function IndividualsPage() {
 
                   {/* Removed drawer */}
                   {removed.length > 0 && (
-                    <div className="mt-3 border-t border-[#E2E8F0] pt-3 shrink-0">
+                    <div className="mt-3 border-t border-border-light pt-3 shrink-0">
                       <button
                         type="button"
                         onClick={() => setShowRemoved((s) => !s)}
-                        className="flex items-center gap-1.5 text-sm font-medium text-[#475569] hover:text-[#0F172A]"
+                        className="flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary"
                       >
                         {showRemoved ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                         Removed holidays ({removed.length})
@@ -403,10 +403,10 @@ export default function IndividualsPage() {
                       {showRemoved && (
                         <div className="mt-2 space-y-1.5">
                           {removed.map((r) => (
-                            <div key={`${r.source}:${r.id}`} className="flex items-center gap-3 py-1.5 px-2 rounded-[8px] bg-[#F8FAFC]">
+                            <div key={`${r.source}:${r.id}`} className="flex items-center gap-3 py-1.5 px-2 rounded-[8px] bg-surface-sunken">
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm text-[#475569] line-through truncate">{r.name}</p>
-                                <p className="text-[11px] text-[#94A3B8]">
+                                <p className="text-sm text-text-secondary line-through truncate">{r.name}</p>
+                                <p className="text-[11px] text-text-muted">
                                   {r.date ? parseLocalDate(r.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
                                   {r.source === 'org' ? ' · org holiday' : ' · department holiday'}
                                 </p>
@@ -415,7 +415,7 @@ export default function IndividualsPage() {
                                 <button
                                   type="button"
                                   onClick={() => restoreHoliday(r)}
-                                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-medium text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+                                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-medium text-primary-text hover:bg-primary-subtle transition-colors"
                                 >
                                   <RotateCcw size={13} /> Restore
                                 </button>
@@ -447,8 +447,8 @@ export default function IndividualsPage() {
             </div>
           )
         ) : (
-          <div className="flex items-center justify-center h-48 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-            <p className="text-[#94A3B8] text-sm">Select an employee to view their schedule.</p>
+          <div className="flex items-center justify-center h-48 bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+            <p className="text-text-muted text-sm">Select an employee to view their schedule.</p>
           </div>
         )}
       </div>
@@ -461,12 +461,12 @@ export default function IndividualsPage() {
         size="sm"
       >
         <div className="space-y-3">
-          <p className="text-sm text-[#1E293B]">
+          <p className="text-sm text-text-primary">
             Remove {selectedRows.length === 1 ? <span className="font-semibold">{selectedRows[0]?.name}</span> : <span className="font-semibold">{selectedRows.length} holidays</span>} for <span className="font-semibold">{selected?.user?.name ?? 'this employee'}</span>?
           </p>
-          <ul className="text-sm text-[#475569] space-y-1.5 list-disc pl-5">
-            <li>These dates will be treated as <span className="font-medium text-[#0F172A]">normal working days</span> for this employee only.</li>
-            <li>Nothing is deleted — you can restore them later from <span className="font-medium text-[#0F172A]">Removed holidays</span>.</li>
+          <ul className="text-sm text-text-secondary space-y-1.5 list-disc pl-5">
+            <li>These dates will be treated as <span className="font-medium text-text-primary">normal working days</span> for this employee only.</li>
+            <li>Nothing is deleted — you can restore them later from <span className="font-medium text-text-primary">Removed holidays</span>.</li>
           </ul>
           <div className="flex items-center justify-end gap-2 pt-1">
             <Button variant="secondary" onClick={() => setConfirmOpen(false)} disabled={removing}>Cancel</Button>
@@ -484,7 +484,7 @@ export default function IndividualsPage() {
           <button type="button" onClick={undoRemoval} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#93C5FD] hover:text-white transition-colors">
             <Undo2 size={14} /> Undo
           </button>
-          <button type="button" onClick={() => setUndoToast(null)} className="text-[#64748B] hover:text-white transition-colors"><X size={14} /></button>
+          <button type="button" onClick={() => setUndoToast(null)} className="text-text-muted hover:text-white transition-colors"><X size={14} /></button>
         </div>
       )}
     </div>

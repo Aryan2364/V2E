@@ -33,7 +33,7 @@ export default function CheckInHistory({
 
   if (checkIns.length === 0) {
     return (
-      <p className="text-[13px] text-[#475569] py-2">
+      <p className="text-[13px] text-text-secondary py-2">
         No check-ins yet. The first one starts this goal’s record.
       </p>
     )
@@ -47,7 +47,7 @@ export default function CheckInHistory({
             key={c.id}
             className={[
               'rounded-[10px] border px-4 py-3',
-              c.is_voided ? 'border-[#E2E8F0] bg-[#F8FAFC]' : 'border-[#E2E8F0] bg-white',
+              c.is_voided ? 'border-border-light bg-surface-sunken' : 'border-border-light bg-white',
             ].join(' ')}
           >
             <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -55,13 +55,13 @@ export default function CheckInHistory({
                 <span
                   className={[
                     'text-[14px] font-semibold',
-                    c.is_voided ? 'text-[#94A3B8] line-through' : 'text-[#0F172A]',
+                    c.is_voided ? 'text-text-muted line-through' : 'text-text-primary',
                   ].join(' ')}
                 >
                   {formatDate(c.check_in_date)}
                 </span>
                 {c.is_voided ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-[#E2E8F0] bg-white px-2 py-0.5 text-[11px] font-semibold text-[#475569]">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-border-light bg-white px-2 py-0.5 text-[11px] font-semibold text-text-secondary">
                     <Ban size={11} /> Voided
                   </span>
                 ) : (
@@ -71,13 +71,13 @@ export default function CheckInHistory({
                   <span
                     className={[
                       'text-[13px] tabular-nums',
-                      c.is_voided ? 'text-[#94A3B8] line-through' : 'text-[#1E293B]',
+                      c.is_voided ? 'text-text-muted line-through' : 'text-text-primary',
                     ].join(' ')}
                   >
                     {formatValue(c.recorded_value, goal.unit)}
                     {c.target_value_at_check_in !== null &&
                       c.target_value_at_check_in !== undefined && (
-                        <span className="text-[#475569]">
+                        <span className="text-text-secondary">
                           {' '}
                           of {formatValue(c.target_value_at_check_in, goal.unit)}
                         </span>
@@ -86,12 +86,12 @@ export default function CheckInHistory({
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[12px] text-[#475569]">{c.created_by?.name ?? '—'}</span>
+                <span className="text-[12px] text-text-secondary">{c.created_by?.name ?? '—'}</span>
                 {canEdit && !c.is_voided && (
                   <button
                     onClick={() => setVoiding(c)}
                     title="Void this check-in"
-                    className="inline-flex items-center gap-1 text-[12px] font-medium text-[#475569] hover:text-[#DC2626] transition-colors"
+                    className="inline-flex items-center gap-1 text-[12px] font-medium text-text-secondary hover:text-danger transition-colors"
                   >
                     <Ban size={12} /> Void
                   </button>
@@ -103,7 +103,7 @@ export default function CheckInHistory({
               <p
                 className={[
                   'mt-2 text-[13px] leading-relaxed whitespace-pre-wrap',
-                  c.is_voided ? 'text-[#94A3B8]' : 'text-[#1E293B]',
+                  c.is_voided ? 'text-text-muted' : 'text-text-primary',
                 ].join(' ')}
               >
                 {c.status_note}
@@ -111,7 +111,7 @@ export default function CheckInHistory({
             )}
 
             {c.is_voided && c.void_reason && (
-              <p className="mt-2 rounded-[6px] border border-[#FECACA] bg-[#FEF2F2] px-2.5 py-1.5 text-[12px] text-[#B91C1C]">
+              <p className="mt-2 rounded-[6px] border border-danger-border bg-danger-bg px-2.5 py-1.5 text-[12px] text-danger">
                 <span className="font-semibold">Voided:</span> {c.void_reason}
               </p>
             )}
@@ -169,18 +169,18 @@ function VoidModal({
   return (
     <Modal isOpen onClose={() => !saving && onClose()} title="Void this check-in" size="sm">
       <form onSubmit={submit} className="space-y-4">
-        <div className="rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-2.5">
-          <p className="text-[14px] font-semibold text-[#0F172A]">
+        <div className="rounded-[10px] bg-surface-sunken border border-border-light px-3 py-2.5">
+          <p className="text-[14px] font-semibold text-text-primary">
             {formatDate(checkIn.check_in_date)}
           </p>
           {checkIn.recorded_value !== null && checkIn.recorded_value !== undefined && (
-            <p className="text-[13px] text-[#475569] mt-0.5">
+            <p className="text-[13px] text-text-secondary mt-0.5">
               Recorded {formatValue(checkIn.recorded_value, goal.unit)}
             </p>
           )}
         </div>
 
-        <p className="text-[13px] text-[#1E293B]">
+        <p className="text-[13px] text-text-primary">
           The row stays in the history, struck through, with your reason attached — nothing is
           erased. The goal’s current number falls back to the newest surviving check-in.
         </p>
@@ -199,7 +199,7 @@ function VoidModal({
           />
         </div>
 
-        <div className="flex justify-end pt-4 border-t border-[#E2E8F0]">
+        <div className="flex justify-end pt-4 border-t border-border-light">
           <Button type="submit" variant="danger" disabled={saving}>
             {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
             {saving ? 'Voiding…' : 'Void check-in'}

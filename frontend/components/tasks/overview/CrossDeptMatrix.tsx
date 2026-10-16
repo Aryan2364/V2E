@@ -21,13 +21,13 @@ export default function CrossDeptMatrix({
   const hasAny = matrix.rows.some((r) => r.cells.some((c) => c > 0))
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col h-[460px]">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col h-[460px]">
       <div className="flex items-center justify-between mb-3 gap-2 shrink-0">
-        <h3 className="text-[15px] font-semibold text-[#0F172A]">Cross-department work flow</h3>
-        <span className="text-xs text-[#94A3B8]">rows give → columns receive</span>
+        <h3 className="text-[15px] font-semibold text-text-primary">Cross-department work flow</h3>
+        <span className="text-xs text-text-muted">rows give → columns receive</span>
       </div>
       {!hasAny ? (
-        <p className="text-sm text-[#475569] flex-1 grid place-items-center">No cross-department work in this view.</p>
+        <p className="text-sm text-text-secondary flex-1 grid place-items-center">No cross-department work in this view.</p>
       ) : (
         <div className="flex-1 overflow-auto">
           <table className="text-xs border-collapse">
@@ -35,7 +35,7 @@ export default function CrossDeptMatrix({
               <tr>
                 <th className="sticky left-0 bg-white z-10" />
                 {matrix.depts.map((d) => (
-                  <th key={d.id} className="px-1 py-1 font-medium text-[#94A3B8] align-bottom" style={{ height: 70 }}>
+                  <th key={d.id} className="px-1 py-1 font-medium text-text-muted align-bottom" style={{ height: 70 }}>
                     <div className="whitespace-nowrap" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>{d.name}</div>
                   </th>
                 ))}
@@ -46,7 +46,7 @@ export default function CrossDeptMatrix({
                 const from = matrix.depts.find((d) => d.id === row.from)
                 return (
                   <tr key={row.from}>
-                    <td className="sticky left-0 bg-white z-10 pr-2 py-0.5 font-medium text-right whitespace-nowrap text-[#475569]">{from?.name ?? '—'}</td>
+                    <td className="sticky left-0 bg-white z-10 pr-2 py-0.5 font-medium text-right whitespace-nowrap text-text-secondary">{from?.name ?? '—'}</td>
                     {row.cells.map((v, ci) => {
                       const to = matrix.depts[ci]
                       const within = row.from === to.id
@@ -76,7 +76,7 @@ export default function CrossDeptMatrix({
           </table>
         </div>
       )}
-      <p className="text-xs text-[#94A3B8] mt-2 shrink-0">
+      <p className="text-xs text-text-muted mt-2 shrink-0">
         <span className="inline-block w-2.5 h-2.5 rounded-xs align-middle mr-1" style={{ background: 'rgba(37,99,235,0.6)' }} /> within a department ·
         <span className="inline-block w-2.5 h-2.5 rounded-xs align-middle mx-1" style={{ background: 'rgba(220,38,38,0.6)' }} /> handed across departments
       </p>

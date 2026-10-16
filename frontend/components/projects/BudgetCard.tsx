@@ -18,25 +18,25 @@ export default function BudgetCard({ planned, actual, currency }: BudgetCardProp
   const barColor = over ? '#DC2626' : '#2563EB'
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-      <h3 className="text-[15px] font-semibold text-[#0F172A] mb-3">Budget</h3>
+    <div className="bg-white border border-border-light rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <h3 className="text-[15px] font-semibold text-text-primary mb-3">Budget</h3>
       <div className="flex justify-between text-sm mb-2">
-        <span className="text-[#475569]">Planned</span>
-        <span className="font-semibold text-[#0F172A]">{planned ? fmt(planned, currency) : '—'}</span>
+        <span className="text-text-secondary">Planned</span>
+        <span className="font-semibold text-text-primary">{planned ? fmt(planned, currency) : '—'}</span>
       </div>
       <div className="flex justify-between text-sm mb-3">
-        <span className="text-[#475569]">Actual Spent</span>
-        <span className={`font-semibold ${over ? 'text-[#DC2626]' : 'text-[#0F172A]'}`}>
+        <span className="text-text-secondary">Actual Spent</span>
+        <span className={`font-semibold ${over ? 'text-danger' : 'text-text-primary'}`}>
           {actual ? fmt(actual, currency) : '—'}
         </span>
       </div>
       {planned && actual ? (
-        <div className="w-full h-2 rounded-full bg-[#F1F5F9] overflow-hidden">
+        <div className="w-full h-2 rounded-full bg-surface-control overflow-hidden">
           <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: barColor }} />
         </div>
       ) : null}
       {over && (
-        <p className="text-xs text-[#DC2626] mt-1">Over budget by {fmt(actual! - planned!, currency)}</p>
+        <p className="text-xs text-danger mt-1">Over budget by {fmt(actual! - planned!, currency)}</p>
       )}
     </div>
   )

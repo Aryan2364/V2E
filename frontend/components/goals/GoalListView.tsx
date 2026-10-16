@@ -257,9 +257,9 @@ export default function GoalListView() {
       primary: true,
       render: (g) => (
         <div className="min-w-0">
-          <p className="text-[15px] font-semibold text-[#0F172A] truncate">{g.title}</p>
+          <p className="text-[15px] font-semibold text-text-primary truncate">{g.title}</p>
           {(g.supported_by_count || g.supports_count) ? (
-            <p className="text-[11px] text-[#475569] mt-0.5">
+            <p className="text-[11px] text-text-secondary mt-0.5">
               {g.supported_by_count ? `${g.supported_by_count} supporting` : ''}
               {g.supported_by_count && g.supports_count ? ' · ' : ''}
               {g.supports_count ? `supports ${g.supports_count}` : ''}
@@ -278,19 +278,19 @@ export default function GoalListView() {
         g.focus_area ? (
           <FocusAreaBadge focus={g.focus_area} compact />
         ) : (
-          <span className="text-[13px] text-[#475569]">—</span>
+          <span className="text-[13px] text-text-secondary">—</span>
         ),
     },
     {
       key: 'owner',
       header: 'Owner',
-      render: (g) => <span className="text-[14px] text-[#1E293B]">{g.owner?.name ?? '—'}</span>,
+      render: (g) => <span className="text-[14px] text-text-primary">{g.owner?.name ?? '—'}</span>,
     },
     {
       key: 'due',
       header: 'Deadline',
       desktopHiddenBelow: 'md',
-      render: (g) => <span className="text-[14px] text-[#1E293B]">{formatDate(g.due_date)}</span>,
+      render: (g) => <span className="text-[14px] text-text-primary">{formatDate(g.due_date)}</span>,
     },
     {
       key: 'days',
@@ -299,7 +299,7 @@ export default function GoalListView() {
         const d = daysLeftLabel(g.days_left)
         const closed = g.status === 'achieved' || g.status === 'closed'
         return (
-          <span className={`text-[13px] font-medium ${closed ? 'text-[#475569]' : DAYS_TONE[d.tone]}`}>
+          <span className={`text-[13px] font-medium ${closed ? 'text-text-secondary' : DAYS_TONE[d.tone]}`}>
             {closed ? '—' : d.text}
           </span>
         )
@@ -316,11 +316,11 @@ export default function GoalListView() {
       desktopHiddenBelow: 'lg',
       render: (g) =>
         g.target_value === null || g.target_value === undefined ? (
-          <span className="text-[13px] text-[#475569]">—</span>
+          <span className="text-[13px] text-text-secondary">—</span>
         ) : (
-          <span className="text-[13px] text-[#1E293B] tabular-nums whitespace-nowrap">
+          <span className="text-[13px] text-text-primary tabular-nums whitespace-nowrap">
             {g.current_value === null || g.current_value === undefined ? '—' : g.current_value}
-            <span className="text-[#475569]"> of {formatValue(g.target_value, g.unit)}</span>
+            <span className="text-text-secondary"> of {formatValue(g.target_value, g.unit)}</span>
           </span>
         ),
     },
@@ -331,13 +331,13 @@ export default function GoalListView() {
       desktopHiddenBelow: 'lg',
       render: (g) => {
         const t = g.task_counts ?? { open: 0, closed: 0 }
-        if (!t.open && !t.closed) return <span className="text-[13px] text-[#475569]">—</span>
+        if (!t.open && !t.closed) return <span className="text-[13px] text-text-secondary">—</span>
         return (
           <span className="text-[13px] whitespace-nowrap">
-            <span className="font-semibold text-[#0F172A]">{t.open}</span>
-            <span className="text-[#475569]"> open</span>
+            <span className="font-semibold text-text-primary">{t.open}</span>
+            <span className="text-text-secondary"> open</span>
             <span className="text-[#CBD5E1]"> · </span>
-            <span className="text-[#475569]">{t.closed} done</span>
+            <span className="text-text-secondary">{t.closed} done</span>
           </span>
         )
       },
@@ -347,7 +347,7 @@ export default function GoalListView() {
       header: 'Last check-in',
       desktopHiddenBelow: 'xl',
       render: (g) => (
-        <span className="text-[13px] text-[#475569] whitespace-nowrap">
+        <span className="text-[13px] text-text-secondary whitespace-nowrap">
           {g.last_check_in_at ? formatDate(g.last_check_in_at) : 'Never'}
         </span>
       ),
@@ -365,14 +365,14 @@ export default function GoalListView() {
   return (
     <div>
       {/* Sticky header so the primary action never scrolls away — DESIGN_RULES Part 3 */}
-      <div className="sticky top-0 z-20 bg-[#F8FAFC] pb-4 -mt-2 pt-2">
+      <div className="sticky top-0 z-20 bg-surface-sunken pb-4 -mt-2 pt-2">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="min-w-0">
             <div className="flex items-center gap-2.5">
-              <h1 className="text-[26px] font-bold text-[#0F172A] leading-tight">Goals</h1>
+              <h1 className="text-[26px] font-bold text-text-primary leading-tight">Goals</h1>
               <CountBadge count={filtered.length} />
             </div>
-            <p className="text-sm text-[#475569] mt-1">
+            <p className="text-sm text-text-secondary mt-1">
               Every goal in the company. Open one to see what it needs, what it powers, and its
               check-in record.
             </p>
@@ -380,7 +380,7 @@ export default function GoalListView() {
           {perms.write && (
             <button
               onClick={() => setCreateOpen(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold transition-colors shrink-0"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-semibold transition-colors shrink-0"
             >
               <Plus size={16} /> New goal
             </button>
@@ -393,13 +393,13 @@ export default function GoalListView() {
           <div className="relative flex-1 min-w-[200px] max-w-[320px]">
             <Search
               size={15}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
             />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search goals…"
-              className="w-full border border-[#CBD5E1] rounded-[8px] pl-9 pr-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+              className="w-full border border-border rounded-[8px] pl-9 pr-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
           <FilterButton
@@ -410,7 +410,7 @@ export default function GoalListView() {
           {isFiltered && (
             <button
               onClick={clearFilters}
-              className="inline-flex items-center gap-1 text-sm font-medium text-[#475569] hover:text-[#0F172A] transition-colors"
+              className="inline-flex items-center gap-1 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
             >
               <X size={14} /> Clear
             </button>
@@ -441,14 +441,14 @@ export default function GoalListView() {
               isFiltered ? (
                 <button
                   onClick={clearFilters}
-                  className="mt-1 text-sm font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
+                  className="mt-1 text-sm font-semibold text-primary-text hover:text-primary-text"
                 >
                   Clear filters
                 </button>
               ) : perms.write ? (
                 <button
                   onClick={() => setCreateOpen(true)}
-                  className="mt-1 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold transition-colors"
+                  className="mt-1 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-semibold transition-colors"
                 >
                   <Plus size={16} /> New goal
                 </button>

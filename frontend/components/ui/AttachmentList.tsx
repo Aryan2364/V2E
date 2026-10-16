@@ -8,7 +8,7 @@ import Tooltip from '@/components/ui/Tooltip'
 
 function KindBadge({ name }: { name: string }) {
   return (
-    <span className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-[8px] bg-[#EFF6FF] border border-[#BFDBFE] text-[9px] font-bold text-[#2563EB]">
+    <span className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-[8px] bg-primary-subtle border border-primary-border text-[9px] font-bold text-primary-text">
       {fileKindLabel(name)}
     </span>
   )
@@ -32,7 +32,7 @@ export function AttachmentList({
       {attachments.map((a) => (
         <div
           key={a.id}
-          className="flex items-center gap-3 rounded-[10px] border border-[#E2E8F0] bg-white px-3 py-2 hover:border-[#CBD5E1] transition-colors"
+          className="flex items-center gap-3 rounded-[10px] border border-border-light bg-white px-3 py-2 hover:border-border transition-colors"
         >
           <KindBadge name={a.file_name} />
           <Tooltip label={`Download ${a.file_name}`}>
@@ -41,10 +41,10 @@ export function AttachmentList({
             onClick={() => onDownload(a)}
             className="flex-1 min-w-0 text-left group"
           >
-            <p className="text-sm font-medium text-[#0F172A] truncate group-hover:text-[#2563EB] group-hover:underline">
+            <p className="text-sm font-medium text-text-primary truncate group-hover:text-primary-text group-hover:underline">
               {a.file_name}
             </p>
-            <p className="text-[11px] text-[#94A3B8]">
+            <p className="text-[11px] text-text-muted">
               {formatBytes(a.size_bytes)}
               {a.uploaded_by_name ? ` · ${a.uploaded_by_name}` : ''}
             </p>
@@ -54,7 +54,7 @@ export function AttachmentList({
           <button
             type="button"
             onClick={() => onDownload(a)}
-            className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-[#475569] hover:bg-[#F1F5F9] hover:text-[#2563EB] transition-colors"
+            className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-primary-text transition-colors"
             aria-label="Download"
           >
             <Download size={15} />
@@ -65,7 +65,7 @@ export function AttachmentList({
             <button
               type="button"
               onClick={() => onRemove(a)}
-              className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-[#94A3B8] hover:bg-[#FEE2E2] hover:text-[#DC2626] transition-colors"
+              className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-text-muted hover:bg-danger-bg hover:text-danger transition-colors"
               aria-label="Remove"
             >
               <X size={15} />
@@ -94,11 +94,11 @@ export function AttachmentChips({
         <button
           type="button"
           onClick={() => onDownload(a)}
-          className="flex items-center gap-1.5 text-xs text-[#2563EB] hover:underline bg-[#EFF6FF] px-2 py-1 rounded-[6px] border border-[#BFDBFE] max-w-[220px]"
+          className="flex items-center gap-1.5 text-xs text-primary-text hover:underline bg-primary-subtle px-2 py-1 rounded-[6px] border border-primary-border max-w-[220px]"
         >
           <FileText size={11} className="shrink-0" />
           <span className="truncate">{a.file_name}</span>
-          <span className="text-[#94A3B8] shrink-0">{formatBytes(a.size_bytes)}</span>
+          <span className="text-text-muted shrink-0">{formatBytes(a.size_bytes)}</span>
         </button>
         </Tooltip>
       ))}
@@ -122,22 +122,22 @@ export function PendingFileList({
       {files.map((f, i) => (
         <div
           key={`${f.name}-${i}`}
-          className="flex items-center gap-3 rounded-[10px] border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2"
+          className="flex items-center gap-3 rounded-[10px] border border-border-light bg-surface-sunken px-3 py-2"
         >
           <KindBadge name={f.name} />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-[#0F172A] truncate">{f.name}</p>
-            <p className="text-[11px] text-[#94A3B8]">{formatBytes(f.size)}</p>
+            <p className="text-sm font-medium text-text-primary truncate">{f.name}</p>
+            <p className="text-[11px] text-text-muted">{formatBytes(f.size)}</p>
           </div>
           {uploading ? (
-            <Loader2 size={15} className="shrink-0 text-[#2563EB] animate-spin" />
+            <Loader2 size={15} className="shrink-0 text-primary-text animate-spin" />
           ) : (
             onRemove && (
               <Tooltip label="Remove">
               <button
                 type="button"
                 onClick={() => onRemove(i)}
-                className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-[#94A3B8] hover:bg-[#FEE2E2] hover:text-[#DC2626] transition-colors"
+                className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-text-muted hover:bg-danger-bg hover:text-danger transition-colors"
                 aria-label="Remove"
               >
                 <X size={15} />

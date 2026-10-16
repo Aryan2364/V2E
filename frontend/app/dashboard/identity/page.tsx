@@ -28,7 +28,7 @@ function PillarCard({
 }) {
   if (!content) return null
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
       <div className="flex items-center gap-2.5 mb-3">
         <span
           className="w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0"
@@ -36,11 +36,11 @@ function PillarCard({
         >
           <Icon size={16} style={{ color: iconColor }} />
         </span>
-        <span className="text-xs font-bold uppercase tracking-widest text-[#475569]">
+        <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">
           {label}
         </span>
       </div>
-      <p className="text-[15px] text-[#1E293B] leading-relaxed whitespace-pre-wrap">{content}</p>
+      <p className="text-[15px] text-text-primary leading-relaxed whitespace-pre-wrap">{content}</p>
     </div>
   )
 }
@@ -50,11 +50,11 @@ function PillarCard({
 function EmptyState({ canEdit, onEdit }: { canEdit: boolean; onEdit: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-16 h-16 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-        <Building2 size={28} className="text-[#94A3B8]" />
+      <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
+        <Building2 size={28} className="text-text-muted" />
       </div>
-      <h2 className="text-lg font-semibold text-[#0F172A]">No identity defined yet</h2>
-      <p className="text-[#475569] text-sm mt-1 max-w-xs">
+      <h2 className="text-lg font-semibold text-text-primary">No identity defined yet</h2>
+      <p className="text-text-secondary text-sm mt-1 max-w-xs">
         Define your organization&apos;s vision, mission, purpose and values.
       </p>
       {canEdit && (
@@ -96,7 +96,7 @@ export default function IdentityPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -106,10 +106,10 @@ export default function IdentityPage() {
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[22px] sm:text-[28px] font-bold text-[#0F172A] leading-tight">
+          <h1 className="text-[22px] sm:text-[28px] font-bold text-text-primary leading-tight">
             Organization Identity
           </h1>
-          <p className="mt-1 text-[14px] sm:text-[15px] text-[#475569]">
+          <p className="mt-1 text-[14px] sm:text-[15px] text-text-secondary">
             Why we exist and how we behave.
           </p>
         </div>
@@ -132,14 +132,14 @@ export default function IdentityPage() {
         <>
           {/* VISION — hero */}
           {identity?.vision && (
-            <section className="rounded-[16px] bg-[#EFF6FF] border border-[#DBEAFE] p-7 sm:p-9">
+            <section className="rounded-[16px] bg-primary-subtle border border-primary-border p-7 sm:p-9">
               <div className="flex items-center gap-2 mb-4">
-                <Target size={16} className="text-[#2563EB]" />
-                <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#2563EB]">
+                <Target size={16} className="text-primary-text" />
+                <span className="text-xs font-bold uppercase tracking-[0.14em] text-primary-text">
                   Vision
                 </span>
               </div>
-              <p className="text-[#0F172A] font-bold text-[20px] sm:text-[22px] leading-snug whitespace-pre-wrap">
+              <p className="text-text-primary font-bold text-[20px] sm:text-[22px] leading-snug whitespace-pre-wrap">
                 {identity.vision}
               </p>
             </section>
@@ -168,7 +168,7 @@ export default function IdentityPage() {
           {/* CORE VALUES */}
           {values.length > 0 && (
             <div>
-              <h2 className="text-[18px] sm:text-[20px] font-semibold text-[#0F172A] mb-5">
+              <h2 className="text-[18px] sm:text-[20px] font-semibold text-text-primary mb-5">
                 Core Values
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -177,7 +177,7 @@ export default function IdentityPage() {
                   return (
                     <div
                       key={i}
-                      className="flex flex-row sm:flex-col bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden"
+                      className="flex flex-row sm:flex-col bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden"
                     >
                       {/* Stripe: left edge on mobile, top edge on desktop */}
                       <div
@@ -191,9 +191,9 @@ export default function IdentityPage() {
                         >
                           {String(i + 1).padStart(2, '0')}
                         </span>
-                        <h3 className="font-bold text-[15px] text-[#0F172A]">{v.title}</h3>
+                        <h3 className="font-bold text-[15px] text-text-primary">{v.title}</h3>
                         {v.description && (
-                          <p className="text-[13px] text-[#475569] mt-1.5 leading-relaxed whitespace-pre-wrap">
+                          <p className="text-[13px] text-text-secondary mt-1.5 leading-relaxed whitespace-pre-wrap">
                             {v.description}
                           </p>
                         )}

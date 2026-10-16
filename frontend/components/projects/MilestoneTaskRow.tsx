@@ -16,9 +16,9 @@ export default function MilestoneTaskRow({ pt, warnings, onSetup }: MilestoneTas
 
   if (!task) {
     return (
-      <div className="flex items-center gap-3 py-2.5 px-4 border-b border-[#F1F5F9] last:border-0 bg-[#FFFBEB]">
+      <div className="flex items-center gap-3 py-2.5 px-4 border-b border-border-light last:border-0 bg-warning-bg">
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-[#475569] italic">Pending task from template</p>
+          <p className="text-sm text-text-secondary italic">Pending task from template</p>
           <PendingTaskBadge onClick={onSetup} />
         </div>
       </div>
@@ -29,14 +29,14 @@ export default function MilestoneTaskRow({ pt, warnings, onSetup }: MilestoneTas
   const completed = task.status?.type === 'completed'
 
   return (
-    <div className="flex items-start gap-3 py-2.5 px-4 border-b border-[#F1F5F9] last:border-0">
+    <div className="flex items-start gap-3 py-2.5 px-4 border-b border-border-light last:border-0">
       <div className="w-2 h-2 rounded-full mt-2 shrink-0" style={{ backgroundColor: statusColor }} />
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium ${completed ? 'line-through text-[#94A3B8]' : 'text-[#0F172A]'}`}>
+        <p className={`text-sm font-medium ${completed ? 'line-through text-text-muted' : 'text-text-primary'}`}>
           {task.title}
         </p>
         {task.deadline && (
-          <p className="text-xs text-[#94A3B8] mt-0.5">
+          <p className="text-xs text-text-muted mt-0.5">
             Due {new Date(task.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
           </p>
         )}
@@ -53,7 +53,7 @@ export default function MilestoneTaskRow({ pt, warnings, onSetup }: MilestoneTas
       {task.id && (
         <a
           href={`/dashboard/tasks/${task.id}`}
-          className="p-1 rounded-xs hover:bg-[#F1F5F9] text-[#475569] shrink-0 transition-colors"
+          className="p-1 rounded-xs hover:bg-surface-control text-text-secondary shrink-0 transition-colors"
         >
           <ExternalLink size={13} />
         </a>

@@ -20,13 +20,13 @@ function errorMessage(e: unknown, fallback: string): string {
   return typeof m === 'string' && m ? m : fallback
 }
 
-const cardCls = 'bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6'
+const cardCls = 'bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6'
 
 function CardHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <div className="mb-4 pb-3 border-b border-[#F1F5F9] flex items-baseline gap-2 flex-wrap">
-      <h2 className="text-base font-semibold text-[#0F172A]">{title}</h2>
-      {subtitle && <span className="text-xs text-[#475569]">{subtitle}</span>}
+    <div className="mb-4 pb-3 border-b border-border-light flex items-baseline gap-2 flex-wrap">
+      <h2 className="text-base font-semibold text-text-primary">{title}</h2>
+      {subtitle && <span className="text-xs text-text-secondary">{subtitle}</span>}
     </div>
   )
 }
@@ -123,7 +123,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
   }
 
   const inputCls =
-    'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] focus:outline-hidden bg-white disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]'
+    'w-full border border-border rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden bg-white disabled:bg-surface-sunken disabled:text-text-muted'
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
@@ -132,16 +132,16 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
         <CardHeader title="Apply for leave" subtitle={readOnly ? 'Preview — changes are disabled' : undefined} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">From</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">From</label>
             <DatePicker value={start} onChange={setStart} min={todayStr} placeholder="Start date" disabled={readOnly} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1.5">To</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">To</label>
             <DatePicker value={end} onChange={setEnd} min={start || todayStr} placeholder="End date" disabled={readOnly} />
           </div>
         </div>
         <div className="mt-4">
-          <label htmlFor="leave-reason" className="block text-sm font-medium text-[#374151] mb-1.5">Reason (optional)</label>
+          <label htmlFor="leave-reason" className="block text-sm font-medium text-text-secondary mb-1.5">Reason (optional)</label>
           <input
             id="leave-reason"
             type="text"
@@ -158,18 +158,18 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
             checked={declare}
             onChange={(e) => setDeclare(e.target.checked)}
             disabled={readOnly}
-            className="accent-[#2563EB] mt-1"
+            className="accent-primary mt-1"
           />
-          <span className="text-sm text-[#1E293B]">Declare as unplanned leave (e.g. sick) — book now without waiting for approval</span>
+          <span className="text-sm text-text-primary">Declare as unplanned leave (e.g. sick) — book now without waiting for approval</span>
         </label>
         {formError && (
-          <div className="mt-4 rounded-[8px] border border-[#FECACA] bg-[#FEF2F2] px-3 py-2 text-sm text-[#B91C1C]">{formError}</div>
+          <div className="mt-4 rounded-[8px] border border-danger-border bg-danger-bg px-3 py-2 text-sm text-danger">{formError}</div>
         )}
         <button
           type="button"
           onClick={apply}
           disabled={submitting || readOnly}
-          className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-[10px] min-h-[44px] sm:min-h-0 text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed transition-colors"
+          className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-[10px] min-h-[44px] sm:min-h-0 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
         >
           {submitting ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
           {submitting ? 'Submitting…' : declare ? 'Declare leave' : 'Submit request'}
@@ -181,38 +181,38 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
         <CardHeader title="My leave" />
         {status === 'loading' ? (
           <div className="space-y-2">
-            {[0, 1, 2].map((i) => <div key={i} className="h-[60px] rounded-[8px] bg-[#F1F5F9] animate-pulse" />)}
+            {[0, 1, 2].map((i) => <div key={i} className="h-[60px] rounded-[8px] bg-surface-control animate-pulse" />)}
           </div>
         ) : status === 'failed' ? (
           <div className="flex flex-col items-center text-center gap-2 py-8">
-            <p className="text-sm text-[#0F172A] font-medium">Your leave could not be loaded</p>
-            <p className="text-xs text-[#475569]">Check your connection and try again.</p>
+            <p className="text-sm text-text-primary font-medium">Your leave could not be loaded</p>
+            <p className="text-xs text-text-secondary">Check your connection and try again.</p>
             <button
               type="button"
               onClick={() => { setStatus('loading'); load() }}
-              className="mt-2 flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-[#2563EB] border-2 border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors"
+              className="mt-2 flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-primary-text border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
             >
               <RefreshCw size={14} /> Retry
             </button>
           </div>
         ) : leaves.length === 0 ? (
           <div className="flex flex-col items-center text-center gap-2 py-8">
-            <CalendarOff size={22} className="text-[#475569]" />
-            <p className="text-sm text-[#0F172A] font-medium">No leave yet</p>
-            <p className="text-xs text-[#475569]">Leave you apply for or declare will appear here.</p>
+            <CalendarOff size={22} className="text-text-secondary" />
+            <p className="text-sm text-text-primary font-medium">No leave yet</p>
+            <p className="text-xs text-text-secondary">Leave you apply for or declare will appear here.</p>
           </div>
         ) : (
           <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
             {leaves.map((l) => (
-              <div key={l.id} className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 p-3 rounded-[8px] border border-[#E2E8F0] bg-[#F8FAFC]">
+              <div key={l.id} className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 p-3 rounded-[8px] border border-border-light bg-surface-sunken">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-[#0F172A]">{fmt(l.start_date)} → {fmt(l.end_date)}</span>
+                    <span className="text-sm font-medium text-text-primary">{fmt(l.start_date)} → {fmt(l.end_date)}</span>
                     <LeaveStateBadge leave={l} />
                   </div>
-                  {l.reason && <p className="text-xs text-[#475569] mt-1 wrap-break-word">{l.reason}</p>}
+                  {l.reason && <p className="text-xs text-text-secondary mt-1 wrap-break-word">{l.reason}</p>}
                   {l.state === 'rejected' && l.decision_note && (
-                    <p className="text-xs text-[#DC2626] mt-1 wrap-break-word">Reason: {l.decision_note}</p>
+                    <p className="text-xs text-danger mt-1 wrap-break-word">Reason: {l.decision_note}</p>
                   )}
                 </div>
                 {!readOnly && (
@@ -222,7 +222,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
                         type="button"
                         disabled={busyId === l.id}
                         onClick={() => takeAnyway(l)}
-                        className="flex items-center gap-1 text-xs font-semibold text-[#7C3AED] border border-[#DDD6FE] bg-[#F5F3FF] rounded-[6px] px-2.5 py-1.5 min-h-[36px] hover:bg-[#EDE9FE] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:border-[#E2E8F0] transition-colors"
+                        className="flex items-center gap-1 text-xs font-semibold text-text-secondary border border-border-light bg-surface-control rounded-[6px] px-2.5 py-1.5 min-h-[36px] hover:bg-surface-control disabled:bg-surface-control-pressed disabled:text-text-muted disabled:border-border-light transition-colors"
                       >
                         {busyId === l.id && <Loader2 size={12} className="animate-spin" />}
                         Take anyway
@@ -232,7 +232,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
                       <button
                         type="button"
                         onClick={() => { setCancelError(null); setCancelTarget(l) }}
-                        className="text-xs font-semibold text-[#475569] border border-[#CBD5E1] bg-white rounded-[6px] px-2.5 py-1.5 min-h-[36px] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors"
+                        className="text-xs font-semibold text-text-secondary border border-border bg-white rounded-[6px] px-2.5 py-1.5 min-h-[36px] hover:bg-surface-control hover:text-text-primary transition-colors"
                       >
                         Cancel leave
                       </button>

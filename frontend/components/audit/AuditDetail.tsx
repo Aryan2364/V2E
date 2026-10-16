@@ -75,7 +75,7 @@ export function ActorCell({ entry }: { entry: AuditEntry }) {
       </span>
     )
   }
-  return <span className="text-sm text-[#0F172A]">{entry.actor?.name ?? '—'}</span>
+  return <span className="text-sm text-text-primary">{entry.actor?.name ?? '—'}</span>
 }
 
 export function ActionBadge({ action }: { action: string }) {
@@ -97,11 +97,11 @@ export function AuditExpandedDetail({ entry }: { entry: AuditEntry }) {
   const showCreated = entry.created_at && entry.occurred_at && entry.created_at.slice(0, 16) !== entry.occurred_at.slice(0, 16)
 
   return (
-    <div className="rounded-[10px] border border-[#E2E8F0] bg-white p-4">
+    <div className="rounded-[10px] border border-border-light bg-white p-4">
       {/* Meta strip */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3 text-[13px] text-[#475569]">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3 text-[13px] text-text-secondary">
         <span className="flex items-center gap-1.5">
-          <span className="font-medium text-[#374151]">By:</span>
+          <span className="font-medium text-text-secondary">By:</span>
           <ActorCell entry={entry} />
         </span>
         {entry.actor_type === 'system' && entry.trigger_source && (
@@ -113,10 +113,10 @@ export function AuditExpandedDetail({ entry }: { entry: AuditEntry }) {
           </span>
         )}
         <span>
-          <span className="font-medium text-[#374151]">When:</span> {fmtDateTime(entry.occurred_at)}
+          <span className="font-medium text-text-secondary">When:</span> {fmtDateTime(entry.occurred_at)}
         </span>
         {showCreated && (
-          <span className="text-[#64748B]">(recorded {fmtDateTime(entry.created_at)})</span>
+          <span className="text-text-muted">(recorded {fmtDateTime(entry.created_at)})</span>
         )}
       </div>
 
@@ -125,15 +125,15 @@ export function AuditExpandedDetail({ entry }: { entry: AuditEntry }) {
         <div className="flex flex-col gap-1.5">
           {Object.entries(changes).map(([field, ch]) => (
             <div key={field} className="text-sm flex items-start gap-2 flex-wrap">
-              <span className="font-medium text-[#374151]">{humanizeField(field)}:</span>
-              <span className="text-[#DC2626] line-through break-all">{formatValue(ch.before)}</span>
-              <span className="text-[#94A3B8]">→</span>
-              <span className="text-[#16A34A] break-all">{formatValue(ch.after)}</span>
+              <span className="font-medium text-text-secondary">{humanizeField(field)}:</span>
+              <span className="text-danger line-through break-all">{formatValue(ch.before)}</span>
+              <span className="text-text-muted">→</span>
+              <span className="text-success break-all">{formatValue(ch.after)}</span>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-sm text-[#64748B]">No field-level changes recorded.</p>
+        <p className="text-sm text-text-muted">No field-level changes recorded.</p>
       )}
     </div>
   )

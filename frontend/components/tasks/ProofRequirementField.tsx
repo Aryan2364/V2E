@@ -49,7 +49,7 @@ export default function ProofRequirementField({
           onClick={() => onProofRequiredChange(!proofRequired)}
           className={[
             'relative w-10 h-5 rounded-full transition-colors duration-200',
-            proofRequired ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]',
+            proofRequired ? 'bg-primary' : 'bg-surface-control-pressed',
           ].join(' ')}
           role="switch"
           aria-checked={proofRequired}
@@ -61,13 +61,13 @@ export default function ProofRequirementField({
             ].join(' ')}
           />
         </button>
-        <span className="text-sm text-[#1E293B] font-medium">Proof of completion required</span>
+        <span className="text-sm text-text-primary font-medium">Proof of completion required</span>
 
         {proofRequired && (
           <button
             type="button"
             onClick={() => setShowTypes((v) => !v)}
-            className="ml-auto inline-flex items-center gap-1.5 text-[12px] font-medium text-[#475569] hover:text-[#2563EB] transition-colors"
+            className="ml-auto inline-flex items-center gap-1.5 text-[12px] font-medium text-text-secondary hover:text-primary-text transition-colors"
             aria-expanded={showTypes}
           >
             <SlidersHorizontal size={13} />
@@ -78,14 +78,14 @@ export default function ProofRequirementField({
       </div>
 
       {proofRequired && showTypes && (
-        <div className="mt-2 rounded-[10px] border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-          <p className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wide mb-2">Allowed proof types</p>
+        <div className="mt-2 rounded-[10px] border border-border-light bg-surface-sunken p-3">
+          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-2">Allowed proof types</p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
             {FILE_TYPE_GROUPS.map((g) => (
-              <label key={g.key} className="flex items-center gap-2 text-sm text-[#334155] cursor-pointer">
+              <label key={g.key} className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
                 <input
                   type="checkbox"
-                  className="accent-[#2563EB] w-4 h-4"
+                  className="accent-primary w-4 h-4"
                   checked={selected.has(g.key)}
                   onChange={() => toggleGroup(g.key)}
                 />
@@ -93,7 +93,7 @@ export default function ProofRequirementField({
               </label>
             ))}
           </div>
-          <p className="mt-2 text-[11px] text-[#64748B]">All types on = anything accepted. At least one must stay on.</p>
+          <p className="mt-2 text-[11px] text-text-muted">All types on = anything accepted. At least one must stay on.</p>
         </div>
       )}
     </div>

@@ -81,11 +81,11 @@ export default function MonthDayPicker({
     return `${value.day} ${MONTHS_SHORT[value.month - 1]}`
   }, [value])
 
-  const triggerCls = `w-full flex items-center gap-0 rounded-[8px] border bg-[#F8FAFC] text-left text-sm transition-colors ${
+  const triggerCls = `w-full flex items-center gap-0 rounded-[8px] border bg-surface-sunken text-left text-sm transition-colors ${
     disabled
-      ? 'border-[#E2E8F0] cursor-not-allowed opacity-70'
-      : 'border-[#CBD5E1] cursor-pointer hover:bg-white hover:border-[#94A3B8]'
-  } ${open ? 'bg-white! border-[#2563EB]! ring-1 ring-[#2563EB]' : ''}`
+      ? 'border-border-light cursor-not-allowed opacity-70'
+      : 'border-border cursor-pointer hover:bg-white hover:border-border-strong'
+  } ${open ? 'bg-white! border-primary! ring-1 ring-primary' : ''}`
 
   return (
     <div>
@@ -96,10 +96,10 @@ export default function MonthDayPicker({
         onClick={() => setOpen((o) => !o)}
         className={triggerCls}
       >
-        <span className="flex items-center px-2.5 py-1.5 border-r border-[#E2E8F0] rounded-l-[8px] text-[#64748B]">
+        <span className="flex items-center px-2.5 py-1.5 border-r border-border-light rounded-l-[8px] text-text-muted">
           <Calendar size={15} />
         </span>
-        <span className={`flex-1 px-3 py-1.5 truncate ${value.month ? 'text-[#0F172A]' : 'text-[#94A3B8]'}`}>
+        <span className={`flex-1 px-3 py-1.5 truncate ${value.month ? 'text-text-primary' : 'text-text-muted'}`}>
           {displayValue}
         </span>
       </button>
@@ -110,7 +110,7 @@ export default function MonthDayPicker({
           onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
           <div
-            className="w-[300px] max-w-full rounded-[12px] border border-[#E2E8F0] bg-white shadow-[0_12px_40px_rgba(0,0,0,0.20)] p-3"
+            className="w-[300px] max-w-full rounded-[12px] border border-border-light bg-white shadow-[0_12px_40px_rgba(0,0,0,0.20)] p-3"
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-2">
@@ -119,7 +119,7 @@ export default function MonthDayPicker({
                   <button
                     type="button"
                     onClick={() => shiftMonth(-1)}
-                    className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#475569] hover:bg-[#F1F5F9]"
+                    className="w-8 h-8 rounded-[8px] flex items-center justify-center text-text-secondary hover:bg-surface-control"
                     aria-label="Previous Month"
                   >
                     <ChevronLeft size={17} />
@@ -127,14 +127,14 @@ export default function MonthDayPicker({
                   <button
                     type="button"
                     onClick={() => setMode('months')}
-                    className="px-3 py-1.5 rounded-[8px] text-sm font-semibold text-[#0F172A] hover:bg-[#F1F5F9]"
+                    className="px-3 py-1.5 rounded-[8px] text-sm font-semibold text-text-primary hover:bg-surface-control"
                   >
                     {MONTHS[viewMonth - 1]}
                   </button>
                   <button
                     type="button"
                     onClick={() => shiftMonth(1)}
-                    className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#475569] hover:bg-[#F1F5F9]"
+                    className="w-8 h-8 rounded-[8px] flex items-center justify-center text-text-secondary hover:bg-surface-control"
                     aria-label="Next Month"
                   >
                     <ChevronRight size={17} />
@@ -142,11 +142,11 @@ export default function MonthDayPicker({
                 </>
               ) : (
                 <div className="w-full flex items-center justify-between px-1">
-                  <span className="text-sm font-semibold text-[#0F172A]">Select Month</span>
+                  <span className="text-sm font-semibold text-text-primary">Select Month</span>
                   <button
                     type="button"
                     onClick={() => setMode('days')}
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-[#94A3B8] hover:bg-[#F1F5F9] hover:text-[#0F172A]"
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-text-muted hover:bg-surface-control hover:text-text-primary"
                   >
                     <X size={14} />
                   </button>
@@ -173,12 +173,12 @@ export default function MonthDayPicker({
                           if (!blocked) pickDay(d)
                         }}
                         className={[
-                          'h-9 rounded-[8px] text-sm flex items-center justify-center transition-colors border focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]',
+                          'h-9 rounded-[8px] text-sm flex items-center justify-center transition-colors border focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary',
                           isSel
-                            ? `bg-[#2563EB] text-white font-semibold ${blocked ? 'border-[#DC2626] ring-1 ring-[#DC2626]' : 'border-[#2563EB]'}`
+                            ? `bg-primary text-white font-semibold ${blocked ? 'border-danger ring-1 ring-danger' : 'border-primary'}`
                             : blocked
-                              ? 'border-transparent bg-[#F1F5F9] text-[#64748B] line-through decoration-[#94A3B8] cursor-not-allowed'
-                              : `text-[#0F172A] hover:bg-[#EFF6FF] ${note ? 'border-dashed border-[#94A3B8]' : 'border-transparent'}`,
+                              ? 'border-transparent bg-surface-control text-text-muted line-through decoration-text-muted cursor-not-allowed'
+                              : `text-text-primary hover:bg-primary-subtle ${note ? 'border-dashed border-border-strong' : 'border-transparent'}`,
                         ].join(' ')}
                       >
                         {d}
@@ -206,8 +206,8 @@ export default function MonthDayPicker({
                       className={[
                         'h-10 rounded-[8px] text-sm flex items-center justify-center transition-colors',
                         isSel
-                          ? 'bg-[#2563EB] text-white font-semibold'
-                          : 'text-[#0F172A] hover:bg-[#EFF6FF]',
+                          ? 'bg-primary text-white font-semibold'
+                          : 'text-text-primary hover:bg-primary-subtle',
                       ].join(' ')}
                     >
                       {m}
@@ -218,11 +218,11 @@ export default function MonthDayPicker({
             )}
 
             {/* Footer */}
-            <div className="flex items-center justify-end mt-2 pt-2 border-t border-[#F1F5F9]">
+            <div className="flex items-center justify-end mt-2 pt-2 border-t border-border-light">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A] px-2 py-1"
+                className="text-xs font-semibold text-text-muted hover:text-text-primary px-2 py-1"
               >
                 Cancel
               </button>

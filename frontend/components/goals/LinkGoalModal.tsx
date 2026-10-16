@@ -110,21 +110,21 @@ export default function LinkGoalModal({
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-2.5">
-            <p className="text-[13px] text-[#475569]">
+          <div className="rounded-[10px] bg-surface-sunken border border-border-light px-3 py-2.5">
+            <p className="text-[13px] text-text-secondary">
               {isSupportedBy ? 'Helping' : 'This goal helps'}
             </p>
-            <p className="text-[15px] font-semibold text-[#0F172A] leading-snug">{goal.title}</p>
+            <p className="text-[15px] font-semibold text-text-primary leading-snug">{goal.title}</p>
           </div>
 
           <div>
             <label className={labelClass}>Goal *</label>
             {loading ? (
-              <div className="flex items-center gap-2 text-sm text-[#475569] py-2">
+              <div className="flex items-center gap-2 text-sm text-text-secondary py-2">
                 <Loader2 size={15} className="animate-spin" /> Loading goals…
               </div>
             ) : candidates.length === 0 ? (
-              <p className="text-sm text-[#475569] py-2">
+              <p className="text-sm text-text-secondary py-2">
                 No other goal can be linked here yet — every existing goal is either already
                 linked or would create a circle. Create a new one below.
               </p>
@@ -153,18 +153,18 @@ export default function LinkGoalModal({
               disabled={saving}
               maxLength={1000}
             />
-            <p className="text-[11px] text-[#475569] mt-1">
+            <p className="text-[11px] text-text-secondary mt-1">
               Optional, but this is the assumption you’ll want to re-read at review — most plans
               fail because an unwritten assumption quietly stopped being true.
             </p>
           </div>
 
-          <div className="flex items-center justify-between gap-3 pt-4 border-t border-[#E2E8F0]">
+          <div className="flex items-center justify-between gap-3 pt-4 border-t border-border-light">
             <button
               type="button"
               onClick={() => setCreateOpen(true)}
               disabled={saving}
-              className="text-sm font-medium text-[#2563EB] hover:text-[#1D4ED8] disabled:text-[#94A3B8] transition-colors"
+              className="text-sm font-medium text-primary-text hover:text-primary-text disabled:text-text-muted transition-colors"
             >
               Create a new goal instead
             </button>

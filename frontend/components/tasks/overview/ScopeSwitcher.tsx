@@ -36,7 +36,7 @@ export default function ScopeSwitcher({
   if (visible.length <= 1) return null
 
   return (
-    <div className="inline-flex items-center border border-[#E2E8F0] rounded-[8px] bg-white p-0.5 gap-0.5">
+    <div className="inline-flex items-center border border-border-light rounded-[8px] bg-white p-0.5 gap-0.5">
       {visible.map(({ scope, label, icon }) => {
         const active = value === scope
         return (
@@ -45,7 +45,7 @@ export default function ScopeSwitcher({
             type="button"
             onClick={() => onChange(scope)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-sm font-medium transition-colors ${
-              active ? 'bg-[#2563EB] text-white' : 'text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9]'
+              active ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
             }`}
           >
             {icon}

@@ -33,13 +33,13 @@ export interface FlowLane {
 
 // Each tone carries a border and a fill; text inside stays dark for contrast.
 const BOX: Record<FlowTone, string> = {
-  default: 'bg-white border-[#CBD5E1]',
-  done: 'bg-white border-[#86EFAC]',
-  current: 'bg-[#EFF6FF] border-[#2563EB] ring-2 ring-[#BFDBFE]',
-  attention: 'bg-[#FEF2F2] border-[#DC2626] ring-2 ring-[#FECACA]',
-  waiting: 'bg-[#F5F3FF] border-[#7C3AED] ring-2 ring-[#DDD6FE]',
-  upcoming: 'bg-[#F8FAFC] border-[#CBD5E1] border-dashed opacity-70',
-  skipped: 'bg-[#F8FAFC] border-[#CBD5E1] opacity-80',
+  default: 'bg-white border-border',
+  done: 'bg-white border-success-border',
+  current: 'bg-primary-subtle border-primary ring-2 ring-primary-border',
+  attention: 'bg-danger-bg border-danger ring-2 ring-danger-border',
+  waiting: 'bg-surface-control border-border-light ring-2 ring-border-light',
+  upcoming: 'bg-surface-sunken border-border border-dashed opacity-70',
+  skipped: 'bg-surface-sunken border-border opacity-80',
 }
 
 const EDGE: Record<EdgeTone, { stroke: string; dash?: string; marker: string }> = {
@@ -211,7 +211,7 @@ export default function FlowDiagram({
             <div
               key={`band-${l.key}`}
               aria-hidden
-              className="rounded-[12px] bg-[#F8FAFC] border border-[#EEF2F7]"
+              className="rounded-[12px] bg-surface-sunken border border-border-light"
               style={{ gridColumn: ci + 1, gridRow: `1 / ${cells.rows + rowOffset}` }}
             />
           ))}
@@ -248,8 +248,8 @@ export default function FlowDiagram({
         {withHeaders &&
           shownLanes.list.map((l, ci) => (
             <div key={`h-${l.key}`} className={`relative z-2 px-3 pt-2.5 pb-1 ${boxW} box-content`} style={{ gridColumn: ci + 1, gridRow: 1 }}>
-              <span className="block text-[13px] font-semibold text-[#0F172A] truncate">{l.label}</span>
-              {l.hint && <span className="block text-[12px] text-[#475569] truncate">{l.hint}</span>}
+              <span className="block text-[13px] font-semibold text-text-primary truncate">{l.label}</span>
+              {l.hint && <span className="block text-[12px] text-text-secondary truncate">{l.hint}</span>}
             </div>
           ))}
 
@@ -260,12 +260,12 @@ export default function FlowDiagram({
           const box = (
             <div
               className={`w-full h-full text-left rounded-[12px] border px-3 py-2.5 ${BOX[tone]} ${
-                n.selected ? 'outline outline-2 outline-offset-2 outline-[#2563EB]' : ''
+                n.selected ? 'outline outline-2 outline-offset-2 outline-primary' : ''
               }`}
             >
               {n.alsoWaitsFor && n.alsoWaitsFor.length > 0 && (
                 <span className="flex mb-1.5">
-                  <span className="inline-flex items-center rounded-full border border-[#CBD5E1] bg-white px-2 py-0.5 text-[11px] font-medium text-[#334155] max-w-full truncate">
+                  <span className="inline-flex items-center rounded-full border border-border bg-white px-2 py-0.5 text-[11px] font-medium text-text-secondary max-w-full truncate">
                     Also waits for {n.alsoWaitsFor.join(', ')}
                   </span>
                 </span>
@@ -291,7 +291,7 @@ export default function FlowDiagram({
                     type="button"
                     onClick={n.onClick}
                     aria-label={n.label}
-                    className="block w-full rounded-[12px] transition-[transform,box-shadow] duration-150 hover:shadow-[0_4px_14px_rgba(15,23,42,0.10)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
+                    className="block w-full rounded-[12px] transition-[transform,box-shadow] duration-150 hover:shadow-[0_4px_14px_rgba(15,23,42,0.10)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   >
                     {box}
                   </button>

@@ -50,64 +50,64 @@ export default function NewKnowledgePostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-6">
+    <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-2xl mx-auto">
-        <Link href="/communication/knowledge" className="flex items-center gap-2 text-sm text-[#475569] hover:text-[#0F172A] mb-6 w-fit">
+        <Link href="/communication/knowledge" className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary mb-6 w-fit">
           <ArrowLeft size={16} />
           Back to Knowledge Hub
         </Link>
 
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-6">
-          <h1 className="text-xl font-bold text-[#0F172A] mb-6">Share Knowledge</h1>
+        <div className="bg-white border border-border-light rounded-[12px] p-6">
+          <h1 className="text-xl font-bold text-text-primary mb-6">Share Knowledge</h1>
 
           {err && (
-            <div className="mb-4 p-3 bg-[#FEF2F2] border border-[#FECACA] rounded-[8px] text-sm text-[#DC2626]">
+            <div className="mb-4 p-3 bg-danger-bg border border-danger-border rounded-[8px] text-sm text-danger">
               {err}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">Title</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1">Title</label>
               <input
                 value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 placeholder="What are you sharing?"
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB]"
+                className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">Content</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1">Content</label>
               <textarea
                 value={form.body}
                 onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
                 rows={8}
                 placeholder="Share tips, processes, learnings, or anything useful…"
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] resize-y"
+                className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-y"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">Tags</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1">Tags</label>
               <div className="flex gap-2">
                 <input
                   value={form.tagInput}
                   onChange={e => setForm(f => ({ ...f, tagInput: e.target.value }))}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag() } }}
                   placeholder="Add a tag and press Enter"
-                  className="flex-1 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB]"
+                  className="flex-1 border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
                 />
-                <button type="button" onClick={addTag} className="bg-[#F1F5F9] text-[#475569] px-3 py-2 rounded-[8px] text-sm font-medium hover:bg-[#E2E8F0] transition-colors">
+                <button type="button" onClick={addTag} className="bg-surface-control text-text-secondary px-3 py-2 rounded-[8px] text-sm font-medium hover:bg-surface-control-pressed transition-colors">
                   Add
                 </button>
               </div>
               {form.tags.length > 0 && (
                 <div className="flex gap-1.5 mt-2 flex-wrap">
                   {form.tags.map(tag => (
-                    <span key={tag} className="flex items-center gap-1 text-xs bg-[#EFF6FF] text-[#2563EB] px-2 py-0.5 rounded-full">
+                    <span key={tag} className="flex items-center gap-1 text-xs bg-primary-subtle text-primary-text px-2 py-0.5 rounded-full">
                       {tag}
-                      <button type="button" onClick={() => removeTag(tag)} className="hover:text-[#1D4ED8]">
+                      <button type="button" onClick={() => removeTag(tag)} className="hover:text-primary-text">
                         <X size={10} />
                       </button>
                     </span>
@@ -117,11 +117,11 @@ export default function NewKnowledgePostPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">Scope</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1">Scope</label>
               <select
                 value={form.scope}
                 onChange={e => setForm(f => ({ ...f, scope: e.target.value }))}
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-hidden focus:border-[#2563EB]"
+                className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary focus:outline-hidden focus:border-primary"
               >
                 <option value="company_wide">Company-wide</option>
                 <option value="department">Department</option>
@@ -131,7 +131,7 @@ export default function NewKnowledgePostPage() {
             <button
               type="submit"
               disabled={saving}
-              className="w-full bg-[#2563EB] text-white px-4 py-2.5 rounded-[8px] text-sm font-semibold hover:bg-[#1D4ED8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-primary text-white px-4 py-2.5 rounded-[8px] text-sm font-semibold hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {saving ? 'Publishing…' : 'Publish Post'}
             </button>

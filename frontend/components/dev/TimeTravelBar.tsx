@@ -123,24 +123,24 @@ export default function TimeTravelBar() {
     hour12: true,
   })
 
-  const inputCls = 'w-full px-2.5 py-2 rounded-[8px] border border-[#CBD5E1] text-base sm:text-sm text-[#0F172A] bg-white focus:border-2 focus:border-[#2563EB] focus:outline-hidden'
-  const arrowCls = 'shrink-0 w-9 h-9 flex items-center justify-center rounded-[8px] bg-white border border-[#FBBF24] text-[#92400E] hover:bg-[#FFFBEB] transition-colors'
+  const inputCls = 'w-full px-2.5 py-2 rounded-[8px] border border-border text-base sm:text-sm text-text-primary bg-white focus:border-2 focus:border-primary focus:outline-hidden'
+  const arrowCls = 'shrink-0 w-9 h-9 flex items-center justify-center rounded-[8px] bg-white border border-warning-border text-warning hover:bg-warning-bg transition-colors'
 
   return (
     <div ref={containerRef} className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
       {/* Expanded control panel */}
       {expanded && (
-        <div className="w-[calc(100vw-2.5rem)] sm:w-[380px] bg-white rounded-[12px] border border-[#E2E8F0] shadow-[0_8px_32px_rgba(0,0,0,0.16)] overflow-hidden">
+        <div className="w-[calc(100vw-2.5rem)] sm:w-[380px] bg-white rounded-[12px] border border-border-light shadow-[0_8px_32px_rgba(0,0,0,0.16)] overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between gap-2 px-4 py-3 bg-[#FEF3C7] border-b-2 border-[#D97706]">
-            <span className="inline-flex items-center gap-1.5 rounded-[999px] bg-[#D97706] px-2.5 py-1 text-[12px] font-semibold text-white">
+          <div className="flex items-center justify-between gap-2 px-4 py-3 bg-warning-bg border-b-2 border-warning">
+            <span className="inline-flex items-center gap-1.5 rounded-[999px] bg-warning px-2.5 py-1 text-[12px] font-semibold text-white">
               <FlaskConical size={13} /> TEST CLOCK
             </span>
             <button
               type="button"
               onClick={() => setExpanded(false)}
               aria-label="Collapse"
-              className="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#92400E] hover:bg-[#FDE68A] transition-colors"
+              className="w-8 h-8 rounded-[6px] flex items-center justify-center text-warning hover:bg-warning-bg transition-colors"
             >
               <X size={18} />
             </button>
@@ -148,13 +148,13 @@ export default function TimeTravelBar() {
 
           <div className="px-4 py-4 space-y-4">
             {/* Live clock */}
-            <div className="inline-flex items-center gap-1.5 text-sm font-medium text-[#92400E]">
+            <div className="inline-flex items-center gap-1.5 text-sm font-medium text-warning">
               <Clock size={14} /> {liveLabel}
             </div>
 
             {/* Pending value editor (local only) */}
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1.5">Simulated time</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1.5">Simulated time</label>
               <div className="flex items-center gap-1.5">
                 <Tooltip label="−1 day">
                 <button type="button" onClick={() => nudgeDays(-1)} aria-label="−1 day" className={arrowCls}>
@@ -174,12 +174,12 @@ export default function TimeTravelBar() {
                 </Tooltip>
               </div>
               <div className="flex items-center gap-1.5 mt-2">
-                <button type="button" onClick={() => nudgeHours(-1)} className="px-2.5 h-8 rounded-[8px] bg-white border border-[#FBBF24] text-[#92400E] text-xs font-semibold hover:bg-[#FFFBEB] transition-colors">−1 hour</button>
-                <button type="button" onClick={() => nudgeHours(1)} className="px-2.5 h-8 rounded-[8px] bg-white border border-[#FBBF24] text-[#92400E] text-xs font-semibold hover:bg-[#FFFBEB] transition-colors">+1 hour</button>
+                <button type="button" onClick={() => nudgeHours(-1)} className="px-2.5 h-8 rounded-[8px] bg-white border border-warning-border text-warning text-xs font-semibold hover:bg-warning-bg transition-colors">−1 hour</button>
+                <button type="button" onClick={() => nudgeHours(1)} className="px-2.5 h-8 rounded-[8px] bg-white border border-warning-border text-warning text-xs font-semibold hover:bg-warning-bg transition-colors">+1 hour</button>
               </div>
             </div>
 
-            {error && <p className="text-sm font-medium text-[#DC2626]">{error}</p>}
+            {error && <p className="text-sm font-medium text-danger">{error}</p>}
 
             {/* Actions */}
             <div className="flex items-center gap-2">
@@ -187,7 +187,7 @@ export default function TimeTravelBar() {
                 type="button"
                 onClick={apply}
                 disabled={busy || !pending}
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] disabled:cursor-not-allowed transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
               >
                 <Play size={14} /> {busy ? 'Applying…' : 'Apply'}
               </button>
@@ -195,14 +195,14 @@ export default function TimeTravelBar() {
                 type="button"
                 onClick={reset}
                 disabled={busy}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-[8px] text-sm font-semibold text-[#92400E] bg-white border border-[#D97706] hover:bg-[#FFFBEB] disabled:text-[#94A3B8] disabled:border-[#E2E8F0] disabled:cursor-not-allowed transition-colors"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-[8px] text-sm font-semibold text-warning bg-white border border-warning hover:bg-warning-bg disabled:text-text-muted disabled:border-border-light disabled:cursor-not-allowed transition-colors"
               >
                 <RotateCcw size={14} /> Reset
               </button>
             </div>
 
             {!synced && (
-              <p className="text-[11px] text-[#92400E]">Connecting to simulated clock…</p>
+              <p className="text-[11px] text-warning">Connecting to simulated clock…</p>
             )}
           </div>
         </div>
@@ -215,12 +215,12 @@ export default function TimeTravelBar() {
         onClick={() => setExpanded((v) => !v)}
         aria-label={expanded ? 'Collapse test clock' : 'Open test clock'}
         aria-expanded={expanded}
-        className="flex items-center gap-2 px-4 h-10 rounded-full bg-[#D97706] text-white font-medium text-xs shadow-[0_4px_16px_rgba(0,0,0,0.20)] ring-2 ring-white hover:bg-[#B45309] transition-all duration-200 cursor-pointer"
+        className="flex items-center gap-2 px-4 h-10 rounded-full bg-warning text-white font-medium text-xs shadow-[0_4px_16px_rgba(0,0,0,0.20)] ring-2 ring-white hover:bg-warning transition-all duration-200 cursor-pointer"
       >
         <FlaskConical size={14} className="animate-pulse shrink-0" />
         <span className="font-semibold">{compactLabel}</span>
         {synced && (
-          <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] shrink-0" />
+          <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
         )}
       </button>
       </Tooltip>

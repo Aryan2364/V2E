@@ -149,32 +149,32 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
     const mine = a.uploaded_by_user_id === user?.id
     return (
       <div className="flex items-center gap-2 text-[12px]">
-        <span className="shrink-0 inline-flex items-center justify-center w-8 h-5 rounded-xs bg-[#EFF6FF] text-[#2563EB] text-[9px] font-bold">
+        <span className="shrink-0 inline-flex items-center justify-center w-8 h-5 rounded-xs bg-primary-subtle text-primary-text text-[9px] font-bold">
           {fileKindLabel(a.file_name)}
         </span>
         <Tooltip label={a.file_name}>
-          <button onClick={() => download(a)} className="min-w-0 truncate text-[#2563EB] hover:underline text-left">
+          <button onClick={() => download(a)} className="min-w-0 truncate text-primary-text hover:underline text-left">
             {a.file_name}
           </button>
         </Tooltip>
-        {showUploader && a.uploaded_by_name && <span className="shrink-0 text-[#64748B]">· {a.uploaded_by_name}</span>}
-        <span className="shrink-0 text-[#94A3B8]">{formatBytes(a.size_bytes)}</span>
-        <span className="shrink-0 text-[#94A3B8]">· {formatWhen(a.created_at)}</span>
+        {showUploader && a.uploaded_by_name && <span className="shrink-0 text-text-muted">· {a.uploaded_by_name}</span>}
+        <span className="shrink-0 text-text-muted">{formatBytes(a.size_bytes)}</span>
+        <span className="shrink-0 text-text-muted">· {formatWhen(a.created_at)}</span>
         {a.proof_visibility === 'everyone' && (
           <Tooltip label="Visible to everyone on the task">
-            <span className="shrink-0 inline-flex items-center gap-0.5 text-[10px] text-[#64748B]">
+            <span className="shrink-0 inline-flex items-center gap-0.5 text-[10px] text-text-muted">
               <Users size={10} /> shared
             </span>
           </Tooltip>
         )}
         <Tooltip label="Download">
-          <button onClick={() => download(a)} aria-label="Download" className="ml-auto shrink-0 text-[#64748B] hover:text-[#2563EB]">
+          <button onClick={() => download(a)} aria-label="Download" className="ml-auto shrink-0 text-text-muted hover:text-primary-text">
             <Download size={13} />
           </button>
         </Tooltip>
         {mine && canManageMine && !a.comment_id && (
           <Tooltip label="Remove this proof">
-            <button onClick={() => setProofToDelete(a)} aria-label="Remove this proof" className="shrink-0 text-[#64748B] hover:text-[#DC2626]">
+            <button onClick={() => setProofToDelete(a)} aria-label="Remove this proof" className="shrink-0 text-text-muted hover:text-danger">
               <Trash2 size={13} />
             </button>
           </Tooltip>
@@ -186,33 +186,33 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
   const uploader = iAmAssignee && !locked && (
     <div className="mt-3">
       <FileDropzone onFiles={handleFiles} onReject={setErrors} disabled={uploading} compact />
-      {uploading && queue.length === 0 && <p className="mt-1 text-[11px] text-[#64748B]">Uploading…</p>}
+      {uploading && queue.length === 0 && <p className="mt-1 text-[11px] text-text-muted">Uploading…</p>}
       {errors.length > 0 && <div className="mt-2"><AttachmentErrorBox errors={errors} onDismiss={() => setErrors([])} /></div>}
     </div>
   )
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-[15px] font-semibold text-[#0F172A] flex items-center gap-2">
-          <ShieldCheck size={15} className="text-[#2563EB]" />
+        <h3 className="text-[15px] font-semibold text-text-primary flex items-center gap-2">
+          <ShieldCheck size={15} className="text-primary-text" />
           Proof of Completion
         </h3>
         {isAllMust ? (
-          <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 ${submittedCount >= requiredCount && requiredCount > 0 ? 'bg-[#F0FDF4] text-[#16A34A] border border-[#BBF7D0]' : 'bg-[#FEF9C3] text-[#B45309] border border-[#FDE68A]'}`}>
+          <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 ${submittedCount >= requiredCount && requiredCount > 0 ? 'bg-success-bg text-success border border-success-border' : 'bg-warning-bg text-warning border border-warning-border'}`}>
             {submittedCount}/{requiredCount} submitted
           </span>
         ) : (
           summary?.task_has_any_proof ? (
-            <span className="text-[11px] font-semibold rounded-full px-2 py-0.5 bg-[#F0FDF4] text-[#16A34A] border border-[#BBF7D0]">Submitted</span>
+            <span className="text-[11px] font-semibold rounded-full px-2 py-0.5 bg-success-bg text-success border border-success-border">Submitted</span>
           ) : (
-            <span className="text-[11px] font-semibold rounded-full px-2 py-0.5 bg-[#FEF9C3] text-[#B45309] border border-[#FDE68A]">Pending</span>
+            <span className="text-[11px] font-semibold rounded-full px-2 py-0.5 bg-warning-bg text-warning border border-warning-border">Pending</span>
           )
         )}
       </div>
 
       {allowed.length > 0 && (
-        <p className="text-[11px] text-[#64748B] mb-2">Accepted: {allowed.join(', ')}</p>
+        <p className="text-[11px] text-text-muted mb-2">Accepted: {allowed.join(', ')}</p>
       )}
 
       {/* Uploader sits up top for an assignee ("upload here"), then the files below. */}
@@ -227,20 +227,20 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
             const files = proofsByUser.get(a.user_id) ?? []
             const isMe = a.user_id === user?.id
             return (
-              <div key={a.id} className="border-l-2 border-[#E2E8F0] pl-3">
+              <div key={a.id} className="border-l-2 border-border-light pl-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-[#0F172A]">{name}{isMe && <span className="text-[#64748B] font-normal"> (you)</span>}</span>
+                  <span className="text-sm font-medium text-text-primary">{name}{isMe && <span className="text-text-muted font-normal"> (you)</span>}</span>
                   {submitted ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#16A34A]"><CheckCircle2 size={12} /> Submitted</span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-success"><CheckCircle2 size={12} /> Submitted</span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#B45309]"><Clock size={12} /> Pending</span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-warning"><Clock size={12} /> Pending</span>
                   )}
                 </div>
                 {files.length > 0 && (
                   <div className="mt-1.5 space-y-1">{files.map((f) => <FileRow key={f.id} a={f} />)}</div>
                 )}
                 {submitted && files.length === 0 && !isMe && (
-                  <p className="mt-1 text-[11px] text-[#94A3B8] inline-flex items-center gap-1"><Lock size={10} /> File visible to the assigner only</p>
+                  <p className="mt-1 text-[11px] text-text-muted inline-flex items-center gap-1"><Lock size={10} /> File visible to the assigner only</p>
                 )}
               </div>
             )
@@ -252,7 +252,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
           {proofs.length > 0 ? (
             proofs.map((p) => <FileRow key={p.id} a={p} showUploader />)
           ) : (
-            <p className="text-[13px] text-[#64748B]">
+            <p className="text-[13px] text-text-muted">
               {isAllMust ? 'No proof yet. Upload yours above.' : 'No proof submitted yet. One proof file from anyone on the task is enough.'}
             </p>
           )}
@@ -269,31 +269,31 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
       >
         {queue[0] && (
           <div>
-            <p className="text-[13px] text-[#475569] mb-3 break-all">
-              <span className="font-semibold text-[#0F172A]">{queue[0].name}</span>
+            <p className="text-[13px] text-text-secondary mb-3 break-all">
+              <span className="font-semibold text-text-primary">{queue[0].name}</span>
             </p>
             <div className="space-y-2">
               {([
                 { v: 'private' as ProofVisibility, label: 'Only the assigner', hint: 'Your teammates won’t see this file.' },
                 { v: 'everyone' as ProofVisibility, label: 'Everyone on the task', hint: 'All assignees can view and download it.' },
               ]).map((o) => (
-                <label key={o.v} className={`flex items-start gap-2.5 rounded-[10px] border p-2.5 cursor-pointer transition-colors ${choice === o.v ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0] hover:bg-[#F8FAFC]'}`}>
-                  <input type="radio" name="proof-visibility" className="accent-[#2563EB] mt-0.5" checked={choice === o.v} onChange={() => setChoice(o.v)} />
+                <label key={o.v} className={`flex items-start gap-2.5 rounded-[10px] border p-2.5 cursor-pointer transition-colors ${choice === o.v ? 'border-primary bg-primary-subtle' : 'border-border-light hover:bg-surface-sunken'}`}>
+                  <input type="radio" name="proof-visibility" className="accent-primary mt-0.5" checked={choice === o.v} onChange={() => setChoice(o.v)} />
                   <span>
-                    <span className="block text-sm font-medium text-[#0F172A]">{o.label}</span>
-                    <span className="block text-[11px] text-[#64748B]">{o.hint}</span>
+                    <span className="block text-sm font-medium text-text-primary">{o.label}</span>
+                    <span className="block text-[11px] text-text-muted">{o.hint}</span>
                   </span>
                 </label>
               ))}
             </div>
-            {queue.length > 1 && <p className="mt-2 text-[11px] text-[#64748B]">{queue.length - 1} more file{queue.length - 1 !== 1 ? 's' : ''} after this.</p>}
+            {queue.length > 1 && <p className="mt-2 text-[11px] text-text-muted">{queue.length - 1} more file{queue.length - 1 !== 1 ? 's' : ''} after this.</p>}
             {/* No footer Cancel — the header X / backdrop dismiss this (both discard the
                 queue), so a duplicate Cancel would break the cancel-vs-X rule. */}
             <div className="mt-4 flex items-center justify-end">
               <button
                 onClick={confirmCurrent}
                 disabled={uploading}
-                className="text-sm font-semibold text-white bg-[#2563EB] rounded-[8px] px-4 py-2 hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors"
+                className="text-sm font-semibold text-white bg-primary rounded-[8px] px-4 py-2 hover:bg-primary-hover disabled:opacity-60 transition-colors"
               >
                 {uploading ? 'Uploading…' : 'Upload'}
               </button>
@@ -313,15 +313,15 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
       >
         {proofToDelete && (
           <div>
-            <p className="text-[14px] text-[#475569]">
-              <span className="font-semibold text-[#0F172A] break-all">{proofToDelete.file_name}</span> will be permanently
+            <p className="text-[14px] text-text-secondary">
+              <span className="font-semibold text-text-primary break-all">{proofToDelete.file_name}</span> will be permanently
               removed and will no longer count toward the proof requirement. This can’t be undone.
             </p>
             <div className="mt-4 flex items-center justify-end">
               <button
                 onClick={() => handleDeleteProof(proofToDelete)}
                 disabled={deleting}
-                className="text-sm font-semibold text-white bg-[#DC2626] rounded-[8px] px-4 py-2 hover:bg-[#B91C1C] disabled:opacity-60 transition-colors"
+                className="text-sm font-semibold text-white bg-danger rounded-[8px] px-4 py-2 hover:bg-danger-hover disabled:opacity-60 transition-colors"
               >
                 {deleting ? 'Removing…' : 'Remove proof'}
               </button>

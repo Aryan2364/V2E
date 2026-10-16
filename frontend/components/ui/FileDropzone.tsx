@@ -57,18 +57,18 @@ export default function FileDropzone({
         className={[
           'w-full flex items-center justify-center gap-2 rounded-[10px] border border-dashed transition-colors',
           compact ? 'px-3 py-2.5' : 'px-4 py-5',
-          dragging ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#CBD5E1] bg-[#F8FAFC] hover:border-[#94A3B8]',
+          dragging ? 'border-primary bg-primary-subtle' : 'border-border bg-surface-sunken hover:border-border-strong',
           disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
         ].join(' ')}
       >
-        <UploadCloud size={compact ? 15 : 18} className="text-[#2563EB] shrink-0" />
-        <span className={`${compact ? 'text-xs' : 'text-sm'} text-[#475569]`}>
-          <span className="font-medium text-[#2563EB]">Click to upload</span>
+        <UploadCloud size={compact ? 15 : 18} className="text-primary-text shrink-0" />
+        <span className={`${compact ? 'text-xs' : 'text-sm'} text-text-secondary`}>
+          <span className="font-medium text-primary-text">Click to upload</span>
           {!compact && ' or drag & drop'}
         </span>
       </button>
       {!compact && (
-        <p className="text-[11px] text-[#475569] mt-1">PDF, Office, images, video/audio, zip · up to 25 MB each</p>
+        <p className="text-[11px] text-text-secondary mt-1">PDF, Office, images, video/audio, zip · up to 25 MB each</p>
       )}
       <input
         ref={inputRef}
@@ -95,25 +95,25 @@ export default function FileDropzone({
 export function AttachmentErrorBox({ errors, onDismiss }: { errors: string[]; onDismiss: () => void }) {
   if (errors.length === 0) return null
   return (
-    <div className="rounded-[10px] border border-[#FECACA] bg-[#FEF2F2] overflow-hidden">
-      <div className="flex items-center gap-2 px-3 py-2 bg-[#FEE2E2] border-b border-[#FECACA]">
-        <AlertTriangle size={15} className="text-[#DC2626] shrink-0" />
-        <p className="flex-1 text-[12px] font-semibold text-[#991B1B]">
+    <div className="rounded-[10px] border border-danger-border bg-danger-bg overflow-hidden">
+      <div className="flex items-center gap-2 px-3 py-2 bg-danger-bg border-b border-danger-border">
+        <AlertTriangle size={15} className="text-danger shrink-0" />
+        <p className="flex-1 text-[12px] font-semibold text-danger">
           {errors.length} file{errors.length !== 1 ? 's' : ''} couldn’t be added
         </p>
         <button
           type="button"
           onClick={onDismiss}
           aria-label="Dismiss"
-          className="shrink-0 w-6 h-6 rounded-[6px] flex items-center justify-center text-[#B91C1C] hover:bg-[#FECACA] transition-colors"
+          className="shrink-0 w-6 h-6 rounded-[6px] flex items-center justify-center text-danger hover:bg-danger-bg transition-colors"
         >
           <X size={13} />
         </button>
       </div>
       <ul className="px-3 py-2 space-y-1">
         {errors.map((er, i) => (
-          <li key={i} className="flex items-start gap-1.5 text-[12px] text-[#B91C1C]">
-            <span className="mt-[6px] w-1 h-1 rounded-full bg-[#DC2626] shrink-0" />
+          <li key={i} className="flex items-start gap-1.5 text-[12px] text-danger">
+            <span className="mt-[6px] w-1 h-1 rounded-full bg-danger shrink-0" />
             <span className="min-w-0 wrap-break-word">{er}</span>
           </li>
         ))}

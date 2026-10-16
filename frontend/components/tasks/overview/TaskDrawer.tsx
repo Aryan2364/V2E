@@ -178,27 +178,27 @@ export default function TaskDrawer({
         <style>{`@keyframes slideIn{from{transform:translateX(24px);opacity:.6}to{transform:translateX(0);opacity:1}}`}</style>
 
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 px-6 py-4 border-b border-[#E2E8F0]">
+        <div className="flex items-start justify-between gap-3 px-6 py-4 border-b border-border-light">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#94A3B8]">Task</p>
-            <h2 className="text-[18px] font-semibold text-[#0F172A] leading-snug mt-0.5 wrap-break-word">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">Task</p>
+            <h2 className="text-[18px] font-semibold text-text-primary leading-snug mt-0.5 wrap-break-word">
               {loading ? 'Loading…' : task?.title}
             </h2>
           </div>
-          <button onClick={onClose} className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors">
+          <button onClick={onClose} className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors">
             <X size={18} />
           </button>
         </div>
 
         {isFutureTask && task && (
-          <div className="bg-[#FEF2F2] border-b border-[#FEE2E2] px-6 py-3 text-xs font-semibold text-[#991B1B]">
+          <div className="bg-danger-bg border-b border-danger-border px-6 py-3 text-xs font-semibold text-danger">
             ⌛ This task was created in a simulated future ({new Date(task.created_at).toLocaleDateString()}). To interact with it, please time-travel to this date or later.
           </div>
         )}
 
         {loading || !task ? (
           <div className="flex-1 flex items-center justify-center">
-            <div className="w-7 h-7 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+            <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <>
@@ -213,13 +213,13 @@ export default function TaskDrawer({
               {/* Meta grid */}
               <div className="grid grid-cols-2 gap-4 text-[13px]">
                 <div>
-                  <p className="text-[#94A3B8] mb-1">Assigned by</p>
+                  <p className="text-text-muted mb-1">Assigned by</p>
                   {(() => {
                     const wf = taskWorkflow(task)
                     if (!wf) {
                       return (
-                        <p className="text-[#0F172A] font-medium flex items-center gap-1.5">
-                          <User size={13} className="text-[#94A3B8]" />
+                        <p className="text-text-primary font-medium flex items-center gap-1.5">
+                          <User size={13} className="text-text-muted" />
                           {task.created_by?.name ?? '—'}
                         </p>
                       )
@@ -227,25 +227,25 @@ export default function TaskDrawer({
                     const setUpBy = wf.set_up_by_name ?? task.created_by?.name
                     return (
                       <>
-                        <p className="text-[#0F172A] font-medium wrap-break-word">{workflowSourceText(wf)}</p>
-                        {setUpBy && <p className="text-[12px] text-[#475569]">set up by {setUpBy}</p>}
+                        <p className="text-text-primary font-medium wrap-break-word">{workflowSourceText(wf)}</p>
+                        {setUpBy && <p className="text-[12px] text-text-secondary">set up by {setUpBy}</p>}
                       </>
                     )
                   })()}
                 </div>
                 <div>
-                  <p className="text-[#94A3B8] mb-1">Deadline</p>
-                  <p className="text-[#0F172A] font-medium flex items-center gap-1.5">
-                    <Calendar size={13} className="text-[#94A3B8]" />
+                  <p className="text-text-muted mb-1">Deadline</p>
+                  <p className="text-text-primary font-medium flex items-center gap-1.5">
+                    <Calendar size={13} className="text-text-muted" />
                     {task.deadline ? formatWhen(task.deadline) : 'No deadline'}
                   </p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-[#94A3B8] mb-1.5">Assignees</p>
-                  {people.length > 0 ? <AssigneeAvatars people={people} max={8} /> : <p className="text-[#475569]">—</p>}
+                  <p className="text-text-muted mb-1.5">Assignees</p>
+                  {people.length > 0 ? <AssigneeAvatars people={people} max={8} /> : <p className="text-text-secondary">—</p>}
                 </div>
                 <div className="col-span-2">
-                  <p className="text-[#94A3B8] mb-1.5">Tags</p>
+                  <p className="text-text-muted mb-1.5">Tags</p>
                   <InlineTaskTags
                     orgId={orgId}
                     taskId={task.id}
@@ -259,18 +259,18 @@ export default function TaskDrawer({
               {/* Description */}
               {task.description && (
                 <div>
-                  <p className="text-[13px] text-[#94A3B8] mb-1">Description</p>
-                  <p className="text-[14px] text-[#1E293B] whitespace-pre-wrap leading-relaxed">{task.description}</p>
+                  <p className="text-[13px] text-text-muted mb-1">Description</p>
+                  <p className="text-[14px] text-text-primary whitespace-pre-wrap leading-relaxed">{task.description}</p>
                 </div>
               )}
 
               {/* Attachments */}
               <div>
-                <p className="text-[13px] font-semibold text-[#0F172A] mb-2 flex items-center gap-1.5">
-                  <Paperclip size={14} className="text-[#475569]" />
+                <p className="text-[13px] font-semibold text-text-primary mb-2 flex items-center gap-1.5">
+                  <Paperclip size={14} className="text-text-secondary" />
                   Attachments
                   {attachments.length > 0 && (
-                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#2563EB] text-white text-[10px] font-semibold">
+                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[10px] font-semibold">
                       {attachments.length}
                     </span>
                   )}
@@ -291,16 +291,16 @@ export default function TaskDrawer({
               {/* Checklist */}
               {task.checklist && task.checklist.length > 0 && (
                 <div>
-                  <p className="text-[13px] text-[#94A3B8] mb-2">
+                  <p className="text-[13px] text-text-muted mb-2">
                     Checklist · {task.checklist.filter((i) => i.is_completed).length}/{task.checklist.length}
                   </p>
                   <div className="space-y-1.5">
                     {task.checklist.map((item) => (
                       <div key={item.id} className="flex items-center gap-2 text-[14px]">
-                        <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 ${item.is_completed ? 'bg-[#16A34A] border-[#16A34A]' : 'border-[#CBD5E1]'}`}>
+                        <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 ${item.is_completed ? 'bg-success border-success' : 'border-border'}`}>
                           {item.is_completed && <CheckCircle2 size={12} className="text-white" />}
                         </span>
-                        <span className={item.is_completed ? 'text-[#94A3B8] line-through' : 'text-[#1E293B]'}>{item.title}</span>
+                        <span className={item.is_completed ? 'text-text-muted line-through' : 'text-text-primary'}>{item.title}</span>
                       </div>
                     ))}
                   </div>
@@ -309,25 +309,25 @@ export default function TaskDrawer({
 
               {/* Comments */}
               <div>
-                <p className="text-[13px] font-semibold text-[#0F172A] mb-3 flex items-center gap-1.5">
-                  <MessageSquare size={14} className="text-[#475569]" />
+                <p className="text-[13px] font-semibold text-text-primary mb-3 flex items-center gap-1.5">
+                  <MessageSquare size={14} className="text-text-secondary" />
                   Comments
                 </p>
                 {comments.length === 0 ? (
-                  <p className="text-[13px] text-[#94A3B8]">No comments yet. Start the conversation below.</p>
+                  <p className="text-[13px] text-text-muted">No comments yet. Start the conversation below.</p>
                 ) : (
                   <div className="space-y-3">
                     {comments.map((c) => (
                       <div key={c.id} className="flex gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center shrink-0">
                           {(c.user_name ?? '?').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-[13px]">
-                            <span className="font-semibold text-[#0F172A]">{c.user_name ?? 'Unknown'}</span>
-                            <span className="text-[#94A3B8] ml-2 text-[11px]">{formatWhen(c.created_at)}</span>
+                            <span className="font-semibold text-text-primary">{c.user_name ?? 'Unknown'}</span>
+                            <span className="text-text-muted ml-2 text-[11px]">{formatWhen(c.created_at)}</span>
                           </p>
-                          <p className="text-[14px] text-[#1E293B] whitespace-pre-wrap wrap-break-word mt-0.5">{c.body}</p>
+                          <p className="text-[14px] text-text-primary whitespace-pre-wrap wrap-break-word mt-0.5">{c.body}</p>
                           {c.attachments && c.attachments.length > 0 && (
                             <AttachmentChips
                               attachments={c.attachments}
@@ -343,7 +343,7 @@ export default function TaskDrawer({
             </div>
 
             {/* Footer actions */}
-            <div className="border-t border-[#E2E8F0] px-6 py-3 space-y-3">
+            <div className="border-t border-border-light px-6 py-3 space-y-3">
               {/* Status row */}
               <div className="flex items-center gap-2">
                 <StyledSelect
@@ -357,7 +357,7 @@ export default function TaskDrawer({
                   <button
                     onClick={complete}
                     disabled={busy || isFutureTask}
-                    className="shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-[8px] bg-[#16A34A] text-white text-sm font-semibold hover:bg-[#15803D] disabled:opacity-60 transition-colors"
+                    className="shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-[8px] bg-success text-white text-sm font-semibold hover:bg-success disabled:opacity-60 transition-colors"
                   >
                     <CheckCircle2 size={15} /> Complete
                   </button>
@@ -366,7 +366,7 @@ export default function TaskDrawer({
                   <button
                     onClick={() => router.push(`/dashboard/tasks/${taskId}`)}
                     aria-label="Open full task page"
-                    className="shrink-0 w-[42px] h-[42px] rounded-[8px] border border-[#E2E8F0] flex items-center justify-center text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors"
+                    className="shrink-0 w-[42px] h-[42px] rounded-[8px] border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
                   >
                     <ExternalLink size={16} />
                   </button>
@@ -381,12 +381,12 @@ export default function TaskDrawer({
                   rows={1}
                   disabled={isFutureTask}
                   placeholder={isFutureTask ? "Comments are locked on future tasks..." : "Write a comment…"}
-                  className="flex-1 resize-none rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-[14px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] max-h-28"
+                  className="flex-1 resize-none rounded-[8px] border border-border bg-white px-3 py-2.5 text-[14px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary max-h-28"
                 />
                 <button
                   onClick={send}
                   disabled={!draft.trim() || sending || isFutureTask}
-                  className="shrink-0 w-[42px] h-[42px] rounded-[8px] bg-[#2563EB] text-white flex items-center justify-center hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors"
+                  className="shrink-0 w-[42px] h-[42px] rounded-[8px] bg-primary text-white flex items-center justify-center hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                 >
                   <Send size={16} />
                 </button>

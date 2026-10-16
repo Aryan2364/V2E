@@ -33,7 +33,7 @@ export default function CountryCodeSelect({
       // For the dark admin page, force the trigger colours over StyledSelect's light default.
       triggerClassName={
         dark
-          ? 'bg-[#0F172A]! border-[#334155]! text-white! hover:bg-[#0F172A]! hover:border-[#2563EB]!'
+          ? 'bg-[#0F172A]! border-border-strong! text-white! hover:bg-[#0F172A]! hover:border-primary!'
           : ''
       }
     />

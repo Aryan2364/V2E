@@ -34,8 +34,8 @@ export default function AssignedTicketsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[22px] font-bold text-[#0F172A]">Assigned to Me</h1>
-        <p className="text-sm text-[#475569] mt-0.5">
+        <h1 className="text-[22px] font-bold text-text-primary">Assigned to Me</h1>
+        <p className="text-sm text-text-secondary mt-0.5">
           {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} assigned
           {needsAcceptance.length > 0 && ` · ${needsAcceptance.length} pending acceptance`}
           {overdueSla.length > 0 && ` · ${overdueSla.length} SLA breached`}
@@ -44,12 +44,12 @@ export default function AssignedTicketsPage() {
 
       {loading ? (
         <div className="flex flex-col gap-2">
-          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-[#F1F5F9] rounded-[12px] animate-pulse" />)}
+          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-surface-control rounded-[12px] animate-pulse" />)}
         </div>
       ) : tickets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-[#E2E8F0] rounded-[12px]">
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border-light rounded-[12px]">
           <TicketIcon size={28} className="text-[#CBD5E1] mb-3" />
-          <p className="text-sm font-medium text-[#0F172A]">No tickets assigned to you</p>
+          <p className="text-sm font-medium text-text-primary">No tickets assigned to you</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">

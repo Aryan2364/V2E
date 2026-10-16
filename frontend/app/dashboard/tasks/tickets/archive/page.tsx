@@ -14,68 +14,68 @@ function formatDate(iso: string) {
 
 function SnapshotViewer({ ticket }: { ticket: Ticket }) {
   return (
-    <div className="mt-3 p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[10px] space-y-3">
+    <div className="mt-3 p-4 bg-surface-sunken border border-border-light rounded-[10px] space-y-3">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
         <div>
-          <p className="text-[#94A3B8] uppercase tracking-wide font-semibold mb-0.5">Raised by</p>
-          <p className="text-[#0F172A] font-medium">{ticket.raised_by_user_id}</p>
+          <p className="text-text-muted uppercase tracking-wide font-semibold mb-0.5">Raised by</p>
+          <p className="text-text-primary font-medium">{ticket.raised_by_user_id}</p>
         </div>
         <div>
-          <p className="text-[#94A3B8] uppercase tracking-wide font-semibold mb-0.5">Assigned to</p>
-          <p className="text-[#0F172A] font-medium">{ticket.assigned_to_user_id ?? '—'}</p>
+          <p className="text-text-muted uppercase tracking-wide font-semibold mb-0.5">Assigned to</p>
+          <p className="text-text-primary font-medium">{ticket.assigned_to_user_id ?? '—'}</p>
         </div>
         <div>
-          <p className="text-[#94A3B8] uppercase tracking-wide font-semibold mb-0.5">SLA</p>
-          <p className="text-[#0F172A] font-medium">{ticket.sla_days}d · {ticket.sla_breached ? '⚠ Breached' : 'OK'}</p>
+          <p className="text-text-muted uppercase tracking-wide font-semibold mb-0.5">SLA</p>
+          <p className="text-text-primary font-medium">{ticket.sla_days}d · {ticket.sla_breached ? '⚠ Breached' : 'OK'}</p>
         </div>
         <div>
-          <p className="text-[#94A3B8] uppercase tracking-wide font-semibold mb-0.5">Created</p>
-          <p className="text-[#0F172A] font-medium">{formatDate(ticket.created_at)}</p>
+          <p className="text-text-muted uppercase tracking-wide font-semibold mb-0.5">Created</p>
+          <p className="text-text-primary font-medium">{formatDate(ticket.created_at)}</p>
         </div>
         {ticket.resolved_at && (
           <div>
-            <p className="text-[#94A3B8] uppercase tracking-wide font-semibold mb-0.5">Resolved</p>
-            <p className="text-[#0F172A] font-medium">{formatDate(ticket.resolved_at)}</p>
+            <p className="text-text-muted uppercase tracking-wide font-semibold mb-0.5">Resolved</p>
+            <p className="text-text-primary font-medium">{formatDate(ticket.resolved_at)}</p>
           </div>
         )}
         {ticket.closed_at && (
           <div>
-            <p className="text-[#94A3B8] uppercase tracking-wide font-semibold mb-0.5">Closed</p>
-            <p className="text-[#0F172A] font-medium">{formatDate(ticket.closed_at)}</p>
+            <p className="text-text-muted uppercase tracking-wide font-semibold mb-0.5">Closed</p>
+            <p className="text-text-primary font-medium">{formatDate(ticket.closed_at)}</p>
           </div>
         )}
         {ticket.rating && (
           <div>
-            <p className="text-[#94A3B8] uppercase tracking-wide font-semibold mb-0.5">Rating</p>
-            <p className="text-[#0F172A] font-medium">{'★'.repeat(ticket.rating)}{'☆'.repeat(5 - ticket.rating)} ({ticket.rating}/5)</p>
+            <p className="text-text-muted uppercase tracking-wide font-semibold mb-0.5">Rating</p>
+            <p className="text-text-primary font-medium">{'★'.repeat(ticket.rating)}{'☆'.repeat(5 - ticket.rating)} ({ticket.rating}/5)</p>
           </div>
         )}
       </div>
 
       {ticket.description && (
         <div>
-          <p className="text-[#94A3B8] uppercase tracking-wide text-xs font-semibold mb-1">Description</p>
-          <p className="text-xs text-[#475569] whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
+          <p className="text-text-muted uppercase tracking-wide text-xs font-semibold mb-1">Description</p>
+          <p className="text-xs text-text-secondary whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
         </div>
       )}
 
       {ticket.resolution_note && (
         <div>
-          <p className="text-[#94A3B8] uppercase tracking-wide text-xs font-semibold mb-1">Resolution Note</p>
-          <p className="text-xs text-[#475569] whitespace-pre-wrap leading-relaxed">{ticket.resolution_note}</p>
+          <p className="text-text-muted uppercase tracking-wide text-xs font-semibold mb-1">Resolution Note</p>
+          <p className="text-xs text-text-secondary whitespace-pre-wrap leading-relaxed">{ticket.resolution_note}</p>
         </div>
       )}
 
       {ticket.checklist && ticket.checklist.length > 0 && (
         <div>
-          <p className="text-[#94A3B8] uppercase tracking-wide text-xs font-semibold mb-1">Checklist</p>
+          <p className="text-text-muted uppercase tracking-wide text-xs font-semibold mb-1">Checklist</p>
           <div className="space-y-1">
             {ticket.checklist.map((item) => (
               <div key={item.id} className="flex items-center gap-2">
-                <div className={`w-3.5 h-3.5 rounded-xs border shrink-0 flex items-center justify-center ${item.is_completed ? 'bg-[#16A34A] border-[#16A34A]' : 'border-[#CBD5E1]'}`}>
+                <div className={`w-3.5 h-3.5 rounded-xs border shrink-0 flex items-center justify-center ${item.is_completed ? 'bg-success border-success' : 'border-border'}`}>
                   {item.is_completed && <span className="text-white text-[8px] font-bold">✓</span>}
                 </div>
-                <span className={`text-xs ${item.is_completed ? 'line-through text-[#94A3B8]' : 'text-[#475569]'}`}>{item.title}</span>
+                <span className={`text-xs ${item.is_completed ? 'line-through text-text-muted' : 'text-text-secondary'}`}>{item.title}</span>
               </div>
             ))}
           </div>
@@ -90,30 +90,30 @@ function ArchiveRow({ entry }: { entry: TicketArchiveEntry }) {
   const snapshot = entry.ticket_snapshot
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
       <div
-        className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-[#F8FAFC] transition-colors"
+        className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-surface-sunken transition-colors"
         onClick={() => setExpanded((v) => !v)}
       >
-        <span className="font-mono text-xs text-[#94A3B8] shrink-0">{snapshot.ticket_number}</span>
+        <span className="font-mono text-xs text-text-muted shrink-0">{snapshot.ticket_number}</span>
 
         {snapshot.ticket_type && <TicketTypeBadge type={snapshot.ticket_type} />}
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-[#0F172A] truncate">{snapshot.title}</p>
+          <p className="text-sm font-semibold text-text-primary truncate">{snapshot.title}</p>
           {snapshot.category && (
-            <p className="text-xs text-[#94A3B8] truncate">{snapshot.category.name}</p>
+            <p className="text-xs text-text-muted truncate">{snapshot.category.name}</p>
           )}
         </div>
 
         {snapshot.status && <TicketStatusBadge status={snapshot.status} />}
 
         <div className="text-right shrink-0">
-          <p className="text-xs text-[#475569]">Deleted {formatDate(entry.deleted_at)}</p>
-          <p className="text-xs text-[#94A3B8] truncate max-w-[140px]">{entry.deletion_reason}</p>
+          <p className="text-xs text-text-secondary">Deleted {formatDate(entry.deleted_at)}</p>
+          <p className="text-xs text-text-muted truncate max-w-[140px]">{entry.deletion_reason}</p>
         </div>
 
-        <span className="text-[#94A3B8] shrink-0">
+        <span className="text-text-muted shrink-0">
           {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </span>
       </div>
@@ -157,10 +157,10 @@ export default function TicketArchivePage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[22px] font-bold text-[#0F172A]">Ticket Archive</h1>
-          <p className="text-sm text-[#475569] mt-0.5">Read-only snapshots of deleted tickets</p>
+          <h1 className="text-[22px] font-bold text-text-primary">Ticket Archive</h1>
+          <p className="text-sm text-text-secondary mt-0.5">Read-only snapshots of deleted tickets</p>
         </div>
-        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-xs font-semibold text-[#475569] bg-[#F1F5F9] border border-[#E2E8F0]">
+        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-xs font-semibold text-text-secondary bg-surface-control border border-border-light">
           <Archive size={13} />
           {entries.length} archived
         </span>
@@ -171,18 +171,18 @@ export default function TicketArchivePage() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search by ticket number, title, or deletion reason..."
-        className="w-full px-3 py-2 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-hidden"
+        className="w-full px-3 py-2 border border-border rounded-[8px] text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden"
       />
 
       {loading ? (
         <div className="flex flex-col gap-2">
-          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-[#F1F5F9] rounded-[12px] animate-pulse" />)}
+          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-surface-control rounded-[12px] animate-pulse" />)}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-[#E2E8F0] rounded-[12px]">
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border-light rounded-[12px]">
           <Archive size={28} className="text-[#CBD5E1] mb-3" />
-          <p className="text-sm font-medium text-[#0F172A]">{search ? 'No matching archived tickets' : 'No archived tickets'}</p>
-          {search && <p className="text-xs text-[#475569] mt-1">Try a different search term</p>}
+          <p className="text-sm font-medium text-text-primary">{search ? 'No matching archived tickets' : 'No archived tickets'}</p>
+          {search && <p className="text-xs text-text-secondary mt-1">Try a different search term</p>}
         </div>
       ) : (
         <div className="flex flex-col gap-2">

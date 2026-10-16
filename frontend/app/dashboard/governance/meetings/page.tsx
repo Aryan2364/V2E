@@ -28,7 +28,7 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 
 const selectClass =
-  'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+  'border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 
 type View = 'day' | 'week' | 'month' | 'list'
 const VIEWS: { key: View; label: string }[] = [
@@ -69,13 +69,13 @@ const meetingColumns: ResponsiveColumn<Meeting>[] = [
     render: (m) => (
       <>
         <div className="flex items-center gap-2">
-          {m.type === 'offline' ? <MapPin size={14} className="text-[#94A3B8]" /> : <Video size={14} className="text-[#94A3B8]" />}
-          <span className="font-medium text-[#0F172A] text-[15px]">{m.title}</span>
+          {m.type === 'offline' ? <MapPin size={14} className="text-text-muted" /> : <Video size={14} className="text-text-muted" />}
+          <span className="font-medium text-text-primary text-[15px]">{m.title}</span>
         </div>
-        <div className="text-xs text-[#64748B] mt-0.5 flex items-center gap-2">
+        <div className="text-xs text-text-muted mt-0.5 flex items-center gap-2">
           <span>{TYPE_LABEL[m.type]}</span>
           <span className="inline-flex items-center gap-1"><Users size={11} /> {m._count?.attendees ?? 0}</span>
-          {m.rhythm_id && <span className="inline-flex items-center gap-1 text-[#7C3AED]"><Repeat size={11} /> rhythm</span>}
+          {m.rhythm_id && <span className="inline-flex items-center gap-1 text-text-secondary"><Repeat size={11} /> rhythm</span>}
         </div>
       </>
     ),
@@ -84,9 +84,9 @@ const meetingColumns: ResponsiveColumn<Meeting>[] = [
     key: 'when',
     header: 'When',
     desktopHiddenBelow: 'md',
-    render: (m) => <span className="text-sm text-[#475569]">{fmtDateTime(m.scheduled_start)}</span>,
+    render: (m) => <span className="text-sm text-text-secondary">{fmtDateTime(m.scheduled_start)}</span>,
   },
-  { key: 'organizer', header: 'Organizer', render: (m) => <span className="text-sm text-[#1E293B]">{m.organizer?.name ?? '—'}</span> },
+  { key: 'organizer', header: 'Organizer', render: (m) => <span className="text-sm text-text-primary">{m.organizer?.name ?? '—'}</span> },
   { key: 'status', header: 'Status', render: (m) => <StatusBadge status={m.status} /> },
 ]
 
@@ -247,35 +247,35 @@ export default function MeetingsPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <h1 className="text-[26px] font-bold text-[#0F172A] leading-tight">Meetings</h1>
-          <p className="text-sm text-[#475569] mt-1">Schedule, run and record meetings — with action items and decisions.</p>
+          <h1 className="text-[26px] font-bold text-text-primary leading-tight">Meetings</h1>
+          <p className="text-sm text-text-secondary mt-1">Schedule, run and record meetings — with action items and decisions.</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {/* Frequent actions grouped as a segmented control; occasional ones live under "More". */}
           <div className="relative" ref={menuRef}>
-            <div className="inline-flex items-center border border-[#E2E8F0] rounded-[8px] overflow-hidden">
-              <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-[#475569] hover:bg-[#F8FAFC]">
+            <div className="inline-flex items-center border border-border-light rounded-[8px] overflow-hidden">
+              <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-text-secondary hover:bg-surface-sunken">
                 <Repeat size={16} /> Rhythms
               </Link>
-              <span className="w-px self-stretch bg-[#E2E8F0]" aria-hidden />
+              <span className="w-px self-stretch bg-surface-control-pressed" aria-hidden />
               <Tooltip label="Block your time (only you see the name; colleagues see Busy)">
-              <button onClick={() => { setEditBlock(null); setTbStart(undefined); setTbOpen(true) }} className="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-[#475569] hover:bg-[#F8FAFC]">
+              <button onClick={() => { setEditBlock(null); setTbStart(undefined); setTbOpen(true) }} className="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-text-secondary hover:bg-surface-sunken">
                 <CalendarClock size={16} /> Time-Block
               </button>
               </Tooltip>
-              <span className="w-px self-stretch bg-[#E2E8F0]" aria-hidden />
-              <button onClick={() => setMenuOpen((o) => !o)} aria-label="More options" aria-haspopup="menu" aria-expanded={menuOpen} className={`px-2.5 py-2.5 text-[#475569] hover:bg-[#F8FAFC] ${menuOpen ? 'bg-[#F1F5F9]' : ''}`}>
+              <span className="w-px self-stretch bg-surface-control-pressed" aria-hidden />
+              <button onClick={() => setMenuOpen((o) => !o)} aria-label="More options" aria-haspopup="menu" aria-expanded={menuOpen} className={`px-2.5 py-2.5 text-text-secondary hover:bg-surface-sunken ${menuOpen ? 'bg-surface-control' : ''}`}>
                 <MoreHorizontal size={18} />
               </button>
             </div>
             {menuOpen && (
-              <div role="menu" className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#E2E8F0] rounded-[10px] shadow-lg p-1.5 z-50">
-                <Link href="/dashboard/governance/meetings/reports" onClick={() => setMenuOpen(false)} role="menuitem" className="w-full flex items-center gap-2.5 px-2.5 py-2 text-sm text-[#334155] rounded-[6px] hover:bg-[#F1F5F9]">
-                  <BarChart3 size={16} className="text-[#64748B]" /> Governance
+              <div role="menu" className="absolute right-0 top-full mt-2 w-56 bg-white border border-border-light rounded-[10px] shadow-lg p-1.5 z-50">
+                <Link href="/dashboard/governance/meetings/reports" onClick={() => setMenuOpen(false)} role="menuitem" className="w-full flex items-center gap-2.5 px-2.5 py-2 text-sm text-text-secondary rounded-[6px] hover:bg-surface-control">
+                  <BarChart3 size={16} className="text-text-muted" /> Governance
                 </Link>
                 {gcal?.configured && (
-                  <button onClick={() => { setMenuOpen(false); setGcalOpen(true) }} role="menuitem" className="w-full flex items-center gap-2.5 px-2.5 py-2 text-sm text-[#334155] rounded-[6px] hover:bg-[#F1F5F9]">
-                    <Calendar size={16} className="text-[#64748B]" />
+                  <button onClick={() => { setMenuOpen(false); setGcalOpen(true) }} role="menuitem" className="w-full flex items-center gap-2.5 px-2.5 py-2 text-sm text-text-secondary rounded-[6px] hover:bg-surface-control">
+                    <Calendar size={16} className="text-text-muted" />
                     <span className="flex-1 text-left">Google Calendar</span>
                     <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: gcal.connected ? '#22C55E' : '#CBD5E1' }} />
                   </button>
@@ -284,7 +284,7 @@ export default function MeetingsPage() {
             )}
           </div>
           {perms.write && (
-            <button onClick={() => openCreate()} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px]">
+            <button onClick={() => openCreate()} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px]">
               <Plus size={16} /> New Meeting
             </button>
           )}
@@ -298,10 +298,10 @@ export default function MeetingsPage() {
         <div className="flex items-center gap-2">
           {showNav && (
             <>
-              <button aria-label="Previous" onClick={() => navShift(-1)} className="p-1.5 rounded-[6px] text-[#475569] hover:bg-[#F1F5F9]"><ChevronLeft size={20} /></button>
-              <button onClick={() => setAnchor(new Date())} className="px-1.5 text-[16px] font-semibold text-[#0F172A] hover:text-[#2563EB] transition-colors">Today</button>
-              <button aria-label="Next" onClick={() => navShift(1)} className="p-1.5 rounded-[6px] text-[#475569] hover:bg-[#F1F5F9]"><ChevronRight size={20} /></button>
-              <span className="text-[16px] font-semibold text-[#0F172A] ml-1.5">{rangeLabel(anchor, view, weekDays)}</span>
+              <button aria-label="Previous" onClick={() => navShift(-1)} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control"><ChevronLeft size={20} /></button>
+              <button onClick={() => setAnchor(new Date())} className="px-1.5 text-[16px] font-semibold text-text-primary hover:text-primary-text transition-colors">Today</button>
+              <button aria-label="Next" onClick={() => navShift(1)} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control"><ChevronRight size={20} /></button>
+              <span className="text-[16px] font-semibold text-text-primary ml-1.5">{rangeLabel(anchor, view, weekDays)}</span>
             </>
           )}
         </div>
@@ -310,19 +310,19 @@ export default function MeetingsPage() {
             <Tooltip label="Toggle work week / full week">
             <button
               onClick={() => setWeekDaysPersist(weekDays === 5 ? 7 : 5)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[#475569] border border-[#E2E8F0] rounded-[8px] hover:bg-[#F8FAFC]"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken"
             >
               <Columns3 size={15} /> {weekDays === 5 ? '5-day' : '7-day'}
             </button>
             </Tooltip>
           )}
-          <div className="flex rounded-[8px] border border-[#E2E8F0] overflow-hidden">
+          <div className="flex rounded-[8px] border border-border-light overflow-hidden">
             {VIEWS.map((v) => (
               <button
                 key={v.key}
                 onClick={() => setView(v.key)}
                 aria-pressed={view === v.key}
-                className={['px-3 py-2 text-sm font-medium', view === v.key ? 'bg-[#2563EB] text-white' : 'bg-white text-[#475569] hover:bg-[#F8FAFC]'].join(' ')}
+                className={['px-3 py-2 text-sm font-medium', view === v.key ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-surface-sunken'].join(' ')}
               >
                 {v.label}
               </button>
@@ -334,14 +334,14 @@ export default function MeetingsPage() {
       {/* Thin stat strip + filter chips (no card wrapper) */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-4 text-sm">
-          <span className="text-[#0F172A] font-semibold">{stats.total} <span className="font-normal text-[#64748B]">{view === 'month' || view === 'list' ? 'total' : 'this ' + view}</span></span>
-          <span className="inline-flex items-center gap-1.5 text-[#475569]"><span className="w-2 h-2 rounded-full bg-[#16A34A]" /> {stats.live} live</span>
-          <span className="inline-flex items-center gap-1.5 text-[#475569]"><span className="w-2 h-2 rounded-full bg-[#2563EB]" /> {stats.scheduled} scheduled</span>
-          <span className="inline-flex items-center gap-1.5 text-[#475569]"><span className="w-2 h-2 rounded-full bg-[#94A3B8]" /> {stats.closed} closed</span>
+          <span className="text-text-primary font-semibold">{stats.total} <span className="font-normal text-text-muted">{view === 'month' || view === 'list' ? 'total' : 'this ' + view}</span></span>
+          <span className="inline-flex items-center gap-1.5 text-text-secondary"><span className="w-2 h-2 rounded-full bg-success" /> {stats.live} live</span>
+          <span className="inline-flex items-center gap-1.5 text-text-secondary"><span className="w-2 h-2 rounded-full bg-primary" /> {stats.scheduled} scheduled</span>
+          <span className="inline-flex items-center gap-1.5 text-text-secondary"><span className="w-2 h-2 rounded-full bg-[#94A3B8]" /> {stats.closed} closed</span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
-            <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+            <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
             <input className={`${selectClass} pl-8 py-1.5 w-[180px]`} placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <StyledSelect
@@ -381,7 +381,7 @@ export default function MeetingsPage() {
       {!permsLoading && !perms.read ? (
         <AccessHiddenState orgId={orgId} leaf="meetings" moduleLabel="Meetings" />
       ) : loading && (view === 'day' || view === 'week') ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-10 text-center text-sm text-[#475569]">Loading…</div>
+        <div className="bg-white border border-border-light rounded-[12px] p-10 text-center text-sm text-text-secondary">Loading…</div>
       ) : view === 'day' || view === 'week' ? (
         <>
           <WeekGrid
@@ -396,15 +396,15 @@ export default function MeetingsPage() {
             onBlockSelect={(b) => { setEditBlock(b); setTbStart(undefined); setTbOpen(true) }}
           />
           {/* legend */}
-          <div className="flex flex-wrap items-center gap-4 mt-3 px-1 text-xs text-[#64748B]">
+          <div className="flex flex-wrap items-center gap-4 mt-3 px-1 text-xs text-text-muted">
             {LEGEND.map((l) => (
               <span key={l.label} className="inline-flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-[3px] border-l-[3px]" style={{ background: l.fill, borderLeftColor: l.stripe }} />
                 {l.label}
               </span>
             ))}
-            <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded-[3px] border-l-[3px] border-dashed border-[#94A3B8] bg-[#F1F5F9]" /> Your time-blocks</span>
-            <span className="text-[#94A3B8]">Click an empty slot to schedule</span>
+            <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded-[3px] border-l-[3px] border-dashed border-border-strong bg-surface-control" /> Your time-blocks</span>
+            <span className="text-text-muted">Click an empty slot to schedule</span>
           </div>
         </>
       ) : view === 'month' ? (
@@ -415,15 +415,15 @@ export default function MeetingsPage() {
           rows={filtered}
           rowKey={(m) => m.id}
           loading={loading}
-          headerRowClassName="bg-[#2563EB] border-b border-[#1D4ED8]"
-          headerCellClassName="text-white bg-[#2563EB]"
+          headerRowClassName="bg-primary border-b border-primary-hover"
+          headerCellClassName="text-white bg-primary"
           maxBodyHeight="calc(100vh - 320px)"
           onRowClick={(m) => router.push(`/dashboard/governance/meetings/${m.id}`)}
           emptyState={
-            <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-12 text-center">
-              <div className="w-14 h-14 rounded-[16px] bg-[#EFF6FF] flex items-center justify-center text-[#2563EB] mx-auto mb-3"><CalendarDays size={26} /></div>
-              <h3 className="text-[18px] font-semibold text-[#0F172A]">No meetings</h3>
-              <p className="text-sm text-[#475569] mt-1">Create one to get started.</p>
+            <div className="bg-white border border-border-light rounded-[12px] p-12 text-center">
+              <div className="w-14 h-14 rounded-[16px] bg-primary-subtle flex items-center justify-center text-primary-text mx-auto mb-3"><CalendarDays size={26} /></div>
+              <h3 className="text-[18px] font-semibold text-text-primary">No meetings</h3>
+              <p className="text-sm text-text-secondary mt-1">Create one to get started.</p>
             </div>
           }
         />

@@ -83,13 +83,13 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
       <div key={n.id}>
         <div
           className={`group flex items-center gap-1 rounded-[6px] pr-2 py-1 cursor-pointer transition-colors ${
-            isSelected || isCurrent ? 'bg-[#EFF6FF]' : 'hover:bg-[#F1F5F9]'
+            isSelected || isCurrent ? 'bg-primary-subtle' : 'hover:bg-surface-control'
           }`}
           style={{ paddingLeft: 4 + depth * 14 }}
         >
           <button
             onClick={(e) => { e.stopPropagation(); if (hasKids) toggle(n.id) }}
-            className={`shrink-0 w-4 h-4 flex items-center justify-center rounded-xs ${hasKids ? 'text-[#64748B] hover:bg-[#E2E8F0]' : 'opacity-0 pointer-events-none'}`}
+            className={`shrink-0 w-4 h-4 flex items-center justify-center rounded-xs ${hasKids ? 'text-text-muted hover:bg-surface-control-pressed' : 'opacity-0 pointer-events-none'}`}
             aria-label={isOpen ? 'Collapse' : 'Expand'}
           >
             <ChevronRight size={13} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
@@ -99,8 +99,8 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
               onClick={() => activate(n)}
               className="flex-1 min-w-0 flex items-center gap-1.5 text-left"
             >
-              <span className="shrink-0 text-[#2563EB]">{KIND_META[n.kind].icon}</span>
-              <span className={`flex-1 min-w-0 truncate text-[13px] ${isSelected || isCurrent ? 'text-[#1D4ED8] font-semibold' : 'text-[#0F172A]'}`}>{n.name}</span>
+              <span className="shrink-0 text-primary-text">{KIND_META[n.kind].icon}</span>
+              <span className={`flex-1 min-w-0 truncate text-[13px] ${isSelected || isCurrent ? 'text-primary-text font-semibold' : 'text-text-primary'}`}>{n.name}</span>
             </button>
           </Tooltip>
         </div>
@@ -113,17 +113,17 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-2 border-b border-[#E2E8F0]">
+      <div className="p-2 border-b border-border-light">
         <div className="relative">
-          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search steps…"
-            className="w-full pl-8 pr-8 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] focus:bg-white focus:border-[#2563EB] focus:outline-hidden text-[#0F172A] placeholder:text-[#94A3B8]"
+            className="w-full pl-8 pr-8 py-1.5 text-[13px] rounded-[8px] border border-border bg-surface-sunken focus:bg-white focus:border-primary focus:outline-hidden text-text-primary placeholder:text-text-muted"
           />
           {query && (
-            <button onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569]">
+            <button onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary">
               <X size={14} />
             </button>
           )}
@@ -133,18 +133,18 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
       <div className="flex-1 overflow-y-auto p-1.5">
         {results ? (
           results.length === 0 ? (
-            <p className="text-[13px] text-[#64748B] text-center py-8 px-3">No steps match “{query}”.</p>
+            <p className="text-[13px] text-text-muted text-center py-8 px-3">No steps match “{query}”.</p>
           ) : (
             <div className="space-y-0.5">
               {results.map(({ node, path }) => (
                 <button key={node.id} onClick={() => activate(node)}
-                  className="w-full text-left rounded-[6px] px-2 py-1.5 hover:bg-[#F1F5F9] transition-colors">
+                  className="w-full text-left rounded-[6px] px-2 py-1.5 hover:bg-surface-control transition-colors">
                   <div className="flex items-center gap-1.5">
-                    <span className="shrink-0 text-[#2563EB]">{KIND_META[node.kind].icon}</span>
-                    <span className="flex-1 min-w-0 truncate text-[13px] text-[#0F172A] font-medium">{node.name}</span>
+                    <span className="shrink-0 text-primary-text">{KIND_META[node.kind].icon}</span>
+                    <span className="flex-1 min-w-0 truncate text-[13px] text-text-primary font-medium">{node.name}</span>
                   </div>
                   {path.length > 0 && (
-                    <p className="text-[11px] text-[#64748B] truncate pl-5">{path.join(' › ')}</p>
+                    <p className="text-[11px] text-text-muted truncate pl-5">{path.join(' › ')}</p>
                   )}
                 </button>
               ))}
@@ -155,14 +155,14 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
             <button
               onClick={() => onOpenLevel(null)}
               className={`w-full flex items-center gap-1.5 rounded-[6px] px-2 py-1.5 mb-0.5 text-left transition-colors ${
-                currentParentId === null ? 'bg-[#EFF6FF]' : 'hover:bg-[#F1F5F9]'
+                currentParentId === null ? 'bg-primary-subtle' : 'hover:bg-surface-control'
               }`}
             >
-              <Workflow size={14} className="shrink-0 text-[#2563EB]" />
-              <span className={`flex-1 min-w-0 truncate text-[13px] font-semibold ${currentParentId === null ? 'text-[#1D4ED8]' : 'text-[#0F172A]'}`}>{mapName}</span>
+              <Workflow size={14} className="shrink-0 text-primary-text" />
+              <span className={`flex-1 min-w-0 truncate text-[13px] font-semibold ${currentParentId === null ? 'text-primary-text' : 'text-text-primary'}`}>{mapName}</span>
             </button>
             {roots.length === 0 ? (
-              <p className="text-[12px] text-[#64748B] px-3 py-4">No steps yet.</p>
+              <p className="text-[12px] text-text-muted px-3 py-4">No steps yet.</p>
             ) : (
               roots.map((n) => renderRow(n, 1))
             )}

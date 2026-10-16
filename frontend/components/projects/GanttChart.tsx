@@ -121,21 +121,21 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
   }
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
       {/* Controls */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[#E2E8F0] bg-[#F8FAFC]">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-border-light bg-surface-sunken">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => navigate(-1)} className="p-1.5 rounded-xs hover:bg-[#E2E8F0] text-[#475569] transition-colors">
+          <button type="button" onClick={() => navigate(-1)} className="p-1.5 rounded-xs hover:bg-surface-control-pressed text-text-secondary transition-colors">
             <ChevronLeft size={16} />
           </button>
-          <span className="text-sm font-medium text-[#0F172A]">
+          <span className="text-sm font-medium text-text-primary">
             {fmtDateLabel(windowStart)} — {fmtDateLabel(windowEnd)}
           </span>
-          <button type="button" onClick={() => navigate(1)} className="p-1.5 rounded-xs hover:bg-[#E2E8F0] text-[#475569] transition-colors">
+          <button type="button" onClick={() => navigate(1)} className="p-1.5 rounded-xs hover:bg-surface-control-pressed text-text-secondary transition-colors">
             <ChevronRight size={16} />
           </button>
         </div>
-        <div className="flex items-center gap-1 bg-[#E2E8F0] rounded-[8px] p-0.5">
+        <div className="flex items-center gap-1 bg-surface-control-pressed rounded-[8px] p-0.5">
           {(['week', 'month', 'quarter'] as ZoomLevel[]).map((z) => (
             <button
               key={z}
@@ -143,7 +143,7 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
               onClick={() => setZoom(z)}
               className={[
                 'px-3 py-1 rounded-[6px] text-xs font-semibold transition-colors capitalize',
-                zoom === z ? 'bg-white text-[#0F172A] shadow-xs' : 'text-[#475569] hover:text-[#0F172A]',
+                zoom === z ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary',
               ].join(' ')}
             >
               {z}
@@ -156,15 +156,15 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
       <div ref={containerRef} className="overflow-x-auto">
         <div style={{ minWidth: 700 }}>
           {/* Header row */}
-          <div className="flex border-b border-[#E2E8F0] bg-[#F8FAFC]">
-            <div className="w-[200px] shrink-0 px-4 py-2 border-r border-[#E2E8F0]">
-              <p className="text-xs font-semibold text-[#475569]">Item</p>
+          <div className="flex border-b border-border-light bg-surface-sunken">
+            <div className="w-[200px] shrink-0 px-4 py-2 border-r border-border-light">
+              <p className="text-xs font-semibold text-text-secondary">Item</p>
             </div>
             <div className="flex-1 relative flex">
               {colLabels.map((lbl, i) => (
                 <div
                   key={i}
-                  className="flex-1 text-center text-[10px] text-[#94A3B8] py-2 border-r border-[#F1F5F9] last:border-0"
+                  className="flex-1 text-center text-[10px] text-text-muted py-2 border-r border-border-light last:border-0"
                 >
                   {lbl}
                 </div>
@@ -173,7 +173,7 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
           </div>
 
           {rows.length === 0 && (
-            <div className="flex items-center justify-center py-12 text-sm text-[#94A3B8]">
+            <div className="flex items-center justify-center py-12 text-sm text-text-muted">
               Add milestones and tasks with dates to see the Gantt chart.
             </div>
           )}
@@ -193,15 +193,15 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
             const inWindow = barStart !== null && barStart < 100 && (barWidth === null || barStart + barWidth > 0)
 
             return (
-              <div key={row.id} className="flex border-b border-[#F1F5F9] last:border-0 hover:bg-[#FAFAFA] transition-colors" style={{ height: 40 }}>
+              <div key={row.id} className="flex border-b border-border-light last:border-0 hover:bg-surface-sunken transition-colors" style={{ height: 40 }}>
                 <div
-                  className="w-[200px] shrink-0 px-4 flex items-center border-r border-[#E2E8F0] overflow-hidden"
+                  className="w-[200px] shrink-0 px-4 flex items-center border-r border-border-light overflow-hidden"
                   style={{ paddingLeft: row.isMilestone ? 16 : row.id.startsWith('task') ? 28 : 16 }}
                 >
                   {row.isMilestone && (
                     <div className="w-2 h-2 rotate-45 shrink-0 mr-2" style={{ backgroundColor: row.color }} />
                   )}
-                  <span className="text-xs font-medium text-[#1E293B] truncate">{row.label}</span>
+                  <span className="text-xs font-medium text-text-primary truncate">{row.label}</span>
                 </div>
                 <div className="flex-1 relative">
                   {todayOffset !== null && (

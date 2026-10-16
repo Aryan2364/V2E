@@ -84,10 +84,10 @@ export default function Sheet({
           shown ? 'translate-x-0 duration-250' : 'translate-x-full duration-200'
         }`}
       >
-        <div className="flex items-start gap-3 px-5 py-4 border-b border-[#E2E8F0] shrink-0">
+        <div className="flex items-start gap-3 px-5 py-4 border-b border-border-light shrink-0">
           <div className="flex-1 min-w-0">
-            {eyebrow && <p className="text-[13px] font-medium text-[#475569]">{eyebrow}</p>}
-            <h2 id={labelId} className="text-[18px] font-semibold text-[#0F172A] wrap-break-word">
+            {eyebrow && <p className="text-[13px] font-medium text-text-secondary">{eyebrow}</p>}
+            <h2 id={labelId} className="text-[18px] font-semibold text-text-primary wrap-break-word">
               {title}
             </h2>
             {headerExtra && <div className="mt-1.5 flex items-center gap-2 flex-wrap">{headerExtra}</div>}
@@ -97,7 +97,7 @@ export default function Sheet({
           </button>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 flex flex-col gap-5">{children}</div>
-        {footer && <div className="shrink-0 border-t border-[#E2E8F0] px-5 py-3 flex flex-wrap items-center justify-end gap-2">{footer}</div>}
+        {footer && <div className="shrink-0 border-t border-border-light px-5 py-3 flex flex-wrap items-center justify-end gap-2">{footer}</div>}
       </div>
     </div>,
     document.body,

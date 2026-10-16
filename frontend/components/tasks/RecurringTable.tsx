@@ -33,15 +33,15 @@ export default function RecurringTable({
   const catMap = new Map(categories.map((c) => [c.id, c]))
   const prioMap = new Map(priorities.map((p) => [p.id, p]))
 
-  const TH = 'text-left text-[12px] font-semibold uppercase tracking-wide text-[#64748B] px-3 py-2.5 whitespace-nowrap'
-  const TD = 'px-3 py-3 text-sm text-[#0F172A] align-middle'
+  const TH = 'text-left text-[12px] font-semibold uppercase tracking-wide text-text-muted px-3 py-2.5 whitespace-nowrap'
+  const TD = 'px-3 py-3 text-sm text-text-primary align-middle'
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full border-collapse min-w-[1200px]">
           <thead>
-            <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+            <tr className="border-b border-border-light bg-surface-sunken">
               <th className={TH}>Template</th>
               <th className={TH}>Created by</th>
               <th className={TH}>Assigned to</th>
@@ -64,11 +64,11 @@ export default function RecurringTable({
                 <tr
                   key={t.id}
                   onClick={() => onOpen(t.id)}
-                  className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] cursor-pointer transition-colors"
+                  className="border-b border-border-light hover:bg-surface-sunken cursor-pointer transition-colors"
                 >
                   <td className={`${TD} max-w-[260px]`}>
-                    <p className="font-medium text-[#0F172A] truncate">{t.title}</p>
-                    {t.description && <p className="text-[12px] text-[#94A3B8] truncate">{t.description}</p>}
+                    <p className="font-medium text-text-primary truncate">{t.title}</p>
+                    {t.description && <p className="text-[12px] text-text-muted truncate">{t.description}</p>}
                   </td>
                   <td className={`${TD} whitespace-nowrap`}>{t.created_by_name ?? '—'}</td>
                   <Tooltip label={(t.assignee_names ?? []).join(', ')}>
@@ -76,14 +76,14 @@ export default function RecurringTable({
                   </Tooltip>
                   <td className={`${TD} whitespace-nowrap`}>{t.department_name ?? '—'}</td>
                   <td className={`${TD} whitespace-nowrap`}>
-                    <span className="inline-flex items-center gap-1.5 text-[#475569]">
-                      <RotateCcw size={12} className="text-[#94A3B8]" /> {scheduleLabel(t)}
+                    <span className="inline-flex items-center gap-1.5 text-text-secondary">
+                      <RotateCcw size={12} className="text-text-muted" /> {scheduleLabel(t)}
                     </span>
                   </td>
                   <td className={TD}>
                     <span className={[
                       'inline-flex items-center gap-1 rounded-[999px] px-2 py-0.5 text-[11px] font-medium border',
-                      t.is_active ? 'bg-[#DCFCE7] text-[#16A34A] border-[#BBF7D0]' : 'bg-[#FEE2E2] text-[#DC2626] border-[#FECACA]',
+                      t.is_active ? 'bg-success-bg text-success border-success-border' : 'bg-danger-bg text-danger border-danger-border',
                     ].join(' ')}>
                       {t.is_active ? 'Active' : <><Pause size={9} /> Paused</>}
                     </span>
@@ -117,7 +117,7 @@ export default function RecurringTable({
                         <button
                           onClick={(e) => { e.stopPropagation(); onManageAccess(t) }}
                           aria-label="Manage access"
-                          className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+                          className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors"
                         >
                           <Shield size={14} />
                         </button>

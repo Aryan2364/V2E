@@ -68,38 +68,38 @@ export default function AssigneeMultiSelect({
   }
 
   return (
-    <div className="border border-[#CBD5E1] rounded-[10px] overflow-hidden">
+    <div className="border border-border rounded-[10px] overflow-hidden">
       {/* Search */}
-      <div className="px-3 py-2 border-b border-[#E2E8F0] bg-[#F8FAFC] flex items-center gap-2">
-        <Search size={15} className="text-[#94A3B8] shrink-0" />
+      <div className="px-3 py-2 border-b border-border-light bg-surface-sunken flex items-center gap-2">
+        <Search size={15} className="text-text-muted shrink-0" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search by name, role or department…"
-          className="flex-1 bg-transparent text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
+          className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
         />
         {q && (
-          <button type="button" onClick={() => setQ('')} className="text-[#94A3B8] hover:text-[#475569] shrink-0">
+          <button type="button" onClick={() => setQ('')} className="text-text-muted hover:text-text-secondary shrink-0">
             <X size={14} />
           </button>
         )}
       </div>
 
       {/* Select-all + counts */}
-      <div className="px-3 py-2 border-b border-[#E2E8F0] flex items-center justify-between gap-2">
+      <div className="px-3 py-2 border-b border-border-light flex items-center justify-between gap-2">
         <button
           type="button"
           onClick={toggleAllFiltered}
           disabled={filteredIds.length === 0}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] disabled:text-[#94A3B8] disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-text hover:text-primary-text disabled:text-text-muted disabled:cursor-not-allowed"
         >
           <CheckCheck size={14} />
           {allFilteredSelected ? 'Deselect' : 'Select'} {q ? 'matching' : 'all'} ({filteredIds.length})
         </button>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs text-[#64748B]">{selected.length} selected</span>
+          <span className="text-xs text-text-muted">{selected.length} selected</span>
           {selected.length > 0 && (
-            <button type="button" onClick={() => onChange([])} className="text-xs font-medium text-[#475569] hover:text-[#DC2626]">
+            <button type="button" onClick={() => onChange([])} className="text-xs font-medium text-text-secondary hover:text-danger">
               Clear
             </button>
           )}
@@ -109,7 +109,7 @@ export default function AssigneeMultiSelect({
       {/* List */}
       <div className={`${heightClass} overflow-y-auto`}>
         {filtered.length === 0 ? (
-          <p className="text-sm text-[#64748B] px-3 py-5 text-center">No people found.</p>
+          <p className="text-sm text-text-muted px-3 py-5 text-center">No people found.</p>
         ) : (
           filtered.map((emp: any) => {
             const checked = selectedSet.has(emp.id)
@@ -117,20 +117,20 @@ export default function AssigneeMultiSelect({
               <label
                 key={emp.id}
                 className={[
-                  'flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors border-b border-[#F1F5F9] last:border-0',
-                  checked ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]',
+                  'flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors border-b border-border-light last:border-0',
+                  checked ? 'bg-primary-subtle' : 'hover:bg-surface-sunken',
                 ].join(' ')}
               >
                 <span className={[
                   'w-4 h-4 rounded-sm flex items-center justify-center border shrink-0',
-                  checked ? 'bg-[#2563EB] border-[#2563EB]' : 'border-[#CBD5E1] bg-white',
+                  checked ? 'bg-primary border-primary' : 'border-border bg-white',
                 ].join(' ')}>
                   {checked && <Check size={12} className="text-white" />}
                 </span>
                 <input type="checkbox" className="hidden" checked={checked} onChange={() => toggle(emp.id)} />
                 <div className="min-w-0">
-                  <div className="text-sm font-medium text-[#0F172A] truncate">{emp.user?.name}</div>
-                  <div className="text-xs text-[#64748B] truncate">
+                  <div className="text-sm font-medium text-text-primary truncate">{emp.user?.name}</div>
+                  <div className="text-xs text-text-muted truncate">
                     {[emp.role?.title, emp.department?.name].filter(Boolean).join(' · ') || '—'}
                   </div>
                 </div>

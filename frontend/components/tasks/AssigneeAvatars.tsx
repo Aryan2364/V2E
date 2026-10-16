@@ -12,8 +12,8 @@ export interface AvatarPerson {
 }
 
 const AVATAR_COLORS = [
-  'bg-[#2563EB]', 'bg-[#7C3AED]', 'bg-[#059669]',
-  'bg-[#D97706]', 'bg-[#DC2626]', 'bg-[#0891B2]', 'bg-[#BE185D]',
+  'bg-primary', 'bg-text-secondary', 'bg-success',
+  'bg-warning', 'bg-danger', 'bg-text-secondary', 'bg-text-secondary',
 ]
 
 function avatarColor(name: string): string {
@@ -69,14 +69,14 @@ export default function AssigneeAvatars({
                 <span
                   className={[
                     'inline-flex items-center rounded-[999px] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide',
-                    p.isCC ? 'bg-[#334155] text-[#CBD5E1]' : 'bg-[#2563EB] text-white',
+                    p.isCC ? 'bg-[#334155] text-[#CBD5E1]' : 'bg-primary text-white',
                   ].join(' ')}
                 >
                   {p.isCC ? 'CC' : 'Assignee'}
                 </span>
               </span>
               {(p.role || p.department) && (
-                <span className="mt-0.5 block text-[10px] text-[#94A3B8] whitespace-nowrap">
+                <span className="mt-0.5 block text-[10px] text-text-muted whitespace-nowrap">
                   {[p.role, p.department].filter(Boolean).join(' · ')}
                 </span>
               )}
@@ -86,7 +86,7 @@ export default function AssigneeAvatars({
           <div
             className={[
               `${s.circle} rounded-full flex items-center justify-center font-bold border-2 border-white cursor-default`,
-              p.isCC ? 'bg-[#F1F5F9] text-[#64748B] ring-1 ring-[#CBD5E1]' : `${avatarColor(p.name)} text-white`,
+              p.isCC ? 'bg-surface-control text-text-muted ring-1 ring-border' : `${avatarColor(p.name)} text-white`,
             ].join(' ')}
           >
             {getInitials(p.name)}
@@ -96,7 +96,7 @@ export default function AssigneeAvatars({
       {extra > 0 && (
         <Tooltip label={people.slice(max).map((p) => p.name).join(', ')}>
           <div
-            className={`${s.circle} rounded-full bg-[#E2E8F0] flex items-center justify-center text-[#475569] font-bold border-2 border-white cursor-default`}
+            className={`${s.circle} rounded-full bg-surface-control-pressed flex items-center justify-center text-text-secondary font-bold border-2 border-white cursor-default`}
           >
             +{extra}
           </div>

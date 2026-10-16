@@ -101,20 +101,20 @@ export default function RichEditor({
   }
 
   const proseCls = '[&_h1]:text-xl [&_h1]:font-bold [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:text-base [&_h3]:font-semibold [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_strong]:font-semibold [&_b]:font-semibold [&_em]:italic [&_i]:italic'
-  const toolBtn = 'inline-flex items-center justify-center w-7 h-7 rounded-[6px] text-[#334155] hover:bg-[#E2E8F0] hover:text-[#0F172A]'
+  const toolBtn = 'inline-flex items-center justify-center w-7 h-7 rounded-[6px] text-text-secondary hover:bg-surface-control-pressed hover:text-text-primary'
 
   if (disabled) {
     return (
       <div
-        className={`min-h-[80px] max-h-[300px] overflow-y-auto border border-[#E2E8F0] rounded-[8px] px-3 py-2 text-[15px] text-[#1E293B] ${proseCls}`}
-        dangerouslySetInnerHTML={{ __html: value.trim() ? renderMarkdown(value) : '<span class="text-[#94A3B8]">Nothing yet.</span>' }}
+        className={`min-h-[80px] max-h-[300px] overflow-y-auto border border-border-light rounded-[8px] px-3 py-2 text-[15px] text-text-primary ${proseCls}`}
+        dangerouslySetInnerHTML={{ __html: value.trim() ? renderMarkdown(value) : '<span class="text-text-muted">Nothing yet.</span>' }}
       />
     )
   }
 
   return (
-    <div className="border border-[#CBD5E1] rounded-[8px] focus-within:border-[#2563EB] focus-within:ring-1 focus-within:ring-[#2563EB] overflow-hidden">
-      <div className="flex items-center gap-0.5 px-1.5 py-1 border-b border-[#E2E8F0] bg-[#F8FAFC]">
+    <div className="border border-border rounded-[8px] focus-within:border-primary focus-within:ring-1 focus-within:ring-primary overflow-hidden">
+      <div className="flex items-center gap-0.5 px-1.5 py-1 border-b border-border-light bg-surface-sunken">
         {/* preventDefault keeps the text selection while the button is pressed */}
         <Tooltip label="Bold"><button type="button" aria-label="Bold" onMouseDown={(e) => e.preventDefault()} onClick={() => cmd('bold')} className={toolBtn}><Bold size={15} /></button></Tooltip>
         <Tooltip label="Italic"><button type="button" aria-label="Italic" onMouseDown={(e) => e.preventDefault()} onClick={() => cmd('italic')} className={toolBtn}><Italic size={15} /></button></Tooltip>
@@ -130,11 +130,11 @@ export default function RichEditor({
           onBlur={sync}
           role="textbox"
           aria-multiline="true"
-          className={`w-full px-3 py-2 text-[15px] text-[#0F172A] focus:outline-hidden overflow-y-auto max-h-[420px] ${proseCls}`}
+          className={`w-full px-3 py-2 text-[15px] text-text-primary focus:outline-hidden overflow-y-auto max-h-[420px] ${proseCls}`}
           style={{ minHeight: `${minRows * 1.6 + 1}rem` }}
         />
         {empty && placeholder && (
-          <span className="pointer-events-none absolute left-3 top-2 text-[15px] text-[#94A3B8]">{placeholder}</span>
+          <span className="pointer-events-none absolute left-3 top-2 text-[15px] text-text-muted">{placeholder}</span>
         )}
       </div>
     </div>

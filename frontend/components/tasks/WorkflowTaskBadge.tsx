@@ -28,7 +28,7 @@ export default function WorkflowTaskBadge({
 }) {
   const text = workflowBadgeText(workflow, getNow())
   const tip = workflowBadgeTip(workflow)
-  const cls = `inline-flex items-center gap-1 min-w-0 max-w-[220px] rounded-[999px] border border-[#BFDBFE] bg-[#EFF6FF] text-[#1D4ED8] font-medium ${
+  const cls = `inline-flex items-center gap-1 min-w-0 max-w-[220px] rounded-[999px] border border-primary-border bg-primary-subtle text-primary-text font-medium ${
     size === 'xs' ? 'px-2 py-0.5 text-[10px]' : 'px-2 py-0.5 text-[11px]'
   } ${className}`
   const body = (
@@ -47,7 +47,7 @@ export default function WorkflowTaskBadge({
           aria-label={`${label}. Open instance`}
           // Inside clickable rows and cards: open the instance, not the task.
           onClick={(e) => e.stopPropagation()}
-          className={`${cls} hover:bg-[#DBEAFE] hover:border-[#93C5FD] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]`}
+          className={`${cls} hover:bg-primary-subtle hover:border-primary-border transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary`}
         >
           {body}
         </Link>
@@ -60,7 +60,7 @@ export default function WorkflowTaskBadge({
         tabIndex={0}
         aria-label={label}
         onClick={(e) => e.stopPropagation()}
-        className={`${cls} focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]`}
+        className={`${cls} focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary`}
       >
         {body}
       </span>

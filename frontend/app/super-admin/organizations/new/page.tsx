@@ -41,26 +41,26 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium text-[#374151]">
-        {label}{required && <span className="text-[#DC2626] ml-0.5">*</span>}
+      <label className="text-sm font-medium text-text-secondary">
+        {label}{required && <span className="text-danger ml-0.5">*</span>}
       </label>
       {children}
-      {error && <p className="text-xs text-[#DC2626]">{error}</p>}
-      {!error && hint && <p className="text-xs text-[#64748B]">{hint}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
+      {!error && hint && <p className="text-xs text-text-muted">{hint}</p>}
     </div>
   )
 }
 
 const inputCls = (hasError?: boolean) =>
   [
-    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden transition-colors',
-    hasError ? 'border-2 border-[#DC2626]' : 'border border-[#CBD5E1] focus:border-2 focus:border-[#2563EB]',
+    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden transition-colors',
+    hasError ? 'border-2 border-danger' : 'border border-border focus:border-2 focus:border-primary',
   ].join(' ')
 
 const selectCls = (hasError?: boolean) =>
   [
-    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-[#0F172A] focus:outline-hidden transition-colors',
-    hasError ? 'border-2 border-[#DC2626]' : 'border border-[#CBD5E1] focus:border-2 focus:border-[#2563EB]',
+    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-text-primary focus:outline-hidden transition-colors',
+    hasError ? 'border-2 border-danger' : 'border border-border focus:border-2 focus:border-primary',
   ].join(' ')
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -173,16 +173,16 @@ export default function NewOrganizationPage() {
       <div>
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center gap-1 text-sm text-[#475569] hover:text-[#0F172A] mb-3 transition-colors"
+          className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary mb-3 transition-colors"
         >
           <ChevronLeft size={16} /> Back
         </button>
-        <h1 className="text-[28px] font-bold text-[#0F172A]">Create Organization</h1>
-        <p className="text-sm text-[#475569] mt-1">Set up a new tenant organization and provision its first admin account.</p>
+        <h1 className="text-[28px] font-bold text-text-primary">Create Organization</h1>
+        <p className="text-sm text-text-secondary mt-1">Set up a new tenant organization and provision its first admin account.</p>
       </div>
 
       {serverError && (
-        <div className="rounded-[8px] bg-[#FEE2E2] border border-[#FECACA] px-4 py-3 text-sm text-[#DC2626]">
+        <div className="rounded-[8px] bg-danger-bg border border-danger-border px-4 py-3 text-sm text-danger">
           {serverError}
         </div>
       )}
@@ -190,7 +190,7 @@ export default function NewOrganizationPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         {/* Section 1 — Org details */}
         <Card>
-          <h2 className="text-[16px] font-semibold text-[#0F172A] mb-5 pb-4 border-b border-[#E2E8F0]">Organization Details</h2>
+          <h2 className="text-[16px] font-semibold text-text-primary mb-5 pb-4 border-b border-border-light">Organization Details</h2>
           <div className="grid grid-cols-1 gap-5">
             <Field label="Organization Name" error={errors.name?.message} required>
               <input
@@ -254,15 +254,15 @@ export default function NewOrganizationPage() {
             </Field>
 
             {/* Test client toggle */}
-            <label className="flex items-start gap-3 rounded-[8px] border border-[#FDE68A] bg-[#FFFBEB] px-4 py-3 cursor-pointer">
+            <label className="flex items-start gap-3 rounded-[8px] border border-warning-border bg-warning-bg px-4 py-3 cursor-pointer">
               <input
                 type="checkbox"
                 {...register('is_test')}
-                className="mt-0.5 w-4 h-4 rounded-xs border-[#CBD5E1] text-[#D97706] focus:ring-[#D97706]"
+                className="mt-0.5 w-4 h-4 rounded-xs border-border text-warning focus:ring-warning"
               />
               <span>
-                <span className="block text-sm font-medium text-[#92400E]">Test client</span>
-                <span className="block text-xs text-[#B45309] mt-0.5">
+                <span className="block text-sm font-medium text-warning">Test client</span>
+                <span className="block text-xs text-warning mt-0.5">
                   Enables a controllable simulated clock so this org can “time travel” for testing. Leave off for real clients.
                 </span>
               </span>
@@ -272,7 +272,7 @@ export default function NewOrganizationPage() {
 
         {/* Section 2 — First Admin Account */}
         <Card>
-          <h2 className="text-[16px] font-semibold text-[#0F172A] mb-1 pb-4 border-b border-[#E2E8F0]">First Admin Account</h2>
+          <h2 className="text-[16px] font-semibold text-text-primary mb-1 pb-4 border-b border-border-light">First Admin Account</h2>
 
           {/* One flow — just enter the admin's email. If it already has a V2E login we
               add them with their existing password (name locked, no password field);
@@ -309,14 +309,14 @@ export default function NewOrganizationPage() {
             <Field label="Admin Name" error={errors.admin_name?.message} required
               hint={adminExists ? 'From their existing account' : undefined}>
               <input {...register('admin_name')} placeholder="" disabled={adminExists}
-                className={[inputCls(!!errors.admin_name), adminExists ? 'bg-[#F8FAFC] text-[#64748B]' : ''].join(' ')} />
+                className={[inputCls(!!errors.admin_name), adminExists ? 'bg-surface-sunken text-text-muted' : ''].join(' ')} />
             </Field>
             {/* Password shown ONLY for a brand-new login. An existing account keeps the
                 one password it uses across its other firms. */}
             {adminExists ? (
-              <div className="flex items-start gap-2 p-3 rounded-[8px] bg-[#F0FDF4] border border-[#BBF7D0]">
-                <Check size={16} className="text-[#16A34A] shrink-0 mt-0.5" />
-                <p className="text-sm text-[#166534]">
+              <div className="flex items-start gap-2 p-3 rounded-[8px] bg-success-bg border border-success-border">
+                <Check size={16} className="text-success shrink-0 mt-0.5" />
+                <p className="text-sm text-success">
                   This email already has a V2E login. They’ll be added as this firm’s admin
                   using their <strong>existing password</strong> — nothing to set here.
                 </p>
@@ -333,7 +333,7 @@ export default function NewOrganizationPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((s) => !s)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}

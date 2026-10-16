@@ -59,28 +59,28 @@ export default function BulletinPostPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
   if (!post) return null
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-6">
+    <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-2xl mx-auto">
-        <Link href={`/communication/bulletin/${boardId}`} className="flex items-center gap-2 text-sm text-[#475569] hover:text-[#0F172A] mb-6 w-fit">
+        <Link href={`/communication/bulletin/${boardId}`} className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary mb-6 w-fit">
           <ArrowLeft size={16} />
           Back to {board?.name ?? 'Board'}
         </Link>
 
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-6 mb-4">
-          <h1 className="text-xl font-bold text-[#0F172A] mb-2">{post.title}</h1>
-          <div className="flex items-center gap-3 text-xs text-[#94A3B8] mb-5">
+        <div className="bg-white border border-border-light rounded-[12px] p-6 mb-4">
+          <h1 className="text-xl font-bold text-text-primary mb-2">{post.title}</h1>
+          <div className="flex items-center gap-3 text-xs text-text-muted mb-5">
             <span>{post.created_by?.name}</span>
             <span>·</span>
             <span>{new Date(post.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
           </div>
-          <p className="text-sm text-[#1E293B] leading-relaxed whitespace-pre-wrap">{post.body}</p>
+          <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">{post.body}</p>
 
           {canReact && (
             <div className="flex items-center gap-1.5 mt-5 flex-wrap">
@@ -91,7 +91,7 @@ export default function BulletinPostPage() {
                   <button
                     key={emoji}
                     onClick={() => handleReact(emoji)}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-sm border transition-colors ${myReaction ? 'bg-[#EFF6FF] border-[#2563EB] text-[#2563EB]' : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#475569] hover:border-[#2563EB]'}`}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-sm border transition-colors ${myReaction ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
                   >
                     {emoji} {count > 0 && <span className="text-xs font-semibold">{count}</span>}
                   </button>
@@ -101,28 +101,28 @@ export default function BulletinPostPage() {
           )}
         </div>
 
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] p-6">
-          <h2 className="text-sm font-semibold text-[#0F172A] mb-4">{post.comments?.length ?? 0} Comments</h2>
+        <div className="bg-white border border-border-light rounded-[12px] p-6">
+          <h2 className="text-sm font-semibold text-text-primary mb-4">{post.comments?.length ?? 0} Comments</h2>
 
           <div className="flex flex-col gap-4 mb-5">
             {(post.comments ?? []).map(c => (
               <div key={c.id} className="flex gap-3">
-                <div className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-xs font-bold shrink-0">
+                <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold shrink-0">
                   {c.created_by?.name?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-sm font-semibold text-[#0F172A]">{c.created_by?.name}</span>
-                      <span className="text-xs text-[#94A3B8] ml-2">{new Date(c.created_at).toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-text-primary">{c.created_by?.name}</span>
+                      <span className="text-xs text-text-muted ml-2">{new Date(c.created_at).toLocaleString()}</span>
                     </div>
                     {(c.created_by_user_id === user?.id || isHR) && (
-                      <button onClick={() => handleDeleteComment(c.id)} className="p-1 text-[#94A3B8] hover:text-[#DC2626] rounded-xs transition-colors">
+                      <button onClick={() => handleDeleteComment(c.id)} className="p-1 text-text-muted hover:text-danger rounded-xs transition-colors">
                         <Trash2 size={12} />
                       </button>
                     )}
                   </div>
-                  <p className="text-sm text-[#1E293B] mt-0.5 whitespace-pre-wrap">{c.body}</p>
+                  <p className="text-sm text-text-primary mt-0.5 whitespace-pre-wrap">{c.body}</p>
                 </div>
               </div>
             ))}
@@ -134,12 +134,12 @@ export default function BulletinPostPage() {
                 value={comment}
                 onChange={e => setComment(e.target.value)}
                 placeholder="Write a comment…"
-                className="flex-1 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB]"
+                className="flex-1 border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
               />
               <button
                 type="submit"
                 disabled={submitting || !comment.trim()}
-                className="bg-[#2563EB] text-white px-4 py-2 rounded-[8px] text-sm font-semibold hover:bg-[#1D4ED8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="bg-primary text-white px-4 py-2 rounded-[8px] text-sm font-semibold hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Post
               </button>

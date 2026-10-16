@@ -70,7 +70,7 @@ export default function DeptTableView({
               className="w-2.5 h-2.5 rounded-full shrink-0 mr-2.5"
               style={{ backgroundColor: base }}
             />
-            <span className="font-medium text-[#0F172A] truncate">{department.name}</span>
+            <span className="font-medium text-text-primary truncate">{department.name}</span>
           </div>
         )
       },
@@ -82,13 +82,13 @@ export default function DeptTableView({
       headerClassName: 'px-5 py-3.5',
       render: ({ department }) => {
         const name = department.head_user?.name
-        if (!name) return <span className="text-[#94A3B8]">—</span>
+        if (!name) return <span className="text-text-muted">—</span>
         return (
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="w-7 h-7 rounded-full bg-[#E2E8F0] text-[#475569] flex items-center justify-center text-[11px] font-bold shrink-0">
+            <span className="w-7 h-7 rounded-full bg-surface-control-pressed text-text-secondary flex items-center justify-center text-[11px] font-bold shrink-0">
               {initials(name)}
             </span>
-            <span className="text-[#1E293B] truncate">{name}</span>
+            <span className="text-text-primary truncate">{name}</span>
           </div>
         )
       },
@@ -101,9 +101,9 @@ export default function DeptTableView({
       headerClassName: 'px-5 py-3.5',
       render: ({ parent }) =>
         parent ? (
-          <span className="text-[#475569]">{parent.name}</span>
+          <span className="text-text-secondary">{parent.name}</span>
         ) : (
-          <span className="inline-flex items-center rounded-[999px] bg-[#F1F5F9] px-2.5 py-0.5 text-xs font-medium text-[#475569]">
+          <span className="inline-flex items-center rounded-[999px] bg-surface-control px-2.5 py-0.5 text-xs font-medium text-text-secondary">
             Top level
           </span>
         ),
@@ -116,8 +116,8 @@ export default function DeptTableView({
       cellClassName: 'px-5 py-3.5',
       headerClassName: 'px-5 py-3.5',
       render: ({ department }) => (
-        <span className="inline-flex items-center gap-1.5 text-[#475569]">
-          <Users size={13} className="text-[#94A3B8]" />
+        <span className="inline-flex items-center gap-1.5 text-text-secondary">
+          <Users size={13} className="text-text-muted" />
           {department._count?.employee_profiles ?? 0}
         </span>
       ),
@@ -130,7 +130,7 @@ export default function DeptTableView({
       cellClassName: 'px-5 py-3.5',
       headerClassName: 'px-5 py-3.5',
       render: ({ department }) => (
-        <span className="text-[#475569]">{department._count?.roles ?? 0}</span>
+        <span className="text-text-secondary">{department._count?.roles ?? 0}</span>
       ),
     },
     {
@@ -149,7 +149,7 @@ export default function DeptTableView({
                 e.stopPropagation()
                 onEdit(department)
               }}
-              className="p-1.5 rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+              className="p-1.5 rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
               aria-label={`Edit ${department.name}`}
             >
               <Pencil size={14} />
@@ -168,12 +168,12 @@ export default function DeptTableView({
       rowKey={({ department }) => department.id}
       onRowClick={({ department }) => onSelect(department)}
       emptyState={
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-14 h-14 rounded-full bg-[#F1F5F9] flex items-center justify-center mb-4">
-            <Network size={24} className="text-[#94A3B8]" />
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
+            <Network size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-[#0F172A]">No departments match your search</p>
-          <p className="text-[#475569] text-sm mt-1">Try a different name.</p>
+          <p className="font-semibold text-text-primary">No departments match your search</p>
+          <p className="text-text-secondary text-sm mt-1">Try a different name.</p>
         </div>
       }
     />

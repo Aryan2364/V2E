@@ -126,19 +126,19 @@ const resolutionColumns: ResponsiveColumn<TicketReportResolutionTime>[] = [
     key: 'user_id',
     header: 'User ID',
     primary: true,
-    cellClassName: 'font-mono text-xs text-[#475569]',
+    cellClassName: 'font-mono text-xs text-text-secondary',
     render: (d) => d.user_id,
   },
   {
     key: 'ticket_count',
     header: 'Tickets Resolved',
-    cellClassName: 'text-[#0F172A] tabular-nums',
+    cellClassName: 'text-text-primary tabular-nums',
     render: (d) => d.ticket_count,
   },
   {
     key: 'avg_days',
     header: 'Avg Resolution Time',
-    cellClassName: 'text-[#0F172A] tabular-nums font-medium',
+    cellClassName: 'text-text-primary tabular-nums font-medium',
     render: (d) => `${d.avg_days.toFixed(1)} days`,
   },
 ]
@@ -186,11 +186,11 @@ function BreakdownTab({
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                        <span className="text-sm font-medium text-[#0F172A]">{d.label}</span>
+                        <span className="text-sm font-medium text-text-primary">{d.label}</span>
                       </div>
-                      <span className="text-sm text-[#475569] tabular-nums">{d.count} ({pct}%)</span>
+                      <span className="text-sm text-text-secondary tabular-nums">{d.count} ({pct}%)</span>
                     </div>
-                    <div className="h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-surface-control rounded-full overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: d.color }} />
                     </div>
                   </div>
@@ -235,7 +235,7 @@ function SlaTab({ orgId, from, to }: { orgId: string; from: string; to: string }
       </div>
 
       {data.tickets.length === 0 ? (
-        <div className="text-center py-12 text-sm text-[#475569]">No SLA breaches in this period.</div>
+        <div className="text-center py-12 text-sm text-text-secondary">No SLA breaches in this period.</div>
       ) : (
         <>
           <div className="flex justify-end">
@@ -262,27 +262,27 @@ const slaColumns: ResponsiveColumn<SlaTicketRow>[] = [
   {
     key: 'ticket_number',
     header: 'Ticket #',
-    cellClassName: 'font-mono text-xs text-[#475569]',
+    cellClassName: 'font-mono text-xs text-text-secondary',
     render: (t) => t.ticket_number,
   },
   {
     key: 'title',
     header: 'Title',
     primary: true,
-    cellClassName: 'text-[#0F172A] font-medium',
+    cellClassName: 'text-text-primary font-medium',
     render: (t) => t.title,
   },
   {
     key: 'sla_due',
     header: 'SLA Due',
-    cellClassName: 'text-[#DC2626] tabular-nums',
+    cellClassName: 'text-danger tabular-nums',
     render: (t) => new Date(t.sla_due_at).toLocaleDateString('en-IN'),
   },
   {
     key: 'status',
     header: 'Status',
     render: () => (
-      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#DC2626]">Breached</span>
+      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-danger-bg text-danger">Breached</span>
     ),
   },
 ]
@@ -315,7 +315,7 @@ function RatingsTab({ orgId, from, to }: { orgId: string; from: string; to: stri
       </div>
 
       {data.total_ratings === 0 ? (
-        <div className="text-center py-12 text-sm text-[#475569]">No ratings in this period.</div>
+        <div className="text-center py-12 text-sm text-text-secondary">No ratings in this period.</div>
       ) : (
         <>
           <div className="h-52">
@@ -355,32 +355,32 @@ const ratingsColumns: ResponsiveColumn<RatingTicketRow>[] = [
   {
     key: 'ticket_number',
     header: 'Ticket #',
-    cellClassName: 'font-mono text-xs text-[#475569]',
+    cellClassName: 'font-mono text-xs text-text-secondary',
     render: (t) => t.ticket_number,
   },
   {
     key: 'title',
     header: 'Title',
     primary: true,
-    cellClassName: 'text-[#0F172A] font-medium',
+    cellClassName: 'text-text-primary font-medium',
     render: (t) => t.title,
   },
   {
     key: 'rating',
     header: 'Rating',
-    cellClassName: 'text-[#D97706] font-semibold',
+    cellClassName: 'text-warning font-semibold',
     render: (t) => '★'.repeat(t.rating),
   },
   {
     key: 'comment',
     header: 'Comment',
-    cellClassName: 'text-[#475569] max-w-[180px] truncate',
+    cellClassName: 'text-text-secondary max-w-[180px] truncate',
     render: (t) => t.rating_comment ?? '—',
   },
   {
     key: 'rated_at',
     header: 'Rated At',
-    cellClassName: 'text-[#475569] tabular-nums',
+    cellClassName: 'text-text-secondary tabular-nums',
     render: (t) => new Date(t.rated_at).toLocaleDateString('en-IN'),
   },
 ]
@@ -442,19 +442,19 @@ const firstResponseColumns: ResponsiveColumn<TicketReportFirstResponse>[] = [
     key: 'user_id',
     header: 'User ID',
     primary: true,
-    cellClassName: 'font-mono text-xs text-[#475569]',
+    cellClassName: 'font-mono text-xs text-text-secondary',
     render: (d) => d.user_id,
   },
   {
     key: 'responded_count',
     header: 'Responded',
-    cellClassName: 'text-[#0F172A] tabular-nums',
+    cellClassName: 'text-text-primary tabular-nums',
     render: (d) => d.responded_count,
   },
   {
     key: 'avg_hours',
     header: 'Avg First Response',
-    cellClassName: 'text-[#0F172A] tabular-nums font-medium',
+    cellClassName: 'text-text-primary tabular-nums font-medium',
     render: (d) => `${d.avg_hours.toFixed(1)} h`,
   },
   {
@@ -462,7 +462,7 @@ const firstResponseColumns: ResponsiveColumn<TicketReportFirstResponse>[] = [
     header: 'Breached',
     cellClassName: 'tabular-nums font-medium',
     render: (d) => (
-      <span className={d.breached_count > 0 ? 'text-[#DC2626] font-semibold' : 'text-[#475569]'}>
+      <span className={d.breached_count > 0 ? 'text-danger font-semibold' : 'text-text-secondary'}>
         {d.breached_count}
       </span>
     ),
@@ -494,7 +494,7 @@ function BacklogAgingTab({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-6">
-      <p className="text-xs text-[#475569] -mt-1">Live snapshot of currently open tickets — not affected by the date range.</p>
+      <p className="text-xs text-text-secondary -mt-1">Live snapshot of currently open tickets — not affected by the date range.</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <StatCard label="Total Open" value={data.total_open} color="#2563EB" />
@@ -502,7 +502,7 @@ function BacklogAgingTab({ orgId }: { orgId: string }) {
       </div>
 
       {data.total_open === 0 ? (
-        <div className="text-center py-12 text-sm text-[#475569]">No open tickets in the backlog.</div>
+        <div className="text-center py-12 text-sm text-text-secondary">No open tickets in the backlog.</div>
       ) : (
         <>
           <div className="h-56">
@@ -521,7 +521,7 @@ function BacklogAgingTab({ orgId }: { orgId: string }) {
 
           {data.oldest.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-[#0F172A] mb-3">Oldest open tickets</h3>
+              <h3 className="text-sm font-semibold text-text-primary mb-3">Oldest open tickets</h3>
               <ResponsiveTable
                 className={FLAT_TABLE}
                 columns={backlogColumns}
@@ -542,17 +542,17 @@ const backlogColumns: ResponsiveColumn<BacklogRow>[] = [
   {
     key: 'ticket_number',
     header: 'Ticket #',
-    cellClassName: 'font-mono text-xs text-[#475569]',
+    cellClassName: 'font-mono text-xs text-text-secondary',
     render: (t) => t.ticket_number,
   },
   {
     key: 'title',
     header: 'Title',
     primary: true,
-    cellClassName: 'text-[#0F172A] font-medium',
+    cellClassName: 'text-text-primary font-medium',
     render: (t) => (
       <span className="flex items-center gap-2">
-        {t.sla_breached && <HoverTip label="SLA breached"><span className="w-2 h-2 rounded-full bg-[#DC2626] shrink-0" /></HoverTip>}
+        {t.sla_breached && <HoverTip label="SLA breached"><span className="w-2 h-2 rounded-full bg-danger shrink-0" /></HoverTip>}
         <span className="truncate">{t.title}</span>
       </span>
     ),
@@ -560,13 +560,13 @@ const backlogColumns: ResponsiveColumn<BacklogRow>[] = [
   {
     key: 'age_days',
     header: 'Age',
-    cellClassName: 'text-[#0F172A] tabular-nums font-medium',
+    cellClassName: 'text-text-primary tabular-nums font-medium',
     render: (t) => `${t.age_days}d`,
   },
   {
     key: 'status',
     header: 'Status',
-    cellClassName: 'text-[#475569]',
+    cellClassName: 'text-text-secondary',
     render: (t) => t.status,
   },
 ]
@@ -591,7 +591,7 @@ function AgentLoadTab({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-6">
-      <p className="text-xs text-[#475569] -mt-1">Live snapshot of resolver workload — not affected by the date range.</p>
+      <p className="text-xs text-text-secondary -mt-1">Live snapshot of resolver workload — not affected by the date range.</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <StatCard label="Resolvers" value={data.length} color="#2563EB" />
@@ -626,22 +626,22 @@ const agentLoadColumns: ResponsiveColumn<TicketReportAgentLoad>[] = [
     key: 'user_id',
     header: 'User ID',
     primary: true,
-    cellClassName: 'font-mono text-xs text-[#475569]',
+    cellClassName: 'font-mono text-xs text-text-secondary',
     render: (d) => d.user_id,
   },
-  { key: 'open', header: 'Open', cellClassName: 'text-[#0F172A] tabular-nums', render: (d) => d.open },
-  { key: 'in_progress', header: 'In Progress', cellClassName: 'text-[#0F172A] tabular-nums', render: (d) => d.in_progress },
-  { key: 'on_hold', header: 'On Hold', cellClassName: 'text-[#0F172A] tabular-nums', render: (d) => d.on_hold },
+  { key: 'open', header: 'Open', cellClassName: 'text-text-primary tabular-nums', render: (d) => d.open },
+  { key: 'in_progress', header: 'In Progress', cellClassName: 'text-text-primary tabular-nums', render: (d) => d.in_progress },
+  { key: 'on_hold', header: 'On Hold', cellClassName: 'text-text-primary tabular-nums', render: (d) => d.on_hold },
   {
     key: 'breached',
     header: 'Breached',
     cellClassName: 'tabular-nums font-medium',
     render: (d) => (
-      <span className={d.breached > 0 ? 'text-[#DC2626] font-semibold' : 'text-[#475569]'}>{d.breached}</span>
+      <span className={d.breached > 0 ? 'text-danger font-semibold' : 'text-text-secondary'}>{d.breached}</span>
     ),
   },
-  { key: 'resolved', header: 'Resolved', cellClassName: 'text-[#16A34A] tabular-nums', render: (d) => d.resolved },
-  { key: 'total', header: 'Total', cellClassName: 'text-[#0F172A] tabular-nums font-semibold', render: (d) => d.total },
+  { key: 'resolved', header: 'Resolved', cellClassName: 'text-success tabular-nums', render: (d) => d.resolved },
+  { key: 'total', header: 'Total', cellClassName: 'text-text-primary tabular-nums font-semibold', render: (d) => d.total },
 ]
 
 // ─── Reopen Rate ──────────────────────────────────────────────────────────────
@@ -669,7 +669,7 @@ function ReopenRateTab({ orgId, from, to }: { orgId: string; from: string; to: s
       </div>
 
       {data.most_reopened.length === 0 ? (
-        <div className="text-center py-12 text-sm text-[#475569]">No reopened tickets in this period.</div>
+        <div className="text-center py-12 text-sm text-text-secondary">No reopened tickets in this period.</div>
       ) : (
         <>
           <div className="flex justify-end">
@@ -679,7 +679,7 @@ function ReopenRateTab({ orgId, from, to }: { orgId: string; from: string; to: s
             )} />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-[#0F172A] mb-3">Most reopened tickets</h3>
+            <h3 className="text-sm font-semibold text-text-primary mb-3">Most reopened tickets</h3>
             <ResponsiveTable
               className={FLAT_TABLE}
               columns={reopenColumns}
@@ -699,20 +699,20 @@ const reopenColumns: ResponsiveColumn<ReopenRow>[] = [
   {
     key: 'ticket_number',
     header: 'Ticket #',
-    cellClassName: 'font-mono text-xs text-[#475569]',
+    cellClassName: 'font-mono text-xs text-text-secondary',
     render: (t) => t.ticket_number,
   },
   {
     key: 'title',
     header: 'Title',
     primary: true,
-    cellClassName: 'text-[#0F172A] font-medium',
+    cellClassName: 'text-text-primary font-medium',
     render: (t) => t.title,
   },
   {
     key: 'reopen_count',
     header: 'Reopens',
-    cellClassName: 'text-[#D97706] tabular-nums font-semibold',
+    cellClassName: 'text-warning tabular-nums font-semibold',
     render: (t) => t.reopen_count,
   },
 ]
@@ -722,20 +722,20 @@ const reopenColumns: ResponsiveColumn<ReopenRow>[] = [
 function Spinner() {
   return (
     <div className="flex items-center justify-center h-40">
-      <div className="w-7 h-7 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+      <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   )
 }
 
 function Empty() {
-  return <p className="text-sm text-[#475569] text-center py-12">No data available for this period.</p>
+  return <p className="text-sm text-text-secondary text-center py-12">No data available for this period.</p>
 }
 
 function ExportBtn({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 px-3 py-[7px] text-sm font-medium text-[#2563EB] border border-[#2563EB] rounded-[8px] hover:bg-[#EFF6FF] transition-colors"
+      className="flex items-center gap-1.5 px-3 py-[7px] text-sm font-medium text-primary-text border border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
     >
       <Download size={14} />
       Export CSV
@@ -745,8 +745,8 @@ function ExportBtn({ onClick }: { onClick: () => void }) {
 
 function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
-      <p className="text-xs font-medium text-[#475569] mb-1">{label}</p>
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
+      <p className="text-xs font-medium text-text-secondary mb-1">{label}</p>
       <p className="text-2xl font-bold tabular-nums" style={{ color }}>{value}</p>
     </div>
   )
@@ -787,7 +787,7 @@ export default function TicketReportsPage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-[#0F172A]">No organization found</p>
+        <p className="font-semibold text-text-primary">No organization found</p>
       </div>
     )
   }
@@ -797,8 +797,8 @@ export default function TicketReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div>
-          <h1 className="text-[22px] font-bold text-[#0F172A]">Ticket Reports</h1>
-          <p className="text-sm text-[#475569] mt-0.5">Analytics and insights for your ticket system</p>
+          <h1 className="text-[22px] font-bold text-text-primary">Ticket Reports</h1>
+          <p className="text-sm text-text-secondary mt-0.5">Analytics and insights for your ticket system</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <div className="w-[220px]">
@@ -807,7 +807,7 @@ export default function TicketReportsPage() {
           {(from || to) && (
             <button
               onClick={() => { setFrom(''); setTo('') }}
-              className="px-3 py-[7px] text-sm font-medium text-[#DC2626] border border-[#FECACA] bg-[#FEE2E2] rounded-[8px] hover:bg-[#FECACA] transition-colors"
+              className="px-3 py-[7px] text-sm font-medium text-danger border border-danger-border bg-danger-bg rounded-[8px] hover:bg-danger-bg transition-colors"
             >
               Clear
             </button>
@@ -826,8 +826,8 @@ export default function TicketReportsPage() {
               className={[
                 'flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-sm font-medium text-left transition-colors',
                 activeTab === tab.key
-                  ? 'bg-[#EFF6FF] text-[#2563EB]'
-                  : 'text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]',
+                  ? 'bg-primary-subtle text-primary-text'
+                  : 'text-text-secondary hover:bg-surface-sunken hover:text-text-primary',
               ].join(' ')}
             >
               <span className="shrink-0">{tab.icon}</span>
@@ -837,7 +837,7 @@ export default function TicketReportsPage() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-6">
+        <div className="flex-1 min-w-0 bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-6">
           {activeTab === 'resolution' && <ResolutionTimeTab orgId={orgId} from={from} to={to} />}
           {activeTab === 'first_response' && <FirstResponseTab orgId={orgId} from={from} to={to} />}
           {activeTab === 'by_type' && <BreakdownTab label="types" data={typeData} loading={typeLoading} exportFilename="by_type.csv" />}

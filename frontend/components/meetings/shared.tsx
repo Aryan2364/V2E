@@ -177,28 +177,28 @@ export function DurationField({
     [
       'px-3 py-1.5 min-h-[36px] text-sm rounded-[8px] border transition-colors',
       disabled
-        ? 'bg-[#E2E8F0] text-[#94A3B8] border-[#E2E8F0] cursor-not-allowed'
+        ? 'bg-surface-control-pressed text-text-muted border-border-light cursor-not-allowed'
         : active
-          ? 'bg-[#2563EB] text-white border-[#2563EB]'
-          : 'bg-white text-[#475569] border-[#E2E8F0] hover:border-[#CBD5E1]',
+          ? 'bg-primary text-white border-primary'
+          : 'bg-white text-text-secondary border-border-light hover:border-border',
     ].join(' ')
 
   const unitBtn = (active: boolean) =>
     [
       'px-2.5 min-h-[36px] text-sm transition-colors',
       disabled
-        ? 'bg-[#E2E8F0] text-[#94A3B8] cursor-not-allowed'
+        ? 'bg-surface-control-pressed text-text-muted cursor-not-allowed'
         : active
-          ? 'bg-[#2563EB] text-white font-medium'
-          : 'bg-white text-[#475569] hover:bg-[#F1F5F9]',
+          ? 'bg-primary text-white font-medium'
+          : 'bg-white text-text-secondary hover:bg-surface-control',
     ].join(' ')
 
   return (
     <div className={inline ? 'flex flex-wrap items-center gap-2' : ''}>
       {inline ? (
-        <span className="text-sm text-[#475569]">{label}</span>
+        <span className="text-sm text-text-secondary">{label}</span>
       ) : (
-        <label className="block text-sm font-medium text-[#374151] mb-1.5">{label}</label>
+        <label className="block text-sm font-medium text-text-secondary mb-1.5">{label}</label>
       )}
       <div className="flex flex-wrap items-center gap-1.5">
         {DURATION_PRESETS.map((d) => (
@@ -233,13 +233,13 @@ export function DurationField({
               onChange={(e) => setDraft(e.target.value)}
               onBlur={(e) => commit(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commit((e.target as HTMLInputElement).value) } }}
-              className="w-[76px] border border-[#CBD5E1] rounded-[8px] px-2.5 py-1.5 min-h-[36px] text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F1F5F9]"
+              className="w-[76px] border border-border rounded-[8px] px-2.5 py-1.5 min-h-[36px] text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface-control"
               aria-label={unit === 'hr' ? `${label} in hours` : `${label} in minutes`}
             />
             {/* Type it in minutes or in hours — 90 min and 1.5 hrs are the same thing. */}
-            <span className="inline-flex rounded-[8px] border border-[#CBD5E1] overflow-hidden">
+            <span className="inline-flex rounded-[8px] border border-border overflow-hidden">
               <button type="button" disabled={disabled} onMouseDown={(e) => e.preventDefault()} onClick={() => switchUnit('min')} className={unitBtn(unit === 'min')}>min</button>
-              <button type="button" disabled={disabled} onMouseDown={(e) => e.preventDefault()} onClick={() => switchUnit('hr')} className={`${unitBtn(unit === 'hr')} border-l border-[#CBD5E1]`}>hrs</button>
+              <button type="button" disabled={disabled} onMouseDown={(e) => e.preventDefault()} onClick={() => switchUnit('hr')} className={`${unitBtn(unit === 'hr')} border-l border-border`}>hrs</button>
             </span>
           </span>
         )}
