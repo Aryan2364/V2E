@@ -45,6 +45,8 @@ import { usePermissions } from '@/lib/auth/use-permissions'
 import { toast } from '@/components/ui/sonner'
 import { useTaskTags } from '@/lib/tasks/useTaskTags'
 import { Plus, Search, SlidersHorizontal, X, BarChart3, Download, ListChecks, CheckSquare } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 const PAGE_SIZE = 25
 
@@ -666,7 +668,7 @@ export default function TasksOverviewPage() {
   if (!permsLoading && !can('tasks.task.manage', 'read')) {
     return (
       <div className="space-y-4">
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Work Overview</h1>
+        <PageHeader title="Work Overview" trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]} />
         <AccessHiddenState orgId={orgId} leaf="tasks.task.manage" moduleLabel="Tasks" />
       </div>
     )
@@ -680,19 +682,19 @@ export default function TasksOverviewPage() {
 
   return (
     <div className="space-y-4 pb-24">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Work Overview</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">{SCOPE_BLURB[appliedScope]}</p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <ScopeSwitcher maxScope={maxScope} value={appliedScope} onChange={(s) => setRequestedScope(s)} />
-          <button onClick={() => setShowCreate(true)} className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors shrink-0">
-            <Plus size={16} /> Create Task
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Work Overview"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        meta={SCOPE_BLURB[appliedScope]}
+        actions={
+          <div className="flex items-center gap-2 shrink-0">
+            <ScopeSwitcher maxScope={maxScope} value={appliedScope} onChange={(s) => setRequestedScope(s)} />
+            <Button onClick={() => setShowCreate(true)} className="shrink-0">
+              <Plus size={16} /> Create Task
+            </Button>
+          </div>
+        }
+      />
 
       {/* View tab: Analytics | Table */}
       <div className="border-b border-border-light pb-px">
