@@ -66,19 +66,19 @@ export default function RolesTableView({
       key: 'title',
       header: 'Job Role',
       primary: true,
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: (r) => <span className="font-medium text-text-primary">{r.title}</span>,
     },
     {
       key: 'level',
       header: 'Level',
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: (r) => (
         <span
           className={[
-            'inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-[11px] font-semibold capitalize',
+            'inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize',
             levelColors[r.level],
           ].join(' ')}
         >
@@ -90,8 +90,8 @@ export default function RolesTableView({
       key: 'department',
       header: 'Department',
       desktopHiddenBelow: 'md',
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: (r) => {
         const dept = deptById.get(r.department_id)
         const base = colors[r.department_id]?.base ?? 'var(--text-muted)'
@@ -108,8 +108,8 @@ export default function RolesTableView({
       header: 'KRAs',
       align: 'right',
       desktopHiddenBelow: 'lg',
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: (r) => <span className="text-text-secondary">{r.kra?.length ?? 0}</span>,
     },
     {
@@ -117,8 +117,8 @@ export default function RolesTableView({
       header: 'KPIs',
       align: 'right',
       desktopHiddenBelow: 'lg',
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: (r) => <span className="text-text-secondary">{r.kpi?.length ?? 0}</span>,
     },
     {
@@ -126,8 +126,8 @@ export default function RolesTableView({
       header: '',
       align: 'right',
       hideOnMobile: true,
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: (r) => (
         <div className="flex items-center justify-end gap-1">
           {canEdit && (
@@ -137,13 +137,13 @@ export default function RolesTableView({
                 e.stopPropagation()
                 onEdit(r)
               }}
-              className="p-1.5 rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
+              className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
               aria-label={`Edit ${r.title}`}
             >
               <Pencil size={14} />
             </button>
           )}
-          <ChevronRight size={16} className="text-[#CBD5E1]" />
+          <ChevronRight size={16} className="text-text-muted" />
         </div>
       ),
     },
@@ -156,11 +156,11 @@ export default function RolesTableView({
       rowKey={(r) => r.id}
       onRowClick={(r) => onSelect(r)}
       emptyState={
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
+        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12 text-center">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
             <Briefcase size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-text-primary">
+          <p className="font-medium text-text-primary">
             {query.trim() ? 'No job roles match your search' : 'No job roles yet'}
           </p>
           <p className="text-text-secondary text-sm mt-1">

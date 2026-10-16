@@ -21,7 +21,7 @@ function describe(l: Pick<Leave, 'state' | 'origin' | 'overridden'>): { label: s
 export default function LeaveStateBadge({ leave }: { leave: Pick<Leave, 'state' | 'origin' | 'overridden'> }) {
   const { label, cls } = describe(leave)
   return (
-    <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 border whitespace-nowrap ${cls}`}>
+    <span className={`text-[11px] font-medium rounded-full px-2 py-0.5 border whitespace-nowrap ${cls}`}>
       {label}
     </span>
   )

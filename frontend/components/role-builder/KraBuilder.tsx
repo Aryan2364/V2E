@@ -24,7 +24,7 @@ export default function KraBuilder({ items, onChange, readOnly }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-text-primary">Key Result Areas (KRA)</h4>
+        <h4 className="text-sm font-medium text-text-primary">Key Result Areas (KRA)</h4>
         {!readOnly && (
           <button type="button" onClick={add} className="flex items-center gap-1 text-xs text-primary-text hover:underline font-medium">
             <Plus size={14} /> Add KRA
@@ -34,7 +34,7 @@ export default function KraBuilder({ items, onChange, readOnly }: Props) {
       {items.map((item, i) => (
         <div key={i} className="bg-surface-sunken border border-border-light rounded-lg p-3 space-y-2">
           <div className="flex items-start gap-2">
-            <span className="text-xs font-semibold text-primary-text mt-2 w-5 shrink-0">{i + 1}.</span>
+            <span className="text-xs font-medium text-primary-text mt-2 w-5 shrink-0">{i + 1}.</span>
             <div className="flex-1 space-y-2">
               <input
                 className="w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-hidden focus:border-2 focus:border-primary"

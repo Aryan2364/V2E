@@ -47,11 +47,11 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
   }
 
   return (
-    <div className="rounded-[12px] border border-warning-border bg-warning-bg p-4 space-y-3">
+    <div className="rounded-card border border-warning-border bg-warning-bg p-4 space-y-3">
       <div className="flex items-start gap-2">
         <AlertTriangle size={16} className="text-warning shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-semibold text-warning">
+          <p className="text-sm font-medium text-warning">
             {pending.length} national holiday{pending.length !== 1 ? 's' : ''} pending review for {year}
           </p>
           <p className="text-xs text-warning mt-0.5">
@@ -60,7 +60,7 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
         </div>
       </div>
 
-      <div className="max-h-56 overflow-y-auto divide-y divide-warning-bg rounded-[8px] border border-warning-border bg-white">
+      <div className="max-h-56 overflow-y-auto divide-y divide-warning-bg rounded-lg border border-warning-border bg-surface">
         <div className="flex items-center gap-3 px-3 py-2 border-b border-warning-border">
           <input
             type="checkbox"
@@ -68,7 +68,7 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
             onChange={toggleAll}
             className="w-4 h-4 accent-warning"
           />
-          <span className="text-xs font-semibold text-text-secondary">Select all ({pending.length})</span>
+          <span className="text-xs font-medium text-text-secondary">Select all ({pending.length})</span>
         </div>
         {pending.map((h) => (
           <label key={h.id} className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-warning-bg transition-colors">
@@ -91,7 +91,7 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
           type="button"
           disabled={saving}
           onClick={dismiss}
-          className="flex items-center gap-1.5 h-9 px-4 rounded-[8px] border border-warning-border text-sm font-semibold text-warning bg-white hover:bg-warning-bg disabled:opacity-50 transition-colors"
+          className="flex items-center gap-1.5 h-9 px-4 rounded-lg border border-warning-border text-sm font-medium text-warning bg-surface hover:bg-warning-bg disabled:opacity-50 transition-colors"
         >
           <X size={14} />
           Dismiss All
@@ -100,7 +100,7 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
           type="button"
           disabled={saving || selected.size === 0}
           onClick={apply}
-          className="flex items-center gap-1.5 h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-warning hover:bg-warning disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+          className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-sm font-medium text-white bg-warning hover:bg-warning disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
         >
           <Check size={14} />
           Activate {selected.size > 0 ? `${selected.size} Selected` : ''}

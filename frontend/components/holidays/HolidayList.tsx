@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Pencil, Trash2, RefreshCw, Check, X } from 'lucide-react'
 import type { OrgHoliday, DepartmentHoliday, IndividualHoliday, HolidayType } from '@/lib/types/holidays'
 import { parseLocalDate, dateOnly } from '@/lib/date'
+import { formatDate } from '@/lib/format'
 import DatePicker from '@/components/ui/DatePicker'
 import Tooltip from '@/components/ui/tooltip'
 
@@ -60,9 +61,7 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
       {holidays.map((h) => {
         const isEditing = editing?.id === h.id
         const isDeleting = deleting === h.id
-        const dateDisplay = parseLocalDate(h.date).toLocaleDateString('en-IN', {
-          day: 'numeric', month: 'short', year: 'numeric',
-        })
+        const dateDisplay = formatDate(parseLocalDate(h.date))
 
         return (
           <div key={h.id} className="flex items-center gap-3 py-3 px-1">
@@ -76,19 +75,19 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
                 <input
                   value={editing.name}
                   onChange={(e) => setEditing((s) => s ? { ...s, name: e.target.value } : s)}
-                  className="flex-1 h-8 px-2 rounded-[6px] border border-border text-sm text-text-primary bg-white focus:border-primary outline-hidden"
+                  className="flex-1 h-8 px-2 rounded-md border border-border text-sm text-text-primary bg-surface focus:border-primary outline-hidden"
                 />
                 <button
                   type="button"
                   onClick={saveEdit}
-                  className="p-1.5 rounded-[6px] bg-success-bg text-success hover:bg-success-bg transition-colors"
+                  className="p-1.5 rounded-md bg-success-bg text-success hover:bg-success-bg transition-colors"
                 >
                   <Check size={14} />
                 </button>
                 <button
                   type="button"
                   onClick={() => setEditing(null)}
-                  className="p-1.5 rounded-[6px] bg-surface-control text-text-secondary hover:bg-surface-control-pressed transition-colors"
+                  className="p-1.5 rounded-md bg-surface-control text-text-secondary hover:bg-surface-control-pressed transition-colors"
                 >
                   <X size={14} />
                 </button>
@@ -115,7 +114,7 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
                 <button
                   type="button"
                   onClick={() => startEdit(h)}
-                  className="p-1.5 rounded-[6px] hover:bg-surface-control text-text-secondary transition-colors shrink-0"
+                  className="p-1.5 rounded-md hover:bg-surface-control text-text-secondary transition-colors shrink-0"
                 >
                   <Pencil size={13} />
                 </button>
@@ -123,7 +122,7 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
                   type="button"
                   disabled={isDeleting}
                   onClick={() => confirmDelete(h.id)}
-                  className="p-1.5 rounded-[6px] hover:bg-danger-bg text-danger transition-colors shrink-0"
+                  className="p-1.5 rounded-md hover:bg-danger-bg text-danger transition-colors shrink-0"
                 >
                   <Trash2 size={13} />
                 </button>

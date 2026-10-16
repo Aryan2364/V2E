@@ -47,7 +47,7 @@ export default function EntityAuditHistory({ orgId, resource, entityId, title = 
   return (
     <div>
       {title && (
-        <h3 className="flex items-center gap-2 text-[15px] font-semibold text-text-primary mb-3">
+        <h3 className="flex items-center gap-2 text-[15px] font-medium text-text-primary mb-3">
           <History size={16} className="text-primary-text" /> {title}
         </h3>
       )}

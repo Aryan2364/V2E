@@ -17,10 +17,10 @@ function RoleCard({ role, onClick }: { role: Role; onClick?: () => void }) {
   const body = (
     <>
       <div className="flex items-center gap-2 flex-wrap">
-        <h4 className="font-semibold text-sm text-text-primary">{role.title}</h4>
+        <h4 className="font-medium text-sm text-text-primary">{role.title}</h4>
         <span
           className={[
-            'inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-[11px] font-semibold capitalize',
+            'inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize',
             levelColors[role.level],
           ].join(' ')}
         >
@@ -47,13 +47,13 @@ function RoleCard({ role, onClick }: { role: Role; onClick?: () => void }) {
 
   if (!onClick) {
     return (
-      <div className="bg-white border border-border-light rounded-[10px] p-4">{body}</div>
+      <div className="bg-surface border border-border-light rounded-xl p-4">{body}</div>
     )
   }
   return (
     <button
       onClick={onClick}
-      className="text-left bg-white border border-border-light rounded-[10px] p-4 hover:border-border hover:shadow-xs transition-all"
+      className="text-left bg-surface border border-border-light rounded-xl p-4 hover:border-border hover:shadow-xs transition-all"
     >
       {body}
     </button>
@@ -115,11 +115,11 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
 
   if (departments.length === 0) {
     return (
-      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
+      <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12 text-center">
         <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
           <Building2 size={24} className="text-text-muted" />
         </div>
-        <p className="font-semibold text-text-primary">No departments yet</p>
+        <p className="font-medium text-text-primary">No departments yet</p>
         <p className="text-text-secondary text-sm mt-1">
           Create departments in the org chart first — job roles live inside them.
         </p>
@@ -131,9 +131,9 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
     <>
       <div className="flex flex-col md:flex-row gap-4 min-h-[500px]">
         {/* Left: department tree */}
-        <div className="md:w-[260px] shrink-0 bg-white border border-border-light rounded-[12px] overflow-hidden self-start w-full">
+        <div className="md:w-[260px] shrink-0 bg-surface border border-border-light rounded-card overflow-hidden self-start w-full">
           <div className="px-4 py-3 border-b border-border-light">
-            <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+            <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
               Departments
             </p>
           </div>
@@ -167,16 +167,16 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
         </div>
 
         {/* Right: roles for the selected department */}
-        <div className="flex-1 bg-white border border-border-light rounded-[12px] flex flex-col overflow-hidden">
+        <div className="flex-1 bg-surface border border-border-light rounded-card flex flex-col overflow-hidden">
           {!selectedDept ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center p-8">
-              <Briefcase size={28} className="text-[#CBD5E1]" />
+              <Briefcase size={28} className="text-text-muted" />
               <p className="text-sm text-text-muted">Select a department to manage its job roles.</p>
             </div>
           ) : (
             <>
               {/* Header + breadcrumb */}
-              <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-border-light">
+              <div className="flex items-start justify-between gap-3 px-4 py-4 border-b border-border-light">
                 <div className="min-w-0">
                   {breadcrumb.length > 1 && (
                     <nav className="flex items-center flex-wrap gap-1 text-xs text-text-muted mb-1">
@@ -194,7 +194,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
                       <span className="text-text-secondary font-medium">{selectedDept.name}</span>
                     </nav>
                   )}
-                  <h3 className="font-bold text-text-primary truncate">{selectedDept.name}</h3>
+                  <h3 className="font-medium text-text-primary truncate">{selectedDept.name}</h3>
                   <p className="text-xs text-text-muted mt-0.5">
                     {roles.length} job role{roles.length !== 1 ? 's' : ''}
                   </p>
@@ -211,14 +211,14 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
               </div>
 
               {/* Role cards */}
-              <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-3">
+              <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
                 {loadingRoles ? (
                   Array.from({ length: 2 }).map((_, i) => (
-                    <div key={i} className="h-24 bg-surface-control-pressed rounded-[10px] animate-pulse" />
+                    <div key={i} className="h-24 bg-surface-control-pressed rounded-xl animate-pulse" />
                   ))
                 ) : roles.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-12">
-                    <Briefcase size={28} className="text-[#CBD5E1]" />
+                    <Briefcase size={28} className="text-text-muted" />
                     <p className="text-sm text-text-muted">No job roles in this department yet.</p>
                     {canEdit && (
                       <button

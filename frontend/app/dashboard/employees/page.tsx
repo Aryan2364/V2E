@@ -54,7 +54,7 @@ function StatusBadge({ status }: { status: EmployeeStatus }) {
   const cfg = statusConfig[status] ?? statusConfig.inactive
   return (
     <span
-      className={`inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-xs font-medium ${cfg.bg} ${cfg.text}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.bg} ${cfg.text}`}
     >
       {cfg.label}
     </span>
@@ -66,7 +66,7 @@ function StatusBadge({ status }: { status: EmployeeStatus }) {
 function Avatar({ name }: { name: string }) {
   return (
     <div
-      className={`w-9 h-9 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-xs font-bold shrink-0`}
+      className={`w-9 h-9 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-xs font-medium shrink-0`}
     >
       {getInitials(name)}
     </div>
@@ -77,11 +77,11 @@ function Avatar({ name }: { name: string }) {
 
 function EmptyState({ filtered }: { filtered: boolean }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
+    <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12 text-center">
       <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
         <Users size={24} className="text-text-muted" />
       </div>
-      <p className="font-semibold text-text-primary">
+      <p className="font-medium text-text-primary">
         {filtered ? 'No employees match your filter' : 'No employees yet'}
       </p>
       <p className="text-text-secondary text-sm mt-1">
@@ -388,7 +388,7 @@ export default function EmployeesPage() {
             e.stopPropagation()
             markNavigating()
           }}
-          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-primary-text text-xs font-medium hover:text-primary-text transition-colors rounded-[6px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-primary-text text-xs font-medium hover:text-primary-text transition-colors rounded-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
         >
           View
           <ChevronRight size={13} />
@@ -404,7 +404,7 @@ export default function EmployeesPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Employees</h1>
+          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Employees</h1>
           <p className="mt-1 text-[15px] text-text-secondary">
             Browse and manage all employee profiles.
           </p>
@@ -413,14 +413,14 @@ export default function EmployeesPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowImport(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               <Upload size={16} />
               Import
             </button>
             <button
               onClick={() => setShowAdd(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
             >
               <UserPlus size={16} />
               Add Employee
@@ -431,11 +431,11 @@ export default function EmployeesPage() {
 
       {/* Profile setup warning banner */}
       {user && !user.isSuperAdmin && !hasProfile && !loading && (
-        <div className="bg-warning-bg border border-warning-border rounded-[12px] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+        <div className="bg-warning-bg border border-warning-border rounded-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-card">
           <div className="flex items-start gap-3">
             <AlertTriangle size={20} className="text-warning shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-warning">Profile Setup Required</p>
+              <p className="text-sm font-medium text-warning">Profile Setup Required</p>
               <p className="text-xs text-warning mt-0.5">
                 You do not have an employee profile in the directory yet. Set up your profile to assign yourself to a department, role, and enable full task assignments.
               </p>
@@ -447,7 +447,7 @@ export default function EmployeesPage() {
               setPrefillSelf(true)
               setShowAdd(true)
             }}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-[8px] text-xs font-bold text-white bg-warning hover:bg-warning transition-colors whitespace-nowrap self-start sm:self-center"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium text-white bg-warning hover:bg-warning transition-colors whitespace-nowrap self-start sm:self-center"
           >
             Setup Profile
           </button>
@@ -466,7 +466,7 @@ export default function EmployeesPage() {
             placeholder="Search by name or email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-[10px] text-sm rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted"
+            className="w-full pl-8 pr-3 py-[10px] text-sm rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted"
           />
         </div>
         <div className="w-full sm:w-60">

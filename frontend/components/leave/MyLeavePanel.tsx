@@ -9,9 +9,10 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import LeaveStateBadge from '@/components/leave/LeaveStateBadge'
 import { leaveApi } from '@/lib/api/leave'
 import type { Leave } from '@/lib/types/leave'
+import { formatDate } from '@/lib/format'
 
 function fmt(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  return formatDate(new Date(iso))
 }
 
 function errorMessage(e: unknown, fallback: string): string {
@@ -20,12 +21,12 @@ function errorMessage(e: unknown, fallback: string): string {
   return typeof m === 'string' && m ? m : fallback
 }
 
-const cardCls = 'bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6'
+const cardCls = 'bg-surface border border-border-light rounded-card shadow-card p-6'
 
 function CardHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="mb-4 pb-3 border-b border-border-light flex items-baseline gap-2 flex-wrap">
-      <h2 className="text-base font-semibold text-text-primary">{title}</h2>
+      <h2 className="text-base font-medium text-text-primary">{title}</h2>
       {subtitle && <span className="text-xs text-text-secondary">{subtitle}</span>}
     </div>
   )
@@ -123,7 +124,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
   }
 
   const inputCls =
-    'w-full border border-border rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden bg-white disabled:bg-surface-sunken disabled:text-text-muted'
+    'w-full border border-border rounded-lg px-3 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden bg-surface disabled:bg-surface-sunken disabled:text-text-muted'
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
@@ -163,13 +164,13 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
           <span className="text-sm text-text-primary">Declare as unplanned leave (e.g. sick) — book now without waiting for approval</span>
         </label>
         {formError && (
-          <div className="mt-4 rounded-[8px] border border-danger-border bg-danger-bg px-3 py-2 text-sm text-danger">{formError}</div>
+          <div className="mt-4 rounded-lg border border-danger-border bg-danger-bg px-3 py-2 text-sm text-danger">{formError}</div>
         )}
         <button
           type="button"
           onClick={apply}
           disabled={submitting || readOnly}
-          className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-[10px] min-h-[44px] sm:min-h-0 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+          className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-[10px] min-h-[44px] sm:min-h-0 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
         >
           {submitting ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
           {submitting ? 'Submitting…' : declare ? 'Declare leave' : 'Submit request'}
@@ -181,7 +182,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
         <CardHeader title="My leave" />
         {status === 'loading' ? (
           <div className="space-y-2">
-            {[0, 1, 2].map((i) => <div key={i} className="h-[60px] rounded-[8px] bg-surface-control animate-pulse" />)}
+            {[0, 1, 2].map((i) => <div key={i} className="h-[60px] rounded-lg bg-surface-control animate-pulse" />)}
           </div>
         ) : status === 'failed' ? (
           <div className="flex flex-col items-center text-center gap-2 py-8">
@@ -190,7 +191,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
             <button
               type="button"
               onClick={() => { setStatus('loading'); load() }}
-              className="mt-2 flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-primary-text border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
+              className="mt-2 flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-primary-text border-2 border-primary rounded-lg hover:bg-primary-subtle transition-colors"
             >
               <RefreshCw size={14} /> Retry
             </button>
@@ -204,7 +205,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
         ) : (
           <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
             {leaves.map((l) => (
-              <div key={l.id} className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 p-3 rounded-[8px] border border-border-light bg-surface-sunken">
+              <div key={l.id} className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 p-3 rounded-lg border border-border-light bg-surface-sunken">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium text-text-primary">{fmt(l.start_date)} → {fmt(l.end_date)}</span>
@@ -222,7 +223,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
                         type="button"
                         disabled={busyId === l.id}
                         onClick={() => takeAnyway(l)}
-                        className="flex items-center gap-1 text-xs font-semibold text-text-secondary border border-border-light bg-surface-control rounded-[6px] px-2.5 py-1.5 min-h-[36px] hover:bg-surface-control disabled:bg-surface-control-pressed disabled:text-text-muted disabled:border-border-light transition-colors"
+                        className="flex items-center gap-1 text-xs font-medium text-text-secondary border border-border-light bg-surface-control rounded-md px-2.5 py-1.5 min-h-[36px] hover:bg-surface-control disabled:bg-surface-control-pressed disabled:text-text-muted disabled:border-border-light transition-colors"
                       >
                         {busyId === l.id && <Loader2 size={12} className="animate-spin" />}
                         Take anyway
@@ -232,7 +233,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
                       <button
                         type="button"
                         onClick={() => { setCancelError(null); setCancelTarget(l) }}
-                        className="text-xs font-semibold text-text-secondary border border-border bg-white rounded-[6px] px-2.5 py-1.5 min-h-[36px] hover:bg-surface-control hover:text-text-primary transition-colors"
+                        className="text-xs font-medium text-text-secondary border border-border bg-surface rounded-md px-2.5 py-1.5 min-h-[36px] hover:bg-surface-control hover:text-text-primary transition-colors"
                       >
                         Cancel leave
                       </button>

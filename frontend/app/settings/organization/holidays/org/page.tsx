@@ -75,9 +75,9 @@ export default function OrgCalendarPage() {
   }
 
   return (
-    <div className="space-y-5 pb-12">
+    <div className="space-y-4 pb-12">
       <div>
-        <h1 className="text-[28px] font-bold text-text-primary">Org Calendar</h1>
+        <h1 className="text-[28px] font-medium text-text-primary">Org Calendar</h1>
         <p className="text-[15px] text-text-secondary mt-1">Set your working days and holidays. They drive deadlines, leave, and reports.</p>
       </div>
 
@@ -87,12 +87,12 @@ export default function OrgCalendarPage() {
       {/* Holidays + calendar, side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 items-start lg:items-stretch">
         {/* Holidays list */}
-        <div className="bg-white border border-border-light rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col">
+        <div className="bg-surface border border-border-light rounded-card p-4 shadow-card flex flex-col">
           <div className="flex items-center justify-between gap-3 flex-wrap mb-4 shrink-0">
             <div className="flex items-center gap-3">
-              <h2 className="text-[18px] font-semibold text-text-primary">Holidays</h2>
+              <h2 className="text-[18px] font-medium text-text-primary">Holidays</h2>
               {/* Year stepper — < 2026 > */}
-              <div className="flex items-center gap-1 rounded-[8px] border border-border bg-white">
+              <div className="flex items-center gap-1 rounded-lg border border-border bg-surface">
                 <button
                   type="button"
                   onClick={() => setSelectedYear((y) => y - 1)}
@@ -101,7 +101,7 @@ export default function OrgCalendarPage() {
                 >
                   <ChevronLeft size={15} />
                 </button>
-                <span className="min-w-[44px] text-center text-sm font-semibold text-text-primary tabular-nums">{selectedYear}</span>
+                <span className="min-w-[44px] text-center text-sm font-medium text-text-primary tabular-nums">{selectedYear}</span>
                 <button
                   type="button"
                   onClick={() => setSelectedYear((y) => y + 1)}
@@ -118,7 +118,7 @@ export default function OrgCalendarPage() {
                 <button
                   type="button"
                   onClick={() => setShowImport(true)}
-                  className="flex items-center gap-1.5 h-9 px-3 rounded-[8px] border border-border text-sm font-medium text-text-secondary hover:border-primary hover:text-primary-text transition-colors"
+                  className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-sm font-medium text-text-secondary hover:border-primary hover:text-primary-text transition-colors"
                 >
                   <Upload size={14} />
                   Import CSV
@@ -126,7 +126,7 @@ export default function OrgCalendarPage() {
                 <button
                   type="button"
                   onClick={() => setShowAdd(true)}
-                  className="flex items-center gap-1.5 h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
+                  className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
                 >
                   <Plus size={15} />
                   Add Holiday

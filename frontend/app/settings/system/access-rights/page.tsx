@@ -156,7 +156,7 @@ function ScopeSelect({
       disabled={disabled}
       onChange={(e) => onChange(e.target.value as DataScope | 'inherit')}
       className={[
-        'text-xs border rounded-[6px] px-2 py-1 bg-white focus:outline-hidden focus:border-primary',
+        'text-xs border rounded-md px-2 py-1 bg-surface focus:outline-hidden focus:border-primary',
         'border-border text-text-primary disabled:bg-surface-sunken disabled:text-text-muted',
         value === 'inherit' ? 'text-text-muted' : 'font-medium',
       ].join(' ')}
@@ -174,7 +174,7 @@ function ScopeSelect({
 const BroadenedBadge = () => (
   <Tooltip label="Broader than the default above it">
   <span
-    className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-warning bg-warning-bg border border-warning-border rounded-[999px] px-1.5 py-0.5"
+    className="inline-flex items-center gap-0.5 text-[10px] font-medium text-warning bg-warning-bg border border-warning-border rounded-full px-1.5 py-0.5"
   >
     <ArrowUp size={10} /> broadened
   </span>
@@ -661,7 +661,7 @@ export default function AccessControlPage() {
         disabled={disabled}
         onChange={(e) => onChange(e.target.value as DataScope | 'inherit')}
         className={[
-          'text-xs border rounded-[6px] px-2 py-1 bg-white focus:outline-hidden focus:border-primary',
+          'text-xs border rounded-md px-2 py-1 bg-surface focus:outline-hidden focus:border-primary',
           'border-border text-text-primary disabled:bg-surface-sunken disabled:text-text-muted',
           value === 'inherit' ? 'text-text-muted' : 'font-medium',
         ].join(' ')}
@@ -679,7 +679,7 @@ export default function AccessControlPage() {
   const BroadenedBadge = () => (
     <Tooltip label="Broader than the default above it">
     <span
-      className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-warning bg-warning-bg border border-warning-border rounded-[999px] px-1.5 py-0.5"
+      className="inline-flex items-center gap-0.5 text-[10px] font-medium text-warning bg-warning-bg border border-warning-border rounded-full px-1.5 py-0.5"
     >
       <ArrowUp size={10} /> broadened
     </span>
@@ -687,14 +687,14 @@ export default function AccessControlPage() {
   )
 
   // ─── Render ────────────────────────────────────────────────────────────────
-  if (loading) return <div className="p-10 text-center text-sm text-text-secondary">Loading…</div>
+  if (loading) return <div className="p-8 text-center text-sm text-text-secondary">Loading…</div>
   if (denied)
     return (
-      <div className="flex flex-col items-center text-center gap-3 py-16">
+      <div className="flex flex-col items-center text-center gap-3 py-12">
         <div className="w-14 h-14 rounded-[16px] bg-danger-bg flex items-center justify-center text-danger">
           <Lock size={24} />
         </div>
-        <h2 className="text-[18px] font-semibold text-text-primary">No access</h2>
+        <h2 className="text-[18px] font-medium text-text-primary">No access</h2>
         <p className="text-sm text-text-secondary max-w-sm">
           You don&apos;t have permission to manage access control. Ask an administrator for access.
         </p>
@@ -705,9 +705,9 @@ export default function AccessControlPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 mb-5">
+      <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <h1 className="flex items-center gap-2 text-[26px] font-bold text-text-primary leading-tight">
+          <h1 className="flex items-center gap-2 text-[26px] font-medium text-text-primary leading-tight">
             <ShieldCheck size={24} className="text-primary-text" /> Access Control
           </h1>
           <p className="text-sm text-text-secondary mt-1 max-w-2xl">
@@ -730,14 +730,14 @@ export default function AccessControlPage() {
       </div>
 
       {/* Tabs */}
-      <div className="inline-flex rounded-[8px] border border-border-light overflow-hidden mb-5">
+      <div className="inline-flex rounded-lg border border-border-light overflow-hidden mb-4">
         {(['roles', 'subjects'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={[
               'px-4 py-2 text-sm font-medium transition-colors',
-              tab === t ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-surface-sunken',
+              tab === t ? 'bg-primary text-white' : 'bg-surface text-text-secondary hover:bg-surface-sunken',
             ].join(' ')}
           >
             {t === 'roles' ? 'Roles & Permissions' : 'Subject eligibility'}
@@ -746,22 +746,22 @@ export default function AccessControlPage() {
       </div>
 
       {tab === 'roles' && (
-        <div className="flex flex-col lg:flex-row gap-5">
+        <div className="flex flex-col lg:flex-row gap-4">
           {/* Left: roles list */}
           <div className="lg:w-[240px] shrink-0">
             <div className="flex items-center justify-between px-1 mb-2">
-              <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">Roles</span>
+              <span className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Roles</span>
               <button
                 onClick={() => {
                   setCreating(true)
                   setNewName('')
                 }}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-primary-text hover:text-primary-text"
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text"
               >
                 <Plus size={13} /> New
               </button>
             </div>
-            <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
+            <div className="bg-surface border border-border-light rounded-card overflow-hidden">
               {creating && (
                 <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-border-light bg-surface-sunken">
                   <input
@@ -773,7 +773,7 @@ export default function AccessControlPage() {
                       if (e.key === 'Escape') setCreating(false)
                     }}
                     placeholder="Role name"
-                    className="flex-1 min-w-0 px-2 py-1 border border-border rounded-[6px] text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary"
+                    className="flex-1 min-w-0 px-2 py-1 border border-border rounded-md text-sm text-text-primary bg-surface focus:outline-hidden focus:border-primary"
                   />
                   <button onClick={handleCreate} className="p-1 text-success hover:bg-success-bg rounded-xs" aria-label="Create role">
                     <Check size={15} />
@@ -791,7 +791,7 @@ export default function AccessControlPage() {
                     onClick={() => setSelectedRoleId(r.id)}
                     className={[
                       'w-full text-left px-4 py-2.5 border-l-[3px] transition-colors',
-                      active ? 'bg-primary-subtle border-primary' : 'bg-white border-transparent hover:bg-surface-sunken',
+                      active ? 'bg-primary-subtle border-primary' : 'bg-surface border-transparent hover:bg-surface-sunken',
                     ].join(' ')}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -799,11 +799,11 @@ export default function AccessControlPage() {
                         {r.name}
                       </span>
                       {r.is_system ? (
-                        <span className="shrink-0 text-[10px] font-semibold text-text-secondary bg-surface-control border border-border-light rounded-[999px] px-2 py-0.5">
+                        <span className="shrink-0 text-[10px] font-medium text-text-secondary bg-surface-control border border-border-light rounded-full px-2 py-0.5">
                           System
                         </span>
                       ) : (
-                        <span className="shrink-0 text-[11px] font-semibold text-text-muted bg-surface-control rounded-[999px] px-2 py-0.5">
+                        <span className="shrink-0 text-[11px] font-medium text-text-muted bg-surface-control rounded-full px-2 py-0.5">
                           {enabledCount(r.id)}
                         </span>
                       )}
@@ -820,13 +820,13 @@ export default function AccessControlPage() {
           {/* Right: matrix */}
           <div className="flex-1 min-w-0">
             {!selectedRole ? (
-              <div className="bg-white border border-border-light rounded-[12px] p-8 text-center text-sm text-text-muted">
+              <div className="bg-surface border border-border-light rounded-card p-8 text-center text-sm text-text-muted">
                 Select a role to configure its access.
               </div>
             ) : (
               <div className="space-y-4">
                 {/* Role header */}
-                <div className="flex items-center justify-between gap-3 bg-white border border-border-light rounded-[12px] px-4 py-3">
+                <div className="flex items-center justify-between gap-3 bg-surface border border-border-light rounded-card px-4 py-3">
                   <div className="min-w-0">
                     {renaming ? (
                       <div className="flex items-center gap-1.5">
@@ -838,7 +838,7 @@ export default function AccessControlPage() {
                             if (e.key === 'Enter') handleRename()
                             if (e.key === 'Escape') setRenaming(false)
                           }}
-                          className="px-2 py-1 border border-border rounded-[6px] text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary"
+                          className="px-2 py-1 border border-border rounded-md text-sm text-text-primary bg-surface focus:outline-hidden focus:border-primary"
                         />
                         <button onClick={handleRename} className="p-1 text-success hover:bg-success-bg rounded-xs" aria-label="Save name">
                           <Check size={15} />
@@ -849,9 +849,9 @@ export default function AccessControlPage() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <h2 className="text-[18px] font-semibold text-text-primary truncate">{selectedRole.name}</h2>
+                        <h2 className="text-[18px] font-medium text-text-primary truncate">{selectedRole.name}</h2>
                         {locked && (
-                          <span className="text-[10px] font-semibold text-text-secondary bg-surface-control border border-border-light rounded-[999px] px-2 py-0.5">
+                          <span className="text-[10px] font-medium text-text-secondary bg-surface-control border border-border-light rounded-full px-2 py-0.5">
                             System
                           </span>
                         )}
@@ -868,14 +868,14 @@ export default function AccessControlPage() {
                           setRenameValue(selectedRole.name)
                           setRenaming(true)
                         }}
-                        className="p-1.5 text-text-secondary hover:bg-surface-control rounded-[6px]"
+                        className="p-1.5 text-text-secondary hover:bg-surface-control rounded-md"
                         aria-label="Rename role"
                       >
                         <Pencil size={15} />
                       </button>
                       <button
                         onClick={() => { setDeleteRoleError(null); setConfirmDeleteRole(true) }}
-                        className="p-1.5 text-danger hover:bg-danger-bg rounded-[6px]"
+                        className="p-1.5 text-danger hover:bg-danger-bg rounded-md"
                         aria-label="Delete role"
                       >
                         <Trash2 size={15} />
@@ -885,14 +885,14 @@ export default function AccessControlPage() {
                 </div>
 
                 {locked && (
-                  <div className="flex items-center gap-2 bg-primary-subtle border border-border-light rounded-[10px] px-4 py-2.5 text-sm text-text-secondary">
+                  <div className="flex items-center gap-2 bg-primary-subtle border border-border-light rounded-xl px-4 py-2.5 text-sm text-text-secondary">
                     <Lock size={15} /> Administrator has full access to enabled modules. Permissions cannot be restricted.
                   </div>
                 )}
 
                 {/* Global scope */}
                 {!locked && (
-                  <div className="flex flex-wrap items-center gap-3 bg-white border border-border-light rounded-[12px] px-4 py-3">
+                  <div className="flex flex-wrap items-center gap-3 bg-surface border border-border-light rounded-card px-4 py-3">
                     <span className="text-sm font-medium text-text-secondary">Default data scope</span>
                     <ScopeSelect value={d.defaultScopes[selectedRole.id] ?? 'own'} onChange={(v) => v !== 'inherit' && setDefaultScope(v)} />
                     <span className="text-xs text-text-muted">
@@ -902,19 +902,19 @@ export default function AccessControlPage() {
                 )}
 
                 {/* Matrix */}
-                <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
+                <div className="bg-surface border border-border-light rounded-card overflow-hidden">
                   <div className="overflow-x-auto">
                     <div className="min-w-[640px]">
                       {/* column header */}
                       <div className="flex items-center border-b border-border-light bg-surface-sunken px-4 py-3">
-                        <span className="flex-1 text-xs font-semibold text-text-secondary uppercase tracking-wider">Section</span>
-                        <span className="w-12 text-center text-xs font-semibold text-text-secondary uppercase tracking-wider">All</span>
+                        <span className="flex-1 text-xs font-medium text-text-secondary uppercase tracking-wider">Section</span>
+                        <span className="w-12 text-center text-xs font-medium text-text-secondary uppercase tracking-wider">All</span>
                         {ALL_ACTIONS.map((a) => (
-                          <span key={a} className="w-14 text-center text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                          <span key={a} className="w-14 text-center text-xs font-medium text-text-secondary uppercase tracking-wider">
                             {ACTION_LABEL[a]}
                           </span>
                         ))}
-                        <span className="w-48 text-xs font-semibold text-text-secondary uppercase tracking-wider pl-2">Data Scope</span>
+                        <span className="w-48 text-xs font-medium text-text-secondary uppercase tracking-wider pl-2">Data Scope</span>
                       </div>
 
                       {actorModules.map((mod) => {
@@ -934,7 +934,7 @@ export default function AccessControlPage() {
                                 className="flex items-center gap-1.5 flex-1 min-w-0 text-left"
                               >
                                 <ChevronRight size={15} className={['text-text-muted transition-transform', isCollapsed ? '' : 'rotate-90'].join(' ')} />
-                                <span className="text-sm font-bold text-text-primary uppercase tracking-wide truncate">{mod.label}</span>
+                                <span className="text-sm font-medium text-text-primary uppercase tracking-wide truncate">{mod.label}</span>
                                 <span className="text-[11px] text-text-muted">{onCount}/{pairs.length}</span>
                               </button>
                               <div className="w-12 flex justify-center">
@@ -970,16 +970,16 @@ export default function AccessControlPage() {
                             {!isCollapsed &&
                               mod.subModules.map((sub) => (
                                 <div key={sub.key}>
-                                  <div className="px-4 pt-2 pb-1 pl-9 flex items-center gap-2">
-                                    <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">{sub.label}</p>
+                                  <div className="px-4 pt-2 pb-1 pl-8 flex items-center gap-2">
+                                    <p className="text-[11px] font-medium text-text-muted uppercase tracking-wider">{sub.label}</p>
                                     {sub.displayOnly && (
-                                      <span className="text-[10px] font-semibold text-text-muted bg-surface-control rounded-[999px] px-2 py-0.5">
+                                      <span className="text-[10px] font-medium text-text-muted bg-surface-control rounded-full px-2 py-0.5">
                                         Entitlement only
                                       </span>
                                     )}
                                   </div>
                                   {sub.displayOnly && (
-                                    <p className="px-4 pb-2 pl-9 text-xs text-text-muted">
+                                    <p className="px-4 pb-2 pl-8 text-xs text-text-muted">
                                       Workflow access is controlled by module entitlement and workflow ownership rules.
                                     </p>
                                   )}
@@ -992,7 +992,7 @@ export default function AccessControlPage() {
                                     const single = lineSingleValue(selectedRole.id, f.key)
                                     const singleBroadened = single !== 'inherit' && SCOPE_RANK[single] > SCOPE_RANK[parent]
                                     return (
-                                      <div key={f.key} className="flex items-center px-4 py-2.5 pl-9 border-t border-border-light hover:bg-surface-sunken">
+                                      <div key={f.key} className="flex items-center px-4 py-2.5 pl-8 border-t border-border-light hover:bg-surface-sunken">
                                         <div className="flex-1 min-w-0 pr-3">
                                           <p className="text-sm font-medium text-text-primary">{f.label}</p>
                                           {f.description && <p className="text-xs text-text-muted mt-0.5">{f.description}</p>}
@@ -1014,7 +1014,7 @@ export default function AccessControlPage() {
                                         {/* action checkboxes */}
                                         {ALL_ACTIONS.map((a) => {
                                           const supported = f.actions.includes(a)
-                                          if (!supported) return <span key={a} className="w-14 text-center text-[#CBD5E1]">—</span>
+                                          if (!supported) return <span key={a} className="w-14 text-center text-text-muted">—</span>
                                           if (locked)
                                             return (
                                               <span key={a} className="w-14 flex justify-center">
@@ -1036,7 +1036,7 @@ export default function AccessControlPage() {
                                         {/* data scope */}
                                         <div className="w-48 pl-2">
                                           {!scopable ? (
-                                            <span className="text-[#CBD5E1] text-sm">—</span>
+                                            <span className="text-text-muted text-sm">—</span>
                                           ) : locked ? (
                                             <span className="text-text-muted text-xs">Company</span>
                                           ) : !split ? (
@@ -1106,8 +1106,8 @@ export default function AccessControlPage() {
       )}
 
       {tab === 'subjects' && (
-        <div className="bg-white border border-border-light rounded-[12px] overflow-hidden max-w-2xl">
-          <div className="px-5 py-4 border-b border-border-light">
+        <div className="bg-surface border border-border-light rounded-card overflow-hidden max-w-2xl">
+          <div className="px-4 py-4 border-b border-border-light">
             <p className="text-sm text-text-secondary">
               Who can be acted upon by others (e.g. assigned a task), independent of whether they can open the
               module themselves. Per-person exceptions are set on the employee&apos;s record.
@@ -1115,18 +1115,18 @@ export default function AccessControlPage() {
           </div>
           {subjectSections.map((section) => (
             <div key={section.key} className="border-b border-border-light last:border-0">
-              <div className="px-5 py-3 bg-surface-sunken">
-                <p className="text-sm font-bold text-text-primary uppercase tracking-wide">{section.label}</p>
+              <div className="px-4 py-3 bg-surface-sunken">
+                <p className="text-sm font-medium text-text-primary uppercase tracking-wide">{section.label}</p>
               </div>
               {section.subModules.map((sub) => (
                 <div key={sub.key} className="border-t border-border-light">
-                  <div className="px-5 pt-3 pb-1">
-                    <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">{sub.label}</p>
+                  <div className="px-4 pt-3 pb-1">
+                    <p className="text-[11px] font-medium text-text-muted uppercase tracking-wider">{sub.label}</p>
                   </div>
                   {sub.policies.map((p) => {
                     const on = policyEdits[p.subject_key]
                     return (
-                      <div key={p.subject_key} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                      <div key={p.subject_key} className="flex items-center justify-between gap-4 px-4 py-3.5">
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-text-primary">{p.label}</p>
                           <p className="text-xs text-text-muted mt-0.5">{on ? 'Everyone eligible unless revoked' : 'No one eligible unless granted'}</p>
@@ -1137,7 +1137,7 @@ export default function AccessControlPage() {
                           onClick={() => setPolicyEdits((e) => ({ ...e, [p.subject_key]: !e[p.subject_key] }))}
                           className={['relative w-11 h-6 rounded-full transition-colors shrink-0', on ? 'bg-primary' : 'bg-surface-control-pressed'].join(' ')}
                         >
-                          <span className={['absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform', on ? 'translate-x-5' : ''].join(' ')} />
+                          <span className={['absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-surface transition-transform', on ? 'translate-x-5' : ''].join(' ')} />
                         </button>
                       </div>
                     )
@@ -1146,7 +1146,7 @@ export default function AccessControlPage() {
               ))}
             </div>
           ))}
-          {subjectSections.length === 0 && <p className="px-5 py-8 text-sm text-text-muted text-center">No subject permissions defined.</p>}
+          {subjectSections.length === 0 && <p className="px-4 py-8 text-sm text-text-muted text-center">No subject permissions defined.</p>}
         </div>
       )}
 

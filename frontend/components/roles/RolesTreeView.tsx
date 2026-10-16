@@ -67,11 +67,11 @@ export default function RolesTreeView({
 
   if (blocks.length === 0) {
     return (
-      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
+      <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12 text-center">
         <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
           <Briefcase size={24} className="text-text-muted" />
         </div>
-        <p className="font-semibold text-text-primary">
+        <p className="font-medium text-text-primary">
           {q ? 'No job roles match your search' : 'No job roles yet'}
         </p>
         <p className="text-text-secondary text-sm mt-1">
@@ -82,7 +82,7 @@ export default function RolesTreeView({
   }
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden divide-y divide-surface-control">
+    <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden divide-y divide-surface-control">
       {blocks.map(({ dept, depth, roles: deptRoles }) => {
         const base = colors[dept.id]?.base ?? 'var(--text-muted)'
         return (
@@ -93,7 +93,7 @@ export default function RolesTreeView({
               style={{ paddingLeft: 16 + depth * 18 }}
             >
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: base }} />
-              <span className="text-sm font-semibold text-text-primary truncate">{dept.name}</span>
+              <span className="text-sm font-medium text-text-primary truncate">{dept.name}</span>
               <span className="text-xs text-text-muted">
                 {deptRoles.length} job role{deptRoles.length !== 1 ? 's' : ''}
               </span>
@@ -126,7 +126,7 @@ export default function RolesTreeView({
                   <span className="font-medium text-sm text-text-primary truncate">{role.title}</span>
                   <span
                     className={[
-                      'inline-flex items-center rounded-[999px] px-2 py-0.5 text-[10px] font-semibold capitalize shrink-0',
+                      'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium capitalize shrink-0',
                       levelColors[role.level],
                     ].join(' ')}
                   >
@@ -144,13 +144,13 @@ export default function RolesTreeView({
                           e.stopPropagation()
                           onEdit(role)
                         }}
-                        className="p-1.5 rounded-[6px] text-text-muted opacity-0 group-hover:opacity-100 hover:text-text-primary hover:bg-surface-control transition-all"
+                        className="p-1.5 rounded-md text-text-muted opacity-0 group-hover:opacity-100 hover:text-text-primary hover:bg-surface-control transition-all"
                         aria-label={`Edit ${role.title}`}
                       >
                         <Pencil size={13} />
                       </span>
                     )}
-                    <ChevronRight size={15} className="text-[#CBD5E1]" />
+                    <ChevronRight size={15} className="text-text-muted" />
                   </span>
                 </button>
               ))

@@ -36,12 +36,12 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
   const { name, roleTitle, level, department, status, color, freeRadical, hiddenManager, hiddenReports } = data
   return (
     <div
-      className={`group relative rounded-[12px] bg-white border shadow-[0_1px_3px_rgba(0,0,0,0.08)] ${
+      className={`group relative rounded-card bg-surface border shadow-card ${
         freeRadical ? 'border-dashed border-border' : 'border-border-light'
       }`}
       style={{ width: NODE_W, borderLeft: `4px solid ${color}` }}
     >
-      <Handle type="target" position={Position.Top} className="bg-[#94A3B8]! w-2! h-2! border-0!" />
+      <Handle type="target" position={Position.Top} className="bg-text-muted! w-2! h-2! border-0!" />
 
       {/* Hidden-neighbour markers: a dot above means this person reports to
           someone filtered out; a dot below means they have reports filtered out. */}
@@ -63,10 +63,10 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
       )}
 
       {/* Hover details card */}
-      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-[220px] -translate-x-1/2 scale-95 rounded-[10px] border border-border-light bg-white p-3 opacity-0 shadow-[0_8px_24px_rgba(15,23,42,0.14)] transition-all duration-150 group-hover:scale-100 group-hover:opacity-100">
+      <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-[220px] -translate-x-1/2 scale-95 rounded-xl border border-border-light bg-surface p-3 opacity-0 shadow-menu transition-all duration-150 group-hover:scale-100 group-hover:opacity-100">
         <div className="flex items-center gap-1.5">
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot[status]}`} />
-          <p className="text-sm font-semibold text-text-primary">{name}</p>
+          <p className="text-sm font-medium text-text-primary">{name}</p>
         </div>
         <dl className="mt-2 space-y-1.5 text-xs">
           <div className="flex items-start gap-2">
@@ -87,7 +87,7 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
               <dt className="w-20 shrink-0 text-text-muted">Level</dt>
               <dd className="flex-1">
                 <span
-                  className={`inline-flex items-center rounded-[999px] px-1.5 py-px text-[10px] font-semibold capitalize ${levelColors[level]}`}
+                  className={`inline-flex items-center rounded-full px-1.5 py-px text-[10px] font-medium capitalize ${levelColors[level]}`}
                 >
                   {level}
                 </span>
@@ -99,7 +99,7 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
 
       <div className="flex items-center gap-2.5 px-3 py-2.5">
         <span
-          className="w-9 h-9 shrink-0 rounded-full inline-flex items-center justify-center text-[11px] font-bold text-white"
+          className="w-9 h-9 shrink-0 rounded-full inline-flex items-center justify-center text-[11px] font-medium text-white"
           style={{ backgroundColor: color }}
         >
           {initials(name)}
@@ -107,13 +107,13 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot[status]}`} />
-            <p className="text-sm font-semibold text-text-primary truncate">{name}</p>
+            <p className="text-sm font-medium text-text-primary truncate">{name}</p>
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
             <p className="text-xs text-text-muted truncate">{roleTitle ?? 'No role'}</p>
             {level && (
               <span
-                className={`inline-flex items-center rounded-[999px] px-1.5 py-px text-[10px] font-semibold capitalize shrink-0 ${levelColors[level]}`}
+                className={`inline-flex items-center rounded-full px-1.5 py-px text-[10px] font-medium capitalize shrink-0 ${levelColors[level]}`}
               >
                 {level}
               </span>
@@ -123,12 +123,12 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
       </div>
 
       {freeRadical && (
-        <span className="absolute -top-2 -right-2 inline-flex items-center gap-0.5 rounded-[999px] bg-surface-control border border-border-light px-1.5 py-px text-[10px] font-semibold text-text-muted">
+        <span className="absolute -top-2 -right-2 inline-flex items-center gap-0.5 rounded-full bg-surface-control border border-border-light px-1.5 py-px text-[10px] font-medium text-text-muted">
           <Zap size={10} className="text-warning" /> unlinked
         </span>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="bg-[#94A3B8]! w-2! h-2! border-0!" />
+      <Handle type="source" position={Position.Bottom} className="bg-text-muted! w-2! h-2! border-0!" />
     </div>
   )
 }

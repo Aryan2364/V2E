@@ -39,8 +39,8 @@ export default function WorkingDaysStrip({
   const pillsDisabled = disabled || !override
 
   return (
-    <div className="flex items-center gap-4 flex-wrap bg-white border border-border-light rounded-[12px] px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-      <span className="text-sm font-semibold text-text-primary shrink-0">Working Days</span>
+    <div className="flex items-center gap-4 flex-wrap bg-surface border border-border-light rounded-card px-4 py-3 shadow-card">
+      <span className="text-sm font-medium text-text-primary shrink-0">Working Days</span>
 
       <div className="flex items-center gap-1.5">
         {DAY_PILLS.map((label, index) => {
@@ -53,13 +53,13 @@ export default function WorkingDaysStrip({
                 disabled={pillsDisabled}
                 aria-pressed={active}
                 className={[
-                  'h-8 w-8 rounded-full text-xs font-semibold border transition-colors duration-150',
+                  'h-8 w-8 rounded-full text-xs font-medium border transition-colors duration-150',
                   pillsDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
                   active
                     ? pillsDisabled
-                      ? 'bg-[#BFDBFE] text-white border-primary-border'
+                      ? 'bg-primary-subtle text-primary-text border-primary-border'
                       : 'bg-primary text-white border-primary'
-                    : 'bg-white text-text-muted border-border-light ' + (pillsDisabled ? '' : 'hover:border-primary hover:text-primary-text'),
+                    : 'bg-surface text-text-muted border-border-light ' + (pillsDisabled ? '' : 'hover:border-primary hover:text-primary-text'),
                 ].join(' ')}
               >
                 {label}

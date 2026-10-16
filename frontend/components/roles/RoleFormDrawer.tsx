@@ -49,13 +49,13 @@ type RoleFormValues = z.infer<typeof roleSchema>
 // ─── Shared styles ──────────────────────────────────────────────────────────────
 
 const inputCls =
-  'w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
+  'w-full rounded-lg border border-border bg-surface px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
 const smInputCls =
-  'w-full rounded-[8px] border border-border bg-white px-2.5 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
+  'w-full rounded-lg border border-border bg-surface px-2.5 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
 const textareaCls =
-  'w-full rounded-[8px] border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors resize-none'
+  'w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors resize-none'
 const labelCls = 'text-sm font-medium text-text-secondary mb-1.5 block'
-const fieldLabelCls = 'text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-1 block'
+const fieldLabelCls = 'text-[11px] font-medium text-text-muted uppercase tracking-wide mb-1 block'
 
 const EMPTY: RoleFormValues = {
   department_id: '',
@@ -207,15 +207,15 @@ export default function RoleFormDrawer({
       {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
 
       <div
-        className={`fixed inset-y-0 right-0 z-70 w-full max-w-lg bg-white border-l border-border-light shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-70 w-full max-w-lg bg-surface border-l border-border-light shadow-menu flex flex-col transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light">
-          <h3 className="font-semibold text-text-primary">{isEdit ? 'Edit Job Role' : 'Add Job Role'}</h3>
+        <div className="flex items-center justify-between px-4 py-4 border-b border-border-light">
+          <h3 className="font-medium text-text-primary">{isEdit ? 'Edit Job Role' : 'Add Job Role'}</h3>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
             aria-label="Close"
           >
             <X size={16} />
@@ -226,7 +226,7 @@ export default function RoleFormDrawer({
           onSubmit={handleSubmit(onSubmit)}
           className="flex-1 overflow-y-auto min-h-0"
         >
-          <div className="px-5 py-5 flex flex-col gap-5">
+          <div className="px-4 py-4 flex flex-col gap-4">
             {/* Department picker (page-level create / move) */}
             {departments && departments.length > 0 && (
               <div>
@@ -289,9 +289,9 @@ export default function RoleFormDrawer({
             </div>
 
             {/* KRA builder */}
-            <div className="bg-surface-sunken border border-border-light rounded-[10px] p-4">
+            <div className="bg-surface-sunken border border-border-light rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-bold text-text-primary">Key Result Areas (KRA)</h4>
+                <h4 className="text-sm font-medium text-text-primary">Key Result Areas (KRA)</h4>
                 <button
                   type="button"
                   onClick={() => kraArray.append({ title: '', description: '' })}
@@ -307,9 +307,9 @@ export default function RoleFormDrawer({
                 {kraArray.fields.map((field, i) => (
                   <div
                     key={field.id}
-                    className="bg-white border border-border-light rounded-[8px] p-3 flex gap-3"
+                    className="bg-surface border border-border-light rounded-lg p-3 flex gap-3"
                   >
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-xs font-bold text-primary-text">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-xs font-medium text-primary-text">
                       {i + 1}
                     </span>
                     <div className="flex-1 flex flex-col gap-2">
@@ -339,9 +339,9 @@ export default function RoleFormDrawer({
             </div>
 
             {/* KPI builder */}
-            <div className="bg-surface-sunken border border-border-light rounded-[10px] p-4">
+            <div className="bg-surface-sunken border border-border-light rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-bold text-text-primary">Key Performance Indicators (KPI)</h4>
+                <h4 className="text-sm font-medium text-text-primary">Key Performance Indicators (KPI)</h4>
                 <button
                   type="button"
                   onClick={() => kpiArray.append({ title: '', metric: '', target: '', unit: '' })}
@@ -357,9 +357,9 @@ export default function RoleFormDrawer({
                 {kpiArray.fields.map((field, i) => (
                   <div
                     key={field.id}
-                    className="bg-white border border-border-light rounded-[8px] p-3 flex gap-3"
+                    className="bg-surface border border-border-light rounded-lg p-3 flex gap-3"
                   >
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-xs font-bold text-primary-text">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-xs font-medium text-primary-text">
                       {i + 1}
                     </span>
                     <div className="flex-1 flex flex-col gap-2.5">
@@ -412,7 +412,7 @@ export default function RoleFormDrawer({
             </div>
 
             {formError && (
-              <p className="text-sm text-danger rounded-[8px] bg-danger-bg border border-danger-border px-4 py-3">
+              <p className="text-sm text-danger rounded-lg bg-danger-bg border border-danger-border px-4 py-3">
                 {formError}
               </p>
             )}
@@ -448,7 +448,7 @@ export default function RoleFormDrawer({
             )}
           </div>
 
-          <div className="px-5 pt-4 pb-12 border-t border-border-light flex gap-3">
+          <div className="px-4 pt-4 pb-12 border-t border-border-light flex gap-3">
             <Button type="submit" variant="primary" isLoading={isSubmitting}>
               {isEdit ? 'Save' : 'Add Job Role'}
             </Button>

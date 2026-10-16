@@ -5,6 +5,7 @@ import { Loader2, ChevronDown, ChevronRight, RotateCcw, CheckCircle2, AlertTrian
 import { holidaysApi } from '@/lib/api/holidays'
 import type { HolidayDiscrepancy } from '@/lib/types/holidays'
 import { parseLocalDate } from '@/lib/date'
+import { formatDate } from '@/lib/format'
 
 interface Props {
   orgId: string
@@ -54,16 +55,16 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
 
   if (loading) {
     return (
-      <div className="bg-white border border-border-light rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center justify-center h-20">
+      <div className="bg-surface border border-border-light rounded-card p-4 shadow-card flex items-center justify-center h-20">
         <Loader2 size={18} className="animate-spin text-text-muted" />
       </div>
     )
   }
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+    <div className="bg-surface border border-border-light rounded-card p-4 shadow-card">
       <div className="flex items-center gap-2 mb-1">
-        <h2 className="text-[18px] font-semibold text-text-primary">Department sync</h2>
+        <h2 className="text-[18px] font-medium text-text-primary">Department sync</h2>
         {rows.length > 0 && (
           <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-warning-bg text-warning border-warning-border">
             <AlertTriangle size={11} /> {rows.length} out of sync
@@ -99,7 +100,7 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                       type="button"
                       onClick={() => reEnforce(d.department_id, allIds)}
                       disabled={busy === `${d.department_id}:${allIds.join(',')}`}
-                      className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-sm font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
                     >
                       <RotateCcw size={13} /> Re-enforce all
                     </button>
@@ -109,11 +110,11 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                 {isOpen && (
                   <div className="mt-2 ml-6 space-y-1.5">
                     {d.removed.map((r) => (
-                      <div key={r.org_holiday_id} className="flex items-center gap-3 py-1.5 px-2 rounded-[8px] bg-surface-sunken">
+                      <div key={r.org_holiday_id} className="flex items-center gap-3 py-1.5 px-2 rounded-lg bg-surface-sunken">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-text-primary truncate">{r.name}</p>
                           <p className="text-[11px] text-text-muted">
-                            {r.date ? parseLocalDate(r.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                            {r.date ? formatDate(parseLocalDate(r.date)) : ''}
                             {r.applies_to_subtree ? ' · applied to sub-departments' : ''}
                             {r.opted_out_by_name ? ` · by ${r.opted_out_by_name}` : ''}
                           </p>
@@ -123,7 +124,7 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                             type="button"
                             onClick={() => reEnforce(d.department_id, [r.org_holiday_id])}
                             disabled={busy === `${d.department_id}:${r.org_holiday_id}`}
-                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-sm font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
                           >
                             <RotateCcw size={13} /> Re-enforce
                           </button>

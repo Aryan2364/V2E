@@ -5,6 +5,7 @@ import { Loader2, Plus, ChevronLeft, ChevronRight, ChevronDown, Trash2, Undo2, R
 import { useAuth } from '@/lib/auth/context'
 import { holidaysApi } from '@/lib/api/holidays'
 import { getDepartments } from '@/lib/api/departments'
+import { formatDate } from '@/lib/format'
 import type { CalendarHoliday, RemovedOrgHoliday } from '@/lib/types/holidays'
 import type { Department } from '@/lib/types'
 import Modal from '@/components/ui/Modal'
@@ -241,9 +242,9 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div>
-        <h3 className="text-[18px] font-semibold text-text-primary">{deptName}</h3>
+        <h3 className="text-[18px] font-medium text-text-primary">{deptName}</h3>
         <p className="text-sm text-text-secondary mt-0.5">
           Org holidays apply here by default; add department holidays on top, or remove any you don&apos;t observe.
         </p>
@@ -263,11 +264,11 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
 
       {/* Holidays + calendar, side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 items-start lg:items-stretch">
-        <div className="bg-white border border-border-light rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col">
+        <div className="bg-surface border border-border-light rounded-card p-4 shadow-card flex flex-col">
           <div className="flex items-center justify-between gap-3 flex-wrap mb-4 shrink-0">
             <div className="flex items-center gap-3">
-              <h2 className="text-[18px] font-semibold text-text-primary">Holidays</h2>
-              <div className="flex items-center gap-1 rounded-[8px] border border-border bg-white">
+              <h2 className="text-[18px] font-medium text-text-primary">Holidays</h2>
+              <div className="flex items-center gap-1 rounded-lg border border-border bg-surface">
                 <button
                   type="button"
                   onClick={() => setSelectedYear((y) => y - 1)}
@@ -276,7 +277,7 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
                 >
                   <ChevronLeft size={15} />
                 </button>
-                <span className="min-w-[44px] text-center text-sm font-semibold text-text-primary tabular-nums">{selectedYear}</span>
+                <span className="min-w-[44px] text-center text-sm font-medium text-text-primary tabular-nums">{selectedYear}</span>
                 <button
                   type="button"
                   onClick={() => setSelectedYear((y) => y + 1)}
@@ -292,7 +293,7 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
               <button
                 type="button"
                 onClick={() => setShowAdd(true)}
-                className="flex items-center gap-1.5 h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
+                className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
               >
                 <Plus size={15} />
                 New Holiday
@@ -302,7 +303,7 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
 
           {/* Bulk-selection action bar — appears when inherited holidays are selected. */}
           {isAdmin && selectedIds.size > 0 && (
-            <div className="flex items-center justify-between gap-3 mb-3 px-3 py-2 rounded-[8px] bg-primary-subtle border border-primary-border shrink-0">
+            <div className="flex items-center justify-between gap-3 mb-3 px-3 py-2 rounded-lg bg-primary-subtle border border-primary-border shrink-0">
               <span className="text-sm font-medium text-primary-text">{selectedIds.size} selected</span>
               <div className="flex items-center gap-2">
                 {selectedIds.size < selectableCount && (
@@ -320,7 +321,7 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
                 <button
                   type="button"
                   onClick={() => { setScopeSubtree(true); setConfirmOpen(true) }}
-                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-semibold text-white bg-danger hover:bg-danger-hover transition-colors"
+                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-sm font-medium text-white bg-danger hover:bg-danger-hover transition-colors"
                 >
                   <Trash2 size={14} /> Remove selected
                 </button>
@@ -359,11 +360,11 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
               {showRemoved && (
                 <div className="mt-2 space-y-1.5">
                   {removedOrg.map((r) => (
-                    <div key={r.org_holiday_id} className="flex items-center gap-3 py-1.5 px-2 rounded-[8px] bg-surface-sunken">
+                    <div key={r.org_holiday_id} className="flex items-center gap-3 py-1.5 px-2 rounded-lg bg-surface-sunken">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-text-secondary line-through truncate">{r.name}</p>
                         <p className="text-[11px] text-text-muted">
-                          {r.date ? parseLocalDate(r.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                          {r.date ? formatDate(parseLocalDate(r.date)) : ''}
                           {r.applies_to_subtree ? ' · also removed for sub-departments' : ''}
                         </p>
                       </div>
@@ -371,7 +372,7 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
                         <button
                           type="button"
                           onClick={() => restoreOrgHoliday(r.org_holiday_id)}
-                          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[8px] text-sm font-medium text-primary-text hover:bg-primary-subtle transition-colors"
+                          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-sm font-medium text-primary-text hover:bg-primary-subtle transition-colors"
                         >
                           <RotateCcw size={13} /> Restore
                         </button>
@@ -406,15 +407,15 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
       >
         <div className="space-y-3">
           <p className="text-sm text-text-primary">
-            Remove {selected.length === 1 ? <><span className="font-semibold">{selected[0]?.name}</span></> : <><span className="font-semibold">{selected.length} holidays</span></>} from <span className="font-semibold">{deptName}</span>?
+            Remove {selected.length === 1 ? <><span className="font-medium">{selected[0]?.name}</span></> : <><span className="font-medium">{selected.length} holidays</span></>} from <span className="font-medium">{deptName}</span>?
           </p>
-          <ul className="text-sm text-text-secondary space-y-1.5 list-disc pl-5">
+          <ul className="text-sm text-text-secondary space-y-1.5 list-disc pl-4">
             <li>These dates will be treated as <span className="font-medium text-text-primary">normal working days</span> for this department{scopeSubtree && selectedHasOrg && hasDescendants ? ' and its sub-departments' : ''}.</li>
             <li>Nothing is deleted — you can restore them later from <span className="font-medium text-text-primary">Removed holidays</span>.</li>
           </ul>
 
           {selectedHasOrg && hasDescendants && (
-            <div className="rounded-[8px] border border-border-light p-3 space-y-2">
+            <div className="rounded-lg border border-border-light p-3 space-y-2">
               <p className="text-[13px] font-medium text-text-secondary">Apply this removal to:</p>
               <label className="flex items-start gap-2 cursor-pointer">
                 <input type="radio" className="mt-0.5 accent-primary" checked={!scopeSubtree} onChange={() => setScopeSubtree(false)} />
@@ -438,12 +439,12 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
 
       {/* Undo toast — a few seconds to reverse an accidental removal. */}
       {undoToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-90 flex items-center gap-3 rounded-[10px] bg-[#0F172A] text-white px-4 py-3 shadow-[0_8px_28px_rgba(0,0,0,0.25)]">
-          <span className="text-sm">Removed <span className="font-semibold">{undoToast.count}</span> holiday{undoToast.count === 1 ? '' : 's'}</span>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-90 flex items-center gap-3 rounded-xl bg-text-primary text-surface px-4 py-3 shadow-menu">
+          <span className="text-sm">Removed <span className="font-medium">{undoToast.count}</span> holiday{undoToast.count === 1 ? '' : 's'}</span>
           <button
             type="button"
             onClick={undoRemoval}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#93C5FD] hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-surface/70 hover:text-surface transition-colors"
           >
             <Undo2 size={14} /> Undo
           </button>

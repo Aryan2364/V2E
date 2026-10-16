@@ -19,7 +19,7 @@ interface Props {
 function LevelBadge({ level }: { level: Role['level'] }) {
   return (
     <span
-      className={`inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-[11px] font-semibold capitalize shrink-0 ${levelColors[level]}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize shrink-0 ${levelColors[level]}`}
     >
       {level}
     </span>
@@ -67,10 +67,10 @@ export default function RoleSelect({
     setQuery('')
   }
 
-  const triggerCls = `w-full flex items-center gap-2.5 border rounded-[8px] px-3 py-2.5 text-[15px] text-left transition-colors ${
+  const triggerCls = `w-full flex items-center gap-2.5 border rounded-lg px-3 py-2.5 text-[15px] text-left transition-colors ${
     disabled
       ? 'bg-surface-control border-border-light cursor-not-allowed'
-      : 'bg-surface-sunken border-border hover:bg-white hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+      : 'bg-surface-sunken border-border hover:bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
   }`
 
   return (
@@ -105,7 +105,7 @@ export default function RoleSelect({
           <div
             ref={panelRef}
             style={style}
-            className="z-80 flex flex-col border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden"
+            className="z-80 flex flex-col border border-border-light rounded-xl bg-surface shadow-menu overflow-hidden"
           >
             <div className="relative border-b border-border-light shrink-0">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
@@ -113,7 +113,7 @@ export default function RoleSelect({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search roles…"
-                className="w-full pl-9 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+                className="w-full pl-8 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
                 autoFocus
               />
               {query && (
@@ -131,7 +131,7 @@ export default function RoleSelect({
             <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center gap-1 py-8 text-center">
-                  <Briefcase size={22} className="text-[#CBD5E1]" />
+                  <Briefcase size={22} className="text-text-muted" />
                   <p className="text-xs text-text-muted">
                     {roles.length === 0 ? 'No roles in this department yet.' : 'No roles found.'}
                   </p>

@@ -38,7 +38,7 @@ function TriToggle({
   revokeLabel?: string
 }) {
   const opts: { v: OverrideState; label: string; on: string }[] = [
-    { v: null, label: 'Inherit', on: 'bg-[#475569] text-white' },
+    { v: null, label: 'Inherit', on: 'bg-text-secondary text-surface' },
     { v: 'grant', label: grantLabel, on: 'bg-success text-white' },
     { v: 'revoke', label: revokeLabel, on: 'bg-danger text-white' },
   ]
@@ -53,7 +53,7 @@ function TriToggle({
             onClick={() => onChange(o.v)}
             className={[
               'px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50',
-              active ? o.on : 'bg-white text-text-secondary hover:bg-surface-sunken',
+              active ? o.on : 'bg-surface text-text-secondary hover:bg-surface-sunken',
             ].join(' ')}
           >
             {o.label}
@@ -68,7 +68,7 @@ function EffectiveDot({ allowed }: { allowed: boolean }) {
   return (
     <span
       className={[
-        'inline-flex items-center rounded-[999px] px-2 py-0.5 text-[11px] font-semibold border',
+        'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium border',
         allowed ? 'bg-success-bg text-success border-success-border' : 'bg-danger-bg text-danger border-danger-border',
       ].join(' ')}
     >
@@ -164,15 +164,15 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
   }
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+    <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center gap-2 px-6 py-4 text-left"
       >
         <ShieldCheck size={18} className="text-primary-text" />
-        <span className="flex-1 text-base font-semibold text-text-primary">Access &amp; Permissions</span>
+        <span className="flex-1 text-base font-medium text-text-primary">Access &amp; Permissions</span>
         {data?.is_admin && (
-          <span className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-[11px] font-semibold bg-surface-control text-text-secondary border border-border-light">
+          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium bg-surface-control text-text-secondary border border-border-light">
             Administrator
           </span>
         )}
@@ -182,14 +182,14 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
       {open && (
         <div className="px-6 pb-6 border-t border-border-light">
           {loading ? (
-            <div className="py-10 flex items-center justify-center text-text-secondary">
+            <div className="py-8 flex items-center justify-center text-text-secondary">
               <Loader2 size={18} className="animate-spin" />
             </div>
           ) : !data ? (
             <p className="py-8 text-sm text-text-muted text-center">No permission data.</p>
           ) : (
             <>
-              <p className="text-sm text-text-secondary mt-4 mb-5">
+              <p className="text-sm text-text-secondary mt-4 mb-4">
                 Baseline flows from the <span className="font-medium text-text-primary">{systemRoleName}</span> system role.
                 Add a personal <span className="text-success font-medium">grant</span> or{' '}
                 <span className="text-danger font-medium">revoke</span> only where this person should differ.
@@ -199,13 +199,13 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
               {actorModules.map((mod) => {
                 const isCollapsed = collapsed[mod.key]
                 return (
-                  <div key={mod.key} className="mb-3 border border-border-light rounded-[10px] overflow-hidden">
+                  <div key={mod.key} className="mb-3 border border-border-light rounded-xl overflow-hidden">
                     <button
                       onClick={() => setCollapsed((c) => ({ ...c, [mod.key]: !c[mod.key] }))}
                       className="w-full flex items-center gap-1.5 px-4 py-2.5 bg-surface-sunken text-left"
                     >
                       <ChevronRight size={15} className={['text-text-muted transition-transform', isCollapsed ? '' : 'rotate-90'].join(' ')} />
-                      <span className="text-sm font-semibold text-text-primary">{mod.label}</span>
+                      <span className="text-sm font-medium text-text-primary">{mod.label}</span>
                     </button>
                     {!isCollapsed &&
                       mod.subModules.map((sub) =>
@@ -242,7 +242,7 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
                                           disabled={busyKey === key}
                                           value={ul.override_scopes?.read ?? defaultReadScope(ul)}
                                           onChange={(e) => changeOverride(f.key, 'read', 'grant', e.target.value as DataScope)}
-                                          className="text-xs border border-border rounded-[6px] px-2 py-1 bg-white text-text-primary focus:outline-hidden focus:border-primary disabled:opacity-50"
+                                          className="text-xs border border-border rounded-md px-2 py-1 bg-surface text-text-primary focus:outline-hidden focus:border-primary disabled:opacity-50"
                                         >
                                           {DATA_SCOPES.map((s) => (
                                             <option key={s} value={s}>
@@ -261,7 +261,7 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
                                         </span>
                                       )}
                                       {ov && (
-                                        <span className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[10px] font-semibold bg-warning-bg text-warning border border-warning-border">
+                                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-warning-bg text-warning border border-warning-border">
                                           Override
                                         </span>
                                       )}
@@ -280,12 +280,12 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
               {/* Subject eligibility */}
               {data.subject_overrides.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-sm font-semibold text-text-primary mb-1">Subject eligibility</h3>
+                  <h3 className="text-sm font-medium text-text-primary mb-1">Subject eligibility</h3>
                   <p className="text-xs text-text-muted mb-3 max-w-xl">
                     Whether this person can be assigned or targeted by others — independent of whether they can
                     open the module themselves.
                   </p>
-                  <div className="border border-border-light rounded-[10px] overflow-hidden">
+                  <div className="border border-border-light rounded-xl overflow-hidden">
                     {data.subject_overrides.map((s) => (
                       <div key={s.subject_key} className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-border-light last:border-0">
                         <span className="flex-1 min-w-[160px] text-sm font-medium text-text-primary">{s.label}</span>

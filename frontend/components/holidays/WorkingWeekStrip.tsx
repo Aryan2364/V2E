@@ -50,8 +50,8 @@ export default function WorkingWeekStrip({ value, onSave, disabled }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-4 bg-white border border-border-light rounded-[12px] px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-      <span className="text-sm font-semibold text-text-primary shrink-0">Working Days</span>
+    <div className="flex items-center gap-4 bg-surface border border-border-light rounded-card px-4 py-3 shadow-card">
+      <span className="text-sm font-medium text-text-primary shrink-0">Working Days</span>
       <div className="flex items-center gap-1.5">
         {DAY_PILLS.map((label, index) => {
           const active = days.includes(index)
@@ -63,11 +63,11 @@ export default function WorkingWeekStrip({ value, onSave, disabled }: Props) {
                 disabled={disabled}
                 aria-pressed={active}
                 className={[
-                  'h-8 w-8 rounded-full text-xs font-semibold border transition-colors duration-150',
+                  'h-8 w-8 rounded-full text-xs font-medium border transition-colors duration-150',
                   disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
                   active
                     ? 'bg-primary text-white border-primary'
-                    : 'bg-white text-text-muted border-border-light hover:border-primary hover:text-primary-text',
+                    : 'bg-surface text-text-muted border-border-light hover:border-primary hover:text-primary-text',
                 ].join(' ')}
               >
                 {label}

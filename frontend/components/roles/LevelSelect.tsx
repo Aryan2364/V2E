@@ -37,7 +37,7 @@ export default function LevelSelect({ value, onChange, showHead = true }: Props)
     setOpen(false)
   }
 
-  const triggerCls = `w-full flex items-center gap-2.5 border rounded-[8px] px-3 py-2.5 text-[15px] text-left transition-colors bg-surface-sunken border-border hover:bg-white hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary`
+  const triggerCls = `w-full flex items-center gap-2.5 border rounded-lg px-3 py-2.5 text-[15px] text-left transition-colors bg-surface-sunken border-border hover:bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary`
 
   return (
     <div>
@@ -60,7 +60,7 @@ export default function LevelSelect({ value, onChange, showHead = true }: Props)
           <div
             ref={panelRef}
             style={style}
-            className="z-80 flex flex-col border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden py-1"
+            className="z-80 flex flex-col border border-border-light rounded-xl bg-surface shadow-menu overflow-hidden py-1"
           >
             <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
               {options.map((l) => {

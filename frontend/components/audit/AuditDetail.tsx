@@ -2,6 +2,7 @@
 
 import { Settings2 } from 'lucide-react'
 import type { AuditEntry } from '@/lib/types/audit'
+import { formatDateTime } from '@/lib/format'
 
 export const ACTION_META: Record<string, { label: string; bg: string; text: string }> = {
   create: { label: 'Create', bg: 'var(--success-bg)', text: 'var(--success)' },
@@ -47,7 +48,7 @@ export function formatValue(v: unknown): string {
     if (ISO_DATE.test(v)) {
       const d = new Date(v)
       if (!isNaN(d.getTime()))
-        return d.toLocaleString(undefined, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        return formatDateTime(d)
     }
     return v
   }
@@ -59,8 +60,7 @@ export function formatValue(v: unknown): string {
 }
 
 export function fmtDateTime(iso: string): string {
-  const d = new Date(iso)
-  return d.toLocaleString(undefined, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return formatDateTime(new Date(iso))
 }
 
 /** Actor as a name, or a ⚙ System chip when the entry is system-triggered. */
@@ -97,7 +97,7 @@ export function AuditExpandedDetail({ entry }: { entry: AuditEntry }) {
   const showCreated = entry.created_at && entry.occurred_at && entry.created_at.slice(0, 16) !== entry.occurred_at.slice(0, 16)
 
   return (
-    <div className="rounded-[10px] border border-border-light bg-white p-4">
+    <div className="rounded-xl border border-border-light bg-surface p-4">
       {/* Meta strip */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3 text-[13px] text-text-secondary">
         <span className="flex items-center gap-1.5">

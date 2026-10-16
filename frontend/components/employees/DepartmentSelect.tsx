@@ -92,7 +92,7 @@ export default function DepartmentSelect({
   }
 
   const triggerCls =
-    'w-full flex items-center gap-2.5 border border-border rounded-[8px] px-3 py-2.5 text-[15px] text-left bg-surface-sunken hover:bg-white hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
+    'w-full flex items-center gap-2.5 border border-border rounded-lg px-3 py-2.5 text-[15px] text-left bg-surface-sunken hover:bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
 
   const lockOf = (id: string) => (id === value ? null : lockedReason?.(id) ?? null)
   const allLocked =
@@ -111,7 +111,7 @@ export default function DepartmentSelect({
         <span className="block text-sm font-medium text-text-muted truncate">{dept.name}</span>
         <span className="block text-[11px] text-text-muted truncate">{sub ? `${reason} · ${sub}` : reason}</span>
       </span>
-      <Lock size={13} className="text-[#CBD5E1] shrink-0" />
+      <Lock size={13} className="text-text-muted shrink-0" />
     </div>
     </Tooltip>
   )
@@ -126,7 +126,7 @@ export default function DepartmentSelect({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search departments…"
-          className="w-full pl-9 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+          className="w-full pl-8 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
           autoFocus
         />
         {query && (
@@ -167,7 +167,7 @@ export default function DepartmentSelect({
 
         {departments.length === 0 ? (
           <div className="flex flex-col items-center gap-1 py-8 text-center">
-            <Building2 size={22} className="text-[#CBD5E1]" />
+            <Building2 size={22} className="text-text-muted" />
             <p className="text-xs text-text-muted">No departments yet.</p>
           </div>
         ) : q ? (
@@ -267,7 +267,7 @@ export default function DepartmentSelect({
 
       {/* Inline mode: in-flow panel that scrolls with the page (no drift). */}
       {open && inline && (
-        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 flex flex-col max-h-[300px] border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden">
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 flex flex-col max-h-[300px] border border-border-light rounded-xl bg-surface shadow-menu overflow-hidden">
           {panelBody}
         </div>
       )}
@@ -280,7 +280,7 @@ export default function DepartmentSelect({
           <div
             ref={panelRef}
             style={style}
-            className="z-80 flex flex-col border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden"
+            className="z-80 flex flex-col border border-border-light rounded-xl bg-surface shadow-menu overflow-hidden"
           >
             {panelBody}
           </div>,

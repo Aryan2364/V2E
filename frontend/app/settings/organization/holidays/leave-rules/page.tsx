@@ -29,16 +29,16 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
       aria-checked={on}
       className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${on ? 'bg-primary' : 'bg-surface-control-pressed'}`}
     >
-      <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-xs transition-transform ${on ? 'translate-x-4' : 'translate-x-0'}`} />
+      <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-surface shadow-xs transition-transform ${on ? 'translate-x-4' : 'translate-x-0'}`} />
     </button>
   )
 }
 
 function Card({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-4">
+    <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
       <div>
-        <h3 className="text-[15px] font-semibold text-text-primary">{title}</h3>
+        <h3 className="text-[15px] font-medium text-text-primary">{title}</h3>
         {description && <p className="text-[13px] text-text-secondary mt-0.5 leading-relaxed">{description}</p>}
       </div>
       {children}
@@ -50,14 +50,14 @@ function UserMultiSelect({ people, selected, onToggle }: { people: Person[]; sel
   const [q, setQ] = useState('')
   const filtered = useMemo(() => people.filter((p) => p.name.toLowerCase().includes(q.toLowerCase())), [people, q])
   return (
-    <div className="border border-border rounded-[8px] overflow-hidden">
+    <div className="border border-border rounded-lg overflow-hidden">
       <div className="relative border-b border-border-light">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search people…"
-          className="w-full pl-9 pr-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+          className="w-full pl-8 pr-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
         />
       </div>
       <div className="max-h-48 overflow-y-auto divide-y divide-surface-control">
@@ -142,8 +142,8 @@ export default function LeaveRulesPage() {
   }
 
   return (
-    <div className="space-y-5 max-w-3xl">
-      <div className="flex items-start gap-2 rounded-[12px] border border-primary-border bg-primary-subtle p-4 text-sm text-text-primary">
+    <div className="space-y-4 max-w-3xl">
+      <div className="flex items-start gap-2 rounded-card border border-primary-border bg-primary-subtle p-4 text-sm text-text-primary">
         <Info size={16} className="text-primary-text shrink-0 mt-0.5" />
         <p>
           These rules govern how employees apply for leave from <span className="font-medium">My Profile → Leave</span>, and approvers decide requests under <span className="font-medium">Work → Leave Approvals</span>.
@@ -212,7 +212,7 @@ export default function LeaveRulesPage() {
             max={60}
             value={master.recurring_notice_days}
             onChange={(e) => patch({ recurring_notice_days: Math.max(0, Math.min(60, Number(e.target.value) || 0)) })}
-            className="w-20 border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-white"
+            className="w-20 border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
           />
           <span className="text-sm text-text-primary">day(s) before the occurrence</span>
         </div>
@@ -222,7 +222,7 @@ export default function LeaveRulesPage() {
         type="button"
         onClick={save}
         disabled={saving}
-        className="flex items-center gap-2 px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+        className="flex items-center gap-2 px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
       >
         {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
         {saving ? 'Saving…' : 'Save leave rules'}

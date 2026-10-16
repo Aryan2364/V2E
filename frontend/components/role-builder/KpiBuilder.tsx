@@ -26,7 +26,7 @@ export default function KpiBuilder({ items, onChange, readOnly }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-text-primary">Key Performance Indicators (KPI)</h4>
+        <h4 className="text-sm font-medium text-text-primary">Key Performance Indicators (KPI)</h4>
         {!readOnly && (
           <button type="button" onClick={add} className="flex items-center gap-1 text-xs text-primary-text hover:underline font-medium">
             <Plus size={14} /> Add KPI

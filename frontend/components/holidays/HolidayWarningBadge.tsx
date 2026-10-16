@@ -2,6 +2,7 @@
 
 import { AlertTriangle, Info, XCircle, CheckCircle2 } from 'lucide-react'
 import type { HolidayCheckResult } from '@/lib/types/holidays'
+import { formatDate } from '@/lib/format'
 
 interface Props {
   check: HolidayCheckResult | null
@@ -29,7 +30,7 @@ export default function HolidayWarningBadge({ check, overridden = false, onToggl
   if (overridden && canOverride) {
     return (
       <div className="mt-1.5">
-        <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-primary-subtle border border-primary-border">
+        <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-primary-subtle border border-primary-border">
           <CheckCircle2 size={14} className="text-primary-text shrink-0 mt-0.5" />
           <p className="text-xs text-primary-text font-medium">
             {reason ? `${reason} — ` : ''}Keeping your chosen date. The system’s suggestion has been overridden.
@@ -42,7 +43,7 @@ export default function HolidayWarningBadge({ check, overridden = false, onToggl
 
   if (action === 'create_anyway') {
     return (
-      <div className="flex items-start gap-2 mt-1.5 px-3 py-2 rounded-[8px] bg-warning-bg border border-warning-border">
+      <div className="flex items-start gap-2 mt-1.5 px-3 py-2 rounded-lg bg-warning-bg border border-warning-border">
         <Info size={14} className="text-warning shrink-0 mt-0.5" />
         <p className="text-xs text-warning font-medium">
           {reason ? `${reason} — ` : ''}This is a non-working day, but the task will still be created.
@@ -54,7 +55,7 @@ export default function HolidayWarningBadge({ check, overridden = false, onToggl
   if (action === 'skip_create') {
     return (
       <div className="mt-1.5">
-        <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-danger-bg border border-danger-border">
+        <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-danger-bg border border-danger-border">
           <XCircle size={14} className="text-danger shrink-0 mt-0.5" />
           <p className="text-xs text-danger font-medium">
             {reason ? `${reason} — ` : ''}Your organization normally blocks tasks on this date. Change the deadline, or keep it anyway below.
@@ -67,12 +68,12 @@ export default function HolidayWarningBadge({ check, overridden = false, onToggl
 
   const label = action === 'move_to_next_working_day' ? 'moved forward' : 'moved back'
   const formattedDate = adjusted_date
-    ? new Date(adjusted_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+    ? formatDate(new Date(adjusted_date))
     : null
 
   return (
     <div className="mt-1.5">
-      <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-warning-bg border border-warning-border">
+      <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-warning-bg border border-warning-border">
         <AlertTriangle size={14} className="text-warning shrink-0 mt-0.5" />
         <p className="text-xs text-warning font-medium">
           {reason ? `${reason} — ` : ''}Suggested: deadline {label}

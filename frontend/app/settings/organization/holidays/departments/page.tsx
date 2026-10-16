@@ -40,20 +40,20 @@ export default function DepartmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-bold text-text-primary">Department Calendars</h1>
+        <h1 className="text-[28px] font-medium text-text-primary">Department Calendars</h1>
         <p className="text-[15px] text-text-secondary mt-1">Override working days and add department-specific holidays.</p>
       </div>
 
       {departments.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] p-8 text-center shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+        <div className="bg-surface border border-border-light rounded-card p-8 text-center shadow-card">
           <p className="text-text-muted text-sm">No departments found. Create departments first in Org Chart.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
           {/* Dept list */}
-          <div className="bg-white border border-border-light rounded-[12px] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+          <div className="bg-surface border border-border-light rounded-card overflow-hidden shadow-card">
             <div className="px-4 py-3 border-b border-border-light bg-surface-sunken">
-              <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Departments</p>
+              <p className="text-xs font-medium text-text-secondary uppercase tracking-wide">Departments</p>
             </div>
             <div className="divide-y divide-surface-control-pressed max-h-[calc(100vh-260px)] overflow-y-auto">
               {flat.map(({ dept, depth }) => (
@@ -65,7 +65,7 @@ export default function DepartmentsPage() {
                   className={[
                     'w-full flex items-center justify-between gap-2 pr-4 py-3 text-sm text-left transition-colors',
                     selected?.id === dept.id
-                      ? 'bg-primary-subtle text-primary-text font-semibold'
+                      ? 'bg-primary-subtle text-primary-text font-medium'
                       : 'text-text-primary hover:bg-surface-sunken',
                   ].join(' ')}
                 >

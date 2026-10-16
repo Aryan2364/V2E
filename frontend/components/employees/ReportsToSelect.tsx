@@ -39,7 +39,7 @@ interface DeptGroup {
 function Avatar({ name, color }: { name?: string; color: string }) {
   return (
     <span
-      className="w-7 h-7 shrink-0 rounded-full inline-flex items-center justify-center text-[10px] font-bold text-white"
+      className="w-7 h-7 shrink-0 rounded-full inline-flex items-center justify-center text-[10px] font-medium text-white"
       style={{ backgroundColor: color }}
     >
       <span className="translate-y-[0.5px]">{initials(name)}</span>
@@ -145,7 +145,7 @@ export default function ReportsToSelect({
   }
 
   const triggerCls =
-    'w-full flex items-center gap-2.5 border border-border rounded-[8px] px-3 py-2 text-[15px] text-left bg-white hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
+    'w-full flex items-center gap-2.5 border border-border rounded-lg px-3 py-2 text-[15px] text-left bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
 
   const PersonRow = ({ p }: { p: EmployeeProfile }) => {
     const isSel = p.user_id === value
@@ -176,7 +176,7 @@ export default function ReportsToSelect({
     <div>
       <div className="sticky top-0 z-1 flex items-center gap-2 px-3 py-1.5 bg-surface-control border-y border-border-light">
         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: colorFor(g.dept.id) }} />
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary truncate">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-text-secondary truncate">
           {g.dept.name}
         </span>
         <span className="ml-auto text-[11px] text-text-muted">{g.people.length}</span>
@@ -233,7 +233,7 @@ export default function ReportsToSelect({
           <div
             ref={panelRef}
             style={style}
-            className="z-80 flex flex-col border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden"
+            className="z-80 flex flex-col border border-border-light rounded-xl bg-surface shadow-menu overflow-hidden"
           >
             {/* Search */}
             <div className="relative border-b border-border-light shrink-0">
@@ -242,7 +242,7 @@ export default function ReportsToSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search people…"
-              className="w-full pl-9 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+              className="w-full pl-8 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
               autoFocus
             />
             {query && (
@@ -277,7 +277,7 @@ export default function ReportsToSelect({
               </button>
 
               {fSuggested.length > 0 && (
-              <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-primary-text">
+              <div className="px-3 pt-2 pb-1 text-[10px] font-medium uppercase tracking-wider text-primary-text">
                 Reporting line
               </div>
             )}
@@ -286,7 +286,7 @@ export default function ReportsToSelect({
             ))}
 
             {fOthers.length > 0 && (
-              <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-text-muted">
+              <div className="px-3 pt-2 pb-1 text-[10px] font-medium uppercase tracking-wider text-text-muted">
                 Other departments
               </div>
             )}

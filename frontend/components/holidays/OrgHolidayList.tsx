@@ -101,19 +101,19 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
               <input
                 value={editing.name}
                 onChange={(e) => setEditing((s) => s ? { ...s, name: e.target.value } : s)}
-                className="flex-1 h-8 px-2 rounded-[6px] border border-border text-sm text-text-primary bg-white focus:border-primary outline-hidden"
+                className="flex-1 h-8 px-2 rounded-md border border-border text-sm text-text-primary bg-surface focus:border-primary outline-hidden"
               />
               <button
                 type="button"
                 onClick={saveEdit}
-                className="p-1.5 rounded-[6px] bg-success-bg text-success hover:bg-success-bg transition-colors"
+                className="p-1.5 rounded-md bg-success-bg text-success hover:bg-success-bg transition-colors"
               >
                 <Check size={14} />
               </button>
               <button
                 type="button"
                 onClick={() => setEditing(null)}
-                className="p-1.5 rounded-[6px] bg-surface-control text-text-secondary hover:bg-surface-control-pressed transition-colors"
+                className="p-1.5 rounded-md bg-surface-control text-text-secondary hover:bg-surface-control-pressed transition-colors"
               >
                 <X size={14} />
               </button>
@@ -124,7 +124,7 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
         return (
           <div
             key={h.id}
-            className="group flex items-center gap-3 py-2.5 px-1 rounded-[8px] hover:bg-surface-sunken transition-colors"
+            className="group flex items-center gap-3 py-2.5 px-1 rounded-lg hover:bg-surface-sunken transition-colors"
           >
             {selectable && h.inherited && (
               <Tooltip label="Select for bulk removal">
@@ -139,9 +139,9 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
             )}
 
             {/* Date chip — weekday over day/month (start date) */}
-            <div className="shrink-0 w-14 flex flex-col items-center justify-center rounded-[8px] border border-border-light bg-surface-sunken py-1">
-              <span className="text-[10px] font-semibold tracking-wide text-text-muted leading-tight">{weekday}</span>
-              <span className="text-[13px] font-semibold text-text-primary leading-tight">{dayMonth}</span>
+            <div className="shrink-0 w-14 flex flex-col items-center justify-center rounded-lg border border-border-light bg-surface-sunken py-1">
+              <span className="text-[10px] font-medium tracking-wide text-text-muted leading-tight">{weekday}</span>
+              <span className="text-[13px] font-medium text-text-primary leading-tight">{dayMonth}</span>
             </div>
 
             <div className="flex-1 min-w-0">
@@ -193,7 +193,7 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
                   <button
                     type="button"
                     onClick={() => onOptOut(h)}
-                    className="p-1.5 rounded-[6px] hover:bg-warning-bg text-text-secondary hover:text-warning transition-colors shrink-0"
+                    className="p-1.5 rounded-md hover:bg-warning-bg text-text-secondary hover:text-warning transition-colors shrink-0"
                     aria-label="Opt out (remove for this department and its sub-departments)"
                   >
                     <Unlink size={13} />
@@ -206,7 +206,7 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
                   <button
                     type="button"
                     onClick={() => startEdit(h)}
-                    className="p-1.5 rounded-[6px] hover:bg-primary-subtle text-text-secondary hover:text-primary-text transition-colors shrink-0"
+                    className="p-1.5 rounded-md hover:bg-primary-subtle text-text-secondary hover:text-primary-text transition-colors shrink-0"
                     aria-label="Edit"
                   >
                     <Pencil size={13} />
@@ -216,7 +216,7 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
                   <button
                     type="button"
                     onClick={() => setToDelete(h)}
-                    className="p-1.5 rounded-[6px] hover:bg-danger-bg text-text-secondary hover:text-danger transition-colors shrink-0"
+                    className="p-1.5 rounded-md hover:bg-danger-bg text-text-secondary hover:text-danger transition-colors shrink-0"
                     aria-label="Delete"
                   >
                     <Trash2 size={13} />
@@ -237,9 +237,9 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
       size="sm"
     >
       <p className="text-sm text-text-primary">
-        Delete <span className="font-semibold">{toDelete?.name}</span>? This can&apos;t be undone.
+        Delete <span className="font-medium">{toDelete?.name}</span>? This can&apos;t be undone.
       </p>
-      <div className="flex items-center justify-end gap-2 mt-5">
+      <div className="flex items-center justify-end gap-2 mt-4">
         <Button variant="secondary" onClick={() => setToDelete(null)} disabled={deleting}>Cancel</Button>
         <Button variant="danger" onClick={confirmDelete} isLoading={deleting} disabled={deleting}>Delete</Button>
       </div>

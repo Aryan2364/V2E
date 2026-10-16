@@ -20,7 +20,7 @@ import {
 // Text inputs (search + dates) stay white to contrast the soft-filled dropdowns,
 // but share the dropdowns' height and radius so the filter row stays aligned.
 const inputClass =
-  'rounded-[8px] border border-border bg-white px-3.5 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
+  'rounded-lg border border-border bg-surface px-3.5 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
 
 // Sentinel for "no filter" in the five Select controls below. The filter
 // state itself stays '' (what AuditFilters expects); only the Select's
@@ -127,7 +127,7 @@ export default function AuditLogsPage() {
         key: 'expand',
         header: '',
         headerClassName: 'w-8 px-2',
-        cellClassName: 'w-8 px-2 text-[#CBD5E1] align-top',
+        cellClassName: 'w-8 px-2 text-text-muted align-top',
         hideOnMobile: true,
         render: (e) => (hasChanges(e) ? expanded === e.id ? <ChevronDown size={15} /> : <ChevronRight size={15} /> : null),
       },
@@ -182,16 +182,16 @@ export default function AuditLogsPage() {
 
   if (denied)
     return (
-      <div className="py-16 text-center">
-        <h2 className="text-[18px] font-semibold text-text-primary">No access</h2>
+      <div className="py-12 text-center">
+        <h2 className="text-[18px] font-medium text-text-primary">No access</h2>
         <p className="text-sm text-text-secondary mt-1">You don&apos;t have permission to view audit logs.</p>
       </div>
     )
 
   return (
     <div>
-      <div className="mb-5">
-        <h1 className="flex items-center gap-2 text-[26px] font-bold text-text-primary leading-tight">
+      <div className="mb-4">
+        <h1 className="flex items-center gap-2 text-[26px] font-medium text-text-primary leading-tight">
           <ScrollText size={24} className="text-primary-text" /> Audit Logs
         </h1>
         <p className="text-sm text-text-secondary mt-1">
@@ -204,7 +204,7 @@ export default function AuditLogsPage() {
         <div className="relative w-full">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
-            className={`${inputClass} w-full pl-9`}
+            className={`${inputClass} w-full pl-8`}
             placeholder="Search by entity or action…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -336,8 +336,8 @@ export default function AuditLogsPage() {
         isExpanded={(e) => expanded === e.id && hasChanges(e)}
         renderExpanded={(e) => <AuditExpandedDetail entry={e} />}
         emptyState={
-          <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
-            <div className="p-10 text-center text-sm text-text-secondary">No audit entries.</div>
+          <div className="bg-surface border border-border-light rounded-card overflow-hidden">
+            <div className="p-8 text-center text-sm text-text-secondary">No audit entries.</div>
           </div>
         }
       />

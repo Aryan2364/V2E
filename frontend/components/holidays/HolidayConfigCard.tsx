@@ -18,9 +18,9 @@ interface Props {
 
 export default function HolidayConfigCard({ action, onActionChange, disabled }: Props) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div>
-        <p className="text-sm font-semibold text-text-primary mb-2">When a deadline falls on a holiday…</p>
+        <p className="text-sm font-medium text-text-primary mb-2">When a deadline falls on a holiday…</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {ACTIONS.map((a) => (
             <button
@@ -29,21 +29,21 @@ export default function HolidayConfigCard({ action, onActionChange, disabled }: 
               disabled={disabled}
               onClick={() => onActionChange(a.value)}
               className={[
-                'rounded-[10px] border px-3 py-3 text-left transition-colors',
+                'rounded-xl border px-3 py-3 text-left transition-colors',
                 disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
                 action === a.value
                   ? 'border-primary bg-primary-subtle'
-                  : 'border-border-light bg-white hover:border-primary/40',
+                  : 'border-border-light bg-surface hover:border-primary/40',
               ].join(' ')}
             >
-              <p className={`text-sm font-semibold ${action === a.value ? 'text-primary-text' : 'text-text-primary'}`}>{a.label}</p>
+              <p className={`text-sm font-medium ${action === a.value ? 'text-primary-text' : 'text-text-primary'}`}>{a.label}</p>
               <p className="text-xs text-text-secondary mt-0.5">{a.desc}</p>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="flex items-start gap-2.5 rounded-[8px] bg-surface-sunken border border-border-light p-3">
+      <div className="flex items-start gap-2.5 rounded-lg bg-surface-sunken border border-border-light p-3">
         <Info size={16} className="text-primary-text mt-0.5 shrink-0" />
         <p className="text-sm text-text-secondary">
           Holidays now cascade automatically: <span className="font-medium text-text-primary">org holidays apply to every department and employee</span>,

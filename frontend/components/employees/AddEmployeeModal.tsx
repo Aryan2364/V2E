@@ -61,7 +61,7 @@ const EMPLOYMENT_TYPES: { value: EmploymentType; label: string }[] = [
 ]
 
 const inputClass =
-  'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  'w-full border border-border rounded-lg px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
 
 export default function AddEmployeeModal({
@@ -328,13 +328,13 @@ export default function AddEmployeeModal({
 
   return createPortal(
     <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
-      <div className="bg-white w-full sm:max-w-2xl sm:rounded-[12px] rounded-t-[16px] shadow-xl max-h-[92vh] flex flex-col">
+      <div className="bg-surface w-full sm:max-w-2xl sm:rounded-card rounded-t-xl shadow-xl max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
-          <h2 className="text-[18px] font-semibold text-text-primary">Add Employee</h2>
+          <h2 className="text-[18px] font-medium text-text-primary">Add Employee</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
+            className="p-1.5 rounded-md text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
             aria-label="Close"
           >
             <X size={18} />
@@ -343,9 +343,9 @@ export default function AddEmployeeModal({
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-          <div className="px-6 py-5 overflow-y-auto space-y-4">
+          <div className="px-6 py-4 overflow-y-auto space-y-4">
             {error && (
-              <div className="p-3 bg-danger-bg border border-danger-border rounded-[8px] text-sm text-danger">
+              <div className="p-3 bg-danger-bg border border-danger-border rounded-lg text-sm text-danger">
                 {error}
               </div>
             )}
@@ -407,15 +407,15 @@ export default function AddEmployeeModal({
               <div className="flex items-start">
                 <div className="w-full">
                   {!prefillSelf && checkingAccount && (
-                    <p className="mt-7 text-xs text-text-muted">Checking…</p>
+                    <p className="mt-6 text-xs text-text-muted">Checking…</p>
                   )}
                   {!prefillSelf && duplicateInOrg && (
-                    <p className="mt-7 text-xs text-danger">
+                    <p className="mt-6 text-xs text-danger">
                       This person is already an employee in this firm.
                     </p>
                   )}
                   {!prefillSelf && existingAccount && !duplicateInOrg && (
-                    <p className="mt-7 text-xs text-success">
+                    <p className="mt-6 text-xs text-success">
                       Existing V2E account — they’ll use their current login. No password needed here.
                     </p>
                   )}
@@ -433,7 +433,7 @@ export default function AddEmployeeModal({
                       value={form.password}
                       onChange={(e) => set('password', e.target.value)}
                       placeholder="Min. 8 characters"
-                      className={`${inputClass} pr-10`}
+                      className={`${inputClass} pr-8`}
                     />
                     <button
                       type="button"
@@ -510,7 +510,7 @@ export default function AddEmployeeModal({
                   }}
                 />
                 {isHeadRoleSelected && deptHasHead && (
-                  <p className="mt-1.5 text-xs text-warning bg-warning-bg border border-warning-border rounded-[6px] px-2.5 py-1.5 font-medium">
+                  <p className="mt-1.5 text-xs text-warning bg-warning-bg border border-warning-border rounded-md px-2.5 py-1.5 font-medium">
                     Already there is a head here.
                   </p>
                 )}
@@ -612,7 +612,7 @@ export default function AddEmployeeModal({
             <button
               type="submit"
               disabled={saving || duplicateInOrg || checkingAccount}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {saving && <Loader2 size={15} className="animate-spin" />}
               {saving ? 'Adding…' : existingAccount ? 'Add to firm' : 'Add Employee'}

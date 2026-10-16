@@ -120,15 +120,15 @@ export default function HolidayFormModal({
         {allowRange && (
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1.5">Duration</label>
-            <div className="inline-flex p-0.5 rounded-[8px] bg-surface-control border border-border-light">
+            <div className="inline-flex p-0.5 rounded-lg bg-surface-control border border-border-light">
               {(['single', 'range'] as Span[]).map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => setSpan(s)}
                   className={[
-                    'px-3 py-1.5 rounded-[6px] text-sm font-medium transition-colors',
-                    span === s ? 'bg-white text-primary-text shadow-[0_1px_2px_rgba(0,0,0,0.06)]' : 'text-text-muted hover:text-text-primary',
+                    'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                    span === s ? 'bg-surface text-primary-text shadow-card' : 'text-text-muted hover:text-text-primary',
                   ].join(' ')}
                 >
                   {s === 'single' ? 'Single day' : 'Range'}
@@ -145,7 +145,7 @@ export default function HolidayFormModal({
             onChange={(e) => set('name', e.target.value)}
             placeholder="e.g. Republic Day"
             autoFocus
-            className="w-full h-[42px] px-3 rounded-[8px] border border-border bg-surface-sunken text-[15px] text-text-primary placeholder:text-text-muted focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
+            className="w-full h-[42px] px-3 rounded-lg border border-border bg-surface-sunken text-[15px] text-text-primary placeholder:text-text-muted focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
           />
         </div>
 
@@ -184,7 +184,7 @@ export default function HolidayFormModal({
             <select
               value={form.type}
               onChange={(e) => set('type', e.target.value as HolidayType)}
-              className="w-full h-[42px] px-3 rounded-[8px] border border-border bg-surface-sunken text-[15px] text-text-primary focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
+              className="w-full h-[42px] px-3 rounded-lg border border-border bg-surface-sunken text-[15px] text-text-primary focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
             >
               {HOLIDAY_TYPES.map((t) => (
                 <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1).replace('_', ' ')}</option>
@@ -197,7 +197,7 @@ export default function HolidayFormModal({
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
               placeholder="Optional"
-              className="w-full h-[42px] px-3 rounded-[8px] border border-border bg-surface-sunken text-[15px] text-text-primary placeholder:text-text-muted focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
+              className="w-full h-[42px] px-3 rounded-lg border border-border bg-surface-sunken text-[15px] text-text-primary placeholder:text-text-muted focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
             />
           </div>
         </div>

@@ -118,7 +118,7 @@ export default function DepartmentMultiSelect({
     <span
       className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] border transition-colors ${
         state === 'none'
-          ? 'border-border bg-white'
+          ? 'border-border bg-surface'
           : 'border-primary bg-primary text-white'
       }`}
     >
@@ -128,14 +128,14 @@ export default function DepartmentMultiSelect({
   )
 
   const triggerCls =
-    'w-full flex items-center gap-2.5 border border-border rounded-[8px] px-3 py-2.5 text-[15px] text-left bg-surface-sunken hover:bg-white hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
+    'w-full flex items-center gap-2.5 border border-border rounded-lg px-3 py-2.5 text-[15px] text-left bg-surface-sunken hover:bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
 
   return (
     <div ref={wrapRef} className="relative">
       <button type="button" onClick={() => setOpen((o) => !o)} className={triggerCls}>
         <span className="flex-1 min-w-0 truncate text-text-primary">{triggerLabel}</span>
         {selected.length > 0 && (
-          <span className="inline-flex items-center justify-center rounded-[999px] bg-primary px-1.5 min-w-[20px] h-5 text-xs font-semibold text-white">
+          <span className="inline-flex items-center justify-center rounded-full bg-primary px-1.5 min-w-[20px] h-5 text-xs font-medium text-white">
             {selected.length}
           </span>
         )}
@@ -146,7 +146,7 @@ export default function DepartmentMultiSelect({
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 flex flex-col max-h-[320px] border border-border-light rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden">
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 flex flex-col max-h-[320px] border border-border-light rounded-xl bg-surface shadow-menu overflow-hidden">
           {/* Search */}
           <div className="relative border-b border-border-light shrink-0">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
@@ -154,7 +154,7 @@ export default function DepartmentMultiSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search departments…"
-              className="w-full pl-9 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+              className="w-full pl-8 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
               autoFocus
             />
             {query && (
@@ -193,7 +193,7 @@ export default function DepartmentMultiSelect({
 
             {departments.length === 0 ? (
               <div className="flex flex-col items-center gap-1 py-8 text-center">
-                <Building2 size={22} className="text-[#CBD5E1]" />
+                <Building2 size={22} className="text-text-muted" />
                 <p className="text-xs text-text-muted">No departments yet.</p>
               </div>
             ) : q ? (
@@ -264,7 +264,7 @@ export default function DepartmentMultiSelect({
               <button
                 type="button"
                 onClick={selectAll}
-                className="text-xs font-semibold text-primary-text hover:text-primary-text"
+                className="text-xs font-medium text-primary-text hover:text-primary-text"
               >
                 Clear
               </button>
