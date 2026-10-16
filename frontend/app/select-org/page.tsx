@@ -2,14 +2,17 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Building2, ArrowRight, LogOut } from 'lucide-react'
+import { Building2Icon, ArrowRightIcon, LogOutIcon } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import type { OrgChoice } from '@/lib/types'
 import { useLayout } from '@/lib/layout'
 import { signedInHome } from '@/lib/phone-routes'
-
-const ADMIN_BADGE = 'bg-success-bg text-success border border-success-border'
-const MEMBER_BADGE = 'bg-surface-control text-text-secondary border border-border-light'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Banner, BannerDescription } from '@/components/ui/banner'
+import { BrandGlyph } from '@/components/ui/BrandMark'
+import { formatDate } from '@/lib/format'
+import { OctagonXIcon } from 'lucide-react'
 
 export default function SelectOrgPage() {
   const { pendingOrgSelection, selectOrg, logout, user } = useAuth()
@@ -47,15 +50,10 @@ export default function SelectOrgPage() {
     : orgs
 
   // While a firm is being entered (or the session is already established and the
-  // dashboard redirect is in flight), show a single clean loading screen instead
-  // of re-rendering the cards or flashing other auth pages.
+  // dashboard redirect is in flight), show nothing rather than a spinner
+  // (section 14 rule 1) so the cards never flash back in before navigating away.
   if (selecting || user) {
-    return (
-      <div className="min-h-screen bg-surface-sunken flex flex-col items-center justify-center gap-4">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-text-secondary">Entering your workspace…</p>
-      </div>
-    )
+    return null
   }
 
   async function handleSelect(orgId: string) {
@@ -70,36 +68,36 @@ export default function SelectOrgPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-sunken flex flex-col items-center justify-center px-4 py-12">
-      <div className="w-full max-w-[640px]">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-surface-sunken px-4 py-12">
+      <div className="w-full max-w-160">
         {/* Header */}
-        <div className="text-center mb-10">
-          <span className="text-[28px] font-bold text-text-primary tracking-tight">V2E</span>
-          <h1 className="mt-4 text-[22px] font-semibold text-text-primary">Select an Organization</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <BrandGlyph size={34} radius={9} />
+          <h1 className="mt-3 text-page-title font-medium text-text-primary">
+            Select an Organization
+          </h1>
+          <p className="mt-1 text-body text-text-secondary">
             You belong to multiple organizations. Choose one to enter.
           </p>
         </div>
 
         {/* Search (show when > 5 orgs) */}
         {orgs.length > 5 && (
-          <div className="mb-6">
-            <input
-              type="text"
-              placeholder="Search organizations…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-[44px] px-4 text-[15px] text-text-primary placeholder-text-muted bg-white border border-border rounded-[8px] focus:outline-hidden focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
+          <Input
+            type="text"
+            placeholder="Search organizations…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="mb-6 max-w-none"
+          />
         )}
 
-        {/* Error */}
-        {error && (
-          <div className="mb-4 rounded-[8px] border border-danger-border bg-danger-bg px-4 py-3 text-sm text-danger">
-            {error}
-          </div>
-        )}
+        {error ? (
+          <Banner variant="danger" className="mb-4">
+            <OctagonXIcon />
+            <BannerDescription>{error}</BannerDescription>
+          </Banner>
+        ) : null}
 
         {/* Org Cards */}
         <div className="flex flex-col gap-3">
@@ -110,44 +108,43 @@ export default function SelectOrgPage() {
                 key={org.id}
                 onClick={() => handleSelect(org.id)}
                 disabled={!!selecting}
-                className="group w-full flex items-center gap-4 p-5 bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:border-primary hover:shadow-[0_2px_8px_rgba(37,99,235,0.12)] transition-all duration-150 text-left disabled:opacity-60 disabled:cursor-not-allowed"
+                className="group flex w-full items-center gap-4 rounded-card border border-border-light bg-surface p-4 text-left shadow-card transition-colors duration-(--duration-fast) hover:border-primary disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {/* Org icon */}
-                <div className="w-12 h-12 rounded-[10px] bg-primary-subtle flex items-center justify-center shrink-0 group-hover:bg-primary-subtle transition-colors">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary-subtle">
                   {org.logo_url ? (
-                    <img src={org.logo_url} alt={org.name} className="w-8 h-8 object-contain rounded-xs" />
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={org.logo_url} alt={org.name} className="size-8 rounded-xs object-contain" />
                   ) : (
-                    <Building2 size={22} className="text-primary-text" />
+                    <Building2Icon size={22} className="text-primary-text" />
                   )}
                 </div>
 
                 {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[15px] font-semibold text-text-primary truncate">{org.name}</p>
-                  <div className="mt-1 flex items-center gap-2 flex-wrap">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium ${org.is_admin ? ADMIN_BADGE : MEMBER_BADGE}`}>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-body font-medium text-text-primary">{org.name}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <Badge variant={org.is_admin ? 'success' : 'neutral'}>
                       {org.is_admin ? 'Administrator' : 'Member'}
-                    </span>
-                    <span className="text-[13px] text-text-muted">
-                      Since {new Date(org.joined_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
+                    </Badge>
+                    <span className="text-meta text-text-muted">
+                      Since {formatDate(org.joined_at)}
                     </span>
                   </div>
                 </div>
 
                 {/* Arrow */}
-                <div className="shrink-0 text-text-muted group-hover:text-primary-text transition-colors">
-                  {isSelecting ? (
-                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <ArrowRight size={20} />
-                  )}
+                <div className="shrink-0 text-text-muted group-hover:text-primary-text">
+                  {isSelecting ? null : <ArrowRightIcon size={20} />}
                 </div>
               </button>
             )
           })}
 
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-text-secondary">No organizations match your search.</div>
+            <div className="py-12 text-center text-body text-text-secondary">
+              No organizations match your search.
+            </div>
           )}
         </div>
 
@@ -155,9 +152,9 @@ export default function SelectOrgPage() {
         <div className="mt-8 text-center">
           <button
             onClick={logout}
-            className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
+            className="inline-flex items-center gap-1 text-body text-text-secondary hover:text-text-primary"
           >
-            <LogOut size={14} />
+            <LogOutIcon size={14} />
             Sign out
           </button>
         </div>

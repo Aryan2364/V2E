@@ -1,16 +1,20 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react'
+import { ShieldCheckIcon, OctagonXIcon } from 'lucide-react'
 import { adminLogin as apiAdminLogin, getMe } from '@/lib/api/auth'
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect'
 import { DEFAULT_COUNTRY, cleanNationalNumber } from '@/lib/phone'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/ui/password-input'
+import { Banner, BannerDescription } from '@/components/ui/banner'
 
 export default function AdminLoginPage() {
   const [identifier, setIdentifier] = useState('')
   const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY)
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -55,53 +59,47 @@ export default function AdminLoginPage() {
   }
 
   if (checking) {
-    return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
-        <Loader2 size={28} className="animate-spin text-text-secondary" />
-      </div>
-    )
+    // Checking the session — render nothing rather than a spinner (section 14 rule 1).
+    return <div className="min-h-screen bg-surface-sunken" />
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
-      <div className="w-full max-w-[400px]">
+    <div className="flex min-h-screen items-center justify-center bg-surface-sunken p-4">
+      <div className="w-full max-w-auth-form">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-[14px] bg-[#1E293B] border border-border-strong mb-4">
-            <ShieldCheck size={28} className="text-primary-text" />
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="flex size-14 items-center justify-center rounded-card border border-border-light bg-surface shadow-card">
+            <ShieldCheckIcon size={28} className="text-primary-text" />
           </div>
-          <h1 className="text-[26px] font-bold text-white tracking-tight">Admin Portal</h1>
-          <p className="mt-1 text-sm text-text-muted">Super administrator access only</p>
+          <h1 className="mt-4 text-page-title font-medium text-text-primary">Admin Portal</h1>
+          <p className="mt-1 text-body text-text-muted">Super administrator access only</p>
         </div>
 
         {/* Card */}
-        <div className="bg-[#1E293B] border border-border-strong rounded-[14px] p-7 shadow-xl">
-          {error && (
-            <div
-              role="alert"
-              className="mb-5 rounded-[8px] border border-danger-border bg-danger-bg px-4 py-3 text-sm text-danger"
-            >
-              {error}
-            </div>
-          )}
+        <div className="rounded-card border border-border-light bg-surface p-7 shadow-card">
+          {error ? (
+            <Banner variant="danger" className="mb-5">
+              <OctagonXIcon />
+              <BannerDescription>{error}</BannerDescription>
+            </Banner>
+          ) : null}
 
-          <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
             {/* Email or phone */}
             <div>
-              <label htmlFor="identifier" className="block text-sm font-medium text-[#CBD5E1] mb-1.5">
+              <Label htmlFor="identifier" required>
                 Email address / Phone number
-              </label>
-              <div className="flex gap-2">
+              </Label>
+              <div className="mt-2 flex gap-2">
                 {isPhoneish && (
                   <CountryCodeSelect
                     value={countryCode}
                     onChange={setCountryCode}
                     disabled={loading}
-                    dark
-                    wrapperClassName="w-[116px] shrink-0"
+                    wrapperClassName="w-29 shrink-0"
                   />
                 )}
-                <input
+                <Input
                   id="identifier"
                   type="text"
                   autoComplete="username"
@@ -109,59 +107,37 @@ export default function AdminLoginPage() {
                   onChange={(e) => setIdentifier(e.target.value)}
                   disabled={loading}
                   placeholder="admin@example.com or mobile number"
-                  className="flex-1 h-11 px-3 rounded-[8px] border border-border-strong bg-[#0F172A] text-white placeholder:text-text-secondary text-sm focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20 disabled:opacity-50 transition-colors"
+                  className="max-w-none flex-1"
                 />
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[#CBD5E1] mb-1.5">
+              <Label htmlFor="password" required>
                 Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                  placeholder="Enter your password"
-                  className="w-full h-11 px-3 pr-10 rounded-[8px] border border-border-strong bg-[#0F172A] text-white placeholder:text-text-secondary text-sm focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20 disabled:opacity-50 transition-colors"
-                />
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-muted transition-colors"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
+              </Label>
+              <PasswordInput
+                id="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                placeholder="Enter your password"
+                className="mt-2 max-w-none"
+              />
             </div>
 
             {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-11 mt-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-[#1E293B] disabled:text-text-secondary disabled:border disabled:border-border-strong disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Signing in…
-                </>
-              ) : (
-                'Sign in'
-              )}
-            </button>
+            <Button type="submit" size="lg" loading={loading} loadingLabel="Signing in" className="w-full">
+              Sign in
+            </Button>
           </form>
         </div>
 
-        <p className="text-center text-xs text-text-secondary mt-6">
+        <p className="mt-6 text-center text-meta text-text-secondary">
           Not an admin?{' '}
-          <a href="/login" className="text-text-secondary hover:text-text-muted underline transition-colors">
+          <a href="/login" className="text-text-secondary underline hover:text-text-primary">
             Go to workspace login
           </a>
         </p>

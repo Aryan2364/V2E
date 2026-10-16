@@ -21,8 +21,8 @@ export default function HomePage() {
   }, [user, isLoading, router, layout]);
 
   return (
-    <div className="min-h-screen bg-surface-sunken flex items-center justify-center">
-      <div className="text-text-secondary text-sm">Loading V2E...</div>
+    <div className="flex min-h-screen items-center justify-center bg-surface-sunken">
+      <div className="text-body text-text-secondary">Loading V2E...</div>
     </div>
   );
 }
