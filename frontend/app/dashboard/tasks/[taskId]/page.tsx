@@ -25,6 +25,8 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import Tooltip from '@/components/ui/tooltip'
 import { AttachmentChips } from '@/components/ui/AttachmentList'
 import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -145,14 +147,6 @@ function deadlineColor(deadline?: string): string {
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
-function Skeleton({ className }: { className?: string }) {
-  return (
-    <div
-      className={`bg-surface-control rounded-xs animate-pulse ${className ?? ''}`}
-    />
-  )
-}
-
 function DetailSkeleton() {
   return (
     <div className="space-y-6">
@@ -255,13 +249,15 @@ function CommentItem({
           if (!mine || a.is_proof || !extOk) return null
           return (
             <Tooltip key={`mp-${a.id}`} label={`Use "${a.file_name}" as your proof of completion`}>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-1 mr-2"
                 onClick={() => onMarkProof(a.id)}
                 disabled={markingProofId === a.id}
-                className="mt-1 mr-2 inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text disabled:opacity-60 transition-colors"
               >
                 <ShieldCheck size={12} /> Mark “{a.file_name}” as proof
-              </button>
+              </Button>
             </Tooltip>
           )
         })}
@@ -271,13 +267,15 @@ function CommentItem({
       </div>
       {comment.user_id === currentUserId && (
         <Tooltip label="Delete comment">
-          <button
-            onClick={() => setConfirmOpen(true)}
+          <Button
+            variant="ghost"
+            size="icon-sm"
             aria-label="Delete comment"
-            className="text-text-muted hover:text-danger transition-colors shrink-0"
+            onClick={() => setConfirmOpen(true)}
+            className="shrink-0 text-text-muted hover:text-danger"
           >
             <Trash2 size={13} />
-          </button>
+          </Button>
         </Tooltip>
       )}
 
