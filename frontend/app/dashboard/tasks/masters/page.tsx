@@ -1533,7 +1533,7 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               {ASSIGNMENT_STRATEGIES.map((opt) => (
                 <button key={opt.value} type="button" onClick={() => setForm({ ...form, assignment_strategy: opt.value })}
-                  className={`flex flex-col items-start gap-0.5 p-3 rounded-control border-2 text-left transition-all ${form.assignment_strategy === opt.value ? 'border-primary bg-primary-subtle' : 'border-border-light hover:border-border'}`}>
+                  className={`flex flex-col items-start gap-0.5 p-3 rounded-control border-2 text-left outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-all ${form.assignment_strategy === opt.value ? 'border-primary bg-primary-subtle' : 'border-border-light hover:border-border'}`}>
                   <span className={`text-body font-medium ${form.assignment_strategy === opt.value ? 'text-primary-text' : 'text-text-primary'}`}>{opt.label}</span>
                   <span className="text-meta text-text-secondary leading-snug">{opt.desc}</span>
                 </button>
@@ -1570,8 +1570,8 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
 
           {error && <p className="text-body font-medium text-danger">{error}</p>}
           <div className="flex gap-2 pt-1">
-            <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Group'}</button>
-            <button onClick={closeForm} className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
+            <Button onClick={handleSubmit} loading={submitting} loadingLabel="Saving">{editingId ? 'Save Changes' : 'Create Group'}</Button>
+            <Button variant="secondary" onClick={closeForm}>Cancel</Button>
           </div>
         </div>
       </div>
@@ -1589,7 +1589,7 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
       />
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} group{items.length !== 1 ? 's' : ''}</p>
-        <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Group</button>
+        <Button onClick={openCreate}><Plus size={14} /> Add Group</Button>
       </div>
       {items.length === 0 && <div className="text-center py-12 text-text-secondary text-body">No resolver groups yet. Create one to route tickets to a pool of resolvers.</div>}
       <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
@@ -1607,8 +1607,8 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
                   {g.description && <p className="text-meta text-text-secondary truncate mt-0.5">{g.description}</p>}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => openEdit(g)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
-                  <button onClick={() => setConfirmDeleteId(g.id)} aria-label="Delete" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+                  <Button variant="ghost" size="icon-sm" onClick={() => openEdit(g)} aria-label="Edit"><Pencil size={13} /></Button>
+                  <Button variant="ghost" size="icon-sm" className="hover:text-danger hover:bg-danger-bg" onClick={() => setConfirmDeleteId(g.id)} aria-label="Delete"><Trash2 size={13} /></Button>
                 </div>
               </div>
               <div className="mt-2 max-h-[120px] overflow-y-auto space-y-1">
