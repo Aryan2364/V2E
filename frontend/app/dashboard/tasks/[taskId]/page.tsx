@@ -2022,12 +2022,13 @@ export default function TaskDetailPage() {
                                     </span>
                                     {canEdit && reopenPartTarget !== a.user_id && (
                                       <Tooltip label={`Reopen ${name}'s part for rework`}>
-                                        <button
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
                                           onClick={() => { setReopenPartReason(''); setReopenPartTarget(a.user_id) }}
-                                          className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                                         >
                                           <RotateCcw size={11} /> Reopen
-                                        </button>
+                                        </Button>
                                       </Tooltip>
                                     )}
                                   </div>
@@ -2040,12 +2041,13 @@ export default function TaskDetailPage() {
                                     </span>
                                     {canEdit && reopenPartTarget !== a.user_id && (
                                       <Tooltip label={`Reopen ${name}'s part`}>
-                                        <button
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
                                           onClick={() => { setReopenPartReason(''); setReopenPartTarget(a.user_id) }}
-                                          className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                                         >
                                           <RotateCcw size={11} /> Reopen
-                                        </button>
+                                        </Button>
                                       </Tooltip>
                                     )}
                                   </div>
@@ -2072,13 +2074,16 @@ export default function TaskDetailPage() {
                                 wrapperClassName="flex-1 min-w-0"
                               />
                               <Tooltip label={`Mark ${name}'s part complete`}>
-                                <button
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  className="shrink-0 border-success-border text-success hover:bg-success-bg"
                                   onClick={() => handleCompleteAssignee(a.user_id)}
-                                  disabled={actionLoading === `complete-${a.user_id}`}
-                                  className="shrink-0 flex items-center gap-1 text-meta font-medium text-success bg-success-bg border border-success-border rounded-full px-2.5 py-1 hover:bg-success-bg disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                                  loading={actionLoading === `complete-${a.user_id}`}
+                                  loadingLabel="…"
                                 >
                                   <CheckCircle2 size={12} /> Done
-                                </button>
+                                </Button>
                               </Tooltip>
                             </div>
                           )}
@@ -2096,19 +2101,17 @@ export default function TaskDetailPage() {
                                 className="w-full rounded-control border border-border bg-surface px-2.5 py-1.5 text-body text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden resize-none"
                               />
                               <div className="mt-2 flex items-center gap-2">
-                                <button
+                                <Button
+                                  size="sm"
                                   onClick={() => handleReopenAssigneePart(a.user_id)}
-                                  disabled={actionLoading === `reopen-part-${a.user_id}`}
-                                  className="inline-flex items-center gap-1 text-meta font-medium text-primary-foreground bg-primary rounded-control px-3 py-1.5 hover:bg-primary-hover disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                                  loading={actionLoading === `reopen-part-${a.user_id}`}
+                                  loadingLabel="Reopening"
                                 >
-                                  <RotateCcw size={12} /> {actionLoading === `reopen-part-${a.user_id}` ? 'Reopening…' : 'Reopen part'}
-                                </button>
-                                <button
-                                  onClick={() => setReopenPartTarget(null)}
-                                  className="text-meta font-medium text-text-secondary hover:text-text-primary outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
-                                >
+                                  <RotateCcw size={12} /> Reopen part
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => setReopenPartTarget(null)}>
                                   Cancel
-                                </button>
+                                </Button>
                               </div>
                             </div>
                           )}
