@@ -1793,7 +1793,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
             <FormField label="Type">
               <div className="flex gap-2">
                 {(['simple', 'full'] as TicketTemplateType[]).map((t) => (
-                  <button key={t} type="button" onClick={() => setForm({ ...form, template_type: t })} className={`flex-1 py-[9px] rounded-control text-body font-medium border-2 transition-colors ${form.template_type === t ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary'}`}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
+                  <button key={t} type="button" onClick={() => setForm({ ...form, template_type: t })} className={`flex-1 py-[9px] rounded-control text-body font-medium border-2 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors ${form.template_type === t ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary'}`}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
                 ))}
               </div>
             </FormField>
@@ -1874,10 +1874,10 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
             {checklistItems.map((item, idx) => (
               <div key={idx} className="flex gap-2 mb-2 max-w-xl">
                 <input type="text" value={item} onChange={(e) => setChecklistItems((prev) => prev.map((v, i) => i === idx ? e.target.value : v))} placeholder={`Item ${idx + 1}`} className={inputCls} />
-                <button onClick={() => setChecklistItems((prev) => prev.filter((_, i) => i !== idx))} className="w-8 h-[38px] flex items-center justify-center text-text-muted hover:text-danger transition-colors"><X size={14} /></button>
+                <Button variant="ghost" size="icon-sm" className="hover:text-danger" onClick={() => setChecklistItems((prev) => prev.filter((_, i) => i !== idx))} aria-label="Remove item"><X size={14} /></Button>
               </div>
             ))}
-            <button onClick={() => setChecklistItems((prev) => [...prev, ''])} className="flex items-center gap-1.5 text-body font-medium text-primary-text hover:text-primary-text transition-colors mt-1"><Plus size={13} /> Add item</button>
+            <Button variant="ghost" size="sm" className="mt-1" onClick={() => setChecklistItems((prev) => [...prev, ''])}><Plus size={13} /> Add item</Button>
           </div>
         </div>
 
@@ -1896,8 +1896,8 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
 
         {error && <p className="text-body font-medium text-danger">{error}</p>}
         <div className="flex gap-2 pt-1">
-          <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Template'}</button>
-          <button onClick={closeForm} className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
+          <Button onClick={handleSubmit} loading={submitting} loadingLabel="Saving">{editingId ? 'Save Changes' : 'Create Template'}</Button>
+          <Button variant="secondary" onClick={closeForm}>Cancel</Button>
         </div>
       </div>
     )
@@ -1928,7 +1928,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
       />
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} template{items.length !== 1 ? 's' : ''}</p>
-        <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Template</button>
+        <Button onClick={openCreate}><Plus size={14} /> Add Template</Button>
       </div>
       {items.length === 0 && <div className="text-center py-12 text-text-secondary text-label">No templates yet.</div>}
       {sections.map((section) => (
@@ -1952,9 +1952,11 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
               {item.checklist_items.length > 0 && <span className="text-meta text-text-secondary">{item.checklist_items.length} items</span>}
               <span className={`text-meta font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Archived'}</span>
               <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => openEdit(item)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
+                <Button variant="ghost" size="icon-sm" onClick={() => openEdit(item)} aria-label="Edit"><Pencil size={13} /></Button>
                 {item.is_active && (
-                  <Tooltip label="Archive"><button onClick={() => setConfirmArchiveId(item.id)} aria-label="Archive" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button></Tooltip>
+                  <Tooltip label="Archive">
+                    <Button variant="ghost" size="icon-sm" className="hover:text-danger hover:bg-danger-bg" onClick={() => setConfirmArchiveId(item.id)} aria-label="Archive"><Trash2 size={13} /></Button>
+                  </Tooltip>
                 )}
               </div>
             </div>
