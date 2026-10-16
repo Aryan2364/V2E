@@ -73,7 +73,7 @@ export default function DeptInfoPanel({
       <SheetContent side="right">
         {department && (
           <>
-            <SheetHeader className="pr-20">
+            <SheetHeader className="pr-12">
               <div className="min-w-0">
                 {ancestors.length > 0 && (
                   <nav className="mb-1 flex flex-wrap items-center gap-0.5 text-meta text-text-muted">
