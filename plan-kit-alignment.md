@@ -194,3 +194,52 @@ npx next build
   documented no-op shim) mounted once in MainLayout. Phone shell untouched and still
   short-circuits before any desktop markup. `npx tsc --noEmit` and the hex/font-weight
   greps clean for components/layout and components/shell.
+- 16 Oct 2026: P3b done (remaining `components/ui` adapters/migrations), via 4 parallel
+  agents, then coordinator-run full verification.
+  **Modal.tsx**/**ConfirmDialog.tsx** (32/21 sites): both rewritten as thin adapters over
+  `dialog.tsx`/`alert-dialog.tsx`; no kit files touched. Modal keeps isOpen/onClose/title/
+  size/closeOnEscape/bodyScroll/elevated; backdrop always closes, Escape only when
+  closeOnEscape (unchanged). ConfirmDialog keeps its props, danger-by-default, loading
+  spinner/error banner added inside the adapter only (not modeled by kit AlertDialog).
+  Escape/backdrop now no-ops on ConfirmDialog, matching kit AlertDialog intent (acceptable
+  per brief — old version only closed via its two buttons anyway). Commits dff80b6,
+  9123773, a18855b.
+  **StyledSelect.tsx** (42 sites) → thin adapter choosing kit `select.tsx` (≤6 options) or
+  `searchable-select.tsx` (≥7) by `options.length`. Added `variant:"danger"` to
+  SelectItem/CommandItem, and colour-dot/divider/action-row support to
+  `SearchableSelectEntry` on `searchable-select.tsx` (backward compatible with existing
+  Record<string,string> usage). **SelectField.tsx** (1 site) migrated directly and
+  deleted. Commits e5c9756, 4e79a65.
+  **DatePicker.tsx** (28 sites) → thin adapter over `date-picker.tsx`; added `min`/`max`
+  and `markedDates`/`markedHint` (leave-day dots) to `date-picker.tsx`/`calendar.tsx`.
+  `compact`/`hideClear`/`bare` dropped (no kit equivalent, unused by call sites).
+  **DateRangePicker.tsx** (9 sites) → rebuilt on kit calendar's existing `mode="range"` +
+  `popover.tsx`, no kit change needed; `{from,to}` ISO contract kept. **TimeField.tsx**
+  (9 sites) → thin adapter over `time-picker.tsx`; real behaviour change flagged: typed
+  minutes now snap to kit's 15-minute steps instead of free entry, and the old analog
+  dialog is replaced by the kit's inline hour/minute/AM-PM popover. **MonthDayPicker.tsx**
+  (1 site) migrated and deleted. Commits d6ea696, e6e56aa, fc7f3fe, efe507a.
+  **ResponsiveTable.tsx** (23 sites) → thin adapter: desktop/tablet now kit `table.tsx`
+  parts; mobile card-list branch kept as its own markup (table.tsx has no card mode).
+  **ViewToggle.tsx** (3 sites) → restyled on the same Toggle/ToggleGroup primitives as
+  `view-switcher.tsx` but deliberately NOT merged into it (different semantic: table-vs-
+  tree, not list/card/board). **MultiSelect.tsx**: added hint/color/colorClassName variant
+  to kit `multi-select.tsx`; 2 of 5 call sites migrated directly; the other 3
+  (TagSelect/TagPicker/StepCard) use renderChip/onCreate/maxSelected — not in kit scope,
+  stay on MultiSelect.tsx, flagged in ADAPTERS.md rather than force-migrated. **useHoverTip**
+  (2 sites, hand-rolled portal tooltip with inline hex) and **FilterButton** (1 site)
+  migrated directly to `tooltip.tsx`/`popover.tsx` and deleted; FilterButton's call site
+  now `components/goals/GoalsFilterPopover.tsx` (logically equivalent reimplementation,
+  not byte-identical — worth a visual check on /dashboard goals). **ClockTimePicker.tsx**
+  re-verified 0 importers tree-wide (TimeField's conversion had already dropped its
+  reference) and deleted. Commits 5281b4a, 95b0d4f, b91b65a, 38a88a7, ac98c0e, bc533ac.
+  Hand-rolled-overlay/native-control counts for P5 (ADAPTERS.md bottom section):
+  `fixed inset-0` outside components/ui — components/tasks 10, app/dashboard 6,
+  components/meetings 5, components/roles/process-hierarchy/org-chart/learning 3 each,
+  +8 more folders at 1-2; `confirm`/`alert`/`prompt` — app/dashboard 9, components/tasks 5,
+  +3 folders at 1; `<select` — app/dashboard 3, app/communication 3, app/super-admin 2,
+  +4 folders at 1.
+  `frontend/FRONTEND_RULES.md` §4.1.1 "v2e additions" table logs every kit-component
+  addition above. `components/ui/ADAPTERS.md` rewritten to final state.
+  Coordinator verification: `npx tsc --noEmit` clean; `NODE_OPTIONS=--max-old-space-size=8192
+  npx next build` green across all routes.
