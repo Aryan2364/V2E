@@ -6,8 +6,11 @@ import { getDepartments } from '@/lib/api/departments'
 import { flattenTree } from '@/lib/dept-tree'
 import { computeNodeColors } from '@/lib/org-chart-colors'
 import type { Department } from '@/lib/types'
-import { Loader2, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import DepartmentCalendarPanel from '@/components/holidays/DepartmentCalendarPanel'
+import { PageHeader } from '@/components/shell/page-header'
+import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 
 export default function DepartmentsPage() {
   const { user } = useAuth()
@@ -29,25 +32,22 @@ export default function DepartmentsPage() {
     }).finally(() => setLoading(false))
   }, [orgId])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 size={24} className="animate-spin text-text-muted" />
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-page-title font-medium text-text-primary">Department Calendars</h1>
-        <p className="text-body text-text-secondary mt-1">Override working days and add department-specific holidays.</p>
-      </div>
+      <PageHeader
+        title="Department calendars"
+        meta="Override working days and add department-specific holidays."
+      />
 
-      {departments.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card p-8 text-center shadow-card">
-          <p className="text-text-muted text-body">No departments found. Create departments first in Org Chart.</p>
+      {loading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-64 w-full" />
         </div>
+      ) : departments.length === 0 ? (
+        <EmptyState variant="nothing-yet" heading="No departments found">
+          Create departments first in Org Chart.
+        </EmptyState>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
           {/* Dept list */}

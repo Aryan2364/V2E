@@ -4,8 +4,11 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth/context'
 import { holidaysApi } from '@/lib/api/holidays'
 import type { HolidayMasterConfig, HolidayOnTaskAction } from '@/lib/types/holidays'
-import { Loader2, Save } from 'lucide-react'
+import { Save } from 'lucide-react'
 import HolidayConfigCard from '@/components/holidays/HolidayConfigCard'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function HolidayConfigurationsPage() {
   const { user } = useAuth()
@@ -34,47 +37,38 @@ export default function HolidayConfigurationsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 size={24} className="animate-spin text-text-muted" />
-      </div>
-    )
-  }
-
-  if (!config) return null
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-page-title font-medium text-text-primary">Configurations</h1>
-        <p className="text-body text-text-secondary mt-1">Configure how deadlines across tasks, recurring tasks, workflows and tickets behave when they fall on a holiday.</p>
-      </div>
+      <PageHeader
+        title="Configurations"
+        meta="Configure how deadlines across tasks, recurring tasks, workflows and tickets behave when they fall on a holiday."
+      />
 
-      <div className="bg-surface border border-border-light rounded-card p-6 shadow-card">
-        <h2 className="text-section font-medium text-text-primary mb-4">Behavior</h2>
+      {loading ? (
+        <div className="space-y-3">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      ) : !config ? null : (
+        <div className="bg-surface border border-border-light rounded-card p-6 shadow-card">
+          <h2 className="text-section font-medium text-text-primary mb-4">Behavior</h2>
 
-        <HolidayConfigCard
-          action={config.holiday_on_task_action}
-          onActionChange={(a: HolidayOnTaskAction) => setConfig((c) => c ? { ...c, holiday_on_task_action: a } : c)}
-          disabled={!isAdmin}
-        />
+          <HolidayConfigCard
+            action={config.holiday_on_task_action}
+            onActionChange={(a: HolidayOnTaskAction) => setConfig((c) => c ? { ...c, holiday_on_task_action: a } : c)}
+            disabled={!isAdmin}
+          />
 
-        {isAdmin && (
-          <div className="mt-4">
-            <button
-              type="button"
-              disabled={saving}
-              onClick={save}
-              className="flex items-center gap-2 h-10 px-4 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-            >
-              <Save size={15} />
-              {saving ? 'Saving...' : 'Save Settings'}
-            </button>
-          </div>
-        )}
-      </div>
-
+          {isAdmin && (
+            <div className="mt-4">
+              <Button type="button" loading={saving} onClick={save}>
+                <Save size={15} />
+                Save settings
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
