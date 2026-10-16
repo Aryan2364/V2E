@@ -37,6 +37,8 @@ import type {
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -163,11 +165,10 @@ function ConfigTab({ orgId }: { orgId: string }) {
             className={inputCls} />
         </FormField>
       </div>
-      <button onClick={handleSave} disabled={saving}
-        className="flex items-center gap-2 px-4 py-[10px] text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+      <Button onClick={handleSave} loading={saving} loadingLabel="Saving">
         <Save size={15} />
-        {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Configuration'}
-      </button>
+        {saved ? 'Saved!' : 'Save Configuration'}
+      </Button>
     </div>
   )
 }
@@ -230,9 +231,9 @@ function CategoriesTab({ orgId }: { orgId: string }) {
       />
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} categor{items.length !== 1 ? 'ies' : 'y'}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover transition-colors">
+        <Button onClick={() => setCreating(true)}>
           <Plus size={14} /> Add Category
-        </button>
+        </Button>
       </div>
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
@@ -247,8 +248,8 @@ function CategoriesTab({ orgId }: { orgId: string }) {
           </div>
           <FormField label="Description (optional)"><input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Brief description..." className={inputCls} /></FormField>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
+            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
+            <Button variant="secondary" onClick={() => setCreating(false)}>Cancel</Button>
           </div>
         </div>
       )}
@@ -267,8 +268,8 @@ function CategoriesTab({ orgId }: { orgId: string }) {
             </div>
             <FormField label="Description"><input type="text" value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} className={inputCls} /></FormField>
             <div className="flex gap-2">
-              <button onClick={() => handleEdit(item.id)} disabled={submitting} className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : 'Save'}</button>
-              <button onClick={() => setEditingId(null)} className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
+              <Button onClick={() => handleEdit(item.id)} loading={submitting} loadingLabel="Saving">Save</Button>
+              <Button variant="secondary" onClick={() => setEditingId(null)}>Cancel</Button>
             </div>
           </div>
         ) : (
@@ -280,8 +281,8 @@ function CategoriesTab({ orgId }: { orgId: string }) {
             </div>
             <span className={`text-meta font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, description: item.description ?? '', color: item.color }) }} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
-              <button onClick={() => setConfirmDeleteId(item.id)} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+              <Button variant="ghost" size="icon-sm" aria-label="Edit" onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, description: item.description ?? '', color: item.color }) }}><Pencil size={13} /></Button>
+              <Button variant="ghost" size="icon-sm" aria-label="Delete" onClick={() => setConfirmDeleteId(item.id)} className="hover:text-danger hover:bg-danger-bg"><Trash2 size={13} /></Button>
             </div>
           </div>
         ))}
