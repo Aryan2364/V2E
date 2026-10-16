@@ -1,10 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useMemo, useRef, useState } from 'react'
 import Tooltip from '@/components/ui/tooltip'
 import {
-  X,
   Download,
   UploadCloud,
   FileText,
@@ -25,7 +23,10 @@ import type {
   ChecklistImportBatchSummary,
   ChecklistUndoImportResult,
 } from '@/lib/types/tasks'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from 'sonner'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { formatDateTime } from '@/lib/format'
 
 interface Props {
   orgId: string
@@ -95,16 +96,9 @@ function SummaryChip({ color, label }: { color: 'green' | 'red' | 'amber' | 'blu
 }
 
 export default function ImportChecklistsModal({ orgId, onClose, onImported }: Props) {
-  const { addToast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
-  }, [])
+  // Body-scroll-lock, Escape and the backdrop are now the kit Dialog's own behaviour.
 
   type Phase = 'upload' | 'preview' | 'result' | 'history'
   const [phase, setPhase] = useState<Phase>('upload')
@@ -174,7 +168,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      addToast('Could not build the template. Please try again.', 'error')
+      toast.error('Could not build the template. Please try again.')
     } finally {
       setBuilding(false)
     }
@@ -283,10 +277,10 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
       setCommitResult(res)
       setPhase('result')
       if (res.created > 0) {
-        addToast(`Imported ${res.created} checklist${res.created !== 1 ? 's' : ''}`, res.failed > 0 ? 'warning' : 'success')
+        toast[res.failed > 0 ? 'warning' : 'success'](`Imported ${res.created} checklist${res.created !== 1 ? 's' : ''}`)
         onImported()
       } else {
-        addToast('No checklists were imported', 'error')
+        toast.error('No checklists were imported')
       }
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? 'Import failed. Please try again.'
@@ -308,12 +302,12 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
     try {
       const res = await tasksApi.undoChecklistImport(orgId, batchId)
       setUndoResult(res)
-      addToast(res.undone > 0 ? `Removed ${res.undone} imported checklist${res.undone !== 1 ? 's' : ''}` : 'Nothing was removed', res.kept.length > 0 ? 'warning' : 'success')
+      toast[res.kept.length > 0 ? 'warning' : 'success'](res.undone > 0 ? `Removed ${res.undone} imported checklist${res.undone !== 1 ? 's' : ''}` : 'Nothing was removed')
       onImported()
       setBatches(await tasksApi.listChecklistImportBatches(orgId))
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? 'Undo failed.'
-      addToast(Array.isArray(msg) ? msg.join(', ') : msg, 'error')
+      toast.error(Array.isArray(msg) ? msg.join(', ') : msg)
     } finally {
       setUndoingId(null)
     }
@@ -334,44 +328,35 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
     return onlyProblems ? validation.rows.filter((r) => r.status !== 'ready' || r.issues.length > 0) : validation.rows
   }, [validation, onlyProblems])
 
-  if (!mounted) return null
-
-  return createPortal(
-    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
-      <div className="bg-surface w-full sm:max-w-3xl sm:rounded-xl rounded-t-xl shadow-xl max-h-[92vh] flex flex-col">
+  return (
+    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
+      <DialogContent size="lg" className="max-w-3xl max-h-[92vh] p-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
-          <div className="flex items-center gap-3">
+        <DialogHeader>
+          <div className="flex items-center gap-3 min-w-0">
             {(phase === 'preview' || phase === 'history') && (
-              <button
+              <Button
+                variant="on-brand"
+                size="icon"
                 onClick={phase === 'history' ? resetToUpload : () => setPhase('upload')}
-                className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
                 aria-label="Back"
               >
                 <ArrowLeft size={18} />
-              </button>
+              </Button>
             )}
-            <h2 className="text-[18px] font-medium text-text-primary">
+            <DialogTitle>
               {phase === 'preview' ? 'Review before importing' : phase === 'history' ? 'Import history' : phase === 'result' ? 'Import complete' : 'Import Checklists'}
-            </h2>
+            </DialogTitle>
           </div>
-          <div className="flex items-center gap-1">
-            {phase === 'upload' && (
-              <button
-                onClick={openHistory}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[13px] font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
-              >
-                <History size={15} /> History
-              </button>
-            )}
-            <button onClick={onClose} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors" aria-label="Close">
-              <X size={18} />
-            </button>
-          </div>
-        </div>
+          {phase === 'upload' && (
+            <Button variant="on-brand" size="sm" onClick={openHistory}>
+              <History size={15} /> History
+            </Button>
+          )}
+        </DialogHeader>
 
         {/* Body */}
-        <div className="px-6 py-4 overflow-y-auto space-y-4">
+        <DialogBody className="space-y-4">
           {/* ── Upload ── */}
           {phase === 'upload' && (
             <>
@@ -564,7 +549,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-text-primary truncate">{b.file_name || 'Checklist import'}</p>
                       <p className="text-xs text-text-muted mt-0.5">
-                        {new Date(b.created_at).toLocaleString()} · by {b.imported_by}
+                        {formatDateTime(b.created_at)} · by {b.imported_by}
                       </p>
                       <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                         <SummaryChip color="green" label={`${b.created_count} created`} />
@@ -588,9 +573,8 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
               ))}
             </div>
           )}
-        </div>
-      </div>
-    </div>,
-    document.body,
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
   )
 }
