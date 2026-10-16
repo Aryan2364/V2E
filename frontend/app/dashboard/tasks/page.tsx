@@ -47,6 +47,7 @@ import { useTaskTags } from '@/lib/tasks/useTaskTags'
 import { Plus, Search, SlidersHorizontal, X, BarChart3, Download, ListChecks, CheckSquare } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const PAGE_SIZE = 25
 
@@ -588,10 +589,18 @@ export default function TasksOverviewPage() {
       {pills.map((p, i) => (
         <span key={i} className="inline-flex items-center gap-1.5 rounded-[999px] bg-primary-subtle border border-primary-border text-primary-text text-meta font-medium pl-2.5 pr-1.5 py-1">
           {p.label}
-          <button onClick={p.clear} className="w-4 h-4 rounded-full hover:bg-primary hover:text-primary-foreground flex items-center justify-center transition-colors"><X size={11} /></button>
+          <button
+            onClick={p.clear}
+            aria-label={`Remove filter: ${p.label}`}
+            className="w-4 h-4 rounded-full hover:bg-primary hover:text-primary-foreground flex items-center justify-center outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+          >
+            <X size={11} />
+          </button>
         </span>
       ))}
-      <button onClick={clearFilters} className="text-meta text-danger font-medium hover:underline">Clear all</button>
+      <Button variant="ghost" size="sm" onClick={clearFilters} className="text-danger hover:text-danger">
+        Clear all
+      </Button>
     </div>
   ) : null
 
@@ -708,7 +717,7 @@ export default function TasksOverviewPage() {
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <LensToggle value={lens} onChange={switchLens} />
           <button onClick={() => setShowInsights((v) => !v)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-control border text-body font-medium transition-colors ${showInsights ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-control border text-body font-medium outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors ${showInsights ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
             <BarChart3 size={15} /> Insights
           </button>
         </div>
@@ -808,13 +817,12 @@ export default function TasksOverviewPage() {
             className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
         <button onClick={() => setShowFilters((v) => !v)}
-          className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border text-body font-medium transition-colors ${showFilters || filtersActive ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
+          className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border text-body font-medium outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors ${showFilters || filtersActive ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
           <SlidersHorizontal size={15} /> Filters{filtersActive && <span className="ml-0.5 w-1.5 h-1.5 rounded-full bg-primary" />}
         </button>
-        <button onClick={exportCsv} disabled={exporting}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border border-border-light text-body font-medium text-text-secondary hover:bg-surface-control disabled:opacity-60 transition-colors">
-          <Download size={15} /> {exporting ? 'Exporting…' : 'Export'}
-        </button>
+        <Button variant="secondary" onClick={exportCsv} loading={exporting} loadingLabel="Exporting">
+          <Download size={15} /> Export
+        </Button>
         <StyledSelect
           value={sort}
           onChange={setSort}
@@ -910,21 +918,24 @@ export default function TasksOverviewPage() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           {rows.length > 0 && (
-            <button onClick={() => setSelected((prev) => prev.size === rows.length ? new Set() : new Set(rows.map((r) => r.id)))}
-              className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors">
+            <Button variant="ghost" size="sm" onClick={() => setSelected((prev) => prev.size === rows.length ? new Set() : new Set(rows.map((r) => r.id)))}>
               <ListChecks size={15} /> {selected.size === rows.length && rows.length > 0 ? 'Deselect' : 'Select'} page
-            </button>
+            </Button>
           )}
           <p className="text-body text-text-secondary">
             {loadingList ? 'Loading…' : <><span className="font-medium text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}{bucket ? ' in this bucket' : ''}</>}
           </p>
         </div>
-        {bucket && <button onClick={() => setBucket(null)} className="text-body text-primary-text hover:underline flex items-center gap-1"><X size={13} /> Clear bucket</button>}
+        {bucket && (
+          <Button variant="ghost" size="sm" onClick={() => setBucket(null)} className="text-primary-text hover:text-primary-text">
+            <X size={13} /> Clear bucket
+          </Button>
+        )}
       </div>
 
       {/* Result surface */}
       {loadingList ? (
-        <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+        <Skeleton className="h-48 w-full rounded-card" />
       ) : rows.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4"><CheckSquare size={24} className="text-text-muted" /></div>
@@ -937,10 +948,15 @@ export default function TasksOverviewPage() {
             <TaskRow key={t.id} task={t} onClick={() => setOpenTaskId(t.id)} selectable selected={selected.has(t.id)} onToggleSelect={() => toggleSelect(t.id)} />
           ))}
           {hasMore && (
-            <button onClick={() => fetchList(page + 1, false)} disabled={loadingMore}
-              className="mt-2 mx-auto px-4 py-2.5 rounded-control border border-border-light bg-surface text-body font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
-              {loadingMore ? 'Loading…' : `Load more (${total - rows.length} left)`}
-            </button>
+            <Button
+              variant="secondary"
+              className="mt-2 mx-auto"
+              onClick={() => fetchList(page + 1, false)}
+              loading={loadingMore}
+              loadingLabel="Loading"
+            >
+              {`Load more (${total - rows.length} left)`}
+            </Button>
           )}
         </div>
       )}
@@ -954,10 +970,9 @@ export default function TasksOverviewPage() {
           <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search tasks…"
             className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
-        <button onClick={exportCsv} disabled={exporting}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border border-border-light text-body font-medium text-text-secondary hover:bg-surface-control disabled:opacity-60 transition-colors">
-          <Download size={15} /> {exporting ? 'Exporting…' : 'Export'}
-        </button>
+        <Button variant="secondary" onClick={exportCsv} loading={exporting} loadingLabel="Exporting">
+          <Download size={15} /> Export
+        </Button>
       </div>
 
       {pillsBar}
