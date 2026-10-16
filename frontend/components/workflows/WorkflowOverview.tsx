@@ -323,11 +323,11 @@ export default function WorkflowOverview({ id }: { id: string }) {
     <>
       <div className="flex items-center gap-2 flex-wrap">
         {!narrow && <TemplateStatusBadge status={w.status} />}
-        <span className="text-[13px] text-text-secondary">
+        <span className="text-label text-text-secondary">
           {narrow ? '' : `${plural(steps.length, 'step')} · `}Editors: {namesSummary(editors, 3)} · Updated {fmtDate(w.updated_at)}
         </span>
       </div>
-      <p className="mt-1.5 text-[13px] text-text-secondary wrap-break-word">
+      <p className="mt-1.5 text-label text-text-secondary wrap-break-word">
         <span className="font-medium text-text-primary">Starts:</span> {startsSummary(w, noStarters ? 'no one can start it yet' : undefined)}
         {w.next_run_at ? (
           <>
@@ -350,7 +350,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
         <WorkflowBreadcrumb trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }, { label: w.name }]} />
         <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{w.name}</h1>
+            <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{w.name}</h1>
             {!narrow && <div className="mt-1.5">{meta}</div>}
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -378,7 +378,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
         </div>
         {/* Phone: the status on one slim line; the rest of the meta sits under the header. */}
         {narrow && (
-          <div className="flex items-center gap-2 mt-1.5 min-w-0 text-[12px] text-text-secondary">
+          <div className="flex items-center gap-2 mt-1.5 min-w-0 text-meta text-text-secondary">
             <TemplateStatusBadge status={w.status} />
             <span className="whitespace-nowrap">{plural(steps.length, 'step')}</span>
           </div>
@@ -412,7 +412,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
                   role="tab"
                   aria-selected={view === v}
                   onClick={() => setView(v)}
-                  className={`inline-flex items-center gap-1.5 px-3 min-h-[44px] sm:min-h-[32px] rounded-[6px] text-[13px] font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
+                  className={`inline-flex items-center gap-1.5 px-3 min-h-[44px] sm:min-h-[32px] rounded-[6px] text-label font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
                     view === v ? 'bg-primary-subtle text-primary-text' : 'text-text-secondary hover:bg-surface-control'
                   }`}
                 >
@@ -447,8 +447,8 @@ export default function WorkflowOverview({ id }: { id: string }) {
                 <div key={lane.key} className="flex flex-col">
                   {lanes.length > 1 && (
                     <p className="flex items-baseline gap-2 pb-1.5 border-b border-border-light">
-                      <span className="text-[14px] font-medium text-text-primary">{lane.label}</span>
-                      {lane.hint && <span className="text-[13px] text-text-secondary">{lane.hint}</span>}
+                      <span className="text-body font-medium text-text-primary">{lane.label}</span>
+                      {lane.hint && <span className="text-label text-text-secondary">{lane.hint}</span>}
                     </p>
                   )}
                   <ol className="flex flex-col divide-y divide-surface-control">
@@ -461,18 +461,18 @@ export default function WorkflowOverview({ id }: { id: string }) {
                       const meta = [also.length ? `Also waits for ${also.join(', ')}` : null, s.if_late === 'move_on' ? 'If late: continue' : 'If late: wait'].filter(Boolean).join(' · ')
                       return (
                         <li key={s.id} className="py-3 flex items-start gap-3">
-                          <span className="mt-0.5 min-w-[26px] h-[26px] px-1 rounded-full bg-primary text-white text-[12px] font-medium flex items-center justify-center shrink-0">
+                          <span className="mt-0.5 min-w-[26px] h-[26px] px-1 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center shrink-0">
                             {layout.labels.get(s.id)}
                           </span>
                           <div className="min-w-0 flex-1">
                             <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                              <span className="text-[15px] font-medium text-text-primary wrap-break-word min-w-0">{s.title || 'Untitled step'}</span>
+                              <span className="text-body font-medium text-text-primary wrap-break-word min-w-0">{s.title || 'Untitled step'}</span>
                               <CompletionChip mode={s.completion_mode} count={names.length} />
                             </p>
-                            <p className="text-[13px] text-text-secondary">
+                            <p className="text-label text-text-secondary">
                               {namesSummary(names.map((name) => ({ name })), 3)} · {timingSummary(startRuleOf(s), dueRuleOf(s), frequency, deps.length > 0, nextFlags.get(s.id))}
                             </p>
-                            <p className="text-[13px] text-text-secondary">{meta}</p>
+                            <p className="text-label text-text-secondary">{meta}</p>
                           </div>
                         </li>
                       )
@@ -496,15 +496,15 @@ export default function WorkflowOverview({ id }: { id: string }) {
         }
       >
         {involved.length === 0 ? (
-          <p className="text-sm text-text-secondary">No one yet.</p>
+          <p className="text-body text-text-secondary">No one yet.</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {involved.map((p) => (
               <li key={p.id} className="flex items-start gap-2.5 min-w-0">
                 <Avatar name={p.name} size="md" />
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
-                  <p className="text-[12px] text-text-secondary">{roleWords(p.id === creator?.id && !p.roles.includes('creator') ? ['creator', ...p.roles] : p.roles)}</p>
+                  <p className="text-body font-medium text-text-primary truncate">{p.name}</p>
+                  <p className="text-meta text-text-secondary">{roleWords(p.id === creator?.id && !p.roles.includes('creator') ? ['creator', ...p.roles] : p.roles)}</p>
                 </div>
               </li>
             ))}
@@ -517,7 +517,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <History size={18} className="text-text-secondary" />
-            <h2 id="instances-heading" className="flex items-center gap-1 text-[18px] font-medium text-text-primary">
+            <h2 id="instances-heading" className="flex items-center gap-1 text-card-heading font-medium text-text-primary">
               Instances <InfoTip label="Instances" text="Each time the workflow is run — by hand or on a schedule — it creates an instance." />
             </h2>
           </div>
@@ -533,14 +533,14 @@ export default function WorkflowOverview({ id }: { id: string }) {
                 aria-selected={active}
                 type="button"
                 onClick={() => setFilter(f.value)}
-                className={`inline-flex items-center gap-2 px-3 min-h-[44px] sm:min-h-[36px] rounded-[8px] text-[13px] font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
+                className={`inline-flex items-center gap-2 px-3 min-h-[44px] sm:min-h-[36px] rounded-[8px] text-label font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
                   active ? 'bg-primary text-white' : 'bg-white text-text-secondary border border-border hover:border-primary hover:text-primary-text'
                 }`}
               >
                 {f.label}
                 {runsStatus === 'ready' && (
                   <span
-                    className={`min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-medium flex items-center justify-center ${
+                    className={`min-w-[20px] h-5 px-1.5 rounded-full text-meta font-medium flex items-center justify-center ${
                       active ? 'bg-white text-primary-text' : 'bg-primary text-white'
                     }`}
                   >
@@ -618,7 +618,7 @@ function Description({ text }: { text: string }) {
   return (
     <div className="mt-1.5 max-w-4xl">
       <p
-        className={`text-[14px] text-text-primary whitespace-pre-wrap wrap-break-word ${
+        className={`text-body text-text-primary whitespace-pre-wrap wrap-break-word ${
           long && !open ? 'line-clamp-2' : open ? 'max-h-[30vh] overflow-y-auto' : ''
         }`}
       >
@@ -629,7 +629,7 @@ function Description({ text }: { text: string }) {
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
-          className="mt-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 text-[13px] font-medium text-primary-text hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
+          className="mt-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 text-label font-medium text-primary-text hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
         >
           {open ? 'Show less' : 'Show more'}
         </button>
@@ -673,7 +673,7 @@ function MyInstancesView({
         <WorkflowBreadcrumb trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }, { label: name }]} />
         <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{name}</h1>
+            <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{name}</h1>
             {workflow && (
               <div className="mt-1.5">
                 <TemplateStatusBadge status={workflow.status} />
@@ -691,7 +691,7 @@ function MyInstancesView({
       <section id="instances" aria-labelledby="my-instances-heading" className="flex flex-col gap-3 scroll-mt-40">
         <div className="flex items-center gap-2">
           <History size={18} className="text-text-secondary" />
-          <h2 id="my-instances-heading" className="flex items-center gap-1 text-[18px] font-medium text-text-primary">
+          <h2 id="my-instances-heading" className="flex items-center gap-1 text-card-heading font-medium text-text-primary">
             My instances of this workflow{' '}
             <InfoTip label="My instances of this workflow" text="The instances you work in. Only its editors and viewers see the whole workflow." />
           </h2>

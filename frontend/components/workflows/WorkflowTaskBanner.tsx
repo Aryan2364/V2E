@@ -77,7 +77,7 @@ export default function WorkflowTaskBanner({
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex items-start gap-2.5 min-w-0 flex-1">
           <WorkflowIcon size={18} className="shrink-0 mt-0.5 text-primary-text" />
-          <div className="min-w-0 text-sm text-primary-text">
+          <div className="min-w-0 text-body text-primary-text">
             <p className="font-medium wrap-break-word">{stepLabel}</p>
             <p className="wrap-break-word">
               {instanceName && <span className="font-medium">{instanceName}</span>}

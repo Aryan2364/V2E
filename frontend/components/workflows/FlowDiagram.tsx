@@ -248,8 +248,8 @@ export default function FlowDiagram({
         {withHeaders &&
           shownLanes.list.map((l, ci) => (
             <div key={`h-${l.key}`} className={`relative z-2 px-3 pt-2.5 pb-1 ${boxW} box-content`} style={{ gridColumn: ci + 1, gridRow: 1 }}>
-              <span className="block text-[13px] font-medium text-text-primary truncate">{l.label}</span>
-              {l.hint && <span className="block text-[12px] text-text-secondary truncate">{l.hint}</span>}
+              <span className="block text-label font-medium text-text-primary truncate">{l.label}</span>
+              {l.hint && <span className="block text-meta text-text-secondary truncate">{l.hint}</span>}
             </div>
           ))}
 
@@ -265,7 +265,7 @@ export default function FlowDiagram({
             >
               {n.alsoWaitsFor && n.alsoWaitsFor.length > 0 && (
                 <span className="flex mb-1.5">
-                  <span className="inline-flex items-center rounded-full border border-border bg-white px-2 py-0.5 text-[11px] font-medium text-text-secondary max-w-full truncate">
+                  <span className="inline-flex items-center rounded-full border border-border bg-white px-2 py-0.5 text-meta font-medium text-text-secondary max-w-full truncate">
                     Also waits for {n.alsoWaitsFor.join(', ')}
                   </span>
                 </span>

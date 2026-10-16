@@ -95,12 +95,12 @@ export default function StepFlow({
           content: (
             <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-start gap-2 min-w-0">
-                <span className="mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-white text-[11px] font-medium flex items-center justify-center shrink-0">
+                <span className="mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center shrink-0">
                   {n}
                 </span>
-                <span className="text-[14px] font-medium text-text-primary leading-snug line-clamp-2 wrap-break-word">{s.title || 'Untitled step'}</span>
+                <span className="text-body font-medium text-text-primary leading-snug line-clamp-2 wrap-break-word">{s.title || 'Untitled step'}</span>
               </div>
-              <span className="flex items-center gap-1.5 text-[12px] text-text-secondary min-w-0">
+              <span className="flex items-center gap-1.5 text-meta text-text-secondary min-w-0">
                 <Users size={12} className="shrink-0 text-text-secondary" />
                 <span className="truncate">{names.length ? namesSummary(names.map((name) => ({ name })), 2) : 'No one assigned'}</span>
               </span>
@@ -109,13 +109,13 @@ export default function StepFlow({
                   <CompletionChip mode={s.completion_mode} count={names.length} />
                 </span>
               )}
-              <span className="flex items-center gap-1.5 text-[12px] text-text-secondary">
+              <span className="flex items-center gap-1.5 text-meta text-text-secondary">
                 <Clock size={12} className="shrink-0 text-text-secondary" />
                 {timingSummary(startRuleOf(s), dueRuleOf(s), frequency ?? MANUAL, deps.length > 0, next?.get(s.id))}
                 {s.if_late === 'move_on' && <span className="text-text-secondary">· continues if late</span>}
               </span>
               {missing && (
-                <span className="flex items-center gap-1.5 text-[12px] font-medium text-danger">
+                <span className="flex items-center gap-1.5 text-meta font-medium text-danger">
                   <AlertTriangle size={12} className="shrink-0" />
                   {!s.title?.trim() ? 'Needs a title' : names.length === 0 ? 'Needs an assignee' : 'Fix timing'}
                 </span>

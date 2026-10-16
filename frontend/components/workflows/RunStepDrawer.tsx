@@ -19,8 +19,8 @@ type Load<T> = { status: 'idle' | 'loading' | 'ready' | 'failed' | 'hidden'; dat
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-[120px_1fr] gap-3 py-2.5 border-b border-border-light last:border-b-0">
-      <dt className="text-[13px] text-text-secondary">{label}</dt>
-      <dd className="text-sm text-text-primary min-w-0 wrap-break-word">{children}</dd>
+      <dt className="text-label text-text-secondary">{label}</dt>
+      <dd className="text-body text-text-primary min-w-0 wrap-break-word">{children}</dd>
     </div>
   )
 }
@@ -184,7 +184,7 @@ export default function RunStepDrawer({
       headerExtra={
         <>
           <StepStatusBadge status={row.status} waiting={waiting} />
-          {row.task?.status?.label && <span className="text-[12px] text-text-secondary">Task: {row.task.status.label}</span>}
+          {row.task?.status?.label && <span className="text-meta text-text-secondary">Task: {row.task.status.label}</span>}
         </>
       }
       footer={footer}
@@ -192,7 +192,7 @@ export default function RunStepDrawer({
       {/* An open send-back: where it went (or who asked) and the reason, said once. */}
       {row.send_back && <SendBackNote sendBack={row.send_back} variant="panel" />}
       {row.status === 'sent_back' && row.send_back?.role !== 'sender' && (
-        <div className="flex items-start gap-2.5 rounded-[10px] border border-border-light bg-surface-control px-3.5 py-2.5 text-sm text-text-secondary">
+        <div className="flex items-start gap-2.5 rounded-[10px] border border-border-light bg-surface-control px-3.5 py-2.5 text-body text-text-secondary">
           <Undo2 size={16} className="shrink-0 mt-0.5" />
           <span>
             Waiting for info from <span className="font-medium">{title(row.waiting_on_row_id)}</span>. Resumes when that step is done.
@@ -200,7 +200,7 @@ export default function RunStepDrawer({
         </div>
       )}
       {row.returned_to_row_id && row.send_back?.role !== 'target' && (
-        <div className="flex items-start gap-2.5 rounded-[10px] border border-border-light bg-surface-control px-3.5 py-2.5 text-sm text-text-secondary">
+        <div className="flex items-start gap-2.5 rounded-[10px] border border-border-light bg-surface-control px-3.5 py-2.5 text-body text-text-secondary">
           <Undo2 size={16} className="shrink-0 mt-0.5" />
           <span>
             Sent back from <span className="font-medium">{title(row.returned_to_row_id)}</span>. The reason is in the discussion. When done, the instance returns there.
@@ -208,13 +208,13 @@ export default function RunStepDrawer({
         </div>
       )}
       {row.status === 'moved_on' && (
-        <div className="flex items-start gap-2.5 rounded-[10px] border border-danger-border bg-danger-bg px-3.5 py-2.5 text-sm text-danger">
+        <div className="flex items-start gap-2.5 rounded-[10px] border border-danger-border bg-danger-bg px-3.5 py-2.5 text-body text-danger">
           <FileWarning size={16} className="shrink-0 mt-0.5" />
           <span>This step is late. Next steps started anyway; this task stays open.</span>
         </div>
       )}
       {waiting && (
-        <div className="flex items-start gap-2.5 rounded-[10px] border border-primary-border bg-primary-subtle px-3.5 py-2.5 text-sm text-primary-text">
+        <div className="flex items-start gap-2.5 rounded-[10px] border border-primary-border bg-primary-subtle px-3.5 py-2.5 text-body text-primary-text">
           <CalendarClock size={16} className="shrink-0 mt-0.5" />
           <span>
             Starts on <span className="font-medium">{fmtDayDateTime(row.start_at)}</span>.{canStartNow !== undefined ? ' You can also start it now.' : ''}
@@ -278,18 +278,18 @@ export default function RunStepDrawer({
 
       {row.description && (
         <section>
-          <h3 className="text-sm font-medium text-text-primary mb-1">Description</h3>
-          <p className="text-sm text-text-primary whitespace-pre-wrap wrap-break-word">{row.description}</p>
+          <h3 className="text-body font-medium text-text-primary mb-1">Description</h3>
+          <p className="text-body text-text-primary whitespace-pre-wrap wrap-break-word">{row.description}</p>
         </section>
       )}
 
       {/* Checklist */}
       {totalCount > 0 && (
         <section>
-          <h3 className="flex items-center gap-1.5 text-sm font-medium text-text-primary mb-2">
+          <h3 className="flex items-center gap-1.5 text-body font-medium text-text-primary mb-2">
             <ListChecks size={15} /> Checklist
             {checklist.some((c) => c.done !== null) && (
-              <span className="ml-auto text-[13px] font-normal text-text-secondary tabular-nums">
+              <span className="ml-auto text-label font-normal text-text-secondary tabular-nums">
                 {doneCount} of {checklist.length} done
               </span>
             )}
@@ -305,10 +305,10 @@ export default function RunStepDrawer({
             <div className="flex flex-col gap-3">
               {groupItems(checklist).map((g, gi) => (
                 <div key={gi}>
-                  {g.heading && <h4 className="text-[13px] font-medium text-text-secondary mb-1.5 wrap-break-word">{g.heading}</h4>}
+                  {g.heading && <h4 className="text-label font-medium text-text-secondary mb-1.5 wrap-break-word">{g.heading}</h4>}
                   <ul className="flex flex-col gap-1.5">
                     {g.items.map((c, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-text-primary px-3 py-2 rounded-[8px] bg-surface-sunken border border-border-light">
+                      <li key={i} className="flex items-start gap-2 text-body text-text-primary px-3 py-2 rounded-[8px] bg-surface-sunken border border-border-light">
                         {c.done ? (
                           <CheckCircle2 size={16} className="shrink-0 mt-0.5 text-success" aria-label="Done" />
                         ) : (
@@ -328,23 +328,23 @@ export default function RunStepDrawer({
       {/* Proof */}
       {taskId && (row.proof_required || proofs.data.length > 0) && (
         <section>
-          <h3 className="flex items-center gap-1.5 text-sm font-medium text-text-primary mb-2">
+          <h3 className="flex items-center gap-1.5 text-body font-medium text-text-primary mb-2">
             <FileText size={15} /> Proof
           </h3>
           {proofs.status === 'loading' ? (
             <Skeleton className="h-10" />
           ) : proofs.status === 'failed' ? (
-            <p className="text-sm text-danger">{proofs.error}</p>
+            <p className="text-body text-danger">{proofs.error}</p>
           ) : proofs.data.length === 0 ? (
-            <p className="text-sm text-text-secondary">{row.proof_required ? 'Proof required. None added yet.' : 'No proof added.'}</p>
+            <p className="text-body text-text-secondary">{row.proof_required ? 'Proof required. None added yet.' : 'No proof added.'}</p>
           ) : (
             <ul className="flex flex-col gap-1.5">
               {proofs.data.map((f) => (
                 <li key={f.id} className="flex items-center gap-2 rounded-[8px] border border-border-light px-3 py-2">
                   <FileText size={15} className="shrink-0 text-text-secondary" />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm text-text-primary truncate">{f.file_name}</span>
-                    <span className="block text-[12px] text-text-secondary">
+                    <span className="block text-body text-text-primary truncate">{f.file_name}</span>
+                    <span className="block text-meta text-text-secondary">
                       {formatBytes(f.size_bytes)}
                       {f.uploaded_by_name ? ` · ${f.uploaded_by_name}` : ''} · {fmtDateTime(f.created_at)}
                     </span>
@@ -367,10 +367,10 @@ export default function RunStepDrawer({
       {/* Comments: one discussion for the whole instance, on the page under the steps. */}
       {taskId && (
         <section className="flex flex-col gap-2">
-          <h3 className="flex items-center gap-1.5 text-sm font-medium text-text-primary">
+          <h3 className="flex items-center gap-1.5 text-body font-medium text-text-primary">
             <MessageSquare size={15} /> Comments
           </h3>
-          <p className="text-sm text-text-secondary">All steps share one discussion on this instance’s page.</p>
+          <p className="text-body text-text-secondary">All steps share one discussion on this instance’s page.</p>
           {onOpenDiscussion && (
             <button type="button" onClick={onOpenDiscussion} className={`${BTN.quiet} self-start`}>
               <MessageSquare size={16} /> Go to the discussion
@@ -380,14 +380,14 @@ export default function RunStepDrawer({
       )}
 
       {!taskId && !row.task_deleted && !waiting && (
-        <p className="text-sm text-text-secondary">
+        <p className="text-body text-text-secondary">
           {row.status === 'pending'
               ? 'Not started yet.'
               : 'This step has no task.'}
         </p>
       )}
       {task.status === 'hidden' && (
-        <p className="text-[13px] text-text-secondary">Some details are visible only to people on this task.</p>
+        <p className="text-label text-text-secondary">Some details are visible only to people on this task.</p>
       )}
     </Sheet>
   )

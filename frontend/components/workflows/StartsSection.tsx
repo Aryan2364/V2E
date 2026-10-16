@@ -93,7 +93,7 @@ function StartChoice({
         >
           {checked && <Check size={12} strokeWidth={3} className="text-white" />}
         </span>
-        <span className={`flex items-center gap-1.5 text-sm font-medium ${checked ? 'text-primary-text' : 'text-text-primary'}`}>
+        <span className={`flex items-center gap-1.5 text-body font-medium ${checked ? 'text-primary-text' : 'text-text-primary'}`}>
           <Icon size={15} aria-hidden /> {label}
         </span>
       </button>
@@ -167,7 +167,7 @@ export default function StartsSection({
           />
           <Reveal open={value.manual}>
             <div className="pl-1">
-              <span className="block text-sm font-medium text-text-secondary mb-2">
+              <span className="block text-body font-medium text-text-secondary mb-2">
                 Who can start it <span className="text-danger">*</span>{' '}
                 <InfoTip label="Who can start it" text="Only the people listed here can run it by hand." />
               </span>
@@ -203,9 +203,9 @@ export default function StartsSection({
             <ScheduleEntryList entries={value.schedules} onChange={(entries) => set({ schedules: entries as ScheduleDraft[] })} />
           </fieldset>
           {errorScheduleIndex !== null && value.schedules[errorScheduleIndex] && (
-            <p className="text-[13px] text-danger">Check schedule #{errorScheduleIndex + 1}.</p>
+            <p className="text-label text-danger">Check schedule #{errorScheduleIndex + 1}.</p>
           )}
-          <div className="rounded-[10px] bg-surface-sunken border border-border-light px-3.5 py-2.5 text-[13px] text-text-secondary flex flex-col gap-1">
+          <div className="rounded-[10px] bg-surface-sunken border border-border-light px-3.5 py-2.5 text-label text-text-secondary flex flex-col gap-1">
             {value.schedules.map((d, i) => (
               <span key={d.id ?? `new-${i}`}>
                 <span className="font-medium text-text-primary">#{i + 1}</span> {describeSchedule(d)}
@@ -231,12 +231,12 @@ export default function StartsSection({
       }`}
     >
       <div>
-        <h2 id="starts-heading" className="flex items-center gap-1 text-[18px] font-medium text-text-primary">
+        <h2 id="starts-heading" className="flex items-center gap-1 text-card-heading font-medium text-text-primary">
           How it starts <InfoTip label="How it starts" text="Choose one or both. Times use your organisation’s time zone." />
         </h2>
       </div>
       {editable === false && reason && (
-        <p className="text-[13px] text-text-secondary rounded-[8px] bg-surface-sunken border border-border-light px-3 py-2">{reason}</p>
+        <p className="text-label text-text-secondary rounded-[8px] bg-surface-sunken border border-border-light px-3 py-2">{reason}</p>
       )}
       {body}
     </section>

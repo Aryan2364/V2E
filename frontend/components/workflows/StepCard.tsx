@@ -41,10 +41,10 @@ export interface StepPlanInput {
 }
 
 export const INPUT_CLS =
-  'w-full px-3 py-2.5 text-base sm:text-sm border border-border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface-sunken disabled:text-text-secondary disabled:cursor-not-allowed'
-export const LABEL_CLS = 'block text-sm font-medium text-text-secondary mb-2'
-const SUB_LABEL = 'block text-[13px] font-medium text-text-secondary mb-1.5'
-const HELP = 'text-[13px] text-text-secondary'
+  'w-full px-3 py-2.5 text-card-heading sm:text-body border border-border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface-sunken disabled:text-text-secondary disabled:cursor-not-allowed'
+export const LABEL_CLS = 'block text-body font-medium text-text-secondary mb-2'
+const SUB_LABEL = 'block text-label font-medium text-text-secondary mb-1.5'
+const HELP = 'text-label text-text-secondary'
 
 /** Same limit as a task title — a step becomes a task. */
 export const STEP_TITLE_MAX = 50
@@ -195,7 +195,7 @@ function ChoiceCards<V extends string>({
               >
                 {on && <span className="w-2 h-2 rounded-full bg-primary" />}
               </span>
-              <span className={`text-sm font-medium ${on ? 'text-primary-text' : 'text-text-primary'}`}>{o.label}</span>
+              <span className={`text-body font-medium ${on ? 'text-primary-text' : 'text-text-primary'}`}>{o.label}</span>
             </button>
             {o.tip && <InfoTip label={o.label} text={o.tip} className="mr-2.5" />}
           </div>
@@ -249,7 +249,7 @@ export function IconAction({
 function MergeChip({ label, redundant, onRemove, disabled }: { label: string; redundant: boolean; onRemove: () => void; disabled?: boolean }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 max-w-full rounded-[6px] border pl-2 pr-1 py-0.5 text-[13px] ${
+      className={`inline-flex items-center gap-1 max-w-full rounded-[6px] border pl-2 pr-1 py-0.5 text-label ${
         redundant ? 'border-border-light bg-surface-sunken text-text-secondary' : 'border-primary-border bg-primary-subtle font-medium text-primary-text'
       }`}
     >
@@ -490,14 +490,14 @@ export default function StepCard(props: EditProps | CreateProps) {
     const unavailable = st ? !st.active : !offered && lookups.status !== 'loading'
     if (unavailable) {
       return (
-        <p className="flex items-start gap-1.5 text-[13px] text-warning">
+        <p className="flex items-start gap-1.5 text-label text-warning">
           <AlertTriangle size={14} className="shrink-0 mt-0.5" />
           <span>Template no longer available. Instances use the saved copy.</span>
         </p>
       )
     }
     return (
-      <p className="flex items-start gap-1.5 text-[13px] text-text-secondary">
+      <p className="flex items-start gap-1.5 text-label text-text-secondary">
         <Link2 size={14} className="shrink-0 mt-0.5 text-primary-text" />
         <span>
           Linked. New instances use its latest items.
@@ -655,14 +655,14 @@ export default function StepCard(props: EditProps | CreateProps) {
               className={`${INPUT_CLS} pr-12 ${titleError ? 'border-danger!' : ''}`}
             />
             <span
-              className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] tabular-nums ${
+              className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-meta tabular-nums ${
                 draft.title.length >= STEP_TITLE_MAX ? 'text-danger' : 'text-text-secondary'
               }`}
             >
               {draft.title.length}/{STEP_TITLE_MAX}
             </span>
           </div>
-          {titleError && <p className="mt-1.5 text-[13px] text-danger">{titleError}</p>}
+          {titleError && <p className="mt-1.5 text-label text-danger">{titleError}</p>}
         </div>
 
         {/* Assigned to */}
@@ -709,7 +709,7 @@ export default function StepCard(props: EditProps | CreateProps) {
                 {placement && (
                   <div>
                     <span className={LABEL_CLS}>After</span>
-                    <p className="text-sm text-text-primary">{placement}</p>
+                    <p className="text-body text-text-primary">{placement}</p>
                   </div>
                 )}
                 {showMerge ? (
@@ -771,7 +771,7 @@ export default function StepCard(props: EditProps | CreateProps) {
               <div className="flex flex-col gap-2">
                 {escRows.map((uid, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="shrink-0 w-16 text-[13px] font-medium text-text-secondary">Level {i + 1}</span>
+                    <span className="shrink-0 w-16 text-label font-medium text-text-secondary">Level {i + 1}</span>
                     <div className="flex-1 min-w-0">
                       <EmployeePicker
                         value={uid}
@@ -797,7 +797,7 @@ export default function StepCard(props: EditProps | CreateProps) {
                     <Plus size={16} /> Add level
                   </button>
                 )}
-                {escError && <p className="text-[13px] text-danger">{escError}</p>}
+                {escError && <p className="text-label text-danger">{escError}</p>}
               </div>
             </Reveal>
           )}
@@ -811,12 +811,12 @@ export default function StepCard(props: EditProps | CreateProps) {
           aria-expanded={moreOpen}
           aria-controls={`${idPrefix}-more`}
           onClick={() => setMoreOpen((v) => !v)}
-          className="inline-flex items-center gap-2 min-h-[44px] sm:min-h-[36px] px-2 -mx-2 rounded-[8px] text-sm font-medium text-primary-text hover:bg-primary-subtle focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex items-center gap-2 min-h-[44px] sm:min-h-[36px] px-2 -mx-2 rounded-[8px] text-body font-medium text-primary-text hover:bg-primary-subtle focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
         >
           <SlidersHorizontal size={16} />
           More options
           {extrasSet > 0 && (
-            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium flex items-center justify-center">
+            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center">
               {extrasSet}
             </span>
           )}
@@ -933,7 +933,7 @@ export default function StepCard(props: EditProps | CreateProps) {
           className={`flex items-center gap-3 px-3 sm:px-4 py-2.5 ${expanded ? 'border-b border-border-light' : ''} ${edit ? 'cursor-pointer' : ''}`}
           onClick={edit ? edit.onToggle : undefined}
         >
-          <span className="min-w-[28px] h-7 px-1.5 rounded-full text-[12px] font-medium flex items-center justify-center shrink-0 bg-primary text-white">
+          <span className="min-w-[28px] h-7 px-1.5 rounded-full text-meta font-medium flex items-center justify-center shrink-0 bg-primary text-white">
             {props.mode === 'create' ? createBadge ?? label : label}
           </span>
           <div className="flex-1 min-w-0">
@@ -946,15 +946,15 @@ export default function StepCard(props: EditProps | CreateProps) {
                   e.stopPropagation()
                   edit.onToggle()
                 }}
-                className="block max-w-full text-left text-[15px] font-medium text-text-primary truncate rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+                className="block max-w-full text-left text-body font-medium text-text-primary truncate rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {draft.title || 'Untitled step'}
               </button>
             ) : (
-              <span className="block text-[15px] font-medium text-text-primary truncate">New step</span>
+              <span className="block text-body font-medium text-text-primary truncate">New step</span>
             )}
             {edit && (
-              <p className={`text-[13px] truncate ${hasProblem ? 'text-danger' : 'text-text-secondary'}`}>
+              <p className={`text-label truncate ${hasProblem ? 'text-danger' : 'text-text-secondary'}`}>
                 {hasProblem && <AlertTriangle size={12} className="inline -mt-0.5 mr-1" aria-hidden />}
                 {assigneeText}
                 {completionText} · {timingSummary(draft.start_rule, draft.due_rule, frequency, waits, nextFlags)}

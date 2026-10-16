@@ -130,7 +130,7 @@ export default function ActionMenu({ items, label = 'More actions' }: { items: A
                     item.onSelect()
                   }}
                   className={[
-                    'w-full flex items-center gap-2.5 px-3 min-h-[44px] sm:min-h-[38px] text-sm text-left transition-colors focus:outline-hidden',
+                    'w-full flex items-center gap-2.5 px-3 min-h-[44px] sm:min-h-[38px] text-body text-left transition-colors focus:outline-hidden',
                     allowed !== true
                       ? 'text-text-muted cursor-not-allowed'
                       : item.danger

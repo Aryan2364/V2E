@@ -438,10 +438,10 @@ export default function InstanceDiscussion({
     >
       <div className="flex items-center gap-2 flex-wrap">
         <MessageSquare size={16} className="text-text-secondary" aria-hidden />
-        <h2 id={headingId} className={`flex items-center gap-1.5 ${compact ? 'text-[15px]' : 'text-[18px]'} font-medium text-text-primary`}>
+        <h2 id={headingId} className={`flex items-center gap-1.5 ${compact ? 'text-body' : 'text-card-heading'} font-medium text-text-primary`}>
           {title}
           {total > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
               {total > 99 ? '99+' : total}
             </span>
           )}
@@ -451,7 +451,7 @@ export default function InstanceDiscussion({
           text="One discussion for the whole instance, on every step’s task. Everyone who can see the instance can read and write. Type @ to mention someone."
         />
         {unread > 0 && (
-          <span className="ml-auto inline-flex items-center rounded-full bg-warning-bg text-warning border border-warning-border px-2.5 py-0.5 text-[12px] font-medium">
+          <span className="ml-auto inline-flex items-center rounded-full bg-warning-bg text-warning border border-warning-border px-2.5 py-0.5 text-meta font-medium">
             {unread} new
           </span>
         )}
@@ -464,14 +464,14 @@ export default function InstanceDiscussion({
           <Skeleton className="h-14" />
         </div>
       ) : status === 'failed' ? (
-        <div className="flex flex-col items-start gap-2 text-sm text-danger">
+        <div className="flex flex-col items-start gap-2 text-body text-danger">
           <span>{loadError}</span>
           <button type="button" onClick={() => load()} className={BTN.quiet}>
             <RefreshCw size={14} /> Try again
           </button>
         </div>
       ) : messages.length === 0 ? (
-        <p className="text-sm text-text-secondary">No messages yet. Start the discussion.</p>
+        <p className="text-body text-text-secondary">No messages yet. Start the discussion.</p>
       ) : (
         <div className="flex flex-col gap-3">
           {hasMore && (
@@ -570,7 +570,7 @@ export default function InstanceDiscussion({
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => pickPerson(p)}
                     onMouseEnter={() => setMentionIndex(i)}
-                    className={`w-full flex items-center gap-2.5 px-3 min-h-[44px] sm:min-h-[38px] text-left text-sm text-text-primary transition-colors ${
+                    className={`w-full flex items-center gap-2.5 px-3 min-h-[44px] sm:min-h-[38px] text-left text-body text-text-primary transition-colors ${
                       i === mentionIndex ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                     }`}
                   >
@@ -582,7 +582,7 @@ export default function InstanceDiscussion({
             </ul>
           )}
           {mention && suggestions.length === 0 && mention.query.length > 0 && (
-            <p className="absolute bottom-full left-0 mb-1.5 z-30 rounded-lg border border-border-light bg-surface shadow-menu px-3 py-2 text-[13px] text-text-secondary">
+            <p className="absolute bottom-full left-0 mb-1.5 z-30 rounded-lg border border-border-light bg-surface shadow-menu px-3 py-2 text-label text-text-secondary">
               No one who can see this instance matches “{mention.query}”.
             </p>
           )}
@@ -592,7 +592,7 @@ export default function InstanceDiscussion({
               {files.map((f, i) => (
                 <span
                   key={`${f.name}-${i}`}
-                  className="inline-flex items-center gap-1.5 max-w-[240px] bg-primary-subtle border border-primary-border text-primary-text text-xs font-medium pl-2 pr-1 py-1 rounded-[6px]"
+                  className="inline-flex items-center gap-1.5 max-w-[240px] bg-primary-subtle border border-primary-border text-primary-text text-meta font-medium pl-2 pr-1 py-1 rounded-[6px]"
                 >
                   <FileText size={12} className="shrink-0" aria-hidden />
                   <span className="truncate">{f.name}</span>
@@ -628,7 +628,7 @@ export default function InstanceDiscussion({
             aria-autocomplete="list"
             aria-expanded={!!mention && suggestions.length > 0}
             placeholder={replyTo ? 'Write a reply' : 'Write a message — @ to mention someone'}
-            className="block w-full border-0 bg-transparent px-3 pt-2.5 pb-1 text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden resize-none max-h-40 overflow-y-auto disabled:cursor-not-allowed"
+            className="block w-full border-0 bg-transparent px-3 pt-2.5 pb-1 text-card-heading sm:text-body text-text-primary placeholder:text-text-muted focus:outline-hidden resize-none max-h-40 overflow-y-auto disabled:cursor-not-allowed"
           />
           <div className="flex items-center gap-1 px-2 pb-2">
             <input
@@ -674,7 +674,7 @@ export default function InstanceDiscussion({
             )}
             <span className="ml-auto flex items-center gap-2">
               {text.length > MESSAGE_MAX - 200 && (
-                <span className={`text-[12px] tabular-nums ${text.length >= MESSAGE_MAX ? 'text-danger' : 'text-text-secondary'}`}>
+                <span className={`text-meta tabular-nums ${text.length >= MESSAGE_MAX ? 'text-danger' : 'text-text-secondary'}`}>
                   {text.length}/{MESSAGE_MAX}
                 </span>
               )}
@@ -684,7 +684,7 @@ export default function InstanceDiscussion({
                   onClick={send}
                   disabled={!canSend}
                   aria-label="Send"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-[36px] px-3.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-[36px] px-3.5 rounded-[8px] text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                 >
                   {posting ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                   <span className="hidden sm:inline">{posting ? 'Sending…' : 'Send'}</span>
@@ -696,7 +696,7 @@ export default function InstanceDiscussion({
 
         <div className={`grid transition-all duration-200 ease-in-out ${showFor && !replyTo ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
           <div ref={forPanelRef} className={showFor && !replyTo ? 'overflow-visible' : 'overflow-hidden'}>
-            <span id={`${sectionId}-for`} className="flex items-center gap-1 text-sm font-medium text-text-secondary mb-1.5">
+            <span id={`${sectionId}-for`} className="flex items-center gap-1 text-body font-medium text-text-secondary mb-1.5">
               For a later step (optional)
               <InfoTip label="For a later step" text="Shown at the top of that step’s task when it starts. Its assignees are told." />
             </span>
@@ -751,7 +751,7 @@ function NewDivider() {
   return (
     <div className="flex items-center gap-2" role="separator" aria-label="New messages">
       <span className="h-px flex-1 bg-danger-bg" />
-      <span className="text-[12px] font-medium text-danger uppercase tracking-wide">New</span>
+      <span className="text-meta font-medium text-danger uppercase tracking-wide">New</span>
       <span className="h-px flex-1 bg-danger-bg" />
     </div>
   )
@@ -772,7 +772,7 @@ function Chip({
 }) {
   const cls = tone === 'amber' ? 'bg-warning-bg border-warning-border text-warning' : 'bg-primary-subtle border-primary-border text-primary-text'
   return (
-    <span className={`inline-flex items-center gap-1.5 max-w-full border rounded-[8px] pl-2.5 pr-1 py-1 text-[13px] ${cls}`}>
+    <span className={`inline-flex items-center gap-1.5 max-w-full border rounded-[8px] pl-2.5 pr-1 py-1 text-label ${cls}`}>
       <Icon size={13} className="shrink-0" />
       <span className="truncate">{label}</span>
       <button
@@ -814,7 +814,7 @@ function MessageItem({
 }) {
   const [expanded, setExpanded] = useState(false)
   if (m.deleted) {
-    return <p className="text-sm italic text-text-secondary pl-8">This message was deleted.</p>
+    return <p className="text-body italic text-text-secondary pl-8">This message was deleted.</p>
   }
   const name = m.author?.name ?? 'Someone'
   const long = m.body.length > LONG
@@ -823,7 +823,7 @@ function MessageItem({
   const mentionsMe = !!myId && m.mentions.some((p) => p.id === myId)
 
   const bodyNode = m.body ? (
-    <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap wrap-break-word wrap-anywhere">
+    <p className="text-body text-text-primary leading-relaxed whitespace-pre-wrap wrap-break-word wrap-anywhere">
       {segments.map((s, i) =>
         s.mention ? (
           <span
@@ -849,10 +849,10 @@ function MessageItem({
       <Avatar name={name} size="md" />
       <div className="min-w-0 flex-1 flex flex-col gap-1.5">
         <div className="flex items-baseline gap-x-2 gap-y-0.5 flex-wrap">
-          <span className="text-sm font-medium text-text-primary wrap-break-word">{name}</span>
-          <span className="text-[12px] text-text-secondary">· {messageTime(m.created_at, now)}</span>
+          <span className="text-body font-medium text-text-primary wrap-break-word">{name}</span>
+          <span className="text-meta text-text-secondary">· {messageTime(m.created_at, now)}</span>
           {m.for_step && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-warning-bg border border-warning-border text-warning px-2 py-0.5 text-[12px] font-medium max-w-full">
+            <span className="inline-flex items-center gap-1 rounded-full bg-warning-bg border border-warning-border text-warning px-2 py-0.5 text-meta font-medium max-w-full">
               <Flag size={11} className="shrink-0" aria-hidden />
               <span className="truncate">For “{m.for_step.title}”</span>
             </span>
@@ -861,7 +861,7 @@ function MessageItem({
 
         {sentBack ? (
           <div className="rounded-[10px] border border-border-light bg-surface-control px-3 py-2 flex flex-col gap-1">
-            <p className="flex items-center gap-1.5 text-[13px] font-medium text-text-secondary wrap-break-word">
+            <p className="flex items-center gap-1.5 text-label font-medium text-text-secondary wrap-break-word">
               <Undo2 size={14} className="shrink-0" aria-hidden /> Sent back to “{sentBack.to_title}”
             </p>
             {bodyNode}
@@ -873,7 +873,7 @@ function MessageItem({
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="self-start text-[13px] font-medium text-primary-text hover:text-primary-text min-h-[32px]"
+            className="self-start text-label font-medium text-primary-text hover:text-primary-text min-h-[32px]"
           >
             {expanded ? 'Show less' : 'Read more'}
           </button>
@@ -888,10 +888,10 @@ function MessageItem({
                 <li key={f.id} className="flex items-center gap-2 flex-wrap">
                   <span className="inline-flex items-center gap-2 min-w-0 max-w-full rounded-[8px] border border-border-light bg-surface-sunken pl-2.5 pr-1 py-1">
                     <FileText size={14} className="shrink-0 text-text-secondary" aria-hidden />
-                    <span className="truncate text-[13px] text-text-primary">{f.file_name}</span>
-                    <span className="shrink-0 text-[12px] text-text-secondary">{fileSize(f.size_bytes)}</span>
+                    <span className="truncate text-label text-text-primary">{f.file_name}</span>
+                    <span className="shrink-0 text-meta text-text-secondary">{fileSize(f.size_bytes)}</span>
                     {f.is_proof && (
-                      <span className="shrink-0 inline-flex items-center gap-1 text-[12px] font-medium text-success">
+                      <span className="shrink-0 inline-flex items-center gap-1 text-meta font-medium text-success">
                         <ShieldCheck size={12} /> Proof
                       </span>
                     )}
@@ -906,7 +906,7 @@ function MessageItem({
                       type="button"
                       onClick={() => onMarkProof(f)}
                       disabled={markingId === f.id}
-                      className="inline-flex items-center gap-1 text-[12px] font-medium text-primary-text hover:text-primary-text disabled:text-text-muted min-h-[32px]"
+                      className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text disabled:text-text-muted min-h-[32px]"
                     >
                       {markingId === f.id ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />} Mark as proof
                     </button>
@@ -923,7 +923,7 @@ function MessageItem({
               <button
                 type="button"
                 onClick={() => onReply(m)}
-                className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-[12px] font-medium text-text-secondary hover:text-primary-text hover:bg-primary-subtle transition-colors"
+                className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-meta font-medium text-text-secondary hover:text-primary-text hover:bg-primary-subtle transition-colors"
               >
                 <CornerUpLeft size={13} /> Reply
               </button>
@@ -933,7 +933,7 @@ function MessageItem({
                 type="button"
                 onClick={() => onDelete(m)}
                 aria-label="Delete message"
-                className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-[12px] font-medium text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
+                className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-meta font-medium text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
               >
                 <Trash2 size={13} /> Delete
               </button>

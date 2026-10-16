@@ -266,16 +266,16 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-start gap-2 min-w-0">
                 <span
-                  className={`mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full text-[11px] font-medium flex items-center justify-center shrink-0 ${
+                  className={`mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full text-meta font-medium flex items-center justify-center shrink-0 ${
                     r.status === 'completed' ? 'bg-success text-white' : r.status === 'pending' ? 'bg-surface-control-pressed text-text-secondary' : 'bg-primary text-white'
                   }`}
                 >
                   {n}
                 </span>
-                <span className="text-[14px] font-medium text-text-primary leading-snug line-clamp-2 wrap-break-word">{r.title || 'Untitled step'}</span>
+                <span className="text-body font-medium text-text-primary leading-snug line-clamp-2 wrap-break-word">{r.title || 'Untitled step'}</span>
               </div>
               <span
-                className={`text-[12px] font-medium ${
+                className={`text-meta font-medium ${
                   r.status === 'overdue' || r.status === 'moved_on'
                     ? 'text-danger'
                     : r.status === 'sent_back'
@@ -299,19 +299,19 @@ export default function RunView({ templateId, instanceId }: { templateId: string
               {/* Where it was sent / who asked, and why (shortened; the panel has it in full). */}
               {r.send_back && <SendBackNote sendBack={r.send_back} variant="compact" />}
               {people.length > 0 && (
-                <span className="flex items-center gap-1.5 text-[12px] text-text-secondary min-w-0">
+                <span className="flex items-center gap-1.5 text-meta text-text-secondary min-w-0">
                   <Users size={12} className="shrink-0 text-text-secondary" />
                   <span className="truncate">{namesSummary(people, 2)}</span>
                 </span>
               )}
               {isWaitingRow(r) && (
-                <span className="flex items-center gap-1.5 text-[12px] font-medium text-primary-text">
+                <span className="flex items-center gap-1.5 text-meta font-medium text-primary-text">
                   <CalendarClock size={12} className="shrink-0" />
                   Starts {fmtDayDateTime(r.start_at)}
                 </span>
               )}
               {(r.completed_at || (deadline && r.status !== 'pending')) && (
-                <span className="flex items-center gap-1.5 text-[12px] text-text-secondary">
+                <span className="flex items-center gap-1.5 text-meta text-text-secondary">
                   <Clock size={12} className="shrink-0 text-text-secondary" />
                   {r.completed_at ? `Done ${fmtDateTime(r.completed_at)}` : `Due ${fmtDateTime(deadline)}`}
                 </span>
@@ -319,12 +319,12 @@ export default function RunView({ templateId, instanceId }: { templateId: string
               {(r.planned_start_at || r.planned_due_at) &&
                 (isWaitingRow(r) && r.planned_start_at && r.start_at && new Date(r.planned_start_at).getTime() === new Date(r.start_at).getTime() ? (
                   // Its start is already said above: only the planned due date is new.
-                  r.planned_due_at && <span className="text-[12px] text-text-secondary leading-snug">Planned due: {fmtDayDateTime(r.planned_due_at)}</span>
+                  r.planned_due_at && <span className="text-meta text-text-secondary leading-snug">Planned due: {fmtDayDateTime(r.planned_due_at)}</span>
                 ) : (
-                  <span className="text-[12px] text-text-secondary leading-snug">Planned: {fmtSpan(r.planned_start_at, r.planned_due_at)}</span>
+                  <span className="text-meta text-text-secondary leading-snug">Planned: {fmtSpan(r.planned_start_at, r.planned_due_at)}</span>
                 ))}
               {t && (t.checklist_total > 0 || t.proof_count > 0 || t.comment_count > 0) && (
-                <span className="flex items-center gap-3 text-[12px] text-text-secondary">
+                <span className="flex items-center gap-3 text-meta text-text-secondary">
                   {t.checklist_total > 0 && (
                     <span className="inline-flex items-center gap-1" title="Checklist">
                       <CheckSquare size={12} className="text-text-secondary" /> {t.checklist_done}/{t.checklist_total}
@@ -435,7 +435,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
     <button type="button" onClick={() => setDocsOpen(true)} className={BTN.secondary}>
       <FolderOpen size={16} /> Documents
       {docCount !== null && docCount > 0 && (
-        <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium flex items-center justify-center">
+        <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center">
           {docCount > 99 ? '99+' : docCount}
         </span>
       )}
@@ -467,7 +467,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
     { key: 'cancel', label: 'Cancel instance', icon: XCircle, danger: true, allowed: cancelGate.allowed, reason: cancelGate.reason, hidden: !live, onSelect: openCancel },
   ]
   const startedLine = (
-    <span className="text-[13px] text-text-secondary">
+    <span className="text-label text-text-secondary">
       {TRIGGER_LABEL[run.trigger_type] ?? 'Started'}
       {run.triggered_by ? ` by ${run.triggered_by.name}` : ''} · {fmtDateTime(run.started_at)}
       {run.completed_at ? ` · Finished ${fmtDateTime(run.completed_at)}` : ''}
@@ -486,16 +486,16 @@ export default function RunView({ templateId, instanceId }: { templateId: string
         />
         <div className="flex items-center lg:items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{run.name}</h1>
+            <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{run.name}</h1>
             <div className="flex items-center gap-2 flex-wrap mt-1.5">
-              {run.instance_number ? <span className="text-[13px] font-medium text-text-secondary whitespace-nowrap">{instanceTitle(run.instance_number)}</span> : null}
+              {run.instance_number ? <span className="text-label font-medium text-text-secondary whitespace-nowrap">{instanceTitle(run.instance_number)}</span> : null}
               <RunStatusBadge run={run} />
               {!narrow && startedLine}
             </div>
             {/* Waiting for info: why, said once in the header (shortened, with "View reason"). */}
             {live &&
               senderRows.map((r) => (
-                <div key={r.id} className="mt-2 flex flex-col gap-1 max-w-3xl text-[13px] text-text-secondary">
+                <div key={r.id} className="mt-2 flex flex-col gap-1 max-w-3xl text-label text-text-secondary">
                   <p className="font-medium wrap-break-word">
                     <span className="font-medium">{nameOf(r.id)}</span> is waiting · {sendBackLead(r.send_back!, getNow())}
                     {sendBackReason(r.send_back) ? ':' : ''}
@@ -544,11 +544,11 @@ export default function RunView({ templateId, instanceId }: { templateId: string
           <section aria-labelledby="run-steps" className="bg-surface border border-border-light rounded-card shadow-card p-4 sm:p-6 min-w-0">
             <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
               <div className="min-w-0">
-                <h2 id="run-steps" className="flex items-center gap-1 text-[18px] font-medium text-text-primary">
+                <h2 id="run-steps" className="flex items-center gap-1 text-card-heading font-medium text-text-primary">
                   Steps <InfoTip label="Steps" text="Select a step to see its checklist, proof and notes." />
                 </h2>
               </div>
-              <div className="flex items-center gap-3 flex-wrap text-[12px] text-text-secondary" aria-hidden>
+              <div className="flex items-center gap-3 flex-wrap text-meta text-text-secondary" aria-hidden>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-[4px] border border-success-border bg-white" /> Done
                 </span>
@@ -560,17 +560,17 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                 </span>
               </div>
             </div>
-            {rows.length === 0 ? <p className="text-sm text-text-secondary">This instance has no steps.</p> : <FlowDiagram nodes={nodes} lanes={flowLanes} edgeTone={edgeTone} />}
+            {rows.length === 0 ? <p className="text-body text-text-secondary">This instance has no steps.</p> : <FlowDiagram nodes={nodes} lanes={flowLanes} edgeTone={edgeTone} />}
             {followUps.length > 0 && (
               <div className="mt-6 pt-4 border-t border-border-light">
-                <h3 className="flex items-center gap-1 text-sm font-medium text-text-primary mb-2">
+                <h3 className="flex items-center gap-1 text-body font-medium text-text-primary mb-2">
                   Follow-ups <InfoTip label="Follow-ups" text="Started because a step was late." />
                 </h3>
                 <ul className="flex flex-col gap-1.5">
                   {followUps.map((f) => (
-                    <li key={f.id} className="flex items-center justify-between gap-2 text-sm text-text-primary">
+                    <li key={f.id} className="flex items-center justify-between gap-2 text-body text-text-primary">
                       <span className="truncate">{f.title}</span>
-                      <span className="text-[12px] text-text-secondary shrink-0">{STEP_STATUS[f.status]?.label}</span>
+                      <span className="text-meta text-text-secondary shrink-0">{STEP_STATUS[f.status]?.label}</span>
                     </li>
                   ))}
                 </ul>
@@ -590,13 +590,13 @@ export default function RunView({ templateId, instanceId }: { templateId: string
 
         <div className="flex flex-col gap-6 min-w-0">
           <section aria-labelledby="run-progress" className="bg-surface border border-border-light rounded-card shadow-card p-4 sm:p-6 flex flex-col gap-3">
-            <h2 id="run-progress" className="text-[18px] font-medium text-text-primary">
+            <h2 id="run-progress" className="text-card-heading font-medium text-text-primary">
               Progress
             </h2>
             <ProgressBar completed={p.completed} total={p.total} run={run} />
             {live && currentRows.length > 0 && (
               <div>
-                <p className="text-[13px] text-text-secondary mb-1.5">{currentRows.length === 1 ? 'In progress' : `${currentRows.length} in progress`}</p>
+                <p className="text-label text-text-secondary mb-1.5">{currentRows.length === 1 ? 'In progress' : `${currentRows.length} in progress`}</p>
                 <ul className="flex flex-col gap-1.5">
                   {currentRows.map((r) => (
                     <li key={r.id}>
@@ -605,10 +605,10 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                         onClick={() => setOpenRowId(r.id)}
                         className="w-full text-left rounded-[8px] border border-border-light px-3 py-2 hover:bg-surface-sunken focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
                       >
-                        <span className="block text-sm font-medium text-text-primary truncate">
+                        <span className="block text-body font-medium text-text-primary truncate">
                           <span className="text-primary-text font-medium">{labels.get(r.id)}</span> {r.title}
                         </span>
-                        <span className="block text-[12px] text-text-secondary truncate">
+                        <span className="block text-meta text-text-secondary truncate">
                           {STEP_STATUS[r.status]?.label}
                           {(r.assignees?.length || r.assigned_to) && ` · ${namesSummary(r.assignees?.length ? r.assignees : [r.assigned_to!], 2)}`}
                         </span>
@@ -625,7 +625,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             )}
             {live && waitingRows.length > 0 && (
               <div>
-                <p className="text-[13px] text-text-secondary mb-1.5">{waitingRows.length === 1 ? 'Waiting to start' : `${waitingRows.length} waiting to start`}</p>
+                <p className="text-label text-text-secondary mb-1.5">{waitingRows.length === 1 ? 'Waiting to start' : `${waitingRows.length} waiting to start`}</p>
                 <ul className="flex flex-col gap-1.5">
                   {waitingRows.map((r) => {
                     const allowed = startNowAllowed(r)
@@ -636,10 +636,10 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                           onClick={() => setOpenRowId(r.id)}
                           className="min-w-0 flex-1 text-left rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
                         >
-                          <span className="block text-sm font-medium text-text-primary truncate">
+                          <span className="block text-body font-medium text-text-primary truncate">
                             <span className="text-primary-text font-medium">{labels.get(r.id)}</span> {r.title}
                           </span>
-                          <span className="block text-[12px] text-text-secondary">Starts {fmtDayDateTime(r.start_at)}</span>
+                          <span className="block text-meta text-text-secondary">Starts {fmtDayDateTime(r.start_at)}</span>
                         </button>
                         {allowed !== undefined || caps.can_start_now_row_ids?.includes(r.id) ? (
                           <GatedButton
@@ -662,7 +662,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
               </div>
             )}
             {run.status === 'stuck' && (
-              <p className="text-[13px] text-text-secondary">
+              <p className="text-label text-text-secondary">
                 This instance is stuck. Open the step with a problem, then retry the instance or skip the step.
               </p>
             )}

@@ -138,7 +138,7 @@ export function todayIso(): string {
 
 // ─── Status badges ───────────────────────────────────────────────────────────
 
-const BADGE = 'inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[12px] font-medium'
+const BADGE = 'inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-meta font-medium'
 
 export const TEMPLATE_STATUS: Record<WorkflowTemplateStatus, { cls: string; dot: string; label: string }> = {
   active: { cls: 'bg-success-bg text-success border-success-border', dot: 'bg-success', label: 'Live' },
@@ -249,7 +249,7 @@ export function useNarrowScreen(): boolean {
 // ─── Buttons ─────────────────────────────────────────────────────────────────
 
 const BTN_BASE =
-  'inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-medium transition-colors duration-150 min-h-[44px] sm:min-h-[38px] px-4 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed whitespace-nowrap'
+  'inline-flex items-center justify-center gap-2 rounded-[8px] text-body font-medium transition-colors duration-150 min-h-[44px] sm:min-h-[38px] px-4 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed whitespace-nowrap'
 
 export const BTN = {
   primary: `${BTN_BASE} bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted`,
@@ -359,7 +359,7 @@ export function AddStepBar({
         type="button"
         onClick={onClick}
         disabled={allowed !== true}
-        className="w-full inline-flex items-center justify-center gap-2 min-h-[48px] rounded-[12px] border-2 border-dashed border-primary-border bg-white text-sm font-medium text-primary-text hover:bg-primary-subtle hover:border-primary transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:border-border-light disabled:text-text-muted"
+        className="w-full inline-flex items-center justify-center gap-2 min-h-[48px] rounded-[12px] border-2 border-dashed border-primary-border bg-white text-body font-medium text-primary-text hover:bg-primary-subtle hover:border-primary transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:border-border-light disabled:text-text-muted"
       >
         <Plus size={16} /> {children}
       </button>
@@ -418,7 +418,7 @@ export function Reveal({
 
 export function WorkflowBreadcrumb({ trail }: { trail: { label: string; href?: string }[] }) {
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center flex-wrap gap-1.5 text-[13px] text-text-secondary mb-2 sm:mb-3 min-w-0">
+    <nav aria-label="Breadcrumb" className="flex items-center flex-wrap gap-1.5 text-label text-text-secondary mb-2 sm:mb-3 min-w-0">
       {trail.map((c, i) => (
         <Fragment key={i}>
           {i > 0 && <span className="text-text-muted" aria-hidden>›</span>}
@@ -451,7 +451,7 @@ export function initials(name: string): string {
 export function Avatar({ name, size = 'sm' }: { name: string; size?: 'sm' | 'md' }) {
   let h = 0
   for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
-  const dim = size === 'md' ? 'w-8 h-8 text-[11px]' : 'w-6 h-6 text-[10px]'
+  const dim = size === 'md' ? 'w-8 h-8 text-meta' : 'w-6 h-6 text-meta'
   return (
     <span
       aria-hidden
@@ -517,8 +517,8 @@ export function EmptyState({
       <div className="w-14 h-14 rounded-[14px] bg-primary-subtle flex items-center justify-center mb-4">
         <Icon size={22} className="text-primary-text" />
       </div>
-      <h3 className="text-[17px] font-medium text-text-primary mb-1">{title}</h3>
-      <p className="text-sm text-text-secondary max-w-md">{text}</p>
+      <h3 className="text-card-heading font-medium text-text-primary mb-1">{title}</h3>
+      <p className="text-body text-text-secondary max-w-md">{text}</p>
       {action && <div className="mt-6">{action}</div>}
     </div>
   )
@@ -530,8 +530,8 @@ export function ErrorState({ title, message, onRetry }: { title: string; message
       <div className="w-14 h-14 rounded-[14px] bg-danger-bg flex items-center justify-center mb-4">
         <AlertTriangle size={22} className="text-danger" />
       </div>
-      <h3 className="text-[17px] font-medium text-text-primary mb-1">{title}</h3>
-      <p className="text-sm text-text-secondary max-w-md">{message}</p>
+      <h3 className="text-card-heading font-medium text-text-primary mb-1">{title}</h3>
+      <p className="text-body text-text-secondary max-w-md">{message}</p>
       {onRetry && (
         <button type="button" onClick={onRetry} className={`${BTN.secondary} mt-6`}>
           <RefreshCw size={15} /> Try again
@@ -547,8 +547,8 @@ export function NotFoundState({ what, backHref, backLabel }: { what: string; bac
       <div className="w-14 h-14 rounded-[14px] bg-surface-control flex items-center justify-center mb-4">
         <SearchX size={22} className="text-text-secondary" />
       </div>
-      <h2 className="text-[18px] font-medium text-text-primary mb-1">{what} not found</h2>
-      <p className="text-sm text-text-secondary max-w-md">It may have been removed, or you may not have access.</p>
+      <h2 className="text-card-heading font-medium text-text-primary mb-1">{what} not found</h2>
+      <p className="text-body text-text-secondary max-w-md">It may have been removed, or you may not have access.</p>
       <Link href={backHref} className={`${BTN.primary} mt-6`}>
         {backLabel}
       </Link>
@@ -563,8 +563,8 @@ export function NoAccessState({ title, text, backHref, backLabel }: { title: str
       <div className="w-14 h-14 rounded-[14px] bg-surface-control flex items-center justify-center mb-4">
         <Lock size={22} className="text-text-secondary" />
       </div>
-      <h2 className="text-[18px] font-medium text-text-primary mb-1">{title}</h2>
-      <p className="text-sm text-text-secondary max-w-md">{text}</p>
+      <h2 className="text-card-heading font-medium text-text-primary mb-1">{title}</h2>
+      <p className="text-body text-text-secondary max-w-md">{text}</p>
       <Link href={backHref} className={`${BTN.primary} mt-6`}>
         {backLabel}
       </Link>
@@ -579,11 +579,11 @@ export function Skeleton({ className = '' }: { className?: string }) {
 /** One-line danger banner with the server's reason (kit §7.5). */
 export function ErrorBanner({ message, onClose }: { message: string; onClose?: () => void }) {
   return (
-    <div role="alert" className="flex items-start gap-2.5 rounded-[10px] border border-danger-border bg-danger-bg px-3.5 py-2.5 text-sm text-danger">
+    <div role="alert" className="flex items-start gap-2.5 rounded-[10px] border border-danger-border bg-danger-bg px-3.5 py-2.5 text-body text-danger">
       <AlertTriangle size={16} className="shrink-0 mt-0.5" />
       <span className="flex-1 min-w-0 wrap-break-word">{message}</span>
       {onClose && (
-        <button type="button" onClick={onClose} className="text-danger hover:underline text-[13px] font-medium shrink-0">
+        <button type="button" onClick={onClose} className="text-danger hover:underline text-label font-medium shrink-0">
           Close
         </button>
       )}
@@ -599,18 +599,18 @@ export function SaveIndicator({ state, error, onRetry }: { state: SaveState; err
   if (state === 'idle') return null
   if (state === 'saving')
     return (
-      <span className="inline-flex items-center gap-1 text-[12px] text-text-secondary" aria-live="polite">
+      <span className="inline-flex items-center gap-1 text-meta text-text-secondary" aria-live="polite">
         <Loader2 size={12} className="animate-spin" /> Saving…
       </span>
     )
   if (state === 'saved')
     return (
-      <span className="inline-flex items-center gap-1 text-[12px] text-success" aria-live="polite">
+      <span className="inline-flex items-center gap-1 text-meta text-success" aria-live="polite">
         <CheckCircle2 size={12} /> Saved
       </span>
     )
   return (
-    <span className="inline-flex items-center gap-1.5 text-[12px] text-danger min-w-0" role="alert">
+    <span className="inline-flex items-center gap-1.5 text-meta text-danger min-w-0" role="alert">
       <AlertTriangle size={12} className="shrink-0" />
       <span className="truncate max-w-[260px]">{error || 'Not saved'}</span>
       {onRetry && (

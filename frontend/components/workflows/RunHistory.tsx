@@ -92,7 +92,7 @@ export default function RunHistory({
     <section aria-labelledby="run-history" className="bg-surface border border-border-light rounded-card shadow-card p-4 sm:p-6 flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <History size={16} className="text-text-secondary" />
-        <h2 id="run-history" className="text-[18px] font-medium text-text-primary">
+        <h2 id="run-history" className="text-card-heading font-medium text-text-primary">
           History
         </h2>
       </div>
@@ -103,14 +103,14 @@ export default function RunHistory({
           <Skeleton className="h-10" />
         </div>
       ) : status === 'failed' ? (
-        <div className="flex flex-col gap-2 text-sm text-danger">
+        <div className="flex flex-col gap-2 text-body text-danger">
           <span>History could not be loaded. {error}</span>
           <button type="button" onClick={load} className={`${BTN.quiet} self-start`}>
             <RefreshCw size={14} /> Try again
           </button>
         </div>
       ) : events.length === 0 ? (
-        <p className="text-sm text-text-secondary">No activity yet.</p>
+        <p className="text-body text-text-secondary">No activity yet.</p>
       ) : (
         <>
           <ol className="flex flex-col">
@@ -129,13 +129,13 @@ export default function RunHistory({
                     <Icon size={14} />
                   </span>
                   <div className="min-w-0 pt-0.5">
-                    <p className="text-sm text-text-primary wrap-break-word">{text}</p>
+                    <p className="text-body text-text-primary wrap-break-word">{text}</p>
                     {reason && !e.message.includes(reason) && (
-                      <p className="mt-1 text-[13px] text-text-secondary rounded-[8px] bg-surface-sunken border border-border-light px-2.5 py-1.5 whitespace-pre-wrap wrap-break-word">“{reason}”</p>
+                      <p className="mt-1 text-label text-text-secondary rounded-[8px] bg-surface-sunken border border-border-light px-2.5 py-1.5 whitespace-pre-wrap wrap-break-word">“{reason}”</p>
                     )}
-                    <p className="text-[12px] text-text-secondary">
+                    <p className="text-meta text-text-secondary">
                       {stepLabel && (
-                        <span className="inline-flex items-center mr-1.5 rounded-full border border-border bg-white px-1.5 text-[11px] font-medium text-text-secondary">
+                        <span className="inline-flex items-center mr-1.5 rounded-full border border-border bg-white px-1.5 text-meta font-medium text-text-secondary">
                           Step {stepLabel}
                         </span>
                       )}

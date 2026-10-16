@@ -114,7 +114,7 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
           <WorkflowIcon size={18} className="text-primary-text" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-[16px] font-medium text-text-primary leading-snug">
+          <h3 className="text-card-heading font-medium text-text-primary leading-snug">
             {/* Stretched link: the whole card opens the workflow; the menu sits above it. */}
             <Link
               href={workflowHref(w.id)}
@@ -132,11 +132,11 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
         </div>
       </div>
 
-      <p className="text-[14px] text-text-secondary line-clamp-2 min-h-[42px] wrap-break-word">
+      <p className="text-body text-text-secondary line-clamp-2 min-h-[42px] wrap-break-word">
         {w.description || <span className="text-text-muted">No description</span>}
       </p>
 
-      <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-[13px] text-text-secondary">
+      <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-label text-text-secondary">
         {/* A limited card (you run it or work in it, but can't see its design) has no step count. */}
         {w.view !== 'limited' && (
           <span className="inline-flex items-center gap-1.5">
@@ -162,7 +162,7 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
         )}
       </div>
 
-      <div className="mt-auto pt-3 border-t border-border-light flex items-center justify-between gap-3 text-[13px] text-text-secondary">
+      <div className="mt-auto pt-3 border-t border-border-light flex items-center justify-between gap-3 text-label text-text-secondary">
         <Tooltip label="Editors">
           <span tabIndex={0} className="relative z-10 inline-flex items-center gap-1.5 min-w-0 rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary">
             <Users size={14} className="shrink-0" />

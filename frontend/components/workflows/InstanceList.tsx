@@ -45,7 +45,7 @@ export function ProgressBar({ completed, total, run }: { completed: number; tota
       <div className="flex-1 h-2 rounded-full bg-surface-control-pressed overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={completed} aria-label="Steps done">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[13px] text-text-secondary whitespace-nowrap tabular-nums">
+      <span className="text-label text-text-secondary whitespace-nowrap tabular-nums">
         {completed} of {total}
       </span>
     </div>
@@ -86,7 +86,7 @@ export default function InstanceList({
             {i.name}
           </Link>
           {(i.instance_number || (showWorkflow && i.template?.name)) && (
-            <p className="text-[13px] text-text-secondary truncate">
+            <p className="text-label text-text-secondary truncate">
               {[i.instance_number ? instanceTitle(i.instance_number) : null, showWorkflow ? i.template?.name : null].filter(Boolean).join(' · ')}
             </p>
           )}
@@ -134,7 +134,7 @@ export default function InstanceList({
       />
       {!loading && instances.length > limit && (
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[13px] text-text-secondary">
+          <span className="text-label text-text-secondary">
             1–{rows.length} of {instances.length}
           </span>
           <button type="button" onClick={() => setLimit((l) => l + PAGE)} className={BTN.quiet}>

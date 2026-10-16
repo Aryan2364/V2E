@@ -110,7 +110,7 @@ export default function SendBackDialog({
   return (
     <Modal isOpen={!!subject} onClose={() => !busy && onClose()} title="Send back" size="md" closeOnEscape={!busy}>
       <form onSubmit={submit} className="flex flex-col gap-6">
-        <p className="text-[15px] text-text-primary leading-relaxed">
+        <p className="text-body text-text-primary leading-relaxed">
           The chosen step reopens with your reason.{' '}
           <span className="font-medium text-text-primary">
             {subject?.stepLabel ? `${subject.stepLabel} ` : ''}“{subject?.stepTitle}”
@@ -119,7 +119,7 @@ export default function SendBackDialog({
         </p>
 
         <div>
-          <span className="block text-sm font-medium text-text-secondary mb-2">
+          <span className="block text-body font-medium text-text-secondary mb-2">
             Send back to <span className="text-danger">*</span> <InfoTip label="Send back to" text="Steps in between are not redone." />
           </span>
           {loadError ? (
@@ -132,7 +132,7 @@ export default function SendBackDialog({
           ) : targets === null ? (
             <Skeleton className="h-11" />
           ) : targets.length === 0 ? (
-            <p className="text-sm text-text-secondary rounded-[8px] border border-border-light bg-surface-sunken px-3 py-2.5">
+            <p className="text-body text-text-secondary rounded-[8px] border border-border-light bg-surface-sunken px-3 py-2.5">
               No earlier finished step to send back to.
             </p>
           ) : (
@@ -150,7 +150,7 @@ export default function SendBackDialog({
         </div>
 
         <div>
-          <label htmlFor="send-back-reason" className="block text-sm font-medium text-text-secondary mb-2">
+          <label htmlFor="send-back-reason" className="block text-body font-medium text-text-secondary mb-2">
             What needs fixing <span className="text-danger">*</span>
           </label>
           <textarea
@@ -167,13 +167,13 @@ export default function SendBackDialog({
             }}
             onBlur={() => reason && setReasonError(reasonProblem(reason))}
             placeholder={targetTitle ? `What should change in “${targetTitle}”?` : 'What should change?'}
-            className={`w-full px-3 py-2.5 text-base sm:text-sm border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:ring-1 resize-y ${
+            className={`w-full px-3 py-2.5 text-card-heading sm:text-body border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:ring-1 resize-y ${
               reasonError ? 'border-danger focus:ring-danger' : 'border-border focus:border-primary focus:ring-primary'
             }`}
           />
           <div className="mt-1.5 flex items-start justify-between gap-3">
-            <p className={`text-[13px] ${reasonError ? 'text-danger' : 'text-text-secondary'}`}>{reasonError ?? `At least ${MIN} characters.`}</p>
-            <span className={`text-[12px] tabular-nums shrink-0 ${trimmed.length < MIN ? 'text-text-secondary' : 'text-success'}`}>
+            <p className={`text-label ${reasonError ? 'text-danger' : 'text-text-secondary'}`}>{reasonError ?? `At least ${MIN} characters.`}</p>
+            <span className={`text-meta tabular-nums shrink-0 ${trimmed.length < MIN ? 'text-text-secondary' : 'text-success'}`}>
               {reason.length} / {MAX}
             </span>
           </div>

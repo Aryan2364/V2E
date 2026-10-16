@@ -120,7 +120,7 @@ export default function StartWorkflowModal({
   return (
     <Modal isOpen={!!workflow} onClose={() => !busy && onClose()} title="Run workflow" size="md" closeOnEscape={!busy}>
       <form onSubmit={run} noValidate className="flex flex-col gap-6">
-        <p className="text-[15px] text-text-primary leading-relaxed">
+        <p className="text-body text-text-primary leading-relaxed">
           Creates a new instance of <span className="font-medium text-text-primary">{workflow?.name}</span>.{' '}
           {nowSteps.length === 1 ? (
             <>
@@ -143,7 +143,7 @@ export default function StartWorkflowModal({
         </p>
 
         <div>
-          <label htmlFor="instance-name" className="block text-sm font-medium text-text-secondary mb-2">
+          <label htmlFor="instance-name" className="block text-body font-medium text-text-secondary mb-2">
             Instance name <span className="text-danger">*</span>{' '}
             <InfoTip label="Instance name" text="Shown on every task of this instance. Each instance of a workflow needs its own name." />
           </label>
@@ -162,16 +162,16 @@ export default function StartWorkflowModal({
             }}
             onBlur={() => clean && setTouched(true)}
             placeholder="e.g. ACME Ltd onboarding"
-            className={`w-full px-3 py-2.5 text-base sm:text-sm border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:ring-1 ${
+            className={`w-full px-3 py-2.5 text-card-heading sm:text-body border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:ring-1 ${
               shownNameError ? 'border-danger focus:border-danger focus:ring-danger' : 'border-border focus:border-primary focus:ring-primary'
             }`}
           />
           {shownNameError ? (
-            <p id="instance-name-error" role="alert" className="mt-1.5 text-[13px] text-danger">
+            <p id="instance-name-error" role="alert" className="mt-1.5 text-label text-danger">
               {shownNameError}
             </p>
           ) : (
-            <p id="instance-name-help" className="mt-1.5 text-[13px] text-text-secondary">
+            <p id="instance-name-help" className="mt-1.5 text-label text-text-secondary">
               {clean.length}/{NAME_MAX}
             </p>
           )}

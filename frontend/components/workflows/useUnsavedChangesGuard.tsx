@@ -180,10 +180,10 @@ export function useUnsavedChangesGuard(
                   <AlertTriangle size={20} className="text-danger" />
                 </div>
                 <div className="min-w-0">
-                  <h3 id="unsaved-title" className="text-[18px] font-medium text-text-primary">
+                  <h3 id="unsaved-title" className="text-card-heading font-medium text-text-primary">
                     {title}
                   </h3>
-                  <p id="unsaved-message" className="text-sm text-text-secondary mt-1">
+                  <p id="unsaved-message" className="text-body text-text-secondary mt-1">
                     {message}
                   </p>
                 </div>
@@ -193,7 +193,7 @@ export function useUnsavedChangesGuard(
                   type="button"
                   onClick={stay}
                   disabled={savingToLeave}
-                  className="min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-sm font-medium text-text-secondary hover:text-text-primary rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60"
+                  className="min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-body font-medium text-text-secondary hover:text-text-primary rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60"
                 >
                   Stay
                 </button>
@@ -202,7 +202,7 @@ export function useUnsavedChangesGuard(
                   onClick={leave}
                   disabled={savingToLeave}
                   className={[
-                    'min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-sm font-medium rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60',
+                    'min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-body font-medium rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60',
                     // With a save on offer, leaving is the second choice: outlined danger.
                     canSave
                       ? 'bg-white text-danger border border-danger-border hover:bg-danger-bg'
@@ -218,7 +218,7 @@ export function useUnsavedChangesGuard(
                     autoFocus
                     onClick={saveAndLeave}
                     disabled={savingToLeave}
-                    className="inline-flex items-center justify-center gap-2 min-h-[44px] sm:min-h-[40px] px-6 whitespace-nowrap text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-primary-border"
+                    className="inline-flex items-center justify-center gap-2 min-h-[44px] sm:min-h-[40px] px-6 whitespace-nowrap text-body font-medium text-white bg-primary hover:bg-primary-hover rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-primary-border"
                   >
                     {savingToLeave && <Loader2 size={15} className="animate-spin" />}
                     {save.label}

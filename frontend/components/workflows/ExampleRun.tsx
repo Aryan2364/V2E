@@ -138,14 +138,14 @@ export default function ExampleRun({
         className="w-full flex items-center gap-2 px-4 py-3 text-left rounded-[12px] hover:bg-surface-sunken focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
       >
         <CalendarRange size={16} className="text-primary-text shrink-0" />
-        <span className="text-[15px] font-medium text-text-primary shrink-0">Example instance</span>
+        <span className="text-body font-medium text-text-primary shrink-0">Example instance</span>
         {busy && data && (
-          <span className="inline-flex items-center gap-1 text-[12px] text-text-secondary shrink-0" aria-live="polite">
+          <span className="inline-flex items-center gap-1 text-meta text-text-secondary shrink-0" aria-live="polite">
             <Loader2 size={12} className="animate-spin" /> Updating
           </span>
         )}
         {warnings.length > 0 && (
-          <span className="inline-flex items-center gap-1 text-[12px] font-medium text-warning shrink-0">
+          <span className="inline-flex items-center gap-1 text-meta font-medium text-warning shrink-0">
             <AlertTriangle size={12} /> {warnings.length === 1 ? '1 warning' : `${warnings.length} warnings`}
           </span>
         )}
@@ -154,13 +154,13 @@ export default function ExampleRun({
       <Reveal open={open} id="example-run">
         <div className="px-4 pb-4 pt-3 border-t border-border-light flex flex-col gap-3">
           {state.status === 'failed' && (
-            <div role="alert" className="flex flex-wrap items-start gap-2 rounded-[10px] border border-danger-border bg-danger-bg px-3.5 py-2.5 text-sm text-danger">
+            <div role="alert" className="flex flex-wrap items-start gap-2 rounded-[10px] border border-danger-border bg-danger-bg px-3.5 py-2.5 text-body text-danger">
               <AlertTriangle size={16} className="shrink-0 mt-0.5" />
               <span className="flex-1 min-w-0 wrap-break-word">
                 {state.error}
                 {data ? ' The dates below may be out of date.' : ''}
               </span>
-              <button type="button" onClick={() => setRetryKey((k) => k + 1)} className="inline-flex items-center gap-1 text-[13px] font-medium underline shrink-0">
+              <button type="button" onClick={() => setRetryKey((k) => k + 1)} className="inline-flex items-center gap-1 text-label font-medium underline shrink-0">
                 <RefreshCw size={13} /> Try again
               </button>
             </div>
@@ -175,7 +175,7 @@ export default function ExampleRun({
           )}
 
           {data && runs.length === 0 && (
-            <p className="text-sm text-text-secondary">
+            <p className="text-body text-text-secondary">
               {manualOnly ? 'No example yet.' : 'No upcoming instances. Check the schedule’s start and end dates.'}
             </p>
           )}
@@ -191,7 +191,7 @@ export default function ExampleRun({
                       role="tab"
                       aria-selected={i === idx}
                       onClick={() => setRunIndex(i)}
-                      className={`min-h-[44px] sm:min-h-[34px] px-3 rounded-[8px] border text-[13px] font-medium transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
+                      className={`min-h-[44px] sm:min-h-[34px] px-3 rounded-[8px] border text-label font-medium transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
                         i === idx ? 'bg-primary border-primary text-white' : 'bg-white border-border text-text-secondary hover:border-primary hover:text-primary-text'
                       }`}
                     >
@@ -200,7 +200,7 @@ export default function ExampleRun({
                   ))}
                 </div>
               )}
-              <p className="text-sm text-text-primary">
+              <p className="text-body text-text-primary">
                 {manualOnly ? 'If triggered now, on ' : 'If triggered on '}
                 <span className="font-medium text-text-primary">{fmtDayDateTime(run.starts_at)}</span>{' '}
                 <InfoTip label="Example instance" text="Planned dates. Holidays and weekly offs are skipped." />
@@ -216,12 +216,12 @@ export default function ExampleRun({
                         className="w-full flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 px-3 py-2.5 text-left hover:bg-surface-sunken focus:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                       >
                         <span className="flex items-center gap-2 min-w-0 sm:w-[40%]">
-                          <span className="min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-white text-[11px] font-medium flex items-center justify-center shrink-0">
+                          <span className="min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center shrink-0">
                             {n ?? '•'}
                           </span>
-                          <span className="text-sm font-medium text-text-primary truncate">{s.title || 'Untitled step'}</span>
+                          <span className="text-body font-medium text-text-primary truncate">{s.title || 'Untitled step'}</span>
                         </span>
-                        <span className="text-[13px] text-text-secondary tabular-nums sm:flex-1 pl-[30px] sm:pl-0">
+                        <span className="text-label text-text-secondary tabular-nums sm:flex-1 pl-[30px] sm:pl-0">
                           {fmtSpan(s.planned_start_at, s.planned_due_at)}
                           {spanLength(s.planned_start_at, s.planned_due_at) && (
                             <span className="text-text-secondary whitespace-nowrap"> · {spanLength(s.planned_start_at, s.planned_due_at)}</span>
@@ -240,7 +240,7 @@ export default function ExampleRun({
               {warnings.map((w, i) => {
                 const key = warningStepKey(w)
                 return (
-                  <li key={i} className="flex items-start gap-2 text-[13px] text-warning">
+                  <li key={i} className="flex items-start gap-2 text-label text-warning">
                     <AlertTriangle size={14} className="shrink-0 mt-0.5 text-warning" />
                     <span className="flex-1 min-w-0 wrap-break-word">{warningText(w, nameOf)}</span>
                     {key && order.has(key) && (
@@ -251,7 +251,7 @@ export default function ExampleRun({
                   </li>
                 )
               })}
-              <li className="text-[12px] text-warning pl-[22px]">Warnings don’t block saving.</li>
+              <li className="text-meta text-warning pl-[22px]">Warnings don’t block saving.</li>
             </ul>
           )}
 

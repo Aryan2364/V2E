@@ -86,8 +86,8 @@ export default function Sheet({
       >
         <div className="flex items-start gap-3 px-6 py-4 border-b border-border-light shrink-0">
           <div className="flex-1 min-w-0">
-            {eyebrow && <p className="text-[13px] font-medium text-text-secondary">{eyebrow}</p>}
-            <h2 id={labelId} className="text-[18px] font-medium text-text-primary wrap-break-word">
+            {eyebrow && <p className="text-label font-medium text-text-secondary">{eyebrow}</p>}
+            <h2 id={labelId} className="text-card-heading font-medium text-text-primary wrap-break-word">
               {title}
             </h2>
             {headerExtra && <div className="mt-1.5 flex items-center gap-2 flex-wrap">{headerExtra}</div>}

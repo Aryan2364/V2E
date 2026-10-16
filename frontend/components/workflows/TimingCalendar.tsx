@@ -266,7 +266,7 @@ export default function TimingCalendar({
         )}
         <span className="flex justify-center">
           <span
-            className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[13px] tabular-nums ${
+            className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-label tabular-nums ${
               isSel
                 ? 'bg-primary text-white font-medium'
                 : grey
@@ -303,7 +303,7 @@ export default function TimingCalendar({
           <button type="button" aria-label={`Previous ${noun}`} onClick={() => go(-1)} disabled={page <= minPage} className={navBtn}>
             <ChevronLeft size={18} />
           </button>
-          <span id={`${uid}-title`} aria-live="polite" className="text-sm font-medium text-text-primary tabular-nums text-center">
+          <span id={`${uid}-title`} aria-live="polite" className="text-body font-medium text-text-primary tabular-nums text-center">
             {title}
           </span>
           <button type="button" aria-label={`Next ${noun}`} onClick={() => go(1)} disabled={page >= maxPage} className={navBtn}>
@@ -323,7 +323,7 @@ export default function TimingCalendar({
         >
           <div role="row" className="grid grid-cols-7">
             {[1, 2, 3, 4, 5, 6, 0].map((w) => (
-              <span key={w} role="columnheader" aria-label={WEEKDAYS_SHORT[w]} className="text-center text-[12px] font-medium text-text-secondary py-1">
+              <span key={w} role="columnheader" aria-label={WEEKDAYS_SHORT[w]} className="text-center text-meta font-medium text-text-secondary py-1">
                 {WEEKDAYS_SHORT[w].slice(0, 2)}
               </span>
             ))}
@@ -342,7 +342,7 @@ export default function TimingCalendar({
               aria-pressed={lastDay.selected && selected !== null && pageOf(selected) === page}
               disabled={disabled || (minDay !== null && firstDayOfMonth(page) + daysInMonthIdx(page) - 1 < minDay)}
               onClick={() => lastDay.onPick(cycleOfPage(page))}
-              className={`min-h-[44px] sm:min-h-[36px] px-3 rounded-[8px] border text-[13px] font-medium transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-text-muted disabled:border-border-light ${
+              className={`min-h-[44px] sm:min-h-[36px] px-3 rounded-[8px] border text-label font-medium transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-text-muted disabled:border-border-light ${
                 lastDay.selected && selected !== null && pageOf(selected) === page
                   ? 'bg-primary border-primary text-white'
                   : 'bg-white border-border text-text-secondary hover:border-primary hover:text-primary-text'
@@ -355,7 +355,7 @@ export default function TimingCalendar({
       </div>
 
       {/* What happens on the day under the pointer / focus (else the picked day). */}
-      <div id={`${uid}-details`} aria-live="polite" className="min-h-[44px] rounded-[8px] bg-surface-sunken border border-border-light px-3 py-2 text-[13px] text-text-primary">
+      <div id={`${uid}-details`} aria-live="polite" className="min-h-[44px] rounded-[8px] bg-surface-sunken border border-border-light px-3 py-2 text-label text-text-primary">
         {shown === null ? (
           <span className="text-text-secondary">Point at a day to see what happens then.</span>
         ) : (
@@ -379,7 +379,7 @@ export default function TimingCalendar({
       </div>
 
       {/* Legend */}
-      <ul aria-label="Legend" className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-text-secondary">
+      <ul aria-label="Legend" className="flex flex-wrap gap-x-3 gap-y-1 text-meta text-text-secondary">
         <li className="inline-flex items-center gap-1">
           <Play size={9} aria-hidden className="text-text-primary fill-text-primary" /> Instance starts
         </li>

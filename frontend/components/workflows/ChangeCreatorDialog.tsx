@@ -67,7 +67,7 @@ export default function ChangeCreatorDialog({
   return (
     <Modal isOpen={open} onClose={() => !busy && onClose()} title="Change creator" size="md" closeOnEscape={!busy}>
       <form onSubmit={save} className="flex flex-col gap-6">
-        <p className="text-[15px] text-text-primary leading-relaxed">
+        <p className="text-body text-text-primary leading-relaxed">
           The creator of <span className="font-medium text-text-primary">{workflow.name}</span> is always an editor and can’t be removed.
           {current ? (
             <>
@@ -78,7 +78,7 @@ export default function ChangeCreatorDialog({
         </p>
 
         <div>
-          <span id="new-creator-label" className="block text-sm font-medium text-text-secondary mb-2">
+          <span id="new-creator-label" className="block text-body font-medium text-text-secondary mb-2">
             New creator <span className="text-danger">*</span>{' '}
             <InfoTip label="New creator" text="Only active members can be chosen. The previous creator stays an editor until someone removes them." />
           </span>
