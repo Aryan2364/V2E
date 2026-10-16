@@ -12,6 +12,7 @@ import DelegationDetailModal from '@/components/delegation/DelegationDetailModal
 import { StatusPill, fmtDate } from '@/components/delegation/delegationUtils'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface EmployeeOption {
   user_id: string
@@ -233,7 +234,7 @@ export default function DelegationPage() {
                 type="button"
                 onClick={() => setView(t)}
                 className={[
-                  'relative flex items-center gap-2 px-4 py-2.5 text-body font-medium transition-colors',
+                  'relative flex items-center gap-2 px-4 py-2.5 text-body font-medium outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors',
                   active ? 'text-primary-text' : 'text-text-muted hover:text-text-primary',
                 ].join(' ')}
               >
@@ -255,7 +256,7 @@ export default function DelegationPage() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-40 rounded-card bg-surface-control animate-pulse" />
+              <Skeleton key={i} className="h-40 rounded-card" />
             ))}
           </div>
         ) : current.length === 0 ? (
@@ -270,16 +271,16 @@ export default function DelegationPage() {
                 : 'Delegations others hand to you will appear here.'}
             </p>
             {canDelegate && (
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                className="mt-4"
                 onClick={() => {
                   setEditing(null)
                   setModalOpen(true)
                 }}
-                className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-control text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
               >
                 <Plus size={16} /> New delegation
-              </button>
+              </Button>
             )}
           </div>
         ) : (
