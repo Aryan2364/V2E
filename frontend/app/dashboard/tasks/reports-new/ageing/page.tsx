@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { formatNumber } from '@/lib/format'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { reportsApi } from '@/lib/api/reports'
@@ -241,7 +242,7 @@ export default function AgeingReportPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="min-w-0">
-          <h1 className="text-[26px] font-bold text-text-primary leading-tight">Pending &amp; Overdue Ageing</h1>
+          <h1 className="text-[26px] font-medium text-text-primary leading-tight">Pending &amp; Overdue Ageing</h1>
           <p className="mt-1 text-[15px] text-text-secondary">
             Only open work — Overdue or Ongoing — sorted into age bands so the oldest pile stands out.
           </p>
@@ -260,7 +261,7 @@ export default function AgeingReportPage() {
           <button
             onClick={downloadReport}
             disabled={downloading || !report || (report.totals.total_pending === 0 && report.totals.withdrawn === 0 && report.totals.handed_over === 0)}
-            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover disabled:opacity-60 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-60 transition-colors"
           >
             <Download size={15} /> {downloading ? 'Preparing…' : 'Download'}
           </button>
@@ -273,7 +274,7 @@ export default function AgeingReportPage() {
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors ${
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === id ? 'border-primary text-primary-text' : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
@@ -288,18 +289,18 @@ export default function AgeingReportPage() {
       </div>
 
       {report?.list_truncated && tab === 'pending' && (
-        <div className="flex items-start gap-2 rounded-[10px] border border-warning-border bg-warning-bg px-4 py-2.5 text-sm text-warning">
+        <div className="flex items-start gap-2 rounded-control border border-warning-border bg-warning-bg px-4 py-2.5 text-sm text-warning">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-          <span>This view is very large, so the detail list is capped at the newest {report.pending.length.toLocaleString()} rows. The By&nbsp;Person and By&nbsp;Task totals above are still complete — narrow the scope for a full drill-down.</span>
+          <span>This view is very large, so the detail list is capped at the newest {formatNumber(report.pending.length)} rows. The By&nbsp;Person and By&nbsp;Task totals above are still complete — narrow the scope for a full drill-down.</span>
         </div>
       )}
 
       {loading ? (
         <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : !report || report.people.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] py-16 flex flex-col items-center text-center">
+        <div className="bg-surface border border-border-light rounded-card py-16 flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
-          <p className="font-semibold text-text-primary">{report ? 'No pending work in your scope' : 'No access'}</p>
+          <p className="font-medium text-text-primary">{report ? 'No pending work in your scope' : 'No access'}</p>
           <p className="text-sm text-text-secondary mt-1 max-w-sm">{report ? 'Everyone you can see is up to date — nothing is overdue or ongoing.' : 'You can only see ageing for people within your visibility.'}</p>
         </div>
       ) : tab === 'person' ? (
@@ -320,9 +321,9 @@ export default function AgeingReportPage() {
               <tbody>
                 {personSort.sorted.map((p) => (
                   <tr key={p.user_id} className="group border-b border-border-light last:border-0 hover:bg-surface-sunken transition-colors whitespace-nowrap">
-                    <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-surface-sunken z-10">
+                    <td className="px-4 py-3 sticky left-0 bg-surface group-hover:bg-surface-sunken z-10">
                       <button onClick={() => drillPerson(p, null, null)} className="text-left min-w-0 hover:text-primary-text">
-                        <p className="font-semibold text-text-primary group-hover:text-primary-text truncate">{p.name}</p>
+                        <p className="font-medium text-text-primary group-hover:text-primary-text truncate">{p.name}</p>
                         {p.role_title && <p className="text-[12px] text-text-muted truncate">{p.role_title}</p>}
                       </button>
                     </td>
@@ -356,8 +357,8 @@ export default function AgeingReportPage() {
               <tbody>
                 {taskSort.sorted.map((t) => (
                   <tr key={t.title} className="group border-b border-border-light last:border-0 hover:bg-surface-sunken transition-colors whitespace-nowrap">
-                    <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-surface-sunken z-10 max-w-[320px]">
-                      <button onClick={() => drillTask(t, null, null)} className="text-left hover:text-primary-text font-semibold text-text-primary group-hover:text-primary-text">
+                    <td className="px-4 py-3 sticky left-0 bg-surface group-hover:bg-surface-sunken z-10 max-w-[320px]">
+                      <button onClick={() => drillTask(t, null, null)} className="text-left hover:text-primary-text font-medium text-text-primary group-hover:text-primary-text">
                         <span className="line-clamp-1">{t.title}</span>
                       </button>
                     </td>
@@ -393,7 +394,7 @@ export default function AgeingReportPage() {
                   <SortHead sort={pendingSort} id="frequency">Frequency</SortHead>
                   <SortHead sort={pendingSort} id="due_date">Due Date</SortHead>
                   <SortHead sort={pendingSort} id="days_late" center>Days Late</SortHead>
-                  <th className="px-3 py-3 font-semibold">How Late</th>
+                  <th className="px-3 py-3 font-medium">How Late</th>
                 </tr>
               </thead>
               <tbody>
@@ -427,7 +428,7 @@ export default function AgeingReportPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-3 text-center tabular-nums font-semibold whitespace-nowrap" style={{ color: r.days_late === null ? 'var(--text-muted)' : r.days_late > 30 ? 'var(--danger)' : 'var(--warning)' }}>{r.days_late ?? '—'}</td>
+                    <td className="px-3 py-3 text-center tabular-nums font-medium whitespace-nowrap" style={{ color: r.days_late === null ? 'var(--text-muted)' : r.days_late > 30 ? 'var(--danger)' : 'var(--warning)' }}>{r.days_late ?? '—'}</td>
                     <td className="px-3 py-3 whitespace-nowrap"><span className={`text-xs font-medium ${r.status === 'Overdue' ? 'text-danger' : 'text-text-secondary'}`}>{r.bucket_label}</span></td>
                   </tr>
                 ))}
@@ -437,7 +438,7 @@ export default function AgeingReportPage() {
               </tbody>
             </table>
           </GridCard>
-          <p className="text-xs text-text-muted">Showing {pendingSort.sorted.length.toLocaleString()} of {report.pending.length.toLocaleString()} pending {report.pending.length === 1 ? 'task' : 'tasks'}. Click a row to open the task.</p>
+          <p className="text-xs text-text-muted">Showing {formatNumber(pendingSort.sorted.length)} of {formatNumber(report.pending.length)} pending {report.pending.length === 1 ? 'task' : 'tasks'}. Click a row to open the task.</p>
         </>
       )}
 
@@ -468,7 +469,7 @@ function SearchBox({ value, onChange, placeholder }: { value: string; onChange: 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-[8px] border border-border bg-white pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+        className="w-full rounded-control border border-border bg-surface pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
       />
     </div>
   )
@@ -476,7 +477,7 @@ function SearchBox({ value, onChange, placeholder }: { value: string; onChange: 
 
 function GridCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+    <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
       <div className="overflow-x-auto">{children}</div>
     </div>
   )
@@ -490,21 +491,21 @@ function SortHead({
 }) {
   const active = sort.sortKey === id
   return (
-    <th className={`py-3 font-semibold ${center ? 'text-center px-3' : 'px-3'} ${className}`} title={title}>
+    <th className={`py-3 font-medium ${center ? 'text-center px-3' : 'px-3'} ${className}`} title={title}>
       <button onClick={() => sort.toggle(id)} className={`inline-flex items-center gap-1 hover:text-text-primary transition-colors ${center ? 'justify-center' : ''}`}>
         {children}
-        <ArrowUpDown size={12} className={active ? 'text-primary-text' : 'text-[#CBD5E1]'} />
+        <ArrowUpDown size={12} className={active ? 'text-primary-text' : 'text-text-muted'} />
       </button>
     </th>
   )
 }
 
 function CountCell({ value, onClick, color, bold }: { value: number; onClick: () => void; color: string; bold?: boolean }) {
-  if (value === 0) return <td className="px-3 py-3 text-center tabular-nums text-[#CBD5E1]">0</td>
+  if (value === 0) return <td className="px-3 py-3 text-center tabular-nums text-text-muted">0</td>
   return (
     <td className="px-3 py-3 text-center tabular-nums">
-      <button onClick={onClick} className={`hover:underline underline-offset-2 tabular-nums ${bold ? 'font-bold' : 'font-semibold'}`} style={{ color }} title="See these tasks">
-        {value.toLocaleString()}
+      <button onClick={onClick} className={`hover:underline underline-offset-2 tabular-nums ${bold ? 'font-medium' : 'font-medium'}`} style={{ color }} title="See these tasks">
+        {formatNumber(value)}
       </button>
     </td>
   )
@@ -539,7 +540,7 @@ function BandCells({ b, onDrill }: { b: AgeBuckets; onDrill: (buckets: AgeBucket
           still in whichever band it belongs to), so it is not a filter dimension the
           drawer can honour without breaking count === rows. Read-only flag. */}
       <td className="px-3 py-3 text-center tabular-nums" style={{ color: b.revised_entries ? 'var(--warning)' : 'var(--border)' }}>
-        {b.revised_entries.toLocaleString()}
+        {formatNumber(b.revised_entries)}
       </td>
     </>
   )
@@ -548,18 +549,18 @@ function BandCells({ b, onDrill }: { b: AgeBuckets; onDrill: (buckets: AgeBucket
 function TotalsFoot({ label, totals, leadCols }: { label: string; totals: AgeBuckets; leadCols: number }) {
   return (
     <tfoot>
-      <tr className="bg-surface-sunken border-t-2 border-border-light font-semibold text-text-primary whitespace-nowrap">
+      <tr className="bg-surface-sunken border-t-2 border-border-light font-medium text-text-primary whitespace-nowrap">
         <td className="px-4 py-3 sticky left-0 bg-surface-sunken z-10">{label}</td>
         {Array.from({ length: leadCols - 1 }).map((_, i) => <td key={i} className="px-3 py-3" />)}
-        {BUCKETS.map((meta) => <td key={meta.key} className="px-3 py-3 text-center tabular-nums">{totals[meta.key].toLocaleString()}</td>)}
-        <td className="px-3 py-3 text-center tabular-nums">{totals.total_pending.toLocaleString()}</td>
-        <td className="px-3 py-3 text-center tabular-nums" style={{ color: totals.over_month_late ? 'var(--danger)' : 'var(--text-primary)' }}>{totals.over_month_late.toLocaleString()}</td>
+        {BUCKETS.map((meta) => <td key={meta.key} className="px-3 py-3 text-center tabular-nums">{formatNumber(totals[meta.key])}</td>)}
+        <td className="px-3 py-3 text-center tabular-nums">{formatNumber(totals.total_pending)}</td>
+        <td className="px-3 py-3 text-center tabular-nums" style={{ color: totals.over_month_late ? 'var(--danger)' : 'var(--text-primary)' }}>{formatNumber(totals.over_month_late)}</td>
         <td className="px-3 py-3 text-center tabular-nums">{totals.oldest_late_days ?? '—'}</td>
         <td className="px-3 py-3 text-center tabular-nums">{totals.avg_late_days ?? '—'}</td>
         {/* Withdrawn is its own total — never folded into Total Pending or a band. */}
-        <td className="px-3 py-3 text-center tabular-nums">{totals.withdrawn.toLocaleString()}</td>
-        <td className="px-3 py-3 text-center tabular-nums">{totals.handed_over.toLocaleString()}</td>
-        <td className="px-3 py-3 text-center tabular-nums">{totals.revised_entries.toLocaleString()}</td>
+        <td className="px-3 py-3 text-center tabular-nums">{formatNumber(totals.withdrawn)}</td>
+        <td className="px-3 py-3 text-center tabular-nums">{formatNumber(totals.handed_over)}</td>
+        <td className="px-3 py-3 text-center tabular-nums">{formatNumber(totals.revised_entries)}</td>
       </tr>
     </tfoot>
   )

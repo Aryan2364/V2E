@@ -658,7 +658,7 @@ export default function TasksOverviewPage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
-        <p className="font-semibold text-text-primary">No organization found</p>
+        <p className="font-medium text-text-primary">No organization found</p>
         <p className="text-sm text-text-secondary mt-1">You are not a member of any organization.</p>
       </div>
     )
@@ -667,7 +667,7 @@ export default function TasksOverviewPage() {
   if (!permsLoading && !can('tasks.task.manage', 'read')) {
     return (
       <div className="space-y-5">
-        <h1 className="text-[28px] font-bold text-text-primary leading-tight">Work Overview</h1>
+        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Work Overview</h1>
         <AccessHiddenState orgId={orgId} leaf="tasks.task.manage" moduleLabel="Tasks" />
       </div>
     )
@@ -684,12 +684,12 @@ export default function TasksOverviewPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex-1 min-w-0">
-          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Work Overview</h1>
+          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Work Overview</h1>
           <p className="mt-1 text-[15px] text-text-secondary">{SCOPE_BLURB[appliedScope]}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <ScopeSwitcher maxScope={maxScope} value={appliedScope} onChange={(s) => setRequestedScope(s)} />
-          <button onClick={() => setShowCreate(true)} className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover transition-colors shrink-0">
+          <button onClick={() => setShowCreate(true)} className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors shrink-0">
             <Plus size={16} /> Create Task
           </button>
         </div>
@@ -707,7 +707,7 @@ export default function TasksOverviewPage() {
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <LensToggle value={lens} onChange={switchLens} />
           <button onClick={() => setShowInsights((v) => !v)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-[8px] border text-sm font-medium transition-colors ${showInsights ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-control border text-sm font-medium transition-colors ${showInsights ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
             <BarChart3 size={15} /> Insights
           </button>
         </div>
@@ -804,14 +804,14 @@ export default function TasksOverviewPage() {
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search tasks…"
-            className="w-full rounded-[8px] border border-border bg-white pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
+            className="w-full rounded-control border border-border bg-surface pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
         <button onClick={() => setShowFilters((v) => !v)}
-          className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-[8px] border text-sm font-medium transition-colors ${showFilters || filtersActive ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
+          className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border text-sm font-medium transition-colors ${showFilters || filtersActive ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
           <SlidersHorizontal size={15} /> Filters{filtersActive && <span className="ml-0.5 w-1.5 h-1.5 rounded-full bg-primary" />}
         </button>
         <button onClick={exportCsv} disabled={exporting}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-[8px] border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-control disabled:opacity-60 transition-colors">
+          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-control disabled:opacity-60 transition-colors">
           <Download size={15} /> {exporting ? 'Exporting…' : 'Export'}
         </button>
         <StyledSelect
@@ -830,7 +830,7 @@ export default function TasksOverviewPage() {
 
       {/* Filter panel */}
       {showFilters && (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-surface border border-border-light rounded-card shadow-card p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <StyledSelect
             value={statusId}
             onChange={setStatusId}
@@ -915,7 +915,7 @@ export default function TasksOverviewPage() {
             </button>
           )}
           <p className="text-sm text-text-secondary">
-            {loadingList ? 'Loading…' : <><span className="font-semibold text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}{bucket ? ' in this bucket' : ''}</>}
+            {loadingList ? 'Loading…' : <><span className="font-medium text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}{bucket ? ' in this bucket' : ''}</>}
           </p>
         </div>
         {bucket && <button onClick={() => setBucket(null)} className="text-sm text-primary-text hover:underline flex items-center gap-1"><X size={13} /> Clear bucket</button>}
@@ -925,9 +925,9 @@ export default function TasksOverviewPage() {
       {loadingList ? (
         <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : rows.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16">
+        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-16">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4"><CheckSquare size={24} className="text-text-muted" /></div>
-          <p className="font-semibold text-text-primary text-base">{filtersActive || bucket || drilled ? 'No tasks match this view' : 'No tasks here yet'}</p>
+          <p className="font-medium text-text-primary text-base">{filtersActive || bucket || drilled ? 'No tasks match this view' : 'No tasks here yet'}</p>
           <p className="text-text-secondary text-sm mt-1 text-center max-w-xs">{filtersActive || bucket || drilled ? 'Try adjusting your filters or scope.' : 'Create a task to get started.'}</p>
         </div>
       ) : (
@@ -937,7 +937,7 @@ export default function TasksOverviewPage() {
           ))}
           {hasMore && (
             <button onClick={() => fetchList(page + 1, false)} disabled={loadingMore}
-              className="mt-2 mx-auto px-5 py-2.5 rounded-[8px] border border-border-light bg-white text-sm font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
+              className="mt-2 mx-auto px-5 py-2.5 rounded-control border border-border-light bg-surface text-sm font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
               {loadingMore ? 'Loading…' : `Load more (${total - rows.length} left)`}
             </button>
           )}
@@ -951,10 +951,10 @@ export default function TasksOverviewPage() {
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search tasks…"
-            className="w-full rounded-[8px] border border-border bg-white pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
+            className="w-full rounded-control border border-border bg-surface pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
         <button onClick={exportCsv} disabled={exporting}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-[8px] border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-control disabled:opacity-60 transition-colors">
+          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-control disabled:opacity-60 transition-colors">
           <Download size={15} /> {exporting ? 'Exporting…' : 'Export'}
         </button>
       </div>
@@ -963,7 +963,7 @@ export default function TasksOverviewPage() {
 
       {/* Live entry count — reads at any point, before or after filters. */}
       <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1 rounded-[999px] bg-primary text-white text-[13px] font-semibold px-2.5 py-1 tabular-nums">
+        <span className="inline-flex items-center gap-1 rounded-[999px] bg-primary text-white text-[13px] font-medium px-2.5 py-1 tabular-nums">
           {loadingList ? '…' : total}
           {!loadingList && filtersActive && scopeTotal != null && scopeTotal !== total && (
             <span className="font-medium text-white/80">of {scopeTotal}</span>

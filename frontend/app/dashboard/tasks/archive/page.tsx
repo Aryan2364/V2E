@@ -7,13 +7,12 @@ import type { TaskArchiveItem } from '@/lib/types/tasks'
 // import QuadrantBadge from '@/components/tasks/QuadrantBadge'
 import { Archive, X } from 'lucide-react'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
+import { formatDateTime } from '@/lib/format'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(str: string): string {
-  return new Date(str).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
-  })
+  return formatDateTime(str)
 }
 
 // ─── Snapshot modal ───────────────────────────────────────────────────────────
@@ -37,15 +36,15 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="relative w-full max-w-2xl bg-white rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light max-h-[85vh] flex flex-col">
+      <div className="relative w-full max-w-2xl bg-surface rounded-card shadow-dialog border border-border-light max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-light shrink-0">
           <div>
-            <h2 className="text-[18px] font-semibold text-text-primary">Archived Task Snapshot</h2>
+            <h2 className="text-[18px] font-medium text-text-primary">Archived Task Snapshot</h2>
             <p className="text-xs text-text-muted mt-0.5">Read-only view of deleted task</p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
+            className="w-8 h-8 rounded-control flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
           >
             <X size={18} />
           </button>
@@ -55,12 +54,12 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           {/* Title */}
           <div className="flex items-start gap-3">
             {/* <QuadrantBadge quadrant={task.quadrant} /> */}
-            <h3 className="text-[22px] font-bold text-text-primary leading-tight flex-1">{task.title}</h3>
+            <h3 className="text-[22px] font-medium text-text-primary leading-tight flex-1">{task.title}</h3>
           </div>
 
           {task.description && (
             <div>
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Description</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Description</p>
               <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">{task.description}</p>
             </div>
           )}
@@ -68,21 +67,21 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           {/* Meta row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Status</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Status</p>
               <p className="text-sm text-text-primary">{task.status?.label ?? task.status_id}</p>
             </div>
             {task.deadline && (
               <div>
-                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Deadline</p>
+                <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Deadline</p>
                 <p className="text-sm text-text-primary">{formatDate(task.deadline)}</p>
               </div>
             )}
             <div>
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Type</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Type</p>
               <p className="text-sm text-text-primary capitalize">{task.type.replace('_', ' ')}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Completion Mode</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Completion Mode</p>
               <p className="text-sm text-text-primary">
                 {task.completion_mode === 'all_must_complete' ? 'All must complete' : 'Any can complete'}
               </p>
@@ -92,16 +91,16 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           {/* Assignees */}
           {task.assignees && task.assignees.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">Assignees</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Assignees</p>
               <div className="flex flex-wrap gap-2">
                 {task.assignees.map((a) => (
                   <span
                     key={a.id}
-                    className="inline-flex items-center gap-1.5 bg-surface-control border border-border-light rounded-[6px] px-2.5 py-1 text-sm text-text-primary"
+                    className="inline-flex items-center gap-1.5 bg-surface-control border border-border-light rounded-control px-2.5 py-1 text-sm text-text-primary"
                   >
                     {a.user_name}
                     {a.is_cc && (
-                      <span className="text-[10px] font-semibold bg-warning-bg text-warning border border-warning-border rounded-xs px-1">CC</span>
+                      <span className="text-[10px] font-medium bg-warning-bg text-warning border border-warning-border rounded-xs px-1">CC</span>
                     )}
                   </span>
                 ))}
@@ -112,7 +111,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           {/* Checklist */}
           {task.checklist && task.checklist.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">Checklist</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Checklist</p>
               <div className="space-y-1.5">
                 {task.checklist.map((item) => (
                   <div key={item.id} className="flex items-center gap-2">
@@ -133,8 +132,8 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           )}
 
           {/* Deletion info */}
-          <div className="bg-warning-bg border border-warning-border rounded-[8px] p-4 space-y-1">
-            <p className="text-xs font-semibold text-warning uppercase tracking-wider">Deletion Info</p>
+          <div className="bg-warning-bg border border-warning-border rounded-control p-4 space-y-1">
+            <p className="text-xs font-medium text-warning uppercase tracking-wider">Deletion Info</p>
             <p className="text-sm text-text-primary">
               Deleted on <span className="font-medium">{formatDate(item.deleted_at)}</span>
             </p>
@@ -149,7 +148,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
         <div className="shrink-0 flex justify-end px-6 py-4 border-t border-border-light">
           <button
             onClick={onClose}
-            className="px-5 py-[10px] text-sm font-semibold text-primary-text bg-white border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
+            className="px-5 py-[10px] text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors"
           >
             Close
           </button>
@@ -180,7 +179,7 @@ export default function ArchivePage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-text-primary">No organization found</p>
+        <p className="font-medium text-text-primary">No organization found</p>
       </div>
     )
   }
@@ -246,7 +245,7 @@ export default function ArchivePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-bold text-text-primary leading-tight">Task Archive</h1>
+        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Task Archive</h1>
         <p className="mt-1 text-[15px] text-text-secondary">
           Deleted tasks stored for record-keeping.
         </p>
@@ -258,11 +257,11 @@ export default function ArchivePage() {
         rowKey={(item) => item.id}
         onRowClick={(item) => setSelected(item)}
         emptyState={
-          <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
+          <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-20">
             <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
               <Archive size={24} className="text-text-muted" />
             </div>
-            <p className="font-semibold text-text-primary">Archive is empty</p>
+            <p className="font-medium text-text-primary">Archive is empty</p>
             <p className="text-sm text-text-secondary mt-1">Deleted tasks will appear here.</p>
           </div>
         }

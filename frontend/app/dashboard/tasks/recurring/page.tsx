@@ -80,17 +80,17 @@ function DeleteConfirmDialog({
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-sm bg-white rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light p-5">
-        <h3 className="text-[16px] font-semibold text-text-primary">{copy.title}</h3>
+      <div className="w-full max-w-sm bg-surface rounded-card shadow-dialog border border-border-light p-5">
+        <h3 className="text-[16px] font-medium text-text-primary">{copy.title}</h3>
         <p className="text-sm text-text-secondary mt-1.5">
           <span className="font-medium text-text-primary">“{template.title}”</span> — {copy.body}
         </p>
         {error && (
-          <div className="mt-3 bg-danger-bg border border-danger-border rounded-[8px] px-3 py-2 text-sm text-danger">{error}</div>
+          <div className="mt-3 bg-danger-bg border border-danger-border rounded-control px-3 py-2 text-sm text-danger">{error}</div>
         )}
         <div className="flex justify-end gap-2 mt-4">
           <button type="button" onClick={onCancel} disabled={busy}
-            className="px-4 py-2 text-sm font-semibold text-primary-text bg-white border-2 border-primary rounded-[8px] hover:bg-primary-subtle disabled:opacity-60 transition-colors">
+            className="px-4 py-2 text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle disabled:opacity-60 transition-colors">
             Cancel
           </button>
           <button type="button"
@@ -101,7 +101,7 @@ function DeleteConfirmDialog({
               finally { setBusy(false) }
             }}
             disabled={busy}
-            className={['px-4 py-2 text-sm font-semibold text-white rounded-[8px] disabled:opacity-60 transition-colors',
+            className={['px-4 py-2 text-sm font-medium text-white rounded-control disabled:opacity-60 transition-colors',
               copy.danger ? 'bg-danger hover:bg-danger-hover' : 'bg-primary hover:bg-primary-hover'].join(' ')}>
             {busy ? 'Working…' : copy.confirm}
           </button>
@@ -174,7 +174,7 @@ function RecurringCard({
 
   return (
     <div onClick={onClick}
-      className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group flex flex-col h-[280px]">
+      className="bg-surface border border-border-light rounded-card shadow-card p-5 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group flex flex-col h-[280px]">
       <div className="mb-3">
         <div className="flex items-center justify-between gap-3 flex-wrap mb-2">
           <div className="flex items-center gap-2 flex-wrap">
@@ -192,7 +192,7 @@ function RecurringCard({
             {template.can_manage && (
               <Tooltip label="Manage access">
                 <button onClick={(e) => { e.stopPropagation(); onManageAccess() }} aria-label="Manage access"
-                  className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors">
+                  className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors">
                   <Shield size={13} />
                 </button>
               </Tooltip>
@@ -200,7 +200,7 @@ function RecurringCard({
             {template.can_edit && (
               <Tooltip label="Edit template">
                 <button onClick={(e) => { e.stopPropagation(); onEdit() }} aria-label="Edit template"
-                  className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors">
+                  className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors">
                   <Edit2 size={13} />
                 </button>
               </Tooltip>
@@ -208,14 +208,14 @@ function RecurringCard({
             {template.can_edit && template.is_active && (
               <Tooltip label="Spawn today's task now">
                 <button onClick={(e) => { e.stopPropagation(); handleSpawnToday() }} disabled={spawning}
-                  className="flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-[8px] text-primary-text bg-primary-subtle border border-primary-border hover:bg-primary-subtle disabled:opacity-60 transition-colors">
+                  className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium rounded-control text-primary-text bg-primary-subtle border border-primary-border hover:bg-primary-subtle disabled:opacity-60 transition-colors">
                   <Zap size={11} />{spawning ? '...' : spawnMsg ?? 'Run Today'}
                 </button>
               </Tooltip>
             )}
             {template.can_edit && (
               <button onClick={(e) => { e.stopPropagation(); handleToggle() }} disabled={toggling}
-                className={['flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-[8px] transition-colors disabled:opacity-60',
+                className={['flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-control transition-colors disabled:opacity-60',
                   template.is_active ? 'text-warning bg-warning-bg border border-warning-border hover:bg-warning-bg' : 'text-success bg-success-bg border border-success-border hover:bg-success-bg'].join(' ')}>
                 {template.is_active ? <Pause size={11} /> : <Play size={11} />}
                 {toggling ? '...' : template.is_active ? 'Pause' : 'Resume'}
@@ -224,20 +224,20 @@ function RecurringCard({
             {template.can_manage && (
             <div className="relative">
               <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu((v) => !v) }}
-                className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
+                className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
                 <Trash2 size={13} />
               </button>
               {showDeleteMenu && (
-                <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-border-light rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.12)] p-1.5 min-w-[220px]">
-                  <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('stop') }} className="w-full text-left px-3 py-2 rounded-[6px] hover:bg-surface-control">
+                <div className="absolute right-0 top-full mt-1 z-20 bg-surface border border-border-light rounded-control shadow-dialog p-1.5 min-w-[220px]">
+                  <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('stop') }} className="w-full text-left px-3 py-2 rounded-control hover:bg-surface-control">
                     <span className="block text-sm font-medium text-text-primary">Stop (keep all tasks)</span>
                     <span className="block text-[11px] text-text-secondary">No new tasks; existing ones stay</span>
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('delete-future') }} className="w-full text-left px-3 py-2 rounded-[6px] hover:bg-danger-bg">
+                  <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('delete-future') }} className="w-full text-left px-3 py-2 rounded-control hover:bg-danger-bg">
                     <span className="block text-sm font-medium text-danger">Stop & remove open tasks</span>
                     <span className="block text-[11px] text-text-secondary">Completed ones are kept</span>
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('delete-all') }} className="w-full text-left px-3 py-2 rounded-[6px] hover:bg-danger-bg">
+                  <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('delete-all') }} className="w-full text-left px-3 py-2 rounded-control hover:bg-danger-bg">
                     <span className="block text-sm font-medium text-danger">Delete everything</span>
                     <span className="block text-[11px] text-text-secondary">Removes it and every task it created</span>
                   </button>
@@ -247,7 +247,7 @@ function RecurringCard({
             )}
           </div>
         </div>
-        <h3 className="text-[15px] font-semibold text-text-primary wrap-break-word group-hover:text-primary-text transition-colors line-clamp-1">{template.title}</h3>
+        <h3 className="text-[15px] font-medium text-text-primary wrap-break-word group-hover:text-primary-text transition-colors line-clamp-1">{template.title}</h3>
         {template.description && <p className="text-sm text-text-secondary mt-0.5 line-clamp-2">{template.description}</p>}
         {toggleErr && <p className="text-[12px] text-danger mt-1">{toggleErr}</p>}
       </div>
@@ -267,11 +267,11 @@ function RecurringCard({
 
       <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-text-secondary shrink-0">
         <span>By {template.created_by_name ?? 'Unknown'}</span>
-        <span className="text-[#CBD5E1]">·</span>
+        <span className="text-text-muted">·</span>
         {earliestStart && (
           <>
             <div className="flex items-center gap-1.5"><Calendar size={12} className="text-text-muted" /><span>From {formatDate(earliestStart)}</span></div>
-            <span className="text-[#CBD5E1]">·</span>
+            <span className="text-text-muted">·</span>
           </>
         )}
         <span>{totalOccurrences} occurrence{totalOccurrences !== 1 ? 's' : ''}</span>
@@ -460,7 +460,7 @@ export default function RecurringPage() {
   }
 
   if (!orgId) {
-    return <div className="flex flex-col items-center justify-center h-64"><p className="font-semibold text-text-primary">No organization found</p></div>
+    return <div className="flex flex-col items-center justify-center h-64"><p className="font-medium text-text-primary">No organization found</p></div>
   }
 
   const showRelation = appliedScope !== 'org'
@@ -479,13 +479,13 @@ export default function RecurringPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Recurring Tasks</h1>
+          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Recurring Tasks</h1>
           <p className="mt-1 text-[15px] text-text-secondary">{SCOPE_BLURB[appliedScope]}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <ScopeSwitcher maxScope={maxScope} value={appliedScope} onChange={handleScopeChange} />
           <button onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-5 py-[10px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover transition-colors shrink-0">
+            className="flex items-center gap-2 px-5 py-[10px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors shrink-0">
             <Plus size={16} /> New Recurring Task
           </button>
         </div>
@@ -493,7 +493,7 @@ export default function RecurringPage() {
 
       {/* Relation (incoming/outgoing) — Mine & Team only */}
       {showRelation && (
-        <div className="inline-flex items-center border border-border-light rounded-[8px] bg-white p-0.5 gap-0.5">
+        <div className="inline-flex items-center border border-border-light rounded-control bg-surface p-0.5 gap-0.5">
           {([
             { key: 'outgoing', label: appliedScope === 'team' ? 'Sent by team' : 'Sent', icon: <ArrowUpRight size={15} /> },
             { key: 'incoming', label: appliedScope === 'team' ? 'Received by team' : 'Received', icon: <ArrowDownLeft size={15} /> },
@@ -501,7 +501,7 @@ export default function RecurringPage() {
             const active = relation === key
             return (
               <button key={key} onClick={() => setRelation(key)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-[6px] text-sm font-medium transition-colors ${active ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'}`}>
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-sm font-medium transition-colors ${active ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'}`}>
                 {icon}<span>{label}</span>
               </button>
             )
@@ -524,15 +524,15 @@ export default function RecurringPage() {
       {/* Count + view toggle */}
       {!loading && visibleTemplates.length > 0 && (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-text-secondary"><span className="font-semibold text-text-primary tabular-nums">{visibleTemplates.length}</span> template{visibleTemplates.length !== 1 ? 's' : ''}</p>
-          <div className="inline-flex items-center border border-border-light rounded-[8px] bg-white p-0.5 gap-0.5 shrink-0">
+          <p className="text-sm text-text-secondary"><span className="font-medium text-text-primary tabular-nums">{visibleTemplates.length}</span> template{visibleTemplates.length !== 1 ? 's' : ''}</p>
+          <div className="inline-flex items-center border border-border-light rounded-control bg-surface p-0.5 gap-0.5 shrink-0">
             <Tooltip label="Cards">
               <button onClick={() => switchView('cards')} aria-label="Cards"
-                className={`flex items-center justify-center w-8 h-8 rounded-[6px] transition-colors ${view === 'cards' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-control'}`}><LayoutGrid size={15} /></button>
+                className={`flex items-center justify-center w-8 h-8 rounded-control transition-colors ${view === 'cards' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-control'}`}><LayoutGrid size={15} /></button>
             </Tooltip>
             <Tooltip label="Table">
               <button onClick={() => switchView('table')} aria-label="Table"
-                className={`flex items-center justify-center w-8 h-8 rounded-[6px] transition-colors ${view === 'table' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-control'}`}><TableIcon size={15} /></button>
+                className={`flex items-center justify-center w-8 h-8 rounded-control transition-colors ${view === 'table' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-control'}`}><TableIcon size={15} /></button>
             </Tooltip>
           </div>
         </div>
@@ -542,17 +542,17 @@ export default function RecurringPage() {
       {loading ? (
         <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : visibleTemplates.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
+        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-20">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">{emptyState.icon}</div>
-          <p className="font-semibold text-text-primary">{emptyState.title}</p>
+          <p className="font-medium text-text-primary">{emptyState.title}</p>
           <p className="text-sm text-text-secondary mt-1 mb-5">{emptyState.sub}</p>
           {filtersActive ? (
             <button onClick={() => { setSearchInput(''); setFilters({ ...EMPTY_RECURRING_FILTERS }) }}
-              className="px-5 py-[10px] text-sm font-semibold text-primary-text bg-white border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors">
+              className="px-5 py-[10px] text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">
               Clear filters
             </button>
           ) : (
-            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-5 py-[10px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover transition-colors">
+            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-5 py-[10px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors">
               <Plus size={16} /> New Recurring Task
             </button>
           )}

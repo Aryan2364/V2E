@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
+import { formatNumber } from '@/lib/format'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { reportsApi } from '@/lib/api/reports'
@@ -25,7 +26,7 @@ function windowLabel(from: string, to: string) {
 }
 
 const pct = (v: number | null) => (v === null || v === undefined ? '—' : `${v}%`)
-const num = (v: number | null) => (v === null || v === undefined ? '—' : v.toLocaleString())
+const num = (v: number | null) => (v === null || v === undefined ? '—' : formatNumber(v))
 const onTimeColor = (v: number | null) =>
   v === null ? 'var(--text-muted)' : v >= 60 ? 'var(--success)' : v >= 30 ? 'var(--success)' : v >= 15 ? 'var(--warning)' : 'var(--danger)'
 
@@ -131,7 +132,7 @@ export default function ScorecardRosterPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="min-w-0">
-          <h1 className="text-[26px] font-bold text-text-primary leading-tight">Person Scorecard</h1>
+          <h1 className="text-[26px] font-medium text-text-primary leading-tight">Person Scorecard</h1>
           <p className="mt-1 text-[15px] text-text-secondary">
             Open a person to see their unique tasks and performance — or download everyone you can see.
           </p>
@@ -145,7 +146,7 @@ export default function ScorecardRosterPage() {
           <button
             onClick={downloadAll}
             disabled={downloading || filtered.length === 0}
-            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover disabled:opacity-60 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-60 transition-colors"
           >
             <Download size={15} /> {downloading ? 'Preparing…' : 'Download all'}
           </button>
@@ -160,7 +161,7 @@ export default function ScorecardRosterPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search people…"
-            className="w-full rounded-[8px] border border-border bg-white pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+            className="w-full rounded-control border border-border bg-surface pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>
         <div className="w-[230px]">
@@ -173,32 +174,32 @@ export default function ScorecardRosterPage() {
       {loading ? (
         <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : people.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] py-16 flex flex-col items-center text-center">
+        <div className="bg-surface border border-border-light rounded-card py-16 flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
-          <p className="font-semibold text-text-primary">No people in your scope</p>
+          <p className="font-medium text-text-primary">No people in your scope</p>
           <p className="text-sm text-text-secondary mt-1 max-w-sm">You can only see scorecards for people within your visibility.</p>
         </div>
       ) : (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-surface-sunken border-b border-border-light text-text-secondary text-left whitespace-nowrap">
-                  <th className="px-4 py-3 font-semibold sticky left-0 bg-surface-sunken">Person</th>
-                  <th className="px-3 py-3 font-semibold text-center" title="How many different task names this person is responsible for — their real scope of work.">Different tasks</th>
-                  <th className="px-3 py-3 font-semibold text-center" title="Every time those tasks came up in the period (each recurring occurrence + each one-time task).">Total entries</th>
-                  <th className="px-3 py-3 font-semibold text-center">Completed</th>
-                  <th className="px-3 py-3 font-semibold text-center" title="Not yet closed — overdue or still ongoing.">Pending</th>
-                  <th className="px-3 py-3 font-semibold text-center" title="Tasks completed ÷ total entries.">Completion</th>
-                  <th className="px-3 py-3 font-semibold text-center" title="Completed on or before the due date.">On&nbsp;time</th>
-                  <th className="px-3 py-3 font-semibold text-center" title="On-time tasks ÷ tasks that have a completion date. Pending work is kept out. This is the real score.">On-time&nbsp;rate</th>
-                  <th className="px-3 py-3 font-semibold text-center" title="Average of (completion date − due date). Minus means finished early.">Avg delay</th>
-                  <th className="px-3 py-3 font-semibold text-center" title="The single worst delay for this person.">Longest Delay</th>
-                  <th className="px-3 py-3 font-semibold">Grade</th>
+                  <th className="px-4 py-3 font-medium sticky left-0 bg-surface-sunken">Person</th>
+                  <th className="px-3 py-3 font-medium text-center" title="How many different task names this person is responsible for — their real scope of work.">Different tasks</th>
+                  <th className="px-3 py-3 font-medium text-center" title="Every time those tasks came up in the period (each recurring occurrence + each one-time task).">Total entries</th>
+                  <th className="px-3 py-3 font-medium text-center">Completed</th>
+                  <th className="px-3 py-3 font-medium text-center" title="Not yet closed — overdue or still ongoing.">Pending</th>
+                  <th className="px-3 py-3 font-medium text-center" title="Tasks completed ÷ total entries.">Completion</th>
+                  <th className="px-3 py-3 font-medium text-center" title="Completed on or before the due date.">On&nbsp;time</th>
+                  <th className="px-3 py-3 font-medium text-center" title="On-time tasks ÷ tasks that have a completion date. Pending work is kept out. This is the real score.">On-time&nbsp;rate</th>
+                  <th className="px-3 py-3 font-medium text-center" title="Average of (completion date − due date). Minus means finished early.">Avg delay</th>
+                  <th className="px-3 py-3 font-medium text-center" title="The single worst delay for this person.">Longest Delay</th>
+                  <th className="px-3 py-3 font-medium">Grade</th>
                   {/* Appended after Grade so the client's signed-off column order is intact. */}
-                  <th className="px-3 py-3 font-semibold text-center" title="Tasks this person was taken off BEFORE the original due date without finishing. They were released in good standing, so these are left out of every figure above — including Total entries and the Grade — and shown here only so the removal is visible.">Withdrawn</th>
-                  <th className="px-3 py-3 font-semibold text-center" title="Tasks that were ALREADY LATE when this person was taken off and they were given to someone else. The delay stays on their record (counted in Total entries), frozen at the day they handed it over — but it is NOT counted as pending or overdue, because the work is no longer theirs to finish. Open the person to see who holds each one now.">Handed over</th>
-                  <th className="px-3 py-3 font-semibold text-center" title="Tasks whose due date has been changed at least once. Every on-time / late / delay figure is measured against the ORIGINAL due date, so moving a deadline cannot turn a late task on time.">Revised</th>
+                  <th className="px-3 py-3 font-medium text-center" title="Tasks this person was taken off BEFORE the original due date without finishing. They were released in good standing, so these are left out of every figure above — including Total entries and the Grade — and shown here only so the removal is visible.">Withdrawn</th>
+                  <th className="px-3 py-3 font-medium text-center" title="Tasks that were ALREADY LATE when this person was taken off and they were given to someone else. The delay stays on their record (counted in Total entries), frozen at the day they handed it over — but it is NOT counted as pending or overdue, because the work is no longer theirs to finish. Open the person to see who holds each one now.">Handed over</th>
+                  <th className="px-3 py-3 font-medium text-center" title="Tasks whose due date has been changed at least once. Every on-time / late / delay figure is measured against the ORIGINAL due date, so moving a deadline cannot turn a late task on time.">Revised</th>
                   <th className="px-3 py-3 w-8" />
                 </tr>
               </thead>
@@ -209,29 +210,29 @@ export default function ScorecardRosterPage() {
                     onClick={() => router.push(`/dashboard/tasks/reports-new/person-scorecard/${p.user_id}`)}
                     className="group border-b border-border-light last:border-0 hover:bg-surface-sunken cursor-pointer transition-colors whitespace-nowrap"
                   >
-                    <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-surface-sunken">
+                    <td className="px-4 py-3 sticky left-0 bg-surface group-hover:bg-surface-sunken">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center shrink-0">{initials(p.name)}</div>
+                        <div className="w-9 h-9 rounded-full bg-primary text-white text-xs font-medium flex items-center justify-center shrink-0">{initials(p.name)}</div>
                         <div className="min-w-0">
-                          <p className="font-semibold text-text-primary truncate">{p.name}</p>
+                          <p className="font-medium text-text-primary truncate">{p.name}</p>
                           {p.role_title && <p className="text-[12px] text-text-muted truncate">{p.role_title}</p>}
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-center font-semibold text-text-secondary tabular-nums">{p.different_tasks}</td>
-                    <td className="px-3 py-3 text-center font-semibold text-text-primary tabular-nums">{num(p.total_given)}</td>
+                    <td className="px-3 py-3 text-center font-medium text-text-secondary tabular-nums">{p.different_tasks}</td>
+                    <td className="px-3 py-3 text-center font-medium text-text-primary tabular-nums">{num(p.total_given)}</td>
                     <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{num(p.completed)}</td>
                     <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.pending > 0 ? 'var(--danger)' : 'var(--text-muted)' }}>{num(p.pending)}</td>
                     <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{pct(p.completion_pct)}</td>
                     <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{num(p.completed_on_time)}</td>
-                    <td className="px-3 py-3 text-center tabular-nums font-semibold" style={{ color: onTimeColor(p.on_time_pct) }}>{pct(p.on_time_pct)}</td>
+                    <td className="px-3 py-3 text-center tabular-nums font-medium" style={{ color: onTimeColor(p.on_time_pct) }}>{pct(p.on_time_pct)}</td>
                     <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{p.avg_delay_days ?? '—'}</td>
                     <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{p.longest_delay_days ?? '—'}</td>
                     <td className="px-3 py-3"><GradePill grade={p.grade} /></td>
                     <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.withdrawn ? 'var(--text-muted)' : 'var(--border)' }}>{num(p.withdrawn)}</td>
                     <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.handed_over ? 'var(--text-secondary)' : 'var(--border)' }}>{num(p.handed_over)}</td>
                     <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.revised_entries ? 'var(--warning)' : 'var(--border)' }}>{num(p.revised_entries)}</td>
-                    <td className="px-3 py-3 text-right"><ChevronRight size={16} className="text-[#CBD5E1]" /></td>
+                    <td className="px-3 py-3 text-right"><ChevronRight size={16} className="text-text-muted" /></td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
@@ -240,7 +241,7 @@ export default function ScorecardRosterPage() {
               </tbody>
               {totals && filtered.length > 0 && selectedDeptIds.length === 0 && !search.trim() && (
                 <tfoot>
-                  <tr className="bg-surface-sunken border-t-2 border-border-light font-semibold text-text-primary whitespace-nowrap">
+                  <tr className="bg-surface-sunken border-t-2 border-border-light font-medium text-text-primary whitespace-nowrap">
                     <td className="px-4 py-3 sticky left-0 bg-surface-sunken">Total / Overall <span className="text-text-muted font-normal">· {people.length} people</span></td>
                     <td className="px-3 py-3 text-center tabular-nums">{totals.different_tasks}</td>
                     <td className="px-3 py-3 text-center tabular-nums">{num(totals.total_given)}</td>

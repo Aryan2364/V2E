@@ -30,10 +30,10 @@ function DelegationCard({ d, onClick }: { d: Delegation; onClick: () => void }) 
     <button
       type="button"
       onClick={onClick}
-      className="text-left bg-white border border-border-light rounded-[12px] p-4 hover:border-border hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all flex flex-col gap-3"
+      className="text-left bg-surface border border-border-light rounded-card p-4 hover:border-border hover:shadow-card transition-all flex flex-col gap-3"
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="text-[15px] font-semibold text-text-primary leading-snug line-clamp-2">{d.title}</h3>
+        <h3 className="text-[15px] font-medium text-text-primary leading-snug line-clamp-2">{d.title}</h3>
         <StatusPill status={d.status} />
       </div>
       <p className="text-sm text-text-secondary line-clamp-2">{d.outcome}</p>
@@ -168,7 +168,7 @@ export default function DelegationPage() {
         <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
           <Lock size={26} className="text-text-muted" />
         </div>
-        <h1 className="text-[18px] font-semibold text-text-primary mb-1">Delegation isn’t enabled</h1>
+        <h1 className="text-[18px] font-medium text-text-primary mb-1">Delegation isn’t enabled</h1>
         <p className="text-sm text-text-secondary max-w-sm">
           This module isn’t part of your organization’s plan yet. Contact your administrator to have it turned on.
         </p>
@@ -186,7 +186,7 @@ export default function DelegationPage() {
         <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
           <Lock size={26} className="text-text-muted" />
         </div>
-        <h1 className="text-[18px] font-semibold text-text-primary mb-1">Delegation isn’t available to you</h1>
+        <h1 className="text-[18px] font-medium text-text-primary mb-1">Delegation isn’t available to you</h1>
         <p className="text-sm text-text-secondary max-w-sm">
           You don’t have permission to delegate. Contact your administrator if you need it.
         </p>
@@ -201,7 +201,7 @@ export default function DelegationPage() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3 shrink-0">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary">Delegation</h1>
+          <h1 className="text-[28px] font-medium text-text-primary">Delegation</h1>
           <p className="text-sm text-text-secondary mt-0.5">Hand off outcomes and track them to a clear finish.</p>
         </div>
         {canDelegate && (
@@ -211,7 +211,7 @@ export default function DelegationPage() {
               setEditing(null)
               setModalOpen(true)
             }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-control text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
           >
             <Plus size={16} /> New delegation
           </button>
@@ -237,7 +237,7 @@ export default function DelegationPage() {
               >
                 {TAB_META[t].label}
                 {count > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-[999px] bg-primary text-white text-[11px] font-semibold">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-[999px] bg-primary text-white text-[11px] font-medium">
                     {count}
                   </span>
                 )}
@@ -253,7 +253,7 @@ export default function DelegationPage() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-40 rounded-[12px] bg-surface-control animate-pulse" />
+              <div key={i} className="h-40 rounded-card bg-surface-control animate-pulse" />
             ))}
           </div>
         ) : current.length === 0 ? (
@@ -261,7 +261,7 @@ export default function DelegationPage() {
             <div className="w-16 h-16 rounded-full bg-primary-subtle flex items-center justify-center mb-4">
               <ArrowRightLeft size={28} className="text-primary-text" />
             </div>
-            <h2 className="text-[18px] font-semibold text-text-primary mb-1">{TAB_META[view].empty}</h2>
+            <h2 className="text-[18px] font-medium text-text-primary mb-1">{TAB_META[view].empty}</h2>
             <p className="text-sm text-text-secondary max-w-xs">
               {canDelegate
                 ? 'Create a delegation to hand an outcome to someone with clear success criteria.'
@@ -274,7 +274,7 @@ export default function DelegationPage() {
                   setEditing(null)
                   setModalOpen(true)
                 }}
-                className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
+                className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-control text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
               >
                 <Plus size={16} /> New delegation
               </button>

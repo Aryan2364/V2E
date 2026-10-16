@@ -36,6 +36,16 @@ import type {
 } from '@/lib/types/tickets'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import StyledSelect from '@/components/ui/StyledSelect'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Plus, Pencil, Trash2, Save, X, Settings2, Tag, Tags, BarChart, Activity, List, Users, Ticket as TicketIcon, CheckSquare, Bell, Loader2, GripVertical, ChevronUp, ChevronDown, ArrowLeft, Upload } from 'lucide-react'
 import { notificationsApi, type NotificationMaster } from '@/lib/api/notifications'
 import { AssigneeVisibilityTab } from '@/components/tasks/AssigneeVisibilityTab'
@@ -60,13 +70,13 @@ function apiError(e: unknown): string | null {
   return msg ?? null
 }
 
-const inputCls = 'w-full border border-border rounded-[8px] px-3 py-[8px] text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white'
+const inputCls = 'w-full border border-border rounded-control px-3 py-[8px] text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface'
 
 /** Solid blue count pill beside a heading; hidden when the count is 0. */
 function CountPill({ n }: { n: number }) {
   if (!n) return null
   return (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold leading-none">
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium leading-none">
       {n}
     </span>
   )
@@ -77,6 +87,31 @@ function Spinner() {
     <div className="h-40 flex items-center justify-center">
       <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
+  )
+}
+
+/** One confirmation dialog, reused by every master list's delete/archive action (section 15). */
+function ConfirmDeleteDialog({ open, onOpenChange, title, description, confirmLabel = 'Delete', onConfirm }: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  title: string
+  description: string
+  confirmLabel?: string
+  onConfirm: () => void
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>{confirmLabel}</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
@@ -128,7 +163,7 @@ function ConfigTab({ orgId }: { orgId: string }) {
         </FormField>
       </div>
       <button onClick={handleSave} disabled={saving}
-        className="flex items-center gap-2 px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+        className="flex items-center gap-2 px-5 py-[10px] text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
         <Save size={15} />
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Configuration'}
       </button>
@@ -173,70 +208,79 @@ function CategoriesTab({ orgId }: { orgId: string }) {
     } catch { /* ignore */ } finally { setSubmitting(false) }
   }
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
   async function handleDelete(id: string) {
-    if (!confirm('Delete this category?')) return
     await tasksApi.deleteCategory(orgId, id).catch(() => null)
     setItems((prev) => prev.filter((i) => i.id !== id))
+    setConfirmDeleteId(null)
   }
 
   if (loading) return <Spinner />
 
   return (
     <div className="space-y-4">
+      <ConfirmDeleteDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
+        title="Delete this category?"
+        description="This category will be removed and can no longer be assigned to tasks."
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+      />
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">{items.length} categor{items.length !== 1 ? 'ies' : 'y'}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors">
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover transition-colors">
           <Plus size={14} /> Add Category
         </button>
       </div>
       {creating && (
-        <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
+        <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Name"><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Category name" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
+                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
                 <input type="text" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className={inputCls} />
               </div>
             </FormField>
           </div>
           <FormField label="Description (optional)"><input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Brief description..." className={inputCls} /></FormField>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
+            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
+            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       )}
       {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-sm">No categories yet.</div>}
       <div className="space-y-2">
         {items.map((item) => editingId === item.id ? (
-          <div key={item.id} className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
+          <div key={item.id} className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Name"><input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className={inputCls} /></FormField>
               <FormField label="Color">
                 <div className="flex gap-2 items-center">
-                  <input type="color" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
+                  <input type="color" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
                   <input type="text" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} className={inputCls} />
                 </div>
               </FormField>
             </div>
             <FormField label="Description"><input type="text" value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} className={inputCls} /></FormField>
             <div className="flex gap-2">
-              <button onClick={() => handleEdit(item.id)} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : 'Save'}</button>
-              <button onClick={() => setEditingId(null)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
+              <button onClick={() => handleEdit(item.id)} disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : 'Save'}</button>
+              <button onClick={() => setEditingId(null)} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
             </div>
           </div>
         ) : (
-          <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
+          <div key={item.id} className="bg-surface border border-border-light rounded-control px-4 py-3 flex items-center gap-3">
             <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-text-primary">{item.name}</p>
+              <p className="text-sm font-medium text-text-primary">{item.name}</p>
               {item.description && <p className="text-xs text-text-secondary truncate">{item.description}</p>}
             </div>
             <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, description: item.description ?? '', color: item.color }) }} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
-              <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+              <button onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, description: item.description ?? '', color: item.color }) }} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
+              <button onClick={() => setConfirmDeleteId(item.id)} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
             </div>
           </div>
         ))}
@@ -325,23 +369,23 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
           <p className="text-sm text-text-secondary">{items.length} priorit{items.length !== 1 ? 'ies' : 'y'}</p>
           {items.length > 1 && <p className="text-xs text-text-muted mt-0.5">Ordered highest → lowest. Drag the handle or use the arrows to rearrange.</p>}
         </div>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors shrink-0"><Plus size={14} /> Add Priority</button>
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover transition-colors shrink-0"><Plus size={14} /> Add Priority</button>
       </div>
       {creating && (
-        <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
+        <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Label"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. High" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
+                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
                 <input type="text" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className={inputCls} />
               </div>
             </FormField>
           </div>
           <p className="text-xs text-text-muted">Added to the bottom of the list. Drag it into position afterwards — the rank number updates automatically.</p>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
+            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
+            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       )}
@@ -358,17 +402,17 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
               onDragOver={(e) => { e.preventDefault(); if (overIndex !== idx) setOverIndex(idx) }}
               onDragEnd={() => { setDragIndex(null); setOverIndex(null) }}
               onDrop={(e) => { e.preventDefault(); handleDrop(idx) }}
-              className={`bg-white border rounded-[8px] pl-2 pr-3 py-3 flex items-center gap-2.5 transition-colors ${isDropTarget ? 'border-primary bg-primary-subtle' : 'border-border-light'} ${dragIndex === idx ? 'opacity-50' : ''}`}
+              className={`bg-surface border rounded-control pl-2 pr-3 py-3 flex items-center gap-2.5 transition-colors ${isDropTarget ? 'border-primary bg-primary-subtle' : 'border-border-light'} ${dragIndex === idx ? 'opacity-50' : ''}`}
             >
               <Tooltip label="Drag to reorder"><span className="cursor-grab active:cursor-grabbing text-text-muted hover:text-text-secondary shrink-0" aria-label="Drag to reorder"><GripVertical size={16} /></span></Tooltip>
-              <span className="w-7 h-7 shrink-0 flex items-center justify-center rounded-full bg-primary-subtle text-primary-text text-xs font-bold">{idx + 1}</span>
+              <span className="w-7 h-7 shrink-0 flex items-center justify-center rounded-full bg-primary-subtle text-primary-text text-xs font-medium">{idx + 1}</span>
               <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-              <span className="flex-1 min-w-0 truncate text-sm font-semibold text-text-primary">{item.label}</span>
+              <span className="flex-1 min-w-0 truncate text-sm font-medium text-text-primary">{item.label}</span>
               {rankLabel && <span className="hidden sm:inline text-[11px] font-medium text-text-secondary">{rankLabel}</span>}
               <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
               <div className="flex flex-col shrink-0">
-                <button type="button" disabled={idx === 0 || savingOrder} onClick={() => move(idx, idx - 1)} aria-label="Move up" className="w-7 h-5 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronUp size={15} /></button>
-                <button type="button" disabled={idx === items.length - 1 || savingOrder} onClick={() => move(idx, idx + 1)} aria-label="Move down" className="w-7 h-5 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronDown size={15} /></button>
+                <button type="button" disabled={idx === 0 || savingOrder} onClick={() => move(idx, idx - 1)} aria-label="Move up" className="w-7 h-5 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-text-muted disabled:hover:bg-transparent transition-colors"><ChevronUp size={15} /></button>
+                <button type="button" disabled={idx === items.length - 1 || savingOrder} onClick={() => move(idx, idx + 1)} aria-label="Move down" className="w-7 h-5 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-text-muted disabled:hover:bg-transparent transition-colors"><ChevronDown size={15} /></button>
               </div>
             </div>
           )
@@ -427,13 +471,14 @@ function StatusesTab({ orgId }: { orgId: string }) {
     } catch (e) { setError(apiError(e) ?? 'Could not save changes.') } finally { setSubmitting(false) }
   }
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
   async function handleDelete(id: string) {
-    if (!confirm('Remove this In Progress stage?')) return
     setError(null)
     try {
       await tasksApi.deleteStatus(orgId, id)
       setItems((prev) => prev.filter((s) => s.id !== id))
-    } catch (e) { setError(apiError(e) ?? 'Could not remove stage.') }
+    } catch (e) { setError(apiError(e) ?? 'Could not remove stage.') } finally { setConfirmDeleteId(null) }
   }
 
   // Reorder among In Progress, then renumber every status into canonical phase order
@@ -457,7 +502,7 @@ function StatusesTab({ orgId }: { orgId: string }) {
   function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
     return (
       <div className="flex gap-2 items-center">
-        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
+        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
         <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className={inputCls} />
       </div>
     )
@@ -465,14 +510,14 @@ function StatusesTab({ orgId }: { orgId: string }) {
 
   function EditRow({ id }: { id: string }) {
     return (
-      <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
+      <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <FormField label="Label"><input type="text" autoFocus value={editForm.label} onChange={(e) => setEditForm({ ...editForm, label: e.target.value })} className={inputCls} /></FormField>
           <FormField label="Color"><ColorPicker value={editForm.color} onChange={(c) => setEditForm({ ...editForm, color: c })} /></FormField>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => handleSaveEdit(id)} disabled={submitting} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"><Save size={14} /> {submitting ? 'Saving...' : 'Save'}</button>
-          <button onClick={() => setEditingId(null)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
+          <button onClick={() => handleSaveEdit(id)} disabled={submitting} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"><Save size={14} /> {submitting ? 'Saving...' : 'Save'}</button>
+          <button onClick={() => setEditingId(null)} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
         </div>
       </div>
     )
@@ -490,23 +535,23 @@ function StatusesTab({ orgId }: { orgId: string }) {
   const lineFor = (item: TaskStatus, role: string, stage: boolean, idx: number) => {
     if (editingId === item.id) return <EditRow key={item.id} id={item.id} />
     return (
-      <div key={item.id} className="flex items-center gap-2.5 bg-white border border-border-light rounded-[8px] pl-3 pr-2 py-2">
+      <div key={item.id} className="flex items-center gap-2.5 bg-surface border border-border-light rounded-control pl-3 pr-2 py-2">
         <span className="w-[78px] shrink-0 flex items-center">
           {stage
-            ? <span className="w-5 h-5 flex items-center justify-center rounded-full bg-primary-subtle text-primary-text text-[11px] font-bold">{idx + 1}</span>
-            : <span className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">{role}</span>}
+            ? <span className="w-5 h-5 flex items-center justify-center rounded-full bg-primary-subtle text-primary-text text-[11px] font-medium">{idx + 1}</span>
+            : <span className="text-[10px] font-medium uppercase tracking-wide text-text-muted">{role}</span>}
         </span>
         <span className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-        <span className="flex-1 min-w-0 truncate text-sm font-semibold text-text-primary">{item.label}</span>
+        <span className="flex-1 min-w-0 truncate text-sm font-medium text-text-primary">{item.label}</span>
         {stage && (
           <div className="flex items-center shrink-0">
-            <button type="button" disabled={idx === 0 || savingOrder} onClick={() => move(idx, -1)} aria-label="Move up" className="w-6 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronUp size={15} /></button>
-            <button type="button" disabled={idx === inProgress.length - 1 || savingOrder} onClick={() => move(idx, 1)} aria-label="Move down" className="w-6 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors"><ChevronDown size={15} /></button>
+            <button type="button" disabled={idx === 0 || savingOrder} onClick={() => move(idx, -1)} aria-label="Move up" className="w-6 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-text-muted disabled:hover:bg-transparent transition-colors"><ChevronUp size={15} /></button>
+            <button type="button" disabled={idx === inProgress.length - 1 || savingOrder} onClick={() => move(idx, 1)} aria-label="Move down" className="w-6 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-text-muted disabled:hover:bg-transparent transition-colors"><ChevronDown size={15} /></button>
           </div>
         )}
-        <button type="button" onClick={() => startEdit(item)} aria-label="Rename" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"><Pencil size={13} /></button>
+        <button type="button" onClick={() => startEdit(item)} aria-label="Rename" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"><Pencil size={13} /></button>
         {stage && (
-          <Tooltip label={inProgress.length <= 1 ? 'At least one In Progress stage is required' : 'Remove stage'}><button type="button" onClick={() => handleDelete(item.id)} disabled={inProgress.length <= 1} aria-label="Remove stage" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg disabled:text-[#E2E8F0] disabled:hover:bg-transparent transition-colors shrink-0"><Trash2 size={13} /></button></Tooltip>
+          <Tooltip label={inProgress.length <= 1 ? 'At least one In Progress stage is required' : 'Remove stage'}><button type="button" onClick={() => setConfirmDeleteId(item.id)} disabled={inProgress.length <= 1} aria-label="Remove stage" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg disabled:text-text-muted disabled:hover:bg-transparent transition-colors shrink-0"><Trash2 size={13} /></button></Tooltip>
         )}
       </div>
     )
@@ -514,19 +559,27 @@ function StatusesTab({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-1.5 max-w-2xl">
-      {error && <div className="text-sm text-danger bg-danger-bg border border-danger-border rounded-[8px] px-3 py-2 mb-1">{error}</div>}
+      <ConfirmDeleteDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
+        title="Remove this In Progress stage?"
+        confirmLabel="Remove stage"
+        description="Tasks currently on this stage will move to the nearest remaining one."
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+      />
+      {error && <div className="text-sm text-danger bg-danger-bg border border-danger-border rounded-control px-3 py-2 mb-1">{error}</div>}
 
       {notStarted && lineFor(notStarted, 'Start', false, -1)}
 
       {inProgress.map((s, i) => lineFor(s, 'In progress', true, i))}
 
       {adding ? (
-        <div className="flex items-center gap-2.5 bg-surface-sunken border border-border-light rounded-[8px] pl-3 pr-2 py-2">
+        <div className="flex items-center gap-2.5 bg-surface-sunken border border-border-light rounded-control pl-3 pr-2 py-2">
           <span className="w-[78px] shrink-0" />
-          <input type="color" value={addForm.color} onChange={(e) => setAddForm({ ...addForm, color: e.target.value })} className="w-7 h-7 shrink-0 rounded-[6px] border border-border cursor-pointer p-0" />
-          <input type="text" autoFocus value={addForm.label} onChange={(e) => setAddForm({ ...addForm, label: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAdding(false); setAddForm({ label: '', color: 'var(--text-secondary)' }) } }} placeholder="New stage name (e.g. In Review)" className="flex-1 min-w-0 border border-border rounded-[6px] px-2.5 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white" />
-          <button onClick={handleAdd} disabled={submitting || !addForm.label.trim()} className="px-3 py-1.5 text-sm font-semibold text-white bg-primary rounded-[6px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors shrink-0">{submitting ? 'Adding…' : 'Add'}</button>
-          <button onClick={() => { setAdding(false); setAddForm({ label: '', color: 'var(--text-secondary)' }) }} aria-label="Cancel" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"><X size={15} /></button>
+          <input type="color" value={addForm.color} onChange={(e) => setAddForm({ ...addForm, color: e.target.value })} className="w-7 h-7 shrink-0 rounded-control border border-border cursor-pointer p-0" />
+          <input type="text" autoFocus value={addForm.label} onChange={(e) => setAddForm({ ...addForm, label: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAdding(false); setAddForm({ label: '', color: 'var(--text-secondary)' }) } }} placeholder="New stage name (e.g. In Review)" className="flex-1 min-w-0 border border-border rounded-control px-2.5 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface" />
+          <button onClick={handleAdd} disabled={submitting || !addForm.label.trim()} className="px-3 py-1.5 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors shrink-0">{submitting ? 'Adding…' : 'Add'}</button>
+          <button onClick={() => { setAdding(false); setAddForm({ label: '', color: 'var(--text-secondary)' }) }} aria-label="Cancel" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"><X size={15} /></button>
         </div>
       ) : (
         <div className="flex items-center gap-2.5">
@@ -748,9 +801,9 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
     return (
       <div className="space-y-5 max-w-6xl">
         <div className="flex items-center gap-3">
-          <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
+          <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-control border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
-            <h2 className="text-[22px] font-semibold text-text-primary leading-tight">{editingId ? 'Edit Checklist Template' : 'New Checklist Template'}</h2>
+            <h2 className="text-[22px] font-medium text-text-primary leading-tight">{editingId ? 'Edit Checklist Template' : 'New Checklist Template'}</h2>
             <p className="text-sm text-text-secondary">{editingId ? 'Update the name, items, and who can use this template.' : 'Name the template, add its items, and choose who can use it.'}</p>
           </div>
         </div>
@@ -758,7 +811,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
         {/* Single column: name + items card on top, access card full-width below. */}
         <div className="space-y-6">
           {/* Name + items */}
-          <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-5">
+          <div className="bg-surface border border-border-light rounded-card shadow-card p-5 space-y-5">
             <FormField label="Template Name"><input type="text" autoFocus value={templateName} onChange={(e) => { setTemplateName(e.target.value); if (error) setError(null) }} placeholder="e.g. Onboarding Checklist" className={`${inputCls} max-w-xl`} /></FormField>
 
             <div>
@@ -775,7 +828,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
           </div>
 
           {/* Access rules card — full width below items */}
-          <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5">
+          <div className="bg-surface border border-border-light rounded-card shadow-card p-5">
             <ChecklistAccessEditor
               mode={accessMode}
               rules={accessRules}
@@ -791,8 +844,8 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
         {error && <p className="text-sm font-medium text-danger">{error}</p>}
 
         <div className="flex gap-2 pt-2">
-          <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Template'}</button>
-          <button onClick={closeForm} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
+          <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Template'}</button>
+          <button onClick={closeForm} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
         </div>
       </div>
     )
@@ -810,8 +863,8 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">{items.length} template{items.length !== 1 ? 's' : ''}</p>
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-primary-text bg-white border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"><Upload size={14} /> Import Checklists</button>
-          <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Template</button>
+          <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors"><Upload size={14} /> Import Checklists</button>
+          <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Template</button>
         </div>
       </div>
       {items.length === 0 && <div className="text-center py-12 text-text-secondary text-sm">No checklist templates yet.</div>}
@@ -821,12 +874,12 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
           const restricted = (t.access_mode ?? 'everyone') === 'restricted'
           const active = t.is_active
           return (
-            <div key={t.id} className={['bg-white border rounded-[10px] p-4 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all', active ? 'border-border-light hover:border-border' : 'border-dashed border-border bg-surface-sunken'].join(' ')}>
+            <div key={t.id} className={['bg-surface border rounded-control p-4 hover:shadow-card transition-all', active ? 'border-border-light hover:border-border' : 'border-dashed border-border bg-surface-sunken'].join(' ')}>
               <div className="flex items-start justify-between gap-2 mb-3">
-                <p className={['text-sm font-semibold leading-snug', active ? 'text-text-primary' : 'text-text-muted'].join(' ')}>{t.name}</p>
+                <p className={['text-sm font-medium leading-snug', active ? 'text-text-primary' : 'text-text-muted'].join(' ')}>{t.name}</p>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => openEdit(t)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
-                  <button onClick={() => handleDelete(t.id)} aria-label="Delete" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+                  <button onClick={() => openEdit(t)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
+                  <button onClick={() => handleDelete(t.id)} aria-label="Delete" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -844,7 +897,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
                 <button
                   onClick={() => toggleActive(t)}
                   disabled={togglingId === t.id}
-                  className={['ml-auto text-[12px] font-semibold rounded-[6px] px-2.5 py-1 transition-colors disabled:opacity-60', active ? 'text-text-secondary bg-white border border-border-light hover:bg-surface-control' : 'text-white bg-success hover:bg-success'].join(' ')}
+                  className={['ml-auto text-[12px] font-medium rounded-control px-2.5 py-1 transition-colors disabled:opacity-60', active ? 'text-text-secondary bg-surface border border-border-light hover:bg-surface-control' : 'text-white bg-success hover:bg-success'].join(' ')}
                 >
                   {togglingId === t.id ? '…' : active ? 'Deactivate' : 'Activate'}
                 </button>
@@ -895,10 +948,10 @@ function TktConfigTab({ orgId }: { orgId: string }) {
         <div className="space-y-2">
           {modeOptions.map((opt) => (
             <button key={opt.value} type="button" onClick={() => setConfig({ ...config, reassignment_mode: opt.value })}
-              className={`w-full flex items-start gap-3 p-3 rounded-[8px] border-2 text-left transition-all ${config.reassignment_mode === opt.value ? 'border-primary bg-primary-subtle' : 'border-border-light hover:border-border'}`}>
+              className={`w-full flex items-start gap-3 p-3 rounded-control border-2 text-left transition-all ${config.reassignment_mode === opt.value ? 'border-primary bg-primary-subtle' : 'border-border-light hover:border-border'}`}>
               <div className={`w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 ${config.reassignment_mode === opt.value ? 'border-primary bg-primary' : 'border-border'}`} />
               <div>
-                <p className={`text-sm font-semibold ${config.reassignment_mode === opt.value ? 'text-primary-text' : 'text-text-primary'}`}>{opt.label}</p>
+                <p className={`text-sm font-medium ${config.reassignment_mode === opt.value ? 'text-primary-text' : 'text-text-primary'}`}>{opt.label}</p>
                 <p className="text-xs text-text-secondary">{opt.desc}</p>
               </div>
             </button>
@@ -931,19 +984,19 @@ function TktConfigTab({ orgId }: { orgId: string }) {
           { key: 'allow_requester_reopen' as const, label: 'Allow requester to reopen', desc: 'The person who raised the ticket can reopen it after it is resolved or closed' },
           { key: 'allow_assignee_reopen' as const, label: 'Allow assignee to reopen', desc: 'The assigned resolver can reopen a ticket after it is resolved or closed' },
         ].map(({ key, label, desc }) => (
-          <div key={key} className={`flex items-start gap-3 p-3 rounded-[8px] border-2 cursor-pointer transition-all ${config[key] ? 'border-primary bg-primary-subtle' : 'border-border-light'}`} onClick={() => setConfig({ ...config, [key]: !config[key] })}>
+          <div key={key} className={`flex items-start gap-3 p-3 rounded-control border-2 cursor-pointer transition-all ${config[key] ? 'border-primary bg-primary-subtle' : 'border-border-light'}`} onClick={() => setConfig({ ...config, [key]: !config[key] })}>
             <div className={`relative w-9 h-5 rounded-full mt-0.5 shrink-0 transition-colors duration-200 ${config[key] ? 'bg-primary' : 'bg-surface-control-pressed'}`}>
-              <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-xs transition-transform duration-200 ${config[key] ? 'translate-x-4' : 'translate-x-0'}`} />
+              <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-surface rounded-full shadow-xs transition-transform duration-200 ${config[key] ? 'translate-x-4' : 'translate-x-0'}`} />
             </div>
             <div>
-              <p className={`text-sm font-semibold ${config[key] ? 'text-primary-text' : 'text-text-primary'}`}>{label}</p>
+              <p className={`text-sm font-medium ${config[key] ? 'text-primary-text' : 'text-text-primary'}`}>{label}</p>
               <p className="text-xs text-text-secondary mt-0.5">{desc}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+      <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-[10px] text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
         <Save size={15} /> {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Configuration'}
       </button>
     </div>
@@ -989,21 +1042,23 @@ function TktTypesTab({ orgId }: { orgId: string }) {
     } catch { /* ignore */ } finally { setSubmitting(false) }
   }
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
   async function handleDelete(id: string) {
-    if (!confirm('Deactivate this type?')) return
     await ticketsApi.deleteType(orgId, id).catch(() => null)
     setItems((prev) => prev.filter((i) => i.id !== id))
+    setConfirmDeleteId(null)
   }
 
   function TypeForm({ f, setF, onSave, onCancel, label }: { f: typeof emptyForm; setF: (v: typeof emptyForm) => void; onSave: () => void; onCancel: () => void; label: string }) {
     return (
-      <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
+      <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <FormField label="Name"><input type="text" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="e.g. Issue" className={inputCls} /></FormField>
           <FormField label="Icon (emoji)"><input type="text" value={f.icon} onChange={(e) => setF({ ...f, icon: e.target.value })} className={inputCls} /></FormField>
           <FormField label="Color">
             <div className="flex gap-2 items-center">
-              <input type="color" value={f.color} onChange={(e) => setF({ ...f, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
+              <input type="color" value={f.color} onChange={(e) => setF({ ...f, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
               <input type="text" value={f.color} onChange={(e) => setF({ ...f, color: e.target.value })} className={inputCls} />
             </div>
           </FormField>
@@ -1023,8 +1078,8 @@ function TktTypesTab({ orgId }: { orgId: string }) {
         </div>
         <FormField label="Description (optional)"><input type="text" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Brief description..." className={inputCls} /></FormField>
         <div className="flex gap-2">
-          <button onClick={onSave} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : label}</button>
-          <button onClick={onCancel} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
+          <button onClick={onSave} disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : label}</button>
+          <button onClick={onCancel} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
         </div>
       </div>
     )
@@ -1034,9 +1089,17 @@ function TktTypesTab({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-4">
+      <ConfirmDeleteDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
+        title="Deactivate this type?"
+        confirmLabel="Deactivate"
+        description="This ticket type will stop appearing for new tickets."
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+      />
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">{items.length} type{items.length !== 1 ? 's' : ''}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Type</button>
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Type</button>
       </div>
       {creating && <TypeForm f={form} setF={setForm} onSave={handleCreate} onCancel={() => setCreating(false)} label="Create" />}
       {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-sm">No ticket types yet. Click "Add Type" to create one.</div>}
@@ -1044,18 +1107,18 @@ function TktTypesTab({ orgId }: { orgId: string }) {
         {items.map((item) => editingId === item.id ? (
           <TypeForm key={item.id} f={editForm} setF={setEditForm} onSave={() => handleEdit(item.id)} onCancel={() => setEditingId(null)} label="Save" />
         ) : (
-          <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
+          <div key={item.id} className="bg-surface border border-border-light rounded-control px-4 py-3 flex items-center gap-3">
             <span className="text-xl">{item.icon}</span>
             <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-text-primary">{item.name}</p>
+              <p className="text-sm font-medium text-text-primary">{item.name}</p>
               {item.description && <p className="text-xs text-text-secondary truncate">{item.description}</p>}
             </div>
             <span className="text-xs text-text-secondary">SLA: {item.default_sla_days}d</span>
             <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, icon: item.icon, color: item.color, default_sla_days: item.default_sla_days, default_response_sla_hours: item.default_response_sla_hours?.toString() ?? '', resolver_group_id: item.resolver_group_id ?? '', description: item.description ?? '' }) }} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
-              <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+              <button onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, icon: item.icon, color: item.color, default_sla_days: item.default_sla_days, default_response_sla_hours: item.default_response_sla_hours?.toString() ?? '', resolver_group_id: item.resolver_group_id ?? '', description: item.description ?? '' }) }} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
+              <button onClick={() => setConfirmDeleteId(item.id)} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
             </div>
           </div>
         ))}
@@ -1100,27 +1163,36 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
     } catch { /* ignore */ } finally { setSubmitting(false) }
   }
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
   async function handleDelete(id: string) {
-    if (!confirm('Delete this category?')) return
     await ticketsApi.deleteCategory(orgId, id).catch(() => null)
     setItems((prev) => prev.filter((i) => i.id !== id))
+    setConfirmDeleteId(null)
   }
 
   if (loading) return <Spinner />
 
   return (
     <div className="space-y-4">
+      <ConfirmDeleteDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
+        title="Delete this category?"
+        description="This category will be removed and can no longer be assigned to tickets."
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+      />
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">{items.length} categor{items.length !== 1 ? 'ies' : 'y'}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Category</button>
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Category</button>
       </div>
       {creating && (
-        <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
+        <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Name"><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Network" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
+                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
                 <input type="text" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className={inputCls} />
               </div>
             </FormField>
@@ -1151,23 +1223,23 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
           </div>
           <FormField label="Description (optional)"><input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputCls} /></FormField>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
+            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
+            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       )}
       {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-sm">No categories yet.</div>}
       <div className="space-y-2">
         {items.map((item) => (
-          <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
+          <div key={item.id} className="bg-surface border border-border-light rounded-control px-4 py-3 flex items-center gap-3">
             <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-text-primary">{item.name}</p>
+              <p className="text-sm font-medium text-text-primary">{item.name}</p>
               {item.ticket_type && <p className="text-xs text-text-muted">{item.ticket_type.icon} {item.ticket_type.name}</p>}
             </div>
             {item.default_sla_days && <span className="text-xs text-text-secondary">SLA: {item.default_sla_days}d</span>}
             <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
-            <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+            <button onClick={() => setConfirmDeleteId(item.id)} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
           </div>
         ))}
       </div>
@@ -1197,49 +1269,58 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
     } catch { /* ignore */ } finally { setSubmitting(false) }
   }
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
   async function handleDelete(id: string) {
-    if (!confirm('Delete this priority?')) return
     await ticketsApi.deletePriority(orgId, id).catch(() => null)
     setItems((prev) => prev.filter((i) => i.id !== id))
+    setConfirmDeleteId(null)
   }
 
   if (loading) return <Spinner />
 
   return (
     <div className="space-y-4">
+      <ConfirmDeleteDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
+        title="Delete this priority?"
+        description="This priority will be removed and can no longer be assigned to tickets."
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+      />
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">{items.length} priorit{items.length !== 1 ? 'ies' : 'y'}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Priority</button>
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Priority</button>
       </div>
       {creating && (
-        <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
+        <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Label"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. Critical" className={inputCls} /></FormField>
             <FormField label="SLA Days (optional)"><input type="number" min={1} value={form.sla_days} onChange={(e) => setForm({ ...form, sla_days: e.target.value })} placeholder="Override SLA" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
+                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
                 <input type="text" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className={inputCls} />
               </div>
             </FormField>
             <FormField label="Order"><input type="number" value={form.order_index} onChange={(e) => setForm({ ...form, order_index: parseInt(e.target.value) || 0 })} className={inputCls} /></FormField>
           </div>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
+            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
+            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       )}
       {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-sm">No priorities yet.</div>}
       <div className="space-y-2">
         {items.map((item) => (
-          <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
+          <div key={item.id} className="bg-surface border border-border-light rounded-control px-4 py-3 flex items-center gap-3">
             <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-            <span className="flex-1 text-sm font-semibold text-text-primary">{item.label}</span>
+            <span className="flex-1 text-sm font-medium text-text-primary">{item.label}</span>
             {item.sla_days && <span className="text-xs text-text-secondary">SLA: {item.sla_days}d</span>}
             <span className="text-xs text-text-secondary">Order: {item.order_index}</span>
             <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
-            <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+            <button onClick={() => setConfirmDeleteId(item.id)} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
           </div>
         ))}
       </div>
@@ -1277,10 +1358,10 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">{items.length} status{items.length !== 1 ? 'es' : ''}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Status</button>
+        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Status</button>
       </div>
       {creating && (
-        <div className="bg-surface-sunken border border-border-light rounded-[8px] p-4 space-y-3">
+        <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Label"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. Pending Review" className={inputCls} /></FormField>
             <FormField label="Type">
@@ -1292,7 +1373,7 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
             </FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-[6px] border border-border cursor-pointer" />
+                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
                 <input type="text" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className={inputCls} />
               </div>
             </FormField>
@@ -1303,17 +1384,17 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
             <span className="text-sm text-text-primary">Set as default status</span>
           </label>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
+            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
+            <button onClick={() => setCreating(false)} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       )}
       {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-sm">No statuses yet.</div>}
       <div className="space-y-2">
         {items.map((item) => (
-          <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
+          <div key={item.id} className="bg-surface border border-border-light rounded-control px-4 py-3 flex items-center gap-3">
             <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-            <span className="flex-1 text-sm font-semibold text-text-primary">{item.label}</span>
+            <span className="flex-1 text-sm font-medium text-text-primary">{item.label}</span>
             <span className="text-xs text-text-secondary capitalize">{item.type.replace(/_/g, ' ')}</span>
             {item.is_default && <span className="text-[11px] font-medium rounded-[999px] px-2 py-0.5 bg-primary-subtle text-primary-text border border-primary-border">Default</span>}
             <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
@@ -1402,10 +1483,12 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
     } catch (e) { setError(apiError(e) ?? 'Could not save the resolver group.') } finally { setSubmitting(false) }
   }
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
   async function handleDelete(id: string) {
-    if (!confirm('Delete this resolver group? Tickets routed to it will need a new group.')) return
     await ticketsApi.deleteResolverGroup(orgId, id).catch(() => null)
     setItems((prev) => prev.filter((g) => g.id !== id))
+    setConfirmDeleteId(null)
   }
 
   if (loading) return <Spinner />
@@ -1419,14 +1502,14 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
     return (
       <div className="space-y-5 max-w-3xl">
         <div className="flex items-center gap-3">
-          <button onClick={closeForm} aria-label="Back to resolver groups" className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
+          <button onClick={closeForm} aria-label="Back to resolver groups" className="w-9 h-9 flex items-center justify-center rounded-control border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
-            <h2 className="text-[22px] font-semibold text-text-primary leading-tight">{editingId ? 'Edit Resolver Group' : 'New Resolver Group'}</h2>
+            <h2 className="text-[22px] font-medium text-text-primary leading-tight">{editingId ? 'Edit Resolver Group' : 'New Resolver Group'}</h2>
             <p className="text-sm text-text-secondary">A pool of people who resolve tickets routed to this group.</p>
           </div>
         </div>
 
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-4">
+        <div className="bg-surface border border-border-light rounded-card shadow-card p-5 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField label="Group Name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. IT Support" className={inputCls} /></FormField>
             <FormField label="Department (optional)">
@@ -1445,8 +1528,8 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               {ASSIGNMENT_STRATEGIES.map((opt) => (
                 <button key={opt.value} type="button" onClick={() => setForm({ ...form, assignment_strategy: opt.value })}
-                  className={`flex flex-col items-start gap-0.5 p-3 rounded-[8px] border-2 text-left transition-all ${form.assignment_strategy === opt.value ? 'border-primary bg-primary-subtle' : 'border-border-light hover:border-border'}`}>
-                  <span className={`text-sm font-semibold ${form.assignment_strategy === opt.value ? 'text-primary-text' : 'text-text-primary'}`}>{opt.label}</span>
+                  className={`flex flex-col items-start gap-0.5 p-3 rounded-control border-2 text-left transition-all ${form.assignment_strategy === opt.value ? 'border-primary bg-primary-subtle' : 'border-border-light hover:border-border'}`}>
+                  <span className={`text-sm font-medium ${form.assignment_strategy === opt.value ? 'text-primary-text' : 'text-text-primary'}`}>{opt.label}</span>
                   <span className="text-[11px] text-text-secondary leading-snug">{opt.desc}</span>
                 </button>
               ))}
@@ -1458,7 +1541,7 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
               <label className="block text-sm font-medium text-text-secondary">Members</label>
               <CountPill n={form.member_user_ids.length} />
             </div>
-            <div className="border border-border-light rounded-[10px] overflow-hidden">
+            <div className="border border-border-light rounded-control overflow-hidden">
               <div className="flex items-center gap-2 px-3 py-2 border-b border-border-light bg-surface-sunken">
                 <input value={memberQuery} onChange={(e) => setMemberQuery(e.target.value)} placeholder="Search people…" className="flex-1 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden bg-transparent" />
               </div>
@@ -1482,8 +1565,8 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
 
           {error && <p className="text-sm font-medium text-danger">{error}</p>}
           <div className="flex gap-2 pt-1">
-            <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Group'}</button>
-            <button onClick={closeForm} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
+            <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Group'}</button>
+            <button onClick={closeForm} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
           </div>
         </div>
       </div>
@@ -1492,9 +1575,16 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-4">
+      <ConfirmDeleteDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
+        title="Delete this resolver group?"
+        description="Tickets routed to it will need a new group."
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+      />
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">{items.length} group{items.length !== 1 ? 's' : ''}</p>
-        <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Group</button>
+        <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Group</button>
       </div>
       {items.length === 0 && <div className="text-center py-12 text-text-secondary text-sm">No resolver groups yet. Create one to route tickets to a pool of resolvers.</div>}
       <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
@@ -1502,18 +1592,18 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
           const strategy = ASSIGNMENT_STRATEGIES.find((s) => s.value === g.assignment_strategy)
           const deptName = g.department_id ? deptById.get(g.department_id)?.name : null
           return (
-            <div key={g.id} className={['bg-white border rounded-[10px] p-4 transition-all', g.is_active ? 'border-border-light hover:border-border' : 'border-dashed border-border bg-surface-sunken'].join(' ')}>
+            <div key={g.id} className={['bg-surface border rounded-control p-4 transition-all', g.is_active ? 'border-border-light hover:border-border' : 'border-dashed border-border bg-surface-sunken'].join(' ')}>
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className={['text-sm font-semibold leading-snug truncate', g.is_active ? 'text-text-primary' : 'text-text-muted'].join(' ')}>{g.name}</p>
+                    <p className={['text-sm font-medium leading-snug truncate', g.is_active ? 'text-text-primary' : 'text-text-muted'].join(' ')}>{g.name}</p>
                     <CountPill n={g.members.length} />
                   </div>
                   {g.description && <p className="text-xs text-text-secondary truncate mt-0.5">{g.description}</p>}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => openEdit(g)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
-                  <button onClick={() => handleDelete(g.id)} aria-label="Delete" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+                  <button onClick={() => openEdit(g)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
+                  <button onClick={() => setConfirmDeleteId(g.id)} aria-label="Delete" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
                 </div>
               </div>
               <div className="mt-2 max-h-[120px] overflow-y-auto space-y-1">
@@ -1659,10 +1749,12 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
     } catch (e) { setError(apiError(e) ?? 'Could not save the template.') } finally { setSubmitting(false) }
   }
 
+  const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null)
+
   async function handleArchive(id: string) {
-    if (!confirm('Archive this template? It will no longer appear for new tickets.')) return
     await ticketsApi.archiveTemplate(orgId, id).catch(() => null)
     setItems((prev) => prev.filter((i) => i.id !== id))
+    setConfirmArchiveId(null)
   }
 
   const accessSummary = (t: TicketTemplate): string => {
@@ -1684,20 +1776,20 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
     return (
       <div className="space-y-5 max-w-6xl">
         <div className="flex items-center gap-3">
-          <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
+          <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-control border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
-            <h2 className="text-[22px] font-semibold text-text-primary leading-tight">{editingId ? 'Edit Ticket Template' : 'New Ticket Template'}</h2>
+            <h2 className="text-[22px] font-medium text-text-primary leading-tight">{editingId ? 'Edit Ticket Template' : 'New Ticket Template'}</h2>
             <p className="text-sm text-text-secondary">Pre-fill ticket fields and choose who can use this template.</p>
           </div>
         </div>
 
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-4">
+        <div className="bg-surface border border-border-light rounded-card shadow-card p-5 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <FormField label="Template Name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. VPN Access Request" className={inputCls} /></FormField>
             <FormField label="Type">
               <div className="flex gap-2">
                 {(['simple', 'full'] as TicketTemplateType[]).map((t) => (
-                  <button key={t} type="button" onClick={() => setForm({ ...form, template_type: t })} className={`flex-1 py-[9px] rounded-[8px] text-sm font-semibold border-2 transition-colors ${form.template_type === t ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary'}`}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
+                  <button key={t} type="button" onClick={() => setForm({ ...form, template_type: t })} className={`flex-1 py-[9px] rounded-control text-sm font-medium border-2 transition-colors ${form.template_type === t ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary'}`}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
                 ))}
               </div>
             </FormField>
@@ -1759,12 +1851,12 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
             <FormField label="Response SLA (hours, optional)"><input type="number" min={1} value={form.response_sla_hours} onChange={(e) => setForm({ ...form, response_sla_hours: e.target.value })} placeholder="Inherits from type/category" className={inputCls} /></FormField>
           </div>
 
-          <div className={`flex items-start gap-3 p-3 rounded-[8px] border-2 cursor-pointer transition-all ${form.lock_priority ? 'border-primary bg-primary-subtle' : 'border-border-light'}`} onClick={() => setForm({ ...form, lock_priority: !form.lock_priority })}>
+          <div className={`flex items-start gap-3 p-3 rounded-control border-2 cursor-pointer transition-all ${form.lock_priority ? 'border-primary bg-primary-subtle' : 'border-border-light'}`} onClick={() => setForm({ ...form, lock_priority: !form.lock_priority })}>
             <div className={`relative w-9 h-5 rounded-full mt-0.5 shrink-0 transition-colors duration-200 ${form.lock_priority ? 'bg-primary' : 'bg-surface-control-pressed'}`}>
-              <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-xs transition-transform duration-200 ${form.lock_priority ? 'translate-x-4' : 'translate-x-0'}`} />
+              <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-surface rounded-full shadow-xs transition-transform duration-200 ${form.lock_priority ? 'translate-x-4' : 'translate-x-0'}`} />
             </div>
             <div>
-              <p className={`text-sm font-semibold ${form.lock_priority ? 'text-primary-text' : 'text-text-primary'}`}>Lock priority</p>
+              <p className={`text-sm font-medium ${form.lock_priority ? 'text-primary-text' : 'text-text-primary'}`}>Lock priority</p>
               <p className="text-xs text-text-secondary mt-0.5">The raiser can&apos;t change the priority when using this template.</p>
             </div>
           </div>
@@ -1786,7 +1878,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
         </div>
 
         {/* Access rules — who can pick this template when raising a ticket */}
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5">
+        <div className="bg-surface border border-border-light rounded-card shadow-card p-5">
           <ChecklistAccessEditor
             mode={accessMode}
             rules={accessRules}
@@ -1800,8 +1892,8 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
 
         {error && <p className="text-sm font-medium text-danger">{error}</p>}
         <div className="flex gap-2 pt-1">
-          <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Template'}</button>
-          <button onClick={closeForm} className="px-4 py-2 text-sm font-semibold text-text-secondary bg-white border border-border-light rounded-[8px] hover:bg-surface-control transition-colors">Cancel</button>
+          <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Template'}</button>
+          <button onClick={closeForm} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
         </div>
       </div>
     )
@@ -1822,23 +1914,31 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-4">
+      <ConfirmDeleteDialog
+        open={confirmArchiveId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmArchiveId(null) }}
+        title="Archive this template?"
+        confirmLabel="Archive"
+        description="It will no longer appear for new tickets."
+        onConfirm={() => confirmArchiveId && handleArchive(confirmArchiveId)}
+      />
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">{items.length} template{items.length !== 1 ? 's' : ''}</p>
-        <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Template</button>
+        <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Template</button>
       </div>
       {items.length === 0 && <div className="text-center py-12 text-text-secondary text-sm">No templates yet.</div>}
       {sections.map((section) => (
         <div key={section.label} className="space-y-2">
           <div className="flex items-center gap-2 pt-1">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-text-muted">{section.label}</h3>
+            <h3 className="text-xs font-medium uppercase tracking-wide text-text-muted">{section.label}</h3>
             <CountPill n={section.templates.length} />
           </div>
           {section.templates.map((item) => (
-            <div key={item.id} className="bg-white border border-border-light rounded-[8px] px-4 py-3 flex items-center gap-3">
+            <div key={item.id} className="bg-surface border border-border-light rounded-control px-4 py-3 flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                  <p className="text-sm font-semibold text-text-primary">{item.name}</p>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${item.template_type === 'full' ? 'bg-primary-subtle text-primary-text border-primary-border' : 'bg-surface-sunken text-text-secondary border-border-light'}`}>{item.template_type}</span>
+                  <p className="text-sm font-medium text-text-primary">{item.name}</p>
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${item.template_type === 'full' ? 'bg-primary-subtle text-primary-text border-primary-border' : 'bg-surface-sunken text-text-secondary border-border-light'}`}>{item.template_type}</span>
                   {item.resolver_group?.name && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-surface-control text-text-secondary">{item.resolver_group.name}</span>}
                   {item.lock_priority && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-warning-bg text-warning">Priority locked</span>}
                 </div>
@@ -1848,9 +1948,9 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
               {item.checklist_items.length > 0 && <span className="text-xs text-text-secondary">{item.checklist_items.length} items</span>}
               <span className={`text-[11px] font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Archived'}</span>
               <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => openEdit(item)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
+                <button onClick={() => openEdit(item)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
                 {item.is_active && (
-                  <Tooltip label="Archive"><button onClick={() => handleArchive(item.id)} aria-label="Archive" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button></Tooltip>
+                  <Tooltip label="Archive"><button onClick={() => setConfirmArchiveId(item.id)} aria-label="Archive" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button></Tooltip>
                 )}
               </div>
             </div>
@@ -1918,7 +2018,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
     >
       <span
         className={[
-          'block w-4 h-4 rounded-full bg-white shadow-sm transition-transform',
+          'block w-4 h-4 rounded-full bg-surface shadow-sm transition-transform',
           on ? 'translate-x-4' : 'translate-x-0',
         ].join(' ')}
       />
@@ -1973,9 +2073,9 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
       </p>
 
       {modules.map((mod) => (
-        <div key={mod} className="border border-border-light rounded-[10px] overflow-hidden">
+        <div key={mod} className="border border-border-light rounded-control overflow-hidden">
           <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
-            <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{NOTIF_MODULE_LABELS[mod]}</p>
+            <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">{NOTIF_MODULE_LABELS[mod]}</p>
           </div>
           <div className="divide-y divide-surface-control">
             {(catalog[mod] ?? []).map((event) => (
@@ -1993,7 +2093,7 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
                   max={365}
                   value={master.overdue_followup_days}
                   onChange={(e) => setMaster({ ...master, overdue_followup_days: parseInt(e.target.value) || 1 })}
-                  className="w-20 border border-border rounded-[8px] px-2 py-1.5 text-sm text-text-primary focus:border-primary focus:outline-hidden bg-white text-center"
+                  className="w-20 border border-border rounded-control px-2 py-1.5 text-sm text-text-primary focus:border-primary focus:outline-hidden bg-surface text-center"
                 />
               </div>
             )}
@@ -2002,7 +2102,7 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
       ))}
 
       <button onClick={handleSave} disabled={saving}
-        className="flex items-center gap-2 px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+        className="flex items-center gap-2 px-5 py-[10px] text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
         <Save size={15} />
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Notification Settings'}
       </button>
@@ -2084,7 +2184,7 @@ export default function MastersPage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-text-primary">No organization found</p>
+        <p className="font-medium text-text-primary">No organization found</p>
       </div>
     )
   }
@@ -2115,7 +2215,7 @@ export default function MastersPage() {
   if (availableSections.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
-        <p className="font-semibold text-text-primary">No access to task configuration</p>
+        <p className="font-medium text-text-primary">No access to task configuration</p>
         <p className="mt-1 text-sm text-text-muted">
           You don&apos;t have permission to configure task masters. Contact an administrator.
         </p>
@@ -2139,12 +2239,12 @@ export default function MastersPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-[28px] font-bold text-text-primary leading-tight">Work Settings</h1>
+        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Work Settings</h1>
         <p className="mt-1 text-[15px] text-text-secondary">Configure system settings for tasks and tickets.</p>
       </div>
 
       {/* Top-level switcher */}
-      <div className="flex gap-2 p-1 bg-surface-control rounded-[10px] w-fit">
+      <div className="flex gap-2 p-1 bg-surface-control rounded-control w-fit">
         {availableSections.map(([key, label]) => (
           <button
             key={key}
@@ -2154,8 +2254,8 @@ export default function MastersPage() {
               syncUrl(key, tab)
             }}
             className={[
-              'px-4 py-2 rounded-[8px] text-sm font-semibold transition-colors',
-              effectiveSection === key ? 'bg-white text-text-primary shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-text-secondary hover:text-text-primary',
+              'px-4 py-2 rounded-control text-sm font-medium transition-colors',
+              effectiveSection === key ? 'bg-surface text-text-primary shadow-card' : 'text-text-secondary hover:text-text-primary',
             ].join(' ')}
           >
             {label}
@@ -2163,7 +2263,7 @@ export default function MastersPage() {
         ))}
       </div>
 
-      <div className="flex flex-col min-h-[calc(100vh-17rem)] bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <div className="flex flex-col min-h-[calc(100vh-17rem)] bg-surface border border-border-light rounded-card shadow-card">
         {/* Tab bar */}
         <div className="flex-none flex border-b border-border-light overflow-x-auto">
           {activeTabs.map((t) => (

@@ -142,7 +142,7 @@ export default function AssignedByMePage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-text-primary">No organization found</p>
+        <p className="font-medium text-text-primary">No organization found</p>
       </div>
     )
   }
@@ -178,7 +178,7 @@ export default function AssignedByMePage() {
           (mirrors My Tasks so the two headers line up). */}
       <div className="flex items-end justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Assigned by Me</h1>
+          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Assigned by Me</h1>
           <p className="mt-1 text-[15px] text-text-secondary">
             {openCount} open
             {overdueCount > 0 && (
@@ -191,7 +191,7 @@ export default function AssignedByMePage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center border border-border-light rounded-[8px] bg-white p-0.5 gap-0.5">
+          <div className="flex items-center border border-border-light rounded-control bg-surface p-0.5 gap-0.5">
             {([
               { mode: 'list', icon: <LayoutList size={15} />, label: 'List' },
               { mode: 'kanban', icon: <Columns size={15} />, label: 'Kanban' },
@@ -200,7 +200,7 @@ export default function AssignedByMePage() {
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-control text-sm font-medium transition-colors ${
                   viewMode === mode
                     ? 'bg-primary text-white'
                     : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
@@ -214,7 +214,7 @@ export default function AssignedByMePage() {
 
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors"
           >
             <Plus size={15} />
             <span className="hidden sm:inline">Create Task</span>
@@ -249,11 +249,11 @@ export default function AssignedByMePage() {
             </p>
           )}
           {sortedTasks.length === 0 ? (
-            <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
+            <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-20">
               <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
                 <UserCheck size={24} className="text-text-muted" />
               </div>
-              <p className="font-semibold text-text-primary">
+              <p className="font-medium text-text-primary">
                 {search.trim() ? `No tasks match ‘${search.trim()}’` : isFiltered ? 'No tasks match your filters' : 'No tasks assigned by you'}
               </p>
               <p className="text-sm text-text-secondary mt-1">
@@ -302,7 +302,7 @@ export default function AssignedByMePage() {
         closeOnEscape={!incompleteSubmitting}
       >
         <div className="space-y-4">
-          <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-warning-bg border border-warning-border">
+          <div className="flex items-start gap-2 px-3 py-2 rounded-control bg-warning-bg border border-warning-border">
             <AlertCircle size={15} className="text-warning shrink-0 mt-0.5" />
             <p className="text-xs text-warning">
               This closes the task as not-done for everyone. A reason is required.
@@ -310,18 +310,18 @@ export default function AssignedByMePage() {
           </div>
 
           {incompleteTask && (
-            <p className="text-sm font-semibold text-text-primary truncate">{incompleteTask.title}</p>
+            <p className="text-sm font-medium text-text-primary truncate">{incompleteTask.title}</p>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary mb-1.5">Reason</label>
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">Reason</label>
             <textarea
               value={incompleteReason}
               onChange={(e) => setIncompleteReason(e.target.value)}
               rows={3}
               autoFocus
               placeholder="Why is this being closed as not-done?"
-              className="w-full rounded-[8px] border border-border-light px-3 py-2 text-sm text-text-primary focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+              className="w-full rounded-control border border-border-light px-3 py-2 text-sm text-text-primary focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-none"
             />
           </div>
 
@@ -330,7 +330,7 @@ export default function AssignedByMePage() {
               type="button"
               onClick={() => { setIncompleteTask(null); setIncompleteReason('') }}
               disabled={incompleteSubmitting}
-              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-text-secondary rounded-[8px] hover:bg-surface-control disabled:opacity-60 transition-colors"
+              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-text-secondary rounded-control hover:bg-surface-control disabled:opacity-60 transition-colors"
             >
               Cancel
             </button>
@@ -338,7 +338,7 @@ export default function AssignedByMePage() {
               type="button"
               onClick={submitIncomplete}
               disabled={incompleteSubmitting || !incompleteReason.trim()}
-              className="w-full sm:w-auto px-5 py-2 text-sm font-semibold text-white bg-danger rounded-[8px] hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto px-5 py-2 text-sm font-medium text-white bg-danger rounded-control hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {incompleteSubmitting ? 'Saving…' : 'Mark Incomplete'}
             </button>

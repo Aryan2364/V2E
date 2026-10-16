@@ -64,7 +64,7 @@ export default function ReportsIndexPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-bold text-text-primary leading-tight">Reports</h1>
+        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Reports</h1>
         <p className="mt-1 text-[15px] text-text-secondary">
           Pick a report. What you can see is scoped to your visibility — your own work, your team, or the whole organization.
         </p>
@@ -75,20 +75,20 @@ export default function ReportsIndexPage() {
           <button
             key={r.key}
             onClick={() => router.push(r.href)}
-            className="group text-left bg-white border border-border-light rounded-[14px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-5 hover:border-primary hover:shadow-[0_4px_16px_rgba(37,99,235,0.10)] transition-all"
+            className="group text-left bg-surface border border-border-light rounded-card shadow-card p-5 hover:border-primary hover:shadow-dialog transition-all"
           >
             <div className="flex items-start gap-4">
               <div
-                className="w-11 h-11 rounded-[10px] flex items-center justify-center shrink-0"
+                className="w-11 h-11 rounded-control flex items-center justify-center shrink-0"
                 style={{ backgroundColor: r.accent + '18', color: r.accent }}
               >
                 <r.Icon size={22} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-[17px] font-semibold text-text-primary">{r.title}</h2>
+                  <h2 className="text-[17px] font-medium text-text-primary">{r.title}</h2>
                   {r.badge && (
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
+                    <span className="text-[10px] font-medium uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
                       {r.badge}
                     </span>
                   )}

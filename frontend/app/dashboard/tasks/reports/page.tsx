@@ -36,13 +36,13 @@ function completionRate(completed: number, total: number): string {
 function SectionHeader({ icon, title, onExport }: { icon: React.ReactNode; title: string; onExport: () => void }) {
   return (
     <div className="flex items-center justify-between mb-5">
-      <h2 className="flex items-center gap-2 text-[17px] font-semibold text-text-primary">
+      <h2 className="flex items-center gap-2 text-[17px] font-medium text-text-primary">
         {icon}
         {title}
       </h2>
       <button
         onClick={onExport}
-        className="flex items-center gap-1.5 px-3 py-[7px] text-sm font-medium text-primary-text border border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
+        className="flex items-center gap-1.5 px-3 py-[7px] text-sm font-medium text-primary-text border border-primary rounded-control hover:bg-primary-subtle transition-colors"
       >
         <Download size={14} />
         Export CSV
@@ -69,16 +69,16 @@ function StatBanner({ data }: { data: TaskReportData }) {
       {stats.map((s) => (
         <div
           key={s.label}
-          className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 flex items-start gap-4"
+          className="bg-surface border border-border-light rounded-card shadow-card p-5 flex items-start gap-4"
         >
           <div
-            className="w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0"
+            className="w-10 h-10 rounded-control flex items-center justify-center shrink-0"
             style={{ backgroundColor: s.color + '18', color: s.color }}
           >
             {s.icon}
           </div>
           <div>
-            <p className="text-3xl font-bold text-text-primary leading-tight tabular-nums">{s.value}</p>
+            <p className="text-3xl font-medium text-text-primary leading-tight tabular-nums">{s.value}</p>
             <p className="text-sm text-text-secondary mt-0.5">{s.label}</p>
           </div>
         </div>
@@ -87,7 +87,7 @@ function StatBanner({ data }: { data: TaskReportData }) {
   )
 }
 
-const CHART_TOOLTIP_STYLE = { borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 13 }
+const CHART_TOOLTIP_STYLE = { borderRadius: 8, border: '1px solid var(--border-light)', fontSize: 13 }
 
 // ─── User Performance ─────────────────────────────────────────────────────────
 
@@ -116,7 +116,7 @@ function UserPerformanceSection({ data }: { data: TaskReportData }) {
   }
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+    <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
       <SectionHeader icon={<Users size={16} className="text-primary-text" />} title="User Performance" onExport={handleExport} />
 
       {rows.length === 0 ? (
@@ -194,7 +194,7 @@ const userPerfColumns: ResponsiveColumn<UserPerfRow>[] = [
           <div className="flex-1 h-1.5 bg-surface-control rounded-full overflow-hidden">
             <div className="h-full bg-success rounded-full" style={{ width: `${rate}%` }} />
           </div>
-          <span className="text-xs font-semibold text-text-secondary w-8 shrink-0">{rate}%</span>
+          <span className="text-xs font-medium text-text-secondary w-8 shrink-0">{rate}%</span>
         </div>
       )
     },
@@ -227,7 +227,7 @@ function DeptPerformanceSection({ data }: { data: TaskReportData }) {
   }
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+    <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
       <SectionHeader icon={<Building2 size={16} className="text-text-secondary" />} title="Department Performance" onExport={handleExport} />
 
       {rows.length === 0 ? (
@@ -299,7 +299,7 @@ const deptPerfColumns: ResponsiveColumn<DeptPerfRow>[] = [
           <div className="flex-1 h-1.5 bg-surface-control rounded-full overflow-hidden">
             <div className="h-full bg-success rounded-full" style={{ width: `${rate}%` }} />
           </div>
-          <span className="text-xs font-semibold text-text-secondary w-8 shrink-0">{rate}%</span>
+          <span className="text-xs font-medium text-text-secondary w-8 shrink-0">{rate}%</span>
         </div>
       )
     },
@@ -326,7 +326,7 @@ function BreakdownSection({
   }
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+    <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
       <SectionHeader icon={icon} title={title} onExport={handleExport} />
 
       {rows.length === 0 ? (
@@ -410,7 +410,7 @@ function StatusBreakdownSection({ data }: { data: TaskReportData }) {
   }
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+    <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
       <SectionHeader icon={<CheckCircle2 size={16} className="text-success" />} title="Status Distribution" onExport={handleExport} />
 
       {rows.length === 0 ? (
@@ -475,7 +475,7 @@ function FrequencySection({ data }: { data: TaskReportData }) {
   }
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+    <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
       <SectionHeader icon={<RotateCcw size={16} className="text-warning" />} title="Task Frequency" onExport={handleExport} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -501,11 +501,11 @@ function FrequencySection({ data }: { data: TaskReportData }) {
             const pct = total > 0 ? Math.round((d.total / total) * 100) : 0
             const rate = d.total > 0 ? Math.round((d.completed / d.total) * 100) : 0
             return (
-              <div key={label} className="border border-border-light rounded-[10px] p-4">
+              <div key={label} className="border border-border-light rounded-control p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-text-primary">{label}</span>
+                  <span className="font-medium text-text-primary">{label}</span>
                   <span
-                    className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                    className="text-xs font-medium px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: color + '18', color }}
                   >
                     {pct}% of all tasks
@@ -553,7 +553,7 @@ export default function ReportsPage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-text-primary">No organization found</p>
+        <p className="font-medium text-text-primary">No organization found</p>
       </div>
     )
   }
@@ -563,7 +563,7 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Analytics</h1>
+          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Analytics</h1>
           <p className="mt-1 text-[15px] text-text-secondary">Organization-wide task analytics — completion, priority, category and status breakdowns.</p>
         </div>
 
@@ -575,7 +575,7 @@ export default function ReportsPage() {
           {(fromDate || toDate) && (
             <button
               onClick={() => { setFromDate(''); setToDate('') }}
-              className="px-3 py-[7px] text-sm font-medium text-danger border border-danger-border bg-danger-bg rounded-[8px] hover:bg-danger-bg transition-colors"
+              className="px-3 py-[7px] text-sm font-medium text-danger border border-danger-border bg-danger-bg rounded-control hover:bg-danger-bg transition-colors"
             >
               Clear
             </button>
@@ -589,8 +589,8 @@ export default function ReportsPage() {
         </div>
       ) : !data ? (
         <div className="flex flex-col items-center justify-center h-64">
-          <p className="font-semibold text-text-primary">Failed to load reports</p>
-          <button onClick={loadData} className="mt-3 px-4 py-2 text-sm font-semibold bg-primary text-white rounded-[8px] hover:bg-primary-hover transition-colors">Retry</button>
+          <p className="font-medium text-text-primary">Failed to load reports</p>
+          <button onClick={loadData} className="mt-3 px-4 py-2 text-sm font-medium bg-primary text-white rounded-control hover:bg-primary-hover transition-colors">Retry</button>
         </div>
       ) : (
         <>

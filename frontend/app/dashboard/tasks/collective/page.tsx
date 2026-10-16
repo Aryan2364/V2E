@@ -59,7 +59,7 @@ export default function CollectivePage() {
         <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
           <Globe size={24} className="text-text-muted" />
         </div>
-        <p className="font-semibold text-text-primary">No organizations found</p>
+        <p className="font-medium text-text-primary">No organizations found</p>
         <p className="text-sm text-text-secondary mt-1">You don't appear to be a member of any organization.</p>
       </div>
     )
@@ -69,7 +69,7 @@ export default function CollectivePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-[28px] font-bold text-text-primary leading-tight">Collective View</h1>
+        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Collective View</h1>
         <p className="mt-1 text-[15px] text-text-secondary">Tasks across all organizations you belong to.</p>
       </div>
 
@@ -118,11 +118,11 @@ export default function CollectivePage() {
 
       {/* Task list */}
       {displayTasks.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
+        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-20">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
             <Globe size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-text-primary">No tasks</p>
+          <p className="font-medium text-text-primary">No tasks</p>
           <p className="text-sm text-text-secondary mt-1">This organization has no tasks yet.</p>
         </div>
       ) : (
@@ -133,7 +133,7 @@ export default function CollectivePage() {
               <div key={task.id} className="relative">
                 {activeOrg === 'all' && org && (
                   <div className="absolute top-0 right-3 z-10">
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-b-[6px] bg-surface-control text-text-secondary border border-border-light border-t-0">
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-b-[6px] bg-surface-control text-text-secondary border border-border-light border-t-0">
                       {org.name}
                     </span>
                   </div>
