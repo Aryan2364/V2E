@@ -14,12 +14,10 @@ import {
   daysLatePhrase, daysLateShort, gradeReason,
   completionColor, onTimeColor, completedDelayColor, pendingAgeColor,
 } from '@/lib/reports/scorecard-format'
-import { ArrowLeft, Download, Lock, RotateCcw, ListChecks, AlertTriangle, ChevronRight, ChevronDown } from 'lucide-react'
+import { Download, Lock, RotateCcw, ListChecks, AlertTriangle, ChevronRight, ChevronDown } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 import { formatDate, formatNumber } from '@/lib/format'
-
-function initials(name: string) {
-  return name.split(' ').filter(Boolean).map((n) => n[0]).join('').slice(0, 2).toUpperCase() || '?'
-}
 
 function fmt(iso: string | null) {
   if (!iso) return '—'
@@ -203,41 +201,36 @@ export default function ScorecardDetailPage() {
         <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
         <p className="font-medium text-text-primary text-base">This person is outside your scope</p>
         <p className="text-text-secondary text-sm mt-1 max-w-sm">You can only open scorecards for people within your visibility.</p>
-        <button onClick={() => router.push('/dashboard/tasks/reports-new/person-scorecard')} className="mt-4 px-4 py-2 rounded-control border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-control">Back to roster</button>
+        <Button variant="secondary" className="mt-4" onClick={() => router.push('/dashboard/tasks/reports-new/person-scorecard')}>Back to roster</Button>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
-        <ArrowLeft size={15} /> Back
-      </button>
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="w-14 h-14 rounded-full bg-primary text-white text-lg font-medium flex items-center justify-center shrink-0">
-            {card ? initials(card.employee.name) : '…'}
+      <PageHeader
+        title={card?.employee.name ?? 'Loading…'}
+        trail={[
+          { label: 'Tasks', href: '/dashboard/tasks' },
+          { label: 'Reports', href: '/dashboard/tasks/reports-new' },
+          { label: 'Person Scorecard', href: '/dashboard/tasks/reports-new/person-scorecard' },
+        ]}
+        meta={
+          <>
+            {m && <GradePill grade={m.grade} className="mr-2 align-middle" />}
+            {[card?.employee.role_title, card?.employee.department_name].filter(Boolean).join(' · ') || card?.employee.email || ''}
+            {m && <span className="block mt-1">{gradeReason(m)}</span>}
+          </>
+        }
+        actions={
+          <div className="flex items-center gap-2 shrink-0">
+            <DateRangePicker from={fromDate} to={toDate} onChange={(f, t) => { setFromDate(f); setToDate(t) }} placeholder="All time" />
+            <Button onClick={download} disabled={!card}>
+              <Download size={15} /> Download
+            </Button>
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-[24px] font-medium text-text-primary leading-tight truncate">{card?.employee.name ?? 'Loading…'}</h1>
-              {m && <GradePill grade={m.grade} />}
-            </div>
-            <p className="text-[14px] text-text-secondary truncate">
-              {[card?.employee.role_title, card?.employee.department_name].filter(Boolean).join(' · ') || card?.employee.email || ''}
-            </p>
-            {m && <p className="mt-1 text-[13px] text-text-secondary">{gradeReason(m)}</p>}
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <DateRangePicker from={fromDate} to={toDate} onChange={(f, t) => { setFromDate(f); setToDate(t) }} placeholder="All time" />
-          <button onClick={download} disabled={!card} className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-60 transition-colors">
-            <Download size={15} /> Download
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {loading ? (
         <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>

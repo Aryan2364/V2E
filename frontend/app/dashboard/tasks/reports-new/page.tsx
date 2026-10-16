@@ -3,6 +3,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { UserSquare2, BarChart2, ArrowRight, CalendarClock, CalendarDays } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
 
 interface ReportTile {
   key: string
@@ -63,12 +64,11 @@ export default function ReportsIndexPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Reports</h1>
-        <p className="mt-1 text-[15px] text-text-secondary">
-          Pick a report. What you can see is scoped to your visibility — your own work, your team, or the whole organization.
-        </p>
-      </div>
+      <PageHeader
+        title="Reports"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        meta="Pick a report. What you can see is scoped to your visibility — your own work, your team, or the whole organization."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {REPORTS.map((r) => (

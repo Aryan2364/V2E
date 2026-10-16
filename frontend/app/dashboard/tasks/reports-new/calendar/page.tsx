@@ -14,7 +14,9 @@ import DepartmentMultiSelect from '@/components/employees/DepartmentMultiSelect'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { exportCalendarXlsx } from '@/lib/reports/calendar-export'
 import { RESULT_META, RESULT_ORDER, fmtDate, fmtAsOn, shiftMonth } from '@/lib/reports/calendar-format'
-import { ArrowLeft, Search, Download, Lock, CalendarClock, ChevronLeft, ChevronRight, Inbox } from 'lucide-react'
+import { Search, Download, Lock, CalendarClock, ChevronLeft, ChevronRight, Inbox } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 type ResultFilter = 'all' | 'missed' | 'late' | 'clean'
 const STATE_KEY = 'calendar-report-state-v1'
@@ -136,38 +138,32 @@ export default function CalendarReportPage() {
 
   return (
     <div className="space-y-4">
-      <button onClick={() => router.push('/dashboard/tasks/reports-new')} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
-        <ArrowLeft size={15} /> Reports
-      </button>
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="min-w-0">
-          <h1 className="text-[26px] font-medium text-text-primary leading-tight">Monthly Task Compliance Calendar</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">
+      <PageHeader
+        title="Monthly Task Compliance Calendar"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }, { label: 'Reports', href: '/dashboard/tasks/reports-new' }]}
+        meta={
+          <>
             One row per task and person, one square per day — green done on time, amber late, red missed, white not due yet.
-          </p>
-          {report && (
-            <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-text">
-              <CalendarClock size={15} /> Position as on {fmtAsOn(report.as_on_date)}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <ScopeSwitcher
-            maxScope={(report?.max_scope as WorkScope) ?? null}
-            value={(report?.applied_scope as WorkScope) ?? 'own'}
-            onChange={(s) => setRequestedScope(s as ScorecardScope)}
-          />
-          <button
-            onClick={download}
-            disabled={downloading || !report || report.rows.length === 0}
-            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-60 transition-colors"
-          >
-            <Download size={15} /> {downloading ? 'Preparing…' : 'Download'}
-          </button>
-        </div>
-      </div>
+            {report && (
+              <span className="block mt-1.5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-text">
+                <CalendarClock size={15} /> Position as on {fmtAsOn(report.as_on_date)}
+              </span>
+            )}
+          </>
+        }
+        actions={
+          <div className="flex items-center gap-2 shrink-0">
+            <ScopeSwitcher
+              maxScope={(report?.max_scope as WorkScope) ?? null}
+              value={(report?.applied_scope as WorkScope) ?? 'own'}
+              onChange={(s) => setRequestedScope(s as ScorecardScope)}
+            />
+            <Button onClick={download} disabled={downloading || !report || report.rows.length === 0}>
+              <Download size={15} /> {downloading ? 'Preparing…' : 'Download'}
+            </Button>
+          </div>
+        }
+      />
 
       {/* Month switcher + legend */}
       <div className="flex items-center justify-between gap-4 flex-wrap">

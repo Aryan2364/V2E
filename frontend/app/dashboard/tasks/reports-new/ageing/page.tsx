@@ -18,7 +18,9 @@ import PendingDrillDrawer, { type DrillFilter } from '@/components/reports/Pendi
 import { exportAgeingXlsx } from '@/lib/reports/ageing-export'
 import { BUCKETS, WITHDRAWN_META, HANDED_OVER_META, OVER_MONTH_BUCKETS, BUCKET_LABEL, countColor, fmtDate, fmtAsOn } from '@/lib/reports/ageing-format'
 import { useSort } from '@/lib/reports/use-sort'
-import { ArrowLeft, Search, Download, Lock, CalendarClock, ArrowUpDown, AlertTriangle, Inbox } from 'lucide-react'
+import { Search, Download, Lock, CalendarClock, ArrowUpDown, AlertTriangle, Inbox } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 type Tab = 'person' | 'task' | 'pending'
 const STATE_KEY = 'ageing-report-state-v1'
@@ -235,38 +237,35 @@ export default function AgeingReportPage() {
 
   return (
     <div className="space-y-4">
-      <button onClick={() => router.push('/dashboard/tasks/reports-new')} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
-        <ArrowLeft size={15} /> Reports
-      </button>
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="min-w-0">
-          <h1 className="text-[26px] font-medium text-text-primary leading-tight">Pending &amp; Overdue Ageing</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">
+      <PageHeader
+        title="Pending & Overdue Ageing"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }, { label: 'Reports', href: '/dashboard/tasks/reports-new' }]}
+        meta={
+          <>
             Only open work — Overdue or Ongoing — sorted into age bands so the oldest pile stands out.
-          </p>
-          {report && (
-            <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-text">
-              <CalendarClock size={15} /> Position as on {fmtAsOn(report.as_on_date)}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <ScopeSwitcher
-            maxScope={(report?.max_scope as WorkScope) ?? null}
-            value={(report?.applied_scope as WorkScope) ?? 'own'}
-            onChange={(s) => setRequestedScope(s as ScorecardScope)}
-          />
-          <button
-            onClick={downloadReport}
-            disabled={downloading || !report || (report.totals.total_pending === 0 && report.totals.withdrawn === 0 && report.totals.handed_over === 0)}
-            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-60 transition-colors"
-          >
-            <Download size={15} /> {downloading ? 'Preparing…' : 'Download'}
-          </button>
-        </div>
-      </div>
+            {report && (
+              <span className="block mt-1.5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-text">
+                <CalendarClock size={15} /> Position as on {fmtAsOn(report.as_on_date)}
+              </span>
+            )}
+          </>
+        }
+        actions={
+          <div className="flex items-center gap-2 shrink-0">
+            <ScopeSwitcher
+              maxScope={(report?.max_scope as WorkScope) ?? null}
+              value={(report?.applied_scope as WorkScope) ?? 'own'}
+              onChange={(s) => setRequestedScope(s as ScorecardScope)}
+            />
+            <Button
+              onClick={downloadReport}
+              disabled={downloading || !report || (report.totals.total_pending === 0 && report.totals.withdrawn === 0 && report.totals.handed_over === 0)}
+            >
+              <Download size={15} /> {downloading ? 'Preparing…' : 'Download'}
+            </Button>
+          </div>
+        }
+      />
 
       {/* Tabs */}
       <div className="flex items-center gap-1 border-b border-border-light">

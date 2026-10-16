@@ -14,7 +14,9 @@ import { getDepartments } from '@/lib/api/departments'
 import type { Department } from '@/lib/types'
 import DateRangePicker from '@/components/ui/DateRangePicker'
 import { exportScorecardsXlsx } from '@/lib/reports/scorecard-export'
-import { ArrowLeft, Search, Download, ChevronRight, UserSquare2, Lock } from 'lucide-react'
+import { Search, Download, ChevronRight, UserSquare2, Lock } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 function initials(name: string) {
   return name.split(' ').filter(Boolean).map((n) => n[0]).join('').slice(0, 2).toUpperCase() || '?'
@@ -125,33 +127,23 @@ export default function ScorecardRosterPage() {
 
   return (
     <div className="space-y-4">
-      <button onClick={() => router.push('/dashboard/tasks/reports-new')} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
-        <ArrowLeft size={15} /> Reports
-      </button>
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="min-w-0">
-          <h1 className="text-[26px] font-medium text-text-primary leading-tight">Person Scorecard</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">
-            Open a person to see their unique tasks and performance — or download everyone you can see.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <ScopeSwitcher
-            maxScope={(maxScope as WorkScope) ?? null}
-            value={(appliedScope as WorkScope) ?? 'own'}
-            onChange={(s) => setRequestedScope(s as ScorecardScope)}
-          />
-          <button
-            onClick={downloadAll}
-            disabled={downloading || filtered.length === 0}
-            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-60 transition-colors"
-          >
-            <Download size={15} /> {downloading ? 'Preparing…' : 'Download all'}
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Person Scorecard"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }, { label: 'Reports', href: '/dashboard/tasks/reports-new' }]}
+        meta="Open a person to see their unique tasks and performance — or download everyone you can see."
+        actions={
+          <div className="flex items-center gap-2 shrink-0">
+            <ScopeSwitcher
+              maxScope={(maxScope as WorkScope) ?? null}
+              value={(appliedScope as WorkScope) ?? 'own'}
+              onChange={(s) => setRequestedScope(s as ScorecardScope)}
+            />
+            <Button onClick={downloadAll} disabled={downloading || filtered.length === 0}>
+              <Download size={15} /> {downloading ? 'Preparing…' : 'Download all'}
+            </Button>
+          </div>
+        }
+      />
 
       {/* Toolbar */}
       <div className="flex items-center gap-2 flex-wrap">
