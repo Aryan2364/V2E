@@ -1315,6 +1315,7 @@ export default function TaskDetailPage() {
                           <FileText size={12} className="shrink-0" />
                           <span className="truncate">{f.name}</span>
                           <span className="text-text-muted shrink-0">{formatBytes(f.size)}</span>
+                          {/* 16px chip dismiss — smaller than the kit's icon-sm (32px); no kit token fits this size. */}
                           <Tooltip label="Remove file">
                             <button
                               type="button"
@@ -1361,25 +1362,26 @@ export default function TaskDetailPage() {
                     />
                     {/* Attach files — sits right before Send */}
                     <Tooltip label="Attach files">
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon-sm"
                         onClick={() => commentFileInputRef.current?.click()}
                         disabled={sendingComment || isFutureTask}
-                        className="shrink-0 w-8 h-8 rounded-control flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-primary-text disabled:text-text-muted disabled:cursor-not-allowed outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                         aria-label="Attach files"
                       >
                         <Paperclip size={16} className="-rotate-45" />
-                      </button>
+                      </Button>
                     </Tooltip>
                     <Tooltip label="Send">
-                      <button
+                      <Button
+                        size="icon-sm"
                         onClick={handleSendComment}
                         disabled={sendingComment || isFutureTask || (!commentText.trim() && commentFiles.length === 0)}
                         aria-label="Send"
-                        className="shrink-0 w-8 h-8 rounded-control flex items-center justify-center text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                       >
                         <Send size={15} />
-                      </button>
+                      </Button>
                     </Tooltip>
                   </div>
                 </div>
@@ -1520,14 +1522,15 @@ export default function TaskDetailPage() {
                           <CheckCircle2 size={14} /> Your part is done
                         </span>
                         {canEdit && (
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="mt-2 text-danger hover:text-danger"
                             onClick={() => { setIncompleteReason(''); setIncompleteTarget('task') }}
-                            className="mt-2 flex items-center gap-1.5 text-meta font-medium text-danger hover:text-danger outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                           >
                             <XCircle size={13} />
                             Mark whole task incomplete
-                          </button>
+                          </Button>
                         )}
                         <p className="mt-2 text-meta text-text-muted">Everyone&apos;s progress is shown in Assignees below.</p>
                       </>
@@ -1587,14 +1590,15 @@ export default function TaskDetailPage() {
                       )}
                       <p className="mt-1 text-meta text-text-muted">Set each person&apos;s status in Assignees below.</p>
                       {canEdit && (
-                        <button
-                          type="button"
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mt-2 text-danger hover:text-danger"
                           onClick={() => { setIncompleteReason(''); setIncompleteTarget('task') }}
-                          className="mt-2 inline-flex items-center gap-1.5 text-meta font-medium text-danger hover:text-danger outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                         >
                           <XCircle size={13} />
                           Mark task incomplete
-                        </button>
+                        </Button>
                       )}
                     </>
                   )}
