@@ -1,15 +1,25 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { X, Trash2 } from 'lucide-react'
+import { Trash2Icon } from 'lucide-react'
 import { createDepartment, updateDepartment, deleteDepartment } from '@/lib/api/departments'
 import { placeUnderParent } from '@/lib/org-chart-layout'
 import { BRANCH_PALETTE } from '@/lib/org-chart-colors'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import EmployeePicker from '@/components/ui/EmployeePicker'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import Tooltip from '@/components/ui/tooltip'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetBody,
+  SheetFooter,
+} from '@/components/ui/sheet'
 import type { Department, User } from '@/lib/types'
 
 export type DeptFormTarget =
@@ -25,10 +35,6 @@ interface DeptFormDrawerProps {
   onSaved: (saved: Department) => void
   onDeleted: (id: string) => void
 }
-
-const inputCls =
-  'w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
-const labelCls = 'text-sm font-medium text-text-secondary mb-1.5 block'
 
 /**
  * Create or edit a department from a right-hand drawer. In edit mode the form is
@@ -47,9 +53,6 @@ export default function DeptFormDrawer({
   const open = !!target
   const isEdit = target?.mode === 'edit'
   const editing = target?.mode === 'edit' ? target.department : null
-
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -157,81 +160,71 @@ export default function DeptFormDrawer({
     }
   }
 
-  if (!mounted) return null
+  return (
+    <Sheet open={open} onOpenChange={(next) => { if (!next) onClose() }}>
+      <SheetContent side="right">
+        <SheetHeader>
+          <SheetTitle>{isEdit ? 'Edit Department' : 'Add Department'}</SheetTitle>
+        </SheetHeader>
 
-  return createPortal(
-    <>
-      {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
-
-      <div
-        className={`fixed inset-y-0 right-0 z-70 w-full max-w-sm bg-white border-l border-border-light shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
-          open ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between px-4 py-4 border-b border-border-light">
-          <h3 className="font-medium text-text-primary">
-            {isEdit ? 'Edit Department' : 'Add Department'}
-          </h3>
-          <button
-            onClick={onClose}
-            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
-            aria-label="Close"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <div className="px-4 py-4 flex flex-col gap-4">
+        <SheetBody className="flex flex-col gap-6">
           <div>
-            <label className={labelCls}>Department Name *</label>
-            <input
+            <Label htmlFor="dept-name" required>
+              Department Name
+            </Label>
+            <Input
+              id="dept-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Engineering"
-              className={inputCls}
+              className="mt-2 max-w-none"
               autoFocus
             />
           </div>
           <div>
-            <label className={labelCls}>Description</label>
-            <textarea
+            <Label htmlFor="dept-description">Description</Label>
+            <Textarea
+              id="dept-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Optional description…"
-              className="w-full rounded-[8px] border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors resize-none"
+              className="mt-2"
             />
           </div>
           <div>
-            <label className={labelCls}>Parent Department</label>
-            <DepartmentSelect
-              value={parentId}
-              onChange={setParentId}
-              departments={parentOptions}
-              placeholder="None (top-level)"
-              allLabel="None (top-level)"
-            />
+            <Label>Parent Department</Label>
+            <div className="mt-2">
+              <DepartmentSelect
+                value={parentId}
+                onChange={setParentId}
+                departments={parentOptions}
+                placeholder="None (top-level)"
+                allLabel="None (top-level)"
+              />
+            </div>
           </div>
           <div>
-            <label className={labelCls}>Department Head</label>
-            <EmployeePicker
-              value={headUserId}
-              onChange={setHeadUserId}
-              employees={users.map((u) => ({ user_id: u.id, name: u.name }))}
-              title="Select Department Head"
-              placeholder="No head assigned"
-              allowClear
-            />
+            <Label>Department Head</Label>
+            <div className="mt-2">
+              <EmployeePicker
+                value={headUserId}
+                onChange={setHeadUserId}
+                employees={users.map((u) => ({ user_id: u.id, name: u.name }))}
+                title="Select Department Head"
+                placeholder="No head assigned"
+                allowClear
+              />
+            </div>
           </div>
           <div>
-            <label className={labelCls}>Node Color</label>
-            <div className="flex flex-wrap items-center gap-2">
+            <Label>Node Color</Label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               <Tooltip label="Default (inherit branch color)">
               <button
                 type="button"
                 onClick={() => setColor(null)}
-                className={`h-7 px-2.5 rounded-[7px] text-xs font-medium border transition-colors ${
+                className={`h-8 rounded-lg border px-3 text-label font-medium transition-colors ${
                   color === null
                     ? 'border-primary bg-primary-subtle text-primary-text'
                     : 'border-border text-text-secondary hover:bg-surface-sunken'
@@ -245,10 +238,10 @@ export default function DeptFormDrawer({
                 <button
                   type="button"
                   onClick={() => setColor(c)}
-                  className={`w-7 h-7 rounded-full border-2 transition-transform hover:scale-110 ${
+                  className={`size-8 rounded-full border-2 transition-transform hover:scale-110 ${
                     color?.toLowerCase() === c.toLowerCase()
-                      ? 'border-[#0F172A] ring-2 ring-offset-1 ring-[#0F172A]/20'
-                      : 'border-white shadow-xs'
+                      ? 'border-text-primary ring-2 ring-offset-1 ring-primary-ring'
+                      : 'border-surface shadow-xs'
                   }`}
                   style={{ backgroundColor: c }}
                   aria-label={`Use color ${c}`}
@@ -256,77 +249,73 @@ export default function DeptFormDrawer({
                 </Tooltip>
               ))}
             </div>
-            <p className="text-xs text-text-muted mt-1.5">
+            <p className="mt-2 text-label text-text-muted">
               Default inherits the branch hue (lighter further down the tree).
             </p>
           </div>
-          {error && <p className="text-xs text-danger">{error}</p>}
-          </div>
+          {error && <p className="text-label text-danger">{error}</p>}
 
-          <div className="px-4 pt-4 pb-12 border-t border-border-light flex flex-col gap-3">
-            <div className="flex gap-3">
-              <Button variant="primary" isLoading={saving} onClick={handleSave}>
-                {isEdit ? 'Save' : 'Add Department'}
-              </Button>
-              <Button variant="secondary" onClick={onClose} disabled={saving || deleting}>
-                Cancel
-              </Button>
-            </div>
+          {isEdit && !confirmDelete && (
+            <Tooltip
+              label={
+                canDelete
+                  ? 'Delete this department'
+                  : `Reassign its ${blockers.join(', ')} first`
+              }
+            >
+            <button
+              type="button"
+              onClick={() => canDelete && setConfirmDelete(true)}
+              disabled={!canDelete}
+              className={`flex items-center gap-1 self-start text-body font-medium transition-colors ${
+                canDelete
+                  ? 'text-danger hover:text-danger'
+                  : 'cursor-not-allowed text-text-muted'
+              }`}
+            >
+              <Trash2Icon size={14} /> Delete department
+            </button>
+            </Tooltip>
+          )}
 
-            {isEdit && !confirmDelete && (
-              <Tooltip
-                label={
-                  canDelete
-                    ? 'Delete this department'
-                    : `Reassign its ${blockers.join(', ')} first`
-                }
-              >
-              <button
-                type="button"
-                onClick={() => canDelete && setConfirmDelete(true)}
-                disabled={!canDelete}
-                className={`flex items-center gap-1.5 text-sm font-medium self-start transition-colors ${
-                  canDelete
-                    ? 'text-danger hover:text-danger'
-                    : 'text-text-muted cursor-not-allowed'
-                }`}
-              >
-                <Trash2 size={14} /> Delete department
-              </button>
-              </Tooltip>
-            )}
+          {isEdit && !canDelete && (
+            <p className="text-label text-text-muted">
+              A department with {blockers.join(', ')} can’t be deleted. Reassign or
+              remove them first.
+            </p>
+          )}
 
-            {isEdit && !canDelete && (
-              <p className="text-xs text-text-muted -mt-1">
-                A department with {blockers.join(', ')} can’t be deleted. Reassign or
-                remove them first.
+          {isEdit && confirmDelete && (
+            <div className="rounded-lg border border-danger-border bg-danger-bg p-3">
+              <p className="mb-3 text-body text-danger">
+                Delete <span className="font-medium">{editing?.name}</span>? This can’t
+                be undone.
               </p>
-            )}
-
-            {isEdit && confirmDelete && (
-              <div className="rounded-[8px] border border-danger-border bg-danger-bg p-3">
-                <p className="text-sm text-danger mb-2.5">
-                  Delete <span className="font-medium">{editing?.name}</span>? This can’t
-                  be undone.
-                </p>
-                <div className="flex gap-2">
-                  <Button variant="danger" isLoading={deleting} onClick={handleDelete}>
-                    Delete
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setConfirmDelete(false)}
-                    disabled={deleting}
-                  >
-                    Cancel
-                  </Button>
-                </div>
+              <div className="flex gap-2">
+                <Button variant="danger" loading={deleting} loadingLabel="Deleting" onClick={handleDelete}>
+                  Delete
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={deleting}
+                >
+                  Cancel
+                </Button>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </>,
-    document.body,
+            </div>
+          )}
+        </SheetBody>
+
+        <SheetFooter>
+          <Button variant="secondary" onClick={onClose} disabled={saving || deleting}>
+            Cancel
+          </Button>
+          <Button loading={saving} loadingLabel="Saving" onClick={handleSave}>
+            {isEdit ? 'Save' : 'Add Department'}
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   )
 }
