@@ -682,6 +682,148 @@ commit by another module agent (b3a0f9b, "goals-learning-communication") when th
 index was mid-commit at the same time - the content is this agent's, the attribution on that
 commit is not. npx tsc --noEmit was clean for this module's folders at every checkpoint.
 
+## Goals, Learning, Communication
+
+Module folders: `app/goals/**`, `app/learning/**`, `app/communication/**`,
+`components/{goals,learning,communication}/**`, `lib/learning/**`.
+
+### Done
+
+- Mechanical token pass over every file in the module: `font-semibold/bold` -> `font-medium`;
+  off-scale spacing (`p-5`, `py-16`, `py-20`, `mb-5`, `gap-5`, etc.) mapped onto the section 5.1
+  scale; arbitrary `text-[Npx]` mapped onto the kit type tokens; arbitrary `rounded-[Npx]` mapped
+  onto `rounded-control`/`rounded-card`; `bg-white`/`text-white`/hex/rgba replaced with
+  surface/text/primary-foreground tokens (`components/learning/OfficeViewer.tsx`'s injected
+  `<style>` now reads CSS vars instead of hex).
+- `toLocaleDateString`/`toLocaleString` call sites (announcements, bulletin, knowledge, messages,
+  `GoalDetailView`, `GoalTrajectory`) now go through `lib/format.ts` instead of a second,
+  locale-dependent formatter. `components/goals/shared.tsx`'s own `formatDate`/`formatDateTime`
+  now delegate to `lib/format.ts`.
+- `LearningAdminSidebar` and `CommunicationSidebar` (hand-rolled dark sidebars duplicating
+  `ModuleSidebar`) migrated onto the shared `components/layout/ModuleSidebar` (section 4 rule 2,
+  section 12.1).
+- All 5 native `<select>` elements in the module (announcements/new, bulletin, knowledge/new)
+  migrated to `StyledSelect`.
+- `components/goals/shared.tsx`'s local `EmptyState`/`CountBadge` (duplicates of kit
+  `empty-state.tsx` / `badge.tsx`'s `Count`) removed; every call site (`GoalListView`,
+  `GoalDetailView`, `goals/dashboard`, `goals/my-check-ins`) now uses the kit component with the
+  matching closed variant (`nothing-yet`, `nothing-found`, `not-found`, `failed`,
+  `nothing-waiting`); `PermissionsUnavailable` now a thin wrapper over `EmptyState variant="failed"`.
+- Every hand-rolled `fixed inset-0` overlay in the module converted to kit `Dialog`, behaviour
+  preserved: `learning/paths/[pathId]`'s "Assign course"; `communication/company-policy/[policyId]`'s
+  local `DialogShell` (used by its item add/edit and assign-employees modals - its hand-rolled
+  checkbox row now uses kit `Checkbox`); `communication/messages`'s "New conversation";
+  `components/learning/MaterialRow`'s per-row preview popup.
+- Desktop back-arrow buttons (section 1 rule 11) removed in favour of `PageHeader`'s breadcrumb
+  `trail` or a standalone `Breadcrumb`, with page content/handlers unchanged: `GoalDetailView`,
+  `goals/dashboard`, `goals/my-check-ins`, `GoalListView` (full section 11.1 list-page header),
+  `learning/my/[assignmentId]`, `learning/paths/builder`, `learning/paths/[pathId]`,
+  `learning/paths/[pathId]/preview`, `communication/announcements/[id]`,
+  `communication/bulletin/[boardId]`, `communication/bulletin/[boardId]/posts/[postId]`,
+  `communication/knowledge/new`, `communication/knowledge/[postId]`,
+  `communication/announcements/new`.
+- Spot icon-button/tooltip fixes: `GoalDetailView`'s add-task button (`title=` attribute) moved to
+  `Button` + `Tooltip` (section 6.3); `learning/paths/[pathId]`'s Preview/Edit/Archive/Restore/
+  Delete controls moved to `Button`.
+- Loader2 spinners on page-level loading states (goals/dashboard, goals/my-check-ins,
+  learning/my/[assignmentId], learning/paths/[pathId]/preview) replaced with `Skeleton`.
+
+### Kept for owner decision
+
+- `components/learning/MaterialPreviewModal.tsx` keeps its own `fixed inset-0` overlay. It is a
+  windowed document/media preview with a maximize-to-true-fullscreen toggle (Windows-style),
+  which `dialog.tsx`'s fixed three-width/80vh-cap model (section 24) does not express - forcing it
+  into Dialog would remove the maximize affordance document viewers are expected to have. Kept
+  per D12; tokens already compliant.
+- `components/learning/CourseViewer.tsx` keeps its own `fixed inset-0` fullscreen file viewer and
+  its two `ArrowLeft`/"Back to..." links (one in its lesson-nav sidebar header, one in its
+  collapsed-nav toolbar). This is an immersive, chromeless course-reading layout (its own lesson
+  list, progress bar, collapse toggle) embedded inside `learning/my/[assignmentId]` and
+  `learning/paths/[pathId]/preview`, not a section-11-template page with a header/breadcrumb band
+  to anchor a `Breadcrumb` in. Treated as a D12 deviation.
+- `learning/paths/[pathId]`'s materials/assignments/engagement tab bar stays local `useState`
+  rather than `section-tabs.tsx`, which requires URL-backed state (section 33.4). Converting it
+  changes observable behaviour (no deep-linking a tab via query param today; switching tabs would
+  newly push/replace history) rather than only its appearance, so it was left and flagged here
+  instead of converted under time pressure.
+
+### Not done / follow-up
+
+- Adapter call sites not migrated off `Modal`/`ConfirmDialog`/`StyledSelect`/`DatePicker`/
+  `ResponsiveTable`/`Toast` in: `learning/paths/builder`, `learning/paths/[pathId]`,
+  `communication/announcements/new`, `communication/bulletin`,
+  `communication/company-policy/[policyId]`, `communication/knowledge/new`,
+  `components/learning/EngagementPanel`, and all of `components/goals/{AddGoalTaskModal,
+  CheckInHistory,CheckInModal,CreateGoalModal,EditGoalModal,GoalDetailView,GoalFormFields,
+  GoalListView,GoalProjectsSection,LinkGoalModal,QuickCreateProjectModal,SupportGoalsSection}`.
+  These adapters already render the kit's underlying primitives (`Modal` -> `dialog.tsx`,
+  `ConfirmDialog` -> `alert-dialog.tsx` with a loading spinner/error banner not modelled by the
+  kit file, `StyledSelect` -> `select.tsx`/`searchable-select.tsx`, `DatePicker` ->
+  `date-picker.tsx`, `ResponsiveTable` -> `table.tsx`, `Toast` -> `sonner.tsx`) per
+  `components/ui/ADAPTERS.md`, so the visible kit look is already there; only the import path
+  differs. The goals module alone has ~12 files using these across dozens of call sites with
+  per-call-site prop differences (richer `StyledSelectOption`/`DatePicker` props the kit file
+  does not natively take), so a safe mechanical migration needs a dedicated pass per adapter
+  rather than a rushed blanket swap under this session's time budget. `ConfirmDialog`'s
+  delete-goal/delete-course confirmations specifically rely on its loading+error UI, which
+  `alert-dialog.tsx` does not provide out of the box.
+- `app/goals/scorecard/page.tsx`, `app/goals/strategy-map/page.tsx` (ReactFlow canvas, D6: tokens
+  only) were covered by the mechanical token pass but not given a `PageHeader`/breadcrumb pass.
+- `app/learning/page.tsx`, `app/learning/my/page.tsx`, `app/learning/progress/page.tsx`,
+  `app/communication/page.tsx`, `communication/announcements/page.tsx`,
+  `communication/bulletin/page.tsx`, `communication/knowledge/page.tsx`,
+  `communication/messages/page.tsx` (list-style landing pages) were covered by the mechanical pass
+  but not converted to the full section 11.1 list-page `PageHeader`/toolbar template. None have a
+  back-arrow or `fixed inset-0` violation; what remains is moving their title/primary-action row
+  into `PageHeader`.
+- Status colour exceptions: did not run a full section 2.4 "one status to one colour map" audit
+  across this module's own status chips (announcement priority, policy status, bulletin
+  interaction mode) against `badge.tsx`'s `Badge`/`STATUS_ICON` - several are still local
+  `Record<string,string>` colour maps rather than `Badge`.
+- `components/goals/StrategyMapCanvas.tsx` keeps its dynamic `rgba()` helper over user-chosen
+  node colours - data, per D7, not touched.
+- `app/communication/messages/page.tsx`'s employee picker inside the "New conversation" `Dialog`
+  keeps its own `max-h-48 overflow-y-auto` list, nested inside the Dialog's own scrolling body -
+  a minor section 1.8 same-axis-scroll exception on a small, already-bounded list; not
+  re-architected.
+
+### Visual changes the owner will notice
+
+- Goals/learning/communication detail and form pages lost their "<- Back to X" link at the top;
+  there is now a breadcrumb trail above the title instead (same destination, one click either way).
+- The dark `LearningAdminSidebar`/`CommunicationSidebar` now share the exact same sidebar chrome
+  (colours, spacing, collapse animation, tooltip-on-collapse) as the Work/Governance/Settings
+  module sidebars, instead of their own slightly different dark palette.
+- Goals list/detail/dashboard/my-check-ins page titles, meta lines and primary actions now sit in
+  the kit's `PageHeader` layout (consistent spacing/type scale with every other migrated module).
+- "No goals yet"/"No goals match your filters"/"Nothing owed" empty states now render the kit's
+  fixed icon+heading+action layout for their variant, rather than the module's own icon choice and
+  copy layout (wording kept close to the original).
+
+### Self-check results (this module's folders)
+
+- hex/rgba outside globals.css: 7 hits, all in `components/goals/StrategyMapCanvas.tsx`'s dynamic
+  `rgba()` over user-chosen data colours (D7, documented above) - no literal hex/rgba left
+  anywhere else.
+- font-(semibold|bold|extrabold|black): none.
+- native confirm()/alert()/prompt(): none.
+- native `<select`: none.
+- off-scale spacing (5/7/9/10/11/14/16/20): none.
+- fixed inset-0: 2 hits (MaterialPreviewModal, CourseViewer - documented D12 exceptions above).
+- toLocale(Date|Time)?String: none.
+- adapter imports (Modal|ConfirmDialog|StyledSelect|DatePicker|ResponsiveTable|Toast): 19 files,
+  see "Not done / follow-up" above.
+- npx tsc --noEmit, filtered to this module's folders: clean throughout.
+
+### Commits
+
+`ec795c0` (tokens/weights/spacing/colours/dates/sidebars/native-selects), further commits for
+PageHeader/EmptyState/Dialog work on goals, 3 overlay-to-Dialog conversions (`b3a0f9b` - this
+commit also picked up a concurrent commit from the Governance module agent due to a
+shared-worktree race, see that agent's note above), MaterialRow's Dialog conversion, and
+communication's back-arrow-to-breadcrumb pass (`5794728`). `npx tsc --noEmit` filtered to this
+module's folders was clean at every commit.
+
 ## Entry, admin, and org visuals
 
 ### Kept for owner decision
