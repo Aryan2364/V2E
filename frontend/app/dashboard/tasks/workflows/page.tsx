@@ -174,7 +174,7 @@ function WorkflowsList() {
               placeholder="Search workflows"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-8 py-2 min-h-[44px] sm:min-h-[38px] text-card-heading sm:text-body border border-border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full pl-8 pr-8 py-2 min-h-[44px] sm:min-h-[38px] text-card-heading sm:text-body border border-border rounded-[8px] bg-surface text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {search && (
               <button
@@ -187,7 +187,7 @@ function WorkflowsList() {
               </button>
             )}
           </div>
-          <div role="tablist" aria-label="Show" className="inline-flex items-center rounded-[8px] border border-border bg-white p-0.5">
+          <div role="tablist" aria-label="Show" className="inline-flex items-center rounded-[8px] border border-border bg-surface p-0.5">
             {SHOWS.map((s) => {
               const active = show === s.value
               return (
@@ -198,7 +198,7 @@ function WorkflowsList() {
                   type="button"
                   onClick={() => setShow(s.value)}
                   className={`px-3 min-h-[40px] sm:min-h-[32px] rounded-[6px] text-label font-medium transition-colors ${
-                    active ? 'bg-text-primary text-white' : 'text-text-secondary hover:text-text-primary'
+                    active ? 'bg-text-primary text-primary-foreground' : 'text-text-secondary hover:text-text-primary'
                   }`}
                 >
                   {s.label}
@@ -220,14 +220,14 @@ function WorkflowsList() {
                   onClick={() => setFilter(f.value)}
                   className={[
                     'inline-flex items-center gap-2 px-3 min-h-[44px] sm:min-h-[36px] rounded-[8px] text-label font-medium transition-colors',
-                    active ? 'bg-primary text-white' : 'bg-white text-text-secondary border border-border hover:border-primary hover:text-primary-text',
+                    active ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary border border-border hover:border-primary hover:text-primary-text',
                   ].join(' ')}
                 >
                   {f.label}
                   {status === 'ready' && (
                     <span
                       className={`min-w-[20px] h-5 px-1.5 rounded-full text-meta font-medium flex items-center justify-center ${
-                        active ? 'bg-white text-primary-text' : 'bg-primary text-white'
+                        active ? 'bg-surface text-primary-text' : 'bg-primary text-primary-foreground'
                       }`}
                     >
                       {n > 99 ? '99+' : n}
@@ -250,7 +250,7 @@ function WorkflowsList() {
             instances={workingShown}
             loading={workingStatus !== 'ready'}
             emptyState={
-              <div className="bg-white border border-border-light rounded-[12px]">
+              <div className="bg-surface border border-border-light rounded-[12px]">
                 <EmptyState icon={UserCheck} title="Nothing to work on" text="Instances where you have a step appear here." />
               </div>
             }

@@ -268,7 +268,7 @@ export default function TimingCalendar({
           <span
             className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-label tabular-nums ${
               isSel
-                ? 'bg-primary text-white font-medium'
+                ? 'bg-primary text-primary-foreground font-medium'
                 : grey
                   ? 'text-text-muted line-through decoration-text-muted'
                   : 'text-text-primary font-medium'
@@ -297,7 +297,7 @@ export default function TimingCalendar({
 
   return (
     <div className="flex flex-col gap-2 min-w-0">
-      <div className="rounded-[10px] border border-border-light bg-white p-1.5 sm:p-2">
+      <div className="rounded-[10px] border border-border-light bg-surface p-1.5 sm:p-2">
         {/* Header: ◀ Month 2 · Dec ▶ */}
         <div className="flex items-center justify-between gap-1 mb-1">
           <button type="button" aria-label={`Previous ${noun}`} onClick={() => go(-1)} disabled={page <= minPage} className={navBtn}>
@@ -344,8 +344,8 @@ export default function TimingCalendar({
               onClick={() => lastDay.onPick(cycleOfPage(page))}
               className={`min-h-[44px] sm:min-h-[36px] px-3 rounded-[8px] border text-label font-medium transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-text-muted disabled:border-border-light ${
                 lastDay.selected && selected !== null && pageOf(selected) === page
-                  ? 'bg-primary border-primary text-white'
-                  : 'bg-white border-border text-text-secondary hover:border-primary hover:text-primary-text'
+                  ? 'bg-primary border-primary text-primary-foreground'
+                  : 'bg-surface border-border text-text-secondary hover:border-primary hover:text-primary-text'
               }`}
             >
               Last day of {MONTHS_SHORT[page % 12]}

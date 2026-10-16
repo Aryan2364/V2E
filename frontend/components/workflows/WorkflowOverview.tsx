@@ -399,7 +399,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
         }
         headerExtra={
           steps.length > 0 ? (
-            <div role="tablist" aria-label="Show steps as" className="inline-flex rounded-[8px] border border-border bg-white p-0.5">
+            <div role="tablist" aria-label="Show steps as" className="inline-flex rounded-[8px] border border-border bg-surface p-0.5">
               {(
                 [
                   ['flow', 'Flow', GitBranch],
@@ -461,7 +461,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
                       const meta = [also.length ? `Also waits for ${also.join(', ')}` : null, s.if_late === 'move_on' ? 'If late: continue' : 'If late: wait'].filter(Boolean).join(' · ')
                       return (
                         <li key={s.id} className="py-3 flex items-start gap-3">
-                          <span className="mt-0.5 min-w-[26px] h-[26px] px-1 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center shrink-0">
+                          <span className="mt-0.5 min-w-[26px] h-[26px] px-1 rounded-full bg-primary text-primary-foreground text-meta font-medium flex items-center justify-center shrink-0">
                             {layout.labels.get(s.id)}
                           </span>
                           <div className="min-w-0 flex-1">
@@ -534,14 +534,14 @@ export default function WorkflowOverview({ id }: { id: string }) {
                 type="button"
                 onClick={() => setFilter(f.value)}
                 className={`inline-flex items-center gap-2 px-3 min-h-[44px] sm:min-h-[36px] rounded-[8px] text-label font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
-                  active ? 'bg-primary text-white' : 'bg-white text-text-secondary border border-border hover:border-primary hover:text-primary-text'
+                  active ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary border border-border hover:border-primary hover:text-primary-text'
                 }`}
               >
                 {f.label}
                 {runsStatus === 'ready' && (
                   <span
                     className={`min-w-[20px] h-5 px-1.5 rounded-full text-meta font-medium flex items-center justify-center ${
-                      active ? 'bg-white text-primary-text' : 'bg-primary text-white'
+                      active ? 'bg-surface text-primary-text' : 'bg-primary text-primary-foreground'
                     }`}
                   >
                     {n > 99 ? '99+' : n}
@@ -559,7 +559,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
             instances={shownRuns}
             loading={runsStatus === 'loading'}
             emptyState={
-              <div className="bg-white border border-border-light rounded-[12px]">
+              <div className="bg-surface border border-border-light rounded-[12px]">
                 {filter !== 'all' && runs.length > 0 ? (
                   <EmptyState
                     icon={History}
@@ -704,7 +704,7 @@ function MyInstancesView({
             instances={runs}
             loading={runsStatus === 'loading'}
             emptyState={
-              <div className="bg-white border border-border-light rounded-[12px]">
+              <div className="bg-surface border border-border-light rounded-[12px]">
                 <EmptyState icon={History} title="No instances yet" text="Instances you work in appear here." />
               </div>
             }

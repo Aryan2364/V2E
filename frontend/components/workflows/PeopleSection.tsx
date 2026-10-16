@@ -42,7 +42,7 @@ export function CreatorChip({ person }: { person: PersonRef }) {
         aria-label={`${person.name}, creator. ${CREATOR_TIP}.`}
         className="inline-flex items-center gap-1.5 bg-primary-subtle border border-primary-border rounded-[8px] pl-1.5 pr-2 py-1 max-w-[220px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
       >
-        <span aria-hidden className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-meta font-medium shrink-0">
+        <span aria-hidden className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0">
           {initials(person.name)}
         </span>
         <span className="text-meta font-medium text-text-primary truncate">{person.name}</span>

@@ -58,7 +58,7 @@ export default function RatingWidget({ onSubmit, submitting, existingRating, exi
         type="button"
         onClick={() => rating > 0 && onSubmit(rating, comment)}
         disabled={rating === 0 || submitting}
-        className="self-start flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+        className="self-start flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
       >
         {submitting ? 'Submitting...' : 'Submit Rating'}
       </button>

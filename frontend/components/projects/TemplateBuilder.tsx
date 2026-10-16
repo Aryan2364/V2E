@@ -86,7 +86,7 @@ export default function TemplateBuilder({
     onDirectTasksChange(directTasks.filter((t) => t.id !== id))
   }
 
-  const inputCls = 'w-full h-9 px-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden'
+  const inputCls = 'w-full h-9 px-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden'
   const labelCls = 'block text-meta font-medium text-text-secondary mb-1'
 
   function TaskRow({ task, onChange, onRemove }: { task: TemplateTask; onChange: (p: Partial<TemplateTask>) => void; onRemove: () => void }) {
@@ -113,7 +113,7 @@ export default function TemplateBuilder({
         </div>
         <div>
           <label className={labelCls}>Description</label>
-          <textarea value={description} onChange={(e) => onDescChange(e.target.value)} placeholder="Brief description..." rows={2} className="w-full px-3 py-2 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden resize-none" />
+          <textarea value={description} onChange={(e) => onDescChange(e.target.value)} placeholder="Brief description..." rows={2} className="w-full px-3 py-2 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden resize-none" />
         </div>
       </div>
 

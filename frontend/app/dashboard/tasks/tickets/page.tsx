@@ -10,6 +10,9 @@ import TicketCard from '@/components/tickets/TicketCard'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { usePermissions } from '@/lib/auth/use-permissions'
+import PageHeader from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { TextLink } from '@/components/ui/text-link'
 
 export default function TicketsPage() {
   const { user } = useAuth()
@@ -76,7 +79,7 @@ export default function TicketsPage() {
   if (!permsLoading && !can('tickets.ticket.manage', 'read')) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-page-title font-medium text-text-primary">Tickets</h1>
+        <PageHeader title="Tickets" />
         <AccessHiddenState orgId={orgId} leaf="tickets.ticket.manage" moduleLabel="Tickets" />
       </div>
     )
@@ -84,20 +87,15 @@ export default function TicketsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-page-title font-medium text-text-primary">Tickets</h1>
-          <p className="text-body text-text-secondary mt-0.5">Track and manage support requests</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => router.push('/dashboard/tasks/tickets/new')}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
-        >
-          <Plus size={15} /> Raise Ticket
-        </button>
-      </div>
+      <PageHeader
+        title="Tickets"
+        meta="Track and manage support requests"
+        actions={
+          <Button onClick={() => router.push('/dashboard/tasks/tickets/new')}>
+            <Plus size={15} /> Raise ticket
+          </Button>
+        }
+      />
 
       {/* Stats */}
       {stats && (
@@ -173,13 +171,12 @@ export default function TicketsPage() {
           ]}
         />
         {hasFilters && (
-          <button
-            type="button"
+          <TextLink
+            render={<button type="button" />}
             onClick={() => { setFilterType(''); setFilterCategory(''); setFilterPriority(''); setFilterStatus(''); setFilterSla('') }}
-            className="text-body text-primary-text hover:underline"
           >
             Clear
-          </button>
+          </TextLink>
         )}
       </div>
 

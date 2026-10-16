@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth/context'
 import { ticketsApi } from '@/lib/api/tickets'
 import type { Ticket } from '@/lib/types/tickets'
 import TicketCard from '@/components/tickets/TicketCard'
+import PageHeader from '@/components/shell/page-header'
 
 export default function MyTicketsPage() {
   const { user } = useAuth()
@@ -37,10 +38,7 @@ export default function MyTicketsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-page-title font-medium text-text-primary">My Tickets</h1>
-        <p className="text-body text-text-secondary mt-0.5">Tickets raised by you</p>
-      </div>
+      <PageHeader title="My tickets" meta="Tickets raised by you" />
 
       {pendingConfirmation.length > 0 && (
         <div className="flex items-center gap-3 p-3 bg-primary-subtle border border-primary-border rounded-[10px]">

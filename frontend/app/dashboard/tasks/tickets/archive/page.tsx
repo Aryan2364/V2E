@@ -8,6 +8,8 @@ import type { TicketArchiveEntry, Ticket } from '@/lib/types/tickets'
 import TicketStatusBadge from '@/components/tickets/TicketStatusBadge'
 import TicketTypeBadge from '@/components/tickets/TicketTypeBadge'
 import { formatDate as formatDateToken } from '@/lib/format'
+import PageHeader from '@/components/shell/page-header'
+import { Badge } from '@/components/ui/badge'
 
 function formatDate(iso: string) {
   return formatDateToken(iso)
@@ -74,7 +76,7 @@ function SnapshotViewer({ ticket }: { ticket: Ticket }) {
             {ticket.checklist.map((item) => (
               <div key={item.id} className="flex items-center gap-2">
                 <div className={`w-3.5 h-3.5 rounded-xs border shrink-0 flex items-center justify-center ${item.is_completed ? 'bg-success border-success' : 'border-border'}`}>
-                  {item.is_completed && <span className="text-white text-meta font-medium">✓</span>}
+                  {item.is_completed && <span className="text-primary-foreground text-meta font-medium">✓</span>}
                 </div>
                 <span className={`text-meta ${item.is_completed ? 'line-through text-text-muted' : 'text-text-secondary'}`}>{item.title}</span>
               </div>
@@ -156,16 +158,15 @@ export default function TicketArchivePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-page-title font-medium text-text-primary">Ticket Archive</h1>
-          <p className="text-body text-text-secondary mt-0.5">Read-only snapshots of deleted tickets</p>
-        </div>
-        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-meta font-medium text-text-secondary bg-surface-control border border-border-light">
-          <Archive size={13} />
-          {entries.length} archived
-        </span>
-      </div>
+      <PageHeader
+        title="Ticket archive"
+        meta="Read-only snapshots of deleted tickets"
+        actions={
+          <Badge variant="neutral">
+            <Archive size={13} /> {entries.length} archived
+          </Badge>
+        }
+      />
 
       <input
         type="text"

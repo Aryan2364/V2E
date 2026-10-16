@@ -205,8 +205,8 @@ export function useUnsavedChangesGuard(
                     'min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-body font-medium rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60',
                     // With a save on offer, leaving is the second choice: outlined danger.
                     canSave
-                      ? 'bg-white text-danger border border-danger-border hover:bg-danger-bg'
-                      : 'bg-danger text-white hover:bg-danger-hover',
+                      ? 'bg-surface text-danger border border-danger-border hover:bg-danger-bg'
+                      : 'bg-danger text-on-danger hover:bg-danger-hover',
                   ].join(' ')}
                 >
                   {words === 'create' && !canSave ? 'Leave' : 'Leave without saving'}
@@ -218,7 +218,7 @@ export function useUnsavedChangesGuard(
                     autoFocus
                     onClick={saveAndLeave}
                     disabled={savingToLeave}
-                    className="inline-flex items-center justify-center gap-2 min-h-[44px] sm:min-h-[40px] px-6 whitespace-nowrap text-body font-medium text-white bg-primary hover:bg-primary-hover rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-primary-border"
+                    className="inline-flex items-center justify-center gap-2 min-h-[44px] sm:min-h-[40px] px-6 whitespace-nowrap text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-primary-border"
                   >
                     {savingToLeave && <Loader2 size={15} className="animate-spin" />}
                     {save.label}

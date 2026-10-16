@@ -186,7 +186,7 @@ export default function ProjectDetailPage() {
             <button
               type="button"
               onClick={() => openAddTask()}
-              className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-body font-medium rounded-[8px] transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-primary-foreground text-body font-medium rounded-[8px] transition-colors"
             >
               <Plus size={15} />
               Add Task
@@ -421,7 +421,7 @@ export default function ProjectDetailPage() {
                 value={docName}
                 onChange={(e) => setDocName(e.target.value)}
                 placeholder="Document name"
-                className="w-full h-9 px-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden"
+                className="w-full h-9 px-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden"
               />
               <div className="relative">
                 <Link2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
@@ -429,7 +429,7 @@ export default function ProjectDetailPage() {
                   value={docUrl}
                   onChange={(e) => setDocUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full h-9 pl-8 pr-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden"
+                  className="w-full h-9 pl-8 pr-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden"
                 />
               </div>
               <div className="flex gap-2 justify-end">
@@ -444,7 +444,7 @@ export default function ProjectDetailPage() {
                   type="button"
                   disabled={docSaving || !docName.trim() || !docUrl.trim()}
                   onClick={handleAddDoc}
-                  className="h-8 px-3 text-meta font-medium bg-primary text-white rounded-[6px] hover:bg-primary-hover disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                  className="h-8 px-3 text-meta font-medium bg-primary text-primary-foreground rounded-[6px] hover:bg-primary-hover disabled:opacity-50 transition-colors flex items-center gap-1.5"
                 >
                   {docSaving && <Loader2 size={12} className="animate-spin" />}
                   Save

@@ -135,7 +135,7 @@ export default function RunHistory({
                     )}
                     <p className="text-meta text-text-secondary">
                       {stepLabel && (
-                        <span className="inline-flex items-center mr-1.5 rounded-full border border-border bg-white px-1.5 text-meta font-medium text-text-secondary">
+                        <span className="inline-flex items-center mr-1.5 rounded-full border border-border bg-surface px-1.5 text-meta font-medium text-text-secondary">
                           Step {stepLabel}
                         </span>
                       )}

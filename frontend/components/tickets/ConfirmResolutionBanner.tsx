@@ -23,7 +23,7 @@ export default function ConfirmResolutionBanner({ ticketNumber, onConfirm, onClo
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-body font-medium text-white bg-success hover:bg-success disabled:opacity-60 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-body font-medium text-primary-foreground bg-success hover:bg-success disabled:opacity-60 transition-colors"
           >
             <CheckCircle2 size={14} /> Confirm Resolved
           </button>
@@ -31,7 +31,7 @@ export default function ConfirmResolutionBanner({ ticketNumber, onConfirm, onClo
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-body font-medium text-danger bg-white border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-body font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
           >
             <XCircle size={14} /> Not Resolved
           </button>

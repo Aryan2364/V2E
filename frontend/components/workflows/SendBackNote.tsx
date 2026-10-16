@@ -19,7 +19,7 @@ export function ReasonQuote({ reason, collapsible = false, className = '' }: { r
     <div className={`flex flex-col items-start gap-1 min-w-0 ${className}`}>
       <blockquote
         id={id}
-        className="w-full min-w-0 border-l-[3px] border-border-light bg-white/70 rounded-r-[6px] pl-3 pr-2 py-1.5 text-body leading-relaxed text-text-secondary whitespace-pre-wrap wrap-break-word wrap-anywhere"
+        className="w-full min-w-0 border-l-[3px] border-border-light bg-surface/70 rounded-r-[6px] pl-3 pr-2 py-1.5 text-body leading-relaxed text-text-secondary whitespace-pre-wrap wrap-break-word wrap-anywhere"
       >
         “{long && !open ? shortReason(reason) : reason}”
       </blockquote>

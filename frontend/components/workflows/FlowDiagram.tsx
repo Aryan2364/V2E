@@ -33,8 +33,8 @@ export interface FlowLane {
 
 // Each tone carries a border and a fill; text inside stays dark for contrast.
 const BOX: Record<FlowTone, string> = {
-  default: 'bg-white border-border',
-  done: 'bg-white border-success-border',
+  default: 'bg-surface border-border',
+  done: 'bg-surface border-success-border',
   current: 'bg-primary-subtle border-primary ring-2 ring-primary-border',
   attention: 'bg-danger-bg border-danger ring-2 ring-danger-border',
   waiting: 'bg-surface-control border-border-light ring-2 ring-border-light',
@@ -265,7 +265,7 @@ export default function FlowDiagram({
             >
               {n.alsoWaitsFor && n.alsoWaitsFor.length > 0 && (
                 <span className="flex mb-1.5">
-                  <span className="inline-flex items-center rounded-full border border-border bg-white px-2 py-0.5 text-meta font-medium text-text-secondary max-w-full truncate">
+                  <span className="inline-flex items-center rounded-full border border-border bg-surface px-2 py-0.5 text-meta font-medium text-text-secondary max-w-full truncate">
                     Also waits for {n.alsoWaitsFor.join(', ')}
                   </span>
                 </span>

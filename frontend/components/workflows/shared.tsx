@@ -252,10 +252,10 @@ const BTN_BASE =
   'inline-flex items-center justify-center gap-2 rounded-[8px] text-body font-medium transition-colors duration-150 min-h-[44px] sm:min-h-[38px] px-4 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed whitespace-nowrap'
 
 export const BTN = {
-  primary: `${BTN_BASE} bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted`,
-  secondary: `${BTN_BASE} bg-white text-primary-text border-2 border-primary hover:bg-primary-subtle disabled:bg-surface-control disabled:text-text-muted disabled:border-border-light`,
-  danger: `${BTN_BASE} bg-danger text-white hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted`,
-  quiet: `${BTN_BASE} bg-white text-text-secondary border border-border hover:bg-surface-control disabled:bg-surface-control disabled:text-text-muted`,
+  primary: `${BTN_BASE} bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted`,
+  secondary: `${BTN_BASE} bg-surface text-primary-text border-2 border-primary hover:bg-primary-subtle disabled:bg-surface-control disabled:text-text-muted disabled:border-border-light`,
+  danger: `${BTN_BASE} bg-danger text-on-danger hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted`,
+  quiet: `${BTN_BASE} bg-surface text-text-secondary border border-border hover:bg-surface-control disabled:bg-surface-control disabled:text-text-muted`,
   icon: 'inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:text-text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed shrink-0',
 } as const
 
@@ -359,7 +359,7 @@ export function AddStepBar({
         type="button"
         onClick={onClick}
         disabled={allowed !== true}
-        className="w-full inline-flex items-center justify-center gap-2 min-h-[48px] rounded-[12px] border-2 border-dashed border-primary-border bg-white text-body font-medium text-primary-text hover:bg-primary-subtle hover:border-primary transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:border-border-light disabled:text-text-muted"
+        className="w-full inline-flex items-center justify-center gap-2 min-h-[48px] rounded-[12px] border-2 border-dashed border-primary-border bg-surface text-body font-medium text-primary-text hover:bg-primary-subtle hover:border-primary transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:border-border-light disabled:text-text-muted"
       >
         <Plus size={16} /> {children}
       </button>
@@ -455,7 +455,7 @@ export function Avatar({ name, size = 'sm' }: { name: string; size?: 'sm' | 'md'
   return (
     <span
       aria-hidden
-      className={`${dim} ${AVATAR_COLORS[h % AVATAR_COLORS.length]} rounded-full border-2 border-white text-white font-medium flex items-center justify-center shrink-0`}
+      className={`${dim} ${AVATAR_COLORS[h % AVATAR_COLORS.length]} rounded-full border-2 border-primary-foreground text-primary-foreground font-medium flex items-center justify-center shrink-0`}
     >
       {initials(name)}
     </span>

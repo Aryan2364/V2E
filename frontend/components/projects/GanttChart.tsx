@@ -143,7 +143,7 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
               onClick={() => setZoom(z)}
               className={[
                 'px-3 py-1 rounded-[6px] text-meta font-medium transition-colors capitalize',
-                zoom === z ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary',
+                zoom === z ? 'bg-surface text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary',
               ].join(' ')}
             >
               {z}

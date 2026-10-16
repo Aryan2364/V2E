@@ -114,7 +114,7 @@ export default function ActionMenu({ items, label = 'More actions' }: { items: A
             role="menu"
             onKeyDown={onMenuKey}
             style={{ top: pos.top, left: pos.left, width: MENU_W, transform: pos.up ? 'translateY(-100%)' : undefined }}
-            className="fixed z-(--z-popover) bg-white border border-border-light rounded-[12px] shadow-menu py-1.5"
+            className="fixed z-(--z-popover) bg-surface border border-border-light rounded-[12px] shadow-menu py-1.5"
           >
             {visible.map((item) => {
               const allowed = item.allowed === undefined && !('allowed' in item) ? true : item.allowed

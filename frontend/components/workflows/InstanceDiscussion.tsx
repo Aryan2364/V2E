@@ -441,7 +441,7 @@ export default function InstanceDiscussion({
         <h2 id={headingId} className={`flex items-center gap-1.5 ${compact ? 'text-body' : 'text-card-heading'} font-medium text-text-primary`}>
           {title}
           {total > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
               {total > 99 ? '99+' : total}
             </span>
           )}
@@ -555,7 +555,7 @@ export default function InstanceDiscussion({
           </div>
         )}
 
-        <div className="relative rounded-[12px] border border-border bg-white focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-colors">
+        <div className="relative rounded-[12px] border border-border bg-surface focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-colors">
           {/* @mention suggestions: people who can see this instance */}
           {mention && suggestions.length > 0 && (
             <ul
@@ -684,7 +684,7 @@ export default function InstanceDiscussion({
                   onClick={send}
                   disabled={!canSend}
                   aria-label="Send"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-[36px] px-3.5 rounded-[8px] text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-[36px] px-3.5 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                 >
                   {posting ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                   <span className="hidden sm:inline">{posting ? 'Sending…' : 'Send'}</span>
@@ -779,7 +779,7 @@ function Chip({
         type="button"
         onClick={onClear}
         aria-label={clearLabel}
-        className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/70 transition-colors"
+        className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center hover:bg-surface/70 transition-colors"
       >
         <X size={13} />
       </button>

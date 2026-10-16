@@ -59,7 +59,7 @@ const LABEL = 'block text-body font-medium text-text-secondary mb-2'
 const SUB = 'block text-label font-medium text-text-secondary mb-1.5'
 const NOTE = 'mt-1.5 flex flex-wrap items-center gap-1 text-label text-text-secondary'
 const INPUT =
-  'px-3 py-2.5 text-card-heading sm:text-body border border-border rounded-[8px] bg-white text-text-primary focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface-sunken disabled:text-text-secondary disabled:cursor-not-allowed'
+  'px-3 py-2.5 text-card-heading sm:text-body border border-border rounded-[8px] bg-surface text-text-primary focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface-sunken disabled:text-text-secondary disabled:cursor-not-allowed'
 
 // ─── Small fields ────────────────────────────────────────────────────────────
 

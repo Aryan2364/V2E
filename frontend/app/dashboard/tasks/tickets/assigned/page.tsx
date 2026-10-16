@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth/context'
 import { ticketsApi } from '@/lib/api/tickets'
 import type { Ticket } from '@/lib/types/tickets'
 import TicketCard from '@/components/tickets/TicketCard'
+import PageHeader from '@/components/shell/page-header'
 
 export default function AssignedTicketsPage() {
   const { user } = useAuth()
@@ -33,14 +34,16 @@ export default function AssignedTicketsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-page-title font-medium text-text-primary">Assigned to Me</h1>
-        <p className="text-body text-text-secondary mt-0.5">
-          {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} assigned
-          {needsAcceptance.length > 0 && ` · ${needsAcceptance.length} pending acceptance`}
-          {overdueSla.length > 0 && ` · ${overdueSla.length} SLA breached`}
-        </p>
-      </div>
+      <PageHeader
+        title="Assigned to me"
+        meta={
+          <>
+            {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} assigned
+            {needsAcceptance.length > 0 && ` · ${needsAcceptance.length} pending acceptance`}
+            {overdueSla.length > 0 && ` · ${overdueSla.length} SLA breached`}
+          </>
+        }
+      />
 
       {loading ? (
         <div className="flex flex-col gap-2">

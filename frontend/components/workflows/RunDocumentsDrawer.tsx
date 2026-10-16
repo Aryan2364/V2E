@@ -254,7 +254,7 @@ export default function RunDocumentsDrawer({
 
 function FileRow({ name, meta, tag, onDownload, onRemove }: { name: string; meta: string; tag?: string; onDownload?: () => void; onRemove?: () => void }) {
   return (
-    <li className="flex items-center gap-2 rounded-[8px] border border-border-light bg-white px-3 py-2">
+    <li className="flex items-center gap-2 rounded-[8px] border border-border-light bg-surface px-3 py-2">
       <FileText size={15} className="shrink-0 text-text-secondary" />
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2 min-w-0">

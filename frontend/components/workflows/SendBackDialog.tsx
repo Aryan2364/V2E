@@ -167,7 +167,7 @@ export default function SendBackDialog({
             }}
             onBlur={() => reason && setReasonError(reasonProblem(reason))}
             placeholder={targetTitle ? `What should change in “${targetTitle}”?` : 'What should change?'}
-            className={`w-full px-3 py-2.5 text-card-heading sm:text-body border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:ring-1 resize-y ${
+            className={`w-full px-3 py-2.5 text-card-heading sm:text-body border rounded-[8px] bg-surface text-text-primary placeholder:text-text-muted focus:outline-hidden focus:ring-1 resize-y ${
               reasonError ? 'border-danger focus:ring-danger' : 'border-border focus:border-primary focus:ring-primary'
             }`}
           />

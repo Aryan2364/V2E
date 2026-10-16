@@ -192,7 +192,7 @@ export default function ExampleRun({
                       aria-selected={i === idx}
                       onClick={() => setRunIndex(i)}
                       className={`min-h-[44px] sm:min-h-[34px] px-3 rounded-[8px] border text-label font-medium transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
-                        i === idx ? 'bg-primary border-primary text-white' : 'bg-white border-border text-text-secondary hover:border-primary hover:text-primary-text'
+                        i === idx ? 'bg-primary border-primary text-primary-foreground' : 'bg-surface border-border text-text-secondary hover:border-primary hover:text-primary-text'
                       }`}
                     >
                       {fmtDayDateTime(r.starts_at)}
@@ -216,7 +216,7 @@ export default function ExampleRun({
                         className="w-full flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 px-3 py-2.5 text-left hover:bg-surface-sunken focus:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                       >
                         <span className="flex items-center gap-2 min-w-0 sm:w-[40%]">
-                          <span className="min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center shrink-0">
+                          <span className="min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-primary-foreground text-meta font-medium flex items-center justify-center shrink-0">
                             {n ?? '•'}
                           </span>
                           <span className="text-body font-medium text-text-primary truncate">{s.title || 'Untitled step'}</span>

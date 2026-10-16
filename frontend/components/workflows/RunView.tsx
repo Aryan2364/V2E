@@ -268,7 +268,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
               <div className="flex items-start gap-2 min-w-0">
                 <span
                   className={`mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full text-meta font-medium flex items-center justify-center shrink-0 ${
-                    r.status === 'completed' ? 'bg-success text-white' : r.status === 'pending' ? 'bg-surface-control-pressed text-text-secondary' : 'bg-primary text-white'
+                    r.status === 'completed' ? 'bg-success text-primary-foreground' : r.status === 'pending' ? 'bg-surface-control-pressed text-text-secondary' : 'bg-primary text-primary-foreground'
                   }`}
                 >
                   {n}
@@ -442,7 +442,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
     <button type="button" onClick={() => setDocsOpen(true)} className={BTN.secondary}>
       <FolderOpen size={16} /> Documents
       {docCount !== null && docCount > 0 && (
-        <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center">
+        <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium flex items-center justify-center">
           {docCount > 99 ? '99+' : docCount}
         </span>
       )}
@@ -557,7 +557,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
               </div>
               <div className="flex items-center gap-3 flex-wrap text-meta text-text-secondary" aria-hidden>
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-[4px] border border-success-border bg-white" /> Done
+                  <span className="w-3 h-3 rounded-[4px] border border-success-border bg-surface" /> Done
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-[4px] border-2 border-primary bg-primary-subtle" /> In progress

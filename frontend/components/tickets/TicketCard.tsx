@@ -70,7 +70,7 @@ export default function TicketCard({ ticket, onClick }: Props) {
       <div className="shrink-0 hidden md:flex items-center gap-1.5">
         {ticket.assigned_to_user_id ? (
           <div
-            className={`w-6 h-6 rounded-full ${avatarColor(ticket.assigned_to_user_id)} flex items-center justify-center text-white text-meta font-medium`}
+            className={`w-6 h-6 rounded-full ${avatarColor(ticket.assigned_to_user_id)} flex items-center justify-center text-primary-foreground text-meta font-medium`}
           >
             {getInitials(ticket.assigned_to_user_id.slice(0, 4))}
           </div>

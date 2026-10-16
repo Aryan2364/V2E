@@ -41,7 +41,7 @@ export interface StepPlanInput {
 }
 
 export const INPUT_CLS =
-  'w-full px-3 py-2.5 text-card-heading sm:text-body border border-border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface-sunken disabled:text-text-secondary disabled:cursor-not-allowed'
+  'w-full px-3 py-2.5 text-card-heading sm:text-body border border-border rounded-[8px] bg-surface text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface-sunken disabled:text-text-secondary disabled:cursor-not-allowed'
 export const LABEL_CLS = 'block text-body font-medium text-text-secondary mb-2'
 const SUB_LABEL = 'block text-label font-medium text-text-secondary mb-1.5'
 const HELP = 'text-label text-text-secondary'
@@ -176,7 +176,7 @@ function ChoiceCards<V extends string>({
           <div
             key={o.value}
             className={`relative flex items-center rounded-[10px] border transition-colors ${
-              on ? 'border-primary bg-primary-subtle' : 'border-border bg-white hover:bg-surface-sunken'
+              on ? 'border-primary bg-primary-subtle' : 'border-border bg-surface hover:bg-surface-sunken'
             }`}
           >
             <button
@@ -816,7 +816,7 @@ export default function StepCard(props: EditProps | CreateProps) {
           <SlidersHorizontal size={16} />
           More options
           {extrasSet > 0 && (
-            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center">
+            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium flex items-center justify-center">
               {extrasSet}
             </span>
           )}
@@ -924,7 +924,7 @@ export default function StepCard(props: EditProps | CreateProps) {
     <Reveal open appear={props.mode === 'create'}>
       <div
         ref={rootRef}
-        className={`bg-white border rounded-[12px] shadow-card scroll-mt-40 scroll-mb-24 ${
+        className={`bg-surface border rounded-[12px] shadow-card scroll-mt-40 scroll-mb-24 ${
           props.mode === 'create' ? 'border-primary-border ring-1 ring-primary-border' : issue ? 'border-danger-border ring-1 ring-danger-border' : 'border-border-light'
         }`}
       >
@@ -933,7 +933,7 @@ export default function StepCard(props: EditProps | CreateProps) {
           className={`flex items-center gap-3 px-3 sm:px-4 py-2.5 ${expanded ? 'border-b border-border-light' : ''} ${edit ? 'cursor-pointer' : ''}`}
           onClick={edit ? edit.onToggle : undefined}
         >
-          <span className="min-w-[28px] h-7 px-1.5 rounded-full text-meta font-medium flex items-center justify-center shrink-0 bg-primary text-white">
+          <span className="min-w-[28px] h-7 px-1.5 rounded-full text-meta font-medium flex items-center justify-center shrink-0 bg-primary text-primary-foreground">
             {props.mode === 'create' ? createBadge ?? label : label}
           </span>
           <div className="flex-1 min-w-0">

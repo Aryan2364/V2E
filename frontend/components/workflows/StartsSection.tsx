@@ -74,7 +74,7 @@ function StartChoice({
   return (
     <div
       className={`w-full flex items-center rounded-[10px] border transition-colors ${
-        invalid ? 'border-danger-border' : checked ? 'border-primary bg-primary-subtle' : 'border-border bg-white hover:bg-surface-sunken'
+        invalid ? 'border-danger-border' : checked ? 'border-primary bg-primary-subtle' : 'border-border bg-surface hover:bg-surface-sunken'
       }`}
     >
       <button
@@ -88,10 +88,10 @@ function StartChoice({
         <span
           aria-hidden
           className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center shrink-0 transition-colors ${
-            checked ? 'bg-primary border-primary' : 'bg-white border-border-strong'
+            checked ? 'bg-primary border-primary' : 'bg-surface border-border-strong'
           }`}
         >
-          {checked && <Check size={12} strokeWidth={3} className="text-white" />}
+          {checked && <Check size={12} strokeWidth={3} className="text-primary-foreground" />}
         </span>
         <span className={`flex items-center gap-1.5 text-body font-medium ${checked ? 'text-primary-text' : 'text-text-primary'}`}>
           <Icon size={15} aria-hidden /> {label}
@@ -226,7 +226,7 @@ export default function StartsSection({
     <section
       id="starts-section"
       aria-labelledby="starts-heading"
-      className={`bg-white border rounded-[12px] shadow-card p-4 sm:p-6 flex flex-col gap-4 scroll-mt-40 ${
+      className={`bg-surface border rounded-[12px] shadow-card p-4 sm:p-6 flex flex-col gap-4 scroll-mt-40 ${
         error ? 'border-danger-border ring-1 ring-danger-border' : 'border-border-light'
       }`}
     >

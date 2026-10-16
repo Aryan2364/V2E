@@ -28,7 +28,7 @@ export default function GanttBar({ label, startOffset, widthPercent, color, comp
           style={{ backgroundColor: color }}
         />
         {showTip && tooltip && (
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-text-primary text-white text-meta rounded-[6px] whitespace-nowrap z-20 pointer-events-none">
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-text-primary text-primary-foreground text-meta rounded-[6px] whitespace-nowrap z-20 pointer-events-none">
             {tooltip}
           </div>
         )}
@@ -51,11 +51,11 @@ export default function GanttBar({ label, startOffset, widthPercent, color, comp
       onMouseEnter={() => setShowTip(true)}
       onMouseLeave={() => setShowTip(false)}
     >
-      <span className="absolute inset-0 flex items-center px-1.5 text-meta font-medium text-white truncate">
+      <span className="absolute inset-0 flex items-center px-1.5 text-meta font-medium text-primary-foreground truncate">
         {label}
       </span>
       {showTip && tooltip && (
-        <div className="absolute bottom-full left-0 mb-1 px-2 py-1 bg-text-primary text-white text-meta rounded-[6px] whitespace-nowrap z-20 pointer-events-none shadow-lg">
+        <div className="absolute bottom-full left-0 mb-1 px-2 py-1 bg-text-primary text-primary-foreground text-meta rounded-[6px] whitespace-nowrap z-20 pointer-events-none shadow-lg">
           {tooltip}
         </div>
       )}

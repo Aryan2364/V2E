@@ -1240,12 +1240,12 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
 
   const note =
     w && caps?.can_edit === false ? (
-      <div className="flex items-start gap-2.5 rounded-[10px] border border-border bg-white px-3.5 py-2.5 text-body text-text-secondary">
+      <div className="flex items-start gap-2.5 rounded-[10px] border border-border bg-surface px-3.5 py-2.5 text-body text-text-secondary">
         <Eye size={16} className="shrink-0 mt-0.5 text-text-secondary" />
         <span>View only. {REASONS.edit}</span>
       </div>
     ) : archived ? (
-      <div className="flex items-start gap-2.5 rounded-[10px] border border-border bg-white px-3.5 py-2.5 text-body text-text-secondary">
+      <div className="flex items-start gap-2.5 rounded-[10px] border border-border bg-surface px-3.5 py-2.5 text-body text-text-secondary">
         <Archive size={16} className="shrink-0 mt-0.5 text-text-secondary" />
         <span>This workflow is archived. Restore it to edit it again as a draft.</span>
       </div>
@@ -1376,7 +1376,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
     const header = multiTrack ? (
       <div
         className={`flex flex-col gap-1.5 rounded-[12px] border px-3.5 py-2.5 ${
-          issue ? 'border-danger-border bg-danger-bg' : 'border-border-light bg-white'
+          issue ? 'border-danger-border bg-danger-bg' : 'border-border-light bg-surface'
         }`}
       >
         <div className="flex items-center gap-2 min-w-0">
@@ -1686,7 +1686,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         )}
 
         {steps.length === 0 && !adding && (
-          <div id="steps-empty" className="bg-white border border-dashed border-border rounded-[12px]">
+          <div id="steps-empty" className="bg-surface border border-dashed border-border rounded-[12px]">
             <EmptyState
               icon={ListChecks}
               title="No steps yet"

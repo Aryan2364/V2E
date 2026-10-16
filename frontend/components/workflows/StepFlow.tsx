@@ -95,7 +95,7 @@ export default function StepFlow({
           content: (
             <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-start gap-2 min-w-0">
-                <span className="mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center shrink-0">
+                <span className="mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-primary-foreground text-meta font-medium flex items-center justify-center shrink-0">
                   {n}
                 </span>
                 <span className="text-body font-medium text-text-primary leading-snug line-clamp-2 wrap-break-word">{s.title || 'Untitled step'}</span>

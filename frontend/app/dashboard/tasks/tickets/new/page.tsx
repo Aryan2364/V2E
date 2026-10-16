@@ -114,7 +114,7 @@ export default function NewTicketPage() {
     }
   }
 
-  const inputCls = 'w-full px-3 py-2.5 border border-border rounded-[8px] text-body text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden bg-white'
+  const inputCls = 'w-full px-3 py-2.5 border border-border rounded-[8px] text-body text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden bg-surface'
 
   if (loading) {
     return (
@@ -168,7 +168,7 @@ export default function NewTicketPage() {
             <div key={group.label} className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">{group.label}</p>
-                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
+                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
                   {group.items.length}
                 </span>
               </div>
@@ -305,7 +305,7 @@ export default function NewTicketPage() {
 
           <div className="flex justify-end pt-2">
             <button type="button" onClick={handleSubmit} disabled={submitting}
-              className="flex items-center gap-1.5 px-6 py-2.5 rounded-[8px] text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+              className="flex items-center gap-1.5 px-6 py-2.5 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
               {submitting ? 'Raising...' : 'Raise Ticket'}
             </button>
           </div>

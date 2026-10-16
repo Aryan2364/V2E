@@ -76,7 +76,7 @@ export default function Sheet({
 
   return createPortal(
     <div className="fixed inset-0 z-(--z-dialog)" role="dialog" aria-modal="true" aria-labelledby={labelId}>
-      <div className={`absolute inset-0 bg-black/40 transition-opacity duration-200 ${shown ? 'opacity-100' : 'opacity-0'}`} onClick={onClose} aria-hidden />
+      <div className={`absolute inset-0 bg-backdrop transition-opacity duration-200 ${shown ? 'opacity-100' : 'opacity-0'}`} onClick={onClose} aria-hidden />
       <div
         ref={panelRef}
         tabIndex={-1}
