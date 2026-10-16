@@ -28,6 +28,12 @@ import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -230,7 +236,7 @@ function CommentItem({
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="mt-0.5 text-meta font-medium text-primary-text hover:text-primary-text transition-colors"
+            className="mt-0.5 text-meta font-medium text-primary-text hover:text-primary-text outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
           >
             {expanded ? 'Show less' : 'Read more'}
           </button>
@@ -351,8 +357,6 @@ export default function TaskDetailPage() {
   const [config, setConfig] = useState<TaskMasterConfig | null>(null)
   const [showActivity, setShowActivity] = useState(false)
   // Overflow (kebab) menu that holds the destructive Delete action.
-  const [showActionsMenu, setShowActionsMenu] = useState(false)
-  const actionsMenuRef = useRef<HTMLDivElement>(null)
   const [commentText, setCommentText] = useState('')
   const [commentFiles, setCommentFiles] = useState<File[]>([])
   const [sendingComment, setSendingComment] = useState(false)
@@ -437,18 +441,6 @@ export default function TaskDetailPage() {
     el.style.height = `${Math.min(el.scrollHeight, 120)}px` // cap ≈ 4 lines, then scroll
   }, [commentText])
 
-  // Close the kebab menu on outside click / Escape. The menu is absolutely anchored
-  // to its button (not a fixed portal), so it never drifts.
-  useEffect(() => {
-    if (!showActionsMenu) return
-    function onDoc(e: MouseEvent) {
-      if (actionsMenuRef.current && !actionsMenuRef.current.contains(e.target as Node)) setShowActionsMenu(false)
-    }
-    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') setShowActionsMenu(false) }
-    document.addEventListener('mousedown', onDoc)
-    document.addEventListener('keydown', onKey)
-    return () => { document.removeEventListener('mousedown', onDoc); document.removeEventListener('keydown', onKey) }
-  }, [showActionsMenu])
 
   // Shared status (any_can_complete) — one status for everyone; any assignee can move it.
   async function handleSharedStatusChange(newStatusId: string) {
@@ -834,12 +826,9 @@ export default function TaskDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <p className="font-medium text-text-primary">Task not found</p>
-        <button
-          onClick={() => router.back()}
-          className="mt-3 text-body text-primary-text hover:underline"
-        >
+        <Button variant="secondary" className="mt-3" onClick={() => router.back()}>
           Back to Tasks
-        </button>
+        </Button>
       </div>
     )
   }
@@ -905,13 +894,9 @@ export default function TaskDetailPage() {
         actions={
           canEdit ? (
             <Tooltip label="Edit task">
-              <button
-                onClick={() => setShowEditModal(true)}
-                aria-label="Edit task"
-                className="w-7 h-7 rounded-control flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors shrink-0"
-              >
+              <Button variant="ghost" size="icon-sm" aria-label="Edit task" onClick={() => setShowEditModal(true)}>
                 <Pencil size={16} />
-              </button>
+              </Button>
             </Tooltip>
           ) : undefined
         }
@@ -935,7 +920,7 @@ export default function TaskDetailPage() {
                     <button
                       onClick={handleComplete}
                       disabled={actionLoading === 'complete'}
-                      className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-primary-foreground bg-success rounded-control hover:bg-success disabled:opacity-60 transition-colors"
+                      className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-primary-foreground bg-success rounded-control hover:bg-success disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                     >
                       <CheckCircle2 size={15} />
                       {actionLoading === 'complete' ? 'Completing...' : 'Complete my part'}
@@ -948,7 +933,7 @@ export default function TaskDetailPage() {
                     <button
                       onClick={() => (pendingNames.length > 0 ? setConfirmCompleteAll(true) : handleCompleteWholeTask())}
                       disabled={actionLoading === 'complete'}
-                      className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-success border border-success-border bg-surface rounded-control hover:bg-success-bg disabled:opacity-60 transition-colors"
+                      className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-success border border-success-border bg-surface rounded-control hover:bg-success-bg disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                     >
                       <CheckCircle2 size={15} />
                       Complete task
@@ -963,7 +948,7 @@ export default function TaskDetailPage() {
                 <button
                   onClick={handleComplete}
                   disabled={actionLoading === 'complete'}
-                  className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-primary-foreground bg-success rounded-control hover:bg-success disabled:opacity-60 transition-colors"
+                  className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-primary-foreground bg-success rounded-control hover:bg-success disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                 >
                   <CheckCircle2 size={15} />
                   {actionLoading === 'complete' ? 'Completing...' : 'Complete'}
@@ -978,7 +963,7 @@ export default function TaskDetailPage() {
                 <button
                   onClick={() => handleReopen()}
                   disabled={actionLoading === 'reopen'}
-                  className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-warning border border-warning-border bg-warning-bg rounded-control hover:bg-warning-bg disabled:opacity-60 transition-colors"
+                  className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-warning border border-warning-border bg-warning-bg rounded-control hover:bg-warning-bg disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                 >
                   <RotateCcw size={15} />
                   {actionLoading === 'reopen' ? 'Undoing…' : `Undo (${formatCountdown(reopenSecondsLeft)})`}
@@ -989,7 +974,7 @@ export default function TaskDetailPage() {
               <button
                 onClick={() => setShowReopenModal(true)}
                 disabled={actionLoading === 'reopen'}
-                className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-warning border border-warning-border bg-warning-bg rounded-control hover:bg-warning-bg disabled:opacity-60 transition-colors"
+                className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-warning border border-warning-border bg-warning-bg rounded-control hover:bg-warning-bg disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
               >
                 <RotateCcw size={15} />
                 Reopen
@@ -1019,46 +1004,25 @@ export default function TaskDetailPage() {
           </div>
           {/* Overflow menu — holds the Activity log and the (destructive) Delete
               action, so neither gets a prominent primary button. */}
-          <div ref={actionsMenuRef} className="relative">
-            <Tooltip label="More">
-              <button
-                onClick={() => setShowActionsMenu((v) => !v)}
-                aria-label="More actions"
-                aria-haspopup="menu"
-                aria-expanded={showActionsMenu}
-                className="w-9 h-9 rounded-control flex items-center justify-center text-text-secondary border border-border bg-surface hover:bg-surface-sunken hover:text-text-primary transition-colors"
-              >
-                <MoreVertical size={16} />
-              </button>
-            </Tooltip>
-            {showActionsMenu && (
-              <div
-                role="menu"
-                className="absolute right-0 top-full mt-1 z-50 w-44 rounded-control border border-border-light bg-surface shadow-dialog py-1"
-              >
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => { setShowActionsMenu(false); setShowActivity(true) }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-body text-text-primary hover:bg-surface-sunken transition-colors"
-                >
-                  <History size={14} className="text-text-secondary" />
-                  Activity log
-                </button>
-                {canDelete && !showDeleteConfirm && (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => { setShowActionsMenu(false); setShowDeleteConfirm(true) }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-left text-body text-danger hover:bg-danger-bg transition-colors"
-                  >
-                    <Trash2 size={14} />
-                    Delete task
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<Button variant="secondary" size="icon" aria-label="More actions" />}
+            >
+              <MoreVertical size={16} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setShowActivity(true)}>
+                <History size={14} />
+                Activity log
+              </DropdownMenuItem>
+              {canDelete && !showDeleteConfirm && (
+                <DropdownMenuItem variant="danger" onClick={() => setShowDeleteConfirm(true)}>
+                  <Trash2 size={14} />
+                  Delete task
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -1111,13 +1075,13 @@ export default function TaskDetailPage() {
             <button
               onClick={() => handleReopen(reopenReason)}
               disabled={actionLoading === 'reopen' || !reopenReason.trim()}
-              className="px-4 py-2 text-body font-medium text-primary-foreground bg-warning rounded-control hover:bg-warning disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-body font-medium text-primary-foreground bg-warning rounded-control hover:bg-warning disabled:opacity-60 disabled:cursor-not-allowed outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
             >
               {actionLoading === 'reopen' ? 'Reopening...' : 'Confirm Reopen'}
             </button>
             <button
               onClick={() => { setShowReopenModal(false); setReopenReason('') }}
-              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors"
+              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
             >
               Cancel
             </button>
@@ -1142,13 +1106,13 @@ export default function TaskDetailPage() {
             <button
               onClick={handleCompleteWholeTask}
               disabled={actionLoading === 'complete'}
-              className="px-4 py-2 text-body font-medium text-primary-foreground bg-success rounded-control hover:bg-success disabled:opacity-60 transition-colors"
+              className="px-4 py-2 text-body font-medium text-primary-foreground bg-success rounded-control hover:bg-success disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
             >
               {actionLoading === 'complete' ? 'Completing...' : 'Complete for everyone'}
             </button>
             <button
               onClick={() => setConfirmCompleteAll(false)}
-              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors"
+              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
             >
               Cancel
             </button>
@@ -1185,7 +1149,7 @@ export default function TaskDetailPage() {
             <button
               onClick={incompleteTarget === 'my_part' ? handleFlagMyPart : handleMarkIncomplete}
               disabled={!incompleteReason.trim() || actionLoading === 'incomplete' || actionLoading === 'flag'}
-              className="px-4 py-2 text-body font-medium text-primary-foreground bg-danger rounded-control hover:bg-danger-hover disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-body font-medium text-primary-foreground bg-danger rounded-control hover:bg-danger-hover disabled:opacity-60 disabled:cursor-not-allowed outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
             >
               {actionLoading === 'incomplete' || actionLoading === 'flag'
                 ? 'Saving...'
@@ -1193,7 +1157,7 @@ export default function TaskDetailPage() {
             </button>
             <button
               onClick={() => { setIncompleteTarget(null); setIncompleteReason('') }}
-              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors"
+              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
             >
               Cancel
             </button>
@@ -1219,13 +1183,13 @@ export default function TaskDetailPage() {
             <button
               onClick={handleDelete}
               disabled={actionLoading === 'delete' || !deleteReason.trim()}
-              className="px-4 py-2 text-body font-medium text-primary-foreground bg-danger rounded-control hover:bg-danger-hover disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-body font-medium text-primary-foreground bg-danger rounded-control hover:bg-danger-hover disabled:opacity-60 disabled:cursor-not-allowed outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
             >
               {actionLoading === 'delete' ? 'Deleting...' : 'Confirm Delete'}
             </button>
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors"
+              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
             >
               Cancel
             </button>
@@ -1342,7 +1306,7 @@ export default function TaskDetailPage() {
                 {/* Comment composer — WhatsApp-style: a single write box that holds
                     the attach (pin) button, the text field, and — once files are
                     picked — their chips, so attachments feel part of the comment. */}
-                <div className="rounded-card border border-border bg-surface focus-within:border-2 focus-within:border-primary transition-colors">
+                <div className="rounded-card border border-border bg-surface focus-within:border-2 focus-within:border-primary outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors">
                   {/* Selected-file chips — live inside the write box */}
                   {commentFiles.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 px-3 pt-3">
@@ -1359,7 +1323,7 @@ export default function TaskDetailPage() {
                               type="button"
                               onClick={() => setCommentFiles((prev) => prev.filter((_, idx) => idx !== i))}
                               disabled={sendingComment}
-                              className="shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-primary-text hover:bg-primary-subtle hover:text-primary-text disabled:opacity-50 transition-colors"
+                              className="shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-primary-text hover:bg-primary-subtle hover:text-primary-text disabled:opacity-50 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                               aria-label={`Remove ${f.name}`}
                             >
                               <X size={11} />
@@ -1404,7 +1368,7 @@ export default function TaskDetailPage() {
                         type="button"
                         onClick={() => commentFileInputRef.current?.click()}
                         disabled={sendingComment || isFutureTask}
-                        className="shrink-0 w-8 h-8 rounded-control flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-primary-text disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+                        className="shrink-0 w-8 h-8 rounded-control flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-primary-text disabled:text-text-muted disabled:cursor-not-allowed outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                         aria-label="Attach files"
                       >
                         <Paperclip size={16} className="-rotate-45" />
@@ -1415,7 +1379,7 @@ export default function TaskDetailPage() {
                         onClick={handleSendComment}
                         disabled={sendingComment || isFutureTask || (!commentText.trim() && commentFiles.length === 0)}
                         aria-label="Send"
-                        className="shrink-0 w-8 h-8 rounded-control flex items-center justify-center text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+                        className="shrink-0 w-8 h-8 rounded-control flex items-center justify-center text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                       >
                         <Send size={15} />
                       </button>
@@ -1562,7 +1526,7 @@ export default function TaskDetailPage() {
                           <button
                             type="button"
                             onClick={() => { setIncompleteReason(''); setIncompleteTarget('task') }}
-                            className="mt-2 flex items-center gap-1.5 text-meta font-medium text-danger hover:text-danger transition-colors"
+                            className="mt-2 flex items-center gap-1.5 text-meta font-medium text-danger hover:text-danger outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                           >
                             <XCircle size={13} />
                             Mark whole task incomplete
@@ -1629,7 +1593,7 @@ export default function TaskDetailPage() {
                         <button
                           type="button"
                           onClick={() => { setIncompleteReason(''); setIncompleteTarget('task') }}
-                          className="mt-2 inline-flex items-center gap-1.5 text-meta font-medium text-danger hover:text-danger transition-colors"
+                          className="mt-2 inline-flex items-center gap-1.5 text-meta font-medium text-danger hover:text-danger outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                         >
                           <XCircle size={13} />
                           Mark task incomplete
@@ -1828,7 +1792,7 @@ export default function TaskDetailPage() {
                       onClick={() => attachInputRef.current?.click()}
                       disabled={uploadingAttachment}
                       aria-label="Add attachment"
-                      className="flex items-center gap-1 text-meta font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control pl-1.5 pr-2 py-1 disabled:opacity-60 transition-colors"
+                      className="flex items-center gap-1 text-meta font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control pl-1.5 pr-2 py-1 disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                     >
                       <Plus size={14} />
                       Add
@@ -1849,7 +1813,7 @@ export default function TaskDetailPage() {
                             type="button"
                             onClick={() => tasksApi.downloadAttachment(orgId, taskId, a.id)}
                             aria-label="Download"
-                            className="w-7 h-7 rounded-control bg-primary-subtle flex items-center justify-center shrink-0 hover:bg-primary-subtle transition-colors"
+                            className="w-7 h-7 rounded-control bg-primary-subtle flex items-center justify-center shrink-0 hover:bg-primary-subtle outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                           >
                             <Download size={13} className="text-primary-text" />
                           </button>
@@ -1859,7 +1823,7 @@ export default function TaskDetailPage() {
                             <button
                               type="button"
                               onClick={() => tasksApi.downloadAttachment(orgId, taskId, a.id)}
-                              className="block max-w-full text-left text-body font-medium text-text-primary hover:text-primary-text truncate transition-colors"
+                              className="block max-w-full text-left text-body font-medium text-text-primary hover:text-primary-text truncate outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                             >
                               {a.file_name}
                             </button>
@@ -1877,7 +1841,7 @@ export default function TaskDetailPage() {
                               type="button"
                               onClick={() => setAttachmentToDelete(a)}
                               aria-label="Remove"
-                              className="text-text-muted hover:text-danger shrink-0 transition-colors"
+                              className="text-text-muted hover:text-danger shrink-0 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                             >
                               <Trash2 size={14} />
                             </button>
@@ -1930,7 +1894,7 @@ export default function TaskDetailPage() {
                       setAssigneeError(null)
                       setEditingAssignees(true)
                     }}
-                    className="text-meta font-medium text-success hover:text-success transition-colors"
+                    className="text-meta font-medium text-success hover:text-success outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                   >
                     Edit
                   </button>
@@ -1940,7 +1904,7 @@ export default function TaskDetailPage() {
                       type="button"
                       onClick={handleSaveAssignees}
                       disabled={savingAssignees}
-                      className="text-meta font-medium text-primary-foreground bg-success px-2.5 py-1 rounded-control hover:bg-success disabled:opacity-60 transition-colors"
+                      className="text-meta font-medium text-primary-foreground bg-success px-2.5 py-1 rounded-control hover:bg-success disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                     >
                       {savingAssignees ? 'Saving…' : 'Save'}
                     </button>
@@ -2050,7 +2014,7 @@ export default function TaskDetailPage() {
                                       <Tooltip label={`Reopen ${name}'s part for rework`}>
                                         <button
                                           onClick={() => { setReopenPartReason(''); setReopenPartTarget(a.user_id) }}
-                                          className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text transition-colors"
+                                          className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                                         >
                                           <RotateCcw size={11} /> Reopen
                                         </button>
@@ -2068,7 +2032,7 @@ export default function TaskDetailPage() {
                                       <Tooltip label={`Reopen ${name}'s part`}>
                                         <button
                                           onClick={() => { setReopenPartReason(''); setReopenPartTarget(a.user_id) }}
-                                          className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text transition-colors"
+                                          className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                                         >
                                           <RotateCcw size={11} /> Reopen
                                         </button>
@@ -2101,7 +2065,7 @@ export default function TaskDetailPage() {
                                 <button
                                   onClick={() => handleCompleteAssignee(a.user_id)}
                                   disabled={actionLoading === `complete-${a.user_id}`}
-                                  className="shrink-0 flex items-center gap-1 text-meta font-medium text-success bg-success-bg border border-success-border rounded-full px-2.5 py-1 hover:bg-success-bg disabled:opacity-60 transition-colors"
+                                  className="shrink-0 flex items-center gap-1 text-meta font-medium text-success bg-success-bg border border-success-border rounded-full px-2.5 py-1 hover:bg-success-bg disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                                 >
                                   <CheckCircle2 size={12} /> Done
                                 </button>
@@ -2125,13 +2089,13 @@ export default function TaskDetailPage() {
                                 <button
                                   onClick={() => handleReopenAssigneePart(a.user_id)}
                                   disabled={actionLoading === `reopen-part-${a.user_id}`}
-                                  className="inline-flex items-center gap-1 text-meta font-medium text-primary-foreground bg-primary rounded-control px-3 py-1.5 hover:bg-primary-hover disabled:opacity-60 transition-colors"
+                                  className="inline-flex items-center gap-1 text-meta font-medium text-primary-foreground bg-primary rounded-control px-3 py-1.5 hover:bg-primary-hover disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                                 >
                                   <RotateCcw size={12} /> {actionLoading === `reopen-part-${a.user_id}` ? 'Reopening…' : 'Reopen part'}
                                 </button>
                                 <button
                                   onClick={() => setReopenPartTarget(null)}
-                                  className="text-meta font-medium text-text-secondary hover:text-text-primary transition-colors"
+                                  className="text-meta font-medium text-text-secondary hover:text-text-primary outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                                 >
                                   Cancel
                                 </button>
@@ -2219,7 +2183,7 @@ export default function TaskDetailPage() {
                       setCompletionModeDraft(task.completion_mode === 'all_must_complete' ? 'all_must_complete' : 'any_can_complete')
                       setEditingCompletionMode(true)
                     }}
-                    className="text-meta font-medium text-warning hover:text-warning transition-colors"
+                    className="text-meta font-medium text-warning hover:text-warning outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                   >
                     Edit
                   </button>
@@ -2229,7 +2193,7 @@ export default function TaskDetailPage() {
                       type="button"
                       onClick={handleSaveCompletionMode}
                       disabled={savingCompletionMode}
-                      className="text-meta font-medium text-primary-foreground bg-warning px-2.5 py-1 rounded-control hover:bg-warning disabled:opacity-60 transition-colors"
+                      className="text-meta font-medium text-primary-foreground bg-warning px-2.5 py-1 rounded-control hover:bg-warning disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                     >
                       {savingCompletionMode ? 'Saving…' : 'Save'}
                     </button>
@@ -2255,7 +2219,7 @@ export default function TaskDetailPage() {
                         <label
                           key={opt.value}
                           className={[
-                            'flex items-center gap-2.5 rounded-control border px-3 py-2.5 cursor-pointer transition-colors',
+                            'flex items-center gap-2.5 rounded-control border px-3 py-2.5 cursor-pointer outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors',
                             active ? 'border-primary bg-primary-subtle' : 'border-border-light bg-surface hover:border-border',
                           ].join(' ')}
                         >
