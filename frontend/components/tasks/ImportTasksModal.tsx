@@ -21,6 +21,9 @@ import {
 import FileDropzone, { AttachmentErrorBox } from '@/components/ui/FileDropzone'
 import { PendingFileList } from '@/components/ui/AttachmentList'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import {
   AlertDialog,
@@ -830,13 +833,21 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
           <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
             <div className="flex items-center gap-3">
               {(phase === 'history' || phase === 'batch-detail') && (
-                <button
-                  onClick={phase === 'history' ? resetToUpload : detailOrigin === 'import' ? resetToUpload : openHistory}
-                  className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
-                  aria-label="Back"
-                >
-                  <ArrowLeft size={18} />
-                </button>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Back"
+                        onClick={phase === 'history' ? resetToUpload : detailOrigin === 'import' ? resetToUpload : openHistory}
+                      />
+                    }
+                  >
+                    <ArrowLeft size={18} />
+                  </TooltipTrigger>
+                  <TooltipContent>Back</TooltipContent>
+                </Tooltip>
               )}
               <h2 className="text-card-heading font-medium text-text-primary">
                 {phase === 'preview' ? 'Review before importing'
@@ -849,17 +860,14 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
               {/* Standalone upload keeps History here; embedded upload hides this whole
                   header, so History is surfaced in the Step 1 card instead. */}
               {phase === 'upload' && !embedded && (
-                <button
-                  onClick={openHistory}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-body font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
-                >
+                <Button variant="secondary" size="sm" onClick={openHistory}>
                   <History size={15} /> History
-                </button>
+                </Button>
               )}
               {!embedded && (
-                <button onClick={onClose} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors" aria-label="Close">
+                <Button variant="ghost" size="icon" aria-label="Close" onClick={onClose}>
                   <X size={18} />
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -888,25 +896,26 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                       <AlertCircle size={15} className="text-danger mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-body text-danger">{optionsError}</p>
-                        <button
+                        <Button
+                          size="sm"
                           onClick={loadOptions}
-                          disabled={loadingOptions}
-                          className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                          loading={loadingOptions}
+                          loadingLabel="Retrying…"
                         >
-                          {loadingOptions ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
-                          {loadingOptions ? 'Retrying…' : 'Retry'}
-                        </button>
+                          <RefreshCw size={13} /> Retry
+                        </Button>
                       </div>
                     </div>
                   ) : (
-                    <button
+                    <Button
+                      className="mt-3"
                       onClick={downloadTemplate}
-                      disabled={building || loadingOptions || !options}
-                      className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                      disabled={!options}
+                      loading={building || loadingOptions}
+                      loadingLabel={loadingOptions ? 'Loading options…' : 'Building…'}
                     >
-                      {building || loadingOptions ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
-                      {loadingOptions ? 'Loading options…' : building ? 'Building…' : 'Download Excel template'}
-                    </button>
+                      <Download size={15} /> Download Excel template
+                    </Button>
                   )}
                 </div>
               </div>
@@ -917,12 +926,9 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-body font-medium text-text-primary">Step 2 — Upload the filled file to review</p>
                   {embedded && (
-                    <button
-                      onClick={openHistory}
-                      className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-body font-medium text-primary-text hover:bg-primary-subtle transition-colors"
-                    >
+                    <Button variant="secondary" size="sm" onClick={openHistory}>
                       <History size={15} /> History
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <button
@@ -1081,12 +1087,9 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                         The other <strong>{notReady} {rowWord}</strong> {notReady === 1 ? 'has a problem' : 'have problems'} and
                         will be skipped.
                       </p>
-                      <button
-                        onClick={downloadFailures}
-                        className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-                      >
+                      <Button size="sm" className="mt-2.5" onClick={downloadFailures}>
                         <Download size={14} /> Download {notReady} {rowWord} to fix
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )
@@ -1127,34 +1130,29 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                 {validation.ready !== 1 ? 's' : ''} import; the rest are skipped. A short-lived undo is available right after.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setPhase('upload')}
-              className="shrink-0 px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
-            >
+            <Button variant="secondary" className="shrink-0" onClick={() => setPhase('upload')}>
               Choose another file
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              className="shrink-0"
               onClick={() => setConfirmOpen(true)}
-              disabled={validation.ready === 0 || importing}
-              className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              disabled={validation.ready === 0}
+              loading={importing}
             >
-              {importing && <Loader2 size={15} className="animate-spin" />}
-              {importing ? 'Importing…' : `Import ${validation.ready} ready`}
-            </button>
+              {`Import ${validation.ready} ready`}
+            </Button>
           </div>
         )}
 
         {/* Footer — result */}
         {phase === 'result' && (
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
-            <button onClick={resetToUpload} className="px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors">
+            <Button variant="secondary" onClick={resetToUpload}>
               Import another file
-            </button>
-            <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors">
+            </Button>
+            <Button onClick={onClose}>
               Done
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -1286,9 +1284,9 @@ function ResultView({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-body font-medium text-text-primary">Rows that didn’t import</p>
-            <button onClick={onDownloadFailures} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors">
+            <Button size="sm" onClick={onDownloadFailures}>
               <Download size={13} /> Download to fix
-            </button>
+            </Button>
           </div>
           <div className="border border-border-light rounded-lg max-h-[280px] overflow-auto divide-y divide-surface-control-pressed">
             {failed.map((r) => (
@@ -1302,13 +1300,9 @@ function ResultView({
       )}
 
       {result.batch_id && result.created > 0 && !undoResult && (
-        <button
-          onClick={onUndo}
-          disabled={undoing}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium text-danger bg-surface border-2 border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
-        >
-          {undoing ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />} Undo this import
-        </button>
+        <Button variant="danger" onClick={onUndo} loading={undoing} loadingLabel="Undoing…">
+          <Undo2 size={14} /> Undo this import
+        </Button>
       )}
     </div>
   )
@@ -1354,13 +1348,16 @@ function HistoryView({
             </p>
           </button>
           {b.can_undo && (
-            <button
+            <Button
+              variant="danger"
+              size="sm"
+              className="shrink-0"
               onClick={() => onUndo(b.id)}
-              disabled={undoingId === b.id}
-              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
+              loading={undoingId === b.id}
+              loadingLabel="Undoing…"
             >
-              {undoingId === b.id ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />} Undo
-            </button>
+              <Undo2 size={13} /> Undo
+            </Button>
           )}
         </div>
       ))}
@@ -1377,7 +1374,13 @@ function BatchDetailView({
   undoing: boolean
 }) {
   if (loading || !detail) {
-    return <div className="flex items-center justify-center py-12"><Loader2 size={24} className="text-primary-text animate-spin" /></div>
+    return (
+      <div className="space-y-2 py-2">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
+      </div>
+    )
   }
   return (
     <div className="space-y-4">
@@ -1386,13 +1389,9 @@ function BatchDetailView({
         {detail.failed_count > 0 && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger-bg text-danger text-body font-medium border border-danger-border">{detail.failed_count} failed</span>}
         <span className="text-body text-text-secondary">{detail.remaining} still present</span>
         {detail.can_undo && (
-          <button
-            onClick={() => onUndo(detail.id)}
-            disabled={undoing}
-            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
-          >
-            {undoing ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />} Undo import
-          </button>
+          <Button variant="danger" size="sm" className="ml-auto" onClick={() => onUndo(detail.id)} loading={undoing} loadingLabel="Undoing…">
+            <Undo2 size={13} /> Undo import
+          </Button>
         )}
       </div>
       <div className="border border-border-light rounded-lg max-h-[52vh] overflow-auto divide-y divide-surface-control-pressed">
