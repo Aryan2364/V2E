@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Plus, Search, Target, X } from 'lucide-react'
+import { Plus, Search, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import GoalsFilterPopover, { type FilterSection } from './GoalsFilterPopover'
@@ -19,10 +19,14 @@ import {
   type GoalFocusArea,
 } from '@/lib/types/goals'
 import CreateGoalModal from './CreateGoalModal'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { Count } from '@/components/ui/badge'
+import { SHOW_MORE_LINK } from '@/components/ui/truncate'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   CountBadge,
   DAYS_TONE,
-  EmptyState,
   FocusAreaBadge,
   GoalStatusBadge,
   daysLeftLabel,
@@ -364,58 +368,48 @@ export default function GoalListView() {
 
   return (
     <div>
-      {/* Sticky header so the primary action never scrolls away — DESIGN_RULES Part 3 */}
-      <div className="sticky top-0 z-20 bg-surface-sunken pb-4 -mt-2 pt-2">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-page-title font-medium text-text-primary leading-tight">Goals</h1>
-              <CountBadge count={filtered.length} />
-            </div>
-            <p className="text-sm text-text-secondary mt-1">
-              Every goal in the company. Open one to see what it needs, what it powers, and its
-              check-in record.
-            </p>
-          </div>
-          {perms.write && (
-            <button
-              onClick={() => setCreateOpen(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium transition-colors shrink-0"
-            >
+      <PageHeader
+        title="Goals"
+        meta={
+          <>
+            Every goal in the company. Open one to see what it needs, what it powers, and its
+            check-in record. <Count value={filtered.length} className="ml-1 align-middle" />
+          </>
+        }
+        actions={
+          perms.write ? (
+            <Button onClick={() => setCreateOpen(true)}>
               <Plus size={16} /> New goal
-            </button>
-          )}
-        </div>
+            </Button>
+          ) : undefined
+        }
+      />
 
-        {/* Search stays inline (it's typed, not chosen); every facet lives
-            behind one Filters button, with its options built from the data. */}
-        <div className="flex items-center gap-2.5 flex-wrap mt-4">
-          <div className="relative flex-1 min-w-[200px] max-w-[320px]">
-            <Search
-              size={15}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
-            />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search goals…"
-              className="w-full border border-border rounded-control pl-8 pr-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
-            />
-          </div>
-          <GoalsFilterPopover
-            sections={filterSections}
-            onClearAll={clearAllFacets}
-            resultCount={filtered.length}
+      {/* Search stays inline (it's typed, not chosen); every facet lives
+          behind one Filters button, with its options built from the data. */}
+      <div className="flex items-center gap-2.5 flex-wrap mb-4">
+        <div className="relative flex-1 min-w-[200px] max-w-[320px]">
+          <Search
+            size={15}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
           />
-          {isFiltered && (
-            <button
-              onClick={clearFilters}
-              className="inline-flex items-center gap-1 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
-            >
-              <X size={14} /> Clear
-            </button>
-          )}
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search goals…"
+            className="w-full border border-border rounded-control pl-8 pr-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+          />
         </div>
+        <GoalsFilterPopover
+          sections={filterSections}
+          onClearAll={clearAllFacets}
+          resultCount={filtered.length}
+        />
+        {isFiltered && (
+          <button onClick={clearFilters} className={`${SHOW_MORE_LINK} inline-flex items-center gap-1`}>
+            <X size={14} /> Clear
+          </button>
+        )}
       </div>
 
       <ResponsiveTable
@@ -429,32 +423,21 @@ export default function GoalListView() {
         minTableWidth={1180}
         maxBodyHeight="min(66vh, 660px)"
         emptyState={
-          <EmptyState
-            icon={<Target size={26} />}
-            title={isFiltered ? 'No goals match your filters' : 'No goals yet'}
-            subtitle={
-              isFiltered
-                ? 'Try clearing a filter.'
-                : 'Start with the outcome you actually want — the number, the owner, the date. You can link supporting goals to it afterwards.'
-            }
-            action={
-              isFiltered ? (
-                <button
-                  onClick={clearFilters}
-                  className="mt-1 text-sm font-medium text-primary-text hover:text-primary-text"
-                >
-                  Clear filters
-                </button>
-              ) : perms.write ? (
-                <button
-                  onClick={() => setCreateOpen(true)}
-                  className="mt-1 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium transition-colors"
-                >
-                  <Plus size={16} /> New goal
-                </button>
-              ) : undefined
-            }
-          />
+          isFiltered ? (
+            <EmptyState variant="nothing-found" heading="No goals match your filters" onAction={clearFilters}>
+              Try clearing a filter.
+            </EmptyState>
+          ) : (
+            <EmptyState
+              variant="nothing-yet"
+              heading="No goals yet"
+              actionLabel="Add goal"
+              onAction={perms.write ? () => setCreateOpen(true) : undefined}
+            >
+              Start with the outcome you actually want — the number, the owner, the date. You can
+              link supporting goals to it afterwards.
+            </EmptyState>
+          )
         }
       />
 

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowUpRight, CheckCircle2, Loader2, PartyPopper } from 'lucide-react'
+import { ArrowUpRight, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import { goalsApi } from '@/lib/api/goals'
@@ -10,12 +10,14 @@ import { CADENCE_META, formatValue, type GoalCheckInDue } from '@/lib/types/goal
 import CheckInModal from '@/components/goals/CheckInModal'
 import {
   CountBadge,
-  EmptyState,
   GoalStatusBadge,
   formatDate,
   PermissionsUnavailable,
   useGoalPermissions,
 } from '@/components/goals/shared'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
+import { PageHeader } from '@/components/shell/page-header'
 
 /**
  * My check-ins — the screen that keeps this module alive.
@@ -64,36 +66,28 @@ export default function MyCheckInsPage() {
 
   return (
     <div>
-      <div className="mb-4">
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-page-title font-medium text-text-primary leading-tight">My check-ins</h1>
-          <CountBadge count={rows.length} />
-        </div>
-        <p className="text-sm text-text-secondary mt-1">
-          Goals you own that are waiting on you. A check-in is one number, one traffic light and a
-          line of context.
-        </p>
-      </div>
+      <PageHeader
+        title="My check-ins"
+        meta={
+          <>
+            Goals you own that are waiting on you. A check-in is one number, one traffic light and a
+            line of context. <CountBadge count={rows.length} />
+          </>
+        }
+      />
 
       {loading ? (
-        <div className="flex items-center gap-2 text-sm text-text-secondary py-12 justify-center">
-          <Loader2 size={16} className="animate-spin" /> Loading…
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-card" />
+          ))}
         </div>
       ) : rows.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-card shadow-card">
-          <EmptyState
-            icon={<PartyPopper size={26} />}
-            title="Nothing owed"
-            subtitle="Every goal you own is checked in and up to date. You'll be nudged here — and by notification — when the next one comes due."
-            action={
-              <button
-                onClick={() => router.push('/goals')}
-                className="mt-1 text-sm font-medium text-primary-text hover:text-primary-text"
-              >
-                See all goals
-              </button>
-            }
-          />
+          <EmptyState variant="nothing-waiting">
+            Every goal you own is checked in and up to date. You'll be nudged here — and by
+            notification — when the next one comes due.
+          </EmptyState>
         </div>
       ) : (
         <ul className="space-y-3">

@@ -2,12 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, CalendarClock, Clock, Loader2, Target } from 'lucide-react'
+import { AlertTriangle, CalendarClock, Clock } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import { goalsApi } from '@/lib/api/goals'
 import { ALL_STATUSES, STATUS_META, formatValue, type Goal, type GoalDashboard } from '@/lib/types/goals'
-import { CountBadge, EmptyState, GoalStatusBadge, formatDate, PermissionsUnavailable, useGoalPermissions } from '@/components/goals/shared'
+import { CountBadge, GoalStatusBadge, formatDate, PermissionsUnavailable, useGoalPermissions } from '@/components/goals/shared'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
+import { PageHeader } from '@/components/shell/page-header'
 
 const ORDER = ALL_STATUSES
 
@@ -57,35 +60,31 @@ export default function GoalsDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-text-secondary py-12 justify-center">
-        <Loader2 size={16} className="animate-spin" /> Loading…
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-card" />
+          ))}
+        </div>
       </div>
     )
   }
 
   if (!data) {
     return (
-      <EmptyState
-        icon={<Target size={26} />}
-        title="Couldn’t load the dashboard"
-        subtitle="Something went wrong fetching the numbers."
-        action={
-          <button onClick={load} className="mt-1 text-sm font-medium text-primary-text hover:text-primary-text">
-            Try again
-          </button>
-        }
-      />
+      <EmptyState variant="failed" heading="Couldn't load the dashboard" onAction={load}>
+        Something went wrong fetching the numbers.
+      </EmptyState>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-page-title font-medium text-text-primary leading-tight">Dashboard</h1>
-        <p className="text-sm text-text-secondary mt-1">
-          {data.total} goal{data.total === 1 ? '' : 's'} · as on {formatDate(data.as_on)}
-        </p>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        meta={`${data.total} goal${data.total === 1 ? '' : 's'} · as on ${formatDate(data.as_on)}`}
+      />
 
       {/* Counts by status — every tile the same size, zeros shown so the set reads
           as one block. Eight statuses, so four per row: no orphan tile. */}

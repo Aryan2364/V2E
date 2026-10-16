@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  ArrowLeft,
   CalendarDays,
   CheckCircle2,
   ClipboardList,
@@ -13,7 +12,6 @@ import {
   Pencil,
   Plus,
   Repeat,
-  Target,
   User,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
@@ -40,7 +38,6 @@ import AddGoalTaskModal from './AddGoalTaskModal'
 import {
   CountBadge,
   DAYS_TONE,
-  EmptyState,
   FocusAreaBadge,
   GoalStatusPicker,
   daysLeftLabel,
@@ -49,6 +46,10 @@ import {
   useGoalPermissions,
   useGoalRefData,
 } from './shared'
+import { EmptyState } from '@/components/ui/empty-state'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 export default function GoalDetailView({ goalId }: { goalId: string }) {
   const { user } = useAuth()
@@ -143,18 +144,9 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
   }
 
   if (notFound || !goal) {
-    return (
-      <EmptyState
-        icon={<Target size={26} />}
-        title="Goal not found"
-        subtitle="It may have been deleted."
-        action={
-          <Link href="/goals" className="mt-1 text-sm font-medium text-primary-text hover:text-primary-text">
-            Back to goals
-          </Link>
-        }
-      />
-    )
+    return <EmptyState variant="not-found" heading="Goal not found" dashboardHref="/goals">
+      It may have been deleted.
+    </EmptyState>
   }
 
   // The server decides this: false when the org isn't licensed for Projects OR
@@ -190,48 +182,33 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
 
   return (
     <div className="space-y-6">
-      {/* Sticky header: back + title + the actions, always reachable */}
-      <div className="sticky top-0 z-20 bg-surface-sunken -mt-2 pt-2 pb-4 border-b border-border-light">
-        <button
-          onClick={() => router.back()}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors mb-3"
-        >
-          <ArrowLeft size={15} /> Back
-        </button>
-
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-page-title font-medium text-text-primary leading-tight">{goal.title}</h1>
-            <div className="flex items-center gap-2.5 flex-wrap mt-2">
-              <GoalStatusPicker status={goal.status} canEdit={perms.edit} onSelect={changeStatus} />
-              <FocusAreaBadge focus={goal.focus_area} />
-              <span className={`text-label font-medium ${isClosed ? 'text-text-secondary' : DAYS_TONE[days.tone]}`}>
-                {isClosed ? formatDate(goal.due_date) : days.text}
-              </span>
-            </div>
-          </div>
-
-          {/* Related actions grouped on one row, primary carrying the weight */}
-          <div className="flex items-center gap-2 shrink-0">
+      <PageHeader
+        title={goal.title}
+        trail={[{ label: 'Goals', href: '/goals' }]}
+        meta={
+          <span className="flex items-center gap-2.5 flex-wrap">
+            <GoalStatusPicker status={goal.status} canEdit={perms.edit} onSelect={changeStatus} />
+            <FocusAreaBadge focus={goal.focus_area} />
+            <span className={`text-label font-medium ${isClosed ? 'text-text-secondary' : DAYS_TONE[days.tone]}`}>
+              {isClosed ? formatDate(goal.due_date) : days.text}
+            </span>
+          </span>
+        }
+        actions={
+          <>
             {perms.edit && !isClosed && (
-              <button
-                onClick={() => setCheckInOpen(true)}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium transition-colors"
-              >
+              <Button onClick={() => setCheckInOpen(true)}>
                 <CheckCircle2 size={16} /> Check in
-              </button>
+              </Button>
             )}
             {perms.edit && (
-              <button
-                onClick={() => setEditOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-control bg-surface border-2 border-primary text-primary-text hover:bg-primary-subtle text-sm font-medium transition-colors"
-              >
+              <Button variant="secondary" onClick={() => setEditOpen(true)}>
                 <Pencil size={15} /> Edit
-              </button>
+              </Button>
             )}
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {goal.description && (
         <p className="text-body text-text-primary leading-relaxed whitespace-pre-wrap max-w-3xl">
@@ -325,14 +302,11 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
             </p>
           </div>
           {perms.edit && (
-            <button
-              onClick={() => setTaskOpen(true)}
-              aria-label="Add task"
-              title="Add a task to this goal"
-              className="w-7 h-7 shrink-0 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground flex items-center justify-center transition-colors"
-            >
-              <Plus size={16} />
-            </button>
+            <Tooltip label="Add a task to this goal">
+              <Button size="icon" aria-label="Add task" onClick={() => setTaskOpen(true)}>
+                <Plus size={16} />
+              </Button>
+            </Tooltip>
           )}
         </header>
         <div className="table-scroll flex-1 overflow-y-auto px-4 py-3">

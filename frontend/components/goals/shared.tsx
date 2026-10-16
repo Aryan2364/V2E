@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Check, ChevronDown, Loader2, RefreshCw } from 'lucide-react'
+import { Check, ChevronDown, Loader2 } from 'lucide-react'
 import { getMyPermissions } from '@/lib/api/permissions'
 import { getEmployees } from '@/lib/api/employees'
 import { getDepartments } from '@/lib/api/departments'
@@ -15,6 +15,8 @@ import {
 } from '@/lib/types/goals'
 import type { DeptOption, EmployeeOption } from './GoalFormFields'
 import { formatDate as formatDateToken, formatDateTime as formatDateTimeToken, formatNumber } from '@/lib/format'
+import { Count } from '@/components/ui/badge'
+import { EmptyState } from '@/components/ui/empty-state'
 
 // ─── Formatting ────────────────────────────────────────────────────────────────
 // Delegates to the one lib/format.ts implementation (section 4 rule 2, section
@@ -253,41 +255,16 @@ export function ValueAgainstTarget({
   )
 }
 
-// ─── Count badge (solid blue pill, hidden at 0 — DESIGN_RULES Part 2) ─────────
+// ─── Count badge (§6.8's one count style, hidden at 0) ────────────────────────
+// Delegates to the kit's badge.tsx Count (section 4 rule 2) instead of a second
+// pill implementation; keeps the "hidden at 0" behaviour this module relies on.
 
 export function CountBadge({ count }: { count: number }) {
   if (!count) return null
-  return (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
-      {count}
-    </span>
-  )
+  return <Count value={count} />
 }
 
 // ─── Empty state ───────────────────────────────────────────────────────────────
-
-export function EmptyState({
-  icon,
-  title,
-  subtitle,
-  action,
-}: {
-  icon: React.ReactNode
-  title: string
-  subtitle: string
-  action?: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col items-center text-center gap-3 py-12 px-6">
-      <div className="w-14 h-14 rounded-card bg-primary-subtle flex items-center justify-center text-primary-text">
-        {icon}
-      </div>
-      <h3 className="text-card-heading font-medium text-text-primary">{title}</h3>
-      <p className="text-sm text-text-secondary max-w-sm">{subtitle}</p>
-      {action}
-    </div>
-  )
-}
 
 // ─── Permissions hook ─────────────────────────────────────────────────────────
 //
@@ -358,18 +335,13 @@ export function useGoalPermissions(orgId: string): {
 export function PermissionsUnavailable({ onRetry }: { onRetry: () => void }) {
   return (
     <EmptyState
-      icon={<RefreshCw size={26} />}
-      title="Couldn’t check your access"
-      subtitle="We couldn’t reach the server to confirm what you can see. This is a connection problem, not a change to your permissions."
-      action={
-        <button
-          onClick={onRetry}
-          className="mt-1 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-medium transition-colors"
-        >
-          <RefreshCw size={15} /> Try again
-        </button>
-      }
-    />
+      variant="failed"
+      heading="Couldn't check your access"
+      onAction={onRetry}
+    >
+      We couldn't reach the server to confirm what you can see. This is a connection problem,
+      not a change to your permissions.
+    </EmptyState>
   )
 }
 
