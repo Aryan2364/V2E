@@ -1,59 +1,59 @@
 "use client";
 
-import { useState } from "react";
-import { Clock } from "lucide-react";
-import ClockTimePicker from "./ClockTimePicker";
+/**
+ * Thin adapter onto the kit's time-picker.tsx. Keeps v2e's original
+ * "HH:MM" 24-hour string contract (value/onChange), '' = empty, and prop
+ * names, so this file's 9 call sites don't change. See
+ * components/ui/ADAPTERS.md.
+ *
+ * Known deviation (logged in REVIEW-kit-alignment.md): `label` (the old
+ * ClockTimePicker dialog's heading) and `compact` (tighter padding) have
+ * no kit equivalent and are accepted but unused — the field always
+ * renders the kit's one time-picker appearance (an inline popover with
+ * hour/minute/AM-PM lists) instead of the old centered analog-clock
+ * dialog.
+ */
+import { TimePicker, type TimeValue } from "@/components/ui/time-picker";
 
 interface Props {
-  value: string;                 // "HH:MM" 24-h, "" = empty
+  value: string; // "HH:MM" 24-h, "" = empty
   onChange: (v: string) => void;
   disabled?: boolean;
   placeholder?: string;
-  label?: string;                // dialog heading, e.g. "Deadline time"
-  compact?: boolean;             // tighter vertical padding for dense inline rows
+  /** No longer has a visual effect; kept for call-site compatibility. */
+  label?: string;
+  /** No longer has a visual effect; kept for call-site compatibility. */
+  compact?: boolean;
 }
 
-/**
- * Trigger field for the analog ClockTimePicker — mirrors DatePicker's trigger so
- * a date + time pair lines up. Clicking opens the centered clock dialog.
- */
-export default function TimeField({
-  value,
-  onChange,
-  disabled,
-  placeholder = "Select time",
-  label,
-  compact = false,
-}: Props) {
-  const [open, setOpen] = useState(false);
+/** "HH:MM" (24h) -> the kit's 12-hour TimeValue, or undefined for "". */
+function fromHHMM(value: string): TimeValue | undefined {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(value)
+  if (!m) return undefined
+  const hour24 = Number(m[1])
+  const minute = Number(m[2])
+  if (hour24 > 23 || minute > 59) return undefined
+  return {
+    hour: hour24 % 12 || 12,
+    minute,
+    meridiem: hour24 >= 12 ? "PM" : "AM",
+  }
+}
 
-  const vpad = compact ? "py-1.5" : "py-2.5";
-  const fsize = compact ? "text-[13px]" : "text-[15px]";
-  const triggerCls = `w-full flex items-center gap-0 rounded-[8px] border bg-surface-sunken text-left ${fsize} transition-colors ${
-    disabled
-      ? "border-border-light cursor-not-allowed opacity-70"
-      : "border-border cursor-pointer hover:bg-white hover:border-border-strong"
-  } ${open ? "bg-white! border-primary! ring-1 ring-primary" : ""}`;
+/** The kit's TimeValue -> "HH:MM" (24h), or "" for undefined. */
+function toHHMM(value: TimeValue | undefined): string {
+  if (!value) return ""
+  const hour24 = (value.hour % 12) + (value.meridiem === "PM" ? 12 : 0)
+  return `${String(hour24).padStart(2, "0")}:${String(value.minute).padStart(2, "0")}`
+}
 
+export default function TimeField({ value, onChange, disabled, placeholder }: Props) {
   return (
-    <>
-      <button type="button" disabled={disabled} onClick={() => setOpen(true)} className={triggerCls}>
-        <span className={`flex items-center px-2.5 ${vpad} border-r border-border-light rounded-l-[8px] text-text-muted`}>
-          <Clock size={15} />
-        </span>
-        <span className={`flex-1 px-3 ${vpad} truncate ${value ? "text-text-primary" : "text-text-muted"}`}>
-          {value || placeholder}
-        </span>
-      </button>
-
-      {open && (
-        <ClockTimePicker
-          value={value || "09:00"}
-          label={label}
-          onChange={onChange}
-          onClose={() => setOpen(false)}
-        />
-      )}
-    </>
+    <TimePicker
+      value={fromHHMM(value)}
+      onValueChange={(next) => onChange(toHHMM(next))}
+      disabled={disabled}
+      placeholder={placeholder}
+    />
   );
 }
