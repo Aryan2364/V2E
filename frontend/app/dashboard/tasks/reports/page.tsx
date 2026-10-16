@@ -13,6 +13,7 @@ import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/Responsi
 import DateRangePicker from '@/components/ui/DateRangePicker'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // Flatten the ResponsiveTable card so it blends into the section card it lives in.
 const FLAT_TABLE = 'border-0 shadow-none rounded-none'
@@ -42,13 +43,10 @@ function SectionHeader({ icon, title, onExport }: { icon: React.ReactNode; title
         {icon}
         {title}
       </h2>
-      <button
-        onClick={onExport}
-        className="flex items-center gap-1.5 px-3 py-[7px] text-body font-medium text-primary-text border border-primary rounded-control hover:bg-primary-subtle transition-colors"
-      >
+      <Button variant="secondary" size="sm" onClick={onExport}>
         <Download size={14} />
         Export CSV
-      </button>
+      </Button>
     </div>
   )
 }
@@ -584,8 +582,13 @@ export default function ReportsPage() {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-card" />
+            ))}
+          </div>
+          <Skeleton className="h-72 rounded-card" />
         </div>
       ) : !data ? (
         <div className="flex flex-col items-center justify-center h-64">
