@@ -681,3 +681,93 @@ removal, remaining token/date sweep) was staged by this agent but got folded int
 commit by another module agent (b3a0f9b, "goals-learning-communication") when the shared git
 index was mid-commit at the same time - the content is this agent's, the attribution on that
 commit is not. npx tsc --noEmit was clean for this module's folders at every checkpoint.
+
+## Entry, admin, and org visuals
+
+### Kept for owner decision
+- Login page (`app/(auth)/login/page.tsx`): the kit's sign-in-page.tsx template models two
+  separate methods (email+password OR mobile+OTP). v2e's actual sign-in is one identifier
+  field (email or phone, detected live) with a password — no OTP step exists in the live
+  product despite the `FRONTEND_RULES_ACCESS.md` reference to "phone/OTP login". Restyled to
+  kit tokens/components (Input, PasswordInput, Button, Banner, Label) but kept the one-field
+  identifier + CountryCodeSelect behaviour rather than forcing it into the kit's two-method
+  shape, since that would change sign-in logic (D1).
+- Register page: kept the confirm-password field. `FRONTEND_RULES_ACCESS.md` section 32.3 says
+  a password field needs no confirm field (the show/hide toggle makes a typo visible), but
+  removing it here would drop a required field from the submitted form — a validation/behaviour
+  change, not a restyle.
+- `/admin` super-admin login page: was a bespoke dark-navy themed page, deliberately distinct
+  from the regular workspace sign-in (a security/context signal). The kit defines no dark
+  surface tokens (D9: no dark mode) and the brief forbids inventing new hex, so it now matches
+  the light sign-in page's surface instead of keeping a dark theme. **Visual change the owner
+  will notice** — the admin portal no longer looks visually distinct from `/login` at a glance;
+  only the "Super administrator access only" copy and icon mark it. If the owner wants a
+  deliberately distinct admin look back, that needs a dark-surface token addition to the kit
+  itself (out of this module's scope — `components/ui/**` is read-only here).
+- `components/dev/TimeTravelBar.tsx` (test-org time-travel widget): kept its own
+  `toLocaleString` calls for the live ticking clock label (weekday + seconds) — `lib/format.ts`
+  has no seconds-granularity or weekday format, and this is an internal QA tool, not a
+  product screen.
+
+### Not done / follow-up
+- ReactFlow canvases (`components/process-hierarchy/ProcessCanvas.tsx`, `nodes.tsx`,
+  `NodeDrawer.tsx`, `ArtifactLibrary.tsx`, `node-materials.tsx`, and
+  `app/dashboard/process-hierarchy/page.tsx` / `[mapId]/page.tsx`) still have several
+  hand-rolled `fixed inset-0`/`fixed z-*` context menus, a right-hand drawer, and a library
+  panel that were **not** converted to kit Dialog/Sheet/Popover this pass — per D6 these canvases
+  are "tokens only, no structural change", and converting their floating menus (which track a
+  canvas pane's pixel position, not a trigger element) to Popover/Sheet would be real
+  interaction-behaviour work, not a restyle, given the remaining time budget. Their hex/rgba was
+  removed (now tokens/color-mix), and the ~45-call-site `useToast`→sonner migration and
+  `toLocaleString`→`lib/format.ts` migration were done on the page-level file, but the
+  drawer/menu/library components themselves were not restructured onto Sheet/Dialog, and still
+  show in the self-check as using the `ResponsiveTable`/legacy-overlay pattern.
+- `components/org-chart/DeptTableView.tsx`, `app/super-admin/{admins,groups,organizations}*`
+  still call `ResponsiveTable` (the kit adapter over `table.tsx`, documented in
+  `components/ui/ADAPTERS.md`) rather than `table.tsx` directly — its mobile card-list branch
+  has no kit equivalent, so a forced migration would drop phone/tablet behaviour. Kept as the
+  adapter per ADAPTERS.md.
+- `app/dashboard/process-hierarchy/page.tsx` and `[mapId]/page.tsx` were not given a
+  `PageHeader` — `[mapId]/page.tsx` (~1700 lines) is a canvas editor whose "header" is a dense
+  toolbar (add/paste/lane/version controls) tightly coupled to canvas state, not a plain
+  title+action row; doing this correctly needs a dedicated pass, not a mechanical swap, and
+  the remaining time budget did not allow it. Logged honestly rather than forced.
+- `components/culture-cards/**` was listed in this agent's folder set but the directory does
+  not exist in this worktree (only `components/culture/**` does) — nothing to migrate there;
+  flagging in case it's expected to exist from another branch.
+- No full visual QA pass (hover/focus/loading states) was run on any converted screen; only
+  `tsc --noEmit` was used to verify compile correctness.
+
+### Visual changes the owner will notice
+- `/admin` super-admin login: dark theme dropped, now matches the light `/login` page (see
+  above).
+- Login/register/forgot-password/select-org/admin pages: restyled fonts, spacing, radii, and
+  button/input shapes to kit tokens — same layout and fields, different visual details
+  (shadows, corner radii, type sizes) throughout.
+- `super-admin/admins`, `super-admin/groups*`, `super-admin/organizations*`: native `<select>`
+  elements replaced with `SearchableSelect`; native `confirm()` for revoking an admin replaced
+  with a styled `AlertDialog`; `Modal` replaced with `Dialog`/`AlertDialog` on the organization
+  detail page (Edit Member, Deactivate, Reactivate).
+- Org-chart and identity/culture drawers (`DeptFormDrawer`, `DeptInfoPanel`,
+  `IdentityFormDrawer`, `CultureManagerDrawer`) now slide in via the kit's `Sheet` component
+  instead of a hand-rolled `fixed inset-y-0` panel — same open/close behaviour, same fields,
+  different motion/shadow/focus details.
+
+### Self-check results (this module's folders)
+- hex/rgba outside globals.css: none.
+- font-(semibold|bold|extrabold|black): none.
+- native confirm()/alert()/prompt(): none.
+- native `<select`: none.
+- off-scale spacing (5/7/9/10/11/14/16/20): none.
+- fixed inset-0: 6 remaining, all in the process-hierarchy canvas components/pages (listed
+  above under follow-up) — D6 canvas scope, not converted this pass.
+- toLocale(Date|Time)?String: 1 remaining (`components/dev/TimeTravelBar.tsx`, kept — see
+  above).
+- adapter imports (Modal|ConfirmDialog|StyledSelect|DatePicker|ResponsiveTable|Toast): only
+  `ResponsiveTable` remains, in the files listed above (kept per ADAPTERS.md).
+- `npx tsc --noEmit` filtered to this module's folders: clean after every commit.
+
+### Commits (entry-admin-org)
+98e87a4, 7a050ee, 6d87a94, 55ed44d, 494b6d2, 7cecdee, f49510b, 113164e, 4149faa, a7ffb6b,
+plus the identity/culture/org-chart PageHeader follow-ups and the DeptInfoPanel spacing fix
+committed after this entry was drafted.
