@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth/context'
 import { getCultureStandards } from '@/lib/api/culture'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { PageHeader } from '@/components/shell/page-header'
 import CultureManagerDrawer from '@/components/culture/CultureManagerDrawer'
 import type { CultureStandard } from '@/lib/types'
-import { CheckCircle2, XCircle, Pencil, Heart } from 'lucide-react'
+import { CheckCircle2Icon, XCircleIcon, PencilIcon, HeartIcon } from 'lucide-react'
 
 // ─── Standard card ─────────────────────────────────────────────────────────────
 
@@ -19,12 +21,12 @@ function StandardCard({
 }) {
   const isExpected = type === 'expected'
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-4 flex gap-3">
+    <div className="bg-surface border border-border-light rounded-card shadow-card p-4 flex gap-3">
       <div className="shrink-0 mt-0.5">
         {isExpected ? (
-          <CheckCircle2 size={18} className="text-success" />
+          <CheckCircle2Icon size={18} className="text-success" />
         ) : (
-          <XCircle size={18} className="text-danger" />
+          <XCircleIcon size={18} className="text-danger" />
         )}
       </div>
       <div>
@@ -57,7 +59,7 @@ function Column({
   return (
     <div className="flex flex-col gap-3">
       <div
-        className={`flex items-center gap-2 px-4 py-2.5 rounded-[8px] ${accentBg}`}
+        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg ${accentBg}`}
       >
         <span className={accent}>{icon}</span>
         <h2 className={`font-medium text-sm ${accent}`}>{title}</h2>
@@ -84,7 +86,7 @@ function EmptyState({ canEdit, onEdit }: { canEdit: boolean; onEdit: () => void 
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
-        <Heart size={28} className="text-text-muted" />
+        <HeartIcon size={28} className="text-text-muted" />
       </div>
       <h2 className="text-lg font-medium text-text-primary">No culture standards defined yet</h2>
       <p className="text-text-secondary text-sm mt-1 max-w-xs">
@@ -130,29 +132,27 @@ export default function CulturePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="flex h-64 flex-col gap-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-40 rounded-card" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
-      {/* Page header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Culture Standards</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">
-            The behaviors your organization expects and prohibits.
-          </p>
-        </div>
-        {canEdit && standards.length > 0 && (
-          <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
-            <Pencil size={14} />
-            Edit
-          </Button>
-        )}
-      </div>
+    <div className="flex flex-col gap-8">
+      <PageHeader
+        title="Culture Standards"
+        meta="The behaviors your organization expects and prohibits."
+        actions={
+          canEdit && standards.length > 0 ? (
+            <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
+              <PencilIcon size={14} />
+              Edit
+            </Button>
+          ) : undefined
+        }
+      />
 
       {standards.length === 0 ? (
         <EmptyState canEdit={canEdit} onEdit={() => setEditing(true)} />
@@ -162,7 +162,7 @@ export default function CulturePage() {
             title="Expected Behaviors"
             accent="text-success"
             accentBg="bg-success-bg"
-            icon={<CheckCircle2 size={16} />}
+            icon={<CheckCircle2Icon size={16} />}
             items={expected}
             type="expected"
           />
@@ -170,7 +170,7 @@ export default function CulturePage() {
             title="Unacceptable Behaviors"
             accent="text-danger"
             accentBg="bg-danger-bg"
-            icon={<XCircle size={16} />}
+            icon={<XCircleIcon size={16} />}
             items={unacceptable}
             type="unacceptable"
           />
