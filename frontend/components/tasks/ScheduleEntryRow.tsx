@@ -140,20 +140,17 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
       <div className="flex items-center justify-between">
         <span className="text-meta font-medium text-text-muted uppercase tracking-wider">Entry #{index + 1}</span>
         <Tooltip label={canDelete ? 'Remove entry' : 'Cannot remove last entry'}>
-        <button
-          type="button"
-          onClick={onDelete}
-          disabled={!canDelete}
-          aria-label={canDelete ? 'Remove entry' : 'Cannot remove last entry'}
-          className={[
-            'w-7 h-7 rounded-[6px] flex items-center justify-center transition-colors',
-            canDelete
-              ? 'text-text-muted hover:text-danger hover:bg-danger-bg'
-              : 'text-text-muted cursor-not-allowed',
-          ].join(' ')}
-        >
-          <X size={14} />
-        </button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={onDelete}
+            disabled={!canDelete}
+            aria-label={canDelete ? 'Remove entry' : 'Cannot remove last entry'}
+            className="hover:text-danger hover:bg-danger-bg"
+          >
+            <X size={14} />
+          </Button>
         </Tooltip>
       </div>
 
@@ -417,23 +414,22 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                   />
                 </div>
                 {entry.yearly_dates.length > 1 && (
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => removeYearlyDate(i)}
-                    className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"
+                    aria-label="Remove date"
+                    className="hover:text-danger hover:bg-danger-bg"
                   >
                     <X size={14} />
-                  </button>
+                  </Button>
                 )}
               </div>
             ))}
-            <button
-              type="button"
-              onClick={addYearlyDate}
-              className="text-body text-primary-text hover:underline font-medium"
-            >
+            <Button type="button" variant="secondary" size="sm" onClick={addYearlyDate}>
               + Add date
-            </button>
+            </Button>
           </div>
         </div>
       )}
