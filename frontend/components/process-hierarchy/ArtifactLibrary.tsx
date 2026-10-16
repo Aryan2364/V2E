@@ -61,14 +61,14 @@ export default function ArtifactLibrary({ orgId, mapId, canEdit, onClose }: {
     <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col animate-[fadeIn_.15s_ease-out]">
-        <div className="flex items-center gap-2 px-5 py-4 border-b border-border-light">
+        <div className="flex items-center gap-2 px-4 py-4 border-b border-border-light">
           <Paperclip size={16} className="text-primary-text" />
-          <h3 className="text-base font-semibold text-text-primary">Document library</h3>
+          <h3 className="text-base font-medium text-text-primary">Document library</h3>
           <button onClick={onClose} className="ml-auto text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
 
         {canEdit && (
-          <div className="px-5 py-3 border-b border-border-light space-y-2 bg-surface-sunken">
+          <div className="px-4 py-3 border-b border-border-light space-y-2 bg-surface-sunken">
             <div className="flex items-center gap-2">
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Document name…"
                 onKeyDown={(e) => e.key === 'Enter' && create()}
@@ -82,27 +82,27 @@ export default function ArtifactLibrary({ orgId, mapId, canEdit, onClose }: {
             </div>
             <div className="flex items-center gap-2">
               <button onClick={create} disabled={!name.trim() || busy}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-[8px] bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
                 <Plus size={14} /> Add (metadata)
               </button>
               <input ref={fileRef} type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = '' }} />
               <button onClick={() => fileRef.current?.click()} disabled={busy}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] border border-primary text-primary-text hover:bg-primary-subtle">
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-[8px] border border-primary text-primary-text hover:bg-primary-subtle">
                 {busy ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} Upload file
               </button>
             </div>
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-5 py-3">
+        <div className="flex-1 overflow-y-auto px-4 py-3">
           {artifacts === null ? (
             <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-primary-text" /></div>
           ) : artifacts.length === 0 ? (
-            <div className="flex flex-col items-center text-center py-10">
+            <div className="flex flex-col items-center text-center py-8">
               <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center mb-3">
                 <FileText size={22} className="text-text-muted" />
               </div>
-              <p className="text-[14px] font-semibold text-text-primary">No documents yet</p>
+              <p className="text-[14px] font-medium text-text-primary">No documents yet</p>
               <p className="text-[13px] text-text-secondary mt-1 max-w-xs">
                 {canEdit ? 'Add a document by name, or upload a file, to attach it to steps as an input or output.' : 'Documents added to this map will appear here.'}
               </p>

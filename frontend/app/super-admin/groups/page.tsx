@@ -27,7 +27,7 @@ export default function GroupsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Groups</h1>
+          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Groups</h1>
           <p className="text-sm text-text-secondary mt-1">Manage organization groups — cluster related companies and share users across them.</p>
         </div>
         <Button variant="primary" onClick={() => router.push('/super-admin/groups/new')}>
@@ -88,7 +88,7 @@ export default function GroupsPage() {
           skeletonRows={4}
           emptyState={
             <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-              <div className="flex flex-col items-center gap-3 py-16">
+              <div className="flex flex-col items-center gap-3 py-12">
                 <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center">
                   <Layers size={22} className="text-text-muted" />
                 </div>

@@ -100,7 +100,7 @@ export default function ProcessHierarchyListPage() {
               {m.node_count > 0 && (
                 <Tooltip label={`${m.node_count} step${m.node_count !== 1 ? 's' : ''}`}>
                   <span
-                    className="shrink-0 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold tabular-nums">{m.node_count}</span>
+                    className="shrink-0 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium tabular-nums">{m.node_count}</span>
                 </Tooltip>
               )}
               {kids.length > 0 && (
@@ -109,7 +109,7 @@ export default function ProcessHierarchyListPage() {
                     className="shrink-0 text-[11px] text-text-muted">· {kids.length} inside</span>
                 </Tooltip>
               )}
-              {m.is_owner && <span className="shrink-0 text-[10px] font-semibold rounded-full px-1.5 py-0.5 bg-surface-control text-text-secondary">Owner</span>}
+              {m.is_owner && <span className="shrink-0 text-[10px] font-medium rounded-full px-1.5 py-0.5 bg-surface-control text-text-secondary">Owner</span>}
             </button>
           </Tooltip>
           <div className="shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
@@ -160,17 +160,17 @@ export default function ProcessHierarchyListPage() {
           <div className="min-w-0 flex-1 pr-8">
             <Tooltip label={m.name}>
               <button onClick={() => router.push(`/dashboard/process-hierarchy/${m.id}`)} className="block w-full text-left">
-                <span className="block text-[15px] font-semibold text-text-primary truncate">{m.name}</span>
+                <span className="block text-[15px] font-medium text-text-primary truncate">{m.name}</span>
               </button>
             </Tooltip>
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
               {m.node_count > 0 && (
                 <span className="inline-flex items-center gap-1 text-[12px] font-medium text-text-secondary">
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold tabular-nums">{m.node_count}</span>
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium tabular-nums">{m.node_count}</span>
                   step{m.node_count !== 1 ? 's' : ''}
                 </span>
               )}
-              {m.is_owner && <span className="text-[10px] font-semibold rounded-full px-1.5 py-0.5 bg-surface-control text-text-secondary">Owner</span>}
+              {m.is_owner && <span className="text-[10px] font-medium rounded-full px-1.5 py-0.5 bg-surface-control text-text-secondary">Owner</span>}
               {kids.length > 0 && (
                 <button onClick={() => toggle(m.id)}
                   className="inline-flex items-center gap-0.5 text-[11px] font-medium text-primary-text hover:bg-primary-subtle rounded-full px-1.5 py-0.5 transition-colors">
@@ -203,7 +203,7 @@ export default function ProcessHierarchyListPage() {
       <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-surface-sunken/95 backdrop-blur border-b border-border-light pb-4 pt-1">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <h1 className="text-[28px] font-bold text-text-primary leading-tight">Process Hierarchy</h1>
+            <h1 className="text-[28px] font-medium text-text-primary leading-tight">Process Hierarchy</h1>
             <p className="mt-1 text-[15px] text-text-secondary">
               Explore how the company does things — drill into any area to see the process flow beneath it.
             </p>
@@ -212,13 +212,13 @@ export default function ProcessHierarchyListPage() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setShowTemplates(true)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
               >
                 <Layers size={16} /> From template
               </button>
               <button
                 onClick={() => setCreateParent(null)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
               >
                 <Plus size={16} /> New Map
               </button>
@@ -229,11 +229,11 @@ export default function ProcessHierarchyListPage() {
 
       <div className="pt-6">
         {maps.length === 0 ? (
-          <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20 text-center">
+          <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-12 text-center">
             <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
               <Workflow size={28} className="text-text-muted" />
             </div>
-            <h2 className="text-lg font-semibold text-text-primary">No process maps yet</h2>
+            <h2 className="text-lg font-medium text-text-primary">No process maps yet</h2>
             <p className="text-text-secondary text-sm mt-1 max-w-sm">
               {canCreate
                 ? 'Create your first map to start documenting how your teams work.'
@@ -242,7 +242,7 @@ export default function ProcessHierarchyListPage() {
             {canCreate && (
               <button
                 onClick={() => setCreateParent(null)}
-                className="mt-5 inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
+                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
               >
                 <Plus size={15} /> New Map
               </button>
@@ -254,7 +254,7 @@ export default function ProcessHierarchyListPage() {
             <div className="relative mb-3">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search maps…"
-                className="w-full pl-9 pr-9 py-2.5 text-[15px] rounded-[8px] border border-border bg-white focus:border-primary focus:outline-hidden text-text-primary placeholder:text-text-muted" />
+                className="w-full pl-8 pr-8 py-2.5 text-[15px] rounded-[8px] border border-border bg-white focus:border-primary focus:outline-hidden text-text-primary placeholder:text-text-muted" />
               {query && (
                 <button onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"><X size={15} /></button>
               )}
@@ -262,7 +262,7 @@ export default function ProcessHierarchyListPage() {
 
             {results ? (
               results.length === 0 ? (
-                <p className="text-[13px] text-text-muted text-center py-10">No maps match “{query}”.</p>
+                <p className="text-[13px] text-text-muted text-center py-8">No maps match “{query}”.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 items-start">
                   {results.map((m) => (
@@ -270,7 +270,7 @@ export default function ProcessHierarchyListPage() {
                       className="text-left bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:border-primary-border hover:shadow-md transition-all p-3.5 flex items-start gap-2.5">
                       <span className="shrink-0 w-9 h-9 rounded-[9px] bg-primary-subtle flex items-center justify-center"><Workflow size={17} className="text-primary-text" /></span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[14px] font-semibold text-text-primary">{m.name}</span>
+                        <span className="block truncate text-[14px] font-medium text-text-primary">{m.name}</span>
                         {pathOf(m).length > 0
                           ? <span className="block truncate text-[11px] text-text-muted mt-0.5">{pathOf(m).join(' › ')}</span>
                           : <span className="block text-[11px] text-text-muted mt-0.5">Top-level map</span>}
@@ -284,7 +284,7 @@ export default function ProcessHierarchyListPage() {
                 {/* Pinned = quick-jump shortcuts, not a group — shown as chips. */}
                 {pinned.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-1.5">Pinned</p>
+                    <p className="text-[11px] font-medium text-text-muted uppercase tracking-wide mb-1.5">Pinned</p>
                     <div className="flex flex-wrap gap-2">
                       {pinned.map((m) => (
                         <button key={m.id} onClick={() => router.push(`/dashboard/process-hierarchy/${m.id}`)}
@@ -366,12 +366,12 @@ function TemplatePickerModal({ orgId, onClose, onInstantiated }: {
       <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/40" onClick={onClose} />
         <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md max-h-[80vh] flex flex-col animate-[fadeIn_.15s_ease-out]">
-          <div className="flex items-center gap-2 px-5 py-4 border-b border-border-light">
+          <div className="flex items-center gap-2 px-4 py-4 border-b border-border-light">
             <Layers size={16} className="text-primary-text" />
-            <h3 className="text-base font-semibold text-text-primary">Create from template</h3>
+            <h3 className="text-base font-medium text-text-primary">Create from template</h3>
             <button onClick={onClose} className="ml-auto text-text-muted hover:text-text-primary"><X size={18} /></button>
           </div>
-          <div className="flex-1 overflow-y-auto px-5 py-3">
+          <div className="flex-1 overflow-y-auto px-4 py-3">
             {templates === null ? (
               <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-primary-text" /></div>
             ) : templates.length === 0 ? (
@@ -385,7 +385,7 @@ function TemplatePickerModal({ orgId, onClose, onInstantiated }: {
                       {t.description && <p className="text-[12px] text-text-secondary truncate">{t.description}</p>}
                     </div>
                     <button onClick={() => setNaming(t)} disabled={busy === t.id}
-                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
+                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-[8px] bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
                       {busy === t.id ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />} Use
                     </button>
                     <Tooltip label="Delete template">
@@ -440,7 +440,7 @@ function NameModal({ title, label, initial, confirmLabel, busy, onCancel, onSubm
       <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md p-6 animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
+          <h3 className="text-lg font-medium text-text-primary">{title}</h3>
           <button onClick={onCancel} className="text-text-muted hover:text-text-primary transition-colors"><X size={18} /></button>
         </div>
         <label className="block text-sm font-medium text-text-secondary mb-1">{label}</label>
@@ -451,7 +451,7 @@ function NameModal({ title, label, initial, confirmLabel, busy, onCancel, onSubm
         />
         <div className="flex justify-end mt-6">
           <button onClick={submit} disabled={!name.trim() || busy}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
             {busy && <Loader2 size={15} className="animate-spin" />} {confirmLabel}
           </button>
         </div>
@@ -485,7 +485,7 @@ function CreateMapModal({ orgId, parentId, onClose, onCreated }: { orgId: string
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md p-6 animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-text-primary">{parentId ? 'New sub-map' : 'New process map'}</h3>
+          <h3 className="text-lg font-medium text-text-primary">{parentId ? 'New sub-map' : 'New process map'}</h3>
           <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors"><X size={18} /></button>
         </div>
         <div className="space-y-4">
@@ -515,7 +515,7 @@ function CreateMapModal({ orgId, parentId, onClose, onCreated }: { orgId: string
           <button
             onClick={submit}
             disabled={!name.trim() || saving}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
           >
             {saving && <Loader2 size={15} className="animate-spin" />} Create Map
           </button>

@@ -68,7 +68,7 @@ function InlineForm({
   return (
     <div className="bg-surface-sunken border border-border-light rounded-[10px] p-4 flex flex-col gap-3 mt-2">
       <div>
-        <label className="text-xs font-semibold text-text-secondary mb-1 block">
+        <label className="text-xs font-medium text-text-secondary mb-1 block">
           Title <span className="text-danger">*</span>
         </label>
         <input
@@ -80,7 +80,7 @@ function InlineForm({
         />
       </div>
       <div>
-        <label className="text-xs font-semibold text-text-secondary mb-1 block">
+        <label className="text-xs font-medium text-text-secondary mb-1 block">
           Description <span className="text-danger">*</span>
         </label>
         <textarea
@@ -96,7 +96,7 @@ function InlineForm({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] bg-primary text-white text-xs font-semibold hover:bg-primary-hover disabled:opacity-60 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] bg-primary text-white text-xs font-medium hover:bg-primary-hover disabled:opacity-60 transition-colors"
         >
           {saving ? (
             <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -108,7 +108,7 @@ function InlineForm({
         <button
           onClick={onCancel}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-border text-text-secondary text-xs font-semibold hover:bg-surface-control transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-border text-text-secondary text-xs font-medium hover:bg-surface-control transition-colors"
         >
           <X size={13} /> Cancel
         </button>
@@ -129,7 +129,7 @@ function CultureCard({
   return (
     <div className="group bg-white border border-border-light rounded-[10px] p-4 flex gap-3 transition-shadow hover:shadow-xs">
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm text-text-primary">{standard.title}</p>
+        <p className="font-medium text-sm text-text-primary">{standard.title}</p>
         {standard.description && (
           <p className="text-sm text-text-secondary mt-1 leading-relaxed">{standard.description}</p>
         )}
@@ -198,16 +198,16 @@ function Column({
         <span
           className={`w-5 h-5 shrink-0 rounded-full inline-flex items-center justify-center ${dotColor}`}
         >
-          <span className="text-[11px] font-bold leading-none text-white tabular-nums translate-y-px">
+          <span className="text-[11px] font-medium leading-none text-white tabular-nums translate-y-px">
             {items.length}
           </span>
         </span>
-        <h3 className={`font-bold text-sm ${headerText}`}>{title}</h3>
+        <h3 className={`font-medium text-sm ${headerText}`}>{title}</h3>
         {!showForm && (
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className={`ml-auto inline-flex items-center gap-1 text-xs font-semibold ${headerText} hover:opacity-80 transition-opacity`}
+            className={`ml-auto inline-flex items-center gap-1 text-xs font-medium ${headerText} hover:opacity-80 transition-opacity`}
           >
             <Plus size={13} /> Add
           </button>
@@ -247,13 +247,13 @@ function Column({
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="px-2.5 py-1 rounded-[6px] bg-danger text-white text-xs font-semibold hover:bg-danger-hover"
+                        className="px-2.5 py-1 rounded-[6px] bg-danger text-white text-xs font-medium hover:bg-danger-hover"
                       >
                         Delete
                       </button>
                       <button
                         onClick={() => setConfirmDeleteId(null)}
-                        className="px-2.5 py-1 rounded-[6px] border border-border text-xs font-semibold"
+                        className="px-2.5 py-1 rounded-[6px] border border-border text-xs font-medium"
                       >
                         Cancel
                       </button>
@@ -329,8 +329,8 @@ export default function CultureManagerDrawer({
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light">
-          <h3 className="font-semibold text-text-primary">Manage Culture Standards</h3>
+        <div className="flex items-center justify-between px-4 py-4 border-b border-border-light">
+          <h3 className="font-medium text-text-primary">Manage Culture Standards</h3>
           <button
             onClick={onClose}
             className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
@@ -341,7 +341,7 @@ export default function CultureManagerDrawer({
         </div>
 
         <div className="flex-1 overflow-y-auto min-h-0">
-          <div className="px-5 py-5">
+          <div className="px-4 py-4">
           {loading ? (
             <div className="flex gap-4">
               {[1, 2].map((i) => (
@@ -368,7 +368,7 @@ export default function CultureManagerDrawer({
           )}
           </div>
 
-          <div className="px-5 pt-4 pb-12 border-t border-border-light flex gap-3">
+          <div className="px-4 pt-4 pb-12 border-t border-border-light flex gap-3">
             <Button variant="primary" onClick={onClose}>
               Done
             </Button>

@@ -497,7 +497,7 @@ export default function ImportDepartmentsModal({
               </button>
               </Tooltip>
             )}
-            <h2 className="text-[18px] font-semibold text-text-primary">Import Departments</h2>
+            <h2 className="text-[18px] font-medium text-text-primary">Import Departments</h2>
           </div>
           <div className="flex items-center gap-2.5">
             {phase === 'upload' && !result && (
@@ -506,7 +506,7 @@ export default function ImportDepartmentsModal({
                   setPhase('history')
                   loadHistory()
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-semibold text-text-secondary bg-surface-control hover:bg-surface-control-pressed transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-medium text-text-secondary bg-surface-control hover:bg-surface-control-pressed transition-colors"
               >
                 <History size={14} /> Import History
               </button>
@@ -522,7 +522,7 @@ export default function ImportDepartmentsModal({
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 overflow-y-auto space-y-5">
+        <div className="px-6 py-4 overflow-y-auto space-y-4">
           {phase === 'history' ? (
             <HistoryView
               batches={batches}
@@ -535,12 +535,12 @@ export default function ImportDepartmentsModal({
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-success-bg border border-success-border">
                   <CheckCircle2 size={16} className="text-success" />
-                  <span className="text-sm font-semibold text-success">{result.created} imported</span>
+                  <span className="text-sm font-medium text-success">{result.created} imported</span>
                 </div>
                 {result.failed > 0 && (
                   <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-danger-bg border border-danger-border">
                     <AlertCircle size={16} className="text-danger" />
-                    <span className="text-sm font-semibold text-danger">{result.failed} failed</span>
+                    <span className="text-sm font-medium text-danger">{result.failed} failed</span>
                   </div>
                 )}
               </div>
@@ -548,7 +548,7 @@ export default function ImportDepartmentsModal({
               {failedRows.length > 0 && (
                 <div className="border border-border-light rounded-[10px] overflow-hidden">
                   <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
-                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                    <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
                       Rows that need fixing
                     </p>
                   </div>
@@ -568,20 +568,20 @@ export default function ImportDepartmentsModal({
 
               <p className="text-[13px] text-text-secondary">
                 Imported departments are placed under their parent on the chart. Press{' '}
-                <span className="font-semibold text-text-primary">Auto-arrange</span> in the tree view to
+                <span className="font-medium text-text-primary">Auto-arrange</span> in the tree view to
                 tidy the whole structure.
               </p>
 
               <div className="flex gap-3">
                 <button
                   onClick={reset}
-                  className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
+                  className="px-4 py-2.5 rounded-[8px] text-sm font-medium text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
                 >
                   Import another file
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
+                  className="px-4 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
                 >
                   Done
                 </button>
@@ -593,11 +593,11 @@ export default function ImportDepartmentsModal({
               <div className="flex items-start gap-3 p-4 rounded-[10px] bg-primary-subtle border border-primary-border">
                 <FileText size={18} className="text-primary-text mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-text-primary">
+                  <p className="text-sm font-medium text-text-primary">
                     Step 1 — Download the Excel template
                   </p>
                   <p className="text-[13px] text-text-secondary mt-0.5">
-                    Only <span className="font-semibold text-primary-text">name</span> is required. The{' '}
+                    Only <span className="font-medium text-primary-text">name</span> is required. The{' '}
                     <strong>parent_department</strong> and <strong>head</strong> columns are dropdowns
                     from your org. You can reference a parent that is{' '}
                     <strong>also being imported</strong> — rows are created parents-first
@@ -606,7 +606,7 @@ export default function ImportDepartmentsModal({
                   <button
                     onClick={downloadTemplate}
                     disabled={building}
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                   >
                     {building ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
                     {building ? 'Building…' : 'Download Excel template'}
@@ -616,7 +616,7 @@ export default function ImportDepartmentsModal({
 
               {/* Step 2 — upload */}
               <div>
-                <p className="text-sm font-semibold text-text-primary mb-2">
+                <p className="text-sm font-medium text-text-primary mb-2">
                   Step 2 — Upload the filled file
                 </p>
                 <button
@@ -649,9 +649,9 @@ export default function ImportDepartmentsModal({
 
               {rows.length > 0 && !parseError && (
                 <div className="p-3 bg-success-bg border border-success-border rounded-[8px] text-sm text-success">
-                  Ready to import <span className="font-semibold">{rows.length}</span> department
+                  Ready to import <span className="font-medium">{rows.length}</span> department
                   {rows.length !== 1 ? 's' : ''} from{' '}
-                  <span className="font-semibold">{fileName}</span>.
+                  <span className="font-medium">{fileName}</span>.
                 </div>
               )}
             </>
@@ -664,7 +664,7 @@ export default function ImportDepartmentsModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
+              className="px-4 py-2.5 rounded-[8px] text-sm font-medium text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               Cancel
             </button>
@@ -672,7 +672,7 @@ export default function ImportDepartmentsModal({
               type="button"
               onClick={handleImport}
               disabled={rows.length === 0 || importing}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {importing && <Loader2 size={15} className="animate-spin" />}
               {importing ? 'Importing…' : `Import${rows.length > 0 ? ` ${rows.length}` : ''}`}
@@ -688,7 +688,7 @@ export default function ImportDepartmentsModal({
 function UndoSummary({ undoResult }: { undoResult: any }) {
   return (
     <div className="border border-border-light rounded-[10px] p-4 space-y-2">
-      <p className="text-sm font-semibold text-text-primary">
+      <p className="text-sm font-medium text-text-primary">
         Removed {undoResult.undone} department{undoResult.undone !== 1 ? 's' : ''}.
       </p>
     </div>
@@ -719,7 +719,7 @@ function HistoryView({
               <p className="text-sm font-medium text-text-primary truncate">
                 {b.file_name || 'Untitled import'}
                 {b.status !== 'committed' && (
-                  <span className="ml-2 text-[11px] font-semibold text-text-muted uppercase">{b.status.replace('_', ' ')}</span>
+                  <span className="ml-2 text-[11px] font-medium text-text-muted uppercase">{b.status.replace('_', ' ')}</span>
                 )}
               </p>
               <p className="text-xs text-text-muted mt-0.5">
@@ -731,7 +731,7 @@ function HistoryView({
               <button
                 onClick={() => onUndo(b.id)}
                 disabled={undoingId === b.id}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-semibold text-danger bg-white border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors shrink-0"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-medium text-danger bg-white border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors shrink-0"
               >
                 {undoingId === b.id ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />}
                 Undo

@@ -3,9 +3,29 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/lib/auth/context'
 import apiClient from '@/lib/api/client'
-import { ShieldCheck, Plus, PowerOff, Power, X, Eye, EyeOff, Loader2, Pencil, Trash2 } from 'lucide-react'
+import { PlusIcon, PowerOffIcon, PowerIcon, XIcon, PencilIcon, Trash2Icon, OctagonXIcon } from 'lucide-react'
 import ResponsiveTable from '@/components/ui/ResponsiveTable'
 import Tooltip from '@/components/ui/tooltip'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/ui/password-input'
+import { Badge } from '@/components/ui/badge'
+import { Banner, BannerDescription } from '@/components/ui/banner'
+import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { formatDate } from '@/lib/format'
 
 interface AdminUser {
   id: string
@@ -46,8 +66,9 @@ interface AddFormState {
   name: string
   email: string
   password: string
-  showPassword: boolean
 }
+
+const EMPTY_FORM: AddFormState = { name: '', email: '', password: '' }
 
 export default function AdminsPage() {
   const { user } = useAuth()
@@ -56,14 +77,15 @@ export default function AdminsPage() {
   const [admins, setAdmins] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm] = useState<AddFormState>({ name: '', email: '', password: '', showPassword: false })
+  const [form, setForm] = useState<AddFormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
   const [actionId, setActionId] = useState<string | null>(null)
+  const [revokeTarget, setRevokeTarget] = useState<AdminUser | null>(null)
 
   // Edit states
   const [editingAdmin, setEditingAdmin] = useState<AdminUser | null>(null)
-  const [editForm, setEditForm] = useState<AddFormState>({ name: '', email: '', password: '', showPassword: false })
+  const [editForm, setEditForm] = useState<AddFormState>(EMPTY_FORM)
   const [editError, setEditError] = useState('')
 
   const load = useCallback(async () => {
@@ -78,7 +100,7 @@ export default function AdminsPage() {
   useEffect(() => { load() }, [load])
 
   function resetForm() {
-    setForm({ name: '', email: '', password: '', showPassword: false })
+    setForm(EMPTY_FORM)
     setFormError('')
     setShowAdd(false)
   }
@@ -120,14 +142,14 @@ export default function AdminsPage() {
 
   function openEdit(admin: AdminUser) {
     setEditingAdmin(admin)
-    setEditForm({ name: admin.name, email: admin.email, password: '', showPassword: false })
+    setEditForm({ name: admin.name, email: admin.email, password: '' })
     setEditError('')
     setShowAdd(false)
   }
 
   function resetEditForm() {
     setEditingAdmin(null)
-    setEditForm({ name: '', email: '', password: '', showPassword: false })
+    setEditForm(EMPTY_FORM)
     setEditError('')
   }
 
@@ -160,7 +182,6 @@ export default function AdminsPage() {
   }
 
   async function handleRevoke(admin: AdminUser) {
-    if (!confirm(`Remove super admin access from ${admin.name}? They will no longer be able to log into the Admin Portal.`)) return
     setActionId(admin.id)
     try {
       await adminApi.revoke(admin.id)
@@ -169,335 +190,337 @@ export default function AdminsPage() {
       // ignore
     } finally {
       setActionId(null)
+      setRevokeTarget(null)
     }
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[28px] font-bold text-text-primary">Admin Users</h1>
-          <p className="text-[15px] text-text-secondary mt-1">
-            Manage who can access the Admin Portal at <span className="font-medium text-text-primary">/admin</span>.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => { setShowAdd(true); setEditingAdmin(null) }}
-          className="flex items-center gap-2 h-10 px-4 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
-        >
-          <Plus size={15} />
-          Add Admin
-        </button>
-      </div>
+    <div className="max-w-3xl">
+      <PageHeader
+        title="Admin Users"
+        meta={
+          <>
+            Manage who can access the Admin Portal at{' '}
+            <span className="font-medium text-text-primary">/admin</span>.
+          </>
+        }
+        actions={
+          <Button onClick={() => { setShowAdd(true); setEditingAdmin(null) }}>
+            <PlusIcon size={15} />
+            Add Admin
+          </Button>
+        }
+      />
 
-      {/* Add form */}
-      {showAdd && (
-        <div className="bg-white border border-border-light rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[18px] font-semibold text-text-primary">New Super Admin</h2>
-            <button
-              type="button"
-              onClick={resetForm}
-              className="p-1.5 rounded-[6px] hover:bg-surface-control text-text-secondary transition-colors"
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Full name</label>
-              <input
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="Jane Smith"
-                className="w-full h-10 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
-              />
+      <div className="mt-6 flex flex-col gap-6">
+        {/* Add form */}
+        {showAdd && (
+          <div className="rounded-card border border-border-light bg-surface p-6 shadow-card">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-section font-medium text-text-primary">New Super Admin</h2>
+              <button
+                type="button"
+                onClick={resetForm}
+                aria-label="Close"
+                className="rounded-md p-1 text-text-secondary hover:bg-surface-control"
+              >
+                <XIcon size={16} />
+              </button>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Email address</label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                placeholder="jane@company.com"
-                className="w-full h-10 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
-              />
-            </div>
-          </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Password</label>
-            <div className="relative max-w-sm">
-              <input
-                type={form.showPassword ? 'text' : 'password'}
+            <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="add-name">Full name</Label>
+                <Input
+                  id="add-name"
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="Jane Smith"
+                  className="mt-2 max-w-none"
+                />
+              </div>
+              <div>
+                <Label htmlFor="add-email" required>
+                  Email address
+                </Label>
+                <Input
+                  id="add-email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                  placeholder="jane@company.com"
+                  className="mt-2 max-w-none"
+                />
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <Label htmlFor="add-password" required>
+                Password
+              </Label>
+              <PasswordInput
+                id="add-password"
                 value={form.password}
                 onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                 placeholder="Min. 8 characters"
-                className="w-full h-10 px-3 pr-10 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
+                className="mt-2 max-w-sm"
               />
+              <p className="mt-2 text-label text-text-muted">
+                If the email already exists in the system, that user will be promoted to super admin — no new account is created.
+              </p>
+            </div>
+
+            {formError ? (
+              <Banner variant="danger" className="mb-4">
+                <OctagonXIcon />
+                <BannerDescription>{formError}</BannerDescription>
+              </Banner>
+            ) : null}
+
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={resetForm}>
+                Cancel
+              </Button>
+              <Button loading={saving} loadingLabel="Adding" onClick={handleAdd}>
+                Add Admin
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Edit form */}
+        {editingAdmin && (
+          <div className="rounded-card border border-border-light bg-surface p-6 shadow-card">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-section font-medium text-text-primary">
+                Edit Super Admin ({editingAdmin.name})
+              </h2>
               <button
                 type="button"
-                tabIndex={-1}
-                onClick={() => setForm((f) => ({ ...f, showPassword: !f.showPassword }))}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
+                onClick={resetEditForm}
+                aria-label="Close"
+                className="rounded-md p-1 text-text-secondary hover:bg-surface-control"
               >
-                {form.showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                <XIcon size={16} />
               </button>
             </div>
-            <p className="text-xs text-text-muted mt-1">
-              If the email already exists in the system, that user will be promoted to super admin — no new account is created.
-            </p>
-          </div>
 
-          {formError && (
-            <p className="text-sm text-danger mb-3">{formError}</p>
-          )}
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={resetForm}
-              className="h-9 px-4 rounded-[8px] border-2 border-primary text-sm font-semibold text-primary-text bg-white hover:bg-primary-subtle transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled={saving}
-              onClick={handleAdd}
-              className="h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
-            >
-              {saving && <Loader2 size={13} className="animate-spin" />}
-              {saving ? 'Adding...' : 'Add Admin'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Edit form */}
-      {editingAdmin && (
-        <div className="bg-white border border-border-light rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[18px] font-semibold text-text-primary">Edit Super Admin ({editingAdmin.name})</h2>
-            <button
-              type="button"
-              onClick={resetEditForm}
-              className="p-1.5 rounded-[6px] hover:bg-surface-control text-text-secondary transition-colors"
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Full name</label>
-              <input
-                value={editForm.name}
-                onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="Jane Smith"
-                className="w-full h-10 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
-              />
+            <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="edit-name">Full name</Label>
+                <Input
+                  id="edit-name"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="Jane Smith"
+                  className="mt-2 max-w-none"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-email" required>
+                  Email address
+                </Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                  placeholder="jane@company.com"
+                  className="mt-2 max-w-none"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Email address (Required)</label>
-              <input
-                type="email"
-                value={editForm.email}
-                onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
-                placeholder="jane@company.com"
-                className="w-full h-10 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
-              />
-            </div>
-          </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">New Password (Required)</label>
-            <div className="relative max-w-sm">
-              <input
-                type={editForm.showPassword ? 'text' : 'password'}
+            <div className="mb-4">
+              <Label htmlFor="edit-password" required>
+                New password
+              </Label>
+              <PasswordInput
+                id="edit-password"
                 value={editForm.password}
                 onChange={(e) => setEditForm((f) => ({ ...f, password: e.target.value }))}
                 placeholder="Min. 8 characters"
-                className="w-full h-10 px-3 pr-10 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
+                className="mt-2 max-w-sm"
               />
-              <button
-                type="button"
-                tabIndex={-1}
-                onClick={() => setEditForm((f) => ({ ...f, showPassword: !f.showPassword }))}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
-              >
-                {editForm.showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
+              <p className="mt-2 text-label text-text-muted">
+                For security, you must specify a new password (min. 8 characters) to save changes.
+              </p>
             </div>
-            <p className="text-xs text-text-muted mt-1">
-              For security, you must specify a new password (min. 8 characters) to save changes.
-            </p>
-          </div>
 
-          {editError && (
-            <p className="text-sm text-danger mb-3">{editError}</p>
-          )}
+            {editError ? (
+              <Banner variant="danger" className="mb-4">
+                <OctagonXIcon />
+                <BannerDescription>{editError}</BannerDescription>
+              </Banner>
+            ) : null}
 
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={resetEditForm}
-              className="h-9 px-4 rounded-[8px] border-2 border-primary text-sm font-semibold text-primary-text bg-white hover:bg-primary-subtle transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled={saving}
-              onClick={handleEdit}
-              className="h-9 px-4 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
-            >
-              {saving && <Loader2 size={13} className="animate-spin" />}
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={resetEditForm}>
+                Cancel
+              </Button>
+              <Button loading={saving} loadingLabel="Saving" onClick={handleEdit}>
+                Save Changes
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* Admin list */}
-      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <Loader2 size={22} className="animate-spin text-text-muted" />
-          </div>
-        ) : admins.length === 0 ? (
-          <div className="p-8 text-center">
-            <ShieldCheck size={32} className="text-[#CBD5E1] mx-auto mb-2" />
-            <p className="text-sm text-text-muted">No admin users found.</p>
-          </div>
-        ) : (
-          <ResponsiveTable<AdminUser>
-            className="border-0 shadow-none rounded-none"
-            columns={[
-              {
-                key: 'name',
-                header: 'Name',
-                primary: true,
-                render: (admin) => {
-                  const isSelf = admin.id === currentUserId
-                  return (
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-primary-subtle border border-primary-border flex items-center justify-center shrink-0">
-                        <span className="text-xs font-semibold text-primary-text">
-                          {admin.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-text-primary">{admin.name}</p>
-                        {isSelf && <p className="text-[11px] text-text-muted">You</p>}
-                      </div>
-                    </div>
-                  )
-                },
-              },
-              {
-                key: 'email',
-                header: 'Email',
-                render: (admin) => <span className="text-text-secondary">{admin.email}</span>,
-              },
-              {
-                key: 'status',
-                header: 'Status',
-                render: (admin) => (
-                  <span className={[
-                    'text-[11px] font-medium px-2.5 py-0.5 rounded-full border',
-                    admin.is_active
-                      ? 'bg-success-bg text-success border-success-border'
-                      : 'bg-danger-bg text-danger border-danger-border',
-                  ].join(' ')}>
-                    {admin.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                ),
-              },
-              {
-                key: 'added',
-                header: 'Added',
-                render: (admin) => (
-                  <span className="text-text-muted text-xs whitespace-nowrap">
-                    {new Date(admin.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </span>
-                ),
-              },
-              {
-                key: 'actions',
-                header: 'Actions',
-                render: (admin) => {
-                  const isSelf = admin.id === currentUserId
-                  const busy = actionId === admin.id
-                  return (
-                    <div className="flex items-center gap-1 md:justify-start justify-end">
-                      {!isSelf && (
-                        <Tooltip label={admin.is_active ? 'Deactivate' : 'Activate'}>
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => handleToggle(admin)}
-                          aria-label={admin.is_active ? 'Deactivate' : 'Activate'}
-                          className="p-1.5 rounded-[6px] hover:bg-surface-control text-text-secondary disabled:opacity-40 transition-colors"
-                        >
-                          {busy ? <Loader2 size={14} className="animate-spin" /> : admin.is_active ? <PowerOff size={14} /> : <Power size={14} />}
-                        </button>
-                        </Tooltip>
-                      )}
-                      <Tooltip label="Edit admin">
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => openEdit(admin)}
-                        aria-label="Edit admin"
-                        className="p-1.5 rounded-[6px] hover:bg-primary-subtle text-primary-text disabled:opacity-40 transition-colors"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      </Tooltip>
-                      <Tooltip label={
-                          isSelf
-                            ? 'You cannot revoke your own super admin access'
-                            : admins.length <= 1
-                              ? 'At least one super administrator account is required'
-                              : 'Remove admin access'
-                        }>
-                      <button
-                        type="button"
-                        disabled={busy || isSelf || admins.length <= 1}
-                        onClick={() => handleRevoke(admin)}
-                        aria-label={
-                          isSelf
-                            ? 'You cannot revoke your own super admin access'
-                            : admins.length <= 1
-                              ? 'At least one super administrator account is required'
-                              : 'Remove admin access'
-                        }
-                        className="p-1.5 rounded-[6px] hover:bg-danger-bg text-danger disabled:opacity-40 disabled:hover:bg-transparent disabled:text-[#CBD5E1] transition-colors"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                      </Tooltip>
-                    </div>
-                  )
-                },
-              },
-            ]}
-            rows={admins}
-            rowKey={(admin) => admin.id}
-          />
         )}
+
+        {/* Admin list */}
+        <div className="overflow-hidden rounded-card border border-border-light bg-surface shadow-card">
+          {loading ? (
+            <div className="flex flex-col gap-3 p-6">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : admins.length === 0 ? (
+            <EmptyState variant="nothing-yet" heading="No admin users yet">
+              Add a super admin to give them access to the Admin Portal.
+            </EmptyState>
+          ) : (
+            <ResponsiveTable<AdminUser>
+              className="rounded-none border-0 shadow-none"
+              columns={[
+                {
+                  key: 'name',
+                  header: 'Name',
+                  primary: true,
+                  render: (admin) => {
+                    const isSelf = admin.id === currentUserId
+                    return (
+                      <div className="flex items-center gap-2">
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-primary-border bg-primary-subtle">
+                          <span className="text-label font-medium text-primary-text">
+                            {admin.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-text-primary">{admin.name}</p>
+                          {isSelf && <p className="text-meta text-text-muted">You</p>}
+                        </div>
+                      </div>
+                    )
+                  },
+                },
+                {
+                  key: 'email',
+                  header: 'Email',
+                  render: (admin) => <span className="text-text-secondary">{admin.email}</span>,
+                },
+                {
+                  key: 'status',
+                  header: 'Status',
+                  render: (admin) => (
+                    <Badge variant={admin.is_active ? 'success' : 'danger'}>
+                      {admin.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  ),
+                },
+                {
+                  key: 'added',
+                  header: 'Added',
+                  render: (admin) => (
+                    <span className="whitespace-nowrap text-meta text-text-muted">
+                      {formatDate(admin.created_at)}
+                    </span>
+                  ),
+                },
+                {
+                  key: 'actions',
+                  header: 'Actions',
+                  render: (admin) => {
+                    const isSelf = admin.id === currentUserId
+                    const busy = actionId === admin.id
+                    return (
+                      <div className="flex items-center justify-end gap-1 md:justify-start">
+                        {!isSelf && (
+                          <Tooltip label={admin.is_active ? 'Deactivate' : 'Activate'}>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              disabled={busy}
+                              onClick={() => handleToggle(admin)}
+                              aria-label={admin.is_active ? 'Deactivate' : 'Activate'}
+                            >
+                              {admin.is_active ? <PowerOffIcon size={14} /> : <PowerIcon size={14} />}
+                            </Button>
+                          </Tooltip>
+                        )}
+                        <Tooltip label="Edit admin">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            disabled={busy}
+                            onClick={() => openEdit(admin)}
+                            aria-label="Edit admin"
+                          >
+                            <PencilIcon size={14} />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip
+                          label={
+                            isSelf
+                              ? 'You cannot revoke your own super admin access'
+                              : admins.length <= 1
+                                ? 'At least one super administrator account is required'
+                                : 'Remove admin access'
+                          }
+                        >
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            disabled={busy || isSelf || admins.length <= 1}
+                            onClick={() => setRevokeTarget(admin)}
+                            aria-label="Remove admin access"
+                            className="text-danger hover:bg-danger-bg"
+                          >
+                            <Trash2Icon size={14} />
+                          </Button>
+                        </Tooltip>
+                      </div>
+                    )
+                  },
+                },
+              ]}
+              rows={admins}
+              rowKey={(admin) => admin.id}
+            />
+          )}
+        </div>
+
+        <div className="rounded-card border border-primary-border bg-primary-subtle px-4 py-4">
+          <p className="mb-1 text-body font-medium text-primary-text">Admin Portal credentials</p>
+          <p className="text-body text-primary-text">
+            Login URL: <span className="font-medium">/admin</span> — Only users with super admin access can sign in here.
+            Regular org accounts (even with the same email) use <span className="font-medium">/login</span> and land in their organization.
+          </p>
+        </div>
       </div>
 
-      <div className="bg-primary-subtle border border-primary-border rounded-[12px] px-5 py-4">
-        <p className="text-sm font-semibold text-primary-text mb-1">Admin Portal credentials</p>
-        <p className="text-sm text-primary-text">
-          Login URL: <span className="font-medium">/admin</span> — Only users with super admin access can sign in here.
-          Regular org accounts (even with the same email) use <span className="font-medium">/login</span> and land in their organization.
-        </p>
-      </div>
+      <AlertDialog open={!!revokeTarget} onOpenChange={(next) => { if (!next) setRevokeTarget(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove super admin access?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {revokeTarget
+                ? `${revokeTarget.name} will no longer be able to log into the Admin Portal.`
+                : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="danger"
+              onClick={() => revokeTarget && handleRevoke(revokeTarget)}
+            >
+              Remove access
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

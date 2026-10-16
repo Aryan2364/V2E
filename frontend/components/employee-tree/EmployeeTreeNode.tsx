@@ -29,7 +29,7 @@ function TreeNodeComponent({ node, depth = 0 }: { node: TreeNode; depth?: number
   return (
     <div className={depth > 0 ? 'ml-8 border-l border-border-light pl-4' : ''}>
       <div className="flex items-center gap-3 py-2">
-        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-semibold shrink-0">
+        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-medium shrink-0">
           {getInitials(node.profile.user?.name ?? 'U')}
         </div>
         <div>
@@ -51,7 +51,7 @@ export default function EmployeeTree({ profiles }: { profiles: EmployeeProfile[]
   }
   return (
     <div className="bg-white rounded-xl border border-border-light p-4">
-      <h3 className="text-[18px] font-semibold text-text-primary mb-4">Reporting Structure</h3>
+      <h3 className="text-[18px] font-medium text-text-primary mb-4">Reporting Structure</h3>
       {roots.map((root) => (
         <TreeNodeComponent key={root.profile.id} node={root} />
       ))}

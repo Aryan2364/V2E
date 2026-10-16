@@ -100,7 +100,7 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
               className="flex-1 min-w-0 flex items-center gap-1.5 text-left"
             >
               <span className="shrink-0 text-primary-text">{KIND_META[n.kind].icon}</span>
-              <span className={`flex-1 min-w-0 truncate text-[13px] ${isSelected || isCurrent ? 'text-primary-text font-semibold' : 'text-text-primary'}`}>{n.name}</span>
+              <span className={`flex-1 min-w-0 truncate text-[13px] ${isSelected || isCurrent ? 'text-primary-text font-medium' : 'text-text-primary'}`}>{n.name}</span>
             </button>
           </Tooltip>
         </div>
@@ -144,7 +144,7 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
                     <span className="flex-1 min-w-0 truncate text-[13px] text-text-primary font-medium">{node.name}</span>
                   </div>
                   {path.length > 0 && (
-                    <p className="text-[11px] text-text-muted truncate pl-5">{path.join(' › ')}</p>
+                    <p className="text-[11px] text-text-muted truncate pl-4">{path.join(' › ')}</p>
                   )}
                 </button>
               ))}
@@ -159,7 +159,7 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
               }`}
             >
               <Workflow size={14} className="shrink-0 text-primary-text" />
-              <span className={`flex-1 min-w-0 truncate text-[13px] font-semibold ${currentParentId === null ? 'text-primary-text' : 'text-text-primary'}`}>{mapName}</span>
+              <span className={`flex-1 min-w-0 truncate text-[13px] font-medium ${currentParentId === null ? 'text-primary-text' : 'text-text-primary'}`}>{mapName}</span>
             </button>
             {roots.length === 0 ? (
               <p className="text-[12px] text-text-muted px-3 py-4">No steps yet.</p>

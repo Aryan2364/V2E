@@ -57,8 +57,8 @@ export default function DeptTableView({
       key: 'name',
       header: 'Department',
       primary: true,
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: ({ department, depth }) => {
         const base = colorMap[department.id]?.base ?? 'var(--text-muted)'
         return (
@@ -78,14 +78,14 @@ export default function DeptTableView({
     {
       key: 'head',
       header: 'Dept. Head',
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: ({ department }) => {
         const name = department.head_user?.name
         if (!name) return <span className="text-text-muted">—</span>
         return (
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="w-7 h-7 rounded-full bg-surface-control-pressed text-text-secondary flex items-center justify-center text-[11px] font-bold shrink-0">
+            <span className="w-7 h-7 rounded-full bg-surface-control-pressed text-text-secondary flex items-center justify-center text-[11px] font-medium shrink-0">
               {initials(name)}
             </span>
             <span className="text-text-primary truncate">{name}</span>
@@ -97,8 +97,8 @@ export default function DeptTableView({
       key: 'parent',
       header: 'Parent Dept.',
       desktopHiddenBelow: 'md',
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: ({ parent }) =>
         parent ? (
           <span className="text-text-secondary">{parent.name}</span>
@@ -113,8 +113,8 @@ export default function DeptTableView({
       header: 'Members',
       align: 'right',
       desktopHiddenBelow: 'lg',
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: ({ department }) => (
         <span className="inline-flex items-center gap-1.5 text-text-secondary">
           <Users size={13} className="text-text-muted" />
@@ -127,8 +127,8 @@ export default function DeptTableView({
       header: 'Roles',
       align: 'right',
       desktopHiddenBelow: 'lg',
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: ({ department }) => (
         <span className="text-text-secondary">{department._count?.roles ?? 0}</span>
       ),
@@ -138,8 +138,8 @@ export default function DeptTableView({
       header: '',
       align: 'right',
       hideOnMobile: true,
-      cellClassName: 'px-5 py-3.5',
-      headerClassName: 'px-5 py-3.5',
+      cellClassName: 'px-4 py-3.5',
+      headerClassName: 'px-4 py-3.5',
       render: ({ department }) => (
         <div className="flex items-center justify-end gap-1">
           {canEdit && (
@@ -168,11 +168,11 @@ export default function DeptTableView({
       rowKey={({ department }) => department.id}
       onRowClick={({ department }) => onSelect(department)}
       emptyState={
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-16 text-center">
+        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-12 text-center">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
             <Network size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-text-primary">No departments match your search</p>
+          <p className="font-medium text-text-primary">No departments match your search</p>
           <p className="text-text-secondary text-sm mt-1">Try a different name.</p>
         </div>
       }

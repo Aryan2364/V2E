@@ -168,8 +168,8 @@ export default function DeptFormDrawer({
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light">
-          <h3 className="font-semibold text-text-primary">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-border-light">
+          <h3 className="font-medium text-text-primary">
             {isEdit ? 'Edit Department' : 'Add Department'}
           </h3>
           <button
@@ -182,7 +182,7 @@ export default function DeptFormDrawer({
         </div>
 
         <div className="flex-1 overflow-y-auto min-h-0">
-          <div className="px-5 py-5 flex flex-col gap-4">
+          <div className="px-4 py-4 flex flex-col gap-4">
           <div>
             <label className={labelCls}>Department Name *</label>
             <input
@@ -263,7 +263,7 @@ export default function DeptFormDrawer({
           {error && <p className="text-xs text-danger">{error}</p>}
           </div>
 
-          <div className="px-5 pt-4 pb-12 border-t border-border-light flex flex-col gap-3">
+          <div className="px-4 pt-4 pb-12 border-t border-border-light flex flex-col gap-3">
             <div className="flex gap-3">
               <Button variant="primary" isLoading={saving} onClick={handleSave}>
                 {isEdit ? 'Save' : 'Add Department'}
@@ -306,7 +306,7 @@ export default function DeptFormDrawer({
             {isEdit && confirmDelete && (
               <div className="rounded-[8px] border border-danger-border bg-danger-bg p-3">
                 <p className="text-sm text-danger mb-2.5">
-                  Delete <span className="font-semibold">{editing?.name}</span>? This can’t
+                  Delete <span className="font-medium">{editing?.name}</span>? This can’t
                   be undone.
                 </p>
                 <div className="flex gap-2">

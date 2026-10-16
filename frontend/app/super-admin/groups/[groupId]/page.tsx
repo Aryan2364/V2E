@@ -87,7 +87,7 @@ export default function GroupDetailPage() {
 
   if (!group) {
     return (
-      <div className="flex flex-col items-center gap-3 py-20">
+      <div className="flex flex-col items-center gap-3 py-12">
         <p className="text-text-secondary">Group not found.</p>
         <Button variant="secondary" onClick={() => router.push('/super-admin/groups')}>Back to list</Button>
       </div>
@@ -103,7 +103,7 @@ export default function GroupDetailPage() {
         >
           <ChevronLeft size={16} /> Groups
         </button>
-        <h1 className="text-[28px] font-bold text-text-primary">{group.name}</h1>
+        <h1 className="text-[28px] font-medium text-text-primary">{group.name}</h1>
         {group.description && <p className="text-sm text-text-secondary mt-1">{group.description}</p>}
       </div>
 
@@ -114,13 +114,13 @@ export default function GroupDetailPage() {
             <Layers size={26} className="text-primary-text" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-text-primary">{group.name}</h2>
+            <h2 className="text-xl font-medium text-text-primary">{group.name}</h2>
           </div>
         </div>
-        <div className="mt-5 pt-5 border-t border-border-light flex gap-8">
+        <div className="mt-4 pt-4 border-t border-border-light flex gap-8">
           <div>
             <p className="text-xs text-text-muted uppercase tracking-wider font-medium">Organizations</p>
-            <p className="text-2xl font-bold text-text-primary mt-0.5">{group.organizations?.length ?? 0}</p>
+            <p className="text-2xl font-medium text-text-primary mt-0.5">{group.organizations?.length ?? 0}</p>
           </div>
         </div>
       </Card>
@@ -135,7 +135,7 @@ export default function GroupDetailPage() {
 
         {/* Add org */}
         {availableOrgs.length > 0 && (
-          <div className="flex gap-3 mb-5 pb-5 border-b border-border-light">
+          <div className="flex gap-3 mb-4 pb-4 border-b border-border-light">
             <select
               value={addOrgId}
               onChange={(e) => setAddOrgId(e.target.value)}
@@ -153,7 +153,7 @@ export default function GroupDetailPage() {
         )}
 
         {(!group.organizations || group.organizations.length === 0) ? (
-          <div className="flex flex-col items-center gap-2 py-10">
+          <div className="flex flex-col items-center gap-2 py-8">
             <Building2 size={28} className="text-[#CBD5E1]" />
             <p className="text-sm text-text-muted">No organizations in this group yet.</p>
           </div>
@@ -197,7 +197,7 @@ export default function GroupDetailPage() {
       <Card>
         <div className="flex items-center gap-2 mb-1">
           <Users size={16} className="text-text-secondary" />
-          <h3 className="text-[18px] font-semibold text-text-primary">Users across group</h3>
+          <h3 className="text-[18px] font-medium text-text-primary">Users across group</h3>
         </div>
         <p className="text-sm text-text-secondary mb-4">
           All users who are members of any organization in this group.

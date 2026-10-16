@@ -625,7 +625,7 @@ export default function ProcessMapExplorerPage() {
       </div>
       <div className="relative">
       <button onClick={() => { setShowAdd((v) => !v); setAddLanePick(false) }}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-[8px] bg-primary text-white hover:bg-primary-hover shadow-xs transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1">
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-[8px] bg-primary text-white hover:bg-primary-hover shadow-xs transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1">
         <Plus size={14} /> Add step
       </button>
       {showAdd && (
@@ -635,7 +635,7 @@ export default function ProcessMapExplorerPage() {
             {addLanePick ? (
               <div className="p-1">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[13px] font-semibold text-text-primary">New swimlane</span>
+                  <span className="text-[13px] font-medium text-text-primary">New swimlane</span>
                   <button onClick={() => setAddLanePick(false)} className="text-[12px] font-medium text-primary-text hover:underline">‹ Back</button>
                 </div>
                 <DepartmentSelect
@@ -725,7 +725,7 @@ export default function ProcessMapExplorerPage() {
           </button>
           <span className="text-[#CBD5E1]">›</span>
           <button onClick={() => goTo(null)}
-            className={`shrink-0 font-medium hover:text-primary-text max-w-[180px] truncate rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${parentId === null && flow.breadcrumb.length === 0 ? 'text-text-primary font-semibold' : ''}`}>
+            className={`shrink-0 font-medium hover:text-primary-text max-w-[180px] truncate rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${parentId === null && flow.breadcrumb.length === 0 ? 'text-text-primary font-medium' : ''}`}>
             {map.name}
           </button>
           {flow.breadcrumb.map((c, i) => (
@@ -733,7 +733,7 @@ export default function ProcessMapExplorerPage() {
               <span className="text-[#CBD5E1]">›</span>
               {i < flow.breadcrumb.length - 1
                 ? <button onClick={() => goTo(c.id)} className="font-medium hover:text-primary-text max-w-[160px] truncate rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary">{c.name}</button>
-                : <span className="font-semibold text-text-primary max-w-[220px] truncate" aria-current="page">{c.name}</span>}
+                : <span className="font-medium text-text-primary max-w-[220px] truncate" aria-current="page">{c.name}</span>}
             </span>
           ))}
         </nav>
@@ -811,7 +811,7 @@ export default function ProcessMapExplorerPage() {
         <div className="flex items-center gap-3 flex-wrap rounded-[10px] bg-[#0F172A] text-white px-4 py-2.5 mt-2 shrink-0">
           <GitCompare size={16} className="shrink-0" />
           <span className="text-[13px] font-medium">
-            Comparing <span className="font-semibold">{comparing.baseLabel}</span> → <span className="font-semibold">{comparing.targetLabel}</span>
+            Comparing <span className="font-medium">{comparing.baseLabel}</span> → <span className="font-medium">{comparing.targetLabel}</span>
           </span>
           <span className="text-[12px] text-white/70">{diff.summary.total_changes} change{diff.summary.total_changes !== 1 ? 's' : ''}</span>
           <span className="flex items-center gap-2 text-[11px]">
@@ -819,7 +819,7 @@ export default function ProcessMapExplorerPage() {
             <span className="inline-flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-warning" /> changed</span>
             <span className="inline-flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-danger" /> removed</span>
           </span>
-          <button onClick={exitCompare} className="ml-auto inline-flex items-center gap-1 text-[13px] font-semibold text-white/90 hover:text-white">
+          <button onClick={exitCompare} className="ml-auto inline-flex items-center gap-1 text-[13px] font-medium text-white/90 hover:text-white">
             <X size={14} /> Exit compare
           </button>
         </div>
@@ -838,7 +838,7 @@ export default function ProcessMapExplorerPage() {
             <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-3">
               {KIND_META.start_event.icon}
             </div>
-            <p className="text-text-primary font-semibold">This level is empty</p>
+            <p className="text-text-primary font-medium">This level is empty</p>
             <p className="text-text-secondary text-sm mt-1 max-w-sm">
               {canEditHere
                 ? 'Add your first step with the Add step button, top right — pick a Container, Task, Decision or a Start/End marker.'
@@ -940,15 +940,15 @@ export default function ProcessMapExplorerPage() {
           <div className="absolute inset-0 bg-black/40" onClick={cancelBranch} />
           <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-xs p-4 animate-[fadeIn_.15s_ease-out]">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-semibold text-text-primary">What does this branch mean?</h3>
+              <h3 className="text-sm font-medium text-text-primary">What does this branch mean?</h3>
               <button onClick={cancelBranch} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
             </div>
             <p className="text-[12px] text-text-muted mb-3">Pick the outcome for this route out of the decision.</p>
             <div className="flex gap-2">
               <button onClick={() => chooseBranch('yes')}
-                className="flex-1 px-3 py-2 rounded-[8px] text-sm font-semibold text-white bg-success hover:bg-success">Yes</button>
+                className="flex-1 px-3 py-2 rounded-[8px] text-sm font-medium text-white bg-success hover:bg-success">Yes</button>
               <button onClick={() => chooseBranch('no')}
-                className="flex-1 px-3 py-2 rounded-[8px] text-sm font-semibold text-white bg-danger hover:bg-danger-hover">No</button>
+                className="flex-1 px-3 py-2 rounded-[8px] text-sm font-medium text-white bg-danger hover:bg-danger-hover">No</button>
             </div>
           </div>
         </div>,
@@ -961,7 +961,7 @@ export default function ProcessMapExplorerPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setLaneRename(null)} />
           <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-sm p-4 animate-[fadeIn_.15s_ease-out]">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-semibold text-text-primary">Change lane&rsquo;s department</h3>
+              <h3 className="text-sm font-medium text-text-primary">Change lane&rsquo;s department</h3>
               <button onClick={() => setLaneRename(null)} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
             </div>
             {(() => {
@@ -969,9 +969,9 @@ export default function ProcessMapExplorerPage() {
               return (
                 <>
                   <p className="text-[12px] text-text-muted mb-2.5">
-                    Re-point <span className="font-semibold text-text-primary">{laneRename.name}</span> at another department.{' '}
+                    Re-point <span className="font-medium text-text-primary">{laneRename.name}</span> at another department.{' '}
                     {count > 0
-                      ? <>All <span className="font-semibold text-warning">{count} step{count !== 1 ? 's' : ''}</span> in this lane will move to it.</>
+                      ? <>All <span className="font-medium text-warning">{count} step{count !== 1 ? 's' : ''}</span> in this lane will move to it.</>
                       : <>This lane is empty.</>}
                   </p>
                   <DepartmentSelect
@@ -981,7 +981,7 @@ export default function ProcessMapExplorerPage() {
                   />
                   {count === 0 && (
                     <button onClick={removeLane}
-                      className="mt-3 w-full px-3 py-2 rounded-[8px] text-[13px] font-semibold text-danger border border-danger-border hover:bg-danger-bg transition-colors">
+                      className="mt-3 w-full px-3 py-2 rounded-[8px] text-[13px] font-medium text-danger border border-danger-border hover:bg-danger-bg transition-colors">
                       Remove this empty lane
                     </button>
                   )}
@@ -999,7 +999,7 @@ export default function ProcessMapExplorerPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setLaneAdd(null)} />
           <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-xs p-4 animate-[fadeIn_.15s_ease-out]">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-text-primary">Add to this lane</h3>
+              <h3 className="text-sm font-medium text-text-primary">Add to this lane</h3>
               <button onClick={() => setLaneAdd(null)} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
             </div>
             <div className="space-y-0.5">
@@ -1051,12 +1051,12 @@ function ReferenceMapModal({ orgId, excludeId, onClose, onPick }: {
     <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md max-h-[80vh] flex flex-col animate-[fadeIn_.15s_ease-out]">
-        <div className="flex items-center gap-2 px-5 py-4 border-b border-border-light">
+        <div className="flex items-center gap-2 px-4 py-4 border-b border-border-light">
           <LinkIcon size={16} className="text-primary-text" />
-          <h3 className="text-base font-semibold text-text-primary">Reference a map</h3>
+          <h3 className="text-base font-medium text-text-primary">Reference a map</h3>
           <button onClick={onClose} className="ml-auto text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
-        <div className="px-5 pt-3 pb-2">
+        <div className="px-4 pt-3 pb-2">
           <div className="relative">
             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
             <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search maps…"
@@ -1080,7 +1080,7 @@ function ReferenceMapModal({ orgId, excludeId, onClose, onPick }: {
             </div>
           )}
         </div>
-        <p className="px-5 py-2.5 border-t border-border-light text-[11px] text-text-muted">
+        <p className="px-4 py-2.5 border-t border-border-light text-[11px] text-text-muted">
           Drops an instance that opens the chosen map. Edits to that map show wherever it’s referenced.
         </p>
       </div>
@@ -1122,7 +1122,7 @@ function SaveTemplateModal({ orgId, mapId, mapName, onClose }: {
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md p-6 animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-text-primary">Save as template</h3>
+          <h3 className="text-lg font-medium text-text-primary">Save as template</h3>
           <button onClick={onClose} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
         {done ? (
@@ -1133,9 +1133,9 @@ function SaveTemplateModal({ orgId, mapId, mapName, onClose }: {
             <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && save()}
               className="w-full px-3 py-2.5 text-[15px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden" />
             <p className="text-[12px] text-text-muted mt-1.5">Freezes this map’s current structure so you can spin up new maps from it later.</p>
-            <div className="flex justify-end mt-5">
+            <div className="flex justify-end mt-4">
               <button onClick={save} disabled={!name.trim() || busy}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
                 {busy && <Loader2 size={15} className="animate-spin" />} Save template
               </button>
             </div>
@@ -1169,13 +1169,13 @@ function DiffPanel({ diff, onClose, onJump }: {
   return createPortal(
     <div className="fixed inset-0 z-60 pointer-events-none">
       <div className="absolute right-0 top-0 h-full w-full max-w-[400px] bg-white shadow-xl border-l border-border-light flex flex-col pointer-events-auto animate-[slideInRight_.22s_ease-out]">
-        <div className="flex items-center gap-2 px-5 py-4 border-b border-border-light">
+        <div className="flex items-center gap-2 px-4 py-4 border-b border-border-light">
           <GitCompare size={16} className="text-primary-text" />
-          <span className="text-sm font-semibold text-text-primary">Changes</span>
+          <span className="text-sm font-medium text-text-primary">Changes</span>
           <span className="text-xs text-text-muted">{diff.summary.total_changes} total</span>
           <button onClick={onClose} className="ml-auto text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5 text-[13px]">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 text-[13px]">
           {diff.summary.total_changes === 0 && (
             <p className="text-text-secondary text-center py-8">No differences between these two versions.</p>
           )}
@@ -1232,7 +1232,7 @@ function DiffPanel({ diff, onClose, onJump }: {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-1">{title}</p>
+      <p className="text-[11px] font-medium text-text-muted uppercase tracking-wide mb-1">{title}</p>
       <div className="space-y-0.5">{children}</div>
     </div>
   )
@@ -1254,7 +1254,7 @@ function VisibilityPanel({ flow, visible, onChange, onClose }: {
       <div className="fixed inset-0 z-40" onClick={onClose} />
       <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 bg-white border border-border-light rounded-[10px] shadow-lg p-3 animate-[popIn_.12s_ease-out]">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[13px] font-semibold text-text-primary">Show nodes</span>
+          <span className="text-[13px] font-medium text-text-primary">Show nodes</span>
           <button onClick={() => onChange(null)} className="text-[12px] font-medium text-primary-text hover:underline">View all</button>
         </div>
         <div className="max-h-64 overflow-y-auto space-y-0.5">
@@ -1319,13 +1319,13 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
       <div className="fixed inset-0 z-40" onClick={onClose} />
       <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-80 bg-white border border-border-light rounded-[10px] shadow-lg p-3 animate-[popIn_.12s_ease-out]">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[13px] font-semibold text-text-primary">Saved versions</span>
+          <span className="text-[13px] font-medium text-text-primary">Saved versions</span>
           <button onClick={onClose} className="text-text-muted hover:text-text-primary"><X size={15} /></button>
         </div>
 
         {/* Compare */}
         <div className="mb-3 pb-3 border-b border-border-light">
-          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-1.5">Compare (as-is → to-be)</p>
+          <p className="text-[11px] font-medium text-text-muted uppercase tracking-wide mb-1.5">Compare (as-is → to-be)</p>
           <div className="flex items-center gap-1.5">
             <div className="flex-1 min-w-0">
               <StyledSelect value={baseRef} onChange={setBaseRef} placeholder="From…"
@@ -1338,7 +1338,7 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
             </div>
           </div>
           <button disabled={!canCompare} onClick={() => onCompare(baseRef, targetRef, labelOf(baseRef), labelOf(targetRef))}
-            className="mt-2 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-[#0F172A] text-white hover:bg-[#1E293B] disabled:bg-surface-control-pressed disabled:text-text-muted">
+            className="mt-2 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-[8px] bg-[#0F172A] text-white hover:bg-[#1E293B] disabled:bg-surface-control-pressed disabled:text-text-muted">
             <GitCompare size={14} /> Compare
           </button>
         </div>

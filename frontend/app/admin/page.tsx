@@ -76,9 +76,9 @@ export default function AdminLoginPage() {
         </div>
 
         {/* Card */}
-        <div className="rounded-card border border-border-light bg-surface p-7 shadow-card">
+        <div className="rounded-card border border-border-light bg-surface p-8 shadow-card">
           {error ? (
-            <Banner variant="danger" className="mb-5">
+            <Banner variant="danger" className="mb-4">
               <OctagonXIcon />
               <BannerDescription>{error}</BannerDescription>
             </Banner>

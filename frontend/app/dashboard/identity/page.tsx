@@ -37,7 +37,7 @@ function PillarCard({
         >
           <Icon size={16} style={{ color: iconColor }} />
         </span>
-        <span className="text-xs font-bold uppercase tracking-widest text-text-secondary">
+        <span className="text-xs font-medium uppercase tracking-widest text-text-secondary">
           {label}
         </span>
       </div>
@@ -50,16 +50,16 @@ function PillarCard({
 
 function EmptyState({ canEdit, onEdit }: { canEdit: boolean; onEdit: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
+    <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
         <Building2 size={28} className="text-text-muted" />
       </div>
-      <h2 className="text-lg font-semibold text-text-primary">No identity defined yet</h2>
+      <h2 className="text-lg font-medium text-text-primary">No identity defined yet</h2>
       <p className="text-text-secondary text-sm mt-1 max-w-xs">
         Define your organization&apos;s vision, mission, purpose and values.
       </p>
       {canEdit && (
-        <Button className="mt-5" onClick={onEdit}>
+        <Button className="mt-4" onClick={onEdit}>
           Define identity
         </Button>
       )}
@@ -103,11 +103,11 @@ export default function IdentityPage() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[22px] sm:text-[28px] font-bold text-text-primary leading-tight">
+          <h1 className="text-[22px] sm:text-[28px] font-medium text-text-primary leading-tight">
             Organization Identity
           </h1>
           <p className="mt-1 text-[14px] sm:text-[15px] text-text-secondary">
@@ -133,14 +133,14 @@ export default function IdentityPage() {
         <>
           {/* VISION — hero */}
           {identity?.vision && (
-            <section className="rounded-[16px] bg-primary-subtle border border-primary-border p-7 sm:p-9">
+            <section className="rounded-[16px] bg-primary-subtle border border-primary-border p-8 sm:p-8">
               <div className="flex items-center gap-2 mb-4">
                 <Target size={16} className="text-primary-text" />
-                <span className="text-xs font-bold uppercase tracking-[0.14em] text-primary-text">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-primary-text">
                   Vision
                 </span>
               </div>
-              <p className="text-text-primary font-bold text-[20px] sm:text-[22px] leading-snug whitespace-pre-wrap">
+              <p className="text-text-primary font-medium text-[20px] sm:text-[22px] leading-snug whitespace-pre-wrap">
                 {identity.vision}
               </p>
             </section>
@@ -148,7 +148,7 @@ export default function IdentityPage() {
 
           {/* MISSION + PURPOSE — two equal cards */}
           {(identity?.mission || identity?.purpose) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <PillarCard
                 icon={Rocket}
                 iconColor="var(--primary-text)"
@@ -169,10 +169,10 @@ export default function IdentityPage() {
           {/* CORE VALUES */}
           {values.length > 0 && (
             <div>
-              <h2 className="text-[18px] sm:text-[20px] font-semibold text-text-primary mb-5">
+              <h2 className="text-[18px] sm:text-[20px] font-medium text-text-primary mb-4">
                 Core Values
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {values.map((v, i) => {
                   const color = STRIPE_COLORS[i % STRIPE_COLORS.length]
                   return (
@@ -185,14 +185,14 @@ export default function IdentityPage() {
                         className="w-1.5 sm:w-full sm:h-1.5 shrink-0"
                         style={{ backgroundColor: color }}
                       />
-                      <div className="p-5 flex-1 min-w-0">
+                      <div className="p-4 flex-1 min-w-0">
                         <span
-                          className="block text-sm font-bold tabular-nums mb-2"
+                          className="block text-sm font-medium tabular-nums mb-2"
                           style={{ color }}
                         >
                           {String(i + 1).padStart(2, '0')}
                         </span>
-                        <h3 className="font-bold text-[15px] text-text-primary">{v.title}</h3>
+                        <h3 className="font-medium text-[15px] text-text-primary">{v.title}</h3>
                         {v.description && (
                           <p className="text-[13px] text-text-secondary mt-1.5 leading-relaxed whitespace-pre-wrap">
                             {v.description}

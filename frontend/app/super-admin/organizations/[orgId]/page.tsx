@@ -72,12 +72,12 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return (
-    <div className="bg-surface-sunken rounded-[10px] border border-border-light px-5 py-4 flex items-center gap-4">
+    <div className="bg-surface-sunken rounded-[10px] border border-border-light px-4 py-4 flex items-center gap-4">
       <div className="w-10 h-10 rounded-[8px] bg-primary-subtle flex items-center justify-center text-primary-text">
         {icon}
       </div>
       <div>
-        <p className="text-2xl font-bold text-text-primary">{value}</p>
+        <p className="text-2xl font-medium text-text-primary">{value}</p>
         <p className="text-xs text-text-secondary">{label}</p>
       </div>
     </div>
@@ -143,7 +143,7 @@ function EntitlementsCard({ orgId }: { orgId: string }) {
           {modules.map((m, i) => (
             <div key={m.module_key}>
               {m.group && m.group !== modules[i - 1]?.group && (
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-text-muted pt-3 pb-1">
+                <p className="text-[11px] font-medium uppercase tracking-widest text-text-muted pt-3 pb-1">
                   {m.group}
                 </p>
               )}
@@ -322,7 +322,7 @@ function EditMemberModal({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Leave blank to keep current password"
-              className={`${inputCls} pr-10`}
+              className={`${inputCls} pr-8`}
             />
             <button
               type="button"
@@ -425,7 +425,7 @@ export default function OrgDetailPage() {
 
   if (!org) {
     return (
-      <div className="flex flex-col items-center gap-3 py-20">
+      <div className="flex flex-col items-center gap-3 py-12">
         <p className="text-text-secondary">Organization not found.</p>
         <Button variant="secondary" onClick={() => router.push('/super-admin/organizations')}>
           Back to list
@@ -449,7 +449,7 @@ export default function OrgDetailPage() {
           <ChevronLeft size={16} /> Organizations
         </button>
         <div className="flex items-center justify-between">
-          <h1 className="text-[28px] font-bold text-text-primary">{org.name}</h1>
+          <h1 className="text-[28px] font-medium text-text-primary">{org.name}</h1>
           {org.status === 'inactive' ? (
             <Button onClick={() => setShowReactivate(true)}>
               <Power size={15} />
@@ -472,10 +472,10 @@ export default function OrgDetailPage() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h2 className="text-xl font-bold text-text-primary">{org.name}</h2>
+              <h2 className="text-xl font-medium text-text-primary">{org.name}</h2>
               <Badge status={orgStatusToBadge(org.status)} label={orgStatusLabel(org.status)} />
               {org.is_test && (
-                <span className="inline-flex items-center gap-1 rounded-[999px] bg-warning-bg text-warning border border-warning-border text-[11px] font-semibold px-2.5 py-0.5">
+                <span className="inline-flex items-center gap-1 rounded-[999px] bg-warning-bg text-warning border border-warning-border text-[11px] font-medium px-2.5 py-0.5">
                   <FlaskConical size={11} /> TEST
                 </span>
               )}
@@ -492,7 +492,7 @@ export default function OrgDetailPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-5 pt-5 border-t border-border-light">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-border-light">
           <InfoRow icon={<Layers size={16} />} label="Industry" value={org.industry ?? '—'} />
           <InfoRow icon={<Globe size={16} />} label="Country" value={org.country ?? '—'} />
           <InfoRow icon={<Clock size={16} />} label="Timezone" value={org.timezone ?? '—'} />
@@ -574,7 +574,7 @@ export default function OrgDetailPage() {
                 render: (m) => (
                   <button
                     onClick={() => setEditingMember(m)}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-text hover:text-primary-text"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-text hover:text-primary-text"
                   >
                     <Pencil size={13} /> Edit
                   </button>

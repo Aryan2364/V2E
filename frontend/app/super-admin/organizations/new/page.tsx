@@ -177,7 +177,7 @@ export default function NewOrganizationPage() {
         >
           <ChevronLeft size={16} /> Back
         </button>
-        <h1 className="text-[28px] font-bold text-text-primary">Create Organization</h1>
+        <h1 className="text-[28px] font-medium text-text-primary">Create Organization</h1>
         <p className="text-sm text-text-secondary mt-1">Set up a new tenant organization and provision its first admin account.</p>
       </div>
 
@@ -190,8 +190,8 @@ export default function NewOrganizationPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         {/* Section 1 — Org details */}
         <Card>
-          <h2 className="text-[16px] font-semibold text-text-primary mb-5 pb-4 border-b border-border-light">Organization Details</h2>
-          <div className="grid grid-cols-1 gap-5">
+          <h2 className="text-[16px] font-medium text-text-primary mb-4 pb-4 border-b border-border-light">Organization Details</h2>
+          <div className="grid grid-cols-1 gap-4">
             <Field label="Organization Name" error={errors.name?.message} required>
               <input
                 {...register('name')}
@@ -272,13 +272,13 @@ export default function NewOrganizationPage() {
 
         {/* Section 2 — First Admin Account */}
         <Card>
-          <h2 className="text-[16px] font-semibold text-text-primary mb-1 pb-4 border-b border-border-light">First Admin Account</h2>
+          <h2 className="text-[16px] font-medium text-text-primary mb-1 pb-4 border-b border-border-light">First Admin Account</h2>
 
           {/* One flow — just enter the admin's email. If it already has a V2E login we
               add them with their existing password (name locked, no password field);
               otherwise it's a brand-new person and you set a name + password. No more
               "new vs existing" choice — the email decides. */}
-          <div className="flex flex-col gap-5 mt-4">
+          <div className="flex flex-col gap-4 mt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Admin Email" error={errors.admin_email?.message} required
                 hint={checkingAdmin ? 'Checking…' : adminExists ? 'Existing account — no password needed' : 'Required — used to recover access'}>
@@ -328,7 +328,7 @@ export default function NewOrganizationPage() {
                     {...register('admin_password')}
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Min. 8 characters"
-                    className={[inputCls(!!errors.admin_password), 'pr-10'].join(' ')}
+                    className={[inputCls(!!errors.admin_password), 'pr-8'].join(' ')}
                   />
                   <button
                     type="button"

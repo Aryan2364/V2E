@@ -246,7 +246,7 @@ function OrgChartInner({
       {/* Tree-only toolbar: arranging the canvas + exporting an image only make
           sense for the chart, so these controls live here (not in the table view). */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border-light flex-wrap">
-        <span className="text-sm font-semibold text-text-primary">Org chart</span>
+        <span className="text-sm font-medium text-text-primary">Org chart</span>
         <span className="text-xs text-text-muted hidden sm:inline">
           Drag to pan · Ctrl/⌘ + scroll or pinch to zoom
         </span>
@@ -316,11 +316,11 @@ function OrgChartInner({
 
 function EmptyState({ canEdit, onAdd }: { canEdit: boolean; onAdd: () => void }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20 text-center">
+    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-12 text-center">
       <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
         <Network size={28} className="text-text-muted" />
       </div>
-      <h2 className="text-lg font-semibold text-text-primary">No departments yet</h2>
+      <h2 className="text-lg font-medium text-text-primary">No departments yet</h2>
       <p className="text-text-secondary text-sm mt-1 max-w-xs">
         {canEdit
           ? 'Add your first department to start building the structure.'
@@ -329,7 +329,7 @@ function EmptyState({ canEdit, onAdd }: { canEdit: boolean; onAdd: () => void })
       {canEdit && (
         <button
           onClick={onAdd}
-          className="mt-5 flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
+          className="mt-4 flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
         >
           <Plus size={15} /> Add Department
         </button>
@@ -455,7 +455,7 @@ export default function OrgChartPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Department Structure</h1>
+          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Department Structure</h1>
           <p className="mt-1 text-[15px] text-text-secondary">
             {canEdit
               ? 'Drag to arrange, click a department for details, and use the pencil to edit.'
@@ -466,14 +466,14 @@ export default function OrgChartPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowImport(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               <Upload size={16} />
               Import
             </button>
             <button
               onClick={openCreate}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
             >
               <Plus size={16} />
               Add Department
@@ -498,7 +498,7 @@ export default function OrgChartPage() {
                 placeholder="Search departments…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-[10px] text-sm rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted"
+                className="w-full pl-8 pr-3 py-[10px] text-sm rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted"
               />
             </div>
           </div>

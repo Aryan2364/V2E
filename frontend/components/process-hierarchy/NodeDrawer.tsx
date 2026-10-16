@@ -346,19 +346,19 @@ export default function NodeDrawer({
     <div className="fixed inset-0 z-60 pointer-events-none">
       <div className="absolute right-0 top-0 h-full w-full max-w-[440px] bg-white shadow-2xl border-l border-border-light flex flex-col pointer-events-auto animate-[slideInRight_.22s_ease-out]">
         {/* Header — breadcrumb path to this node; the last crumb is its live name. */}
-        <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border-light">
+        <div className="flex items-center gap-2 px-4 py-3.5 border-b border-border-light">
           <span className="text-primary-text shrink-0">{node ? KIND_META[node.kind].icon : <FileText size={14} />}</span>
           <div className="min-w-0 flex-1 truncate text-[12px] text-text-muted">
             {ancestorPath.map((a, i) => (
               <span key={i}>{a} <span className="text-[#CBD5E1]">/</span> </span>
             ))}
-            <span className="text-text-primary font-semibold">{node ? (name || KIND_META[node.kind].label) : 'Loading'}</span>
+            <span className="text-text-primary font-medium">{node ? (name || KIND_META[node.kind].label) : 'Loading'}</span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {drillable && (
               <button
                 onClick={() => onDrill(nodeId)}
-                className="inline-flex items-center gap-1 text-[13px] font-semibold text-primary-text hover:text-primary-text px-2 py-1 rounded-[6px] hover:bg-primary-subtle transition-colors"
+                className="inline-flex items-center gap-1 text-[13px] font-medium text-primary-text hover:text-primary-text px-2 py-1 rounded-[6px] hover:bg-primary-subtle transition-colors"
               >
                 Open <ChevronRight size={14} />
               </button>
@@ -379,7 +379,7 @@ export default function NodeDrawer({
                     <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 bg-white border border-border-light rounded-[10px] shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
                       {!isEvent(node.kind) && moveOptions.length > 1 && (
                         <>
-                          <p className="px-2 py-1 text-[11px] font-semibold text-text-muted uppercase tracking-wide">Move to another area</p>
+                          <p className="px-2 py-1 text-[11px] font-medium text-text-muted uppercase tracking-wide">Move to another area</p>
                           <div className="max-h-48 overflow-y-auto">
                             {moveOptions.map((o) => (
                               <button key={o.value} onClick={() => { setShowMenu(false); moveTo(o.value) }}
@@ -417,7 +417,7 @@ export default function NodeDrawer({
           </div>
         ) : (
           <>
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
             {/* Name — capped so it always fits on the canvas (no ellipsis). A note has no
                 name, just body text, so it shows a roomy textarea instead. */}
             {isNote ? (
@@ -487,7 +487,7 @@ export default function NodeDrawer({
             {node.kind === 'decision' && (
               <div className="flex items-start gap-2 rounded-[8px] bg-surface-sunken border border-border-light px-3 py-2.5 text-[12px] text-text-secondary">
                 <GitBranch size={14} className="text-text-muted shrink-0 mt-0.5" />
-                <span>Set the <span className="font-semibold text-text-primary">Yes / No</span> routes by clicking the arrows leaving this diamond on the canvas.</span>
+                <span>Set the <span className="font-medium text-text-primary">Yes / No</span> routes by clicking the arrows leaving this diamond on the canvas.</span>
               </div>
             )}
 
@@ -577,7 +577,7 @@ export default function NodeDrawer({
                   {node.linked_map && (
                     <Tooltip label="Open linked map">
                       <button onClick={() => onDrill(nodeId)}
-                        className="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 text-[12px] font-semibold rounded-[8px] border border-primary text-primary-text hover:bg-primary-subtle">
+                        className="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 text-[12px] font-medium rounded-[8px] border border-primary text-primary-text hover:bg-primary-subtle">
                         <ExternalLink size={13} /> Open
                       </button>
                     </Tooltip>
@@ -588,7 +588,7 @@ export default function NodeDrawer({
                     <p className="text-[11px] text-text-muted">Opening this node jumps to “{node.linked_map.name}”.</p>
                     {canEdit && !node.linked_map.owned && (
                       <button onClick={detach} disabled={detaching}
-                        className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold text-primary-text hover:underline disabled:text-text-muted">
+                        className="shrink-0 inline-flex items-center gap-1 text-[11px] font-medium text-primary-text hover:underline disabled:text-text-muted">
                         {detaching ? <Loader2 size={11} className="animate-spin" /> : <Copy size={11} />} Make my own copy
                       </button>
                     )}
@@ -600,7 +600,7 @@ export default function NodeDrawer({
                 {canEdit && !(node.linked_map && !node.linked_map.owned) && (
                   <div className="mt-2 flex items-start justify-between gap-2 rounded-[8px] border border-border-light bg-surface-sunken p-2.5">
                     <div className="min-w-0">
-                      <p className="text-[12px] font-semibold text-text-primary">Reusable map</p>
+                      <p className="text-[12px] font-medium text-text-primary">Reusable map</p>
                       <p className="text-[11px] text-text-muted leading-snug">
                         {node.linked_map?.owned
                           ? 'Publish this as a shared map you can reference in any other map.'
@@ -609,7 +609,7 @@ export default function NodeDrawer({
                     </div>
                     <Tooltip label="Make reusable">
                       <button onClick={makeReusable} disabled={makingReusable}
-                        className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-semibold rounded-[8px] border border-primary text-primary-text hover:bg-primary-subtle disabled:opacity-50">
+                        className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-medium rounded-[8px] border border-primary text-primary-text hover:bg-primary-subtle disabled:opacity-50">
                         {makingReusable ? <Loader2 size={12} className="animate-spin" /> : <Share2 size={12} />} Make reusable
                       </button>
                     </Tooltip>
@@ -632,9 +632,9 @@ export default function NodeDrawer({
           {/* Save — pinned footer, always visible so it's obvious your typed edits are
               held locally and only written when you click Save (never per keystroke). */}
           {canEdit && (
-            <div className="shrink-0 border-t border-border-light px-5 py-3">
+            <div className="shrink-0 border-t border-border-light px-4 py-3">
               <button onClick={saveCore} disabled={saving || !dirty}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors">
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors">
                 {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
                 {saving ? 'Saving…' : dirty ? 'Save changes' : 'Saved'}
               </button>
@@ -722,9 +722,9 @@ function CollapsibleSection({ title, count = 0, defaultOpen = false, children }:
       <button type="button" onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center gap-2 text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs">
         <ChevronRight size={14} className={`text-text-muted shrink-0 transition-transform ${open ? 'rotate-90' : ''}`} />
-        <span className="flex-1 text-xs font-semibold text-text-primary">{title}</span>
+        <span className="flex-1 text-xs font-medium text-text-primary">{title}</span>
         {count > 0 && (
-          <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold shrink-0">{count}</span>
+          <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium shrink-0">{count}</span>
         )}
       </button>
       {open && <div className="mt-3">{children}</div>}
@@ -795,7 +795,7 @@ function SharingSection({ orgId, mapId, nodeId, node, departments, roles, employ
         <div className="space-y-1">
           {node.access_rules.map((r) => (
             <div key={r.id} className="flex items-center gap-2 text-[13px] bg-surface-sunken border border-border-light rounded-[6px] px-2 py-1.5">
-              <span className={`text-[10px] font-semibold rounded-xs px-1.5 py-0.5 shrink-0 ${
+              <span className={`text-[10px] font-medium rounded-xs px-1.5 py-0.5 shrink-0 ${
                 r.kind === 'exclude_user' ? 'bg-danger-bg text-danger' : r.level === 'edit' ? 'bg-success-bg text-success' : 'bg-surface-control text-text-secondary'}`}>
                 {r.kind === 'exclude_user' ? 'hidden' : r.level}
               </span>
@@ -809,14 +809,14 @@ function SharingSection({ orgId, mapId, nodeId, node, departments, roles, employ
       {/* Add-rule form stays behind a single link until you want it. */}
       {!showAddForm ? (
         <button onClick={() => setShowAddForm(true)}
-          className="inline-flex items-center gap-1 text-[13px] font-semibold text-primary-text hover:underline">
+          className="inline-flex items-center gap-1 text-[13px] font-medium text-primary-text hover:underline">
           <Plus size={14} /> Add person, role or department
         </button>
       ) : (
       /* One control per line so nothing crams; searchable pickers for role/person. */
       <div className="bg-surface-sunken border border-border-light rounded-[8px] p-3 space-y-2.5">
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide">Give access to</p>
+          <p className="text-[11px] font-medium text-text-muted uppercase tracking-wide">Give access to</p>
           <button onClick={() => setShowAddForm(false)} aria-label="Close" className="text-text-muted hover:text-text-primary"><X size={14} /></button>
         </div>
 
@@ -850,7 +850,7 @@ function SharingSection({ orgId, mapId, nodeId, node, departments, roles, employ
             </div>
           )}
           <button onClick={add} disabled={!entityId || busy}
-            className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-semibold rounded-[8px] bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+            className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-medium rounded-[8px] bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
             {busy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={15} />} Add
           </button>
         </div>

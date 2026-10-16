@@ -9,7 +9,7 @@ import type { Department, EmployeeProfile } from '@/lib/types'
 /** Small pill that tags the department head wherever they appear. */
 function HeadBadge() {
   return (
-    <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+    <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-white">
       <Crown size={10} />
       Head
     </span>
@@ -80,7 +80,7 @@ export default function DeptInfoPanel({
         {department && (
           <>
             {/* Header */}
-            <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-border-light">
+            <div className="flex items-start justify-between gap-3 px-4 py-4 border-b border-border-light">
               <div className="min-w-0">
                 {ancestors.length > 0 && (
                   <nav className="flex items-center flex-wrap gap-0.5 mb-1 text-xs text-text-muted">
@@ -97,7 +97,7 @@ export default function DeptInfoPanel({
                     ))}
                   </nav>
                 )}
-                <h3 className="font-bold text-text-primary text-[17px] truncate flex items-center gap-2">
+                <h3 className="font-medium text-text-primary text-[17px] truncate flex items-center gap-2">
                   {accentColor && (
                     <span
                       className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -132,14 +132,14 @@ export default function DeptInfoPanel({
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-6">
+            <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-6">
               {department.description && (
                 <p className="text-sm text-text-secondary leading-relaxed">{department.description}</p>
               )}
 
               {/* Members — the department head is pinned to the top and tagged. */}
               <section>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-2 flex items-center gap-1.5">
+                <h4 className="text-xs font-medium uppercase tracking-wider text-text-muted mb-2 flex items-center gap-1.5">
                   <Users size={13} /> Members ({members.length})
                 </h4>
                 {members.length === 0 && !headOnlyName ? (
@@ -150,11 +150,11 @@ export default function DeptInfoPanel({
                         department): show a read-only row so they're never lost. */}
                     {headOnlyName && (
                       <div className="flex items-center gap-2.5 rounded-[8px] px-2 py-2 bg-primary-subtle ring-1 ring-inset ring-primary-border">
-                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary-text text-xs font-bold shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary-text text-xs font-medium shrink-0">
                           {headOnlyName.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-text-primary truncate flex items-center gap-1.5">
+                          <p className="text-sm font-medium text-text-primary truncate flex items-center gap-1.5">
                             <span className="truncate">{headOnlyName}</span>
                             <HeadBadge />
                           </p>
@@ -174,8 +174,8 @@ export default function DeptInfoPanel({
                           }`}
                         >
                           <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${
-                              isHead ? 'bg-white text-primary-text font-bold' : 'bg-surface-control text-text-secondary'
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
+                              isHead ? 'bg-white text-primary-text font-medium' : 'bg-surface-control text-text-secondary'
                             }`}
                           >
                             {(m.user?.name ?? 'U').charAt(0).toUpperCase()}
@@ -200,7 +200,7 @@ export default function DeptInfoPanel({
 
               {/* Sub-departments */}
               <section>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-2 flex items-center gap-1.5">
+                <h4 className="text-xs font-medium uppercase tracking-wider text-text-muted mb-2 flex items-center gap-1.5">
                   <Network size={13} /> Sub-departments ({subDepartments.length})
                 </h4>
                 {subDepartments.length === 0 ? (

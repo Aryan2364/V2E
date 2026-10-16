@@ -51,7 +51,7 @@ function DeptNode({ data, selected }: { data: DeptNodeData; selected: boolean })
       )}
 
       <Tooltip label={data.name}>
-      <div className="font-semibold text-sm pr-6 line-clamp-2 wrap-break-word">
+      <div className="font-medium text-sm pr-6 line-clamp-2 wrap-break-word">
         {data.name}
       </div>
       </Tooltip>

@@ -172,7 +172,7 @@ function DirectionSection({
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[11px] font-semibold text-text-secondary uppercase tracking-wide">{title}</p>
+        <p className="text-[11px] font-medium text-text-secondary uppercase tracking-wide">{title}</p>
         {canEdit && mode === 'closed' && (
           <Tooltip label="Add">
             <button onClick={() => setMode('chooser')} aria-label={`Add ${direction}`}
@@ -206,7 +206,7 @@ function DirectionSection({
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => fileRef.current?.click()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-primary text-white hover:bg-primary-hover">
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-[8px] bg-primary text-white hover:bg-primary-hover">
               <Upload size={14} /> Choose file
             </button>
             <button onClick={reset} className="text-[13px] text-text-muted hover:text-text-primary">Cancel</button>
@@ -223,7 +223,7 @@ function DirectionSection({
             placeholder="https://…" className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white" />
           <div className="flex items-center gap-2">
             <button onClick={submitLink} disabled={!linkTitle.trim() || !linkUrl.trim()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-[8px] bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
               {editing ? 'Save' : 'Add link'}
             </button>
             <button onClick={reset} className="text-[13px] text-text-muted hover:text-text-primary">Cancel</button>
@@ -295,9 +295,9 @@ function ArticleEditorModal({ initial, onSave, onCancel }: {
   return createPortal(
     <div className="fixed inset-0 z-80 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
-      <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-lg p-5 animate-[fadeIn_.15s_ease-out]">
+      <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-lg p-4 animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-semibold text-text-primary">{initial ? 'Edit article' : 'Write an article'}</h3>
+          <h3 className="text-base font-medium text-text-primary">{initial ? 'Edit article' : 'Write an article'}</h3>
           <button onClick={onCancel} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
         <div className="flex items-center justify-between mb-1">
@@ -312,7 +312,7 @@ function ArticleEditorModal({ initial, onSave, onCancel }: {
           className="w-full px-3 py-2 text-[14px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white resize-none" />
         <div className="flex justify-end mt-4">
           <button onClick={save} disabled={!name.trim() || !body.trim() || busy}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
             {busy && <Loader2 size={15} className="animate-spin" />} Save
           </button>
         </div>
@@ -349,16 +349,16 @@ export function MaterialPreviewModal({ orgId, mapId, artifact, onClose, onDownlo
     <div className="fixed inset-0 z-80 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-3xl max-h-[88vh] flex flex-col overflow-hidden animate-[fadeIn_.15s_ease-out]">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-border-light shrink-0">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-border-light shrink-0">
           <MaterialIcon type={artifact.content_type} />
-          <h3 className="flex-1 min-w-0 truncate text-sm font-semibold text-text-primary">{artifact.name}</h3>
+          <h3 className="flex-1 min-w-0 truncate text-sm font-medium text-text-primary">{artifact.name}</h3>
           <button onClick={onClose} aria-label="Close" className="text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
         <div className="flex-1 overflow-y-auto p-4">
           {artifact.content_type === 'article' ? (
             <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-text-primary">{artifact.content_body}</div>
           ) : loading ? (
-            <div className="flex items-center justify-center py-16"><Loader2 size={22} className="animate-spin text-primary-text" /></div>
+            <div className="flex items-center justify-center py-12"><Loader2 size={22} className="animate-spin text-primary-text" /></div>
           ) : (
             <MaterialViewer
               data={data}

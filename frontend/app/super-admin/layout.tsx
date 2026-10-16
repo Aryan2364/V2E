@@ -16,14 +16,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   }, [user, isLoading, router])
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-surface-sunken">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          <p className="text-sm text-text-secondary">Loading…</p>
-        </div>
-      </div>
-    )
+    // Checking the session — render nothing rather than a spinner (section 14 rule 1).
+    return <div className="min-h-screen bg-surface-sunken" />
   }
 
   if (!user || !user.isSuperAdmin) {

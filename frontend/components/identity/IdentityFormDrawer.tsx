@@ -36,7 +36,7 @@ type FormValues = {
   values: Array<{ title: string; description?: string }>
 }
 
-const labelCls = 'block text-sm font-semibold text-text-secondary mb-1.5'
+const labelCls = 'block text-sm font-medium text-text-secondary mb-1.5'
 const textareaCls =
   'w-full rounded-[8px] border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors resize-none'
 const inputCls =
@@ -108,8 +108,8 @@ export default function IdentityFormDrawer({
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light">
-          <h3 className="font-semibold text-text-primary">Edit Organization Identity</h3>
+        <div className="flex items-center justify-between px-4 py-4 border-b border-border-light">
+          <h3 className="font-medium text-text-primary">Edit Organization Identity</h3>
           <button
             onClick={onClose}
             className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
@@ -120,7 +120,7 @@ export default function IdentityFormDrawer({
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto min-h-0">
-          <div className="px-5 py-5 flex flex-col gap-5">
+          <div className="px-4 py-4 flex flex-col gap-4">
             {/* Core pillars */}
             <div className="flex flex-col gap-4">
               <div>
@@ -155,7 +155,7 @@ export default function IdentityFormDrawer({
             {/* Values */}
             <div className="bg-surface-sunken border border-border-light rounded-[10px] p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-bold text-text-primary">Organizational Values</h4>
+                <h4 className="text-sm font-medium text-text-primary">Organizational Values</h4>
                 <button
                   type="button"
                   onClick={() => append({ title: '', description: '' })}
@@ -173,7 +173,7 @@ export default function IdentityFormDrawer({
                     key={field.id}
                     className="bg-white border border-border-light rounded-[8px] p-3 flex gap-3"
                   >
-                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
+                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-medium shrink-0 mt-0.5">
                       {index + 1}
                     </div>
                     <div className="flex-1 flex flex-col gap-2">
@@ -216,7 +216,7 @@ export default function IdentityFormDrawer({
             )}
           </div>
 
-          <div className="px-5 pt-4 pb-12 border-t border-border-light flex gap-3">
+          <div className="px-4 pt-4 pb-12 border-t border-border-light flex gap-3">
             <Button type="submit" variant="primary" isLoading={isSubmitting}>
               Save
             </Button>

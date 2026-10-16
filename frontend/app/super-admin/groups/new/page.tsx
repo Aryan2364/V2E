@@ -62,7 +62,7 @@ export default function NewGroupPage() {
         >
           <ChevronLeft size={16} /> Back
         </button>
-        <h1 className="text-[28px] font-bold text-text-primary">Create Group</h1>
+        <h1 className="text-[28px] font-medium text-text-primary">Create Group</h1>
         <p className="text-sm text-text-secondary mt-1">Groups let you cluster related organizations and share users across them.</p>
       </div>
 
@@ -74,8 +74,8 @@ export default function NewGroupPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         <Card>
-          <h2 className="text-[16px] font-semibold text-text-primary mb-5 pb-4 border-b border-border-light">Group Details</h2>
-          <div className="flex flex-col gap-5">
+          <h2 className="text-[16px] font-medium text-text-primary mb-4 pb-4 border-b border-border-light">Group Details</h2>
+          <div className="flex flex-col gap-4">
             <Field label="Group Name" error={errors.name?.message} required>
               <input
                 {...register('name')}

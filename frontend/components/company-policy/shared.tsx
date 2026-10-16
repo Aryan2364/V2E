@@ -52,7 +52,7 @@ export function PolicyBreadcrumb({ trail }: { trail: { label: string; href?: str
               {c.label}
             </Link>
           ) : (
-            <span className="font-semibold text-text-primary truncate max-w-[60vw]" aria-current="page">
+            <span className="font-medium text-text-primary truncate max-w-[60vw]" aria-current="page">
               {c.label}
             </span>
           )}
