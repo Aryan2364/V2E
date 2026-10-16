@@ -8,6 +8,7 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import DatePicker from '@/components/ui/DatePicker'
 import TagPicker from '@/components/tasks/TagPicker'
 import TagSelect from './TagSelect'
+import { Button } from '@/components/ui/button'
 
 // useLayoutEffect warns during server rendering; measure with it only in the browser.
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
@@ -100,18 +101,18 @@ export default function BulkActionBar({
             onApply={onTags}
           />
 
-          <button
+          <Button
             onClick={onComplete}
             disabled={busy}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-success text-primary-foreground text-body font-medium hover:bg-success disabled:opacity-60 transition-colors"
+            className="bg-success border-success hover:bg-success active:bg-success"
           >
             <CheckCircle2 size={15} /> Complete
-          </button>
+          </Button>
         </div>
 
-        <button onClick={onClear} className="flex items-center gap-1 text-body text-text-muted hover:text-primary-foreground transition-colors">
+        <Button variant="on-brand" onClick={onClear}>
           <X size={15} /> Clear
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -209,9 +210,6 @@ function BulkTagButton({
   }
 
   const tasksWord = `${count} task${count === 1 ? '' : 's'}`
-  const applyLabel = mode === 'add_tags'
-    ? (applying ? 'Adding…' : `Add to ${tasksWord}`)
-    : (applying ? 'Removing…' : `Remove from ${tasksWord}`)
 
   return (
     <>
@@ -246,14 +244,9 @@ function BulkTagButton({
           >
             <div className="flex items-center justify-between gap-2 mb-3">
               <p className="text-body font-medium text-heading">Tag {tasksWord}</p>
-              <button
-                type="button"
-                onClick={() => close(true)}
-                aria-label="Close"
-                className="w-7 h-7 rounded-btn flex items-center justify-center text-secondary hover:bg-surface-control hover:text-heading focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
-              >
+              <Button type="button" variant="ghost" size="icon-sm" onClick={() => close(true)} aria-label="Close">
                 <X size={15} />
-              </button>
+              </Button>
             </div>
 
             <div role="group" aria-label="Add or remove" className="grid grid-cols-2 gap-1 p-0.5 mb-3 rounded-btn border border-border bg-surface-sunken">
@@ -289,21 +282,18 @@ function BulkTagButton({
             <p className="mt-2 text-meta text-secondary">Tasks you can’t edit are skipped, and you’ll see how many.</p>
 
             <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => close(true)}
-                className="px-3.5 py-2 rounded-btn border border-border text-body font-medium text-secondary hover:bg-surface-control hover:text-heading transition-colors"
-              >
+              <Button type="button" variant="secondary" onClick={() => close(true)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => void apply()}
-                disabled={!ids.length || applying || busy}
-                className="px-3.5 py-2 rounded-btn bg-primary text-primary-foreground text-body font-medium hover:bg-primary-hover disabled:bg-border disabled:text-muted disabled:cursor-not-allowed transition-colors"
+                disabled={!ids.length || busy}
+                loading={applying}
+                loadingLabel={mode === 'add_tags' ? 'Adding…' : 'Removing…'}
               >
-                {applyLabel}
-              </button>
+                {mode === 'add_tags' ? `Add to ${tasksWord}` : `Remove from ${tasksWord}`}
+              </Button>
             </div>
           </div>,
           document.body,
