@@ -917,27 +917,29 @@ export default function TaskDetailPage() {
                       You&apos;re done
                     </span>
                   ) : (
-                    <button
+                    <Button
                       onClick={handleComplete}
-                      disabled={actionLoading === 'complete'}
-                      className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-primary-foreground bg-success rounded-control hover:bg-success disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                      loading={actionLoading === 'complete'}
+                      loadingLabel="Completing"
+                      className="bg-success border-success text-primary-foreground hover:bg-success hover:border-success"
                     >
                       <CheckCircle2 size={15} />
-                      {actionLoading === 'complete' ? 'Completing...' : 'Complete my part'}
-                    </button>
+                      Complete my part
+                    </Button>
                   )
                 )}
                 {/* Owner override — close the whole task for everyone (heads-up if pending). */}
                 {canEdit && (
                   <Tooltip label="Complete the whole task for everyone">
-                    <button
+                    <Button
+                      variant="secondary"
                       onClick={() => (pendingNames.length > 0 ? setConfirmCompleteAll(true) : handleCompleteWholeTask())}
                       disabled={actionLoading === 'complete'}
-                      className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-success border border-success-border bg-surface rounded-control hover:bg-success-bg disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                      className="border-success-border text-success hover:bg-success-bg"
                     >
                       <CheckCircle2 size={15} />
                       Complete task
-                    </button>
+                    </Button>
                   </Tooltip>
                 )}
               </div>
@@ -945,14 +947,15 @@ export default function TaskDetailPage() {
               // Any one assignee can close the whole task via Complete. (Incomplete lives
               // in the Status dropdown.)
               (isAssignee || canEdit) ? (
-                <button
+                <Button
                   onClick={handleComplete}
-                  disabled={actionLoading === 'complete'}
-                  className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-primary-foreground bg-success rounded-control hover:bg-success disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                  loading={actionLoading === 'complete'}
+                  loadingLabel="Completing"
+                  className="bg-success border-success text-primary-foreground hover:bg-success hover:border-success"
                 >
                   <CheckCircle2 size={15} />
-                  {actionLoading === 'complete' ? 'Completing...' : 'Complete'}
-                </button>
+                  Complete
+                </Button>
               ) : null
             )
           ) : !currentUserIsCC && (
@@ -960,25 +963,26 @@ export default function TaskDetailPage() {
               // Undo window open — a frictionless, reason-free revert for any participant,
               // so an accidental Complete/Incomplete can be taken back. Locks when it ends.
               <Tooltip label="Undo — revert this task to open (no reason needed while the window is open)">
-                <button
+                <Button
                   onClick={() => handleReopen()}
-                  disabled={actionLoading === 'reopen'}
-                  className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-warning border border-warning-border bg-warning-bg rounded-control hover:bg-warning-bg disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                  loading={actionLoading === 'reopen'}
+                  loadingLabel="Undoing"
+                  className="bg-warning-bg border-warning-border text-warning hover:bg-warning-bg"
                 >
                   <RotateCcw size={15} />
-                  {actionLoading === 'reopen' ? 'Undoing…' : `Undo (${formatCountdown(reopenSecondsLeft)})`}
-                </button>
+                  {`Undo (${formatCountdown(reopenSecondsLeft)})`}
+                </Button>
               </Tooltip>
             ) : isCreator ? (
               // After the window it's locked — only the creator can reopen, with a reason.
-              <button
+              <Button
                 onClick={() => setShowReopenModal(true)}
                 disabled={actionLoading === 'reopen'}
-                className="flex items-center gap-2 px-4 py-[8px] text-body font-medium text-warning border border-warning-border bg-warning-bg rounded-control hover:bg-warning-bg disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                className="bg-warning-bg border-warning-border text-warning hover:bg-warning-bg"
               >
                 <RotateCcw size={15} />
                 Reopen
-              </button>
+              </Button>
             ) : (
               // Locked outcome (read-only) for everyone else.
               <span
@@ -1072,19 +1076,18 @@ export default function TaskDetailPage() {
             />
           </div>
           <div className="flex gap-2 shrink-0">
-            <button
+            <Button
               onClick={() => handleReopen(reopenReason)}
-              disabled={actionLoading === 'reopen' || !reopenReason.trim()}
-              className="px-4 py-2 text-body font-medium text-primary-foreground bg-warning rounded-control hover:bg-warning disabled:opacity-60 disabled:cursor-not-allowed outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+              disabled={!reopenReason.trim()}
+              loading={actionLoading === 'reopen'}
+              loadingLabel="Reopening"
+              className="bg-warning border-warning text-primary-foreground hover:bg-warning hover:border-warning"
             >
-              {actionLoading === 'reopen' ? 'Reopening...' : 'Confirm Reopen'}
-            </button>
-            <button
-              onClick={() => { setShowReopenModal(false); setReopenReason('') }}
-              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
-            >
+              Confirm Reopen
+            </Button>
+            <Button variant="secondary" onClick={() => { setShowReopenModal(false); setReopenReason('') }}>
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -1103,19 +1106,17 @@ export default function TaskDetailPage() {
             </p>
           </div>
           <div className="flex gap-2 shrink-0">
-            <button
+            <Button
               onClick={handleCompleteWholeTask}
-              disabled={actionLoading === 'complete'}
-              className="px-4 py-2 text-body font-medium text-primary-foreground bg-success rounded-control hover:bg-success disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+              loading={actionLoading === 'complete'}
+              loadingLabel="Completing"
+              className="bg-success border-success text-primary-foreground hover:bg-success hover:border-success"
             >
-              {actionLoading === 'complete' ? 'Completing...' : 'Complete for everyone'}
-            </button>
-            <button
-              onClick={() => setConfirmCompleteAll(false)}
-              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
-            >
+              Complete for everyone
+            </Button>
+            <Button variant="secondary" onClick={() => setConfirmCompleteAll(false)}>
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -1146,21 +1147,18 @@ export default function TaskDetailPage() {
             />
           </div>
           <div className="flex gap-2 shrink-0">
-            <button
+            <Button
+              variant="danger"
               onClick={incompleteTarget === 'my_part' ? handleFlagMyPart : handleMarkIncomplete}
-              disabled={!incompleteReason.trim() || actionLoading === 'incomplete' || actionLoading === 'flag'}
-              className="px-4 py-2 text-body font-medium text-primary-foreground bg-danger rounded-control hover:bg-danger-hover disabled:opacity-60 disabled:cursor-not-allowed outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+              disabled={!incompleteReason.trim()}
+              loading={actionLoading === 'incomplete' || actionLoading === 'flag'}
+              loadingLabel="Saving"
             >
-              {actionLoading === 'incomplete' || actionLoading === 'flag'
-                ? 'Saving...'
-                : incompleteTarget === 'my_part' ? "Flag my part" : 'Confirm Incomplete'}
-            </button>
-            <button
-              onClick={() => { setIncompleteTarget(null); setIncompleteReason('') }}
-              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
-            >
+              {incompleteTarget === 'my_part' ? "Flag my part" : 'Confirm Incomplete'}
+            </Button>
+            <Button variant="secondary" onClick={() => { setIncompleteTarget(null); setIncompleteReason('') }}>
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -1180,19 +1178,18 @@ export default function TaskDetailPage() {
             />
           </div>
           <div className="flex gap-2 shrink-0">
-            <button
+            <Button
+              variant="danger"
               onClick={handleDelete}
-              disabled={actionLoading === 'delete' || !deleteReason.trim()}
-              className="px-4 py-2 text-body font-medium text-primary-foreground bg-danger rounded-control hover:bg-danger-hover disabled:opacity-60 disabled:cursor-not-allowed outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+              disabled={!deleteReason.trim()}
+              loading={actionLoading === 'delete'}
+              loadingLabel="Deleting"
             >
-              {actionLoading === 'delete' ? 'Deleting...' : 'Confirm Delete'}
-            </button>
-            <button
-              onClick={() => setShowDeleteConfirm(false)}
-              className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
-            >
+              Confirm Delete
+            </Button>
+            <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       )}
