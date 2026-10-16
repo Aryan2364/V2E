@@ -1,9 +1,20 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
-import { X, Info, Plus } from 'lucide-react'
+import { Info, Plus } from 'lucide-react'
 import { tasksApi } from '@/lib/api/tasks'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import type {
   RecurringTemplate, RecurringScheduleEntry, TaskAttachment,
   TaskCategory, TaskPriority, CompletionMode, SelectedAssignee, YearlyDate, ChecklistTemplate,
@@ -122,21 +133,8 @@ export default function EditRecurringModal({ template, orgId, categories, priori
   // which occurrences were left alone before the modal closes.
   const [savedResult, setSavedResult] = useState<RecurringTemplate | null>(null)
   const [skippedNote, setSkippedNote] = useState<{ title: string; reason: string }[]>([])
-  // Portal target only exists on the client — guard against SSR mismatch.
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-
-  useEffect(() => {
-    // Escape inside an open picker (e.g. the Tags search) closes only that picker.
-    function handle(e: KeyboardEvent) { if (e.key === 'Escape' && !isListboxOpen()) onClose() }
-    document.addEventListener('keydown', handle)
-    return () => document.removeEventListener('keydown', handle)
-  }, [onClose])
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
-  }, [])
+  // Escape (except inside an open picker), the backdrop and body-scroll-lock are now
+  // the kit Dialog's own behaviour — see the Dialog's onOpenChange below.
 
   // Prefill the assignee badges with the template's current people (names resolved
   // from the eligible-assignees directory) — editing no longer starts from a
@@ -291,25 +289,31 @@ export default function EditRecurringModal({ template, orgId, categories, priori
     }
   }
 
-  if (!mounted) return null
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+  return (
+    <>
+    <Dialog
+      open
+      onOpenChange={(open, eventDetails) => {
+        if (open) return
+        // Escape inside an open picker (e.g. the Tags search) closes only that
+        // picker, exactly as before.
+        if (eventDetails.reason === 'escape-key' && isListboxOpen()) {
+          eventDetails.cancel()
+          return
+        }
+        onClose()
+      }}
     >
-      <div className="relative w-full max-w-2xl bg-surface rounded-t-xl sm:rounded-xl shadow-dialog border border-border-light max-h-[92vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-light shrink-0">
+      <DialogContent size="lg" className="max-w-2xl">
+        <DialogHeader>
           <div>
-            <h2 className="text-[22px] font-medium text-text-primary">Edit Recurring Template</h2>
-            <p className="text-sm text-text-secondary mt-0.5">Changes apply to future task instances only.</p>
+            <DialogTitle>Edit Recurring Template</DialogTitle>
+            <p className="text-sm text-on-brand-muted mt-0.5">Changes apply to future task instances only.</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors" aria-label="Close">
-            <X size={18} />
-          </button>
-        </div>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-6">
+        <DialogBody className="p-0 flex flex-col overflow-hidden">
+        <form id="edit-recurring-form" onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-6">
           <div className="flex gap-3 bg-warning-bg border border-warning-border rounded-lg px-4 py-3">
             <Info size={16} className="text-text-secondary shrink-0 mt-0.5" />
             <div className="text-sm text-warning space-y-1">
@@ -553,9 +557,10 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             </div>
           </div>
         </form>
+        </DialogBody>
 
-        {/* Footer — no Cancel button; the header X closes the modal (see DESIGN_RULES) */}
-        <div className="shrink-0 px-6 py-4 border-t border-border-light space-y-3">
+        {/* Footer — no Cancel button; the header close button closes the modal (see DESIGN_RULES) */}
+        <DialogFooter className="flex-col items-stretch space-y-3">
           {/* Saved, but some open occurrences were deliberately left alone. */}
           {skippedNote.length > 0 && (
             <div className="rounded-lg border border-warning-border bg-warning-bg px-4 py-3">
@@ -574,55 +579,41 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           )}
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
             {savedResult ? (
-              <button
-                type="button"
-                onClick={() => onUpdated(savedResult)}
-                className="w-full sm:w-auto px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
-              >
+              <Button type="button" onClick={() => onUpdated(savedResult)} className="w-full sm:w-auto">
                 Done
-              </button>
+              </Button>
             ) : (
-              <button type="button" onClick={handleSubmit} disabled={submitting} className="w-full sm:w-auto px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors">
-                {submitting ? 'Saving...' : 'Save Changes'}
-              </button>
+              <Button type="submit" form="edit-recurring-form" disabled={submitting} loading={submitting} loadingLabel="Saving" className="w-full sm:w-auto">
+                Save Changes
+              </Button>
             )}
           </div>
-        </div>
-      </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
       {/* Remove-attachment confirmation — destructive and immediate, so confirm first. */}
-      {removingAttachment && (
-        <div
-          className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/40"
-          onClick={(e) => { if (e.target === e.currentTarget) setRemovingAttachment(null) }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="w-full max-w-sm bg-surface rounded-xl shadow-dialog border border-border-light p-4">
-            <h3 className="text-[16px] font-medium text-text-primary">Remove attachment?</h3>
-            <p className="text-sm text-text-secondary mt-1.5">
-              “{removingAttachment.file_name}” will no longer be copied onto future instances. This happens right away.
-            </p>
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                type="button"
-                onClick={() => setRemovingAttachment(null)}
-                className="px-4 py-2 text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-lg hover:bg-primary-subtle transition-colors"
-              >
-                Keep it
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRemoveAttachment(removingAttachment)}
-                className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-lg hover:bg-danger-hover transition-colors"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>,
-    document.body,
+      <AlertDialog open={!!removingAttachment} onOpenChange={(next) => { if (!next) setRemovingAttachment(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove attachment?</AlertDialogTitle>
+            {removingAttachment && (
+              <AlertDialogDescription>
+                “{removingAttachment.file_name}” will no longer be copied onto future instances. This happens right away.
+              </AlertDialogDescription>
+            )}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep it</AlertDialogCancel>
+            <AlertDialogAction
+              variant="danger"
+              onClick={() => removingAttachment && handleRemoveAttachment(removingAttachment)}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
