@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronRight, ShieldCheck, Loader2 } from 'lucide-react'
 import { toast } from '@/components/ui/sonner'
-import StyledSelect from '@/components/ui/StyledSelect'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { clearPermissionsCache } from '@/lib/auth/use-permissions'
 import {
   getPermissionRegistry,
@@ -237,14 +237,21 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
                                         }
                                       />
                                       {showScope && ov === 'grant' && (
-                                        <StyledSelect
-                                          size="sm"
-                                          triggerClassName="text-meta"
-                                          disabled={busyKey === key}
+                                        <Select
                                           value={ul.override_scopes?.read ?? defaultReadScope(ul)}
-                                          onChange={(v) => changeOverride(f.key, 'read', 'grant', v as DataScope)}
-                                          options={DATA_SCOPES.map((s) => ({ value: s, label: DATA_SCOPE_LABEL[s] }))}
-                                        />
+                                          onValueChange={(v) => changeOverride(f.key, 'read', 'grant', v as DataScope)}
+                                          disabled={busyKey === key}
+                                          items={DATA_SCOPES.map((s) => ({ value: s, label: DATA_SCOPE_LABEL[s] }))}
+                                        >
+                                          <SelectTrigger className="h-8 text-meta">
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {DATA_SCOPES.map((s) => (
+                                              <SelectItem key={s} value={s}>{DATA_SCOPE_LABEL[s]}</SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
                                       )}
                                       <span className="text-meta text-text-muted">
                                         inherited: {ul.inherited[a] ? 'Allowed' : 'Denied'}

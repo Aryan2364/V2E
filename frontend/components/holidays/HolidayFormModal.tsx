@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
-import StyledSelect from '@/components/ui/StyledSelect'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import CascadeTargetTree from './CascadeTargetTree'
 import type { HolidayType } from '@/lib/types/holidays'
 import type { Department } from '@/lib/types'
@@ -182,11 +182,20 @@ export default function HolidayFormModal({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-meta font-medium text-text-secondary mb-1">Type</label>
-            <StyledSelect
+            <Select
               value={form.type}
-              onChange={(v) => set('type', v as HolidayType)}
-              options={HOLIDAY_TYPES.map((t) => ({ value: t, label: t.charAt(0).toUpperCase() + t.slice(1).replace('_', ' ') }))}
-            />
+              onValueChange={(v) => set('type', v as HolidayType)}
+              items={HOLIDAY_TYPES.map((t) => ({ value: t, label: t.charAt(0).toUpperCase() + t.slice(1).replace('_', ' ') }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {HOLIDAY_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1).replace('_', ' ')}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <label className="block text-meta font-medium text-text-secondary mb-1">Description</label>
