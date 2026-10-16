@@ -209,7 +209,7 @@ export default function ScorecardDetailPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
         <ArrowLeft size={15} /> Back
       </button>
@@ -242,7 +242,7 @@ export default function ScorecardDetailPage() {
       {loading ? (
         <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : !card || !m ? (
-        <div className="bg-surface border border-border-light rounded-card py-14 text-center text-text-muted">Could not load this scorecard.</div>
+        <div className="bg-surface border border-border-light rounded-card py-12 text-center text-text-muted">Could not load this scorecard.</div>
       ) : (
         <>
           {/* Warning strip — recurring tasks never once completed since they started */}
@@ -391,7 +391,7 @@ export default function ScorecardDetailPage() {
             </div>
 
             {filtered.length === 0 ? (
-              <div className="px-4 py-10 text-center text-text-muted">No task entries in this view.</div>
+              <div className="px-4 py-8 text-center text-text-muted">No task entries in this view.</div>
             ) : listView === 'grouped' ? (
               /* ── Grouped view ─────────────────────────────────────────────── */
               <div className="overflow-x-auto">

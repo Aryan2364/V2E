@@ -283,7 +283,7 @@ function CommentItem({
                 <p className="text-sm text-text-secondary mt-1">This can’t be undone. The comment will be removed for everyone.</p>
               </div>
             </div>
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-5">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-4">
               <button
                 type="button"
                 onClick={() => setConfirmOpen(false)}
@@ -2345,7 +2345,7 @@ export default function TaskDetailPage() {
                 </p>
               </div>
             </div>
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-5">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-4">
               <button
                 type="button"
                 onClick={() => setAttachmentToDelete(null)}
@@ -2379,7 +2379,7 @@ export default function TaskDetailPage() {
           aria-modal="true"
         >
           <div className="relative w-full max-w-lg bg-surface rounded-t-[16px] sm:rounded-card shadow-dialog border border-border-light max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-border-light shrink-0">
+            <div className="flex items-center justify-between px-6 pt-4 pb-3 border-b border-border-light shrink-0">
               <h3 className="text-[16px] font-medium text-text-primary flex items-center gap-2">
                 <History size={16} className="text-primary-text" />
                 Activity Log

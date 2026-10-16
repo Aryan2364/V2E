@@ -163,7 +163,7 @@ function ConfigTab({ orgId }: { orgId: string }) {
         </FormField>
       </div>
       <button onClick={handleSave} disabled={saving}
-        className="flex items-center gap-2 px-5 py-[10px] text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+        className="flex items-center gap-2 px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
         <Save size={15} />
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Configuration'}
       </button>
@@ -799,7 +799,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
 
   if (formOpen) {
     return (
-      <div className="space-y-5 max-w-6xl">
+      <div className="space-y-4 max-w-6xl">
         <div className="flex items-center gap-3">
           <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-control border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
@@ -811,7 +811,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
         {/* Single column: name + items card on top, access card full-width below. */}
         <div className="space-y-6">
           {/* Name + items */}
-          <div className="bg-surface border border-border-light rounded-card shadow-card p-5 space-y-5">
+          <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
             <FormField label="Template Name"><input type="text" autoFocus value={templateName} onChange={(e) => { setTemplateName(e.target.value); if (error) setError(null) }} placeholder="e.g. Onboarding Checklist" className={`${inputCls} max-w-xl`} /></FormField>
 
             <div>
@@ -819,7 +819,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
               <p className="text-xs text-text-muted mb-2">Press Enter to add the next item. Ctrl+Z undoes a removal.</p>
               {templateItems.map((item, idx) => (
                 <div key={idx} className="relative mb-2 max-w-xl">
-                  <input ref={(el) => { itemRefs.current[idx] = el }} type="text" value={item} onChange={(e) => handleItemChange(idx, e.target.value)} onKeyDown={(e) => handleItemKeyDown(e, idx)} onBlur={() => handleItemBlur(idx)} placeholder={`Item ${idx + 1}`} className={`${inputCls} pr-9`} />
+                  <input ref={(el) => { itemRefs.current[idx] = el }} type="text" value={item} onChange={(e) => handleItemChange(idx, e.target.value)} onKeyDown={(e) => handleItemKeyDown(e, idx)} onBlur={() => handleItemBlur(idx)} placeholder={`Item ${idx + 1}`} className={`${inputCls} pr-8`} />
                   <button onMouseDown={(e) => e.preventDefault()} onClick={() => { pushHistory(); setTemplateItems((prev) => prev.length <= 1 ? [''] : prev.filter((_, i) => i !== idx)) }} className="absolute top-0 right-0 h-[38px] w-9 flex items-center justify-center text-text-muted hover:text-danger transition-colors" aria-label="Remove item"><X size={14} /></button>
                 </div>
               ))}
@@ -828,7 +828,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
           </div>
 
           {/* Access rules card — full width below items */}
-          <div className="bg-surface border border-border-light rounded-card shadow-card p-5">
+          <div className="bg-surface border border-border-light rounded-card shadow-card p-4">
             <ChecklistAccessEditor
               mode={accessMode}
               rules={accessRules}
@@ -996,7 +996,7 @@ function TktConfigTab({ orgId }: { orgId: string }) {
         ))}
       </div>
 
-      <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-[10px] text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+      <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
         <Save size={15} /> {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Configuration'}
       </button>
     </div>
@@ -1500,7 +1500,7 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
       ? activeEmployees.filter((e) => (e.user?.name ?? '').toLowerCase().includes(q) || (e.role?.title ?? '').toLowerCase().includes(q) || (e.department?.name ?? '').toLowerCase().includes(q))
       : activeEmployees
     return (
-      <div className="space-y-5 max-w-3xl">
+      <div className="space-y-4 max-w-3xl">
         <div className="flex items-center gap-3">
           <button onClick={closeForm} aria-label="Back to resolver groups" className="w-9 h-9 flex items-center justify-center rounded-control border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
@@ -1509,7 +1509,7 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
           </div>
         </div>
 
-        <div className="bg-surface border border-border-light rounded-card shadow-card p-5 space-y-4">
+        <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField label="Group Name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. IT Support" className={inputCls} /></FormField>
             <FormField label="Department (optional)">
@@ -1774,7 +1774,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
 
   if (formOpen) {
     return (
-      <div className="space-y-5 max-w-6xl">
+      <div className="space-y-4 max-w-6xl">
         <div className="flex items-center gap-3">
           <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-control border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
@@ -1783,7 +1783,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
           </div>
         </div>
 
-        <div className="bg-surface border border-border-light rounded-card shadow-card p-5 space-y-4">
+        <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <FormField label="Template Name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. VPN Access Request" className={inputCls} /></FormField>
             <FormField label="Type">
@@ -1878,7 +1878,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
         </div>
 
         {/* Access rules — who can pick this template when raising a ticket */}
-        <div className="bg-surface border border-border-light rounded-card shadow-card p-5">
+        <div className="bg-surface border border-border-light rounded-card shadow-card p-4">
           <ChecklistAccessEditor
             mode={accessMode}
             rules={accessRules}
@@ -2102,7 +2102,7 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
       ))}
 
       <button onClick={handleSave} disabled={saving}
-        className="flex items-center gap-2 px-5 py-[10px] text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+        className="flex items-center gap-2 px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
         <Save size={15} />
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Notification Settings'}
       </button>
@@ -2237,7 +2237,7 @@ export default function MastersPage() {
   const activeTabs = effectiveSection === 'tasks' ? visibleTaskTabs : effectiveSection === 'tickets' ? ticketTabs : notifTabs
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <div>
         <h1 className="text-[28px] font-medium text-text-primary leading-tight">Work Settings</h1>
         <p className="mt-1 text-[15px] text-text-secondary">Configure system settings for tasks and tickets.</p>
@@ -2279,7 +2279,7 @@ export default function MastersPage() {
                 }
               }}
               className={[
-                'flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors whitespace-nowrap border-b-2',
+                'flex items-center gap-2 px-4 py-3.5 text-sm font-medium transition-colors whitespace-nowrap border-b-2',
                 (effectiveSection === 'tasks' ? effectiveTaskTab : effectiveSection === 'tickets' ? ticketTab : 'config') === t.key
                   ? 'text-primary-text border-primary'
                   : 'text-text-secondary border-transparent hover:text-text-primary',

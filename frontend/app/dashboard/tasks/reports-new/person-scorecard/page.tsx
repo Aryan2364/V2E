@@ -124,7 +124,7 @@ export default function ScorecardRosterPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <button onClick={() => router.push('/dashboard/tasks/reports-new')} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
         <ArrowLeft size={15} /> Reports
       </button>
@@ -161,7 +161,7 @@ export default function ScorecardRosterPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search people…"
-            className="w-full rounded-control border border-border bg-surface pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+            className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>
         <div className="w-[230px]">
@@ -174,7 +174,7 @@ export default function ScorecardRosterPage() {
       {loading ? (
         <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : people.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card py-16 flex flex-col items-center text-center">
+        <div className="bg-surface border border-border-light rounded-card py-12 flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
           <p className="font-medium text-text-primary">No people in your scope</p>
           <p className="text-sm text-text-secondary mt-1 max-w-sm">You can only see scorecards for people within your visibility.</p>
@@ -236,7 +236,7 @@ export default function ScorecardRosterPage() {
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={14} className="px-4 py-10 text-center text-text-muted"><UserSquare2 size={22} className="mx-auto mb-2" />No people match your search.</td></tr>
+                  <tr><td colSpan={14} className="px-4 py-8 text-center text-text-muted"><UserSquare2 size={22} className="mx-auto mb-2" />No people match your search.</td></tr>
                 )}
               </tbody>
               {totals && filtered.length > 0 && selectedDeptIds.length === 0 && !search.trim() && (

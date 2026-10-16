@@ -80,7 +80,7 @@ function DeleteConfirmDialog({
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-sm bg-surface rounded-card shadow-dialog border border-border-light p-5">
+      <div className="w-full max-w-sm bg-surface rounded-card shadow-dialog border border-border-light p-4">
         <h3 className="text-[16px] font-medium text-text-primary">{copy.title}</h3>
         <p className="text-sm text-text-secondary mt-1.5">
           <span className="font-medium text-text-primary">“{template.title}”</span> — {copy.body}
@@ -174,7 +174,7 @@ function RecurringCard({
 
   return (
     <div onClick={onClick}
-      className="bg-surface border border-border-light rounded-card shadow-card p-5 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group flex flex-col h-[280px]">
+      className="bg-surface border border-border-light rounded-card shadow-card p-4 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group flex flex-col h-[280px]">
       <div className="mb-3">
         <div className="flex items-center justify-between gap-3 flex-wrap mb-2">
           <div className="flex items-center gap-2 flex-wrap">
@@ -475,7 +475,7 @@ export default function RecurringPage() {
       : relationEmpty
 
   return (
-    <div className="space-y-5 pb-16">
+    <div className="space-y-4 pb-12">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
@@ -485,7 +485,7 @@ export default function RecurringPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <ScopeSwitcher maxScope={maxScope} value={appliedScope} onChange={handleScopeChange} />
           <button onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-5 py-[10px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors shrink-0">
+            className="flex items-center gap-2 px-4 py-[10px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors shrink-0">
             <Plus size={16} /> New Recurring Task
           </button>
         </div>
@@ -542,17 +542,17 @@ export default function RecurringPage() {
       {loading ? (
         <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : visibleTemplates.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-20">
+        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">{emptyState.icon}</div>
           <p className="font-medium text-text-primary">{emptyState.title}</p>
-          <p className="text-sm text-text-secondary mt-1 mb-5">{emptyState.sub}</p>
+          <p className="text-sm text-text-secondary mt-1 mb-4">{emptyState.sub}</p>
           {filtersActive ? (
             <button onClick={() => { setSearchInput(''); setFilters({ ...EMPTY_RECURRING_FILTERS }) }}
-              className="px-5 py-[10px] text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">
+              className="px-4 py-[10px] text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">
               Clear filters
             </button>
           ) : (
-            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-5 py-[10px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors">
+            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-[10px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors">
               <Plus size={16} /> New Recurring Task
             </button>
           )}

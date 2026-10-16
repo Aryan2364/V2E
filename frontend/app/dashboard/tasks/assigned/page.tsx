@@ -249,7 +249,7 @@ export default function AssignedByMePage() {
             </p>
           )}
           {sortedTasks.length === 0 ? (
-            <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-20">
+            <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
               <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
                 <UserCheck size={24} className="text-text-muted" />
               </div>
@@ -338,7 +338,7 @@ export default function AssignedByMePage() {
               type="button"
               onClick={submitIncomplete}
               disabled={incompleteSubmitting || !incompleteReason.trim()}
-              className="w-full sm:w-auto px-5 py-2 text-sm font-medium text-white bg-danger rounded-control hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-danger rounded-control hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {incompleteSubmitting ? 'Saving…' : 'Mark Incomplete'}
             </button>

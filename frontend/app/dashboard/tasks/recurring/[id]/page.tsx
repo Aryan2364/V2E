@@ -95,7 +95,7 @@ function reminderSpecLabel(s: ReminderSpec): string {
 
 function StatCard({ label, value, icon, color, hint }: { label: string; value: number | string; icon: React.ReactNode; color: string; hint?: string }) {
   return (
-    <div className="bg-surface border border-border-light rounded-card shadow-card p-5 flex items-start gap-3">
+    <div className="bg-surface border border-border-light rounded-card shadow-card p-4 flex items-start gap-3">
       <div className="w-9 h-9 rounded-control flex items-center justify-center shrink-0" style={{ backgroundColor: color + '18', color }}>
         {icon}
       </div>
@@ -116,7 +116,7 @@ function PerformanceCard({ stats, onOpenInstance }: { stats: RecurringStats; onO
   const shownTimings: RecurringInstanceTiming[] = ['early', 'on_time', 'late', 'partial', 'incomplete', 'overdue', 'pending']
 
   return (
-    <div className="bg-surface border border-border-light rounded-card shadow-card p-5 space-y-5">
+    <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
       <div className="flex items-center gap-2">
         <TrendingUp size={16} className="text-primary-text" />
         <h3 className="text-[16px] font-medium text-text-primary">Performance</h3>
@@ -530,7 +530,7 @@ export default function RecurringDetailPage() {
 
               {/* List */}
               {filtered.length === 0 ? (
-                <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-16">
+                <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
                   <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center mb-3">
                     <CheckSquare size={20} className="text-text-muted" />
                   </div>
@@ -561,7 +561,7 @@ export default function RecurringDetailPage() {
             <>
               {/* Grouped Attachments List */}
               {groupedAttachments.length === 0 ? (
-                <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-16">
+                <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
                   <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center mb-3">
                     <Paperclip size={20} className="text-text-muted" />
                   </div>
@@ -785,7 +785,7 @@ export default function RecurringDetailPage() {
                           <span className="text-[10px] font-medium text-danger bg-danger-bg border border-danger-border rounded-[999px] px-1.5 py-0.5">Ended</span>
                         )}
                       </div>
-                      <div className="text-xs text-text-secondary pl-5 space-y-0.5">
+                      <div className="text-xs text-text-secondary pl-4 space-y-0.5">
                         <p>From {formatDate(entry.start_date)}</p>
                         {entry.end_condition === 'on_date' && entry.end_date && (
                           <p>Until {formatDate(entry.end_date)}</p>

@@ -79,7 +79,7 @@ export default function EmployeeReportPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <button onClick={() => router.push('/dashboard/tasks')} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
         <ArrowLeft size={15} /> Back to Overview
       </button>
@@ -123,7 +123,7 @@ export default function EmployeeReportPage() {
       {listLoading ? (
         <div className="flex items-center justify-center h-40"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : rows.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card py-14 text-center">
+        <div className="bg-surface border border-border-light rounded-card py-12 text-center">
           <p className="font-medium text-text-primary">Nothing here</p>
           <p className="text-sm text-text-secondary mt-1">No tasks in this view.</p>
         </div>
@@ -131,7 +131,7 @@ export default function EmployeeReportPage() {
         <div className="flex flex-col gap-2">
           {rows.map((t) => <TaskRow key={t.id} task={t} onClick={() => setOpenTaskId(t.id)} />)}
           {hasMore && (
-            <button onClick={() => fetchList(page + 1, false)} className="mt-2 mx-auto px-5 py-2.5 rounded-control border border-border-light bg-surface text-sm font-medium text-text-secondary hover:bg-surface-control">
+            <button onClick={() => fetchList(page + 1, false)} className="mt-2 mx-auto px-4 py-2.5 rounded-control border border-border-light bg-surface text-sm font-medium text-text-secondary hover:bg-surface-control">
               Load more ({total - rows.length} left)
             </button>
           )}

@@ -190,14 +190,14 @@ export default function LeaveApprovalsPage() {
   ]
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div>
         <h1 className="text-[22px] sm:text-[28px] font-medium text-text-primary leading-tight">Leave Approvals</h1>
         <p className="text-sm text-text-secondary mt-0.5">Leave requests waiting for your decision.</p>
       </div>
 
       {status === 'loading' ? (
-        <div className="bg-surface border border-border-light rounded-card p-5 space-y-3">
+        <div className="bg-surface border border-border-light rounded-card p-4 space-y-3">
           {[0, 1, 2].map((i) => <div key={i} className="h-10 rounded-control bg-surface-control animate-pulse" />)}
         </div>
       ) : status === 'failed' ? (
@@ -269,7 +269,7 @@ export default function LeaveApprovalsPage() {
                 type="button"
                 onClick={confirmReject}
                 disabled={rejecting}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-medium text-white bg-danger hover:bg-danger-hover rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] sm:min-h-0 text-sm font-medium text-white bg-danger hover:bg-danger-hover rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 {rejecting && <Loader2 size={15} className="animate-spin" />}
                 Reject leave

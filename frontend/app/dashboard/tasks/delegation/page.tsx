@@ -221,7 +221,7 @@ export default function DelegationPage() {
       {/* View tabs — only rendered when there's more than one view to switch
           between. With a single view the strip is noise, so it's hidden. */}
       {tabs.length > 1 && (
-        <div className="flex items-center gap-1 border-b border-border-light mt-5 shrink-0">
+        <div className="flex items-center gap-1 border-b border-border-light mt-4 shrink-0">
           {tabs.map((t) => {
             const active = view === t
             const count = (lists[t] ?? []).length
@@ -249,7 +249,7 @@ export default function DelegationPage() {
       )}
 
       {/* Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto py-5">
+      <div className="flex-1 min-h-0 overflow-y-auto py-4">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
@@ -257,7 +257,7 @@ export default function DelegationPage() {
             ))}
           </div>
         ) : current.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-16 h-16 rounded-full bg-primary-subtle flex items-center justify-center mb-4">
               <ArrowRightLeft size={28} className="text-primary-text" />
             </div>
@@ -274,7 +274,7 @@ export default function DelegationPage() {
                   setEditing(null)
                   setModalOpen(true)
                 }}
-                className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-control text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+                className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-control text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
               >
                 <Plus size={16} /> New delegation
               </button>

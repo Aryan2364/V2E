@@ -234,7 +234,7 @@ export default function AgeingReportPage() {
     setDrill({ personId: null, personName: null, taskTitle: t.title, buckets, bandLabel })
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <button onClick={() => router.push('/dashboard/tasks/reports-new')} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
         <ArrowLeft size={15} /> Reports
       </button>
@@ -298,7 +298,7 @@ export default function AgeingReportPage() {
       {loading ? (
         <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : !report || report.people.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card py-16 flex flex-col items-center text-center">
+        <div className="bg-surface border border-border-light rounded-card py-12 flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
           <p className="font-medium text-text-primary">{report ? 'No pending work in your scope' : 'No access'}</p>
           <p className="text-sm text-text-secondary mt-1 max-w-sm">{report ? 'Everyone you can see is up to date — nothing is overdue or ongoing.' : 'You can only see ageing for people within your visibility.'}</p>
@@ -469,7 +469,7 @@ function SearchBox({ value, onChange, placeholder }: { value: string; onChange: 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-control border border-border bg-surface pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+        className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
       />
     </div>
   )

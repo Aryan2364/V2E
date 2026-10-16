@@ -133,7 +133,7 @@ export default function CCTasksPage() {
       )}
 
       {sortedTasks.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-20">
+        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
           <div className="w-14 h-14 rounded-full bg-warning-bg flex items-center justify-center mb-4">
             <Eye size={24} className="text-warning" />
           </div>

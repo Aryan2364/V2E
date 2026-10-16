@@ -666,7 +666,7 @@ export default function TasksOverviewPage() {
 
   if (!permsLoading && !can('tasks.task.manage', 'read')) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-4">
         <h1 className="text-[28px] font-medium text-text-primary leading-tight">Work Overview</h1>
         <AccessHiddenState orgId={orgId} leaf="tasks.task.manage" moduleLabel="Tasks" />
       </div>
@@ -680,7 +680,7 @@ export default function TasksOverviewPage() {
   const showTagFilter = tagsLoading || !!tagsError || orgTags.length > 0 || tagIds.length > 0
 
   return (
-    <div className="space-y-5 pb-24">
+    <div className="space-y-4 pb-24">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex-1 min-w-0">
@@ -804,7 +804,7 @@ export default function TasksOverviewPage() {
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search tasks…"
-            className="w-full rounded-control border border-border bg-surface pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
+            className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
         <button onClick={() => setShowFilters((v) => !v)}
           className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border text-sm font-medium transition-colors ${showFilters || filtersActive ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
@@ -925,7 +925,7 @@ export default function TasksOverviewPage() {
       {loadingList ? (
         <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : rows.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-16">
+        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4"><CheckSquare size={24} className="text-text-muted" /></div>
           <p className="font-medium text-text-primary text-base">{filtersActive || bucket || drilled ? 'No tasks match this view' : 'No tasks here yet'}</p>
           <p className="text-text-secondary text-sm mt-1 text-center max-w-xs">{filtersActive || bucket || drilled ? 'Try adjusting your filters or scope.' : 'Create a task to get started.'}</p>
@@ -937,7 +937,7 @@ export default function TasksOverviewPage() {
           ))}
           {hasMore && (
             <button onClick={() => fetchList(page + 1, false)} disabled={loadingMore}
-              className="mt-2 mx-auto px-5 py-2.5 rounded-control border border-border-light bg-surface text-sm font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
+              className="mt-2 mx-auto px-4 py-2.5 rounded-control border border-border-light bg-surface text-sm font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
               {loadingMore ? 'Loading…' : `Load more (${total - rows.length} left)`}
             </button>
           )}
@@ -951,7 +951,7 @@ export default function TasksOverviewPage() {
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search tasks…"
-            className="w-full rounded-control border border-border bg-surface pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
+            className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
         <button onClick={exportCsv} disabled={exporting}
           className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-control disabled:opacity-60 transition-colors">

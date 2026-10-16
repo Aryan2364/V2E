@@ -50,7 +50,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           </button>
         </div>
 
-        <div className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
+        <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
           {/* Title */}
           <div className="flex items-start gap-3">
             {/* <QuadrantBadge quadrant={task.quadrant} /> */}
@@ -148,7 +148,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
         <div className="shrink-0 flex justify-end px-6 py-4 border-t border-border-light">
           <button
             onClick={onClose}
-            className="px-5 py-[10px] text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors"
+            className="px-4 py-[10px] text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors"
           >
             Close
           </button>
@@ -257,7 +257,7 @@ export default function ArchivePage() {
         rowKey={(item) => item.id}
         onRowClick={(item) => setSelected(item)}
         emptyState={
-          <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-20">
+          <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
             <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
               <Archive size={24} className="text-text-muted" />
             </div>

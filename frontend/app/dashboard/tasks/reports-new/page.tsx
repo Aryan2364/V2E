@@ -75,7 +75,7 @@ export default function ReportsIndexPage() {
           <button
             key={r.key}
             onClick={() => router.push(r.href)}
-            className="group text-left bg-surface border border-border-light rounded-card shadow-card p-5 hover:border-primary hover:shadow-dialog transition-all"
+            className="group text-left bg-surface border border-border-light rounded-card shadow-card p-4 hover:border-primary hover:shadow-dialog transition-all"
           >
             <div className="flex items-start gap-4">
               <div

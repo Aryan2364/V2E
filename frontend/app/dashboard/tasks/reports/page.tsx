@@ -35,7 +35,7 @@ function completionRate(completed: number, total: number): string {
 
 function SectionHeader({ icon, title, onExport }: { icon: React.ReactNode; title: string; onExport: () => void }) {
   return (
-    <div className="flex items-center justify-between mb-5">
+    <div className="flex items-center justify-between mb-4">
       <h2 className="flex items-center gap-2 text-[17px] font-medium text-text-primary">
         {icon}
         {title}
@@ -69,7 +69,7 @@ function StatBanner({ data }: { data: TaskReportData }) {
       {stats.map((s) => (
         <div
           key={s.label}
-          className="bg-surface border border-border-light rounded-card shadow-card p-5 flex items-start gap-4"
+          className="bg-surface border border-border-light rounded-card shadow-card p-4 flex items-start gap-4"
         >
           <div
             className="w-10 h-10 rounded-control flex items-center justify-center shrink-0"

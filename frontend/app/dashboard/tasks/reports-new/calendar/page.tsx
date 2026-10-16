@@ -135,7 +135,7 @@ export default function CalendarReportPage() {
   const onTimePct = t && t.on_time + t.late + t.missed > 0 ? Math.round((t.on_time / (t.on_time + t.late + t.missed)) * 100) : null
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <button onClick={() => router.push('/dashboard/tasks/reports-new')} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
         <ArrowLeft size={15} /> Reports
       </button>
@@ -190,7 +190,7 @@ export default function CalendarReportPage() {
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search task or person…" className="w-full rounded-control border border-border bg-surface pl-9 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search task or person…" className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
         <div className="w-[210px]"><DepartmentMultiSelect selected={deptIds} onChange={setDeptIds} departments={departments} allLabel="All departments" /></div>
         <div className="w-[180px]"><StyledSelect value={freq} onChange={setFreq} options={freqOptions} /></div>
@@ -199,7 +199,7 @@ export default function CalendarReportPage() {
 
       {/* Totals strip */}
       {t && report && report.rows.length > 0 && (
-        <div className="flex gap-6 flex-wrap bg-surface border border-border-light rounded-card px-5 py-3">
+        <div className="flex gap-6 flex-wrap bg-surface border border-border-light rounded-card px-4 py-3">
           <Stat label="Task · person rows" value={t.rows} />
           <Stat label="Scheduled" value={t.scheduled} />
           <Stat label="Done on time" value={t.on_time} color="var(--success)" />
@@ -219,7 +219,7 @@ export default function CalendarReportPage() {
       {loading ? (
         <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : !report || report.rows.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card py-16 flex flex-col items-center text-center">
+        <div className="bg-surface border border-border-light rounded-card py-12 flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-primary-subtle flex items-center justify-center mb-4">{report ? <CalendarClock size={24} className="text-primary-text" /> : <Lock size={24} className="text-danger" />}</div>
           <p className="font-medium text-text-primary">{report ? 'Nothing scheduled this month' : 'No access'}</p>
           <p className="text-sm text-text-secondary mt-1 max-w-sm">{report ? 'No task fell due in this month for anyone in your scope. Try another month.' : 'You can only see the calendar for people within your visibility.'}</p>
