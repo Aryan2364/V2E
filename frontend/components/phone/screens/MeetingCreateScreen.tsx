@@ -164,12 +164,12 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
             maxLength={250}
             enterKeyHint="next"
             placeholder="e.g. Weekly sync"
-            className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] text-phone-body text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
+            className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-phone-body text-text-primary outline-hidden focus-visible:border-primary"
           />
         </Field>
 
         <div className="flex flex-col gap-[6px]">
-          <span className="text-phone-label font-medium text-phone-text-secondary">Type</span>
+          <span className="text-phone-label font-medium text-text-secondary">Type</span>
           <div className="flex gap-[8px]">
             {(['online', 'offline'] as const).map((t) => (
               <button
@@ -178,7 +178,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
                 onClick={() => setType(t)}
                 className={cx(
                   'flex-1 min-h-(--h-control) rounded-[8px] border-2 text-phone-body font-semibold',
-                  type === t ? 'border-phone-primary bg-phone-primary-subtle text-phone-primary-text' : 'border-phone-border bg-phone-surface text-phone-text-secondary',
+                  type === t ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border bg-surface text-text-secondary',
                 )}
               >
                 {t === 'online' ? 'Online' : 'In person'}
@@ -195,7 +195,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
               onChange={(e) => setOnlineLink(e.target.value)}
               placeholder="https://…"
               inputMode="url"
-              className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] text-phone-body text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
+              className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-phone-body text-text-primary outline-hidden focus-visible:border-primary"
             />
           </Field>
         ) : (
@@ -205,7 +205,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g. Conference room 2"
-              className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] text-phone-body text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
+              className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-phone-body text-text-primary outline-hidden focus-visible:border-primary"
             />
           </Field>
         )}
@@ -216,20 +216,20 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
           <PhoneTimeField id="meeting-start" label="Start time" value={startTime} onChange={setStartTime} />
           <PhoneTimeField id="meeting-end" label="End time" value={endTime} onChange={setEndTime} />
         </div>
-        {errors.endTime ? <p className="text-phone-meta text-phone-danger">{errors.endTime}</p> : null}
+        {errors.endTime ? <p className="text-phone-meta text-danger">{errors.endTime}</p> : null}
 
         <button
           type="button"
           onClick={() => setPickerOpen(true)}
-          className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-phone-border-light bg-phone-surface px-[12px] text-left active:bg-phone-surface-control"
+          className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-light bg-surface px-[12px] text-left active:bg-surface-control"
         >
-          <span className="text-phone-body text-phone-text-primary">
+          <span className="text-phone-body text-text-primary">
             Attendees{selectedPeople.length > 0 ? ` · ${selectedPeople.length}` : ''}
           </span>
-          <ChevronRight aria-hidden className="size-[18px] text-phone-text-secondary" />
+          <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
         </button>
         {selectedPeople.length > 0 ? (
-          <p className="text-phone-meta text-phone-text-secondary">{selectedPeople.map((p) => p.name).join(', ')}</p>
+          <p className="text-phone-meta text-text-secondary">{selectedPeople.map((p) => p.name).join(', ')}</p>
         ) : null}
 
         {agendaOpen ? (
@@ -239,24 +239,24 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
               onChange={(e) => setAgenda(e.target.value)}
               rows={4}
               placeholder="What this meeting will cover"
-              className="w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] py-[10px] text-phone-body text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
+              className="w-full rounded-[8px] border border-border bg-surface px-[12px] py-[10px] text-phone-body text-text-primary outline-hidden focus-visible:border-primary"
             />
           </Field>
         ) : (
           <button
             type="button"
             onClick={() => setAgendaOpen(true)}
-            className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-phone-border-light bg-phone-surface px-[12px] text-left active:bg-phone-surface-control"
+            className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-light bg-surface px-[12px] text-left active:bg-surface-control"
           >
-            <span className="text-phone-body text-phone-text-primary">Add agenda</span>
-            <ChevronRight aria-hidden className="size-[18px] text-phone-text-secondary" />
+            <span className="text-phone-body text-text-primary">Add agenda</span>
+            <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
           </button>
         )}
       </div>
 
       <div
         className={cx(
-          'fixed inset-x-0 bottom-0 z-30 border-t border-phone-border-light bg-phone-surface px-[16px] py-[12px]',
+          'fixed inset-x-0 bottom-0 z-30 border-t border-border-light bg-surface px-[16px] py-[12px]',
           'pb-[calc(12px+var(--safe-bottom))] pl-[max(16px,var(--safe-left))] pr-[max(16px,var(--safe-right))]',
         )}
       >
@@ -293,11 +293,11 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-[6px]">
-      <label className="text-phone-label font-medium text-phone-text-secondary">
+      <label className="text-phone-label font-medium text-text-secondary">
         {label} {required ? <span aria-hidden>*</span> : null}
       </label>
       {children}
-      {error ? <p className="text-phone-meta text-phone-danger">{error}</p> : null}
+      {error ? <p className="text-phone-meta text-danger">{error}</p> : null}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth/context'
 import QueryProvider from '@/lib/providers/QueryProvider'
@@ -13,10 +13,14 @@ import { getInitialLayout } from '@/lib/layout.server'
 import { InstallPromptCapture } from '@/lib/install'
 import { APP_SHORT_NAME, INSTALL_COLOURS, IPHONE_STATUS_BAR } from '@/lib/install-settings'
 
-const inter = Inter({
+const geistSans = Geist({
+  variable: '--font-geist-sans',
   subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
+})
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 })
 
 /** Everything every page's head carries, in both layouts (unchanged from before the phone layout). */
@@ -89,8 +93,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const layout = await getInitialLayout()
 
   return (
-    <html lang="en" data-layout={layout} className={inter.variable}>
-      <body className="font-(family-name:--font-inter) antialiased bg-[#F8FAFC] text-[#1E293B]">
+    <html lang="en" data-layout={layout} className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="font-sans antialiased bg-surface-sunken text-text-primary">
         <LayoutProvider initial={layout}>
           <QueryProvider>
             <AuthProvider>

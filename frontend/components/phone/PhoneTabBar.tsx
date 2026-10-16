@@ -84,7 +84,7 @@ export default function PhoneTabBar() {
       data-slot="phone-tab-bar"
       data-fixed-bottom="tab-bar"
       className={cx(
-        'fixed inset-x-0 bottom-0 z-40 flex border-t border-phone-border-light bg-phone-surface',
+        'fixed inset-x-0 bottom-0 z-40 flex border-t border-border-light bg-surface',
         'h-[calc(var(--h-tab-bar)+var(--safe-bottom))] pb-(--safe-bottom) pl-(--safe-left) pr-(--safe-right)',
       )}
     >
@@ -105,9 +105,9 @@ export default function PhoneTabBar() {
             className={cx(
               'flex min-w-0 flex-1 basis-0 flex-col items-center justify-center gap-[4px] px-[4px]',
               '[&_svg]:size-[22px] [&_svg]:shrink-0',
-              'transition-[background-color] duration-(--duration-fast) active:bg-phone-surface-control',
-              'outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring',
-              isActive ? 'text-phone-primary-text' : 'text-phone-text-secondary',
+              'transition-[background-color] duration-(--duration-fast) active:bg-surface-control',
+              'outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-ring',
+              isActive ? 'text-primary-text' : 'text-text-secondary',
             )}
           >
             <span className="relative flex">
@@ -115,7 +115,7 @@ export default function PhoneTabBar() {
               {count !== null ? (
                 <span
                   aria-hidden
-                  className="absolute top-[-8px] left-[12px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-phone-primary px-[5px] text-[11px] font-semibold leading-none text-phone-primary-foreground"
+                  className="absolute top-[-8px] left-[12px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-[5px] text-[11px] font-semibold leading-none text-primary-foreground"
                 >
                   {count > 99 ? '99+' : count}
                 </span>

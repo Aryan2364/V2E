@@ -24,7 +24,7 @@ export function cx(...parts: (string | false | null | undefined)[]): string {
 
 /** The focus ring every phone control shows on keyboard focus. */
 export const FOCUS_RING =
-  'outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-phone-primary-ring'
+  'outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ring'
 
 type Variant = 'primary' | 'secondary'
 
@@ -36,16 +36,16 @@ type Variant = 'primary' | 'secondary'
  */
 const VARIANTS: Record<Variant, string> = {
   primary:
-    'bg-phone-primary text-phone-primary-foreground border-2 border-phone-primary active:bg-phone-primary-pressed active:border-phone-primary-pressed',
+    'bg-primary text-primary-foreground border-2 border-primary active:bg-primary-pressed active:border-primary-pressed',
   secondary:
-    'bg-phone-surface text-phone-primary-text border-2 border-phone-primary active:bg-phone-primary-subtle',
+    'bg-surface text-primary-text border-2 border-primary active:bg-primary-subtle',
 }
 
 const BUTTON = cx(
   'inline-flex min-h-(--h-control) items-center justify-center gap-[8px] rounded-[8px] px-[16px] py-[8px]',
   'text-phone-body font-semibold text-center',
   'transition-[background-color,border-color] duration-(--duration-fast)',
-  'disabled:bg-phone-surface-control-pressed disabled:border-phone-surface-control-pressed disabled:text-phone-text-secondary disabled:cursor-not-allowed',
+  'disabled:bg-surface-control-pressed disabled:border-surface-control-pressed disabled:text-text-secondary disabled:cursor-not-allowed',
   '[&_svg]:size-[18px] [&_svg]:shrink-0',
   FOCUS_RING,
 )
@@ -94,12 +94,12 @@ export function PhoneLinkButton({
  * plus the side safe areas; the safe area stays padded).
  */
 export const ROW_BLOCK =
-  'mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface'
+  'mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface'
 
 /** One tappable row, at least 48px, 16px in from the sides (41.5 rule 8, 41.8 rule 7). */
 export const ROW = cx(
   'flex min-h-[48px] w-full items-center gap-[12px] px-[16px] py-[12px] text-left',
-  'text-phone-body text-phone-text-primary',
-  'transition-[background-color] duration-(--duration-fast) active:bg-phone-surface-control',
-  'outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring',
+  'text-phone-body text-text-primary',
+  'transition-[background-color] duration-(--duration-fast) active:bg-surface-control',
+  'outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-ring',
 )

@@ -46,12 +46,12 @@ export function DraftBanner<T extends DraftValues>({
       <div
         role="status"
         className={cx(
-          'flex items-start gap-[8px] rounded-[8px] border border-phone-border bg-phone-surface-sunken px-[12px] py-[10px]',
+          'flex items-start gap-[8px] rounded-[8px] border border-border bg-surface-sunken px-[12px] py-[10px]',
           className,
         )}
       >
-        <CircleAlert aria-hidden className="mt-[2px] size-[16px] shrink-0 text-phone-text-secondary" />
-        <p className="min-w-0 flex-1 text-phone-label text-phone-text-secondary">
+        <CircleAlert aria-hidden className="mt-[2px] size-[16px] shrink-0 text-text-secondary" />
+        <p className="min-w-0 flex-1 text-phone-label text-text-secondary">
           Your draft from {when(savedAt, now)} was not used, because{' '}
           {changedBy ? `${changedBy} changed` : 'this record was changed'} this record at {when(changedAt, now)}.
         </p>
@@ -59,7 +59,7 @@ export function DraftBanner<T extends DraftValues>({
           type="button"
           aria-label="Close"
           onClick={draft.discard}
-          className="shrink-0 text-phone-text-secondary"
+          className="shrink-0 text-text-secondary"
         >
           <X aria-hidden className="size-[16px]" />
         </button>
@@ -71,13 +71,13 @@ export function DraftBanner<T extends DraftValues>({
     <div
       role="status"
       className={cx(
-        'flex flex-col gap-[8px] rounded-[8px] border border-phone-primary-border bg-phone-primary-subtle px-[12px] py-[10px]',
+        'flex flex-col gap-[8px] rounded-[8px] border border-primary-border bg-primary-subtle px-[12px] py-[10px]',
         className,
       )}
     >
       <div className="flex items-start gap-[8px]">
-        <CircleAlert aria-hidden className="mt-[2px] size-[16px] shrink-0 text-phone-primary-text" />
-        <p className="min-w-0 flex-1 text-phone-label text-phone-primary-text">
+        <CircleAlert aria-hidden className="mt-[2px] size-[16px] shrink-0 text-primary-text" />
+        <p className="min-w-0 flex-1 text-phone-label text-primary-text">
           You have an unsaved draft from {when(offer.savedAt, now)}.
         </p>
       </div>

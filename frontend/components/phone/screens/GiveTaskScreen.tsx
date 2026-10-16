@@ -143,17 +143,17 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
             maxLength={TITLE_MAX + 20}
             autoFocus
             className={cx(
-              'min-h-(--h-control) w-full rounded-[8px] border bg-phone-surface px-[12px] text-[16px] text-phone-text-primary outline-hidden focus-visible:border-phone-primary',
-              titleError ? 'border-phone-danger' : 'border-phone-border-strong',
+              'min-h-(--h-control) w-full rounded-[8px] border bg-surface px-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary',
+              titleError ? 'border-danger' : 'border-border-strong',
             )}
           />
         </Field>
 
         <Field label="Assignee(s)">
-          <button type="button" onClick={() => setAssigneePicker(true)} className={cx(ROW, 'mx-0 rounded-[8px] border border-phone-border-strong bg-phone-surface')}>
+          <button type="button" onClick={() => setAssigneePicker(true)} className={cx(ROW, 'mx-0 rounded-[8px] border border-border-strong bg-surface')}>
             <span className="min-w-0 flex-1 truncate text-left">
               {draft.assignees.length === 0 ? (
-                <span className="text-phone-text-secondary">Choose who this is for</span>
+                <span className="text-text-secondary">Choose who this is for</span>
               ) : (
                 draft.assignees.map((a) => a.name).join(', ')
               )}
@@ -166,7 +166,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
             type="datetime-local"
             value={draft.deadline}
             onChange={(e) => setDraft((d) => ({ ...d, deadline: e.target.value }))}
-            className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border-strong bg-phone-surface px-[12px] text-[16px] text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
+            className="min-h-(--h-control) w-full rounded-[8px] border border-border-strong bg-surface px-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary"
           />
         </Field>
 
@@ -174,7 +174,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           <select
             value={draft.priorityId}
             onChange={(e) => setDraft((d) => ({ ...d, priorityId: e.target.value }))}
-            className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border-strong bg-phone-surface px-[12px] text-[16px] text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
+            className="min-h-(--h-control) w-full rounded-[8px] border border-border-strong bg-surface px-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary"
           >
             <option value="">No priority</option>
             {priorities.map((p) => (
@@ -192,21 +192,21 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
               onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
               rows={4}
               className={cx(
-                'w-full resize-none rounded-[8px] border bg-phone-surface px-[12px] py-[10px] text-[16px] text-phone-text-primary outline-hidden focus-visible:border-phone-primary',
-                descriptionError ? 'border-phone-danger' : 'border-phone-border-strong',
+                'w-full resize-none rounded-[8px] border bg-surface px-[12px] py-[10px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary',
+                descriptionError ? 'border-danger' : 'border-border-strong',
               )}
             />
           </Field>
         ) : (
-          <button type="button" onClick={() => setShowDescription(true)} className="self-start text-phone-label font-semibold text-phone-primary-text">
+          <button type="button" onClick={() => setShowDescription(true)} className="self-start text-phone-label font-semibold text-primary-text">
             + Add description
           </button>
         )}
 
-        <p className="text-phone-meta text-phone-text-secondary">Repeat (daily/weekly/monthly) isn&apos;t available from the phone yet - set it up on a computer.</p>
+        <p className="text-phone-meta text-text-secondary">Repeat (daily/weekly/monthly) isn&apos;t available from the phone yet - set it up on a computer.</p>
 
         {(draft.title || draft.description) ? (
-          <button type="button" onClick={onDiscard} className="self-start text-phone-label font-semibold text-phone-danger">
+          <button type="button" onClick={onDiscard} className="self-start text-phone-label font-semibold text-danger">
             Discard draft
           </button>
         ) : null}
@@ -214,7 +214,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
 
       <div
         className={cx(
-          'fixed inset-x-0 bottom-0 z-30 flex gap-[8px] border-t border-phone-border-light bg-phone-surface px-[16px] pt-[12px]',
+          'fixed inset-x-0 bottom-0 z-30 flex gap-[8px] border-t border-border-light bg-surface px-[16px] pt-[12px]',
           'pb-[calc(12px+var(--safe-bottom))] pl-[max(16px,var(--safe-left))] pr-[max(16px,var(--safe-right))]',
         )}
       >
@@ -247,9 +247,9 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
 function Field({ label, error, children }: { label: string; error?: string | null; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-[6px]">
-      <span className="text-phone-label font-medium text-phone-text-secondary">{label}</span>
+      <span className="text-phone-label font-medium text-text-secondary">{label}</span>
       {children}
-      {error ? <span className="text-phone-meta text-phone-danger">{error}</span> : null}
+      {error ? <span className="text-phone-meta text-danger">{error}</span> : null}
     </label>
   )
 }
@@ -302,25 +302,25 @@ function AssigneePickerSheet({
     >
       <div className="flex flex-col gap-[12px]">
         <div className="relative">
-          <Search aria-hidden className="absolute left-[12px] top-1/2 size-[16px] -translate-y-1/2 text-phone-text-secondary" />
+          <Search aria-hidden className="absolute left-[12px] top-1/2 size-[16px] -translate-y-1/2 text-text-secondary" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search people"
-            className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border-strong bg-phone-surface py-[8px] pl-[36px] pr-[12px] text-[16px] text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
+            className="min-h-(--h-control) w-full rounded-[8px] border border-border-strong bg-surface py-[8px] pl-[36px] pr-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary"
           />
           {query ? (
             <button type="button" aria-label="Clear search" onClick={() => setQuery('')} className="absolute right-[8px] top-1/2 -translate-y-1/2">
-              <X aria-hidden className="size-[16px] text-phone-text-secondary" />
+              <X aria-hidden className="size-[16px] text-text-secondary" />
             </button>
           ) : null}
         </div>
 
         {loading ? (
-          <p className="text-phone-body text-phone-text-secondary">Searching…</p>
+          <p className="text-phone-body text-text-secondary">Searching…</p>
         ) : users.length === 0 ? (
-          <p className="text-phone-body text-phone-text-secondary">No one matches.</p>
+          <p className="text-phone-body text-text-secondary">No one matches.</p>
         ) : (
           <ul className="flex flex-col">
             {users.map((u) => {
@@ -332,18 +332,18 @@ function AssigneePickerSheet({
                       aria-hidden
                       className={cx(
                         'flex size-[20px] shrink-0 items-center justify-center rounded-[4px] border-2',
-                        checked ? 'border-phone-primary bg-phone-primary' : 'border-phone-border-strong',
+                        checked ? 'border-primary bg-primary' : 'border-border-strong',
                       )}
                     >
                       {checked ? (
-                        <svg viewBox="0 0 16 16" className="size-[12px] text-phone-primary-foreground" fill="none">
+                        <svg viewBox="0 0 16 16" className="size-[12px] text-primary-foreground" fill="none">
                           <path d="M3 8.5L6.2 11.5L13 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       ) : null}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-left">
-                      <span className="block truncate text-phone-body text-phone-text-primary">{u.name}</span>
-                      <span className="block truncate text-phone-meta text-phone-text-secondary">{u.department_name}</span>
+                      <span className="block truncate text-phone-body text-text-primary">{u.name}</span>
+                      <span className="block truncate text-phone-meta text-text-secondary">{u.department_name}</span>
                     </span>
                   </button>
                 </li>

@@ -1,42 +1,925 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 @import "tailwindcss";
-@config "../tailwind.config.ts";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* The phone layout - section 41. `phone:` applies a utility only inside
+   html[data-layout="phone"], so a phone-only class can never reach the
+   desktop layout. Used for what a token cannot express, such as a fixed
+   height becoming a minimum where text can wrap (41.9 rule 7). */
+@custom-variant phone (&:where([data-layout="phone"], [data-layout="phone"] *));
+
+/* ============================================================
+   TOKENS - FRONTEND_RULES.md section 2.1
+   This is the only file in the project that contains a colour (the one
+   exception is lib/install-settings.ts, section 0.1 item 9, which holds
+   hand copies of the brand block below for the manifest/status bar - the
+   phone reads those outside CSS and cannot read a token).
+   Change --primary below and every screen follows automatically.
+   Nothing outside this file knows what the brand colour is.
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #1E293B;
+  /* Brand - 2.2. V2E blue, carried over unchanged from the phone-only
+     block built on feat/phone-app (D3: "brand color is ok for now").
+     These EIGHT are edited together when the brand changes, with
+     --on-brand-accent below them and the three scrollbar colours
+     further down (section 0.1). Deliberately explicit, not derived from
+     --primary: this colour is dark, so hover goes LIGHTER and pressed
+     goes DARKER. Any replacement must measure at least 4.5:1 against its
+     foreground. */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-pressed: #1e40af;
+  --primary-ring: #3b82f6;
+  --primary-subtle: #eff6ff;
+  --primary-border: #bfdbfe;
+  --primary-foreground: #ffffff;
+  /* The brand used as TEXT on surface: links, secondary buttons, the
+     active tab, accent-band labels. 5.2:1 on surface (--surface below). */
+  --primary-text: #2563eb;
+
+  /* Sign-in headline highlight - 11.7. primary's hue (218), 45%
+     saturation, 72% lightness because this brand is dark (white
+     foreground). Measures well above the 4.5:1 floor on --primary.
+     Used nowhere else. */
+  --on-brand-accent: #97afd8;
+
+  /* On a brand ground - 36.8. Text, icons and control states for a
+     section 36 header band and for the sidebar. DERIVED (see the kit's
+     own note: no direction to get wrong here, since --primary-foreground
+     and --primary already clear 4.5:1 by construction for any brand). */
+  --on-brand: var(--primary-foreground);
+  --on-brand-muted: color-mix(in srgb, var(--primary-foreground) 80%, var(--primary));
+  --on-brand-hover: color-mix(in srgb, var(--primary-foreground) 12%, transparent);
+  --on-brand-pressed: color-mix(in srgb, var(--primary-foreground) 20%, transparent);
+
+  /* Neutrals - 2.3. --text-muted is never set lighter than this. */
+  --text-primary: #171717;
+  --text-secondary: #525252;
+  --text-muted: #737373;
+  --border: #d4d4d4;
+  --border-light: #e5e5e5;
+  /* Not in the 2.3 table. The hover border of fields, select triggers,
+     tick boxes and radios (6.4: a text-entry control's hover moves the
+     border only), and the pressed fill of an unchecked switch. */
+  --border-strong: #a3a3a3;
+  --surface: #ffffff;
+  --surface-sunken: #fafafa;
+  --surface-control: #f5f5f5;
+  --surface-control-pressed: #e5e5e5;
+
+  /* Status - 2.4. These never change when the brand colour changes.
+     They carry meaning, not brand. There is deliberately no blue -
+     informational blue (v2e's old "info" #0891B2) becomes neutral (D8),
+     per §2.4; see audit/colour-map.md. */
+  --success: #166534;
+  --success-bg: #dcfce7;
+  --success-border: #86efac;
+  --warning: #92400e;
+  --warning-bg: #fef3c7;
+  --warning-border: #fcd34d;
+  --danger: #991b1b;
+  --danger-bg: #fee2e2;
+  --danger-border: #fca5a5;
+  /* Text on a danger fill - 6.1: white, whatever the brand. */
+  --on-danger: #ffffff;
+  --danger-hover: color-mix(in srgb, var(--danger) 88%, #ffffff);
+  --danger-pressed: color-mix(in srgb, var(--danger) 85%, #000000);
+
+  /* Charts - 21. Positions 1 and 2 are maximally different because most
+     charts carry only two or three series. Never use status colours in a
+     chart unless the chart is about status. */
+  --chart-1: var(--primary);
+  --chart-2: #c2841d;
+  --chart-3: #3b5a9a;
+  --chart-4: #a34a5e;
+  --chart-5: #6fa8a4;
+  --chart-6: #7a7268;
+
+  /* The single-measure ramp - 21. Mixed from two brand tokens, so it
+     follows a brand change and always ends at the dark, readable end. */
+  --chart-ramp-1: color-mix(in srgb, var(--primary-text) 0%, var(--primary-subtle));
+  --chart-ramp-2: color-mix(in srgb, var(--primary-text) 25%, var(--primary-subtle));
+  --chart-ramp-3: color-mix(in srgb, var(--primary-text) 50%, var(--primary-subtle));
+  --chart-ramp-4: color-mix(in srgb, var(--primary-text) 75%, var(--primary-subtle));
+  --chart-ramp-5: color-mix(in srgb, var(--primary-text) 100%, var(--primary-subtle));
+
+  /* Scrollbar - 10.1. The browser default is never used. Derived from
+     --primary so a brand change carries here too (the kit picks its own
+     explicit tritone; these mix the brand into the same neutral shape). */
+  --scroll-track: color-mix(in srgb, var(--primary) 3%, #f8fafc);
+  --scroll-thumb: color-mix(in srgb, var(--primary) 30%, #94a3b8);
+  --scroll-thumb-hover: color-mix(in srgb, var(--primary) 50%, #64748b);
+
+  /* Overlay - 24. Derived from the neutral so no new colour enters the
+     system and a theme change carries it. */
+  --backdrop: color-mix(in srgb, var(--text-primary) 40%, transparent);
+
+  /* Radius - 5.3. Three values exist. There are no others.
+     --radius-tick is scoped to tick boxes only. */
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-tick: 4px;
+
+  /* Control heights - 6.2. Height is fixed; width grows with the label,
+     height never does. The phone layout raises all three to 44px (41.9
+     rule 2) in the PHONE LAYOUT block below. */
+  --h-control: 36px;
+  --h-control-sm: 32px;
+  --h-control-lg: 40px;
+
+  /* The icon button INSIDE a field - 6.2's exception, 6.3.1. */
+  --h-icon-in-field: 32px;
+
+  /* Section 17 rule 2: a single-line field never exceeds this. */
+  --field-max: 480px;
+
+  /* The type scale - section 3. */
+  --type-display: 40px;
+  --type-page-title: 30px;
+  --type-section: 20px;
+  --type-card-heading: 16px;
+  --type-body: 14px;
+  --type-label: 13px;
+  --type-meta: 12px;
+
+  /* Tap area on a touch screen - 9 rule 4. */
+  --tap-target: 44px;
+
+  /* Layers - 5.5, bottom to top. */
+  --z-sticky: 10;
+  --z-shell: 20;
+  --z-dialog: 30;
+  --z-popover: 40;
+  --z-toast: 50;
+  --z-tooltip: 60;
+
+  /* Motion - 5.6. */
+  --duration-fast: 150ms;
+  --duration-medium: 200ms;
+  --duration-slow: 250ms;
+
+  /* Page-loading bar - 5.6. */
+  --progress-delay: 300ms;
+  --progress-min-visible: 500ms;
+
+  /* Menu height - 16.2. */
+  --menu-max-height: calc(7 * var(--h-control) + 8px);
+
+  /* Sign-in brand panel grid pattern - 11.7. */
+  --brand-pattern-opacity: 6%;
+
+  /* Board - 35.6.1. */
+  --drag-threshold: 5px;
+
+  /* Safe areas - 41.13 rules 1 to 3. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* The on-screen keyboard - 41.13 rule 6. */
+  --keyboard-inset: 0px;
+
+  /* BOTTOM BARS - THE CONTRACT. */
+  --h-tab-bar: 56px;
+  --h-action-bar: calc(var(--h-control) + 2 * calc(var(--spacing) * 3) + 1px);
+  --bottom-bar: 0px;
 }
 
-* {
-  box-sizing: border-box;
+html[data-layout="phone"]:has([data-fixed-bottom="tab-bar"]) {
+  --bottom-bar: var(--h-tab-bar);
+}
+html[data-layout="phone"]:has([data-slot="app-bar"][data-below-top]):not(:has([data-fixed-bottom="action-bar"])) {
+  --bottom-bar: 0px;
+}
+html[data-layout="phone"]:has([data-fixed-bottom="action-bar"]) {
+  --bottom-bar: var(--h-action-bar);
+}
+html[data-keyboard="open"] {
+  --safe-bottom: 0px;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
+/* ------------------------------------------------------------
+   PHONE LAYOUT - section 41.9 rules 2, 3 and 5 to 7.
+   Merged from the phone-only block built on feat/phone-app (D10): those
+   tokens are now part of the one global token layer above, so only the
+   PHONE OVERRIDES remain here, scoped to [data-layout="phone"].
+   ------------------------------------------------------------ */
+:root[data-layout="phone"] {
+  --h-control: 2.75rem;
+  --h-control-sm: 2.75rem;
+  --h-control-lg: 2.75rem;
+  --field-max: none;
+  --h-icon-in-field: 2.25rem;
+
+  --type-page-title: 1.25rem;
+  --type-section: 1.125rem;
+  --type-card-heading: 1rem;
+  --type-body: 1rem;
+  --type-label: 0.875rem;
+  --type-meta: 0.75rem;
+
+  --spacing: 4px;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* Shadows - 5.4, and the two easings of 5.6. */
+@theme {
+  --shadow-card: 0 1px 2px color-mix(in srgb, var(--text-primary) 6%, transparent);
+  --shadow-menu: 0 4px 12px color-mix(in srgb, var(--text-primary) 10%, transparent),
+    0 1px 3px color-mix(in srgb, var(--text-primary) 6%, transparent);
+  --shadow-dialog: 0 16px 40px color-mix(in srgb, var(--text-primary) 16%, transparent),
+    0 2px 6px color-mix(in srgb, var(--text-primary) 8%, transparent);
+
+  --ease-enter: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* DARK THEME - section 28. Not built (D9: no dark mode). */
+
+/* ------------------------------------------------------------
+   shadcn / Base UI vocabulary.
+   ------------------------------------------------------------ */
+:root {
+  --background: var(--surface-sunken);
+  --foreground: var(--text-primary);
+  --card: var(--surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface);
+  --popover-foreground: var(--text-primary);
+  --secondary: var(--surface-control);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--surface-control);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--surface-control);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--danger);
+  --input: var(--border);
+  --ring: var(--primary-ring);
+  --radius: var(--radius-control);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--primary-subtle);
+  --sidebar-accent-foreground: var(--primary-pressed);
+  --sidebar-border: var(--border-light);
+  --sidebar-ring: var(--primary-ring);
+}
+
+@theme inline {
+  /* Type - section 3. Geist. */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-geist-sans);
+
+  --text-display: var(--type-display);
+  --text-display--line-height: 1.15;
+  --text-page-title: var(--type-page-title);
+  --text-page-title--line-height: 1.25;
+  --text-section: var(--type-section);
+  --text-section--line-height: 1.3;
+  --text-card-heading: var(--type-card-heading);
+  --text-card-heading--line-height: 1.4;
+  --text-body: var(--type-body);
+  --text-body--line-height: 1.6;
+  --text-label: var(--type-label);
+  --text-label--line-height: 1.5;
+  --text-meta: var(--type-meta);
+  --text-meta--line-height: 1.5;
+
+  --text-bar-title: 20px;
+  --text-bar-title--line-height: 1.3;
+  --text-bar-label: 12px;
+  --text-bar-label--line-height: 1.5;
+  --text-bar-button: 14px;
+  --text-bar-button--line-height: 1.6;
+
+  --text-xs: var(--type-meta);
+  --text-xs--line-height: 1.5;
+  --text-sm: var(--type-body);
+  --text-sm--line-height: 1.6;
+  --text-base: var(--type-card-heading);
+  --text-base--line-height: 1.4;
+  --text-lg: var(--type-section);
+  --text-lg--line-height: 1.3;
+  --text-xl: var(--type-section);
+  --text-xl--line-height: 1.3;
+  --text-2xl: var(--type-page-title);
+  --text-2xl--line-height: 1.25;
+  --text-3xl: var(--type-page-title);
+  --text-3xl--line-height: 1.25;
+  --text-4xl: initial;
+  --text-5xl: initial;
+  --text-6xl: initial;
+  --text-7xl: initial;
+  --text-8xl: initial;
+  --text-9xl: initial;
+
+  /* Only two weights exist - 3 rule 1. */
+  --font-weight-thin: initial;
+  --font-weight-extralight: initial;
+  --font-weight-light: initial;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: initial;
+  --font-weight-bold: initial;
+  --font-weight-extrabold: initial;
+  --font-weight-black: initial;
+
+  /* Radius - 5.3. */
+  --radius-xs: var(--radius-control);
+  --radius-sm: var(--radius-control);
+  --radius-md: var(--radius-control);
+  --radius-lg: var(--radius-control);
+  --radius-xl: var(--radius-card);
+  --radius-2xl: var(--radius-card);
+  --radius-3xl: var(--radius-card);
+  --radius-4xl: var(--radius-control);
+
+  --spacing-control: var(--h-control);
+  --spacing-control-sm: var(--h-control-sm);
+  --spacing-control-lg: var(--h-control-lg);
+  --spacing-icon-in-field: var(--h-icon-in-field);
+
+  --spacing-safe-top: var(--safe-top);
+  --spacing-safe-right: var(--safe-right);
+  --spacing-safe-bottom: var(--safe-bottom);
+  --spacing-safe-left: var(--safe-left);
+  --spacing-keyboard-inset: var(--keyboard-inset);
+
+  --spacing-tab-bar: var(--h-tab-bar);
+  --spacing-action-bar: var(--h-action-bar);
+  --spacing-bottom-bar: var(--bottom-bar);
+
+  --spacing-search: 280px;
+
+  --spacing-field-min: 160px;
+  --spacing-field-max: var(--field-max);
+
+  --spacing-dialog-sm: 400px;
+  --spacing-dialog-md: 560px;
+  --spacing-dialog-lg: 800px;
+
+  --spacing-sidebar: 260px;
+  --spacing-sidebar-rail: 64px;
+  --spacing-topbar: 56px;
+  --spacing-content-max: 1600px;
+  --spacing-phone-column: 600px;
+  --spacing-bar-button: 44px;
+  --spacing-fab: 56px;
+  --spacing-list-end: 88px;
+
+  --spacing-settings-menu: 200px;
+
+  --spacing-auth-form: 400px;
+
+  --spacing-progress: 3px;
+
+  --spacing-grid-cell: 120px;
+  --spacing-grid-head: 240px;
+
+  --spacing-band: calc(var(--h-control) + var(--spacing) * 4);
+
+  --spacing-col-tick: 48px;
+  --spacing-col-count: 96px;
+  --spacing-col-date: 128px;
+  --spacing-col-amount: 136px;
+  --spacing-col-ref: 144px;
+  --spacing-col-status: 152px;
+  --spacing-col-actions: 80px;
+  --spacing-col-datetime: 192px;
+  --spacing-col-scope: 168px;
+
+  --spacing-menu-max: var(--menu-max-height);
+
+  --spacing-board-column: 280px;
+
+  --spacing-count: 18px;
+  --spacing-count-pad: 6px;
+
+  --spacing-toast: 360px;
+  --spacing-notification-panel: 360px;
+
+  --spacing-icon: 16px;
+  --spacing-icon-nav: 18px;
+  --spacing-icon-empty: 22px;
+
+  --spacing-tooltip-max: 240px;
+
+  /* Colours, project vocabulary */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-pressed: var(--primary-pressed);
+  --color-primary-ring: var(--primary-ring);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-border: var(--primary-border);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-text: var(--primary-text);
+  --color-on-brand-accent: var(--on-brand-accent);
+
+  --color-on-brand: var(--on-brand);
+  --color-on-brand-muted: var(--on-brand-muted);
+  --color-on-brand-hover: var(--on-brand-hover);
+  --color-on-brand-pressed: var(--on-brand-pressed);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-border: var(--border);
+  --color-border-light: var(--border-light);
+  --color-border-strong: var(--border-strong);
+
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-control: var(--surface-control);
+  --color-surface-control-pressed: var(--surface-control-pressed);
+
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-success-border: var(--success-border);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-border: var(--warning-border);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-border: var(--danger-border);
+  --color-danger-hover: var(--danger-hover);
+  --color-on-danger: var(--on-danger);
+  --color-danger-pressed: var(--danger-pressed);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-ramp-1: var(--chart-ramp-1);
+  --color-chart-ramp-2: var(--chart-ramp-2);
+  --color-chart-ramp-3: var(--chart-ramp-3);
+  --color-chart-ramp-4: var(--chart-ramp-4);
+  --color-chart-ramp-5: var(--chart-ramp-5);
+
+  /* Colours, shadcn vocabulary (components/ui) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  html[data-layout="phone"] {
+    font: -apple-system-body;
+    @apply font-sans;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-surface-sunken text-body text-text-primary antialiased;
+  }
+
+  /* Scrollbars - section 10. Styled everywhere; the browser default is
+     never used. 10px, fully rounded. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scroll-track);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb);
+    border-radius: 9999px;
+  }
+
+  @media (hover: hover) {
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--scroll-thumb-hover);
+    }
+  }
+
+  /* Section 18: numbers, amounts and dates line up in tables. */
+  th,
+  td {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Autofill - 1 rule 5. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
+    box-shadow: 0 0 0 1000px var(--surface) inset;
+    -webkit-text-fill-color: var(--text-primary);
+    caret-color: var(--text-primary);
+  }
+  [data-slot="otp-field-input"]:-webkit-autofill,
+  [data-slot="otp-field-input"]:-webkit-autofill:hover,
+  [data-slot="otp-field-input"]:-webkit-autofill:focus {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    -webkit-text-fill-color: transparent;
+    caret-color: transparent;
+  }
+
+  /* V2E: number inputs never show the browser's spinner (kept from the
+     pre-kit globals.css). Not a colour; a form-control affordance. */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
   }
 }
 
-/* Hide number input spinners */
-input[type='number']::-webkit-inner-spin-button,
-input[type='number']::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input[type='number'] {
-  -moz-appearance: textfield;
+/* Reduce motion - 5.6 rule 3. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    --tw-enter-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-exit-translate-x: 0;
+    --tw-exit-translate-y: 0;
+    --tw-enter-scale: 1;
+    --tw-exit-scale: 1;
+    --tw-enter-rotate: 0;
+    --tw-exit-rotate: 0;
+    --tw-animation-duration: var(--duration-fast);
+  }
+
+  [class*="animate-in"],
+  [class*="animate-out"] {
+    animation-duration: var(--duration-fast);
+  }
+
+  /* V2E keyframes below (boot-bar, fadeIn, slideInRight, slideInLeft, popIn) */
+  .boot-bar { animation-duration: 2.3s; }
+  [class*="animate-[fadeIn"],
+  [class*="animate-[slideInRight"],
+  [class*="animate-[slideInLeft"],
+  [class*="animate-[popIn"] { animation: none !important; }
 }
 
+/* Tap area - 9 rule 4. */
+@utility tap-area {
+  @media (pointer: coarse) {
+    &:where(:not(.absolute, .fixed, .sticky)) {
+      position: relative;
+    }
 
-/* Dark sidebar scrollbar */
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, var(--tap-target));
+      height: max(100%, var(--tap-target));
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+@layer components {
+  /* Section 36: a band never contains unreadable text. */
+  [data-slot="header-band"][data-band-level="1"] .text-text-primary,
+  [data-slot="table-header"][data-band-level="1"] .text-text-primary {
+    color: var(--on-brand);
+  }
+
+  [data-slot="header-band"][data-band-level="1"] .text-text-secondary,
+  [data-slot="header-band"][data-band-level="1"] .text-text-muted,
+  [data-slot="table-header"][data-band-level="1"] .text-text-secondary,
+  [data-slot="table-header"][data-band-level="1"] .text-text-muted {
+    color: var(--on-brand-muted);
+  }
+}
+
+/* ------------------------------------------------------------
+   FORCED STATES - the /kitchen-sink page only.
+   ------------------------------------------------------------ */
+[data-force="hover"] button[data-variant="primary"] {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+[data-force="pressed"] button[data-variant="primary"] {
+  background-color: var(--primary-pressed);
+  border-color: var(--primary-pressed);
+}
+[data-force="hover"] button[data-variant="secondary"] {
+  background-color: var(--surface-control);
+}
+[data-force="pressed"] button[data-variant="secondary"] {
+  background-color: var(--surface-control-pressed);
+}
+[data-force="hover"] button[data-variant="ghost"] {
+  background-color: var(--surface-control);
+  color: var(--text-primary);
+}
+[data-force="pressed"] button[data-variant="ghost"] {
+  background-color: var(--surface-control-pressed);
+  color: var(--text-primary);
+}
+[data-force="hover"] button[data-variant="danger"] {
+  background-color: var(--danger-hover);
+  border-color: var(--danger-hover);
+}
+[data-force="pressed"] button[data-variant="danger"] {
+  background-color: var(--danger-pressed);
+  border-color: var(--danger-pressed);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+  box-shadow: var(--shadow-menu);
+}
+
+html [data-sonner-toaster] {
+  @apply font-sans;
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+  @apply text-body;
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-title] {
+  @apply text-body font-normal;
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-content]:has(> [data-description]) > [data-title] {
+  @apply font-medium;
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-description] {
+  @apply text-label font-normal text-text-secondary;
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-button] {
+  @apply text-label font-medium;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"]:focus-visible,
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button]:focus-visible,
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-button]:focus-visible {
+  box-shadow: var(--shadow-menu);
+  outline: 2px solid var(--primary-ring);
+  outline-offset: 2px;
+}
+
+[data-force="hover"] button[data-variant="in-field"] {
+  background-color: var(--surface-control);
+  color: var(--text-primary);
+}
+[data-force="pressed"] button[data-variant="in-field"] {
+  background-color: var(--surface-control-pressed);
+  color: var(--text-primary);
+}
+
+[data-force="hover"] button[data-variant="on-brand"] {
+  background-color: var(--on-brand-hover);
+}
+[data-force="pressed"] button[data-variant="on-brand"] {
+  background-color: var(--on-brand-pressed);
+}
+
+[data-force="hover"] [data-slot="select-trigger"] {
+  background-color: var(--surface-control);
+  border-color: var(--border-strong);
+}
+[data-force="pressed"] [data-slot="select-trigger"] {
+  background-color: var(--surface-control-pressed);
+  border-color: var(--border-strong);
+}
+
+[data-force="hover"] [data-slot="input"],
+[data-force="hover"] [data-slot="textarea"] {
+  border-color: var(--border-strong);
+}
+
+[data-force="drop-target"] [data-slot="board-column"]:first-child {
+  background-color: var(--primary-subtle);
+  border-color: var(--primary-border);
+}
+
+[data-force="hover"] [data-slot="board-card"] {
+  background-color: var(--surface-control);
+  box-shadow: var(--shadow-menu);
+}
+[data-force="pressed"] [data-slot="board-card"] {
+  background-color: var(--surface-control-pressed);
+}
+
+[data-force="hover"] [data-slot="card"][data-variant="record"]:has([data-slot="card-link"]) {
+  background-color: var(--surface-control);
+  box-shadow: var(--shadow-menu);
+}
+[data-force="pressed"] [data-slot="card"][data-variant="record"]:has([data-slot="card-link"]) {
+  background-color: var(--surface-control-pressed);
+}
+[data-force="focus"] [data-slot="card"][data-variant="record"]:has([data-slot="card-link"]) {
+  outline: 2px solid var(--primary-ring);
+  outline-offset: 2px;
+}
+
+[data-force="hover"] [data-slot="view-switcher-item"]:not([data-pressed]) {
+  background-color: var(--surface-control);
+  color: var(--text-primary);
+}
+[data-force="pressed"] [data-slot="view-switcher-item"]:not([data-pressed]) {
+  background-color: var(--surface-control-pressed);
+  color: var(--text-primary);
+}
+[data-force="focus"] [data-slot="view-switcher-item"] {
+  outline: 2px solid var(--primary-ring);
+  outline-offset: -2px;
+}
+
+[data-force="hover"] [data-slot="switch"][data-unchecked] {
+  background-color: var(--border);
+}
+[data-force="pressed"] [data-slot="switch"][data-unchecked] {
+  background-color: var(--border-strong);
+}
+[data-force="hover"] [data-slot="switch"][data-checked] {
+  background-color: var(--primary-hover);
+}
+[data-force="pressed"] [data-slot="switch"][data-checked] {
+  background-color: var(--primary-pressed);
+}
+
+[data-force="hover"] [data-slot="checkbox"]:not([data-checked], [data-indeterminate]),
+[data-force="hover"] [data-slot="radio-group-item"]:not([data-checked]) {
+  background-color: var(--surface-control);
+  border-color: var(--border-strong);
+}
+[data-force="pressed"] [data-slot="checkbox"]:not([data-checked], [data-indeterminate]),
+[data-force="pressed"] [data-slot="radio-group-item"]:not([data-checked]) {
+  background-color: var(--surface-control-pressed);
+  border-color: var(--border-strong);
+}
+[data-force="hover"] [data-slot="checkbox"][data-checked],
+[data-force="hover"] [data-slot="checkbox"][data-indeterminate],
+[data-force="hover"] [data-slot="radio-group-item"][data-checked] {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+[data-force="pressed"] [data-slot="checkbox"][data-checked],
+[data-force="pressed"] [data-slot="checkbox"][data-indeterminate],
+[data-force="pressed"] [data-slot="radio-group-item"][data-checked] {
+  background-color: var(--primary-pressed);
+  border-color: var(--primary-pressed);
+}
+
+[data-force="focus"] button[data-variant],
+[data-force="focus"] [data-slot="board-card"],
+[data-force="focus"] [data-slot="input"],
+[data-force="focus"] [data-slot="textarea"],
+[data-force="focus"] [data-slot="select-trigger"],
+[data-force="focus"] [data-slot="checkbox"],
+[data-force="focus"] [data-slot="radio-group-item"],
+[data-force="focus"] [data-slot="switch"] {
+  outline: 2px solid var(--primary-ring);
+  outline-offset: 2px;
+}
+[data-force="focus"] [data-slot="input"],
+[data-force="focus"] [data-slot="textarea"],
+[data-force="focus"] [data-slot="select-trigger"] {
+  border-color: var(--primary-ring);
+  outline-offset: 0;
+}
+[data-force="focus"] button[data-variant="in-field"] {
+  outline: 2px solid var(--primary-ring);
+  outline-offset: 0;
+}
+[data-force="focus"] button[data-variant="on-brand"] {
+  outline: 2px solid var(--on-brand);
+  outline-offset: 0;
+}
+
+/* ------------------------------------------------------------
+   PHONE SHELL - 41.4.
+   ------------------------------------------------------------ */
+html:has([data-slot="app-bar"][data-source="page"]) [data-slot="app-bar"][data-source="shell"] {
+  display: none;
+}
+html:has([data-slot="app-bar"][data-below-top]) [data-slot="tab-bar"] {
+  display: none;
+}
+
+html[data-layout="phone"] {
+  overscroll-behavior-y: none;
+}
+html[data-layout="phone"] body:not(:has([data-slot="app-shell"])):not(:has([data-slot="phone-shell"])) {
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+}
+
+/* V2E's own toast region (components/ui/Toast.tsx, pre-P3 — P3 replaces it
+   with the kit's sonner, at which point this block is dropped along with
+   the component). Positions it above the tab/action bar and the keyboard
+   on phone; desktop keeps its top-right stack untouched. */
+html[data-layout="phone"] [data-slot="toast-region"] {
+  top: auto;
+  right: calc(16px + var(--safe-right));
+  left: calc(16px + var(--safe-left));
+  bottom: calc(var(--bottom-bar) + var(--safe-bottom) + var(--keyboard-inset) + 16px);
+  max-width: var(--spacing-phone-column);
+  margin: 0 auto;
+  align-items: stretch;
+}
+html[data-layout="phone"] [data-slot="toast-region"] [role="alert"] {
+  min-width: 0;
+  max-width: none;
+}
+
+/* TOASTS ON PHONE (sonner) - 41.8 rules 12-14, 41.9 rules 1 and 2, 5.6. */
+html[data-layout="phone"] [data-sonner-toaster][data-x-position] {
+  left: calc(var(--spacing) * 4 + var(--safe-left));
+  right: calc(var(--spacing) * 4 + var(--safe-right));
+  width: auto;
+  max-width: var(--spacing-phone-column);
+  margin-inline: auto;
+  transform: none;
+}
+html[data-layout="phone"] [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button]:hover {
+  background: var(--normal-bg);
+  border-color: var(--normal-border);
+}
+html[data-layout="phone"] [data-sonner-toast][data-styled="true"] [data-button] {
+  position: relative;
+  height: auto;
+  min-height: calc(var(--spacing) * 6);
+}
+html[data-layout="phone"] [data-sonner-toast][data-styled="true"] [data-close-button]::after,
+html[data-layout="phone"] [data-sonner-toast][data-styled="true"] [data-button]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, var(--tap-target));
+  height: max(100%, var(--tap-target));
+  transform: translate(-50%, -50%);
+}
+html[data-layout="phone"] [data-sonner-toast]:not([data-swiping="true"]) {
+  transition:
+    transform var(--duration-medium) var(--ease-enter),
+    opacity var(--duration-medium) var(--ease-enter);
+}
+html[data-layout="phone"] [data-sonner-toast][data-removed="true"]:not([data-swiping="true"]) {
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-exit);
+}
+html[data-layout="phone"] [data-sonner-toast][data-swipe-out="true"] {
+  animation-duration: var(--duration-fast);
+  animation-timing-function: var(--ease-exit);
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   V2E-SPECIFIC, KEPT FROM THE PRE-KIT globals.css (grepped for call sites
+   before keeping each one - see plan-kit-alignment.md P2).
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* Dark sidebar scrollbar - the desktop nav sidebar has its own permanently
+   dark ground (components/layout), independent of the light-only kit
+   token layer above, so it keeps its own literal colours rather than the
+   light-surface scroll-* tokens. */
 .sidebar-scroll::-webkit-scrollbar {
   width: 4px;
 }
@@ -51,14 +934,13 @@ input[type='number'] {
   background: #475569;
 }
 
-/* Light scrollbar for data tables and scrollable panels.
-   Scrollbars here are ALWAYS visible when a container overflows — never the
-   overlay/auto-hiding kind — so it is obvious there is more to see in either
-   direction. `scrollbar-gutter: stable` reserves the track's width so content
-   doesn't shift the moment the bar appears. */
+/* Light, always-visible scrollbar for data tables and scrollable panels
+   that want a visible (never auto-hiding) bar and a stable gutter, used
+   independently of the body-wide thin scrollbar above. Re-pointed at the
+   kit's scroll-* tokens so a brand change still carries here. */
 .table-scroll {
-  scrollbar-width: thin; /* Firefox */
-  scrollbar-color: #CBD5E1 #F1F5F9;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
   scrollbar-gutter: stable;
 }
 .table-scroll::-webkit-scrollbar {
@@ -66,28 +948,29 @@ input[type='number'] {
   height: 10px;
 }
 .table-scroll::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: var(--scroll-track);
   border-radius: 8px;
 }
 .table-scroll::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border: 2px solid #F1F5F9;
+  background: var(--scroll-thumb);
+  border: 2px solid var(--scroll-track);
   border-radius: 8px;
 }
 .table-scroll::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: var(--scroll-thumb-hover);
 }
-/* Where both bars show, keep the corner from rendering as a white notch. */
 .table-scroll::-webkit-scrollbar-corner {
-  background: #F1F5F9;
+  background: var(--scroll-track);
 }
 
-/* React Flow overrides */
+/* React Flow overrides - process hierarchy, org chart, strategic map
+   canvases (D6: tokens only, no structural change). */
 .react-flow__node {
-  font-family: 'Inter', sans-serif;
+  @apply font-sans;
 }
 
-/* Boot splash — indeterminate loading bar (a blue segment sweeping the track) */
+/* Boot splash - indeterminate loading bar (a brand segment sweeping the
+   track). Re-pointed at --primary so it follows the brand block above. */
 @keyframes boot-bar-slide {
   0%   { left: -40%; width: 40%; }
   50%  { left: 25%;  width: 55%; }
@@ -98,12 +981,14 @@ input[type='number'] {
   top: 0;
   bottom: 0;
   border-radius: 999px;
-  background: #2563EB;
+  background: var(--primary);
   animation: boot-bar-slide 1.15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* Overlay / panel entrances — modals fade+lift, side drawers glide in from the right.
-   Used via Tailwind arbitrary utilities e.g. animate-[fadeIn_.15s_ease-out]. */
+/* Overlay / panel entrances - modals fade+lift, side drawers glide in from
+   the right. Used via Tailwind arbitrary utilities, e.g.
+   animate-[fadeIn_.15s_ease-out]. Kept for existing call sites; new work
+   uses tw-animate-css's animate-in/animate-out instead (section 5.6). */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px) scale(0.99); }
   to   { opacity: 1; transform: none; }
@@ -120,31 +1005,19 @@ input[type='number'] {
   from { opacity: 0; transform: translateX(-8px); }
   to   { opacity: 1; transform: none; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .boot-bar { animation-duration: 2.3s; }
-  [class*="animate-[fadeIn"],
-  [class*="animate-[slideInRight"],
-  [class*="animate-[slideInLeft"],
-  [class*="animate-[popIn"] { animation: none !important; }
-}
 
 /* ─── Task tag palette (TASK_TAGS_PLAN.md §6.1) ───────────────────────────────
    A tag stores a palette KEY (slate, ochre, indigo, rose, teal, green, violet,
    amber), never a hex, so these eight blocks are the only place a tag colour
-   exists. Each key has a fill, a text and a border colour, plus the full-strength
-   dot used for swatches and option markers. Seeded from the kit §21 categorical
-   colours (ochre #C2841D, indigo #3B5A9A, rose #A34A5E, light teal #6FA8A4, warm
-   grey #7A7268 as slate); green, violet and amber sit at the same weight.
+   exists (D7: user-chosen tag colours stay data). Seeded from the kit §21
+   categorical colours (ochre #C2841D, indigo #3B5A9A, rose #A34A5E, light
+   teal #6FA8A4, warm grey #7A7268 as slate); green, violet and amber sit at
+   the same weight.
 
-   Measured contrast, text on fill (WCAG 2.x, minimum 4.5:1):
-     slate 8.37  ochre 6.35  indigo 7.87  rose 7.31
-     teal 6.22   green 6.39  violet 7.44  amber 6.46   inactive 6.92
-   Every text colour also clears 7:1 on white.
-
-   Components never name these properties: lib/tasks/tagColors.ts maps a key to
-   the .tag-chip-* / .tag-dot-* classes below. The classes sit outside any
-   @layer on purpose, so Tailwind never purges them even though the class names
-   are built from data. */
+   Components never name these properties: lib/tasks/tagColors.ts maps a key
+   to the .tag-chip-* / .tag-dot-* classes below. The classes sit outside any
+   @layer on purpose, so Tailwind never purges them even though the class
+   names are built from data. */
 :root {
   --tag-slate-bg: #F1EFEC;
   --tag-slate-text: #4A443D;
@@ -186,12 +1059,12 @@ input[type='number'] {
   --tag-amber-border: #F2C7A8;
   --tag-amber-dot: #C8642A;
 
-  /* A deactivated tag: neutral, dashed, still readable (6.92:1). */
+  /* A deactivated tag: neutral, dashed, still readable. */
   --tag-inactive-bg: #F1F5F9;
   --tag-inactive-text: #475569;
   --tag-inactive-border: #94A3B8;
 
-  /* Hover fill behind a chip's remove ✕ — a tint of whatever chip it sits on. */
+  /* Hover fill behind a chip's remove X - a tint of whatever chip it sits on. */
   --tag-remove-hover: rgba(15, 23, 42, 0.10);
 }
 
@@ -224,179 +1097,33 @@ input[type='number'] {
 .tag-chip-remove:hover,
 .tag-chip-remove:focus-visible { background-color: var(--tag-remove-hover); }
 
-/* ═════════════════════════════════════════════════════════════════════════════
-   PHONE LAYOUT - FRONTEND_RULES_PHONE.md section 41 (RGB frontend kit).
-
-   EVERYTHING BELOW IS SCOPED TO html[data-layout="phone"] (or to the phone
-   tree's own data-slot attributes, which only phone components render), so
-   the desktop layout computes exactly what it did before. data-layout is set
-   on <html> by the server's first guess (lib/layout.server.ts) and confirmed
-   in the browser by LayoutProvider (lib/layout.ts, 41.2 rule 3).
-
-   Phone components read these tokens through the `phone-*` Tailwind aliases
-   in tailwind.config.ts (bg-phone-primary, text-phone-text-secondary, ...).
-   The kit's token NAMES carry V2E's own VALUES. V2E's existing Tailwind
-   colours (primary, border, muted, ...) are untouched: the aliases live under
-   their own `phone` key, so no desktop class can change meaning.
-   ═════════════════════════════════════════════════════════════════════════════ */
-
-/* ─── PHONE BRAND BLOCK - kit section 0.1 item 1, section 2.2 ─────────────────
-   Edit these together. lib/install-settings.ts holds hand copies of
-   --primary, --surface-sunken and --primary-foreground for the manifest and
-   the status bar, and is edited with this block. */
-html[data-layout="phone"] {
-  /* Brand */
-  --primary: #2563EB;
-  --primary-hover: #1D4ED8;
-  --primary-pressed: #1E40AF;
-  --primary-ring: #3B82F6;
-  --primary-subtle: #EFF6FF;
-  --primary-border: #BFDBFE;
-  --primary-foreground: #FFFFFF;
-  /* The brand as text on surface (links, the active tab): 5.2:1 on white. */
-  --primary-text: #2563EB;
-
-  /* On a brand ground (the app bar) - kit section 36.8. */
-  --on-brand: var(--primary-foreground);
-  --on-brand-hover: rgba(255, 255, 255, 0.12);
-  --on-brand-pressed: rgba(255, 255, 255, 0.2);
-
-  /* Status - kit 2.4 names, V2E values (DESIGN_RULES.md "Status badges"). */
-  --success: #16A34A;
-  --success-bg: #DCFCE7;
-  --success-border: #BBF7D0;
-  --warning: #D97706;
-  --warning-bg: #FEF9C3;
-  --warning-border: #FDE68A;
-  --danger: #DC2626;
-  --danger-bg: #FEE2E2;
-  --danger-border: #FECACA;
-  --on-danger: #FFFFFF;
-  --info: #0891B2;
-  --info-bg: #E0F2FE;
-  --info-border: #BAE6FD;
-
-  /* Text. --text-muted is V2E's helper colour (#64748B), the lightest text
-     allowed. #94A3B8 is a placeholder colour only and is never text here. */
-  --text-primary: #0F172A;
-  --text-body: #1E293B;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
-
-  /* Surfaces and borders */
-  --surface: #FFFFFF;
-  --surface-sunken: #F8FAFC;
-  --surface-control: #F1F5F9;          /* V2E's neutral fill (ghost hover) */
-  --surface-control-pressed: #E2E8F0;
-  --border-light: #E2E8F0;
-  --border: #CBD5E1;                   /* V2E's input border */
-  --border-strong: #94A3B8;            /* borders only, never text */
-
-  /* Overlays - kit 5.4 */
-  --backdrop: rgba(15, 23, 42, 0.45);
-  --shadow-dialog: 0 16px 40px rgba(15, 23, 42, 0.16), 0 2px 6px rgba(15, 23, 42, 0.08);
+/* ─── Compatibility shims for tailwind.config.ts's retired custom theme ──────
+   tailwind.config.ts (and its @config import) is gone (P2). These four
+   class names had no counterpart with the exact same name in the kit's
+   @theme inline, so rather than touch every call site in this pass (most
+   are in components/tasks/**, module M1's folder) they are kept as plain
+   utilities here, pointed at the matching kit token. No colour value lives
+   here - they are a renaming shim, not a new token. TODO P3/P5: migrate
+   call sites to rounded-xl / rounded-md / text-primary / text-muted /
+   motion-safe:animate-in and delete this block. */
+@utility rounded-card {
+  border-radius: var(--radius-card);
 }
-
-/* ─── PHONE GEOMETRY - 41.4, 41.9, 41.13 ────────────────────────────────────── */
-html[data-layout="phone"] {
-  /* Safe areas (41.13 rules 1 to 3): what each phone reports, 0 elsewhere. */
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
-  /* The on-screen keyboard (41.13 rule 6). lib/keyboard.ts writes the live
-     value inline on <html> while it is open; 0px otherwise. */
-  --keyboard-inset: 0px;
-
-  /* The two bars are fixed at 56px and never grow with text size (41.4
-     rules 1 and 12). */
-  --h-topbar: 56px;
-  --h-tab-bar: 56px;
-  /* 41.9 rule 2: every control at least 44px; rem, so it grows with the
-     phone's text-size setting (41.9 rule 7). */
-  --h-control: 2.75rem;
-  /* 41.6 rule 7: one control, 12px above and below, a 1px top line. */
-  --h-action-bar: calc(var(--h-control) + 24px + 1px);
-  /* The fixed bar currently at the bottom, worked out below by CSS alone,
-     so it is right on the first paint and never goes stale. */
-  --bottom-bar: 0px;
-  /* 41.13 rule 10: held sideways, content stays in a centred column. */
-  --phone-column: 600px;
-
-  /* Motion - kit 5.6 */
-  --duration-fast: 150ms;
-  --duration-slow: 300ms;
-
-  /* The 41.9 type table, in rem so it grows with the text-size setting. */
-  --type-page-title: 1.25rem;
-  --type-section: 1.125rem;
-  --type-card-heading: 1rem;
-  --type-body: 1rem;
-  --type-label: 0.875rem;
-  --type-meta: 0.75rem;
+@utility rounded-btn {
+  border-radius: var(--radius-control);
 }
-
-/* The bottom-bar contract (kit globals.css): a fixed bottom bar only marks
-   itself with data-fixed-bottom, and --bottom-bar follows what is in the page. */
-html[data-layout="phone"]:has([data-fixed-bottom="tab-bar"]) {
-  --bottom-bar: var(--h-tab-bar);
+.text-heading {
+  color: var(--text-primary);
 }
-html[data-layout="phone"]:has([data-fixed-bottom="action-bar"]) {
-  --bottom-bar: var(--h-action-bar);
+.text-helper {
+  color: var(--text-muted);
 }
-/* iPhone keeps reporting the home indicator's inset while the keyboard
-   covers it; bars sit on the keyboard instead (41.7 rule 4). */
-html[data-layout="phone"][data-keyboard="open"] {
-  --safe-bottom: 0px;
+@keyframes fade-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-/* ─── PHONE BASE - 41.9 rules 1, 5 and 7, 41.13 rule 12 ─────────────────────── */
-html[data-layout="phone"] {
-  /* Large text on iPhone (41.9 rule 7): the system body font makes rem
-     follow the text-size setting. A browser that does not know
-     -apple-system-body drops the declaration; the family is set again
-     straight after it. */
-  font: -apple-system-body;
-  font-family: var(--font-inter), 'Inter', sans-serif;
-  /* Light theme only, whatever the phone's own setting (41.13 rule 12). */
-  color-scheme: only light;
-  /* The browser's own pull-to-refresh reloads the whole page (41.5 rule 16). */
-  overscroll-behavior-y: none;
-  -webkit-text-size-adjust: 100%;
-}
-html[data-layout="phone"] body {
-  /* 16px body, so no field's text is under 16px and iPhone never zooms in
-     when one is tapped (41.9 rule 5). */
-  font-size: var(--type-body);
-  background: var(--surface-sunken);
-  color: var(--text-body);
-}
-/* A touch browser flashes its own grey box over anything tapped; on phone
-   the pressed state is the feedback (41.9 rule 1). */
-html[data-layout="phone"] * {
-  -webkit-tap-highlight-color: transparent;
-}
-/* Pages outside the phone shell (sign-in, choose organisation) are held clear
-   of the notch and the phone's bars (41.13 rule 2). The shell pads itself. */
-html[data-layout="phone"] body:not(:has([data-slot="phone-shell"])) {
-  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
-}
-
-/* ─── TOASTS ON PHONE - 41.8 rule 12 ──────────────────────────────────────────
-   At the bottom, the screen width less 16px each side, above the tab bar or
-   action bar and the keyboard. Desktop keeps its top-right stack. */
-html[data-layout="phone"] [data-slot="toast-region"] {
-  top: auto;
-  right: calc(16px + var(--safe-right));
-  left: calc(16px + var(--safe-left));
-  bottom: calc(var(--bottom-bar) + var(--safe-bottom) + var(--keyboard-inset) + 16px);
-  max-width: var(--phone-column);
-  margin: 0 auto;
-  align-items: stretch;
-}
-html[data-layout="phone"] [data-slot="toast-region"] [role="alert"] {
-  min-width: 0;
-  max-width: none;
+.animate-fade-rise {
+  animation: fade-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 /* ─── BOTTOM SHEET - 41.8 rules 1 to 6 ────────────────────────────────────── */
@@ -409,10 +1136,10 @@ html[data-layout="phone"] [data-slot="toast-region"] [role="alert"] {
   to { opacity: 1; }
 }
 [data-slot="phone-sheet"] {
-  animation: phone-sheet-up var(--duration-slow, 300ms) cubic-bezier(0.2, 0, 0, 1);
+  animation: phone-sheet-up var(--duration-slow, 250ms) var(--ease-enter, cubic-bezier(0.2, 0, 0, 1));
 }
 [data-slot="phone-sheet-backdrop"] {
-  animation: phone-backdrop-in var(--duration-slow, 300ms) ease-out;
+  animation: phone-backdrop-in var(--duration-slow, 250ms) ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
   [data-slot="phone-sheet"],

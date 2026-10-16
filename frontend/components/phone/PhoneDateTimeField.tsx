@@ -13,7 +13,7 @@ import { cx } from './primitives'
  */
 
 const FIELD = cx(
-  'relative flex min-h-(--h-control) w-full items-center rounded-[8px] border border-phone-border bg-phone-surface px-[12px]',
+  'relative flex min-h-(--h-control) w-full items-center rounded-[8px] border border-border bg-surface px-[12px]',
 )
 
 function fmtDate(value: string): string {
@@ -48,11 +48,11 @@ export function PhoneDateField({
 }) {
   return (
     <div className="flex flex-col gap-[6px]">
-      <label htmlFor={id} className="text-phone-label font-medium text-phone-text-secondary">
+      <label htmlFor={id} className="text-phone-label font-medium text-text-secondary">
         {label} {required ? <span aria-hidden>*</span> : null}
       </label>
       <div className={FIELD}>
-        <span className={cx('text-phone-body', value ? 'text-phone-text-primary' : 'text-phone-text-muted')}>
+        <span className={cx('text-phone-body', value ? 'text-text-primary' : 'text-text-muted')}>
           {value ? fmtDate(value) : 'DD Mon YYYY'}
         </span>
         <input
@@ -83,11 +83,11 @@ export function PhoneTimeField({
 }) {
   return (
     <div className="flex flex-col gap-[6px]">
-      <label htmlFor={id} className="text-phone-label font-medium text-phone-text-secondary">
+      <label htmlFor={id} className="text-phone-label font-medium text-text-secondary">
         {label} {required ? <span aria-hidden>*</span> : null}
       </label>
       <div className={FIELD}>
-        <span className={cx('text-phone-body', value ? 'text-phone-text-primary' : 'text-phone-text-muted')}>
+        <span className={cx('text-phone-body', value ? 'text-text-primary' : 'text-text-muted')}>
           {value ? fmtTime(value) : 'h:mm A'}
         </span>
         <input

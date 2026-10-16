@@ -54,8 +54,8 @@ export default function MoreScreen({ route }: { route: PhoneRoute }) {
       <div className="flex flex-col gap-[24px]">
         {user ? (
           <div className="flex min-w-0 flex-col">
-            <p className="wrap-break-word text-phone-card-heading font-semibold text-phone-text-primary">{user.name}</p>
-            {detail ? <p className="wrap-break-word text-phone-label text-phone-text-secondary">{detail}</p> : null}
+            <p className="wrap-break-word text-phone-card-heading font-semibold text-text-primary">{user.name}</p>
+            {detail ? <p className="wrap-break-word text-phone-label text-text-secondary">{detail}</p> : null}
           </div>
         ) : null}
 
@@ -63,16 +63,16 @@ export default function MoreScreen({ route }: { route: PhoneRoute }) {
           const id = `more-group-${group}`
           return (
             <section key={group} aria-labelledby={id} className="flex flex-col gap-[8px]">
-              <h2 id={id} className="text-phone-label font-medium text-phone-text-secondary">
+              <h2 id={id} className="text-phone-label font-medium text-text-secondary">
                 {group}
               </h2>
               <ul className={ROW_BLOCK}>
                 {ROWS.filter((r) => r.group === group).map((row) => (
                   <li key={row.href}>
                     <Link href={row.href} className={cx(ROW, '[&_svg]:size-[20px] [&_svg]:shrink-0')}>
-                      <span className="text-phone-text-secondary">{row.icon}</span>
+                      <span className="text-text-secondary">{row.icon}</span>
                       <span className="min-w-0 flex-1 wrap-break-word">{row.label}</span>
-                      <ChevronRight aria-hidden className="text-phone-text-secondary" />
+                      <ChevronRight aria-hidden className="text-text-secondary" />
                     </Link>
                   </li>
                 ))}

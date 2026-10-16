@@ -258,7 +258,7 @@ export default function NotificationsScreen({ title }: { title: string }) {
     >
       <div ref={pullRef}>
       {refreshing ? (
-        <p className="mb-[8px] text-center text-phone-label text-phone-text-secondary">Refreshing…</p>
+        <p className="mb-[8px] text-center text-phone-label text-text-secondary">Refreshing…</p>
       ) : null}
       {state === 'loading' ? (
         <SkeletonRows />
@@ -280,7 +280,7 @@ export default function NotificationsScreen({ title }: { title: string }) {
         />
       ) : (
         <>
-          <p className="mb-[12px] text-phone-label text-phone-text-secondary">
+          <p className="mb-[12px] text-phone-label text-text-secondary">
             {unreadCount > 0 ? `${unreadCount} unread` : 'You are all caught up.'}
           </p>
           <ul className={ROW_BLOCK}>
@@ -291,7 +291,7 @@ export default function NotificationsScreen({ title }: { title: string }) {
           <div ref={endRef} aria-hidden />
           {loadingMore ? <SkeletonRows count={3} /> : null}
           {capped && cursor ? (
-            <p className="mt-[16px] text-center text-phone-label text-phone-text-secondary">
+            <p className="mt-[16px] text-center text-phone-label text-text-secondary">
               Showing the latest {MAX_ROWS}. Older notifications are on the computer.
             </p>
           ) : null}
@@ -306,14 +306,14 @@ export default function NotificationsScreen({ title }: { title: string }) {
               type="button"
               disabled={!anyUnread}
               onClick={() => void onMarkAll()}
-              className={cx(ROW, 'disabled:text-phone-text-secondary disabled:active:bg-transparent')}
+              className={cx(ROW, 'disabled:text-text-secondary disabled:active:bg-transparent')}
             >
               Mark all as read
             </button>
           </li>
         </ul>
         {!anyUnread ? (
-          <p className="mt-[4px] text-phone-label text-phone-text-secondary">Everything is already read.</p>
+          <p className="mt-[4px] text-phone-label text-text-secondary">Everything is already read.</p>
         ) : null}
       </PhoneSheet>
     </PhoneScreen>
@@ -375,7 +375,7 @@ function NotificationRow({
 
   return (
     <li
-      className="relative flex min-h-[64px] overflow-hidden bg-phone-surface"
+      className="relative flex min-h-[64px] overflow-hidden bg-surface"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -396,31 +396,31 @@ function NotificationRow({
           type="button"
           aria-label={n.is_read ? 'Mark as unread' : 'Mark as read'}
           onClick={() => onToggleRead(n)}
-          className="flex w-[44px] shrink-0 justify-center pt-[19px] outline-hidden active:bg-phone-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
+          className="flex w-[44px] shrink-0 justify-center pt-[19px] outline-hidden active:bg-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-ring"
         >
           {n.is_read ? (
-            <span className="size-[10px] rounded-full border-2 border-phone-border" />
+            <span className="size-[10px] rounded-full border-2 border-border" />
           ) : (
-            <span className="size-[10px] rounded-full bg-phone-primary" />
+            <span className="size-[10px] rounded-full bg-primary" />
           )}
         </button>
         <button
           type="button"
           onClick={() => onOpen(n)}
-          className="min-w-0 flex-1 py-[12px] pr-[16px] text-left outline-hidden transition-[background-color] duration-(--duration-fast) active:bg-phone-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
+          className="min-w-0 flex-1 py-[12px] pr-[16px] text-left outline-hidden transition-[background-color] duration-(--duration-fast) active:bg-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-ring"
         >
           <span
             className={cx(
-              'line-clamp-2 text-phone-body text-phone-text-primary',
+              'line-clamp-2 text-phone-body text-text-primary',
               n.is_read ? 'font-normal' : 'font-semibold',
             )}
           >
             {n.title}
           </span>
           {n.body ? (
-            <span className="mt-[2px] line-clamp-2 text-phone-label text-phone-text-secondary">{n.body}</span>
+            <span className="mt-[2px] line-clamp-2 text-phone-label text-text-secondary">{n.body}</span>
           ) : null}
-          <span className="mt-[4px] block text-phone-meta text-phone-text-muted">{formatWhen(n.created_at)}</span>
+          <span className="mt-[4px] block text-phone-meta text-text-muted">{formatWhen(n.created_at)}</span>
         </button>
       </div>
     </li>
@@ -432,10 +432,10 @@ function SkeletonRows({ count = 8 }: { count?: number }) {
     <ul aria-hidden className={cx(ROW_BLOCK, 'mt-[12px]')}>
       {Array.from({ length: count }, (_, i) => (
         <li key={i} className="flex min-h-[64px] items-start gap-[12px] px-[16px] py-[14px]">
-          <span className="mt-[4px] size-[10px] shrink-0 rounded-full bg-phone-surface-control-pressed" />
+          <span className="mt-[4px] size-[10px] shrink-0 rounded-full bg-surface-control-pressed" />
           <span className="flex flex-1 flex-col gap-[8px]">
-            <span className="h-[14px] w-3/4 animate-pulse rounded-xs bg-phone-surface-control-pressed" />
-            <span className="h-[12px] w-1/2 animate-pulse rounded-xs bg-phone-surface-control" />
+            <span className="h-[14px] w-3/4 animate-pulse rounded-xs bg-surface-control-pressed" />
+            <span className="h-[12px] w-1/2 animate-pulse rounded-xs bg-surface-control" />
           </span>
         </li>
       ))}

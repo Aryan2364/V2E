@@ -200,7 +200,7 @@ export default function MyWorkScreen({ route }: { route: PhoneRoute }) {
       <PullHint refreshing={refreshing} onRefresh={onRefresh} />
 
       {loading ? (
-        <div className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <div className="mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface">
           {Array.from({ length: 5 }).map((_, i) => (
             <TaskPhoneRowSkeleton key={i} />
           ))}
@@ -222,12 +222,12 @@ export default function MyWorkScreen({ route }: { route: PhoneRoute }) {
                   id={`my-work-${key}`}
                   className={cx(
                     'text-phone-label font-medium',
-                    key === 'overdue' ? 'text-phone-danger' : 'text-phone-text-secondary',
+                    key === 'overdue' ? 'text-danger' : 'text-text-secondary',
                   )}
                 >
                   {label}
                 </h2>
-                <div className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+                <div className="mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface">
                   {list.map((task) => (
                     <TaskPhoneRow
                       key={task.id}
@@ -268,7 +268,7 @@ export default function MyWorkScreen({ route }: { route: PhoneRoute }) {
           href="/dashboard/tasks/new"
           aria-label="Give task"
           className={cx(
-            'fixed z-30 flex size-[56px] items-center justify-center rounded-full bg-phone-primary text-phone-primary-foreground shadow-phone-dialog active:bg-phone-primary-pressed',
+            'fixed z-30 flex size-[56px] items-center justify-center rounded-full bg-primary text-primary-foreground shadow-phone-dialog active:bg-primary-pressed',
             'right-[max(16px,var(--safe-right))] bottom-[calc(var(--bottom-bar)+var(--safe-bottom)+16px)]',
           )}
         >
@@ -318,7 +318,7 @@ function PullHint({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: (
       {refreshing || pull > 8 ? (
         <RotateCw
           aria-hidden
-          className={cx('size-[20px] text-phone-text-secondary', refreshing && 'animate-spin')}
+          className={cx('size-[20px] text-text-secondary', refreshing && 'animate-spin')}
         />
       ) : null}
     </div>

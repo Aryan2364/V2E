@@ -67,19 +67,19 @@ export function TaskPhoneRow({
             aria-pressed={filled}
             onClick={onTapCircle}
             disabled={phase !== 'idle'}
-            className="flex size-[44px] shrink-0 items-center justify-center outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-phone-primary-ring"
+            className="flex size-[44px] shrink-0 items-center justify-center outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ring"
           >
             <span
               aria-hidden
               className={cx(
                 'flex size-[22px] shrink-0 items-center justify-center rounded-full transition-[background-color,border-color] duration-(--duration-fast)',
                 filled
-                  ? 'bg-phone-primary border-2 border-phone-primary'
-                  : 'border-2 border-phone-border-strong bg-transparent',
+                  ? 'bg-primary border-2 border-primary'
+                  : 'border-2 border-border-strong bg-transparent',
               )}
             >
               {filled ? (
-                <svg viewBox="0 0 16 16" className="size-[12px] text-phone-primary-foreground" fill="none">
+                <svg viewBox="0 0 16 16" className="size-[12px] text-primary-foreground" fill="none">
                   <path
                     d="M3 8.5L6.2 11.5L13 4.5"
                     stroke="currentColor"
@@ -95,14 +95,14 @@ export function TaskPhoneRow({
           <Link href={href} className="flex min-h-[56px] min-w-0 flex-1 items-center gap-[8px]">
             <span
               className={cx(
-                'min-w-0 flex-1 truncate text-phone-body font-medium text-phone-text-primary transition-[color] duration-(--duration-fast)',
-                filled && 'text-phone-text-muted line-through',
+                'min-w-0 flex-1 truncate text-phone-body font-medium text-text-primary transition-[color] duration-(--duration-fast)',
+                filled && 'text-text-muted line-through',
               )}
             >
               {task.title}
             </span>
             {due || marker.proof || marker.checklist ? (
-              <span className="flex shrink-0 items-center gap-[8px] text-phone-meta text-phone-text-secondary">
+              <span className="flex shrink-0 items-center gap-[8px] text-phone-meta text-text-secondary">
                 {marker.proof ? (
                   <span className="inline-flex items-center" aria-label="Proof needed">
                     <Paperclip aria-hidden className="size-[14px]" />
@@ -110,7 +110,7 @@ export function TaskPhoneRow({
                 ) : null}
                 {marker.checklist ? <span aria-label={`Checklist ${marker.checklist}`}>{marker.checklist}</span> : null}
                 {due ? (
-                  <span className={cx('whitespace-nowrap', task.is_overdue && 'font-medium text-phone-danger')}>{due}</span>
+                  <span className={cx('whitespace-nowrap', task.is_overdue && 'font-medium text-danger')}>{due}</span>
                 ) : null}
               </span>
             ) : null}
@@ -126,10 +126,10 @@ export function TaskPhoneRowSkeleton() {
   return (
     <div className="flex min-h-[56px] items-center gap-[4px] pl-[8px] pr-[16px]" aria-hidden>
       <span className="flex size-[44px] shrink-0 items-center justify-center">
-        <span className="size-[22px] rounded-full bg-phone-surface-control" />
+        <span className="size-[22px] rounded-full bg-surface-control" />
       </span>
-      <span className="h-[14px] flex-1 rounded-full bg-phone-surface-control" />
-      <span className="h-[10px] w-[48px] shrink-0 rounded-full bg-phone-surface-control" />
+      <span className="h-[14px] flex-1 rounded-full bg-surface-control" />
+      <span className="h-[10px] w-[48px] shrink-0 rounded-full bg-surface-control" />
     </div>
   )
 }

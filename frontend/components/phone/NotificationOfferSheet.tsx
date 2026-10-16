@@ -75,7 +75,7 @@ export function NotificationOfferSheet({
         </>
       }
     >
-      <p className="text-phone-body text-phone-text-primary">
+      <p className="text-phone-body text-text-primary">
         Get a notification when something needs you, such as a task given to you or a reply on your comment.
       </p>
     </PhoneSheet>

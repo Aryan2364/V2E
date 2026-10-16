@@ -44,7 +44,7 @@ export function InstallSheet({
   return (
     <PhoneSheet open={open} onOpenChange={onOpenChange} title={WORDS.title}>
       {platform === 'ios' ? (
-        <div className="flex flex-col gap-[16px] text-phone-body text-phone-text-primary">
+        <div className="flex flex-col gap-[16px] text-phone-body text-text-primary">
           <p>{WORDS.iPhoneIntro}</p>
           <ol className="flex list-decimal flex-col gap-[8px] pl-[24px]">
             {WORDS.iPhoneSteps.map((step) => (
@@ -53,7 +53,7 @@ export function InstallSheet({
           </ol>
         </div>
       ) : (
-        <p className="text-phone-body text-phone-text-primary">{WORDS.otherSteps}</p>
+        <p className="text-phone-body text-text-primary">{WORDS.otherSteps}</p>
       )}
     </PhoneSheet>
   )

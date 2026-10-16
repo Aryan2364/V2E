@@ -85,9 +85,9 @@ function ConnectionBanner() {
   return (
     <div
       role="status"
-      className="flex items-start gap-[12px] border-b border-phone-border-light bg-phone-surface-control px-[16px] py-[12px] text-phone-body text-phone-text-primary"
+      className="flex items-start gap-[12px] border-b border-border-light bg-surface-control px-[16px] py-[12px] text-phone-body text-text-primary"
     >
-      <WifiOff aria-hidden className="mt-[2px] size-[20px] shrink-0 text-phone-text-secondary" />
+      <WifiOff aria-hidden className="mt-[2px] size-[20px] shrink-0 text-text-secondary" />
       <p>You are offline. Changes cannot be saved until you are back online.</p>
     </div>
   )

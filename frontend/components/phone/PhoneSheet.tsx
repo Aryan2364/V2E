@@ -136,7 +136,7 @@ export function PhoneSheet({
       <div
         data-slot="phone-sheet-backdrop"
         aria-hidden
-        className="absolute inset-0 bg-phone-backdrop"
+        className="absolute inset-0 bg-backdrop"
         onClick={() => onOpenChange(false)}
       />
       <div
@@ -147,7 +147,7 @@ export function PhoneSheet({
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cx(
-          'absolute inset-x-0 flex flex-col rounded-t-[12px] bg-phone-surface shadow-phone-dialog outline-hidden',
+          'absolute inset-x-0 flex flex-col rounded-t-[12px] bg-surface shadow-phone-dialog outline-hidden',
           'bottom-(--keyboard-inset) max-h-[calc(90dvh-var(--safe-top)-var(--keyboard-inset))]',
           'pr-(--safe-right) pl-(--safe-left)',
         )}
@@ -160,17 +160,17 @@ export function PhoneSheet({
           onPointerCancel={onPointerUp}
         >
           <div className="flex justify-center pt-[8px]" aria-hidden>
-            <span className="h-[4px] w-[32px] rounded-full bg-phone-border" />
+            <span className="h-[4px] w-[32px] rounded-full bg-border" />
           </div>
           <div className="flex items-center gap-[8px] pb-[8px] pl-[16px] pr-[4px] pt-[4px]">
-            <h2 id={titleId} className="min-w-0 flex-1 text-phone-card-heading font-semibold text-phone-text-primary">
+            <h2 id={titleId} className="min-w-0 flex-1 text-phone-card-heading font-semibold text-text-primary">
               {title}
             </h2>
             <button
               type="button"
               aria-label="Close"
               onClick={() => onOpenChange(false)}
-              className="inline-flex size-[44px] shrink-0 items-center justify-center rounded-full text-phone-text-secondary active:bg-phone-surface-control outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
+              className="inline-flex size-[44px] shrink-0 items-center justify-center rounded-full text-text-secondary active:bg-surface-control outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-ring"
             >
               <X aria-hidden className="size-[22px]" />
             </button>
@@ -178,7 +178,7 @@ export function PhoneSheet({
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-[16px] pb-[16px]">{children}</div>
         {footer ? (
-          <div className="flex shrink-0 gap-[8px] border-t border-phone-border-light px-[16px] pt-[12px] pb-[calc(12px+var(--safe-bottom))] *:flex-1">
+          <div className="flex shrink-0 gap-[8px] border-t border-border-light px-[16px] pt-[12px] pb-[calc(12px+var(--safe-bottom))] *:flex-1">
             {footer}
           </div>
         ) : (

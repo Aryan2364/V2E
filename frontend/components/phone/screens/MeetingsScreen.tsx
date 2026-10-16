@@ -99,8 +99,8 @@ export default function MeetingsScreen({ route }: { route: PhoneRoute }) {
             className={cx(
               'min-h-[36px] rounded-full px-[14px] py-[6px] text-phone-label font-medium',
               tab === key
-                ? 'border border-phone-primary bg-phone-primary-subtle text-phone-primary-text'
-                : 'border border-phone-border bg-phone-surface text-phone-text-secondary',
+                ? 'border border-primary bg-primary-subtle text-primary-text'
+                : 'border border-border bg-surface text-text-secondary',
             )}
           >
             {key === 'today' ? `Today${today.length ? ` · ${today.length}` : ''}` : `Upcoming${upcoming.length ? ` · ${upcoming.length}` : ''}`}
@@ -109,7 +109,7 @@ export default function MeetingsScreen({ route }: { route: PhoneRoute }) {
       </div>
 
       {loading ? (
-        <div className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <div className="mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface">
           {Array.from({ length: 4 }).map((_, i) => (
             <MeetingPhoneRowSkeleton key={i} />
           ))}
@@ -121,7 +121,7 @@ export default function MeetingsScreen({ route }: { route: PhoneRoute }) {
           line={tab === 'today' ? 'Meetings scheduled for today will show up here.' : 'Meetings scheduled after today will show up here.'}
         />
       ) : (
-        <div className="mx-[-16px] mb-[88px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <div className="mx-[-16px] mb-[88px] divide-y divide-border-light border-y border-border-light bg-surface">
           {list.map((m) => (
             <MeetingPhoneRow key={m.id} meeting={m} href={`/dashboard/governance/meetings/${m.id}`} />
           ))}
@@ -133,7 +133,7 @@ export default function MeetingsScreen({ route }: { route: PhoneRoute }) {
           href="/dashboard/governance/meetings/new"
           aria-label="Create meeting"
           className={cx(
-            'fixed z-30 flex size-[56px] items-center justify-center rounded-full bg-phone-primary text-phone-primary-foreground shadow-phone-dialog active:bg-phone-primary-pressed',
+            'fixed z-30 flex size-[56px] items-center justify-center rounded-full bg-primary text-primary-foreground shadow-phone-dialog active:bg-primary-pressed',
             'right-[max(16px,var(--safe-right))] bottom-[calc(var(--bottom-bar)+var(--safe-bottom)+16px)]',
           )}
         >
@@ -174,7 +174,7 @@ function PullHint({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: (
       className="flex items-center justify-center overflow-hidden transition-[height] duration-(--duration-fast)"
     >
       {refreshing || pull > 8 ? (
-        <RotateCw aria-hidden className={cx('size-[20px] text-phone-text-secondary', refreshing && 'animate-spin')} />
+        <RotateCw aria-hidden className={cx('size-[20px] text-text-secondary', refreshing && 'animate-spin')} />
       ) : null}
     </div>
   )

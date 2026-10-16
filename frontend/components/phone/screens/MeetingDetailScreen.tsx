@@ -70,8 +70,8 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
     return (
       <PhoneScreen title="Meeting" parent={route.parent ?? MEETINGS_HREF}>
         <div className="flex flex-col gap-[12px]" aria-hidden>
-          <span className="h-[24px] w-2/3 rounded-full bg-phone-surface-control" />
-          <span className="h-[16px] w-1/3 rounded-full bg-phone-surface-control" />
+          <span className="h-[24px] w-2/3 rounded-full bg-surface-control" />
+          <span className="h-[16px] w-1/3 rounded-full bg-surface-control" />
         </div>
       </PhoneScreen>
     )
@@ -141,7 +141,7 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
     <PhoneScreen title={meeting.title} parent={route.parent ?? MEETINGS_HREF}>
       <div className="flex flex-col gap-[20px] pb-[16px]">
         <div className="flex flex-col gap-[8px]">
-          <h2 className="text-phone-card-heading font-semibold text-phone-text-primary">{meeting.title}</h2>
+          <h2 className="text-phone-card-heading font-semibold text-text-primary">{meeting.title}</h2>
           <span
             className="inline-flex w-fit items-center rounded-full px-[10px] py-[2px] text-phone-label font-semibold"
             style={{ backgroundColor: statusMeta.bg, color: statusMeta.text }}
@@ -153,8 +153,8 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
         <dl className="grid grid-cols-2 gap-y-[14px] gap-x-[12px]">
           {facts.map((f) => (
             <div key={f.label} className="flex flex-col gap-[2px]">
-              <dt className="text-phone-meta text-phone-text-secondary">{f.label}</dt>
-              <dd className="truncate text-phone-body text-phone-text-primary">{f.value}</dd>
+              <dt className="text-phone-meta text-text-secondary">{f.label}</dt>
+              <dd className="truncate text-phone-body text-text-primary">{f.value}</dd>
             </div>
           ))}
         </dl>
@@ -162,16 +162,16 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
         <button
           type="button"
           onClick={() => setAttendeesOpen(true)}
-          className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-phone-border-light bg-phone-surface px-[12px] text-left active:bg-phone-surface-control"
+          className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-light bg-surface px-[12px] text-left active:bg-surface-control"
         >
-          <span className="text-phone-body text-phone-text-primary">Attendees · {meeting.attendees?.length ?? meeting._count?.attendees ?? 0}</span>
-          <ChevronRight aria-hidden className="size-[18px] text-phone-text-secondary" />
+          <span className="text-phone-body text-text-primary">Attendees · {meeting.attendees?.length ?? meeting._count?.attendees ?? 0}</span>
+          <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
         </button>
 
         {meeting.agenda ? (
           <div className="flex flex-col gap-[4px]">
-            <h3 className="text-phone-label font-medium text-phone-text-secondary">Agenda</h3>
-            <p className="whitespace-pre-wrap text-phone-body text-phone-text-primary">{meeting.agenda}</p>
+            <h3 className="text-phone-label font-medium text-text-secondary">Agenda</h3>
+            <p className="whitespace-pre-wrap text-phone-body text-text-primary">{meeting.agenda}</p>
           </div>
         ) : null}
       </div>
@@ -179,7 +179,7 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
       {canJoin || showDecline ? (
         <div
           className={cx(
-            'fixed inset-x-0 bottom-0 z-30 flex gap-[8px] border-t border-phone-border-light bg-phone-surface px-[16px] py-[12px]',
+            'fixed inset-x-0 bottom-0 z-30 flex gap-[8px] border-t border-border-light bg-surface px-[16px] py-[12px]',
             'pb-[calc(12px+var(--safe-bottom))] pl-[max(16px,var(--safe-left))] pr-[max(16px,var(--safe-right))]',
           )}
         >

@@ -140,21 +140,21 @@ export function FinishTaskSheet({
       <div className="flex flex-col gap-[24px]">
         {unfinished.length > 0 ? (
           <section className="flex flex-col gap-[8px]">
-            <h3 className="text-phone-label font-medium text-phone-text-secondary">Checklist</h3>
-            <ul className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+            <h3 className="text-phone-label font-medium text-text-secondary">Checklist</h3>
+            <ul className="mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface">
               {unfinished.map((item) => (
                 <li key={item.id}>
                   <button
                     type="button"
                     onClick={() => void toggleChecklistItem(item.id)}
                     disabled={checking.has(item.id)}
-                    className="flex min-h-[48px] w-full items-center gap-[12px] px-[16px] py-[10px] text-left active:bg-phone-surface-control"
+                    className="flex min-h-[48px] w-full items-center gap-[12px] px-[16px] py-[10px] text-left active:bg-surface-control"
                   >
                     <span
                       aria-hidden
-                      className="flex size-[22px] shrink-0 items-center justify-center rounded-full border-2 border-phone-border-strong"
+                      className="flex size-[22px] shrink-0 items-center justify-center rounded-full border-2 border-border-strong"
                     />
-                    <span className="min-w-0 flex-1 truncate text-phone-body text-phone-text-primary">
+                    <span className="min-w-0 flex-1 truncate text-phone-body text-text-primary">
                       {item.title}
                     </span>
                   </button>
@@ -166,7 +166,7 @@ export function FinishTaskSheet({
 
         {task.proof_required ? (
           <section className="flex flex-col gap-[8px]">
-            <h3 className="text-phone-label font-medium text-phone-text-secondary">Attach proof</h3>
+            <h3 className="text-phone-label font-medium text-text-secondary">Attach proof</h3>
 
             <div className="flex gap-[8px]">
               <PhoneButton
@@ -216,35 +216,35 @@ export function FinishTaskSheet({
                 {uploads.map((u) => (
                   <li
                     key={u.id}
-                    className="flex items-center gap-[8px] rounded-[8px] border border-phone-border-light bg-phone-surface px-[12px] py-[8px]"
+                    className="flex items-center gap-[8px] rounded-[8px] border border-border-light bg-surface px-[12px] py-[8px]"
                   >
-                    <Paperclip aria-hidden className="size-[16px] shrink-0 text-phone-text-secondary" />
-                    <span className="min-w-0 flex-1 truncate text-phone-label text-phone-text-primary">
+                    <Paperclip aria-hidden className="size-[16px] shrink-0 text-text-secondary" />
+                    <span className="min-w-0 flex-1 truncate text-phone-label text-text-primary">
                       {u.file.name}
                     </span>
                     {u.status === 'uploading' ? (
-                      <span className="text-phone-meta text-phone-text-secondary">{u.progress}%</span>
+                      <span className="text-phone-meta text-text-secondary">{u.progress}%</span>
                     ) : u.status === 'error' ? (
                       <button
                         type="button"
                         onClick={() => retry(u.id)}
                         className={cx(
                           'inline-flex items-center gap-[4px] rounded-[6px] px-[8px] py-[4px]',
-                          'text-phone-label font-semibold text-phone-danger active:bg-phone-danger-bg',
+                          'text-phone-label font-semibold text-danger active:bg-danger-bg',
                         )}
                       >
                         <RotateCcw aria-hidden className="size-[14px]" />
                         Retry
                       </button>
                     ) : (
-                      <span className="text-phone-label font-medium text-phone-success">Done</span>
+                      <span className="text-phone-label font-medium text-success">Done</span>
                     )}
                   </li>
                 ))}
               </ul>
             ) : null}
             {proofNeeded && uploads.length === 0 ? (
-              <p className="text-phone-meta text-phone-text-secondary">
+              <p className="text-phone-meta text-text-secondary">
                 {accept ? `Allowed types: ${accept}` : 'Any file type is allowed.'}
               </p>
             ) : null}

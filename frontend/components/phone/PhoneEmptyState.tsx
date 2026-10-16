@@ -29,12 +29,12 @@ export function PhoneEmptyState({
     <div className="flex flex-col items-center px-[8px] py-[48px] text-center">
       <span
         aria-hidden
-        className="mb-[16px] flex size-[56px] items-center justify-center rounded-full bg-phone-primary-subtle text-phone-primary-text [&_svg]:size-[26px]"
+        className="mb-[16px] flex size-[56px] items-center justify-center rounded-full bg-primary-subtle text-primary-text [&_svg]:size-[26px]"
       >
         {icon}
       </span>
-      <Heading className="text-phone-section font-semibold text-phone-text-primary">{heading}</Heading>
-      <p className="mt-[8px] max-w-[420px] text-phone-body text-phone-text-secondary">{line}</p>
+      <Heading className="text-phone-section font-semibold text-text-primary">{heading}</Heading>
+      <p className="mt-[8px] max-w-[420px] text-phone-body text-text-secondary">{line}</p>
       {children ? <div className="mt-[24px] flex w-full max-w-[420px] flex-col gap-[8px]">{children}</div> : null}
     </div>
   )

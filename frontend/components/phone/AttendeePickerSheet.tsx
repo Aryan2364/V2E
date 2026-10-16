@@ -68,18 +68,18 @@ export function AttendeePickerSheet({
       }
     >
       <div className="flex flex-col gap-[12px]">
-        <div className="sticky top-0 flex min-h-[44px] items-center gap-[8px] rounded-[8px] border border-phone-border bg-phone-surface px-[12px]">
-          <Search aria-hidden className="size-[16px] shrink-0 text-phone-text-secondary" />
+        <div className="sticky top-0 flex min-h-[44px] items-center gap-[8px] rounded-[8px] border border-border bg-surface px-[12px]">
+          <Search aria-hidden className="size-[16px] shrink-0 text-text-secondary" />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search people"
-            className="w-full bg-transparent text-phone-body text-phone-text-primary outline-hidden placeholder:text-phone-text-muted"
+            className="w-full bg-transparent text-phone-body text-text-primary outline-hidden placeholder:text-text-muted"
           />
         </div>
 
-        <ul className="mx-[-16px] divide-y divide-phone-border-light">
+        <ul className="mx-[-16px] divide-y divide-border-light">
           {filtered.map((p) => {
             const isSelected = draftSelected.includes(p.user_id)
             const isOptional = draftOptional.includes(p.user_id)
@@ -94,12 +94,12 @@ export function AttendeePickerSheet({
                     aria-hidden
                     className={cx(
                       'flex size-[22px] shrink-0 items-center justify-center rounded-[6px] border-2',
-                      isSelected ? 'border-phone-primary bg-phone-primary' : 'border-phone-border-strong bg-transparent',
+                      isSelected ? 'border-primary bg-primary' : 'border-border-strong bg-transparent',
                     )}
                   >
-                    {isSelected ? <Check aria-hidden className="size-[14px] text-phone-primary-foreground" /> : null}
+                    {isSelected ? <Check aria-hidden className="size-[14px] text-primary-foreground" /> : null}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-phone-body text-phone-text-primary">{p.name}</span>
+                  <span className="min-w-0 flex-1 truncate text-phone-body text-text-primary">{p.name}</span>
                 </button>
                 {isSelected ? (
                   <button
@@ -107,7 +107,7 @@ export function AttendeePickerSheet({
                     onClick={() => toggleOptional(p.user_id)}
                     className={cx(
                       'shrink-0 rounded-full border px-[8px] py-[4px] text-phone-meta font-medium',
-                      isOptional ? 'border-phone-primary bg-phone-primary-subtle text-phone-primary-text' : 'border-phone-border text-phone-text-secondary',
+                      isOptional ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border text-text-secondary',
                     )}
                   >
                     {isOptional ? 'Optional' : 'Required'}
@@ -117,7 +117,7 @@ export function AttendeePickerSheet({
             )
           })}
           {filtered.length === 0 ? (
-            <li className="px-[16px] py-[24px] text-center text-phone-body text-phone-text-secondary">No one matches &quot;{query}&quot;</li>
+            <li className="px-[16px] py-[24px] text-center text-phone-body text-text-secondary">No one matches &quot;{query}&quot;</li>
           ) : null}
         </ul>
       </div>

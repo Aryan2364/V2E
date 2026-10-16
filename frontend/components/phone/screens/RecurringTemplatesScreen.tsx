@@ -46,11 +46,11 @@ export default function RecurringTemplatesScreen({ route }: { route: PhoneRoute 
   return (
     <PhoneScreen title={route.title} parent={route.parent ?? GIVEN_HREF}>
       {loading ? (
-        <div className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <div className="mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex min-h-[64px] flex-col gap-[8px] px-[16px] py-[12px]" aria-hidden>
-              <span className="h-[16px] w-3/4 rounded-full bg-phone-surface-control" />
-              <span className="h-[12px] w-1/2 rounded-full bg-phone-surface-control" />
+              <span className="h-[16px] w-3/4 rounded-full bg-surface-control" />
+              <span className="h-[12px] w-1/2 rounded-full bg-surface-control" />
             </div>
           ))}
         </div>
@@ -61,19 +61,19 @@ export default function RecurringTemplatesScreen({ route }: { route: PhoneRoute 
           line="Tasks set to repeat (daily, weekly or monthly) will show up here. Set one up from Give task, or on a computer for more options."
         />
       ) : (
-        <ul className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <ul className="mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface">
           {templates.map((t) => (
             <li key={t.id}>
               <a href={recurringInstancesHref(t.id)} className={cx(ROW, 'min-h-[64px] items-start py-[12px]')}>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-phone-body font-semibold text-phone-text-primary">
+                  <span className="block truncate text-phone-body font-semibold text-text-primary">
                     {t.title}
-                    {!t.is_active ? <span className="ml-[8px] text-phone-meta font-normal text-phone-text-secondary">(paused)</span> : null}
+                    {!t.is_active ? <span className="ml-[8px] text-phone-meta font-normal text-text-secondary">(paused)</span> : null}
                   </span>
-                  <span className="block truncate text-phone-label text-phone-text-secondary">{templateScheduleSummary(t.schedule_entries)}</span>
-                  <span className="block truncate text-phone-meta text-phone-text-secondary">{assigneeLine(t)}</span>
+                  <span className="block truncate text-phone-label text-text-secondary">{templateScheduleSummary(t.schedule_entries)}</span>
+                  <span className="block truncate text-phone-meta text-text-secondary">{assigneeLine(t)}</span>
                 </span>
-                <ChevronRight aria-hidden className="mt-[4px] size-[18px] shrink-0 text-phone-text-secondary" />
+                <ChevronRight aria-hidden className="mt-[4px] size-[18px] shrink-0 text-text-secondary" />
               </a>
             </li>
           ))}

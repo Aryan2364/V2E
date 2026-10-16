@@ -135,7 +135,7 @@ export default function NotificationChoicesScreen({ route }: { route: PhoneRoute
       next = (
         <Link
           href={MORE_HREF}
-          className="text-phone-body font-semibold text-phone-primary-text underline underline-offset-2 outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-phone-primary-ring"
+          className="text-phone-body font-semibold text-primary-text underline underline-offset-2 outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-ring"
         >
           Go to More to install the app
         </Link>
@@ -169,11 +169,11 @@ export default function NotificationChoicesScreen({ route }: { route: PhoneRoute
     <PhoneScreen title={route.title} parent={route.parent}>
       {view.kind === 'loading' ? null : (
         <section aria-labelledby="phone-notifications-heading" className="flex flex-col gap-[8px]">
-          <h2 id="phone-notifications-heading" className="text-phone-card-heading font-semibold text-phone-text-primary">
+          <h2 id="phone-notifications-heading" className="text-phone-card-heading font-semibold text-text-primary">
             Phone notifications
           </h2>
           {/* An instruction, so body text, never the muted colour. */}
-          <p className="text-phone-body text-phone-text-primary">{line}</p>
+          <p className="text-phone-body text-text-primary">{line}</p>
           {next ? <div className="pt-[8px]">{next}</div> : null}
         </section>
       )}
@@ -195,7 +195,7 @@ export default function NotificationChoicesScreen({ route }: { route: PhoneRoute
           </>
         }
       >
-        <p className="text-phone-body text-phone-text-primary">
+        <p className="text-phone-body text-text-primary">
           Get a notification when something needs you, such as a task given to you or a meeting about to start.
         </p>
       </PhoneSheet>
