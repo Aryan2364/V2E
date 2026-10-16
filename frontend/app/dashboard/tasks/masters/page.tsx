@@ -954,7 +954,7 @@ function TktConfigTab({ orgId }: { orgId: string }) {
         <div className="space-y-2">
           {modeOptions.map((opt) => (
             <button key={opt.value} type="button" onClick={() => setConfig({ ...config, reassignment_mode: opt.value })}
-              className={`w-full flex items-start gap-3 p-3 rounded-control border-2 text-left transition-all ${config.reassignment_mode === opt.value ? 'border-primary bg-primary-subtle' : 'border-border-light hover:border-border'}`}>
+              className={`w-full flex items-start gap-3 p-3 rounded-control border-2 text-left outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-all ${config.reassignment_mode === opt.value ? 'border-primary bg-primary-subtle' : 'border-border-light hover:border-border'}`}>
               <div className={`w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 ${config.reassignment_mode === opt.value ? 'border-primary bg-primary' : 'border-border'}`} />
               <div>
                 <p className={`text-body font-medium ${config.reassignment_mode === opt.value ? 'text-primary-text' : 'text-text-primary'}`}>{opt.label}</p>
@@ -1002,9 +1002,9 @@ function TktConfigTab({ orgId }: { orgId: string }) {
         ))}
       </div>
 
-      <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-[10px] text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
-        <Save size={15} /> {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Configuration'}
-      </button>
+      <Button onClick={handleSave} loading={saving} loadingLabel="Saving">
+        <Save size={15} /> {saved ? 'Saved!' : 'Save Configuration'}
+      </Button>
     </div>
   )
 }
@@ -1084,8 +1084,8 @@ function TktTypesTab({ orgId }: { orgId: string }) {
         </div>
         <FormField label="Description (optional)"><input type="text" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Brief description..." className={inputCls} /></FormField>
         <div className="flex gap-2">
-          <button onClick={onSave} disabled={submitting} className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : label}</button>
-          <button onClick={onCancel} className="px-4 py-2 text-label font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
+          <Button onClick={onSave} loading={submitting} loadingLabel="Saving">{label}</Button>
+          <Button variant="secondary" onClick={onCancel}>Cancel</Button>
         </div>
       </div>
     )
@@ -1105,7 +1105,7 @@ function TktTypesTab({ orgId }: { orgId: string }) {
       />
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} type{items.length !== 1 ? 's' : ''}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Type</button>
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add Type</Button>
       </div>
       {creating && <TypeForm f={form} setF={setForm} onSave={handleCreate} onCancel={() => setCreating(false)} label="Create" />}
       {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-label">No ticket types yet. Click "Add Type" to create one.</div>}
@@ -1123,8 +1123,8 @@ function TktTypesTab({ orgId }: { orgId: string }) {
             <span className="text-meta text-text-secondary">SLA: {item.default_sla_days}d</span>
             <span className={`text-meta font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, icon: item.icon, color: item.color, default_sla_days: item.default_sla_days, default_response_sla_hours: item.default_response_sla_hours?.toString() ?? '', resolver_group_id: item.resolver_group_id ?? '', description: item.description ?? '' }) }} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
-              <button onClick={() => setConfirmDeleteId(item.id)} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+              <Button variant="ghost" size="icon-sm" onClick={() => { setEditingId(item.id); setEditForm({ name: item.name, icon: item.icon, color: item.color, default_sla_days: item.default_sla_days, default_response_sla_hours: item.default_response_sla_hours?.toString() ?? '', resolver_group_id: item.resolver_group_id ?? '', description: item.description ?? '' }) }}><Pencil size={13} /></Button>
+              <Button variant="ghost" size="icon-sm" className="hover:text-danger hover:bg-danger-bg" onClick={() => setConfirmDeleteId(item.id)}><Trash2 size={13} /></Button>
             </div>
           </div>
         ))}
@@ -1190,7 +1190,7 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
       />
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} categor{items.length !== 1 ? 'ies' : 'y'}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Category</button>
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add Category</Button>
       </div>
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
@@ -1229,8 +1229,8 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
           </div>
           <FormField label="Description (optional)"><input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputCls} /></FormField>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
+            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
+            <Button variant="secondary" onClick={() => setCreating(false)}>Cancel</Button>
           </div>
         </div>
       )}
@@ -1245,7 +1245,7 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
             </div>
             {item.default_sla_days && <span className="text-meta text-text-secondary">SLA: {item.default_sla_days}d</span>}
             <span className={`text-meta font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
-            <button onClick={() => setConfirmDeleteId(item.id)} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+            <Button variant="ghost" size="icon-sm" className="hover:text-danger hover:bg-danger-bg" onClick={() => setConfirmDeleteId(item.id)}><Trash2 size={13} /></Button>
           </div>
         ))}
       </div>
