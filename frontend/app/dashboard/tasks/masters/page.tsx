@@ -39,6 +39,7 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,7 +50,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Plus, Pencil, Trash2, Save, X, Settings2, Tag, Tags, BarChart, Activity, List, Users, Ticket as TicketIcon, CheckSquare, Bell, Loader2, GripVertical, ChevronUp, ChevronDown, Upload } from 'lucide-react'
+import { Plus, Pencil, Trash2, Save, X, Settings2, Tag, Tags, BarChart, Activity, List, Users, Ticket as TicketIcon, CheckSquare, Bell, GripVertical, ChevronUp, ChevronDown, Upload } from 'lucide-react'
 import { notificationsApi, type NotificationMaster } from '@/lib/api/notifications'
 import { AssigneeVisibilityTab } from '@/components/tasks/AssigneeVisibilityTab'
 import ImportChecklistsModal from '@/components/tasks/ImportChecklistsModal'
@@ -87,8 +88,10 @@ function CountPill({ n }: { n: number }) {
 
 function Spinner() {
   return (
-    <div className="h-40 flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    <div className="space-y-2">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Skeleton key={i} className="h-12 w-full rounded-control" />
+      ))}
     </div>
   )
 }
@@ -2010,28 +2013,6 @@ const NOTIF_MODULE_LABELS: Record<string, string> = {
   tickets: 'Tickets',
 }
 
-function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      onClick={onChange}
-      className={[
-        'inline-flex items-center w-9 h-5 rounded-full px-0.5 transition-colors shrink-0',
-        on ? 'bg-primary' : 'bg-surface-control-pressed',
-      ].join(' ')}
-    >
-      <span
-        className={[
-          'block w-4 h-4 rounded-full bg-surface shadow-sm transition-transform',
-          on ? 'translate-x-4' : 'translate-x-0',
-        ].join(' ')}
-      />
-    </button>
-  )
-}
-
 function NotificationsMasterTab({ orgId }: { orgId: string }) {
   const [master, setMaster] = useState<NotificationMaster | null>(null)
   const [loading, setLoading] = useState(true)
@@ -2087,7 +2068,7 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
             {(catalog[mod] ?? []).map((event) => (
               <div key={event} className="flex items-center justify-between px-4 py-2.5 gap-4">
                 <span className="text-body text-text-primary">{NOTIF_EVENT_LABELS[event] ?? event}</span>
-                <Toggle on={isOn(event)} onChange={() => flip(event)} />
+                <Switch checked={isOn(event)} onCheckedChange={() => flip(event)} />
               </div>
             ))}
             {mod === 'tasks' && (
@@ -2107,11 +2088,10 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
         </div>
       ))}
 
-      <button onClick={handleSave} disabled={saving}
-        className="flex items-center gap-2 px-4 py-[10px] text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+      <Button onClick={handleSave} loading={saving} loadingLabel="Saving">
         <Save size={15} />
-        {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Notification Settings'}
-      </button>
+        {saved ? 'Saved!' : 'Save Notification Settings'}
+      </Button>
     </div>
   )
 }
@@ -2197,8 +2177,9 @@ export default function MastersPage() {
 
   if (permsLoading) {
     return (
-      <div className="flex items-center justify-center h-64 text-text-muted">
-        <Loader2 size={20} className="animate-spin" />
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-64 w-full rounded-card" />
       </div>
     )
   }
@@ -2261,7 +2242,7 @@ export default function MastersPage() {
               syncUrl(key, tab)
             }}
             className={[
-              'px-4 py-2 rounded-control text-body font-medium transition-colors',
+              'px-4 py-2 rounded-control text-body font-medium outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors',
               effectiveSection === key ? 'bg-surface text-text-primary shadow-card' : 'text-text-secondary hover:text-text-primary',
             ].join(' ')}
           >
@@ -2286,7 +2267,7 @@ export default function MastersPage() {
                 }
               }}
               className={[
-                'flex items-center gap-2 px-4 py-3.5 text-body font-medium transition-colors whitespace-nowrap border-b-2',
+                'flex items-center gap-2 px-4 py-3.5 text-body font-medium outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors whitespace-nowrap border-b-2',
                 (effectiveSection === 'tasks' ? effectiveTaskTab : effectiveSection === 'tickets' ? ticketTab : 'config') === t.key
                   ? 'text-primary-text border-primary'
                   : 'text-text-secondary border-transparent hover:text-text-primary',
