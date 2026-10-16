@@ -5,6 +5,8 @@ import { Filter, Search, X, Square, SquareCheck, SquareMinus, AlertTriangle } fr
 import type { TaskCategory, TaskPriority, TaskTagRef } from '@/lib/types/tasks'
 import { tagDotClass } from '@/lib/tasks/tagColors'
 import PeopleDeptFilter, { type DeptGroup } from './PeopleDeptFilter'
+import { Button } from '@/components/ui/button'
+import { Count } from '@/components/ui/badge'
 
 // ─── Filter model ───────────────────────────────────────────────────────────────
 
@@ -258,22 +260,19 @@ function RecurringFilterPopover({
 
   return (
     <div ref={ref} className="relative shrink-0">
-      <button
+      <Button
         ref={btnRef}
         type="button"
+        variant="secondary"
         onClick={toggle}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className={`flex items-center gap-2 h-[38px] px-3 rounded-lg border text-body font-medium transition-colors ${
-          activeCount > 0 || open ? 'bg-primary-subtle text-primary-text border-primary-border' : 'bg-surface-sunken text-text-secondary border-border hover:border-border-strong'
-        }`}
+        className={activeCount > 0 || open ? 'bg-primary-subtle border-primary-border' : undefined}
       >
         <Filter size={16} />
         Filters
-        {activeCount > 0 && (
-          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-meta font-medium">{activeCount}</span>
-        )}
-      </button>
+        {activeCount > 0 && <Count value={activeCount} />}
+      </Button>
 
       {open && (
         <div
@@ -285,15 +284,10 @@ function RecurringFilterPopover({
             <div className="flex items-center justify-between">
               <span className="text-body font-medium text-text-primary">Filters</span>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={clearAll} className="text-meta font-medium text-text-secondary hover:text-text-primary">Clear all</button>
-                <button
-                  type="button"
-                  onClick={apply}
-                  disabled={empties.length > 0}
-                  className="text-meta font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:cursor-not-allowed rounded-lg px-3 py-1 transition-colors"
-                >
+                <Button type="button" variant="secondary" size="sm" onClick={clearAll}>Clear all</Button>
+                <Button type="button" size="sm" onClick={apply} disabled={empties.length > 0}>
                   Apply
-                </button>
+                </Button>
               </div>
             </div>
             {empties.length > 0 && (
@@ -433,13 +427,9 @@ function RecurringFilterChips({
           </button>
         </span>
       ))}
-      <button
-        type="button"
-        onClick={() => onChange({ ...EMPTY_RECURRING_FILTERS })}
-        className="text-meta font-medium text-text-secondary hover:text-text-primary px-1.5 py-1 transition-colors"
-      >
+      <Button type="button" variant="secondary" size="sm" onClick={() => onChange({ ...EMPTY_RECURRING_FILTERS })}>
         Clear all
-      </button>
+      </Button>
     </div>
   )
 }
@@ -487,14 +477,16 @@ export default function RecurringFilterToolbar({
             className="w-full h-[38px] pl-8 pr-8 rounded-lg border border-border bg-surface-sunken text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary focus:bg-surface transition-colors"
           />
           {search && (
-            <button
+            <Button
               type="button"
+              variant="in-field"
+              size="icon-sm"
               onClick={() => onSearch('')}
               aria-label="Clear search"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2"
             >
               <X size={15} />
-            </button>
+            </Button>
           )}
         </div>
         <RecurringFilterPopover
