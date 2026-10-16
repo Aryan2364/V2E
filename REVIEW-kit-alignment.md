@@ -253,3 +253,92 @@ Each agent appends its own self-contained section. Do not edit another agent's s
 - adapter imports (`Modal|ConfirmDialog|StyledSelect|DatePicker|ResponsiveTable|Toast`): ~30 remain, documented above as follow-up.
 - `npx tsc --noEmit` filtered to this module's folders: clean.
 - `npm run test:unit` (components/workflows/__tests__): 69/69 pass.
+
+## Settings, people, roles, access, holidays, leave, audit
+
+Folders: `app/settings/**`, `app/dashboard/{employees,roles}/**`, `components/{employees,roles,role-builder,permissions,holidays,leave,audit}/**`.
+
+### Kept for owner decision
+
+- **Access-rights and role screens kept v2e's permission model and data (D1).** `app/settings/system/access-rights/page.tsx`
+  follows FRONTEND_RULES_ACCESS.md §40's presentation (scope selects, module/sub-section
+  grid, badges) but the underlying grid shape, module/action/scope vocabulary and the
+  "subject eligibility" panel are v2e's own and were not restructured to match §40's
+  exact column layout — only restyled to tokens and migrated off the native `<select>`.
+- **Hand-rolled overlay shells in the employee/role import and detail flows** (`AddEmployeeModal.tsx`,
+  `ImportEmployeesModal.tsx`, `ImportJobRolesModal.tsx`, `ImportHolidaysModal.tsx`, the edit/delete
+  dialogs inside `app/dashboard/employees/[employeeId]/page.tsx`, and the slide-in drawers
+  `RoleFormDrawer.tsx`/`RoleInfoPanel.tsx`) still use their own `fixed inset-0` backdrop + manual
+  open/close state instead of `Dialog`/`Sheet`. These are multi-step wizards (file upload, column
+  mapping, validation, undo) and an always-mounted slide-in drawer animated by `translate-x`, not a
+  simple open/close dialog; porting them onto `Dialog`/`Sheet`'s own open/close and focus-management
+  contract is real behavioural surgery (each has 2-5 internal steps and async state), not a restyle,
+  so it was left on v2e's existing shell, with colours/radii/shadows already on tokens
+  (`bg-surface`, `shadow-menu`, `bg-black/40` backdrop kept — not yet the shared `--backdrop` token).
+  Flagged per D12/ADAPTERS.md's own note that this is real follow-up work, not a rushed wrapper.
+- **Holiday calendars kept (per brief), restyled to tokens only**: `HolidayCalendar.tsx`,
+  `OrgHolidayCalendar.tsx`, `CascadeTargetTree.tsx`, `WorkingDaysStrip.tsx`/`WorkingWeekStrip.tsx` keep
+  their existing custom grid/strip visuals, now on kit colour/spacing/radius/shadow tokens.
+- **Employee import modal re-skinned in place (D11)**: `ImportEmployeesModal.tsx` keeps its own
+  structure (not unified with the other four product import modals) — colours, weights and spacing
+  moved to tokens; the overlay shell itself is the D12 item above.
+
+### Not done / follow-up
+
+- `fixed inset-0` hand-rolled overlays: 10 occurrences across 7 files (listed above) not converted to
+  `Dialog`/`Sheet`/`AlertDialog` — see "Kept for owner decision".
+- Adapter imports not migrated off this pass: 17 files in this module still import
+  `Modal`/`ConfirmDialog`/`StyledSelect`/`DatePicker`/`ResponsiveTable`/`Toast` from
+  `@/components/ui/*` rather than the kit component directly. Per `components/ui/ADAPTERS.md` these
+  are now thin adapters over the kit (so presentation is already correct), but call sites were not
+  individually migrated to `dialog.tsx`/`alert-dialog.tsx`/`select.tsx`/`date-picker.tsx`/`table.tsx`/
+  `sonner.tsx` given the volume (~17 files) versus the time available this pass.
+- `toLocaleDateString` with no year (`OrgHolidayList.tsx` weekday/day-month strip,
+  `PendingHolidayReviewer.tsx` day-month chip) was left as-is: `lib/format.ts` (shared, out of this
+  module's edit scope) has no exported day/month-only or weekday-only formatter to delegate to
+  without adding one. Flagged as a shared-file need: a `formatDayMonth`/`formatWeekday` export would
+  let these two files drop their own `toLocaleDateString` calls.
+- Pagination (D5): `app/dashboard/employees/page.tsx`, `app/dashboard/roles/page.tsx` and the audit
+  log list render unbounded/current-loading lists with no server pagination added, per the brief.
+- `z-60`/`z-70`/`z-50` on the hand-rolled overlays above are ad-hoc numbers, not the shared
+  `--z-dialog`/`--z-popover` tokens (section 5.5) — left alongside the overlay shells themselves
+  rather than partially tokenising one piece of a file that otherwise keeps its own stacking logic.
+
+### Visual changes the owner will notice
+
+- All `font-semibold`/`font-bold`/`font-extrabold` in this module (49 files touched by the sweep)
+  now render at `font-medium` (weight 500) per kit §3.
+- Hex/rgba colours (card backgrounds, borders, shadows, grey icon tints, a few dark "chip"
+  colours) replaced with kit tokens: `bg-white` → `bg-surface`, `rounded-[12px]` → `rounded-card`,
+  `rounded-[10px]`/`rounded-[8px]`/`rounded-[6px]` → `rounded-xl`/`rounded-lg`/`rounded-md`,
+  assorted `shadow-[...]` → `shadow-card`/`shadow-menu`, `text-[#CBD5E1]` → `text-text-muted`, the
+  dark "undo toast" and a few status chips → `bg-text-primary`/`text-surface`.
+- Off-scale spacing (`p-5`, `gap-5`, `mt-7`, `py-10`, `py-16`, `py-20`, etc. — 31 files) moved to the
+  nearest kit scale value (5→4, 7→6, 9/10→8, 11/14/16/20→12); card padding and empty-state vertical
+  padding are slightly tighter than before in a few places (e.g. a `py-20` empty state is now `py-12`).
+- Native `<select>` elements (access-rights scope pickers, the employee edit form's department/job
+  role/employment type/status/reports-to fields, the permission-override scope picker, the holiday
+  type picker) are now the kit-styled `StyledSelect` dropdown instead of the browser's native control.
+- Dates that used `toLocaleDateString('en-IN', ...)`/`toLocaleString()` ad hoc (holidays list, leave
+  dates, audit timestamps, import batch timestamps — 9 files) now render through `lib/format.ts`'s
+  `formatDate`/`formatDateTime`, which is the same "12 Aug 2026" / "12 Aug 2026, 3:45 PM" shape these
+  already produced, so no visible format change is expected there.
+
+### Self-check results (this module's folders only)
+
+- hex/rgba outside globals.css: none.
+- `font-(semibold|bold|extrabold|black)`: none.
+- native `confirm()/alert()/prompt()`: none found.
+- native `<select`: none (two remaining grep hits are code comments, not markup).
+- off-scale spacing (5/7/9/10/11/14/16/20): none.
+- `fixed inset-0`: 10 remaining, documented above as kept/follow-up.
+- `toLocale(Date|Time)?String`: 4 remaining (day/month-only, no `lib/format.ts` export to delegate
+  to — documented above).
+- adapter imports (`Modal|ConfirmDialog|StyledSelect|DatePicker|ResponsiveTable|Toast`): 17 files,
+  documented above as follow-up.
+- `npx tsc --noEmit` filtered to this module's folders: clean.
+
+### Commits
+
+- `78df27d` — tokens, weights, spacing, date formatting to kit.
+- `ff3dcaa` — native `<select>` elements to `StyledSelect`.
