@@ -251,9 +251,9 @@ export default function MyTasksPage() {
                 <button
                   key={mode}
                   onClick={() => setViewMode(mode)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-control text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-control text-body font-medium transition-colors ${
                     viewMode === mode
-                      ? 'bg-primary text-white'
+                      ? 'bg-primary text-primary-foreground'
                       : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
                   }`}
                 >
@@ -293,7 +293,7 @@ export default function MyTasksPage() {
       {viewMode === 'list' && (
         <>
           {(isFiltered || search.trim()) && (
-            <p className="text-sm text-text-secondary">
+            <p className="text-body text-text-secondary">
               Showing {sortedTasks.length} of {tasks.length} task{tasks.length !== 1 ? 's' : ''}
             </p>
           )}
@@ -305,7 +305,7 @@ export default function MyTasksPage() {
               <p className="font-medium text-text-primary">
                 {search.trim() ? `No tasks match ‘${search.trim()}’` : isFiltered ? 'No tasks match your filters' : 'No tasks assigned to you'}
               </p>
-              <p className="text-sm text-text-secondary mt-1">
+              <p className="text-body text-text-secondary mt-1">
                 {search.trim() ? 'Try a different search term.' : isFiltered ? 'Try adjusting your filters.' : 'Tasks assigned to you will appear here.'}
               </p>
             <ClearNarrowingButton
@@ -354,7 +354,7 @@ export default function MyTasksPage() {
         <div className="space-y-4">
           <div className="flex items-start gap-2 px-3 py-2 rounded-control bg-warning-bg border border-warning-border">
             <AlertCircle size={15} className="text-warning shrink-0 mt-0.5" />
-            <p className="text-xs text-warning">
+            <p className="text-meta text-warning">
               {incompleteTask?.completion_mode === 'all_must_complete'
                 ? 'Your part will be flagged as not-done. The task creator decides how the whole task is closed.'
                 : 'The task will be closed as not-done for everyone.'}{' '}
@@ -363,18 +363,18 @@ export default function MyTasksPage() {
           </div>
 
           {incompleteTask && (
-            <p className="text-sm font-medium text-text-primary truncate">{incompleteTask.title}</p>
+            <p className="text-body font-medium text-text-primary truncate">{incompleteTask.title}</p>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">Reason</label>
+            <label className="block text-meta font-medium text-text-secondary mb-1.5">Reason</label>
             <textarea
               value={incompleteReason}
               onChange={(e) => setIncompleteReason(e.target.value)}
               rows={3}
               autoFocus
               placeholder="Why can’t this be completed?"
-              className="w-full rounded-control border border-border-light px-3 py-2 text-sm text-text-primary focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+              className="w-full rounded-control border border-border-light px-3 py-2 text-body text-text-primary focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-none"
             />
           </div>
 
@@ -383,7 +383,7 @@ export default function MyTasksPage() {
               type="button"
               onClick={() => { setIncompleteTask(null); setIncompleteReason('') }}
               disabled={incompleteSubmitting}
-              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-text-secondary rounded-control hover:bg-surface-control disabled:opacity-60 transition-colors"
+              className="w-full sm:w-auto px-4 py-2 text-body font-medium text-text-secondary rounded-control hover:bg-surface-control disabled:opacity-60 transition-colors"
             >
               Cancel
             </button>
@@ -391,7 +391,7 @@ export default function MyTasksPage() {
               type="button"
               onClick={submitIncomplete}
               disabled={incompleteSubmitting || !incompleteReason.trim()}
-              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-danger rounded-control hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto px-4 py-2 text-body font-medium text-primary-foreground bg-danger rounded-control hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {incompleteSubmitting ? 'Saving…' : 'Mark Incomplete'}
             </button>

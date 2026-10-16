@@ -69,8 +69,8 @@ export default function EmployeeReportPage() {
     return (
       <div className="flex flex-col items-center justify-center h-72 text-center">
         <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
-        <p className="font-medium text-text-primary text-base">This employee is outside your scope</p>
-        <p className="text-text-secondary text-sm mt-1 max-w-sm">You can only open the work report of people within your visibility scope.</p>
+        <p className="font-medium text-text-primary text-body">This employee is outside your scope</p>
+        <p className="text-text-secondary text-body mt-1 max-w-sm">You can only open the work report of people within your visibility scope.</p>
         <Button variant="secondary" onClick={() => router.push('/dashboard/tasks')} className="mt-4">Back to Overview</Button>
       </div>
     )
@@ -93,7 +93,7 @@ export default function EmployeeReportPage() {
           <button
             key={key}
             onClick={() => { setLens(key); setBucket(null) }}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-sm font-medium transition-colors ${lens === key ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'}`}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-body font-medium transition-colors ${lens === key ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'}`}
           >
             {icon}{label}
           </button>
@@ -104,7 +104,7 @@ export default function EmployeeReportPage() {
       {kpis && <KpiTiles kpis={kpis} active={bucket} onSelect={setBucket} />}
 
       {/* Tasks */}
-      <p className="text-sm text-text-secondary">
+      <p className="text-body text-text-secondary">
         {listLoading ? 'Loading…' : <><span className="font-medium text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}</>}
       </p>
       {listLoading ? (
@@ -112,13 +112,13 @@ export default function EmployeeReportPage() {
       ) : rows.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-card py-12 text-center">
           <p className="font-medium text-text-primary">Nothing here</p>
-          <p className="text-sm text-text-secondary mt-1">No tasks in this view.</p>
+          <p className="text-body text-text-secondary mt-1">No tasks in this view.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           {rows.map((t) => <TaskRow key={t.id} task={t} onClick={() => setOpenTaskId(t.id)} />)}
           {hasMore && (
-            <button onClick={() => fetchList(page + 1, false)} className="mt-2 mx-auto px-4 py-2.5 rounded-control border border-border-light bg-surface text-sm font-medium text-text-secondary hover:bg-surface-control">
+            <button onClick={() => fetchList(page + 1, false)} className="mt-2 mx-auto px-4 py-2.5 rounded-control border border-border-light bg-surface text-body font-medium text-text-secondary hover:bg-surface-control">
               Load more ({total - rows.length} left)
             </button>
           )}
