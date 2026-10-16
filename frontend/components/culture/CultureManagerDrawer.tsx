@@ -1,15 +1,26 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { Plus, Trash2, Pencil, X, Check } from 'lucide-react'
+import { PlusIcon, Trash2Icon, PencilIcon, XIcon, CheckIcon } from 'lucide-react'
 import {
   getCultureStandards,
   createCultureStandard,
   updateCultureStandard,
   deleteCultureStandard,
 } from '@/lib/api/culture'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetBody,
+  SheetFooter,
+} from '@/components/ui/sheet'
 import type { CultureStandard, BehaviorType } from '@/lib/types'
 
 interface CultureManagerDrawerProps {
@@ -23,7 +34,6 @@ interface CultureManagerDrawerProps {
 // ─── Inline add / edit form (mirrors setup step-2) ──────────────────────────────
 
 function InlineForm({
-  type,
   initial,
   onSave,
   onCancel,
@@ -37,11 +47,6 @@ function InlineForm({
   const [description, setDescription] = useState(initial?.description ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const isExpected = type === 'expected_behavior'
-  const accentBorder = isExpected ? 'focus:border-success' : 'focus:border-danger'
-  const inputCls = `w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 ${accentBorder} transition-colors`
-  const textareaCls = `w-full rounded-[8px] border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 ${accentBorder} transition-colors resize-none`
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -66,52 +71,35 @@ function InlineForm({
   }
 
   return (
-    <div className="bg-surface-sunken border border-border-light rounded-[10px] p-4 flex flex-col gap-3 mt-2">
+    <div className="mt-2 flex flex-col gap-3 rounded-lg border border-border-light bg-surface-sunken p-4">
       <div>
-        <label className="text-xs font-medium text-text-secondary mb-1 block">
-          Title <span className="text-danger">*</span>
-        </label>
-        <input
+        <Label required>Title</Label>
+        <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Proactive Communication"
-          className={inputCls}
+          className="mt-1 max-w-none"
           autoFocus
         />
       </div>
       <div>
-        <label className="text-xs font-medium text-text-secondary mb-1 block">
-          Description <span className="text-danger">*</span>
-        </label>
-        <textarea
+        <Label required>Description</Label>
+        <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
           placeholder="Describe this standard in detail…"
-          className={textareaCls}
+          className="mt-1"
         />
       </div>
-      {error && <p className="text-xs text-danger">{error}</p>}
+      {error && <p className="text-label text-danger">{error}</p>}
       <div className="flex gap-2">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] bg-primary text-white text-xs font-medium hover:bg-primary-hover disabled:opacity-60 transition-colors"
-        >
-          {saving ? (
-            <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <Check size={13} />
-          )}
-          Save
-        </button>
-        <button
-          onClick={onCancel}
-          disabled={saving}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] border border-border text-text-secondary text-xs font-medium hover:bg-surface-control transition-colors"
-        >
-          <X size={13} /> Cancel
-        </button>
+        <Button size="sm" loading={saving} onClick={handleSave}>
+          <CheckIcon size={13} /> Save
+        </Button>
+        <Button size="sm" variant="secondary" disabled={saving} onClick={onCancel}>
+          <XIcon size={13} /> Cancel
+        </Button>
       </div>
     </div>
   )
@@ -127,27 +115,27 @@ function CultureCard({
   onDelete: () => void
 }) {
   return (
-    <div className="group bg-white border border-border-light rounded-[10px] p-4 flex gap-3 transition-shadow hover:shadow-xs">
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm text-text-primary">{standard.title}</p>
+    <div className="group flex gap-3 rounded-lg border border-border-light bg-surface p-4 transition-shadow hover:shadow-xs">
+      <div className="min-w-0 flex-1">
+        <p className="text-body font-medium text-text-primary">{standard.title}</p>
         {standard.description && (
-          <p className="text-sm text-text-secondary mt-1 leading-relaxed">{standard.description}</p>
+          <p className="mt-1 text-body text-text-secondary">{standard.description}</p>
         )}
       </div>
-      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+      <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         <button
           onClick={onEdit}
-          className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors"
+          className="flex size-7 items-center justify-center rounded-md text-text-muted hover:bg-primary-subtle hover:text-primary-text"
           aria-label="Edit"
         >
-          <Pencil size={14} />
+          <PencilIcon size={14} />
         </button>
         <button
           onClick={onDelete}
-          className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"
+          className="flex size-7 items-center justify-center rounded-md text-text-muted hover:bg-danger-bg hover:text-danger"
           aria-label="Delete"
         >
-          <Trash2 size={14} />
+          <Trash2Icon size={14} />
         </button>
       </div>
     </div>
@@ -193,28 +181,28 @@ function Column({
   }
 
   return (
-    <div className="flex-1 flex flex-col min-w-0">
-      <div className={`rounded-t-[12px] border border-b-0 px-4 py-3 flex items-center gap-2 ${headerBg}`}>
+    <div className="flex min-w-0 flex-1 flex-col">
+      <div className={`flex items-center gap-2 rounded-t-card border border-b-0 px-4 py-3 ${headerBg}`}>
         <span
-          className={`w-5 h-5 shrink-0 rounded-full inline-flex items-center justify-center ${dotColor}`}
+          className={`inline-flex size-5 shrink-0 items-center justify-center rounded-full ${dotColor}`}
         >
-          <span className="text-[11px] font-medium leading-none text-white tabular-nums translate-y-px">
+          <span className="translate-y-px text-meta leading-none font-medium text-primary-foreground tabular-nums">
             {items.length}
           </span>
         </span>
-        <h3 className={`font-medium text-sm ${headerText}`}>{title}</h3>
+        <h3 className={`text-body font-medium ${headerText}`}>{title}</h3>
         {!showForm && (
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className={`ml-auto inline-flex items-center gap-1 text-xs font-medium ${headerText} hover:opacity-80 transition-opacity`}
+            className={`ml-auto inline-flex items-center gap-1 text-label font-medium ${headerText} hover:opacity-80`}
           >
-            <Plus size={13} /> Add
+            <PlusIcon size={13} /> Add
           </button>
         )}
       </div>
 
-      <div className="border border-border-light rounded-b-[12px] bg-surface-sunken flex flex-col">
+      <div className="flex flex-col rounded-b-card border border-border-light bg-surface-sunken">
         {/* Add form sits below the fixed header so it stays visible while typing */}
         {showForm && (
           <div className="px-3 pt-3">
@@ -223,10 +211,10 @@ function Column({
         )}
 
         {/* Scrollable card list — the column heading above stays fixed */}
-        <div className="p-3 flex flex-col gap-2 max-h-[360px] overflow-y-auto min-h-[120px]">
+        <div className="flex max-h-90 min-h-30 flex-col gap-2 overflow-y-auto p-3">
           {items.length === 0 && !showForm && (
             <div className="flex flex-col items-center gap-1 py-8">
-              <p className="text-xs text-[#CBD5E1] text-center">No standards added yet.</p>
+              <p className="text-center text-label text-text-muted">No standards added yet.</p>
             </div>
           )}
 
@@ -242,21 +230,15 @@ function Column({
             ) : (
               <div key={item.id}>
                 {confirmDeleteId === item.id ? (
-                  <div className="bg-danger-bg border border-danger-border rounded-[10px] p-3 flex items-center justify-between gap-3">
-                    <p className="text-xs text-danger">Delete &quot;{item.title}&quot;?</p>
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-danger-border bg-danger-bg p-3">
+                    <p className="text-label text-danger">Delete &quot;{item.title}&quot;?</p>
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="px-2.5 py-1 rounded-[6px] bg-danger text-white text-xs font-medium hover:bg-danger-hover"
-                      >
+                      <Button size="sm" variant="danger" onClick={() => handleDelete(item.id)}>
                         Delete
-                      </button>
-                      <button
-                        onClick={() => setConfirmDeleteId(null)}
-                        className="px-2.5 py-1 rounded-[6px] border border-border text-xs font-medium"
-                      >
+                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => setConfirmDeleteId(null)}>
                         Cancel
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -287,9 +269,6 @@ export default function CultureManagerDrawer({
   onClose,
   onChanged,
 }: CultureManagerDrawerProps) {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-
   const [standards, setStandards] = useState<CultureStandard[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -318,38 +297,21 @@ export default function CultureManagerDrawer({
   const expected = standards.filter((s) => s.type === 'expected_behavior')
   const unacceptable = standards.filter((s) => s.type === 'unacceptable_behavior')
 
-  if (!mounted) return null
+  return (
+    <Sheet open={open} onOpenChange={(next) => { if (!next) onClose() }}>
+      <SheetContent side="right" className="sm:max-w-2xl">
+        <SheetHeader>
+          <SheetTitle>Manage Culture Standards</SheetTitle>
+        </SheetHeader>
 
-  return createPortal(
-    <>
-      {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
-
-      <div
-        className={`fixed inset-y-0 right-0 z-70 w-full max-w-2xl bg-white border-l border-border-light shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
-          open ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between px-4 py-4 border-b border-border-light">
-          <h3 className="font-medium text-text-primary">Manage Culture Standards</h3>
-          <button
-            onClick={onClose}
-            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
-            aria-label="Close"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <div className="px-4 py-4">
+        <SheetBody>
           {loading ? (
             <div className="flex gap-4">
-              {[1, 2].map((i) => (
-                <div key={i} className="flex-1 h-48 rounded-[12px] bg-surface-control-pressed animate-pulse" />
-              ))}
+              <Skeleton className="h-48 flex-1 rounded-card" />
+              <Skeleton className="h-48 flex-1 rounded-card" />
             </div>
           ) : (
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
               <Column
                 title="Expected Behaviors"
                 type="expected_behavior"
@@ -366,16 +328,12 @@ export default function CultureManagerDrawer({
               />
             </div>
           )}
-          </div>
+        </SheetBody>
 
-          <div className="px-4 pt-4 pb-12 border-t border-border-light flex gap-3">
-            <Button variant="primary" onClick={onClose}>
-              Done
-            </Button>
-          </div>
-        </div>
-      </div>
-    </>,
-    document.body,
+        <SheetFooter>
+          <Button onClick={onClose}>Done</Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   )
 }

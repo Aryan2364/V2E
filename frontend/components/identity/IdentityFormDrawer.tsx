@@ -1,13 +1,26 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { X, Plus, Trash2 } from 'lucide-react'
+import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { upsertOrgIdentity } from '@/lib/api/org-identity'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { Banner, BannerDescription } from '@/components/ui/banner'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetBody,
+  SheetFooter,
+} from '@/components/ui/sheet'
+import { OctagonXIcon } from 'lucide-react'
 import type { OrgIdentity } from '@/lib/types'
 
 interface IdentityFormDrawerProps {
@@ -36,12 +49,6 @@ type FormValues = {
   values: Array<{ title: string; description?: string }>
 }
 
-const labelCls = 'block text-sm font-medium text-text-secondary mb-1.5'
-const textareaCls =
-  'w-full rounded-[8px] border border-border bg-white px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors resize-none'
-const inputCls =
-  'w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
-
 /**
  * Edit organization identity (vision, mission, purpose, values) from
  * a right-hand drawer — so admins edit in place in Settings instead of being sent
@@ -54,9 +61,6 @@ export default function IdentityFormDrawer({
   onClose,
   onSaved,
 }: IdentityFormDrawerProps) {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-
   const [formError, setFormError] = useState<string | null>(null)
 
   const {
@@ -97,136 +101,119 @@ export default function IdentityFormDrawer({
     }
   }
 
-  if (!mounted) return null
+  return (
+    <Sheet open={open} onOpenChange={(next) => { if (!next) onClose() }}>
+      <SheetContent side="right" className="sm:max-w-xl">
+        <SheetHeader>
+          <SheetTitle>Edit Organization Identity</SheetTitle>
+        </SheetHeader>
 
-  return createPortal(
-    <>
-      {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
-
-      <div
-        className={`fixed inset-y-0 right-0 z-70 w-full max-w-xl bg-white border-l border-border-light shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
-          open ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between px-4 py-4 border-b border-border-light">
-          <h3 className="font-medium text-text-primary">Edit Organization Identity</h3>
-          <button
-            onClick={onClose}
-            className="w-7 h-7 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
-            aria-label="Close"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto min-h-0">
-          <div className="px-4 py-4 flex flex-col gap-4">
+        <form id="identity-form" onSubmit={handleSubmit(onSubmit)} className="contents">
+          <SheetBody className="flex flex-col gap-6">
             {/* Core pillars */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-6">
               <div>
-                <label className={labelCls}>Vision</label>
-                <textarea
+                <Label htmlFor="identity-vision">Vision</Label>
+                <Textarea
+                  id="identity-vision"
                   {...register('vision')}
                   rows={3}
                   placeholder="What future are you working toward?"
-                  className={textareaCls}
+                  className="mt-2"
                 />
               </div>
               <div>
-                <label className={labelCls}>Mission</label>
-                <textarea
+                <Label htmlFor="identity-mission">Mission</Label>
+                <Textarea
+                  id="identity-mission"
                   {...register('mission')}
                   rows={3}
                   placeholder="What does your organization do, for whom, and why?"
-                  className={textareaCls}
+                  className="mt-2"
                 />
               </div>
               <div>
-                <label className={labelCls}>Purpose</label>
-                <textarea
+                <Label htmlFor="identity-purpose">Purpose</Label>
+                <Textarea
+                  id="identity-purpose"
                   {...register('purpose')}
                   rows={3}
                   placeholder="Beyond profit, why does your organization exist?"
-                  className={textareaCls}
+                  className="mt-2"
                 />
               </div>
             </div>
 
             {/* Values */}
-            <div className="bg-surface-sunken border border-border-light rounded-[10px] p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-medium text-text-primary">Organizational Values</h4>
+            <div className="rounded-lg border border-border-light bg-surface-sunken p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="text-body font-medium text-text-primary">Organizational Values</h4>
                 <button
                   type="button"
                   onClick={() => append({ title: '', description: '' })}
-                  className="inline-flex items-center gap-1 text-xs text-primary-text font-medium hover:text-primary-text"
+                  className="inline-flex items-center gap-1 text-label font-medium text-primary-text hover:text-primary-text"
                 >
-                  <Plus size={13} /> Add Value
+                  <PlusIcon size={13} /> Add Value
                 </button>
               </div>
-              <div className="flex flex-col gap-3 max-h-[340px] overflow-y-auto pr-1">
+              <div className="flex max-h-85 flex-col gap-3 overflow-y-auto pr-1">
                 {fields.length === 0 && (
-                  <p className="text-xs text-text-muted text-center py-3">No values added yet.</p>
+                  <p className="py-3 text-center text-label text-text-muted">No values added yet.</p>
                 )}
                 {fields.map((field, index) => (
                   <div
                     key={field.id}
-                    className="bg-white border border-border-light rounded-[8px] p-3 flex gap-3"
+                    className="flex gap-3 rounded-lg border border-border-light bg-surface p-3"
                   >
-                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-medium shrink-0 mt-0.5">
+                    <div className="mt-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-label font-medium text-primary-foreground">
                       {index + 1}
                     </div>
-                    <div className="flex-1 flex flex-col gap-2">
+                    <div className="flex flex-1 flex-col gap-2">
                       <div>
-                        <input
+                        <Input
                           {...register(`values.${index}.title`)}
                           placeholder="Value title (e.g. Integrity)"
-                          className={inputCls}
+                          className="max-w-none"
                         />
-                        {errors.values?.[index]?.title && (
-                          <p className="text-xs text-danger mt-1">
-                            {errors.values[index]?.title?.message}
-                          </p>
-                        )}
+                        <InlineFieldError>{errors.values?.[index]?.title?.message}</InlineFieldError>
                       </div>
-                      <textarea
+                      <Textarea
                         {...register(`values.${index}.description`)}
                         rows={2}
                         placeholder="What does this value mean in practice?"
-                        className={textareaCls}
                       />
                     </div>
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="text-text-muted hover:text-danger self-start p-1 rounded-xs transition-colors"
+                      className="self-start rounded-xs p-1 text-text-muted hover:text-danger"
                       aria-label="Remove value"
                     >
-                      <Trash2 size={14} />
+                      <Trash2Icon size={14} />
                     </button>
                   </div>
                 ))}
               </div>
             </div>
 
-            {formError && (
-              <p className="text-sm text-danger rounded-[8px] bg-danger-bg border border-danger-border px-4 py-3">
-                {formError}
-              </p>
-            )}
-          </div>
-
-          <div className="px-4 pt-4 pb-12 border-t border-border-light flex gap-3">
-            <Button type="submit" variant="primary" isLoading={isSubmitting}>
-              Save
-            </Button>
-            <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-          </div>
+            {formError ? (
+              <Banner variant="danger">
+                <OctagonXIcon />
+                <BannerDescription>{formError}</BannerDescription>
+              </Banner>
+            ) : null}
+          </SheetBody>
         </form>
-      </div>
-    </>,
-    document.body,
+
+        <SheetFooter>
+          <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" form="identity-form" loading={isSubmitting} loadingLabel="Saving">
+            Save
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   )
 }
