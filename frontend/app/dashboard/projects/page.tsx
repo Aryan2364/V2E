@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { projectsApi } from '@/lib/api/projects'
 import type { Project, ProjectStatus } from '@/lib/types/projects'
@@ -9,8 +10,12 @@ import ProjectCard from '@/components/projects/ProjectCard'
 import ProjectStatCard from '@/components/projects/ProjectStatCard'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import { usePermissions } from '@/lib/auth/use-permissions'
-import { Plus, Briefcase, Search } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
+import { PageHeader } from '@/components/shell/page-header'
 
 const STATUS_OPTS: { value: 'all' | ProjectStatus; label: string }[] = [
   { value: 'all', label: 'All Statuses' },
@@ -22,6 +27,7 @@ const STATUS_OPTS: { value: 'all' | ProjectStatus; label: string }[] = [
 
 export default function ProjectsPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const orgId = user?.organizationId ?? ''
   const { can, loading: permsLoading } = usePermissions()
 
@@ -62,7 +68,7 @@ export default function ProjectsPage() {
   if (!permsLoading && !can('projects.project.manage', 'read')) {
     return (
       <div className="space-y-6">
-        <h1 className="text-page-title font-medium text-text-primary leading-tight">Projects</h1>
+        <PageHeader title="Projects" />
         <AccessHiddenState orgId={orgId} leaf="projects.project.manage" moduleLabel="Projects" />
       </div>
     )
@@ -70,27 +76,28 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
+        </div>
+        <Skeleton className="h-64" />
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-page-title font-medium text-text-primary leading-tight">Projects</h1>
-          <p className="mt-1 text-body text-text-secondary">All projects across your organization.</p>
-        </div>
-        <Link
-          href="/dashboard/projects/new"
-          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-body font-medium hover:bg-primary-hover transition-colors shrink-0"
-        >
-          <Plus size={16} />
-          New Project
-        </Link>
-      </div>
+      <PageHeader
+        title="Projects"
+        meta="All projects across your organization."
+        actions={
+          <Button render={<Link href="/dashboard/projects/new" />}>
+            <Plus />
+            New project
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <ProjectStatCard label="Total Projects" value={projects.length} color="var(--primary-text)" />
@@ -125,23 +132,20 @@ export default function ProjectsPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
-          <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
-            <Briefcase size={24} className="text-text-muted" />
-          </div>
-          <p className="font-medium text-text-primary">No projects found</p>
-          <p className="text-body text-text-secondary mt-1">
-            {projects.length === 0 ? 'Create your first project to get started.' : 'Try adjusting your filters.'}
-          </p>
-          {projects.length === 0 && (
-            <Link
-              href="/dashboard/projects/new"
-              className="mt-4 px-4 py-2 bg-primary text-white text-body font-medium rounded-[8px] hover:bg-primary-hover transition-colors"
-            >
-              New Project
-            </Link>
-          )}
-        </div>
+        projects.length === 0 ? (
+          <EmptyState
+            variant="nothing-yet"
+            heading="No projects yet"
+            actionLabel="New project"
+            onAction={() => router.push('/dashboard/projects/new')}
+          >
+            Create your first project to get started.
+          </EmptyState>
+        ) : (
+          <EmptyState variant="nothing-found" heading="No projects found" onAction={() => { setFilterStatus('all'); setSearch('') }}>
+            Try adjusting your filters.
+          </EmptyState>
+        )
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filtered.map((p) => (

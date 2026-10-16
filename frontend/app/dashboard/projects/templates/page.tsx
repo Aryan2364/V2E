@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { projectsApi } from '@/lib/api/projects'
 import type { ProjectTemplate } from '@/lib/types/projects'
@@ -16,6 +17,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { TextLink } from '@/components/ui/text-link'
+import Tooltip from '@/components/ui/tooltip'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
+import { PageHeader } from '@/components/shell/page-header'
 
 function TemplateCard({ template, onDelete }: { template: ProjectTemplate; onDelete: () => void }) {
   const [deleting, setDeleting] = useState(false)
@@ -30,14 +38,18 @@ function TemplateCard({ template, onDelete }: { template: ProjectTemplate; onDel
         <div className="w-9 h-9 rounded-control bg-primary-subtle border border-primary-border flex items-center justify-center shrink-0">
           <BookTemplate size={18} className="text-primary-text" />
         </div>
-        <button
-          type="button"
-          disabled={deleting}
-          onClick={() => setConfirmOpen(true)}
-          className="p-1.5 rounded-xs hover:bg-danger-bg text-text-muted hover:text-danger transition-colors"
-        >
-          <Trash2 size={14} />
-        </button>
+        <Tooltip label="Delete template">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            disabled={deleting}
+            onClick={() => setConfirmOpen(true)}
+            aria-label="Delete template"
+          >
+            <Trash2 />
+          </Button>
+        </Tooltip>
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -73,19 +85,12 @@ function TemplateCard({ template, onDelete }: { template: ProjectTemplate; onDel
       </div>
 
       <div className="pt-1 border-t border-border-light flex items-center justify-between">
-        <span className={`text-meta font-medium px-2 py-0.5 rounded-full ${
-          template.is_active
-            ? 'bg-success-bg text-success'
-            : 'bg-surface-control text-text-muted'
-        }`}>
+        <Badge variant={template.is_active ? 'success' : 'neutral'}>
           {template.is_active ? 'Active' : 'Inactive'}
-        </span>
-        <Link
-          href={`/dashboard/projects/templates/${template.id}`}
-          className="text-meta font-medium text-primary-text hover:text-primary-text transition-colors"
-        >
+        </Badge>
+        <TextLink render={<Link href={`/dashboard/projects/templates/${template.id}`} />}>
           Edit
-        </Link>
+        </TextLink>
       </div>
     </div>
   )
@@ -93,6 +98,7 @@ function TemplateCard({ template, onDelete }: { template: ProjectTemplate; onDel
 
 export default function TemplatesPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const orgId = user?.organizationId ?? ''
 
   const [templates, setTemplates] = useState<ProjectTemplate[]>([])
@@ -113,42 +119,37 @@ export default function TemplatesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-36" />)}
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-page-title font-medium text-text-primary leading-tight">Project Templates</h1>
-          <p className="mt-1 text-body text-text-secondary">Reusable project structures with predefined milestones and tasks.</p>
-        </div>
-        <Link
-          href="/dashboard/projects/templates/new"
-          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-body font-medium hover:bg-primary-hover transition-colors shrink-0"
-        >
-          <Plus size={16} />
-          New Template
-        </Link>
-      </div>
+      <PageHeader
+        title="Project templates"
+        meta="Reusable project structures with predefined milestones and tasks."
+        actions={
+          <Button render={<Link href="/dashboard/projects/templates/new" />}>
+            <Plus />
+            New template
+          </Button>
+        }
+      />
 
       {templates.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
-          <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
-            <BookTemplate size={24} className="text-text-muted" />
-          </div>
-          <p className="font-medium text-text-primary">No templates yet</p>
-          <p className="text-body text-text-secondary mt-1">Create a template to speed up project setup.</p>
-          <Link
-            href="/dashboard/projects/templates/new"
-            className="mt-4 px-4 py-2 bg-primary text-white text-body font-medium rounded-[8px] hover:bg-primary-hover transition-colors"
-          >
-            New Template
-          </Link>
-        </div>
+        <EmptyState
+          variant="nothing-yet"
+          heading="No templates yet"
+          actionLabel="New template"
+          onAction={() => router.push('/dashboard/projects/templates/new')}
+        >
+          Create a template to speed up project setup.
+        </EmptyState>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {templates.map((t) => (
