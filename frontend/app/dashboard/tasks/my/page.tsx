@@ -20,6 +20,8 @@ import { toast } from '@/components/ui/sonner'
 import { CheckSquare, LayoutList, Columns, CalendarDays, AlertCircle, Plus } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 
 // Read the backend's real message (the completion gate, an already-closed task, etc.)
 // instead of a generic failure — same convention as the task detail page.
@@ -251,7 +253,7 @@ export default function MyTasksPage() {
                 <button
                   key={mode}
                   onClick={() => setViewMode(mode)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-control text-body font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-control text-body font-medium outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-[background-color,color] ${
                     viewMode === mode
                       ? 'bg-primary text-primary-foreground'
                       : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
@@ -367,34 +369,35 @@ export default function MyTasksPage() {
           )}
 
           <div>
-            <label className="block text-meta font-medium text-text-secondary mb-1.5">Reason</label>
-            <textarea
+            <Label className="mb-1.5">Reason</Label>
+            <Textarea
               value={incompleteReason}
               onChange={(e) => setIncompleteReason(e.target.value)}
               rows={3}
               autoFocus
               placeholder="Why can’t this be completed?"
-              className="w-full rounded-control border border-border-light px-3 py-2 text-body text-text-primary focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-none"
             />
           </div>
 
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-1">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              className="w-full sm:w-auto"
               onClick={() => { setIncompleteTask(null); setIncompleteReason('') }}
               disabled={incompleteSubmitting}
-              className="w-full sm:w-auto px-4 py-2 text-body font-medium text-text-secondary rounded-control hover:bg-surface-control disabled:opacity-60 transition-colors"
             >
               Cancel
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="danger"
+              className="w-full sm:w-auto"
               onClick={submitIncomplete}
               disabled={incompleteSubmitting || !incompleteReason.trim()}
-              className="w-full sm:w-auto px-4 py-2 text-body font-medium text-primary-foreground bg-danger rounded-control hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              loading={incompleteSubmitting}
+              loadingLabel="Saving"
             >
-              {incompleteSubmitting ? 'Saving…' : 'Mark Incomplete'}
-            </button>
+              Mark Incomplete
+            </Button>
           </div>
         </div>
       </Modal>
