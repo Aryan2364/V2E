@@ -30,6 +30,7 @@ import RecurringFilterToolbar, {
 import { useSessionState } from '@/lib/tasks/useSessionState'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +43,12 @@ import {
 } from '@/components/ui/alert-dialog'
 import ScopeSwitcher from '@/components/tasks/overview/ScopeSwitcher'
 import Tooltip from '@/components/ui/tooltip'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { entryLabel, formatDate } from '@/lib/tasks/recurrence-label'
 import {
   RotateCcw, Play, Pause, Calendar, Users, Plus, Trash2, Edit2, Zap, Shield,
@@ -135,7 +142,6 @@ function RecurringCard({
   const [spawning, setSpawning] = useState(false)
   const [spawnMsg, setSpawnMsg] = useState<string | null>(null)
   const [toggleErr, setToggleErr] = useState<string | null>(null)
-  const [showDeleteMenu, setShowDeleteMenu] = useState(false)
 
   async function handleToggle() {
     setToggling(true); setToggleErr(null)
@@ -195,59 +201,84 @@ function RecurringCard({
           <div className="flex items-center gap-1 shrink-0">
             {template.can_manage && (
               <Tooltip label="Manage access">
-                <button onClick={(e) => { e.stopPropagation(); onManageAccess() }} aria-label="Manage access"
-                  className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Manage access"
+                  onClick={(e) => { e.stopPropagation(); onManageAccess() }}
+                >
                   <Shield size={13} />
-                </button>
+                </Button>
               </Tooltip>
             )}
             {template.can_edit && (
               <Tooltip label="Edit template">
-                <button onClick={(e) => { e.stopPropagation(); onEdit() }} aria-label="Edit template"
-                  className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Edit template"
+                  onClick={(e) => { e.stopPropagation(); onEdit() }}
+                >
                   <Edit2 size={13} />
-                </button>
+                </Button>
               </Tooltip>
             )}
             {template.can_edit && template.is_active && (
               <Tooltip label="Spawn today's task now">
-                <button onClick={(e) => { e.stopPropagation(); handleSpawnToday() }} disabled={spawning}
-                  className="flex items-center gap-1 px-2 py-1.5 text-meta font-medium rounded-control text-primary-text bg-primary-subtle border border-primary-border hover:bg-primary-subtle disabled:opacity-60 transition-colors">
-                  <Zap size={11} />{spawning ? '...' : spawnMsg ?? 'Run Today'}
-                </button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={(e) => { e.stopPropagation(); handleSpawnToday() }}
+                  loading={spawning}
+                  loadingLabel="…"
+                >
+                  <Zap size={11} />{spawnMsg ?? 'Run Today'}
+                </Button>
               </Tooltip>
             )}
             {template.can_edit && (
               <button onClick={(e) => { e.stopPropagation(); handleToggle() }} disabled={toggling}
-                className={['flex items-center gap-1 px-2.5 py-1.5 text-meta font-medium rounded-control transition-colors disabled:opacity-60',
+                className={['flex items-center gap-1 px-2.5 py-1.5 text-meta font-medium rounded-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors disabled:opacity-60',
                   template.is_active ? 'text-warning bg-warning-bg border border-warning-border hover:bg-warning-bg' : 'text-success bg-success-bg border border-success-border hover:bg-success-bg'].join(' ')}>
                 {template.is_active ? <Pause size={11} /> : <Play size={11} />}
                 {toggling ? '...' : template.is_active ? 'Pause' : 'Resume'}
               </button>
             )}
             {template.can_manage && (
-            <div className="relative">
-              <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu((v) => !v) }}
-                className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
-                <Trash2 size={13} />
-              </button>
-              {showDeleteMenu && (
-                <div className="absolute right-0 top-full mt-1 z-20 bg-surface border border-border-light rounded-control shadow-dialog p-1.5 min-w-[220px]">
-                  <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('stop') }} className="w-full text-left px-3 py-2 rounded-control hover:bg-surface-control">
-                    <span className="block text-body font-medium text-text-primary">Stop (keep all tasks)</span>
-                    <span className="block text-meta text-text-secondary">No new tasks; existing ones stay</span>
-                  </button>
-                  <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('delete-future') }} className="w-full text-left px-3 py-2 rounded-control hover:bg-danger-bg">
-                    <span className="block text-body font-medium text-danger">Stop & remove open tasks</span>
-                    <span className="block text-meta text-text-secondary">Completed ones are kept</span>
-                  </button>
-                  <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('delete-all') }} className="w-full text-left px-3 py-2 rounded-control hover:bg-danger-bg">
-                    <span className="block text-body font-medium text-danger">Delete everything</span>
-                    <span className="block text-meta text-text-secondary">Removes it and every task it created</span>
-                  </button>
-                </div>
-              )}
-            </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="Stop or delete"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  }
+                >
+                  <Trash2 size={13} />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => onDelete('stop')}>
+                    <span className="flex flex-col">
+                      <span className="text-body font-medium text-text-primary">Stop (keep all tasks)</span>
+                      <span className="text-meta text-text-secondary">No new tasks; existing ones stay</span>
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem variant="danger" onClick={() => onDelete('delete-future')}>
+                    <span className="flex flex-col">
+                      <span className="text-body font-medium">Stop & remove open tasks</span>
+                      <span className="text-meta text-text-secondary">Completed ones are kept</span>
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem variant="danger" onClick={() => onDelete('delete-all')}>
+                    <span className="flex flex-col">
+                      <span className="text-body font-medium">Delete everything</span>
+                      <span className="text-meta text-text-secondary">Removes it and every task it created</span>
+                    </span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
@@ -504,7 +535,7 @@ export default function RecurringPage() {
             const active = relation === key
             return (
               <button key={key} onClick={() => setRelation(key)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-body font-medium transition-colors ${active ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'}`}>
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-body font-medium outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors ${active ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'}`}>
                 {icon}<span>{label}</span>
               </button>
             )
@@ -531,11 +562,11 @@ export default function RecurringPage() {
           <div className="inline-flex items-center border border-border-light rounded-control bg-surface p-0.5 gap-0.5 shrink-0">
             <Tooltip label="Cards">
               <button onClick={() => switchView('cards')} aria-label="Cards"
-                className={`flex items-center justify-center w-8 h-8 rounded-control transition-colors ${view === 'cards' ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:bg-surface-control'}`}><LayoutGrid size={15} /></button>
+                className={`flex items-center justify-center w-8 h-8 rounded-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors ${view === 'cards' ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:bg-surface-control'}`}><LayoutGrid size={15} /></button>
             </Tooltip>
             <Tooltip label="Table">
               <button onClick={() => switchView('table')} aria-label="Table"
-                className={`flex items-center justify-center w-8 h-8 rounded-control transition-colors ${view === 'table' ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:bg-surface-control'}`}><TableIcon size={15} /></button>
+                className={`flex items-center justify-center w-8 h-8 rounded-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors ${view === 'table' ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:bg-surface-control'}`}><TableIcon size={15} /></button>
             </Tooltip>
           </div>
         </div>
@@ -543,21 +574,24 @@ export default function RecurringPage() {
 
       {/* Body */}
       {loading ? (
-        <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-card" />
+          ))}
+        </div>
       ) : visibleTemplates.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">{emptyState.icon}</div>
           <p className="font-medium text-text-primary">{emptyState.title}</p>
           <p className="text-body text-text-secondary mt-1 mb-4">{emptyState.sub}</p>
           {filtersActive ? (
-            <button onClick={() => { setSearchInput(''); setFilters({ ...EMPTY_RECURRING_FILTERS }) }}
-              className="px-4 py-[10px] text-body font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">
+            <Button variant="secondary" onClick={() => { setSearchInput(''); setFilters({ ...EMPTY_RECURRING_FILTERS }) }}>
               Clear filters
-            </button>
+            </Button>
           ) : (
-            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-[10px] bg-primary text-primary-foreground rounded-control text-body font-medium hover:bg-primary-hover transition-colors">
+            <Button onClick={() => setShowCreate(true)}>
               <Plus size={16} /> New Recurring Task
-            </button>
+            </Button>
           )}
         </div>
       ) : view === 'table' ? (
