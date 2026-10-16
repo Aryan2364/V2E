@@ -6,6 +6,7 @@ import { tasksApi } from '@/lib/api/tasks'
 import type { CollectiveOrgTasks, Task, TaskPriority, TaskStatus, TaskCategory } from '@/lib/types/tasks'
 import TaskCard from '@/components/tasks/TaskCard'
 import { Globe, Building2 } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
 
 export default function CollectivePage() {
   const router = useRouter()
@@ -67,11 +68,11 @@ export default function CollectivePage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Collective View</h1>
-        <p className="mt-1 text-[15px] text-text-secondary">Tasks across all organizations you belong to.</p>
-      </div>
+      <PageHeader
+        title="Collective View"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        meta="Tasks across all organizations you belong to."
+      />
 
       {/* Org tabs */}
       <div className="flex items-center gap-1 border-b border-border-light overflow-x-auto pb-0">

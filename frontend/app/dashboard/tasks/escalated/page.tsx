@@ -13,6 +13,7 @@ import { type TaskSort, DEFAULT_TASK_SORT } from '@/components/tasks/TaskSortCon
 import { useSessionState } from '@/lib/tasks/useSessionState'
 import { type TaskFilters, EMPTY_TASK_FILTERS, isTaskFiltered, applyTaskFilters, normalizeTaskFilters } from '@/components/tasks/TaskFilterBar'
 import { AlertTriangle } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
 
 export default function EscalatedPage() {
   const { user } = useAuth()
@@ -97,18 +98,21 @@ export default function EscalatedPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Escalated Tasks</h1>
-        <p className="mt-1 text-[15px] text-text-secondary">
-          {openCount} open
-          {overdueCount > 0 && (
-            <>
-              {' · '}
-              <span className="text-danger font-medium">{overdueCount} overdue</span>
-            </>
-          )}
-        </p>
-      </div>
+      <PageHeader
+        title="Escalated Tasks"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        meta={
+          <>
+            {openCount} open
+            {overdueCount > 0 && (
+              <>
+                {' · '}
+                <span className="text-danger font-medium">{overdueCount} overdue</span>
+              </>
+            )}
+          </>
+        }
+      />
 
       <TaskListToolbar
         search={search}

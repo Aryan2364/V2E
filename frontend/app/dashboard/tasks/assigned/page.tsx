@@ -18,6 +18,8 @@ import { type TaskFilters, EMPTY_TASK_FILTERS, isTaskFiltered, applyTaskFilters,
 import Modal from '@/components/ui/Modal'
 import { toast } from '@/components/ui/sonner'
 import { Plus, UserCheck, LayoutList, Columns, CalendarDays, AlertCircle } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 type ViewMode = 'list' | 'kanban' | 'calendar'
 
@@ -173,12 +175,11 @@ export default function AssignedByMePage() {
 
   return (
     <div className="space-y-6">
-      {/* Title row — summary lead; compact Create action + view switcher on the right
-          (mirrors My Tasks so the two headers line up). */}
-      <div className="flex items-end justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Assigned by Me</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">
+      <PageHeader
+        title="Assigned by Me"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        meta={
+          <>
             {openCount} open
             {overdueCount > 0 && (
               <>
@@ -186,40 +187,38 @@ export default function AssignedByMePage() {
                 <span className="text-danger font-medium">{overdueCount} overdue</span>
               </>
             )}
-          </p>
-        </div>
+          </>
+        }
+        actions={
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center border border-border-light rounded-control bg-surface p-0.5 gap-0.5">
+              {([
+                { mode: 'list', icon: <LayoutList size={15} />, label: 'List' },
+                { mode: 'kanban', icon: <Columns size={15} />, label: 'Kanban' },
+                { mode: 'calendar', icon: <CalendarDays size={15} />, label: 'Calendar' },
+              ] as const).map(({ mode, icon, label }) => (
+                <button
+                  key={mode}
+                  onClick={() => setViewMode(mode)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-control text-sm font-medium transition-colors ${
+                    viewMode === mode
+                      ? 'bg-primary text-white'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
+                  }`}
+                >
+                  {icon}
+                  <span className="hidden sm:inline">{label}</span>
+                </button>
+              ))}
+            </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center border border-border-light rounded-control bg-surface p-0.5 gap-0.5">
-            {([
-              { mode: 'list', icon: <LayoutList size={15} />, label: 'List' },
-              { mode: 'kanban', icon: <Columns size={15} />, label: 'Kanban' },
-              { mode: 'calendar', icon: <CalendarDays size={15} />, label: 'Calendar' },
-            ] as const).map(({ mode, icon, label }) => (
-              <button
-                key={mode}
-                onClick={() => setViewMode(mode)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-control text-sm font-medium transition-colors ${
-                  viewMode === mode
-                    ? 'bg-primary text-white'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
-                }`}
-              >
-                {icon}
-                <span className="hidden sm:inline">{label}</span>
-              </button>
-            ))}
+            <Button onClick={() => setShowCreateModal(true)}>
+              <Plus size={15} />
+              <span className="hidden sm:inline">Create Task</span>
+            </Button>
           </div>
-
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-3.5 py-[7px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors"
-          >
-            <Plus size={15} />
-            <span className="hidden sm:inline">Create Task</span>
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Toolbar — search + filters + sort (the calendar filters by date itself) */}
       {viewMode !== 'calendar' && (
