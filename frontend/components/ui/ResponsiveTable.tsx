@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { cn } from '@/lib/utils'
 
 export interface ResponsiveColumn<T> {
   key: string
@@ -41,9 +43,9 @@ interface ResponsiveTableProps<T> {
   maxBodyHeight?: number | string
   /** Ref to the desktop scroll container — lets callers persist/restore its scroll position. */
   scrollContainerRef?: React.Ref<HTMLDivElement>
-  /** Override the header row (thead) styling — e.g. a coloured header band. Defaults to the light-gray strip. */
+  /** Override the header row (thead) styling — e.g. a coloured header band. Defaults to the kit band. */
   headerRowClassName?: string
-  /** Override each header cell (th) bg + text — e.g. white-on-blue. Defaults to gray-on-light. */
+  /** Override each header cell (th) bg + text — e.g. white-on-blue. Defaults to the kit band's text colour. */
   headerCellClassName?: string
   /**
    * Minimum width of the table itself (px or any CSS length). Without this the
@@ -66,6 +68,17 @@ const desktopHideClass = {
   xl: 'hidden xl:table-cell',
 } as const
 
+/**
+ * Thin adapter over the kit's `table.tsx` (sections 10, 11.1, 22) that KEEPS
+ * ResponsiveTable's own mobile card-list behaviour: the kit's table has no
+ * card mode, and real screens rely on this component collapsing to cards
+ * below `md`. Desktop/tablet renders the kit's table parts (so it gets the
+ * section 36 band, sticky header and kit tokens); the mobile card list below
+ * `md` is plain kit-token-styled markup, driven by the same breakpoint.
+ *
+ * Exported prop API is unchanged from the pre-kit implementation, so none of
+ * this component's 23 call sites need to change.
+ */
 export default function ResponsiveTable<T>({
   columns,
   rows,
@@ -80,15 +93,14 @@ export default function ResponsiveTable<T>({
   renderExpanded,
   maxBodyHeight,
   scrollContainerRef,
-  headerRowClassName = 'bg-surface-sunken border-b border-border-light',
-  headerCellClassName = 'text-text-secondary bg-surface-sunken',
+  headerRowClassName,
+  headerCellClassName,
   minTableWidth,
 }: ResponsiveTableProps<T>) {
   const primaryIdx = Math.max(0, columns.findIndex((c) => c.primary))
   const primary = columns[primaryIdx]
   const cardColumns = columns.filter((c) => !c.hideOnMobile)
-  const card =
-    'bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden'
+  const card = 'bg-surface border border-border-light rounded-xl shadow-card overflow-hidden'
   const bodyMaxHeight =
     maxBodyHeight == null
       ? undefined
@@ -101,95 +113,99 @@ export default function ResponsiveTable<T>({
   }
 
   return (
-    <div className={`${card} ${className}`}>
+    <div className={cn(card, className)}>
       {toolbar && (
         <div className="flex items-center justify-between gap-3 px-4 md:px-5 py-3 border-b border-border-light">
           {toolbar}
         </div>
       )}
 
-      {/* Desktop / tablet: real table (md+) */}
+      {/* Desktop / tablet: the kit's table (md+) */}
       <div
         ref={scrollContainerRef}
-        className={`table-scroll hidden md:block ${bodyMaxHeight ? 'overflow-auto' : 'overflow-x-auto'}`}
+        className={cn('table-scroll hidden md:block', bodyMaxHeight ? 'overflow-auto' : 'overflow-x-auto')}
         style={bodyMaxHeight ? { maxHeight: bodyMaxHeight } : undefined}
       >
-        <table
-          className="w-full text-sm"
+        <Table
           style={
             minTableWidth
               ? { minWidth: typeof minTableWidth === 'number' ? `${minTableWidth}px` : minTableWidth }
               : undefined
           }
         >
-          <thead className={`${headerRowClassName} ${bodyMaxHeight ? 'sticky top-0 z-10' : ''}`}>
-            <tr>
+          <TableHeader className={headerRowClassName}>
+            <TableRow>
               {columns.map((col) => (
-                <th
+                <TableHead
                   key={col.key}
-                  className={[
-                    'px-4 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap',
-                    headerCellClassName,
+                  numeric={col.align === 'right'}
+                  className={cn(
                     alignClass[col.align ?? 'left'],
                     col.desktopHiddenBelow ? desktopHideClass[col.desktopHiddenBelow] : '',
-                    col.headerClassName ?? '',
-                  ].join(' ')}
+                    headerCellClassName,
+                    col.headerClassName,
+                  )}
                 >
                   {col.header}
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-surface-control">
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {loading
               ? Array.from({ length: skeletonRows }).map((_, r) => (
-                  <tr key={r}>
+                  <TableRow key={r}>
                     {columns.map((col) => (
-                      <td key={col.key} className="px-4 py-4">
+                      <TableCell key={col.key}>
                         <div className="h-4 rounded-md bg-surface-control animate-pulse" />
-                      </td>
+                      </TableCell>
                     ))}
-                  </tr>
+                  </TableRow>
                 ))
               : rows.map((row, i) => {
                   const expanded = isExpanded?.(row, i) ?? false
                   return (
                     <React.Fragment key={rowKey(row, i)}>
-                      <tr
+                      <TableRow
                         onClick={onRowClick ? () => onRowClick(row, i) : undefined}
-                        className={`transition-colors hover:bg-surface-sunken ${onRowClick ? 'cursor-pointer' : ''} ${expanded ? 'bg-surface-sunken' : ''}`}
+                        className={cn(
+                          onRowClick && 'cursor-pointer hover:bg-surface-control',
+                          expanded && 'bg-surface-sunken',
+                        )}
                       >
                         {columns.map((col) => (
-                          <td
+                          <TableCell
                             key={col.key}
-                            className={[
-                              'px-4 py-3.5 text-text-primary',
+                            numeric={col.align === 'right'}
+                            className={cn(
                               alignClass[col.align ?? 'left'],
                               col.desktopHiddenBelow ? desktopHideClass[col.desktopHiddenBelow] : '',
-                              col.cellClassName ?? '',
-                            ].join(' ')}
+                              col.cellClassName,
+                            )}
                           >
                             {col.render(row, i)}
-                          </td>
+                          </TableCell>
                         ))}
-                      </tr>
+                      </TableRow>
                       {expanded && renderExpanded && (
-                        <tr className="bg-surface-sunken">
-                          <td colSpan={columns.length} className="px-4 pb-4 pt-0 border-b border-border-light">
+                        <TableRow className="bg-surface-sunken">
+                          <TableCell colSpan={columns.length} className="pb-4 pt-0 border-b border-border-light">
                             {renderExpanded(row, i)}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       )}
                     </React.Fragment>
                   )
                 })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
-      {/* Mobile: stacked cards (below md) */}
+      {/* Mobile: stacked cards (below md) — ResponsiveTable's own mode; the
+          kit's table has no equivalent, so this stays plain kit-token markup
+          driven by the same breakpoint as the desktop table above. */}
       <div
-        className={`md:hidden divide-y divide-surface-control-pressed ${bodyMaxHeight ? 'overflow-auto' : ''}`}
+        className={cn('md:hidden divide-y divide-border-light', bodyMaxHeight ? 'overflow-auto' : '')}
         style={bodyMaxHeight ? { maxHeight: bodyMaxHeight } : undefined}
       >
         {loading
@@ -203,21 +219,18 @@ export default function ResponsiveTable<T>({
               <div
                 key={rowKey(row, i)}
                 onClick={onRowClick ? () => onRowClick(row, i) : undefined}
-                className={`p-4 min-h-[44px] ${onRowClick ? 'cursor-pointer active:bg-surface-control hover:bg-surface-sunken transition-colors' : ''}`}
+                className={cn(
+                  'p-4 min-h-[44px]',
+                  onRowClick && 'cursor-pointer active:bg-surface-control hover:bg-surface-sunken transition-colors',
+                )}
               >
-                <div className="text-[15px] font-semibold text-text-primary mb-2">
-                  {primary.render(row, i)}
-                </div>
+                <div className="text-body font-medium text-text-primary mb-2">{primary.render(row, i)}</div>
                 <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
                   {cardColumns.map((col) =>
                     col === primary ? null : (
                       <React.Fragment key={col.key}>
-                        <dt className="text-xs font-medium text-text-muted uppercase tracking-wide self-center">
-                          {col.mobileLabel ?? col.header}
-                        </dt>
-                        <dd className="text-sm text-text-primary min-w-0 text-right">
-                          {col.render(row, i)}
-                        </dd>
+                        <dt className="text-label text-text-muted self-center">{col.mobileLabel ?? col.header}</dt>
+                        <dd className="text-body text-text-primary min-w-0 text-right">{col.render(row, i)}</dd>
                       </React.Fragment>
                     ),
                   )}
