@@ -19,11 +19,12 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import Tooltip from '@/components/ui/tooltip'
 import { FILE_TYPE_GROUPS, groupsFromExtensions } from '@/lib/attachments'
 import {
-  ArrowLeft, RotateCcw, Play, Pause, Edit2, Zap,
+  RotateCcw, Play, Pause, Edit2, Zap,
   CheckCircle2, Clock, ListChecks, BarChart2, Filter, Users,
   Calendar, Shield, CheckSquare, Flame, Target, TrendingUp, Bell, Paperclip, Download, Tag,
 } from 'lucide-react'
 import TagChip from '@/components/ui/TagChip'
+import { PageHeader } from '@/components/shell/page-header'
 
 // ─── Schedule helpers (mirrors recurring/page.tsx) ────────────────────────────
 
@@ -392,10 +393,7 @@ export default function RecurringDetailPage() {
   if (!template) {
     return (
       <div className="space-y-4">
-        <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary">
-          <ArrowLeft size={15} /> Back
-        </button>
-        <p className="text-text-primary font-medium">Template not found.</p>
+        <PageHeader title="Template not found" trail={[{ label: 'Tasks', href: '/dashboard/tasks' }, { label: 'Recurring', href: '/dashboard/tasks/recurring' }]} />
       </div>
     )
   }
@@ -416,26 +414,26 @@ export default function RecurringDetailPage() {
 
   return (
     <div className="space-y-6 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
-      {/* Header */}
-      <div className="flex items-start gap-2">
-        <Tooltip label="Back">
-          <button
-            onClick={() => router.back()}
-            aria-label="Back"
-            className="mt-1.5 w-6 h-6 rounded-control flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"
-          >
-            <ArrowLeft size={16} />
-          </button>
-        </Tooltip>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start gap-2 min-w-0 flex-1">
-            <h1 className="text-[26px] font-medium text-text-primary leading-tight min-w-0">{template.title}</h1>
+      <PageHeader
+        title={template.title}
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }, { label: 'Recurring', href: '/dashboard/tasks/recurring' }]}
+        meta={
+          <>
+            <span className="inline-flex items-center gap-2">
+              <RotateCcw size={11} className="shrink-0" />
+              {frequencyLabel} · Created by {template?.created_by_name ?? 'Unknown'} · Created {formatDate(template.created_at)}
+            </span>
+            {template.description && <span className="block mt-1 text-[15px]">{template.description}</span>}
+          </>
+        }
+        actions={
+          <div className="flex items-center gap-1 shrink-0">
             {template.can_edit && (
               <Tooltip label="Edit template">
                 <button
                   onClick={() => setShowEditModal(true)}
                   aria-label="Edit template"
-                  className="mt-1 w-7 h-7 rounded-control flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors shrink-0"
+                  className="w-7 h-7 rounded-control flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors shrink-0"
                 >
                   <Edit2 size={14} />
                 </button>
@@ -446,22 +444,15 @@ export default function RecurringDetailPage() {
                 <button
                   onClick={() => setShowManageAccess(true)}
                   aria-label="Manage access"
-                  className="mt-1 w-7 h-7 rounded-control flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors shrink-0"
+                  className="w-7 h-7 rounded-control flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors shrink-0"
                 >
                   <Shield size={14} />
                 </button>
               </Tooltip>
             )}
           </div>
-          <div className="mt-2 flex items-center gap-2 flex-wrap text-xs text-text-secondary">
-            <RotateCcw size={11} className="shrink-0" />
-            <span>{frequencyLabel} · Created by {template?.created_by_name ?? 'Unknown'} · Created {formatDate(template.created_at)}</span>
-          </div>
-          {template.description && (
-            <p className="mt-2 text-[15px] text-text-secondary">{template.description}</p>
-          )}
-        </div>
-      </div>
+        }
+      />
 
 
       {/* Body */}
