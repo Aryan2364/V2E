@@ -25,9 +25,9 @@ const BUCKET = 15 // minutes per heatmap cell
 /** Shade a heatmap cell: 0 busy = light green (free), scaling to red as more are busy. */
 function densityColor(busy: number, total: number): string {
   if (total === 0) return 'transparent'
-  if (busy === 0) return 'rgba(22,163,74,0.12)'
+  if (busy === 0) return 'color-mix(in srgb, var(--success) 12%, transparent)'
   const f = busy / total
-  return `rgba(220,38,38,${0.14 + f * 0.5})`
+  return `color-mix(in srgb, var(--danger) ${Math.round((0.14 + f * 0.5) * 100)}%, transparent)`
 }
 
 function pad(n: number) { return String(n).padStart(2, '0') }
@@ -170,13 +170,13 @@ export default function FindTimeDialog({
   if (!mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-70 bg-white flex flex-col">
-      <div className="w-full flex-1 min-h-0 bg-white flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-70 bg-surface flex flex-col">
+      <div className="w-full flex-1 min-h-0 bg-surface flex flex-col overflow-hidden">
         {/* header */}
-        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-border-light">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border-light">
           <div className="flex items-center gap-2">
             <Sparkles size={18} className="text-primary-text" />
-            <h3 className="text-[18px] font-semibold text-text-primary">Find a time</h3>
+            <h3 className="text-[18px] font-medium text-text-primary">Find a time</h3>
           </div>
           <div className="flex items-center gap-1.5">
             <button aria-label="Previous day" onClick={() => shiftDay(-1)} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control"><ChevronLeft size={18} /></button>
@@ -188,7 +188,7 @@ export default function FindTimeDialog({
         </div>
 
         {/* duration */}
-        <div className="flex items-center gap-2 px-5 py-2 border-b border-border-light">
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-border-light">
           <DurationField value={durationMin} onChange={onChangeDuration} label="Duration" inline />
           {loading && <Loader2 size={15} className="animate-spin text-text-muted ml-1" />}
         </div>
@@ -203,7 +203,7 @@ export default function FindTimeDialog({
 
             {/* best times */}
             <div>
-              <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Best times</p>
+              <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-2">Best times</p>
               {!data || data.suggestions.length === 0 ? (
                 <p className="text-sm text-text-muted">{attendees.length === 0 ? 'Add people to see suggestions.' : 'No clear slot on this day — try another day or trim the guest list.'}</p>
               ) : (
@@ -215,7 +215,7 @@ export default function FindTimeDialog({
                       <button
                         key={i}
                         onClick={() => { const c = Math.max(START_HOUR * 60, Math.min(END_HOUR * 60 - durationMin, sMin)); setCand(c); scrollToMin(c) }}
-                        className="flex items-center justify-between gap-2 text-left border rounded-[8px] px-3 py-2 hover:border-primary"
+                        className="flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2 hover:border-primary"
                         style={{ borderColor: clean ? 'var(--success-bg)' : 'var(--warning-bg)', background: clean ? 'var(--success-bg)' : 'var(--warning-bg)' }}
                       >
                         <span className="text-sm text-text-primary">{minLabel(sMin)}</span>
@@ -233,7 +233,7 @@ export default function FindTimeDialog({
             {/* Who's free at the selected slot — vertical list scales to any headcount */}
             {useAgg && perPerson.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">At {minLabel(cand)} – {minLabel(candEnd)}</p>
+                <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-2">At {minLabel(cand)} – {minLabel(candEnd)}</p>
                 <div className="flex flex-col gap-1 max-h-[240px] overflow-y-auto pr-1">
                   {[...perPerson].sort((a, b) => Number(b.conflict) - Number(a.conflict)).map((p) => (
                     <div key={p.user_id} className="flex items-center gap-2 text-sm">
@@ -247,7 +247,7 @@ export default function FindTimeDialog({
               </div>
             )}
 
-            <div className="flex items-start gap-2 text-xs text-text-secondary bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2">
+            <div className="flex items-start gap-2 text-xs text-text-secondary bg-surface-sunken border border-border-light rounded-lg px-3 py-2">
               <Info size={14} className="mt-0.5 shrink-0 text-text-muted" />
               <span>{data?.caveat ?? 'Shows only meetings, leave and holidays this app knows about — not a guarantee someone is free.'}</span>
             </div>
@@ -258,7 +258,7 @@ export default function FindTimeDialog({
             {/* candidate summary + confirm */}
             <div className="flex items-center justify-between gap-3 px-4 py-2.5 border border-border-light rounded-[10px] bg-surface-sunken shrink-0">
               <div className="text-sm">
-                <span className="font-semibold text-text-primary">{minLabel(cand)} – {minLabel(candEnd)}</span>
+                <span className="font-medium text-text-primary">{minLabel(cand)} – {minLabel(candEnd)}</span>
                 {clashes.hard.length === 0 && clashes.soft.length === 0 ? (
                   <span className="ml-2 text-success">Everyone’s free</span>
                 ) : (
@@ -269,14 +269,14 @@ export default function FindTimeDialog({
                   </span>
                 )}
               </div>
-              <button onClick={confirm} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px]">
+              <button onClick={confirm} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg">
                 <Check size={15} /> Use this time
               </button>
             </div>
 
             {/* calendar card — rounded like the week view; header + body reserve a stable
                 scrollbar gutter so columns align and the scrollbar sits below the header */}
-            <div className="flex-1 min-h-0 flex flex-col border border-border-light rounded-[12px] overflow-hidden">
+            <div className="flex-1 min-h-0 flex flex-col border border-border-light rounded-xl overflow-hidden">
             {/* column headers */}
             <div className="flex border-b border-primary-hover bg-primary overflow-hidden" style={{ scrollbarGutter: 'stable' }}>
               <div className="w-[54px] shrink-0 border-r border-white/20" />
@@ -285,20 +285,20 @@ export default function FindTimeDialog({
                   <div className="py-2 text-center text-sm text-white">Add participants to see availability</div>
                 ) : useAgg ? (
                   <div className="py-2.5 px-3 flex items-center justify-center gap-4 text-white flex-wrap">
-                    <span className="text-[13px] font-semibold">Team availability · {perPerson.length} people</span>
+                    <span className="text-[13px] font-medium">Team availability · {perPerson.length} people</span>
                     <span className="flex items-center gap-3 text-[11px]">
-                      <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-[3px]" style={{ background: 'rgba(22,163,74,0.5)' }} /> all free</span>
-                      <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-[3px]" style={{ background: 'rgba(220,38,38,0.6)' }} /> most busy</span>
+                      <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: 'color-mix(in srgb, var(--success) 50%, transparent)' }} /> all free</span>
+                      <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: 'color-mix(in srgb, var(--danger) 60%, transparent)' }} /> most busy</span>
                     </span>
                   </div>
                 ) : (
                   <div className="grid" style={{ gridTemplateColumns: `repeat(${cols}, minmax(80px,1fr))` }}>
                     {perPerson.map((p) => (
                       <div key={p.user_id} className="py-1.5 px-2 text-center border-r border-white/20 last:border-r-0">
-                        <div className="text-[13px] font-semibold text-white truncate">{p.name.split(' ')[0]}</div>
+                        <div className="text-[13px] font-medium text-white truncate">{p.name.split(' ')[0]}</div>
                         <div className="flex items-center justify-center gap-1 mt-0.5">
                           <span className="text-[10px] text-white">{p.required ? 'Required' : 'Optional'}</span>
-                          {p.conflict && <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.required ? 'var(--warning-border)' : 'rgba(255,255,255,0.6)' }} />}
+                          {p.conflict && <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.required ? 'var(--warning-border)' : 'color-mix(in srgb, white 60%, transparent)' }} />}
                         </div>
                       </div>
                     ))}
@@ -343,7 +343,7 @@ export default function FindTimeDialog({
                         <div key={p.user_id} className="relative border-r border-border-light last:border-r-0">
                           {p.blocks.map((b, i) => {
                             const isOOO = b.kind === 'leave' || b.kind === 'holiday'
-                            const bg = isOOO ? 'rgba(100,116,139,0.16)' : p.required ? 'rgba(220,38,38,0.14)' : 'rgba(217,119,6,0.14)'
+                            const bg = isOOO ? 'color-mix(in srgb, var(--text-muted) 16%, transparent)' : p.required ? 'color-mix(in srgb, var(--danger) 14%, transparent)' : 'color-mix(in srgb, var(--warning) 14%, transparent)'
                             const bd = isOOO ? 'var(--text-muted)' : p.required ? 'var(--danger)' : 'var(--warning)'
                             return (
                               <Tooltip key={i} label={`${p.name} · busy`}>
@@ -366,7 +366,7 @@ export default function FindTimeDialog({
                     style={{ top: topFor(cand), height: Math.max(20, (durationMin / 60) * PX_PER_HOUR) }}
                   >
                     <div className="h-full mx-0.5 rounded-[6px] border-2 border-primary bg-primary/15 flex items-center justify-center">
-                      <span className="text-[11px] font-semibold text-primary-text whitespace-nowrap">{minLabel(cand)} – {minLabel(candEnd)}</span>
+                      <span className="text-[11px] font-medium text-primary-text whitespace-nowrap">{minLabel(cand)} – {minLabel(candEnd)}</span>
                     </div>
                   </div>
                 </div>

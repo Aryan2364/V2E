@@ -69,10 +69,10 @@ const STATUS_FILTERS: { key: 'all' | Bucket; label: string }[] = [
 
 function StatCard({ icon, value, label, tint }: { icon: React.ReactNode; value: React.ReactNode; label: string; tint: string }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] p-4 flex items-center gap-3">
+    <div className="bg-surface border border-border-light rounded-xl p-4 flex items-center gap-3">
       <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ backgroundColor: tint }}>{icon}</div>
       <div className="min-w-0">
-        <div className="text-[20px] font-bold text-text-primary leading-none">{value}</div>
+        <div className="text-[20px] font-medium text-text-primary leading-none">{value}</div>
         <div className="text-xs text-text-muted mt-1 truncate">{label}</div>
       </div>
     </div>
@@ -81,8 +81,8 @@ function StatCard({ icon, value, label, tint }: { icon: React.ReactNode; value: 
 
 function SidebarCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] p-4">
-      <h3 className="text-[13px] font-semibold text-text-secondary uppercase tracking-wide mb-3">{title}</h3>
+    <div className="bg-surface border border-border-light rounded-xl p-4">
+      <h3 className="text-[13px] font-medium text-text-secondary uppercase tracking-wide mb-3">{title}</h3>
       {children}
     </div>
   )
@@ -169,13 +169,13 @@ export default function RhythmDetailPage() {
     } catch (e: any) { addToast(e?.response?.data?.message ?? 'Failed', 'error') }
   }
 
-  if (loading) return <div className="p-10 text-center text-sm text-text-secondary">Loading…</div>
+  if (loading) return <div className="p-8 text-center text-sm text-text-secondary">Loading…</div>
   if (notFound || !rhythm) {
     return (
       <div className="max-w-2xl">
         <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary mb-4"><ArrowLeft size={15} /> Rhythms</Link>
-        <div className="bg-white border border-border-light rounded-[12px] p-12 text-center">
-          <h3 className="text-[18px] font-semibold text-text-primary">Rhythm not found</h3>
+        <div className="bg-surface border border-border-light rounded-xl p-12 text-center">
+          <h3 className="text-[18px] font-medium text-text-primary">Rhythm not found</h3>
           <p className="text-sm text-text-secondary mt-1">It may have been removed, or you don’t have access to it.</p>
         </div>
       </div>
@@ -193,7 +193,7 @@ export default function RhythmDetailPage() {
       <div className="sticky top-0 z-10 bg-surface-sunken -mx-1 px-1 pb-4 mb-1">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="min-w-0">
-            <h1 className="text-[26px] font-bold text-text-primary leading-tight flex items-center gap-2">
+            <h1 className="text-[26px] font-medium text-text-primary leading-tight flex items-center gap-2">
               <Repeat size={22} className="text-text-secondary shrink-0" /> {rhythm.title}
               <span className="inline-flex items-center font-medium text-[12px] rounded-full px-2.5 py-0.5 border shrink-0"
                 style={rhythm.is_active ? { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'var(--success-border)' } : { backgroundColor: 'var(--surface-control)', color: 'var(--text-secondary)', borderColor: 'var(--border-light)' }}>
@@ -204,35 +204,35 @@ export default function RhythmDetailPage() {
           </div>
           {rhythm.can_manage && (
             <div className="flex items-center gap-2 shrink-0">
-              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px]"><Pencil size={15} /> Edit</button>
+              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg"><Pencil size={15} /> Edit</button>
               <Tooltip label={rhythm.is_active ? 'Pause' : 'Resume'}>
-              <button onClick={toggleActive} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary border border-border-light hover:bg-surface-control rounded-[8px]">
+              <button onClick={toggleActive} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary border border-border-light hover:bg-surface-control rounded-lg">
                 {rhythm.is_active ? <><Pause size={15} /> Pause</> : <><Play size={15} /> Resume</>}
               </button>
               </Tooltip>
-              <Tooltip label="Stop"><button onClick={() => setStopping(true)} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-danger border border-danger-border hover:bg-danger-bg rounded-[8px]"><Square size={15} /> Stop</button></Tooltip>
+              <Tooltip label="Stop"><button onClick={() => setStopping(true)} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-danger border border-danger-border hover:bg-danger-bg rounded-lg"><Square size={15} /> Stop</button></Tooltip>
             </div>
           )}
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <StatCard icon={<CalendarDays size={18} className="text-primary-text" />} value={meetings.length} label="Total occurrences" tint="var(--primary-subtle)" />
         <StatCard icon={<CheckCircle2 size={18} className="text-success" />} value={buckets.held} label="Held" tint="var(--success-bg)" />
         <StatCard icon={<CalendarClock size={18} className="text-text-secondary" />} value={buckets.upcoming} label="Upcoming" tint="var(--surface-control)" />
         <StatCard icon={<CalendarX2 size={18} className="text-danger" />} value={buckets.missed + buckets.cancelled} label="Missed / cancelled" tint="var(--danger-bg)" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 items-start">
         {/* Instances list */}
-        <div className="bg-white border border-border-light rounded-[12px] flex flex-col">
+        <div className="bg-surface border border-border-light rounded-xl flex flex-col">
           <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border-light flex-wrap">
-            <h2 className="text-[15px] font-semibold text-text-primary">Meetings <span className="text-text-muted font-normal">({sorted.length})</span></h2>
+            <h2 className="text-[15px] font-medium text-text-primary">Meetings <span className="text-text-muted font-normal">({sorted.length})</span></h2>
             <div className="flex items-center gap-1 flex-wrap">
               {STATUS_FILTERS.map((f) => (
                 <button key={f.key} onClick={() => setFilter(f.key)}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-[6px] border transition-colors ${filter === f.key ? 'bg-primary text-white border-primary' : 'bg-white text-text-secondary border-border-light hover:border-border'}`}>
+                  className={`px-2.5 py-1 text-xs font-medium rounded-[6px] border transition-colors ${filter === f.key ? 'bg-primary text-white border-primary' : 'bg-surface text-text-secondary border-border-light hover:border-border'}`}>
                   {f.label}
                 </button>
               ))}
@@ -253,8 +253,8 @@ export default function RhythmDetailPage() {
                   <button key={m.id} onClick={() => router.push(`/dashboard/governance/meetings/${m.id}`)}
                     className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-surface-sunken transition-colors">
                     <div className="w-11 shrink-0 text-center">
-                      <div className="text-[11px] font-semibold text-text-muted uppercase">{m.scheduled_start ? new Date(m.scheduled_start).toLocaleDateString(undefined, { month: 'short' }) : '—'}</div>
-                      <div className="text-[18px] font-bold text-text-primary leading-none">{m.scheduled_start ? new Date(m.scheduled_start).getDate() : '·'}</div>
+                      <div className="text-[11px] font-medium text-text-muted uppercase">{m.scheduled_start ? new Date(m.scheduled_start).toLocaleDateString(undefined, { month: 'short' }) : '—'}</div>
+                      <div className="text-[18px] font-medium text-text-primary leading-none">{m.scheduled_start ? new Date(m.scheduled_start).getDate() : '·'}</div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-text-primary truncate">{m.title}</p>
@@ -264,7 +264,7 @@ export default function RhythmDetailPage() {
                       </p>
                     </div>
                     <span className="inline-flex items-center font-medium text-[11px] rounded-full px-2.5 py-0.5 border shrink-0" style={{ backgroundColor: meta.bg, color: meta.fg, borderColor: meta.border }}>{meta.label}</span>
-                    <ChevronRight size={16} className="text-[#CBD5E1] shrink-0" />
+                    <ChevronRight size={16} className="text-muted shrink-0" />
                   </button>
                 )
               })}
@@ -299,16 +299,16 @@ export default function RhythmDetailPage() {
             <div className="flex flex-col gap-2">
               {/* Host is always in. */}
               <div className="flex items-center gap-2.5">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${avatarColor(rhythm.created_by_name ?? 'Host')}`}>{initials(rhythm.created_by_name ?? 'H')}</div>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(rhythm.created_by_name ?? 'Host')}`}>{initials(rhythm.created_by_name ?? 'H')}</div>
                 <span className="text-sm text-text-primary truncate">{rhythm.created_by_user_id === user?.id ? 'You' : (rhythm.created_by_name ?? 'Host')}</span>
-                <span className="text-[10px] font-semibold rounded-[4px] px-1.5 py-0.5 bg-primary-subtle text-primary-text border border-primary-border ml-auto shrink-0">Host</span>
+                <span className="text-[10px] font-medium rounded-[4px] px-1.5 py-0.5 bg-primary-subtle text-primary-text border border-primary-border ml-auto shrink-0">Host</span>
               </div>
               {attendeeIds.map((id) => {
                 const name = nameOf.get(id) ?? 'Unknown'
                 const opt = (rhythm.optional_user_ids ?? []).includes(id)
                 return (
                   <div key={id} className="flex items-center gap-2.5">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${avatarColor(name)}`}>{initials(name)}</div>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(name)}`}>{initials(name)}</div>
                     <span className="text-sm text-text-secondary truncate">{name}</span>
                     {opt && <span className="text-[10px] font-medium rounded-[4px] px-1.5 py-0.5 bg-surface-control text-text-muted ml-auto shrink-0">Optional</span>}
                   </div>
@@ -330,7 +330,7 @@ export default function RhythmDetailPage() {
 
       <Modal isOpen={stopping} onClose={() => setStopping(false)} title="Stop rhythm" size="sm">
         <p className="text-sm text-text-primary">Stop “{rhythm.title}”? No new occurrences will be created. Past meetings are kept.</p>
-        <div className="flex flex-col gap-2 mt-5">
+        <div className="flex flex-col gap-2 mt-4">
           <Button variant="primary" onClick={() => stop('stop')}>Stop — keep upcoming meetings</Button>
           <Button variant="danger" onClick={() => stop('delete-future')}>Stop &amp; remove upcoming (still-scheduled) meetings</Button>
           <Button variant="secondary" onClick={() => setStopping(false)}>Cancel</Button>

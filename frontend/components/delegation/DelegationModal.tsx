@@ -236,7 +236,7 @@ export default function DelegationModal({
             type="button"
             onClick={handleSubmit}
             disabled={!canSubmit || saving}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
           >
             {saving && <Loader2 size={15} className="animate-spin" />}
             {isEdit ? 'Save changes' : 'Create delegation'}

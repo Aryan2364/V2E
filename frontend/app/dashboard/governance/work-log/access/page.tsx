@@ -5,10 +5,12 @@ import { Plus, Trash2, ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { workLogApi } from '@/lib/api/workLogs'
 import type { WorkLogAccessConfig } from '@/lib/types/workLogs'
+import { SearchableSelect } from '@/components/ui/searchable-select'
+import { Switch } from '@/components/ui/switch'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Button } from '@/components/ui/button'
 
-const cardCls = 'bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
-const selectCls =
-  'border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary bg-white focus:border-2 focus:border-primary focus:outline-hidden'
+const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
 
 export default function WorkLogAccessPage() {
   const { user } = useAuth()
@@ -76,7 +78,7 @@ export default function WorkLogAccessPage() {
     <div className="space-y-6 max-w-3xl">
       {/* Read access */}
       <div className={`${cardCls} p-6`}>
-        <h2 className="text-[18px] font-semibold text-text-primary flex items-center gap-2 mb-1">
+        <h2 className="text-[18px] font-medium text-text-primary flex items-center gap-2 mb-1">
           <ShieldCheck size={17} className="text-primary-text" /> Read access
         </h2>
         <p className="text-sm text-text-secondary mb-4">Control who can read whose Daily Updates and demanded logs.</p>
@@ -86,45 +88,39 @@ export default function WorkLogAccessPage() {
             Managers automatically read their reports
             <span className="block text-xs text-text-muted">Everyone below them in the reporting hierarchy.</span>
           </span>
-          <button
-            type="button"
-            onClick={toggleManagersRead}
-            className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${config.settings.managers_read_reports ? 'bg-primary' : 'bg-surface-control-pressed'}`}
-            aria-pressed={config.settings.managers_read_reports}
-          >
-            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${config.settings.managers_read_reports ? 'translate-x-5' : ''}`} />
-          </button>
+          <Switch
+            checked={config.settings.managers_read_reports}
+            onCheckedChange={toggleManagersRead}
+          />
         </label>
 
         <div className="border-t border-border-light mt-4 pt-4">
-          <h3 className="text-sm font-semibold text-text-primary mb-2">Explicit reader → writer grants</h3>
+          <h3 className="text-sm font-medium text-text-primary mb-2">Explicit reader → writer grants</h3>
           <div className="flex flex-wrap items-end gap-2 mb-3">
-            <div>
+            <div className="w-[200px]">
               <label className="text-xs font-medium text-text-secondary block mb-1">Reader</label>
-              <select value={newReader} onChange={(e) => setNewReader(e.target.value)} className={selectCls}>
-                <option value="">Select…</option>
-                {config.members.map((m) => (
-                  <option key={m.user_id} value={m.user_id}>{m.name}</option>
-                ))}
-              </select>
+              <SearchableSelect
+                value={newReader}
+                onValueChange={setNewReader}
+                placeholder="Select…"
+                options={config.members.map((m) => ({ value: m.user_id, label: m.name }))}
+              />
             </div>
-            <div>
+            <div className="w-[200px]">
               <label className="text-xs font-medium text-text-secondary block mb-1">Can read</label>
-              <select value={newWriter} onChange={(e) => setNewWriter(e.target.value)} className={selectCls}>
-                <option value="">Select…</option>
-                {config.members.map((m) => (
-                  <option key={m.user_id} value={m.user_id}>{m.name}</option>
-                ))}
-              </select>
+              <SearchableSelect
+                value={newWriter}
+                onValueChange={setNewWriter}
+                placeholder="Select…"
+                options={config.members.map((m) => ({ value: m.user_id, label: m.name }))}
+              />
             </div>
-            <button
-              type="button"
+            <Button
               onClick={addGrant}
               disabled={!newReader || !newWriter || newReader === newWriter}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
             >
               <Plus size={15} /> Add
-            </button>
+            </Button>
           </div>
 
           {config.grants.length === 0 ? (
@@ -140,7 +136,7 @@ export default function WorkLogAccessPage() {
                   <button
                     type="button"
                     onClick={() => removeGrant(g.id)}
-                    className="w-8 h-8 flex items-center justify-center rounded-[8px] text-text-muted hover:text-danger hover:bg-danger-bg"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg"
                     aria-label="Remove grant"
                   >
                     <Trash2 size={14} />
@@ -154,19 +150,15 @@ export default function WorkLogAccessPage() {
 
       {/* Write access */}
       <div className={`${cardCls} p-6`}>
-        <h2 className="text-[18px] font-semibold text-text-primary mb-1">Write access</h2>
+        <h2 className="text-[18px] font-medium text-text-primary mb-1">Write access</h2>
         <p className="text-sm text-text-secondary mb-4">By default everyone has a Daily Update. Restrict it to a specific set if needed.</p>
 
         <label className="flex items-center justify-between gap-4 py-2">
           <span className="text-sm text-text-primary">Restrict who can write Daily Updates</span>
-          <button
-            type="button"
-            onClick={() => setRestrict(!restrictWriters)}
-            className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${restrictWriters ? 'bg-primary' : 'bg-surface-control-pressed'}`}
-            aria-pressed={restrictWriters}
-          >
-            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${restrictWriters ? 'translate-x-5' : ''}`} />
-          </button>
+          <Switch
+            checked={restrictWriters}
+            onCheckedChange={(checked) => setRestrict(checked)}
+          />
         </label>
 
         {restrictWriters && (
@@ -174,12 +166,10 @@ export default function WorkLogAccessPage() {
             <p className="text-xs text-text-muted mb-3">Only the selected people will be able to fill a Daily Update.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-72 overflow-y-auto">
               {config.members.map((m) => (
-                <label key={m.user_id} className="flex items-center gap-2 px-2.5 py-2 rounded-[8px] hover:bg-surface-sunken cursor-pointer">
-                  <input
-                    type="checkbox"
+                <label key={m.user_id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-surface-sunken cursor-pointer">
+                  <Checkbox
                     checked={writerAllow.has(m.user_id)}
-                    onChange={() => toggleWriter(m.user_id)}
-                    className="w-4 h-4 accent-primary"
+                    onCheckedChange={() => toggleWriter(m.user_id)}
                   />
                   <span className="text-sm text-text-primary">{m.name}</span>
                 </label>

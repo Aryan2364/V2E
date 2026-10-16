@@ -7,9 +7,9 @@ import { workLogApi } from '@/lib/api/workLogs'
 import DemandModal from '@/components/work-logs/DemandModal'
 import type { WorkLogDemand, WorkLogSubmission } from '@/lib/types/workLogs'
 
-const cardCls = 'bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
+const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
 const inputCls =
-  'w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary bg-white placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden'
+  'w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary bg-white placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden'
 
 function freqLabel(d: WorkLogDemand): string {
   if (d.kind === 'one_time') return d.deadline ? `One-time · due ${new Date(d.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}` : 'One-time'
@@ -69,14 +69,14 @@ export default function WorkLogDemandsPage() {
       {/* Logs demanded from me */}
       {mine.length > 0 && (
         <div className={`${cardCls} p-6`}>
-          <h2 className="text-[18px] font-semibold text-text-primary flex items-center gap-2 mb-4">
+          <h2 className="text-[18px] font-medium text-text-primary flex items-center gap-2 mb-4">
             <Inbox size={17} className="text-primary-text" /> Logs demanded from me
           </h2>
           <div className="space-y-4">
             {mine.map((s) => (
               <div key={s.id} className="border border-border-light rounded-[10px] p-4 bg-surface-sunken">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-semibold text-text-primary">{s.demand?.title}</span>
+                  <span className="text-sm font-medium text-text-primary">{s.demand?.title}</span>
                   <span className="text-xs text-text-muted">due {s.period_label}</span>
                 </div>
                 {s.assigner_name && <p className="text-xs text-text-muted mb-2">Asked by {s.assigner_name}</p>}
@@ -91,7 +91,7 @@ export default function WorkLogDemandsPage() {
                   <button
                     type="button"
                     onClick={() => submitMine(s.id)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover"
                   >
                     <Send size={14} /> Submit
                   </button>
@@ -106,11 +106,11 @@ export default function WorkLogDemandsPage() {
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-80 shrink-0 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-[18px] font-semibold text-text-primary">Logs I demanded</h2>
+            <h2 className="text-[18px] font-medium text-text-primary">Logs I demanded</h2>
             <button
               type="button"
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover"
             >
               <Plus size={15} /> Demand
             </button>
@@ -130,7 +130,7 @@ export default function WorkLogDemandsPage() {
                     className={`w-full text-left ${cardCls} p-4 transition-colors ${selected?.id === d.id ? 'ring-2 ring-primary' : 'hover:bg-surface-sunken'}`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold text-text-primary truncate">{d.title}</span>
+                      <span className="text-sm font-medium text-text-primary truncate">{d.title}</span>
                       {!d.is_active && (
                         <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-danger-bg text-danger border border-danger-border shrink-0">Paused</span>
                       )}
@@ -159,7 +159,7 @@ export default function WorkLogDemandsPage() {
             <div className={`${cardCls} p-6`}>
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div>
-                  <h2 className="text-[18px] font-semibold text-text-primary">{selected.title}</h2>
+                  <h2 className="text-[18px] font-medium text-text-primary">{selected.title}</h2>
                   <p className="text-sm text-text-muted mt-0.5">
                     {freqLabel(selected)} · for {selected.assignee_name ?? 'someone'}
                   </p>
@@ -169,7 +169,7 @@ export default function WorkLogDemandsPage() {
                     <button
                       type="button"
                       onClick={() => toggle(selected)}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-[8px] text-sm font-medium text-text-secondary border border-border-light hover:bg-surface-control"
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-text-secondary border border-border-light hover:bg-surface-control"
                     >
                       {selected.is_active ? <><Pause size={13} /> Pause</> : <><Play size={13} /> Resume</>}
                     </button>
@@ -177,7 +177,7 @@ export default function WorkLogDemandsPage() {
                   <button
                     type="button"
                     onClick={() => remove(selected.id)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-[8px] text-sm font-medium text-danger border border-danger-border hover:bg-danger-bg"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-danger border border-danger-border hover:bg-danger-bg"
                   >
                     <Trash2 size={13} /> Delete
                   </button>
@@ -185,7 +185,7 @@ export default function WorkLogDemandsPage() {
               </div>
               {selected.description && <p className="text-sm text-text-primary mb-4">{selected.description}</p>}
 
-              <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">Submission series</h3>
+              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Submission series</h3>
               {(selected.submissions ?? []).length === 0 ? (
                 <p className="text-sm text-text-muted">No submissions yet.</p>
               ) : (

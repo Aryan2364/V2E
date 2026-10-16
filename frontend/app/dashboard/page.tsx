@@ -87,12 +87,12 @@ function StatCard({
   icon: React.ReactNode
 }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-4 sm:p-6 flex items-start gap-3 sm:gap-4">
-      <div className="w-10 h-10 rounded-[8px] bg-primary-subtle flex items-center justify-center text-primary-text shrink-0">
+    <div className="bg-surface border border-border-light rounded-xl shadow-card p-4 sm:p-6 flex items-start gap-3 sm:gap-4">
+      <div className="w-10 h-10 rounded-lg bg-primary-subtle flex items-center justify-center text-primary-text shrink-0">
         {icon}
       </div>
       <div>
-        <p className="text-3xl font-bold text-text-primary leading-tight tabular-nums">{value}</p>
+        <p className="text-3xl font-medium text-text-primary leading-tight tabular-nums">{value}</p>
         <p className="text-sm text-text-secondary mt-0.5">{label}</p>
       </div>
     </div>
@@ -113,20 +113,20 @@ function QuickNavCard({ label, description, href, icon, iconBg }: QuickNavCardPr
   return (
     <Link
       href={href}
-      className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 flex items-start gap-4 hover:border-primary hover:shadow-md active:scale-[0.99] active:border-primary transition-all duration-150 group focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+      className="bg-surface border border-border-light rounded-xl shadow-card p-4 flex items-start gap-4 hover:border-primary hover:shadow-md active:scale-[0.99] active:border-primary transition-all duration-150 group focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
     >
       <div
-        className={`w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0 ${iconBg}`}
+        className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}
       >
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-text-primary text-sm">{label}</p>
+        <p className="font-medium text-text-primary text-sm">{label}</p>
         <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{description}</p>
       </div>
       <ChevronRight
         size={16}
-        className="text-[#CBD5E1] group-hover:text-primary-text group-active:text-primary-text transition-colors mt-0.5 shrink-0"
+        className="text-muted group-hover:text-primary-text group-active:text-primary-text transition-colors mt-0.5 shrink-0"
       />
     </Link>
   )
@@ -185,7 +185,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Page header */}
       <div>
-        <h1 className="text-[28px] font-bold text-text-primary leading-tight">
+        <h1 className="text-[28px] font-medium text-text-primary leading-tight">
           {greeting}
         </h1>
         <p className="mt-1 text-[15px] text-text-secondary">
@@ -196,10 +196,10 @@ export default function DashboardPage() {
       {/* Setup banner — only for admins, who are the only ones who can reach
           Settings/Setup. Members (no settings gear) must never see this. */}
       {user?.is_admin && setupProgress < 100 && (
-        <div className="bg-primary-subtle border border-primary-border rounded-[12px] p-5">
+        <div className="bg-primary-subtle border border-primary-border rounded-xl p-4">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
-              <p className="font-semibold text-primary-text text-sm">
+              <p className="font-medium text-primary-text text-sm">
                 Complete your organization setup
               </p>
               <p className="text-xs text-primary-text mt-0.5">
@@ -208,13 +208,13 @@ export default function DashboardPage() {
             </div>
             <Link
               href="/settings/organization/company"
-              className="flex items-center gap-1.5 text-sm font-semibold text-primary-text hover:text-primary-text transition-colors shrink-0 whitespace-nowrap"
+              className="flex items-center gap-1.5 text-sm font-medium text-primary-text hover:text-primary-text transition-colors shrink-0 whitespace-nowrap"
             >
               Continue setup
               <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="h-2 bg-[#BFDBFE] rounded-full overflow-hidden">
+          <div className="h-2 bg-primary-border rounded-full overflow-hidden">
             <div
               className="h-full bg-primary rounded-full transition-all duration-500"
               style={{ width: `${setupProgress}%` }}
@@ -236,7 +236,7 @@ export default function DashboardPage() {
 
       {/* Quick nav */}
       <div>
-        <h2 className="text-base font-semibold text-text-primary mb-4">Quick access</h2>
+        <h2 className="text-base font-medium text-text-primary mb-4">Quick access</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           <QuickNavCard
             label="Identity"

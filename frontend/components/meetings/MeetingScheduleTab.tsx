@@ -25,7 +25,7 @@ export default function MeetingScheduleTab({
   return (
     <div className="flex flex-col gap-4">
       <div className="bg-white border border-border-light rounded-[12px] p-6">
-        <h3 className="text-[16px] font-semibold text-text-primary mb-1">Scheduled time</h3>
+        <h3 className="text-[16px] font-medium text-text-primary mb-1">Scheduled time</h3>
         <p className="text-[15px] text-text-primary">{fmtDateTime(meeting.scheduled_start)} – {fmtTime(meeting.scheduled_end)}</p>
         <p className="text-xs text-text-muted mt-1">The organiser sets the time. If it changes, everyone on the meeting is notified.</p>
 
@@ -57,7 +57,7 @@ export default function MeetingScheduleTab({
       </div>
 
       <div className="bg-white border border-border-light rounded-[12px] p-6">
-        <h3 className="text-[16px] font-semibold text-text-primary mb-3">Who’s coming</h3>
+        <h3 className="text-[16px] font-medium text-text-primary mb-3">Who’s coming</h3>
         <div className="flex flex-col gap-2 max-h-[420px] overflow-y-auto">
           {attendees.map((a) => (
             <div key={a.id} className="flex items-center justify-between gap-3 border border-border-light rounded-[8px] px-3 py-2">

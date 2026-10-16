@@ -17,7 +17,7 @@ export function GradePill({ grade, className = '' }: { grade: ScorecardGrade; cl
   const s = STYLE[grade] ?? STYLE['Too Few Tasks to Judge']
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-semibold whitespace-nowrap ${className}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium whitespace-nowrap ${className}`}
       style={{ backgroundColor: s.bg, color: s.fg, border: `1px solid ${s.border}` }}
     >
       {grade}

@@ -80,7 +80,7 @@ export default function NotificationsOptInPrompt() {
 
   return (
     <div className="fixed bottom-4 right-4 left-4 sm:left-auto z-60 sm:w-[360px]">
-      <div className="relative rounded-[12px] border border-border-light bg-white p-4 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+      <div className="relative rounded-xl border border-border-light bg-white p-4 shadow-dialog">
         <button
           onClick={dismiss}
           aria-label="Dismiss"
@@ -94,7 +94,7 @@ export default function NotificationsOptInPrompt() {
             <Bell size={18} />
           </span>
           <div className="min-w-0 pr-4">
-            <p className="text-[15px] font-semibold text-text-primary">Turn on notifications</p>
+            <p className="text-[15px] font-medium text-text-primary">Turn on notifications</p>
             <p className="mt-0.5 text-[13px] leading-snug text-text-secondary">
               Get alerts for tasks, tickets and mentions on this device — even when V2E isn&apos;t open.
             </p>
@@ -105,14 +105,14 @@ export default function NotificationsOptInPrompt() {
           <button
             onClick={dismiss}
             disabled={busy}
-            className="rounded-[8px] px-3 py-2 text-[13px] font-medium text-text-secondary transition-colors hover:bg-surface-control disabled:opacity-60"
+            className="rounded-lg px-3 py-2 text-[13px] font-medium text-text-secondary transition-colors hover:bg-surface-control disabled:opacity-60"
           >
             Not now
           </button>
           <button
             onClick={turnOn}
             disabled={busy}
-            className="rounded-[8px] bg-primary px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
+            className="rounded-lg bg-primary px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
           >
             {busy ? 'Enabling…' : 'Turn on'}
           </button>

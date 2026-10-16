@@ -71,15 +71,15 @@ export default function DecisionLogPage() {
 
   return (
     <div>
-      <div className="mb-5">
-        <h1 className="flex items-center gap-2 text-[26px] font-bold text-text-primary leading-tight"><Gavel size={24} className="text-primary-text" /> Decision Log</h1>
+      <div className="mb-4">
+        <h1 className="flex items-center gap-2 text-[26px] font-medium text-text-primary leading-tight"><Gavel size={24} className="text-primary-text" /> Decision Log</h1>
         <p className="text-sm text-text-secondary mt-1">Every decision recorded across meetings, with a line of sight back to where it was made.</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="relative flex-1 min-w-[200px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input className={`${inputClass} w-full pl-9`} placeholder="Search decisions…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input className={`${inputClass} w-full pl-8`} placeholder="Search decisions…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="w-[220px]">
           <DateRangePicker from={from} to={to} onChange={(f, t) => { setFrom(f); setTo(t) }} />
@@ -93,7 +93,7 @@ export default function DecisionLogPage() {
         loading={loading}
         emptyState={
           <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
-            <div className="p-10 text-center text-sm text-text-secondary">No decisions logged.</div>
+            <div className="p-8 text-center text-sm text-text-secondary">No decisions logged.</div>
           </div>
         }
       />

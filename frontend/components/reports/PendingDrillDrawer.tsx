@@ -97,40 +97,40 @@ export default function PendingDrillDrawer({
   const clearBand = () => setFilter((f) => ({ ...f, buckets: null, bandLabel: null }))
 
   const SortTh = ({ id, label, className = '' }: { id: string; label: string; className?: string }) => (
-    <th className={`px-3 py-2.5 font-semibold whitespace-nowrap ${className}`}>
+    <th className={`px-3 py-2.5 font-medium whitespace-nowrap ${className}`}>
       <button onClick={() => toggle(id)} className="inline-flex items-center gap-1 hover:text-text-primary transition-colors">
         {label}
-        <ArrowUpDown size={12} className={sortKey === id ? 'text-primary-text' : 'text-[#CBD5E1]'} />
+        <ArrowUpDown size={12} className={sortKey === id ? 'text-primary-text' : 'text-muted'} />
       </button>
     </th>
   )
 
   return createPortal(
     <div className="fixed inset-0 z-70">
-      <div className="absolute inset-0 bg-[#0F172A]/40" onClick={onClose} />
-      <aside className="absolute right-0 top-0 h-full w-full max-w-[760px] bg-white shadow-[-12px_0_40px_rgba(0,0,0,0.18)] flex flex-col">
+      <div className="absolute inset-0 bg-(--backdrop)" onClick={onClose} />
+      <aside className="absolute right-0 top-0 h-full w-full max-w-[760px] bg-surface shadow-dialog flex flex-col">
         {/* Header */}
-        <div className="px-5 py-4 flex items-start justify-between border-b border-border-light shrink-0">
+        <div className="px-4 py-4 flex items-start justify-between border-b border-border-light shrink-0">
           <div className="min-w-0 flex items-start gap-3">
             <button
               onClick={onClose}
-              className="mt-0.5 w-8 h-8 rounded-[8px] border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control shrink-0"
+              className="mt-0.5 w-8 h-8 rounded-lg border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control shrink-0"
               title="Back to grid"
             >
               <ArrowLeft size={16} />
             </button>
             <div className="min-w-0">
               <div className="text-xs font-medium text-primary-text">{sub}</div>
-              <h3 className="text-lg font-bold tracking-tight text-text-primary truncate">{heading}</h3>
+              <h3 className="text-lg font-medium tracking-tight text-text-primary truncate">{heading}</h3>
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-[8px] border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control shrink-0">
+          <button onClick={onClose} className="w-8 h-8 rounded-lg border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control shrink-0">
             <X size={16} />
           </button>
         </div>
 
         {/* Filter chips */}
-        <div className="px-5 py-2.5 flex items-center gap-2 flex-wrap border-b border-border-light bg-surface-sunken shrink-0">
+        <div className="px-4 py-2.5 flex items-center gap-2 flex-wrap border-b border-border-light bg-surface-sunken shrink-0">
           {filter.personName && <Chip label={filter.personName} onRemove={clearPerson} />}
           {filter.taskTitle && <Chip label={filter.taskTitle} onRemove={clearTask} />}
           {filter.bandLabel && <Chip label={filter.bandLabel} onRemove={clearBand} />}
@@ -140,7 +140,7 @@ export default function PendingDrillDrawer({
         </div>
 
         {/* Stat strip */}
-        <div className="px-5 py-3 flex gap-6 border-b border-border-light shrink-0">
+        <div className="px-4 py-3 flex gap-6 border-b border-border-light shrink-0">
           <Stat label="Total pending" value={total} />
           <Stat label="More than a month late" value={overMonth} color={overMonth ? 'var(--danger)' : 'var(--text-muted)'} />
           <Stat label="Oldest late task" value={oldest === null ? '—' : `${oldest} days`} color={oldest === null ? 'var(--text-muted)' : 'var(--danger)'} />
@@ -155,7 +155,7 @@ export default function PendingDrillDrawer({
             </div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-surface-sunken shadow-[0_1px_0_#E2E8F0]">
+              <thead className="sticky top-0 z-10 bg-surface-sunken shadow-card">
                 <tr className="text-left text-text-secondary">
                   {!singleTask && <SortTh id="title" label="Task" />}
                   {!singlePerson && <SortTh id="assigned_to" label="Assigned To" />}
@@ -163,7 +163,7 @@ export default function PendingDrillDrawer({
                   <SortTh id="assigned_by" label="Assigned By" />
                   <SortTh id="due_date" label="Due Date" />
                   <SortTh id="days_late" label="Days Late" className="text-right" />
-                  <th className="px-3 py-2.5 font-semibold whitespace-nowrap">How Late</th>
+                  <th className="px-3 py-2.5 font-medium whitespace-nowrap">How Late</th>
                   <th className="px-2 py-2.5 w-8" />
                 </tr>
               </thead>
@@ -193,13 +193,13 @@ export default function PendingDrillDrawer({
                     <td className="px-3 py-3 text-text-secondary whitespace-nowrap">{r.frequency}</td>
                     <td className="px-3 py-3 text-text-secondary whitespace-nowrap">{r.assigned_by ?? '—'}</td>
                     <td className="px-3 py-3 text-text-secondary whitespace-nowrap tabular-nums">{fmtDate(r.due_date)}</td>
-                    <td className="px-3 py-3 text-right tabular-nums font-semibold whitespace-nowrap" style={{ color: r.days_late === null ? 'var(--text-muted)' : r.days_late > 30 ? 'var(--danger)' : 'var(--warning)' }}>
+                    <td className="px-3 py-3 text-right tabular-nums font-medium whitespace-nowrap" style={{ color: r.days_late === null ? 'var(--text-muted)' : r.days_late > 30 ? 'var(--danger)' : 'var(--warning)' }}>
                       {r.days_late === null ? '—' : r.days_late}
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap">
                       <span className={`text-xs font-medium ${r.status === 'Overdue' ? 'text-danger' : 'text-text-secondary'}`}>{r.bucket_label}</span>
                     </td>
-                    <td className="px-2 py-3 text-right"><ChevronRight size={15} className="text-[#CBD5E1] group-hover:text-primary-text" /></td>
+                    <td className="px-2 py-3 text-right"><ChevronRight size={15} className="text-muted group-hover:text-primary-text" /></td>
                   </tr>
                 ))}
               </tbody>
@@ -214,7 +214,7 @@ export default function PendingDrillDrawer({
 
 function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-border pl-3 pr-1.5 py-1 text-xs font-semibold text-text-primary max-w-[260px]">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border pl-3 pr-1.5 py-1 text-xs font-medium text-text-primary max-w-[260px]">
       <span className="truncate">{label}</span>
       <button onClick={onRemove} className="w-4 h-4 rounded-full flex items-center justify-center text-text-muted hover:bg-danger-bg hover:text-danger transition-colors shrink-0" title="Remove filter">
         <X size={12} strokeWidth={3} />
@@ -226,7 +226,7 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
 function Stat({ label, value, color = 'var(--text-primary)' }: { label: string; value: number | string; color?: string }) {
   return (
     <div>
-      <div className="text-lg font-bold tabular-nums leading-none" style={{ color }}>{value}</div>
+      <div className="text-lg font-medium tabular-nums leading-none" style={{ color }}>{value}</div>
       <div className="text-xs mt-1 text-text-muted">{label}</div>
     </div>
   )

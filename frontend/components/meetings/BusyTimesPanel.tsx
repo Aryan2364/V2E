@@ -55,7 +55,7 @@ export default function BusyTimesPanel({
     <div className="border border-border-light rounded-[12px] bg-white">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border-light">
         <CalendarDays size={16} className="text-primary-text" />
-        <h4 className="text-[15px] font-semibold text-text-primary">Busy times</h4>
+        <h4 className="text-[15px] font-medium text-text-primary">Busy times</h4>
         {loading && <Loader2 size={14} className="animate-spin text-text-muted ml-1" />}
       </div>
 
@@ -70,7 +70,7 @@ export default function BusyTimesPanel({
         {/* Ranked suggestions (organiser still picks) */}
         {data && data.suggestions.length > 0 && (
           <div className="mb-3">
-            <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Clearest times</p>
+            <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-2">Clearest times</p>
             <div className="flex flex-col gap-1.5 max-h-[132px] overflow-y-auto">
               {data.suggestions.map((s, i) => {
                 const clean = s.hard_conflicts.length === 0

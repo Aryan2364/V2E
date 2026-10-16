@@ -49,9 +49,9 @@ interface NoteDraft {
   description: string
 }
 
-const cardCls = 'bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
+const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
 const inputCls =
-  'w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary bg-white placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden'
+  'w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary bg-white placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden'
 const labelCls = 'text-sm font-medium text-text-secondary'
 
 export default function DailyUpdatePage() {
@@ -141,14 +141,14 @@ export default function DailyUpdatePage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary">Daily Update</h1>
+          <h1 className="text-[28px] font-medium text-text-primary">Daily Update</h1>
           <p className="text-sm text-text-secondary mt-0.5">Log your work, blockers, decisions, and tomorrow&apos;s plan.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setDate((d) => shiftDate(d, -1))}
-            className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-border-light text-text-secondary hover:bg-surface-control"
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-surface-control"
             aria-label="Previous day"
           >
             <ChevronLeft size={18} />
@@ -158,7 +158,7 @@ export default function DailyUpdatePage() {
             type="button"
             onClick={() => setDate((d) => (d < today ? shiftDate(d, 1) : d))}
             disabled={date >= today}
-            className="w-9 h-9 flex items-center justify-center rounded-[8px] border border-border-light text-text-secondary hover:bg-surface-control disabled:text-[#CBD5E1] disabled:cursor-not-allowed"
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-surface-control disabled:text-muted disabled:cursor-not-allowed"
             aria-label="Next day"
           >
             <ChevronRight size={18} />
@@ -170,7 +170,7 @@ export default function DailyUpdatePage() {
         {/* ─── Sidebar: day context ─── */}
         <aside className="lg:w-72 shrink-0 space-y-4">
           <div className={`${cardCls} p-4`}>
-            <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-3">
+            <h3 className="text-sm font-medium text-text-primary flex items-center gap-2 mb-3">
               <ListChecks size={15} className="text-primary-text" /> Tasks due {date === today ? 'today' : 'this day'}
             </h3>
             {context && context.tasks.length > 0 ? (
@@ -190,7 +190,7 @@ export default function DailyUpdatePage() {
           </div>
 
           <div className={`${cardCls} p-4`}>
-            <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-3">
+            <h3 className="text-sm font-medium text-text-primary flex items-center gap-2 mb-3">
               <TicketIcon size={15} className="text-primary-text" /> Tickets this day
             </h3>
             {context && context.tickets.length > 0 ? (
@@ -198,7 +198,7 @@ export default function DailyUpdatePage() {
                 {context.tickets.map((t) => (
                   <li key={t.id} className="text-sm flex items-start gap-1.5">
                     <span
-                      className={`mt-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${
+                      className={`mt-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${
                         t.direction === 'by_me'
                           ? 'bg-primary-subtle text-primary-text border border-primary-border'
                           : 'bg-warning-bg text-warning border border-warning-border'
@@ -219,7 +219,7 @@ export default function DailyUpdatePage() {
         </aside>
 
         {/* ─── Main body ─── */}
-        <div className="flex-1 min-w-0 space-y-5">
+        <div className="flex-1 min-w-0 space-y-4">
           {loading ? (
             <div className={`${cardCls} p-8 text-center text-sm text-text-muted`}>Loading…</div>
           ) : (
@@ -228,8 +228,8 @@ export default function DailyUpdatePage() {
 
               {/* Carry-forward */}
               {view?.previous_planning_tomorrow && (
-                <div className="border border-border-light bg-surface-control rounded-[12px] p-4">
-                  <h3 className="text-sm font-semibold text-text-secondary flex items-center gap-2 mb-1">
+                <div className="border border-border-light bg-surface-control rounded-xl p-4">
+                  <h3 className="text-sm font-medium text-text-secondary flex items-center gap-2 mb-1">
                     <CalendarClock size={15} /> Yesterday&apos;s plan for today
                   </h3>
                   <p className="text-sm text-text-primary whitespace-pre-wrap">{view.previous_planning_tomorrow}</p>
@@ -245,7 +245,7 @@ export default function DailyUpdatePage() {
               {/* Notes */}
               <div className={`${cardCls} p-6`}>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-[18px] font-semibold text-text-primary">Work notes</h2>
+                  <h2 className="text-[18px] font-medium text-text-primary">Work notes</h2>
                   <button
                     type="button"
                     onClick={() => setNotes((n) => [...n, { title: '', description: '' }])}
@@ -270,7 +270,7 @@ export default function DailyUpdatePage() {
                           <button
                             type="button"
                             onClick={() => setNotes((n) => n.filter((_, j) => j !== i))}
-                            className="w-9 h-9 shrink-0 flex items-center justify-center rounded-[8px] text-text-muted hover:text-danger hover:bg-danger-bg"
+                            className="w-9 h-9 shrink-0 flex items-center justify-center rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg"
                             aria-label="Remove note"
                           >
                             <Trash2 size={15} />
@@ -294,7 +294,7 @@ export default function DailyUpdatePage() {
               {/* Folded daily demands */}
               {view && view.folded_demands.length > 0 && (
                 <div className={`${cardCls} p-6`}>
-                  <h2 className="text-[18px] font-semibold text-text-primary flex items-center gap-2 mb-1">
+                  <h2 className="text-[18px] font-medium text-text-primary flex items-center gap-2 mb-1">
                     <Inbox size={17} className="text-primary-text" /> Demanded daily logs
                   </h2>
                   <p className="text-sm text-text-secondary mb-4">These were demanded from you — submit them with your update.</p>
@@ -302,7 +302,7 @@ export default function DailyUpdatePage() {
                     {view.folded_demands.map((f) => (
                       <div key={f.submission_id} className="border border-border-light rounded-[10px] p-4 bg-surface-sunken">
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-sm font-semibold text-text-primary">{f.title}</span>
+                          <span className="text-sm font-medium text-text-primary">{f.title}</span>
                           {f.status === 'submitted' && (
                             <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-success-bg text-success border border-success-border">
                               Submitted
@@ -326,7 +326,7 @@ export default function DailyUpdatePage() {
               )}
 
               {/* Reflection fields */}
-              <div className={`${cardCls} p-6 space-y-5`}>
+              <div className={`${cardCls} p-6 space-y-4`}>
                 <div>
                   <label className={labelCls}>Where I was stuck today</label>
                   <textarea value={stuck} onChange={(e) => setStuck(e.target.value)} rows={2} className={`${inputCls} mt-1.5`} />
@@ -356,7 +356,7 @@ export default function DailyUpdatePage() {
                   type="button"
                   onClick={() => save(false)}
                   disabled={saving}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle disabled:opacity-60"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle disabled:opacity-60"
                 >
                   <Save size={15} /> Save draft
                 </button>
@@ -364,7 +364,7 @@ export default function DailyUpdatePage() {
                   type="button"
                   onClick={() => save(true)}
                   disabled={saving}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
                 >
                   <Send size={15} /> {isSubmitted ? 'Update' : 'Submit'}
                 </button>

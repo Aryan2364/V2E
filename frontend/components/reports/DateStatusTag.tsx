@@ -36,7 +36,7 @@ export function DateStatusTag({
     const to = handover.to.length ? handover.to.join(', ') : 'no one'
     return (
       <span
-        className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-semibold whitespace-nowrap"
+        className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-medium whitespace-nowrap"
         style={{ backgroundColor: s.bg, color: s.fg, border: `1px solid ${s.border}` }}
         title={
           `Taken off this person on ${fmt(handover.at)}` +
@@ -54,11 +54,11 @@ export function DateStatusTag({
 
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-semibold whitespace-nowrap"
+      className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-medium whitespace-nowrap"
       style={{ backgroundColor: s.bg, color: s.fg, border: `1px solid ${s.border}` }}
     >
       {s.label}
-      {showDays && <span className="font-bold">· {daysLate} {daysLate === 1 ? 'day' : 'days'} late</span>}
+      {showDays && <span className="font-medium">· {daysLate} {daysLate === 1 ? 'day' : 'days'} late</span>}
     </span>
   )
 }

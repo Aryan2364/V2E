@@ -22,7 +22,7 @@ import { DurationField } from './shared'
 const inputClass =
   'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
-const sectionLabel = 'text-[13px] font-semibold text-text-secondary'
+const sectionLabel = 'text-[13px] font-medium text-text-secondary'
 
 interface Props {
   isOpen: boolean
@@ -278,7 +278,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
             <button
               type="button"
               onClick={openFinder}
-              className="mt-2.5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-text hover:text-primary-text"
+              className="mt-2.5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-text hover:text-primary-text"
             >
               <Sparkles size={15} /> Find a time that works for everyone →
             </button>

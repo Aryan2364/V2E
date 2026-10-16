@@ -1,10 +1,18 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { Calendar, Check, Loader2, RefreshCw, X } from 'lucide-react'
+import { Calendar, Check, RefreshCw } from 'lucide-react'
+import { toast } from 'sonner'
 import { meetingsApi, type GoogleSyncStatus } from '@/lib/api/meetings'
 import Tooltip from '@/components/ui/tooltip'
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 // Per-user Google Calendar connection control for the meetings header.
 // Controlled by the page (status + onChanged) so the calendar's reverse view and
@@ -27,20 +35,17 @@ export default function GoogleCalendarConnect({
   const open = openProp !== undefined ? openProp : internalOpen
   const setOpen = onOpenChange ?? setInternalOpen
   const [busy, setBusy] = useState(false)
-  const [toast, setToast] = useState<'connected' | 'error' | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
     return () => {
       if (pollRef.current) clearInterval(pollRef.current)
     }
   }, [])
 
   function flash(kind: 'connected' | 'error') {
-    setToast(kind)
-    setTimeout(() => setToast(null), 4000)
+    if (kind === 'connected') toast.success('Google Calendar connected!')
+    else toast.error('Connection failed. Please try again.')
   }
 
   async function connect() {
@@ -111,100 +116,53 @@ export default function GoogleCalendarConnect({
         </Tooltip>
       )}
 
-      {mounted &&
-        open &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-1000 flex items-center justify-center bg-black/40 p-4"
-            onClick={() => !busy && setOpen(false)}
-          >
-            <div
-              className="bg-white rounded-[14px] shadow-xl w-full max-w-[420px] p-5"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-[10px] bg-primary-subtle flex items-center justify-center text-primary-text">
-                    <Calendar size={18} />
-                  </div>
-                  <div>
-                    <h3 className="text-[16px] font-semibold text-text-primary leading-tight">Google Calendar</h3>
-                    <p className="text-xs text-text-muted mt-0.5">
-                      {connected ? 'Connected — syncing both ways' : 'Not connected'}
-                    </p>
-                  </div>
-                </div>
-                <button onClick={() => !busy && setOpen(false)} className="text-text-muted hover:text-text-secondary">
-                  <X size={18} />
-                </button>
+      <Dialog open={open} onOpenChange={(next) => { if (!busy) setOpen(next) }}>
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>Google Calendar</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <div className="flex items-start gap-2 mb-3">
+              <div className="w-9 h-9 rounded-lg bg-primary-subtle flex items-center justify-center text-primary-text shrink-0">
+                <Calendar size={18} />
               </div>
-
-              <p className="text-sm text-text-secondary leading-relaxed mb-4">
-                {connected ? (
-                  <>
-                    Your meetings are mirrored to your Google Calendar, and attendees receive Google invites.
-                    Your Google events also appear in the calendar view here.
-                  </>
-                ) : (
-                  <>
-                    Connect your Google account to mirror your meetings onto your Google Calendar (attendees get
-                    real Google invites), and to see your existing Google events alongside your meetings.
-                  </>
-                )}
+              <p className="text-xs text-text-muted mt-2">
+                {connected ? 'Connected — syncing both ways' : 'Not connected'}
               </p>
-
-              {connected ? (
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
-                    <Check size={16} /> Connected
-                  </span>
-                  <div className="flex-1" />
-                  <button
-                    onClick={disconnect}
-                    disabled={busy}
-                    className="px-3 py-2 text-sm font-medium text-danger border border-danger-border rounded-[8px] hover:bg-danger-bg disabled:opacity-50"
-                  >
-                    {busy ? <Loader2 size={15} className="animate-spin" /> : 'Disconnect'}
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={connect}
-                  disabled={busy}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50"
-                >
-                  {busy ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" /> Waiting for Google…
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw size={16} /> Connect Google Calendar
-                    </>
-                  )}
-                </button>
-              )}
             </div>
-          </div>,
-          document.body,
-        )}
 
-      {mounted &&
-        toast &&
-        createPortal(
-          <div
-            className="fixed bottom-5 right-5 z-1001 flex items-center gap-2 px-4 py-3 rounded-[10px] shadow-lg border text-sm"
-            style={{
-              backgroundColor: toast === 'connected' ? 'var(--surface)' : 'var(--danger-bg)',
-              borderColor: toast === 'connected' ? 'var(--success-bg)' : 'var(--danger-bg)',
-              color: toast === 'connected' ? 'var(--success)' : 'var(--danger)',
-            }}
-          >
-            {toast === 'connected' ? <Check size={16} /> : <X size={16} />}
-            {toast === 'connected' ? 'Google Calendar connected!' : 'Connection failed. Please try again.'}
-          </div>,
-          document.body,
-        )}
+            <p className="text-sm text-text-secondary leading-relaxed mb-4">
+              {connected ? (
+                <>
+                  Your meetings are mirrored to your Google Calendar, and attendees receive Google invites.
+                  Your Google events also appear in the calendar view here.
+                </>
+              ) : (
+                <>
+                  Connect your Google account to mirror your meetings onto your Google Calendar (attendees get
+                  real Google invites), and to see your existing Google events alongside your meetings.
+                </>
+              )}
+            </p>
+
+            {connected ? (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
+                  <Check size={16} /> Connected
+                </span>
+                <div className="flex-1" />
+                <Button variant="danger" onClick={disconnect} loading={busy} loadingLabel="Disconnecting">
+                  Disconnect
+                </Button>
+              </div>
+            ) : (
+              <Button onClick={connect} loading={busy} loadingLabel="Waiting for Google" className="w-full">
+                <RefreshCw size={16} /> Connect Google Calendar
+              </Button>
+            )}
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

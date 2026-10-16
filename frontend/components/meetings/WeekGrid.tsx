@@ -185,7 +185,7 @@ export default function WeekGrid({
   const hourLabels = Array.from({ length: 24 }, (_, h) => h)
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
+    <div className="bg-surface border border-border-light rounded-xl overflow-hidden">
       {/* Header sits ABOVE the scroll body (not inside it) so the scrollbar starts
           BELOW the header, never cutting through the blue band. Both the header and
           the scroll body reserve a stable scrollbar gutter, so their columns still
@@ -199,13 +199,13 @@ export default function WeekGrid({
             <button
               key={day.toISOString()}
               onClick={() => onSelectDay?.(day)}
-              className="py-2 text-center border-r border-white/20 last:border-r-0 transition-colors hover:bg-white/10"
+              className="py-2 text-center border-r border-white/20 last:border-r-0 transition-colors hover:bg-surface/10"
             >
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-white">
+              <div className="text-[11px] font-medium uppercase tracking-wide text-white">
                 {day.toLocaleDateString(undefined, { weekday: 'short' })}
               </div>
               <div className="mt-0.5 flex items-center justify-center">
-                <span className={['w-8 h-8 flex items-center justify-center rounded-full text-[18px] font-bold leading-none', today ? 'bg-white text-primary-text' : 'text-white'].join(' ')}>
+                <span className={['w-8 h-8 flex items-center justify-center rounded-full text-[18px] font-medium leading-none', today ? 'bg-surface text-primary-text' : 'text-white'].join(' ')}>
                   {day.getDate()}
                 </span>
               </div>
@@ -235,7 +235,7 @@ export default function WeekGrid({
                 <div
                   key={day.toISOString()}
                   className={['relative border-r border-border-light last:border-r-0', onCreateAt ? 'cursor-pointer' : ''].join(' ')}
-                  style={{ height: DAY_PX, background: today ? 'rgba(239,246,255,0.4)' : undefined }}
+                  style={{ height: DAY_PX, background: today ? 'color-mix(in srgb, var(--primary-subtle) 40%, transparent)' : undefined }}
                   onClick={(e) => handleColumnClick(day, e)}
                 >
                   {/* hour lines */}
@@ -265,10 +265,10 @@ export default function WeekGrid({
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onBlockSelect?.(b) }}
-                              className="absolute rounded-[6px] overflow-hidden px-1.5 py-1 border-l-[3px] border-dashed text-left cursor-pointer hover:brightness-95"
-                              style={{ top, height, left: '2px', right: '2px', background: 'repeating-linear-gradient(45deg,#F1F5F9,#F1F5F9 6px,#E2E8F0 6px,#E2E8F0 12px)', borderLeftColor: 'var(--text-muted)', color: 'var(--text-secondary)', zIndex: 6 }}
+                              className="absolute rounded-lg overflow-hidden px-1.5 py-1 border-l-[3px] border-dashed text-left cursor-pointer hover:brightness-95"
+                              style={{ top, height, left: '2px', right: '2px', background: 'repeating-linear-gradient(45deg,var(--surface-sunken),var(--surface-sunken) 6px,var(--border-light) 6px,var(--border-light) 12px)', borderLeftColor: 'var(--text-muted)', color: 'var(--text-secondary)', zIndex: 6 }}
                             >
-                              <div className="text-[12px] font-semibold truncate flex items-center gap-1">
+                              <div className="text-[12px] font-medium truncate flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-text-muted shrink-0" />
                                 <span className="truncate">{b.title}</span>
                               </div>
@@ -281,7 +281,7 @@ export default function WeekGrid({
                           }
                         />
                         <TooltipContent>
-                          <div className="font-semibold">{b.title}</div>
+                          <div className="font-medium">{b.title}</div>
                           <div className="text-surface/70">
                             {b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`} · Time-block
                           </div>
@@ -318,7 +318,7 @@ export default function WeekGrid({
                               <div className="flex items-center gap-1 min-w-0">
                                 {lk.live && <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />}
                                 {lk.rhythm && <Repeat size={10} className="shrink-0" />}
-                                <span className={['text-[12px] font-semibold truncate', lk.strike ? 'line-through' : ''].join(' ')}>{m.title}</span>
+                                <span className={['text-[12px] font-medium truncate', lk.strike ? 'line-through' : ''].join(' ')}>{m.title}</span>
                               </div>
                               {!compact && (
                                 <div className="text-[11px] opacity-90 truncate">
@@ -329,7 +329,7 @@ export default function WeekGrid({
                           }
                         />
                         <TooltipContent>
-                          <div className="font-semibold">{m.title}</div>
+                          <div className="font-medium">{m.title}</div>
                           <div className="text-surface/70">
                             {fmtTime(m.scheduled_start)}
                             {m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}
@@ -372,11 +372,11 @@ function MeetingPopover({ meeting, onClose, onOpen }: { meeting: Meeting; onClos
       {/* click-away catcher */}
       <div className="fixed inset-0 z-55" onClick={onClose} />
       {/* centered card — avoids scroll-drift; keeps the "no navigation" promise */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-56 w-[320px] bg-white border border-border-light rounded-[12px] shadow-xl p-4">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-56 w-[320px] bg-surface border border-border-light rounded-xl shadow-xl p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: lk.stripe }} />
-            <h4 className="text-[16px] font-semibold text-text-primary leading-tight truncate">{meeting.title}</h4>
+            <h4 className="text-[16px] font-medium text-text-primary leading-tight truncate">{meeting.title}</h4>
           </div>
           <button onClick={onClose} className="text-text-muted hover:text-text-secondary shrink-0"><X size={16} /></button>
         </div>
@@ -399,11 +399,11 @@ function MeetingPopover({ meeting, onClose, onOpen }: { meeting: Meeting; onClos
         </div>
 
         <div className="flex items-center gap-2">
-          <button onClick={onOpen} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px]">
+          <button onClick={onOpen} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg">
             <ArrowUpRight size={15} /> Open meeting
           </button>
           {online && meeting.online_link && (
-            <a href={meeting.online_link} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold text-primary-text border-2 border-primary hover:bg-primary-subtle rounded-[8px]">
+            <a href={meeting.online_link} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-text border-2 border-primary hover:bg-primary-subtle rounded-lg">
               <ExternalLink size={15} /> Join
             </a>
           )}

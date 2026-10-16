@@ -85,13 +85,13 @@ export default function RhythmsPage() {
     <div>
       <Link href="/dashboard/governance/meetings" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary w-fit mb-4"><ArrowLeft size={15} /> Meetings</Link>
 
-      <div className="flex items-start justify-between gap-4 mb-5">
+      <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <h1 className="text-[26px] font-bold text-text-primary leading-tight flex items-center gap-2"><Repeat size={24} className="text-text-secondary" /> Rhythms</h1>
+          <h1 className="text-[26px] font-medium text-text-primary leading-tight flex items-center gap-2"><Repeat size={24} className="text-text-secondary" /> Rhythms</h1>
           <p className="text-sm text-text-secondary mt-1">Recurring meetings — a daily huddle, an every-Thursday review. Occurrences appear 60 days ahead.</p>
         </div>
         {perms.write && (
-          <button onClick={() => setCreateOpen(true)} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] shrink-0">
+          <button onClick={() => setCreateOpen(true)} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-[8px] shrink-0">
             <Plus size={16} /> New Rhythm
           </button>
         )}
@@ -100,19 +100,19 @@ export default function RhythmsPage() {
       {!permsLoading && !perms.read ? (
         <AccessHiddenState orgId={orgId} leaf="meetings" moduleLabel="Meetings" />
       ) : loading ? (
-        <div className="p-10 text-center text-sm text-text-secondary">Loading…</div>
+        <div className="p-8 text-center text-sm text-text-secondary">Loading…</div>
       ) : rhythms.length === 0 ? (
         <div className="bg-white border border-border-light rounded-[12px] p-12 text-center">
           <div className="w-14 h-14 rounded-[16px] bg-surface-control flex items-center justify-center text-text-secondary mx-auto mb-3"><Repeat size={26} /></div>
-          <h3 className="text-[18px] font-semibold text-text-primary">No rhythms yet</h3>
+          <h3 className="text-[18px] font-medium text-text-primary">No rhythms yet</h3>
           <p className="text-sm text-text-secondary mt-1">Set up a recurring meeting to build a cadence.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {rhythms.map((r) => (
-            <div key={r.id} className="bg-white border border-border-light rounded-[12px] p-5 flex flex-col">
+            <div key={r.id} className="bg-white border border-border-light rounded-[12px] p-4 flex flex-col">
               <div className="flex items-start justify-between gap-2">
-                <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-[16px] font-semibold text-text-primary hover:text-primary-text hover:underline">{r.title}</Link>
+                <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-[16px] font-medium text-text-primary hover:text-primary-text hover:underline">{r.title}</Link>
                 <span className="inline-flex items-center font-medium text-[12px] rounded-full px-2.5 py-0.5 border shrink-0"
                   style={r.is_active ? { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'var(--success-border)' } : { backgroundColor: 'var(--surface-control)', color: 'var(--text-secondary)', borderColor: 'var(--border-light)' }}>
                   {r.is_active ? 'Active' : 'Paused'}
@@ -147,7 +147,7 @@ export default function RhythmsPage() {
 
       <Modal isOpen={!!stopping} onClose={() => setStopping(null)} title="Stop rhythm" size="sm">
         <p className="text-sm text-text-primary">Stop “{stopping?.title}”? No new occurrences will be created. Past meetings are kept.</p>
-        <div className="flex flex-col gap-2 mt-5">
+        <div className="flex flex-col gap-2 mt-4">
           <Button variant="primary" onClick={() => stop('stop')}>Stop — keep upcoming meetings</Button>
           <Button variant="danger" onClick={() => stop('delete-future')}>Stop &amp; remove upcoming (still-scheduled) meetings</Button>
           <Button variant="secondary" onClick={() => setStopping(null)}>Cancel</Button>

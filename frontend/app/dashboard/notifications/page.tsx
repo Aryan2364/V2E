@@ -97,7 +97,7 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Notifications</h1>
+          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Notifications</h1>
           <p className="mt-1 text-[15px] text-text-secondary">
             {unread > 0 ? `${unread} unread notification${unread !== 1 ? 's' : ''}` : 'You’re all caught up.'}
           </p>
@@ -105,7 +105,7 @@ export default function NotificationsPage() {
         {unread > 0 && (
           <button
             onClick={handleMarkAll}
-            className="flex items-center gap-2 px-4 py-[9px] text-sm font-semibold text-primary-text bg-primary-subtle border border-primary-border rounded-[8px] hover:bg-primary-subtle transition-colors shrink-0"
+            className="flex items-center gap-2 px-4 py-[9px] text-sm font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-lg hover:bg-primary-subtle transition-colors shrink-0"
           >
             <CheckCheck size={15} /> Mark all read
           </button>
@@ -119,7 +119,7 @@ export default function NotificationsPage() {
             key={m}
             onClick={() => setModuleFilter(m)}
             className={[
-              'px-3 py-1.5 rounded-[999px] text-xs font-semibold capitalize transition-colors',
+              'px-3 py-1.5 rounded-[999px] text-xs font-medium capitalize transition-colors',
               moduleFilter === m
                 ? 'bg-primary text-white'
                 : 'bg-white border border-border-light text-text-secondary hover:border-border',
@@ -132,31 +132,31 @@ export default function NotificationsPage() {
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
+        <div className="bg-surface border border-border-light rounded-xl shadow-card flex flex-col items-center justify-center py-12">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
             <Bell size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-text-primary">No notifications</p>
+          <p className="font-medium text-text-primary">No notifications</p>
           <p className="text-sm text-text-secondary mt-1">Activity on your tasks and projects will appear here.</p>
         </div>
       ) : (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] divide-y divide-surface-control overflow-hidden">
+        <div className="bg-surface border border-border-light rounded-xl shadow-card divide-y divide-surface-control overflow-hidden">
           {filtered.map((n) => (
             <button
               key={n.id}
               onClick={() => handleClick(n)}
               className={[
-                'w-full text-left px-5 py-4 transition-colors hover:bg-surface-sunken',
+                'w-full text-left px-4 py-4 transition-colors hover:bg-surface-sunken',
                 n.is_read ? '' : 'bg-primary-subtle/40',
               ].join(' ')}
             >
               <div className="flex items-start gap-3">
                 {!n.is_read && <span className="mt-2 w-2 h-2 rounded-full bg-primary shrink-0" />}
-                <div className={`flex-1 min-w-0 ${n.is_read ? 'pl-5' : ''}`}>
+                <div className={`flex-1 min-w-0 ${n.is_read ? 'pl-4' : ''}`}>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-text-primary">{n.title}</p>
+                    <p className="text-sm font-medium text-text-primary">{n.title}</p>
                     <span
-                      className={`inline-flex rounded-[999px] border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${MODULE_COLORS[n.module] ?? MODULE_COLORS.system}`}
+                      className={`inline-flex rounded-[999px] border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${MODULE_COLORS[n.module] ?? MODULE_COLORS.system}`}
                     >
                       {n.module}
                     </span>

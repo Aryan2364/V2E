@@ -202,7 +202,7 @@ export default function EditMeetingModal({
 
         <div className="flex items-center justify-end gap-2 pt-1 border-t border-border-light mt-1">
           <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken">Cancel</button>
-          <button type="submit" disabled={saving} className="px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50">
+          <button type="submit" disabled={saving} className="px-4 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50">
             {saving ? 'Saving…' : 'Save changes'}
           </button>
         </div>

@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X } from 'lucide-react'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import AssigneeSelector from '@/components/tasks/AssigneeSelector'
@@ -10,16 +9,24 @@ import type { ScheduleEntryDraft } from '@/components/tasks/ScheduleEntryRow'
 import type { SelectedAssignee } from '@/lib/types/tasks'
 import { workLogApi } from '@/lib/api/workLogs'
 import type { CreateDemandPayload } from '@/lib/types/workLogs'
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 
 interface Props {
   orgId: string
   onClose: () => void
   onCreated: () => void
 }
-
-const inputCls =
-  'w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary bg-white placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden'
-const labelCls = 'text-sm font-medium text-text-secondary'
 
 function defaultSchedule(): ScheduleEntryDraft {
   return {
@@ -101,105 +108,92 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/30 p-0 md:p-4">
-      <div className="bg-white w-full md:max-w-2xl md:rounded-[16px] rounded-t-[16px] max-h-[92vh] overflow-y-auto shadow-[0_8px_32px_rgba(0,0,0,0.18)]">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light sticky top-0 bg-white">
-          <h2 className="text-[18px] font-semibold text-text-primary">Demand a log</h2>
-          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-[8px] text-text-muted hover:bg-surface-control">
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="px-6 py-5 space-y-5">
-          <div>
-            <label className={labelCls}>Title</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Update on outstanding amount" className={`${inputCls} mt-1.5`} />
-          </div>
-
-          <div>
-            <label className={labelCls}>Description (optional)</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className={`${inputCls} mt-1.5`} />
-          </div>
-
-          <div>
-            <label className={labelCls}>Who must write this log</label>
-            <div className="mt-1.5">
-              <AssigneeSelector orgId={orgId} value={assignees} onChange={handleAssigneeChange} />
-            </div>
-            <p className="text-xs text-text-muted mt-1">Must be someone below you in the hierarchy.</p>
-          </div>
-
-          {/* Kind */}
-          <div>
-            <label className={labelCls}>Frequency</label>
-            <div className="flex items-center border border-border-light rounded-[8px] p-0.5 gap-0.5 mt-1.5 w-fit">
-              {(['one_time', 'recurring'] as const).map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setKind(k)}
-                  className={`px-4 py-1.5 rounded-[6px] text-sm font-semibold transition-colors ${
-                    kind === k ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-control'
-                  }`}
-                >
-                  {k === 'one_time' ? 'One-time' : 'Recurring'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {kind === 'one_time' ? (
+    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
+      <DialogContent size="lg">
+        <DialogHeader>
+          <DialogTitle>Demand a log</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <div className="space-y-4">
             <div>
-              <label className={labelCls}>Deadline</label>
-              <div className="mt-1.5 flex gap-2">
-                <div className="flex-1">
-                  <DatePicker
-                    value={deadlineDate}
-                    onChange={(iso) => {
-                      if (!iso) { setDeadlineDate(''); setDeadlineTime(''); return }
-                      setDeadlineDate(iso)
-                      if (!deadlineTime) setDeadlineTime('23:59')
-                    }}
-                    placeholder="Select date"
-                  />
-                </div>
-                {/* Time — always present, disabled until a date is picked */}
-                <div className="flex-1">
-                  <TimeField
-                    value={deadlineTime}
-                    onChange={setDeadlineTime}
-                    disabled={!deadlineDate}
-                    label="Deadline time"
-                  />
-                </div>
+              <Label className="mb-1.5">Title</Label>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Update on outstanding amount" />
+            </div>
+
+            <div>
+              <Label className="mb-1.5">Description (optional)</Label>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+            </div>
+
+            <div>
+              <Label className="mb-1.5">Who must write this log</Label>
+              <AssigneeSelector orgId={orgId} value={assignees} onChange={handleAssigneeChange} />
+              <p className="text-xs text-text-muted mt-1">Must be someone below you in the hierarchy.</p>
+            </div>
+
+            {/* Kind */}
+            <div>
+              <Label className="mb-1.5">Frequency</Label>
+              <div className="flex items-center border border-border-light rounded-lg p-0.5 gap-0.5 w-fit">
+                {(['one_time', 'recurring'] as const).map((k) => (
+                  <Button
+                    key={k}
+                    type="button"
+                    size="sm"
+                    variant={kind === k ? 'primary' : 'ghost'}
+                    onClick={() => setKind(k)}
+                  >
+                    {k === 'one_time' ? 'One-time' : 'Recurring'}
+                  </Button>
+                ))}
               </div>
             </div>
-          ) : (
-            <div>
-              <label className={labelCls}>Recurrence</label>
-              <div className="mt-1.5">
+
+            {kind === 'one_time' ? (
+              <div>
+                <Label className="mb-1.5">Deadline</Label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <DatePicker
+                      value={deadlineDate}
+                      onChange={(iso) => {
+                        if (!iso) { setDeadlineDate(''); setDeadlineTime(''); return }
+                        setDeadlineDate(iso)
+                        if (!deadlineTime) setDeadlineTime('23:59')
+                      }}
+                      placeholder="Select date"
+                    />
+                  </div>
+                  {/* Time — always present, disabled until a date is picked */}
+                  <div className="flex-1">
+                    <TimeField
+                      value={deadlineTime}
+                      onChange={setDeadlineTime}
+                      disabled={!deadlineDate}
+                      label="Deadline time"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <Label className="mb-1.5">Recurrence</Label>
                 <ScheduleEntryList entries={schedules} onChange={setSchedules} />
               </div>
-            </div>
-          )}
+            )}
 
-          {error && <p className="text-sm text-danger">{error}</p>}
-        </div>
-
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light sticky bottom-0 bg-white">
-          <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-text-secondary hover:bg-surface-control">
+            {error && <p className="text-sm text-danger">{error}</p>}
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="secondary" onClick={onClose}>
             Cancel
-          </button>
-          <button
-            type="button"
-            onClick={submit}
-            disabled={saving}
-            className="px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
-          >
-            {saving ? 'Creating…' : 'Demand log'}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+          <Button onClick={submit} loading={saving} loadingLabel="Creating">
+            Demand log
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

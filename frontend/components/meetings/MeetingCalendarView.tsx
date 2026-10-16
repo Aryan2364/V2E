@@ -63,7 +63,7 @@ export default function MeetingCalendarView({
           their columns stay aligned. */}
       <div className="grid grid-cols-7 gap-px bg-surface-control-pressed border-b border-primary-hover overflow-hidden" style={{ scrollbarGutter: 'stable' }}>
         {WEEKDAYS.map((w) => (
-          <div key={w} className="bg-primary text-center text-xs font-semibold uppercase tracking-wide text-white py-2.5">{w}</div>
+          <div key={w} className="bg-primary text-center text-xs font-medium uppercase tracking-wide text-white py-2.5">{w}</div>
         ))}
       </div>
       <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 320px)', minHeight: 420, scrollbarGutter: 'stable' }}>
@@ -103,7 +103,7 @@ export default function MeetingCalendarView({
                             }
                           />
                           <TooltipContent>
-                            <div className="font-semibold">{m.title}</div>
+                            <div className="font-medium">{m.title}</div>
                             <div className="text-surface/70">
                               {fmtTime(m.scheduled_start)}
                               {m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}
@@ -128,7 +128,7 @@ export default function MeetingCalendarView({
                           }
                         />
                         <TooltipContent>
-                          <div className="font-semibold">{b.title}</div>
+                          <div className="font-medium">{b.title}</div>
                           <div className="text-surface/70">
                             {b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`} · Time-block
                           </div>

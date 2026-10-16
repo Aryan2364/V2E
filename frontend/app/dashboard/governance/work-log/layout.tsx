@@ -30,7 +30,7 @@ export default function WorkLogLayout({ children }: { children: React.ReactNode 
 
   return (
     <div>
-      <h1 className="text-[28px] font-bold text-text-primary mb-4">Work Log</h1>
+      <h1 className="text-[28px] font-medium text-text-primary mb-4">Work Log</h1>
       <div className="flex items-center gap-0 border-b border-border-light overflow-x-auto mb-6">
         {TABS.map((t) => {
           if (t.adminOnly && !isAdminOrHR) return null

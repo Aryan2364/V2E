@@ -163,7 +163,7 @@ export default function CreateTimeBlockModal({
             <span className="text-sm text-danger">Delete this block? It is also removed from your Google Calendar.</span>
             <div className="flex items-center gap-2 shrink-0">
               <button type="button" onClick={() => setConfirmDelete(false)} className="px-3 py-1.5 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] bg-white hover:bg-surface-sunken">Cancel</button>
-              <button type="button" onClick={handleDelete} disabled={busy} className="px-3 py-1.5 text-sm font-semibold text-white bg-danger hover:bg-danger-hover rounded-[8px] disabled:opacity-50">Delete</button>
+              <button type="button" onClick={handleDelete} disabled={busy} className="px-3 py-1.5 text-sm font-medium text-white bg-danger hover:bg-danger-hover rounded-[8px] disabled:opacity-50">Delete</button>
             </div>
           </div>
         )}
@@ -178,7 +178,7 @@ export default function CreateTimeBlockModal({
           </div>
           <div className="flex items-center gap-2">
             <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken">Cancel</button>
-            <button type="submit" disabled={busy} className="px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50">
+            <button type="submit" disabled={busy} className="px-4 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50">
               {busy ? 'Saving…' : isEditing ? 'Save changes' : 'Create time-block'}
             </button>
           </div>

@@ -24,8 +24,8 @@ import BusyTimesPanel from '@/components/meetings/BusyTimesPanel'
 import EditMeetingModal from '@/components/meetings/EditMeetingModal'
 import CreateRhythmModal from '@/components/meetings/CreateRhythmModal'
 
-const inputClass = 'border border-border rounded-[8px] px-3 py-2.5 text-[15px] text-text-primary focus:outline-hidden focus:border-primary'
-const cardCls = 'bg-white border border-border-light rounded-[12px]'
+const inputClass = 'border border-border rounded-lg px-3 py-2.5 text-[15px] text-text-primary focus:outline-hidden focus:border-primary'
+const cardCls = 'bg-surface border border-border-light rounded-xl'
 const SIDE_TINTS: Record<string, string> = {
   blue: 'bg-primary-subtle text-primary-text',
   indigo: 'bg-primary-subtle text-text-secondary',
@@ -35,8 +35,8 @@ const SIDE_TINTS: Record<string, string> = {
 function SideHeader({ icon, label, tint }: { icon: ReactNode; label: string; tint: keyof typeof SIDE_TINTS }) {
   return (
     <div className="flex items-center gap-2">
-      <span className={`w-7 h-7 rounded-[8px] flex items-center justify-center shrink-0 ${SIDE_TINTS[tint]}`}>{icon}</span>
-      <h3 className="text-[15px] font-semibold text-text-primary">{label}</h3>
+      <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${SIDE_TINTS[tint]}`}>{icon}</span>
+      <h3 className="text-[15px] font-medium text-text-primary">{label}</h3>
     </div>
   )
 }
@@ -76,10 +76,10 @@ export default function MeetingDetailPage(props: { params: Promise<{ meetingId: 
 
   useEffect(() => { load() }, [load])
 
-  if (loading) return <div className="p-10 text-center text-sm text-text-secondary">Loading…</div>
+  if (loading) return <div className="p-8 text-center text-sm text-text-secondary">Loading…</div>
   if (!meeting) return (
     <div className="p-12 text-center">
-      <h2 className="text-[18px] font-semibold text-text-primary">Meeting not found</h2>
+      <h2 className="text-[18px] font-medium text-text-primary">Meeting not found</h2>
       <Link href="/dashboard/governance/meetings" className="text-sm text-primary-text hover:underline mt-2 inline-block">Back to meetings</Link>
     </div>
   )
@@ -121,10 +121,10 @@ export default function MeetingDetailPage(props: { params: Promise<{ meetingId: 
     }
   }
 
-  const ghostBtn = 'inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken'
+  const ghostBtn = 'inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary border border-border-light rounded-lg hover:bg-surface-sunken'
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       {/* Back mirrors forward: return to wherever the user came from. */}
       <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary w-fit"><ArrowLeft size={15} /> Back</button>
 
@@ -137,7 +137,7 @@ export default function MeetingDetailPage(props: { params: Promise<{ meetingId: 
               <span className="inline-flex items-center gap-1 text-xs text-text-muted">{m.type === 'offline' ? <MapPin size={12} /> : <Video size={12} />} {TYPE_LABEL[m.type]}</span>
               {m.link_type && <span className="text-xs text-primary-text bg-primary-subtle rounded-full px-2 py-0.5">{LINK_TYPE_LABEL[m.link_type]}</span>}
             </div>
-            <h1 className="text-[24px] font-bold text-text-primary leading-tight">{m.title}</h1>
+            <h1 className="text-[24px] font-medium text-text-primary leading-tight">{m.title}</h1>
             <div className="flex items-center gap-3 text-sm text-text-secondary mt-2 flex-wrap">
               <span className="inline-flex items-center gap-1"><CalendarClock size={14} /> {fmtDateTime(m.scheduled_start)}{m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}</span>
               <span className="inline-flex items-center gap-1"><Users size={14} /> {m.organizer?.name}</span>
@@ -146,17 +146,17 @@ export default function MeetingDetailPage(props: { params: Promise<{ meetingId: 
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-            {canManage && (m.status === 'scheduled' || m.status === 'in_progress') && <button onClick={() => { if (m.rhythm_id) setChoiceOpen(true); else setEditOpen(true) }} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken"><Pencil size={14} /> Edit</button>}
-            {canManage && m.status === 'scheduled' && <button onClick={() => act(() => meetingsApi.start(orgId, m.id), 'Meeting started')} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-success rounded-[8px]"><Play size={14} /> Start</button>}
+            {canManage && (m.status === 'scheduled' || m.status === 'in_progress') && <button onClick={() => { if (m.rhythm_id) setChoiceOpen(true); else setEditOpen(true) }} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary border border-border-light rounded-lg hover:bg-surface-sunken"><Pencil size={14} /> Edit</button>}
+            {canManage && m.status === 'scheduled' && <button onClick={() => act(() => meetingsApi.start(orgId, m.id), 'Meeting started')} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-success rounded-lg"><Play size={14} /> Start</button>}
             {canManage && m.status === 'in_progress' && <button onClick={() => act(() => meetingsApi.end(orgId, m.id), 'Marked ended')} className={ghostBtn}><Square size={14} /> End</button>}
-            {canManage && (m.status === 'in_progress' || m.status === 'scheduled') && <button onClick={() => act(() => meetingsApi.close(orgId, m.id), 'Meeting closed')} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary rounded-[8px]"><Lock size={14} /> Close</button>}
-            {canManage && m.status === 'closed' && <button onClick={() => act(() => meetingsApi.reopen(orgId, m.id), 'Meeting reopened')} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-warning border border-warning-border rounded-[8px]"><Unlock size={14} /> Reopen</button>}
-            {perms.delete && <button onClick={() => setDeleteOpen(true)} aria-label="Delete meeting" className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-danger border border-danger-border rounded-[8px]"><Trash2 size={14} /></button>}
+            {canManage && (m.status === 'in_progress' || m.status === 'scheduled') && <button onClick={() => act(() => meetingsApi.close(orgId, m.id), 'Meeting closed')} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary rounded-lg"><Lock size={14} /> Close</button>}
+            {canManage && m.status === 'closed' && <button onClick={() => act(() => meetingsApi.reopen(orgId, m.id), 'Meeting reopened')} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-warning border border-warning-border rounded-lg"><Unlock size={14} /> Reopen</button>}
+            {perms.delete && <button onClick={() => setDeleteOpen(true)} aria-label="Delete meeting" className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-danger border border-danger-border rounded-lg"><Trash2 size={14} /></button>}
           </div>
         </div>
 
         {(m.conflicts?.length ?? 0) > 0 && (
-          <div className="mt-4 flex items-start gap-2 bg-warning-bg border border-warning-border rounded-[8px] px-3 py-2 text-sm text-warning">
+          <div className="mt-4 flex items-start gap-2 bg-warning-bg border border-warning-border rounded-lg px-3 py-2 text-sm text-warning">
             <AlertTriangle size={15} className="mt-0.5 shrink-0" />
             <span>Scheduling conflict: {m.conflicts!.map((c) => `${nameOf.get(c.user_id) ?? 'Someone'} (${c.title})`).join(', ')}. Not blocked — attendees decide.</span>
           </div>
@@ -171,14 +171,14 @@ export default function MeetingDetailPage(props: { params: Promise<{ meetingId: 
       </div>
 
       {/* Body: the record (main) + logistics (sidebar). One page, no tabs. */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-        <div className="lg:col-span-2 order-2 lg:order-1 flex flex-col gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <div className="lg:col-span-2 order-2 lg:order-1 flex flex-col gap-4">
           <MeetingRecordTab key={m.id} orgId={orgId} meeting={m} canEdit={true} onSaved={load} />
           <ActionItemsTab meeting={m} orgId={orgId} people={people} nameOf={nameOf} onChanged={onChanged} />
           <DecisionsTab meeting={m} orgId={orgId} people={people} nameOf={nameOf} onChanged={onChanged} />
         </div>
 
-        <div className="order-1 lg:order-2 flex flex-col gap-5">
+        <div className="order-1 lg:order-2 flex flex-col gap-4">
           <RsvpCard meeting={m} orgId={orgId} userId={userId} onChanged={onChanged} />
           <WhenCard meeting={m} orgId={orgId} canManage={canManage} />
           <PeopleCard meeting={m} orgId={orgId} canManage={canManage} onChanged={onChanged} nameOf={nameOf} />
@@ -189,7 +189,7 @@ export default function MeetingDetailPage(props: { params: Promise<{ meetingId: 
 
       <Modal isOpen={deleteOpen} onClose={() => setDeleteOpen(false)} title="Delete meeting" size="sm">
         <p className="text-sm text-text-primary">Are you sure? This can&apos;t be undone.</p>
-        <div className="flex justify-end gap-2 mt-5">
+        <div className="flex justify-end gap-2 mt-4">
           <Button variant="secondary" onClick={() => setDeleteOpen(false)}>Cancel</Button>
           <Button variant="danger" onClick={async () => { await meetingsApi.remove(orgId, m.id); addToast('Meeting deleted', 'success'); router.push('/dashboard/governance/meetings') }}>Delete</Button>
         </div>
@@ -203,11 +203,11 @@ export default function MeetingDetailPage(props: { params: Promise<{ meetingId: 
         <p className="text-sm text-text-secondary mb-3">This meeting repeats. What do you want to change?</p>
         <div className="flex flex-col gap-2">
           <button onClick={() => { setChoiceOpen(false); setEditOpen(true) }} className="text-left border border-border-light rounded-[10px] px-4 py-3 hover:border-primary hover:bg-surface-sunken">
-            <div className="text-[15px] font-semibold text-text-primary">This occurrence only</div>
+            <div className="text-[15px] font-medium text-text-primary">This occurrence only</div>
             <div className="text-xs text-text-muted mt-0.5">Change just this one meeting. The rest of the series stays the same.</div>
           </button>
           <button onClick={async () => { setChoiceOpen(false); try { const r = await meetingsApi.getRhythm(orgId, m.rhythm_id!); setSeriesRhythm(r); setSeriesOpen(true) } catch { addToast('Could not load the series', 'error') } }} className="text-left border border-border-light rounded-[10px] px-4 py-3 hover:border-primary hover:bg-surface-sunken">
-            <div className="text-[15px] font-semibold text-text-primary">Whole series</div>
+            <div className="text-[15px] font-medium text-text-primary">Whole series</div>
             <div className="text-xs text-text-muted mt-0.5">Change the recurring pattern or details for all future occurrences.</div>
           </button>
         </div>
@@ -246,24 +246,24 @@ function RsvpCard({ meeting, orgId, userId, onChanged }: { meeting: Meeting; org
 
   if (declined) {
     return (
-      <div className="bg-danger-bg border border-danger-border rounded-[12px] p-4 flex items-center justify-between gap-3">
+      <div className="bg-danger-bg border border-danger-border rounded-xl p-4 flex items-center justify-between gap-3">
         <p className="text-sm text-danger">You can’t make it{me.reject_reason ? `: “${me.reject_reason}”` : ''}.</p>
-        <button onClick={() => submit(() => meetingsApi.undoDecline(orgId, meeting.id), 'You’re back on the meeting')} disabled={busy} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-text bg-white border border-primary-border rounded-[8px] shrink-0"><RotateCcw size={14} /> I can make it</button>
+        <button onClick={() => submit(() => meetingsApi.undoDecline(orgId, meeting.id), 'You’re back on the meeting')} disabled={busy} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-text bg-surface border border-primary-border rounded-lg shrink-0"><RotateCcw size={14} /> I can make it</button>
       </div>
     )
   }
 
   return (
-    <div className="bg-primary-subtle border border-primary-border rounded-[12px] p-4">
+    <div className="bg-primary-subtle border border-primary-border rounded-xl p-4">
       <p className="text-sm font-medium text-text-primary mb-2">You’re on this meeting.</p>
       {!mode ? (
         <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => setMode(true)} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-danger border border-danger-border bg-white rounded-[8px]"><X size={15} /> Can’t make it</button>
+          <button onClick={() => setMode(true)} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-danger border border-danger-border bg-surface rounded-lg"><X size={15} /> Can’t make it</button>
           <span className="text-xs text-text-muted">A reason is required.</span>
         </div>
       ) : (
         <div className="flex gap-2">
-          <input className="flex-1 border border-border rounded-[8px] px-3 py-2 text-sm bg-white" placeholder="Reason (required)" value={text} onChange={(e) => setText(e.target.value)} autoFocus />
+          <input className="flex-1 border border-border rounded-lg px-3 py-2 text-sm bg-surface" placeholder="Reason (required)" value={text} onChange={(e) => setText(e.target.value)} autoFocus />
           <Button variant="danger" disabled={!text.trim() || busy} onClick={() => submit(() => meetingsApi.decline(orgId, meeting.id, text.trim()), 'You declined')}>Submit</Button>
         </div>
       )}
@@ -323,10 +323,10 @@ function PeopleCard({ meeting, orgId, canManage, onChanged, nameOf }: { meeting:
       <SideHeader icon={<Users size={15} />} label={`People (${attendees.length})`} tint="indigo" />
       <div className="flex flex-col gap-2 mt-2.5 max-h-[360px] overflow-y-auto">
         {attendees.map((a) => (
-          <div key={a.id} className="flex items-center justify-between gap-2 border border-border-light rounded-[8px] px-2.5 py-2">
+          <div key={a.id} className="flex items-center justify-between gap-2 border border-border-light rounded-lg px-2.5 py-2">
             <div className="flex items-center gap-2 min-w-0">
               {canMarkAttendance ? (
-                <Tooltip label="Mark attended"><button onClick={() => toggleAttended(a.user_id, !a.attended)} className="text-text-secondary shrink-0" aria-label="Toggle attended">{a.attended ? <CheckCircle2 size={17} className="text-success" /> : <Circle size={17} className="text-[#CBD5E1]" />}</button></Tooltip>
+                <Tooltip label="Mark attended"><button onClick={() => toggleAttended(a.user_id, !a.attended)} className="text-text-secondary shrink-0" aria-label="Toggle attended">{a.attended ? <CheckCircle2 size={17} className="text-success" /> : <Circle size={17} className="text-muted" />}</button></Tooltip>
               ) : a.attended ? <CheckCircle2 size={17} className="text-success shrink-0" /> : null}
               <div className="min-w-0">
                 <span className="text-[14px] text-text-primary">
@@ -395,7 +395,7 @@ function NotesCard({ orgId, meeting }: { orgId: string; meeting: Meeting }) {
       {expanded && (
         <div className="mt-2.5">
           <p className="text-[11px] text-text-muted mb-2">Only you can see these — never part of the official record.</p>
-          <textarea className="w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary focus:outline-hidden focus:border-primary resize-y" rows={6} value={body} onChange={(e) => setBody(e.target.value)} />
+          <textarea className="w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-hidden focus:border-primary resize-y" rows={6} value={body} onChange={(e) => setBody(e.target.value)} />
           <div className="flex justify-end items-center gap-3 mt-2">
             {saved && <span className="inline-flex items-center gap-1 text-xs font-medium text-success"><Check size={14} /> Saved</span>}
             <Button variant="primary" isLoading={saving} disabled={saving} onClick={save}>Save notes</Button>
@@ -422,14 +422,14 @@ function ActionItemsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting
 
   return (
     <div className={`${cardCls} p-6`}>
-      <h3 className="text-[16px] font-semibold text-text-primary mb-3 flex items-center gap-2"><span className="w-7 h-7 rounded-[8px] bg-primary-subtle text-primary-text flex items-center justify-center"><ListChecks size={16} /></span> Action items</h3>
+      <h3 className="text-[16px] font-medium text-text-primary mb-3 flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-primary-subtle text-primary-text flex items-center justify-center"><ListChecks size={16} /></span> Action items</h3>
       <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-0.5">
         {items.length === 0 && <p className="text-sm text-text-muted">No action items yet.</p>}
         {items.map((it) => (
-          <div key={it.id} className="border border-border-light rounded-[8px] px-3 py-2">
+          <div key={it.id} className="border border-border-light rounded-lg px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
-                <button disabled={locked} onClick={() => run(() => meetingsApi.updateActionItem(orgId, meeting.id, it.id, { is_done: !it.is_done }))}>{it.is_done ? <CheckCircle2 size={18} className="text-success" /> : <Circle size={18} className="text-[#CBD5E1]" />}</button>
+                <button disabled={locked} onClick={() => run(() => meetingsApi.updateActionItem(orgId, meeting.id, it.id, { is_done: !it.is_done }))}>{it.is_done ? <CheckCircle2 size={18} className="text-success" /> : <Circle size={18} className="text-muted" />}</button>
                 <div className="min-w-0">
                   <p className={['text-[15px]', it.is_done ? 'text-text-muted line-through' : 'text-text-primary'].join(' ')}>{it.text}</p>
                   <p className="text-xs text-text-muted flex items-center gap-1.5 flex-wrap">
@@ -461,7 +461,7 @@ function ActionItemsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting
           <input className={`${inputClass} flex-1 min-w-[200px]`} placeholder="New action item…" value={text} onChange={(e) => setText(e.target.value)} />
           <StyledSelect wrapperClassName="w-48" value={owner} onChange={setOwner} placeholder="Owner" searchable searchPlaceholder="Search people…" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
           <DatePicker value={due} onChange={setDue} placeholder="Select date" />
-          <button onClick={() => { if (!text.trim()) return; run(() => meetingsApi.addActionItem(orgId, meeting.id, { text: text.trim(), owner_user_id: owner || undefined, due_date: due ? new Date(due).toISOString() : undefined })); setText(''); setOwner(''); setDue('') }} className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold text-white bg-primary rounded-[8px]"><Plus size={15} /> Add</button>
+          <button onClick={() => { if (!text.trim()) return; run(() => meetingsApi.addActionItem(orgId, meeting.id, { text: text.trim(), owner_user_id: owner || undefined, due_date: due ? new Date(due).toISOString() : undefined })); setText(''); setOwner(''); setDue('') }} className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-lg"><Plus size={15} /> Add</button>
         </div>
       )}
     </div>
@@ -477,11 +477,11 @@ function LinkTaskRow({ item, people, onAttachId, onCreate }: { item: { text: str
       <div className="flex flex-wrap items-end gap-2">
         <input className={`${inputClass} flex-1 min-w-[160px]`} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Task title" />
         <StyledSelect wrapperClassName="w-48" value={assignee} onChange={setAssignee} placeholder="Executor" searchable searchPlaceholder="Search people…" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
-        <button onClick={() => assignee && onCreate(title, assignee, item.due_date ?? undefined)} disabled={!assignee || !title.trim()} className="px-3 py-2 text-sm font-medium text-white bg-primary rounded-[8px] disabled:bg-surface-control-pressed disabled:text-text-muted">Create &amp; link</button>
+        <button onClick={() => assignee && onCreate(title, assignee, item.due_date ?? undefined)} disabled={!assignee || !title.trim()} className="px-3 py-2 text-sm font-medium text-white bg-primary rounded-lg disabled:bg-surface-control-pressed disabled:text-text-muted">Create &amp; link</button>
       </div>
       <div className="flex items-center gap-2">
         <input className={`${inputClass} flex-1`} value={taskId} onChange={(e) => setTaskId(e.target.value)} placeholder="…or paste an existing task ID" />
-        <button onClick={() => taskId && onAttachId(taskId)} disabled={!taskId} className="px-3 py-2 text-sm font-medium text-primary-text border border-primary rounded-[8px] disabled:opacity-50">Attach</button>
+        <button onClick={() => taskId && onAttachId(taskId)} disabled={!taskId} className="px-3 py-2 text-sm font-medium text-primary-text border border-primary rounded-lg disabled:opacity-50">Attach</button>
       </div>
     </div>
   )
@@ -499,11 +499,11 @@ function DecisionsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting: 
 
   return (
     <div className={`${cardCls} p-6`}>
-      <h3 className="text-[16px] font-semibold text-text-primary mb-3 flex items-center gap-2"><span className="w-7 h-7 rounded-[8px] bg-primary-subtle text-text-secondary flex items-center justify-center"><Gavel size={16} /></span> Decisions</h3>
+      <h3 className="text-[16px] font-medium text-text-primary mb-3 flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-primary-subtle text-text-secondary flex items-center justify-center"><Gavel size={16} /></span> Decisions</h3>
       <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-0.5">
         {decisions.length === 0 && <p className="text-sm text-text-muted">No decisions logged.</p>}
         {decisions.map((d) => (
-          <div key={d.id} className="border border-border-light rounded-[8px] px-3 py-2 flex items-start justify-between gap-3">
+          <div key={d.id} className="border border-border-light rounded-lg px-3 py-2 flex items-start justify-between gap-3">
             <div>
               <p className="text-[15px] text-text-primary font-medium">{d.decision}</p>
               <p className="text-xs text-text-muted mt-0.5">{d.owner_user_id ? nameOf.get(d.owner_user_id) ?? 'Owner' : '—'} · {fmtDate(d.decided_on)}{d.reason ? ` · ${d.reason}` : ''}</p>
@@ -518,7 +518,7 @@ function DecisionsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting: 
           <div className="flex flex-wrap gap-2">
             <StyledSelect wrapperClassName="w-48" value={owner} onChange={setOwner} placeholder="Owner" searchable searchPlaceholder="Search people…" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
             <input className={`${inputClass} flex-1 min-w-[160px]`} placeholder="One-line reason" value={reason} onChange={(e) => setReason(e.target.value)} />
-            <button onClick={() => { if (!decision.trim()) return; run(() => meetingsApi.addDecision(orgId, meeting.id, { decision: decision.trim(), owner_user_id: owner || undefined, reason: reason || undefined })); setDecision(''); setOwner(''); setReason('') }} className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold text-white bg-primary rounded-[8px]"><Plus size={15} /> Log decision</button>
+            <button onClick={() => { if (!decision.trim()) return; run(() => meetingsApi.addDecision(orgId, meeting.id, { decision: decision.trim(), owner_user_id: owner || undefined, reason: reason || undefined })); setDecision(''); setOwner(''); setReason('') }} className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-lg"><Plus size={15} /> Log decision</button>
           </div>
         </div>
       )}
@@ -555,8 +555,8 @@ function AnalyticsPanel({ orgId, meetingId }: { orgId: string; meetingId: string
   if (loading) return <div className="p-2 text-sm text-text-secondary">Loading…</div>
   if (!data) return <div className="p-2 text-sm text-text-muted">No analytics.</div>
   const stat = (label: string, value: string | number, color = 'var(--text-primary)') => (
-    <div className="bg-white border border-border-light rounded-[12px] p-4">
-      <p className="text-[24px] font-bold leading-none" style={{ color }}>{value}</p>
+    <div className="bg-surface border border-border-light rounded-xl p-4">
+      <p className="text-[24px] font-medium leading-none" style={{ color }}>{value}</p>
       <p className="text-sm text-text-secondary mt-1">{label}</p>
     </div>
   )
@@ -577,7 +577,7 @@ function AnalyticsPanel({ orgId, meetingId }: { orgId: string; meetingId: string
         {stat('Decisions', data.decisions, data.decisions ? 'var(--success)' : 'var(--danger)')}
       </div>
       {!att.attendance_recorded && (
-        <div className="flex items-start gap-2 bg-surface-control border border-border-light rounded-[8px] px-3 py-2 text-sm text-text-secondary">
+        <div className="flex items-start gap-2 bg-surface-control border border-border-light rounded-lg px-3 py-2 text-sm text-text-secondary">
           <AlertTriangle size={15} className="mt-0.5 shrink-0 text-text-muted" />
           <span>Attendance hasn’t been recorded, so no-shows aren’t counted. Mark it in the People panel.</span>
         </div>

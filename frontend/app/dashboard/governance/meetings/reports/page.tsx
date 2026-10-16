@@ -13,7 +13,7 @@ import AccessHiddenState from '@/components/ui/AccessHiddenState'
 function Stat({ label, value, color = 'var(--text-primary)', sub }: { label: string; value: string | number; color?: string; sub?: string }) {
   return (
     <div className="bg-white border border-border-light rounded-[12px] p-4">
-      <p className="text-[26px] font-bold leading-none" style={{ color }}>{value}</p>
+      <p className="text-[26px] font-medium leading-none" style={{ color }}>{value}</p>
       <p className="text-sm text-text-secondary mt-1">{label}</p>
       {sub && <p className="text-xs text-text-muted mt-0.5">{sub}</p>}
     </div>
@@ -47,7 +47,7 @@ export default function MeetingReportsPage() {
 
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <h1 className="text-[26px] font-bold text-text-primary leading-tight flex items-center gap-2"><BarChart3 size={24} className="text-primary-text" /> Meeting governance</h1>
+          <h1 className="text-[26px] font-medium text-text-primary leading-tight flex items-center gap-2"><BarChart3 size={24} className="text-primary-text" /> Meeting governance</h1>
           <p className="text-sm text-text-secondary mt-1">Who’s actually showing up, across the meetings and rhythms you run.</p>
         </div>
         <div className="w-[260px] shrink-0">
@@ -63,11 +63,11 @@ export default function MeetingReportsPage() {
       {!permsLoading && !perms.read ? (
         <AccessHiddenState orgId={orgId} leaf="meetings" moduleLabel="Meetings" />
       ) : loading ? (
-        <div className="p-10 text-center text-sm text-text-secondary">Loading…</div>
+        <div className="p-8 text-center text-sm text-text-secondary">Loading…</div>
       ) : !report ? (
-        <div className="p-10 text-center text-sm text-text-muted">No data.</div>
+        <div className="p-8 text-center text-sm text-text-muted">No data.</div>
       ) : (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Stat label="Meetings" value={report.activity.meetings_count} color="var(--primary-text)" />
             <Stat label="Total hours" value={report.activity.total_hours} />
@@ -76,7 +76,7 @@ export default function MeetingReportsPage() {
           </div>
 
           <div>
-            <h2 className="text-[18px] font-semibold text-text-primary mb-2">Attendance</h2>
+            <h2 className="text-[18px] font-medium text-text-primary mb-2">Attendance</h2>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <Stat label="Attendance rate" value={`${report.attendance.attendance_rate}%`} color="var(--success)" sub="recorded meetings only" />
               <Stat label="No-show rate" value={`${report.attendance.no_show_rate}%`} color={report.attendance.no_show_rate > 0 ? 'var(--danger)' : 'var(--success)'} sub="recorded meetings only" />
@@ -94,31 +94,31 @@ export default function MeetingReportsPage() {
 
           {/* Per-person over the series */}
           <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
-            <div className="px-5 py-3 border-b border-border-light"><h2 className="text-[16px] font-semibold text-text-primary">Per person</h2></div>
+            <div className="px-4 py-3 border-b border-border-light"><h2 className="text-[16px] font-medium text-text-primary">Per person</h2></div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-text-secondary border-b border-border-light">
-                    <th className="px-5 py-2 font-medium">Person</th>
+                    <th className="px-4 py-2 font-medium">Person</th>
                     <th className="px-3 py-2 font-medium text-right">Expected</th>
                     <th className="px-3 py-2 font-medium text-right">Attended</th>
                     <th className="px-3 py-2 font-medium text-right">No-show</th>
                     <th className="px-3 py-2 font-medium text-right">Declined</th>
-                    <th className="px-5 py-2 font-medium text-right">Declined (required)</th>
+                    <th className="px-4 py-2 font-medium text-right">Declined (required)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {report.by_person.length === 0 && (
-                    <tr><td colSpan={6} className="px-5 py-6 text-center text-text-muted">No attendees yet.</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-6 text-center text-text-muted">No attendees yet.</td></tr>
                   )}
                   {report.by_person.map((p) => (
                     <tr key={p.user_id} className="border-b border-border-light">
-                      <td className="px-5 py-2 text-text-primary">{p.name}</td>
+                      <td className="px-4 py-2 text-text-primary">{p.name}</td>
                       <td className="px-3 py-2 text-right text-text-secondary">{p.expected}</td>
                       <td className="px-3 py-2 text-right text-success">{p.attended}</td>
                       <td className="px-3 py-2 text-right" style={{ color: p.no_show ? 'var(--danger)' : 'var(--text-secondary)' }}>{p.no_show}</td>
                       <td className="px-3 py-2 text-right text-warning">{p.declined}</td>
-                      <td className="px-5 py-2 text-right" style={{ color: p.declined_required ? 'var(--danger)' : 'var(--text-secondary)' }}>{p.declined_required}</td>
+                      <td className="px-4 py-2 text-right" style={{ color: p.declined_required ? 'var(--danger)' : 'var(--text-secondary)' }}>{p.declined_required}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -128,7 +128,7 @@ export default function MeetingReportsPage() {
 
           {/* Output */}
           <div>
-            <h2 className="text-[18px] font-semibold text-text-primary mb-2">Output</h2>
+            <h2 className="text-[18px] font-medium text-text-primary mb-2">Output</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <Stat label="Decisions" value={report.output.decisions_total} />
               <Stat label="Per meeting" value={report.output.decisions_per_meeting} />

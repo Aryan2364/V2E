@@ -31,7 +31,7 @@ function ParticipantAvatars({ people, max = 6 }: { people: Person[]; max?: numbe
         <div key={p.id} className="relative group/av">
           <div
             className={[
-              'w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold border-2 border-white',
+              'w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-medium border-2 border-white',
               p.declined ? 'bg-surface-control text-text-muted ring-1 ring-border-light' : `${avatarColor(p.name)} text-white`,
               p.isHost ? 'ring-2 ring-warning-border' : '',
             ].join(' ')}
@@ -40,25 +40,25 @@ function ParticipantAvatars({ people, max = 6 }: { people: Person[]; max?: numbe
           </div>
           {/* hover tooltip: full name + role in this meeting */}
           <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/av:block z-80">
-            <div className="rounded-[8px] bg-[#0F172A] px-2.5 py-1.5 shadow-lg w-max max-w-[220px]">
+            <div className="rounded-lg bg-text-primary px-2.5 py-1.5 shadow-lg w-max max-w-[220px]">
               <div className="flex items-center gap-1.5">
-                <p className="text-xs font-semibold text-white whitespace-nowrap">{p.name}</p>
+                <p className="text-xs font-medium text-white whitespace-nowrap">{p.name}</p>
                 <span
                   className={[
-                    'inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide',
-                    p.isHost ? 'bg-text-secondary text-white' : p.declined ? 'bg-[#334155] text-[#CBD5E1]' : 'bg-primary text-white',
+                    'inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide',
+                    p.isHost ? 'bg-text-secondary text-white' : p.declined ? 'bg-text-secondary text-muted' : 'bg-primary text-white',
                   ].join(' ')}
                 >
                   {p.isHost ? 'Host' : p.declined ? "Won't make it" : 'Attending'}
                 </span>
               </div>
             </div>
-            <div className="mx-auto w-2 h-2 -mt-1 rotate-45 bg-[#0F172A]" />
+            <div className="mx-auto w-2 h-2 -mt-1 rotate-45 bg-text-primary" />
           </div>
         </div>
       ))}
       {extra > 0 && (
-        <div className="w-6 h-6 rounded-full bg-surface-control-pressed flex items-center justify-center text-[9px] font-bold text-text-secondary border-2 border-white">+{extra}</div>
+        <div className="w-6 h-6 rounded-full bg-surface-control-pressed flex items-center justify-center text-[9px] font-medium text-text-secondary border-2 border-white">+{extra}</div>
       )}
     </div>
   )
@@ -124,12 +124,12 @@ export default function MonthDayPanel({
     <div className="fixed inset-0 z-70 pointer-events-none">
       {/* right drawer */}
       <div
-        className={['pointer-events-auto absolute top-0 right-0 h-full w-[380px] max-w-[92vw] bg-white shadow-2xl border-l border-border-light flex flex-col transition-transform duration-200 ease-in-out', visible ? 'translate-x-0' : 'translate-x-full'].join(' ')}
+        className={['pointer-events-auto absolute top-0 right-0 h-full w-[380px] max-w-[92vw] bg-surface shadow-2xl border-l border-border-light flex flex-col transition-transform duration-200 ease-in-out', visible ? 'translate-x-0' : 'translate-x-full'].join(' ')}
       >
         {/* header */}
         <div className="flex items-start justify-between gap-3 px-4 py-3.5 border-b border-border-light">
           <div>
-            <h3 className="text-[17px] font-semibold text-text-primary leading-tight">{dateLabel}</h3>
+            <h3 className="text-[17px] font-medium text-text-primary leading-tight">{dateLabel}</h3>
             <p className="text-sm text-text-muted mt-0.5">{meetings.length} meeting{meetings.length === 1 ? '' : 's'}</p>
           </div>
           <button onClick={close} className="p-1 -mr-1 text-text-muted hover:text-text-secondary"><X size={18} /></button>
@@ -138,13 +138,13 @@ export default function MonthDayPanel({
         {/* list */}
         <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
           {sorted.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center py-16 px-4">
+            <div className="flex flex-col items-center justify-center text-center py-12 px-4">
               <div className="w-12 h-12 rounded-[14px] bg-primary-subtle flex items-center justify-center text-primary-text mb-3"><CalendarDays size={22} /></div>
               <p className="text-sm font-medium text-text-primary">No meetings this day</p>
               {onCreate && (
                 <button
                   onClick={() => { const d = new Date(day); d.setHours(10, 0, 0, 0); onCreate(d.toISOString()) }}
-                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px]"
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg"
                 >
                   <Plus size={14} /> Schedule a meeting
                 </button>
@@ -160,12 +160,12 @@ export default function MonthDayPanel({
                 <button
                   key={m.id}
                   onClick={() => onSelect(m.id)}
-                  className="w-full text-left rounded-[10px] border border-border-light hover:border-primary hover:shadow-xs transition-all p-3 bg-white"
+                  className="w-full text-left rounded-[10px] border border-border-light hover:border-primary hover:shadow-xs transition-all p-3 bg-surface"
                 >
                   <div className="flex items-start gap-2">
                     <span className="mt-1 w-2.5 h-2.5 rounded-full shrink-0" style={{ background: meta.text }} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-[15px] font-semibold text-text-primary leading-snug">{m.title}</p>
+                      <p className="text-[15px] font-medium text-text-primary leading-snug">{m.title}</p>
                       <p className="text-sm text-text-secondary mt-0.5 flex items-center gap-1.5">
                         {online ? <Video size={13} className="text-text-muted" /> : <MapPin size={13} className="text-text-muted" />}
                         {m.scheduled_start ? `${fmtTime(m.scheduled_start)}${m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}` : 'No time set'}
