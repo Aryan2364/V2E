@@ -18,6 +18,7 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
 import Button from '@/components/ui/button'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import StyledSelect from '@/components/ui/StyledSelect'
 import Tooltip from '@/components/ui/tooltip'
 import { clearPermissionsCache } from '@/lib/auth/use-permissions'
 import {
@@ -151,23 +152,17 @@ function ScopeSelect({
   disabled?: boolean
 }) {
   return (
-    <select
+    <StyledSelect
       value={value}
       disabled={disabled}
-      onChange={(e) => onChange(e.target.value as DataScope | 'inherit')}
-      className={[
-        'text-xs border rounded-md px-2 py-1 bg-surface focus:outline-hidden focus:border-primary',
-        'border-border text-text-primary disabled:bg-surface-sunken disabled:text-text-muted',
-        value === 'inherit' ? 'text-text-muted' : 'font-medium',
-      ].join(' ')}
-    >
-      {inheritLabel !== undefined && <option value="inherit">{inheritLabel}</option>}
-      {DATA_SCOPES.map((s) => (
-        <option key={s} value={s}>
-          {DATA_SCOPE_LABEL[s]}
-        </option>
-      ))}
-    </select>
+      onChange={(v) => onChange(v as DataScope | 'inherit')}
+      size="sm"
+      triggerClassName="text-xs"
+      options={[
+        ...(inheritLabel !== undefined ? [{ value: 'inherit', label: inheritLabel }] : []),
+        ...DATA_SCOPES.map((s) => ({ value: s, label: DATA_SCOPE_LABEL[s] })),
+      ]}
+    />
   )
 }
 
@@ -656,23 +651,17 @@ export default function AccessControlPage() {
     disabled?: boolean
   }) {
     return (
-      <select
+      <StyledSelect
         value={value}
         disabled={disabled}
-        onChange={(e) => onChange(e.target.value as DataScope | 'inherit')}
-        className={[
-          'text-xs border rounded-md px-2 py-1 bg-surface focus:outline-hidden focus:border-primary',
-          'border-border text-text-primary disabled:bg-surface-sunken disabled:text-text-muted',
-          value === 'inherit' ? 'text-text-muted' : 'font-medium',
-        ].join(' ')}
-      >
-        {inheritLabel !== undefined && <option value="inherit">{inheritLabel}</option>}
-        {DATA_SCOPES.map((s) => (
-          <option key={s} value={s}>
-            {DATA_SCOPE_LABEL[s]}
-          </option>
-        ))}
-      </select>
+        onChange={(v) => onChange(v as DataScope | 'inherit')}
+        size="sm"
+        triggerClassName="text-xs"
+        options={[
+          ...(inheritLabel !== undefined ? [{ value: 'inherit', label: inheritLabel }] : []),
+          ...DATA_SCOPES.map((s) => ({ value: s, label: DATA_SCOPE_LABEL[s] })),
+        ]}
+      />
     )
   }
 

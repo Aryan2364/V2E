@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronRight, ShieldCheck, Loader2 } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
+import StyledSelect from '@/components/ui/StyledSelect'
 import { clearPermissionsCache } from '@/lib/auth/use-permissions'
 import {
   getPermissionRegistry,
@@ -237,19 +238,14 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
                                         }
                                       />
                                       {showScope && ov === 'grant' && (
-                                        <select
-                                          aria-label={`${f.label} visibility scope`}
+                                        <StyledSelect
+                                          size="sm"
+                                          triggerClassName="text-xs"
                                           disabled={busyKey === key}
                                           value={ul.override_scopes?.read ?? defaultReadScope(ul)}
-                                          onChange={(e) => changeOverride(f.key, 'read', 'grant', e.target.value as DataScope)}
-                                          className="text-xs border border-border rounded-md px-2 py-1 bg-surface text-text-primary focus:outline-hidden focus:border-primary disabled:opacity-50"
-                                        >
-                                          {DATA_SCOPES.map((s) => (
-                                            <option key={s} value={s}>
-                                              {DATA_SCOPE_LABEL[s]}
-                                            </option>
-                                          ))}
-                                        </select>
+                                          onChange={(v) => changeOverride(f.key, 'read', 'grant', v as DataScope)}
+                                          options={DATA_SCOPES.map((s) => ({ value: s, label: DATA_SCOPE_LABEL[s] }))}
+                                        />
                                       )}
                                       <span className="text-[11px] text-text-muted">
                                         inherited: {ul.inherited[a] ? 'Allowed' : 'Denied'}

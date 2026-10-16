@@ -464,26 +464,24 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
             {/* Department */}
             <div>
               <label className={labelClass}>Department</label>
-              <select
+              <StyledSelect
                 value={form.department_id}
-                onChange={(e) => setForm((f) => ({ ...f, department_id: e.target.value, role_id: '' }))}
-                className={selectClass}
-              >
-                {departments.map((d) => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
-                ))}
-              </select>
+                onChange={(v) => setForm((f) => ({ ...f, department_id: v, role_id: '' }))}
+                options={departments.map((d) => ({ value: d.id, label: d.name }))}
+              />
             </div>
 
             {/* Job Role — scoped to the selected department */}
             <div>
               <label className={labelClass}>Job Role</label>
-              <select value={form.role_id} onChange={(e) => set('role_id', e.target.value)} className={selectClass}>
-                <option value="">— Select —</option>
-                {deptRoles.map((r) => (
-                  <option key={r.id} value={r.id}>{r.title}</option>
-                ))}
-              </select>
+              <StyledSelect
+                value={form.role_id}
+                onChange={(v) => set('role_id', v)}
+                options={[
+                  { value: '', label: '— Select —' },
+                  ...deptRoles.map((r) => ({ value: r.id, label: r.title })),
+                ]}
+              />
             </div>
 
             {/* System Role — access-rights bundle (required). StyledSelect (not a native
@@ -504,25 +502,29 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
             {/* Employment Type */}
             <div>
               <label className={labelClass}>Employment Type</label>
-              <select value={form.employment_type} onChange={(e) => set('employment_type', e.target.value)} className={selectClass}>
-                <option value="full_time">Full Time</option>
-                <option value="part_time">Part Time</option>
-                <option value="contract">Contract</option>
-              </select>
+              <StyledSelect
+                value={form.employment_type}
+                onChange={(v) => set('employment_type', v)}
+                options={[
+                  { value: 'full_time', label: 'Full Time' },
+                  { value: 'part_time', label: 'Part Time' },
+                  { value: 'contract', label: 'Contract' },
+                ]}
+              />
             </div>
 
             {/* Status */}
             <div>
               <label className={labelClass}>Status</label>
-              <select
+              <StyledSelect
                 value={form.status}
-                onChange={(e) => set('status', e.target.value)}
-                className={selectClass}
+                onChange={(v) => set('status', v)}
                 disabled={isPrimaryAdmin || isSelf}
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
+                options={[
+                  { value: 'active', label: 'Active' },
+                  { value: 'inactive', label: 'Inactive' },
+                ]}
+              />
               {(isPrimaryAdmin || isSelf) && (
                 <p className="text-[11px] text-text-muted mt-1">
                   {isPrimaryAdmin ? 'Primary administrator cannot be deactivated.' : 'You cannot deactivate your own account.'}
@@ -576,14 +578,14 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
           {/* Reporting To */}
           <div>
             <label className={labelClass}>Reports To</label>
-            <select value={form.reporting_to_user_id} onChange={(e) => set('reporting_to_user_id', e.target.value)} className={selectClass}>
-              <option value="">— None —</option>
-              {otherEmployees.map((e) => (
-                <option key={e.user_id} value={e.user_id}>
-                  {e.user?.name} ({e.role?.title ?? 'N/A'})
-                </option>
-              ))}
-            </select>
+            <StyledSelect
+              value={form.reporting_to_user_id}
+              onChange={(v) => set('reporting_to_user_id', v)}
+              options={[
+                { value: '', label: '— None —' },
+                ...otherEmployees.map((e) => ({ value: e.user_id, label: `${e.user?.name} (${e.role?.title ?? 'N/A'})` })),
+              ]}
+            />
           </div>
         </div>
 

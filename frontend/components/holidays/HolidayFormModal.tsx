@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
+import StyledSelect from '@/components/ui/StyledSelect'
 import CascadeTargetTree from './CascadeTargetTree'
 import type { HolidayType } from '@/lib/types/holidays'
 import type { Department } from '@/lib/types'
@@ -181,15 +182,11 @@ export default function HolidayFormModal({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1">Type</label>
-            <select
+            <StyledSelect
               value={form.type}
-              onChange={(e) => set('type', e.target.value as HolidayType)}
-              className="w-full h-[42px] px-3 rounded-lg border border-border bg-surface-sunken text-[15px] text-text-primary focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
-            >
-              {HOLIDAY_TYPES.map((t) => (
-                <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1).replace('_', ' ')}</option>
-              ))}
-            </select>
+              onChange={(v) => set('type', v as HolidayType)}
+              options={HOLIDAY_TYPES.map((t) => ({ value: t, label: t.charAt(0).toUpperCase() + t.slice(1).replace('_', ' ') }))}
+            />
           </div>
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1">Description</label>
