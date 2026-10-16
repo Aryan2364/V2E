@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth/context'
 import { tasksApi } from '@/lib/api/tasks'
 import { goalsApi } from '@/lib/api/goals'
@@ -25,6 +26,9 @@ import {
 } from 'lucide-react'
 import TagChip from '@/components/ui/TagChip'
 import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // ─── Schedule helpers (mirrors recurring/page.tsx) ────────────────────────────
 
@@ -140,7 +144,7 @@ function PerformanceCard({ stats, onOpenInstance }: { stats: RecurringStats; onO
                     <button
                       type="button"
                       onClick={() => onOpenInstance(r.task_id)}
-                      className="w-7 h-7 rounded-control border transition-transform hover:scale-110"
+                      className="w-7 h-7 rounded-control border outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-transform hover:scale-110"
                       style={{ backgroundColor: meta.bg, borderColor: meta.color }}
                       aria-label={`${formatDate(r.date)} — ${meta.label}`}
                     />
@@ -384,8 +388,9 @@ export default function RecurringDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-4">
+        <Skeleton className="h-24 w-full rounded-card" />
+        <Skeleton className="h-64 w-full rounded-card" />
       </div>
     )
   }
@@ -430,24 +435,16 @@ export default function RecurringDetailPage() {
           <div className="flex items-center gap-1 shrink-0">
             {template.can_edit && (
               <Tooltip label="Edit template">
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  aria-label="Edit template"
-                  className="w-7 h-7 rounded-control flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors shrink-0"
-                >
+                <Button variant="ghost" size="icon-sm" aria-label="Edit template" onClick={() => setShowEditModal(true)}>
                   <Edit2 size={14} />
-                </button>
+                </Button>
               </Tooltip>
             )}
             {template.can_manage && (
               <Tooltip label="Manage who can see this">
-                <button
-                  onClick={() => setShowManageAccess(true)}
-                  aria-label="Manage access"
-                  className="w-7 h-7 rounded-control flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors shrink-0"
-                >
+                <Button variant="ghost" size="icon-sm" aria-label="Manage access" onClick={() => setShowManageAccess(true)}>
                   <Shield size={14} />
-                </button>
+                </Button>
               </Tooltip>
             )}
           </div>
@@ -466,20 +463,12 @@ export default function RecurringDetailPage() {
 
           {/* Tab bar with inline controls */}
           <div className="flex items-center justify-between border-b border-border-light mb-4 flex-wrap gap-2">
-            <div className="flex gap-4">
-              <button
-                onClick={() => setActiveTab('instances')}
-                className={`px-1 py-2 text-body font-medium border-b-2 transition-colors -mb-px ${activeTab === 'instances' ? 'border-primary text-primary-text' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
-              >
-                Task Instances
-              </button>
-              <button
-                onClick={() => setActiveTab('documents')}
-                className={`px-1 py-2 text-body font-medium border-b-2 transition-colors -mb-px ${activeTab === 'documents' ? 'border-primary text-primary-text' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
-              >
-                Instance Documents
-              </button>
-            </div>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+              <TabsList className="border-b-0">
+                <TabsTrigger value="instances">Task Instances</TabsTrigger>
+                <TabsTrigger value="documents">Instance Documents</TabsTrigger>
+              </TabsList>
+            </Tabs>
 
             {/* Right side controls: filter & count */}
             {activeTab === 'instances' && (
@@ -498,12 +487,9 @@ export default function RecurringDetailPage() {
                     ]}
                   />
                   {isFiltered && (
-                    <button
-                      onClick={() => setFilterStatus('all')}
-                      className="px-2.5 py-[5px] text-meta font-medium text-danger border border-danger-border bg-danger-bg rounded-control hover:bg-danger-bg transition-colors"
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => setFilterStatus('all')} className="text-danger hover:text-danger">
                       Clear
-                    </button>
+                    </Button>
                   )}
                 </div>
 
@@ -568,22 +554,16 @@ export default function RecurringDetailPage() {
                       {/* Header: Link to instance page */}
                       <div className="flex items-center justify-between px-4 py-3 bg-surface-sunken border-b border-border-light">
                         <div className="min-w-0">
-                          <button
-                            onClick={() => router.push(`/dashboard/tasks/${group.task_id}`)}
-                            className="text-body font-medium text-primary-text hover:underline text-left wrap-break-word"
+                          <Link
+                            href={`/dashboard/tasks/${group.task_id}`}
+                            className="text-body font-medium text-primary-text hover:underline wrap-break-word outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring rounded-xs"
                           >
                             {group.task_title}
-                          </button>
+                          </Link>
                           <p className="text-meta text-text-muted mt-0.5">
                             {formatDate(group.task_date)}
                           </p>
                         </div>
-                        <button
-                          onClick={() => router.push(`/dashboard/tasks/${group.task_id}`)}
-                          className="text-meta font-medium text-text-secondary bg-surface border border-border rounded-control px-2.5 py-1.5 hover:bg-surface-control transition-colors"
-                        >
-                          View Task
-                        </button>
                       </div>
                       {/* Attachments List */}
                       <div className="p-4 divide-y divide-surface-control">
@@ -600,7 +580,7 @@ export default function RecurringDetailPage() {
                                       tasksApi.downloadAttachment(orgId, group.task_id, att.id)
                                     }
                                   }}
-                                  className="text-body font-medium text-text-primary hover:text-primary-text text-left truncate block max-w-md"
+                                  className="text-body font-medium text-text-primary hover:text-primary-text text-left truncate block max-w-md outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring rounded-xs"
                                 >
                                   {att.file_name}
                                 </button>
@@ -615,18 +595,6 @@ export default function RecurringDetailPage() {
                                 </p>
                               </div>
                             </div>
-                            <button
-                              onClick={() => {
-                                if (att.is_proof) {
-                                  tasksApi.downloadProof(orgId, group.task_id, att.id)
-                                } else {
-                                  tasksApi.downloadAttachment(orgId, group.task_id, att.id)
-                                }
-                              }}
-                              className="text-meta text-primary-text hover:underline font-medium shrink-0"
-                            >
-                              Download
-                            </button>
                           </div>
                         ))}
                       </div>
@@ -661,7 +629,7 @@ export default function RecurringDetailPage() {
                   onClick={handleToggle}
                   disabled={toggling}
                   className={[
-                    'flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium rounded-control disabled:opacity-60 transition-colors',
+                    'flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium rounded-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring disabled:opacity-60 transition-colors',
                     template.is_active
                       ? 'text-warning bg-warning-bg border border-warning-border hover:bg-warning-bg'
                       : 'text-success bg-success-bg border border-success-border hover:bg-success-bg',
@@ -1008,7 +976,7 @@ export default function RecurringDetailPage() {
                       <button
                         type="button"
                         onClick={() => tasksApi.downloadRecurringAttachment(orgId, templateId, a.id)}
-                        className="w-full flex items-center gap-2 text-left px-2 py-1.5 rounded-control hover:bg-surface-sunken transition-colors"
+                        className="w-full flex items-center gap-2 text-left px-2 py-1.5 rounded-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring hover:bg-surface-sunken transition-colors"
                       >
                         <Download size={13} className="text-text-muted shrink-0" />
                         <span className="text-body text-primary-text truncate">{a.file_name}</span>
