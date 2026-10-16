@@ -4,10 +4,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { createAnnouncement, publishAnnouncement } from '@/lib/api/announcements'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import DatePicker from '@/components/ui/DatePicker'
 import StyledSelect from '@/components/ui/StyledSelect'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Banner, BannerDescription } from '@/components/ui/banner'
 
 export default function NewAnnouncementPage() {
   const { user } = useAuth()
@@ -57,25 +60,17 @@ export default function NewAnnouncementPage() {
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-2xl mx-auto">
-        <Link
-          href="/communication/announcements"
-          className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary mb-6 w-fit"
-        >
-          <ArrowLeft size={16} />
-          Back to Announcements
-        </Link>
+        <PageHeader title="New announcement" trail={[{ label: 'Announcements', href: '/communication/announcements' }]} />
         <div className="bg-surface border border-border-light rounded-card p-6">
-          <h1 className="text-xl font-medium text-text-primary mb-6">New Announcement</h1>
-
           {err && (
-            <div className="mb-4 p-3 bg-danger-bg border border-danger-border rounded-control text-sm text-danger">
-              {err}
-            </div>
+            <Banner variant="danger" className="mb-4">
+              <BannerDescription>{err}</BannerDescription>
+            </Banner>
           )}
 
           <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1">Title</label>
+              <Label>Title</Label>
               <input
                 value={form.title}
                 onChange={e => set('title', e.target.value)}
@@ -85,19 +80,18 @@ export default function NewAnnouncementPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1">Body</label>
-              <textarea
+              <Label>Body</Label>
+              <Textarea
                 value={form.body}
                 onChange={e => set('body', e.target.value)}
                 rows={6}
                 placeholder="Write your announcement..."
-                className="w-full border border-border rounded-control px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-y"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">Type</label>
+                <Label>Type</Label>
                 <StyledSelect
                   value={form.type}
                   onChange={(v) => set('type', v)}
@@ -108,7 +102,7 @@ export default function NewAnnouncementPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">Priority</label>
+                <Label>Priority</Label>
                 <StyledSelect
                   value={form.priority}
                   onChange={(v) => set('priority', v)}
@@ -122,7 +116,7 @@ export default function NewAnnouncementPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">Scope</label>
+                <Label>Scope</Label>
                 <StyledSelect
                   value={form.scope}
                   onChange={(v) => set('scope', v)}
@@ -133,7 +127,7 @@ export default function NewAnnouncementPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">Expires At (optional)</label>
+                <Label>Expires at <span className="text-text-secondary font-normal">(optional)</span></Label>
                 <DatePicker
                   value={form.expires_at}
                   onChange={(iso) => set('expires_at', iso)}
@@ -143,20 +137,12 @@ export default function NewAnnouncementPage() {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => handleSubmit(false)}
-                disabled={saving}
-                className="flex-1 bg-surface border-2 border-primary text-primary-text px-4 py-2.5 rounded-control text-sm font-medium hover:bg-primary-subtle disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Save Draft
-              </button>
-              <button
-                onClick={() => handleSubmit(true)}
-                disabled={saving}
-                className="flex-1 bg-primary text-primary-foreground px-4 py-2.5 rounded-control text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {saving ? 'Publishing…' : 'Publish Now'}
-              </button>
+              <Button variant="secondary" className="flex-1" onClick={() => handleSubmit(false)} disabled={saving}>
+                Save draft
+              </Button>
+              <Button className="flex-1" onClick={() => handleSubmit(true)} disabled={saving} loading={saving}>
+                Publish now
+              </Button>
             </div>
           </div>
         </div>

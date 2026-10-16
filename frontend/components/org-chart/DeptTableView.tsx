@@ -64,7 +64,7 @@ export default function DeptTableView({
         return (
           <div className="flex items-center min-w-0" style={{ paddingLeft: depth * 20 }}>
             {depth > 0 && (
-              <CornerDownRight size={13} className="text-[#CBD5E1] mr-1.5 shrink-0" />
+              <CornerDownRight size={13} className="text-text-muted mr-1.5 shrink-0" />
             )}
             <span
               className="w-2.5 h-2.5 rounded-full shrink-0 mr-2.5"
@@ -155,7 +155,7 @@ export default function DeptTableView({
               <Pencil size={14} />
             </button>
           )}
-          <ChevronRight size={16} className="text-[#CBD5E1]" />
+          <ChevronRight size={16} className="text-text-muted" />
         </div>
       ),
     },
@@ -168,7 +168,7 @@ export default function DeptTableView({
       rowKey={({ department }) => department.id}
       onRowClick={({ department }) => onSelect(department)}
       emptyState={
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-12 text-center">
+        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12 text-center">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
             <Network size={24} className="text-text-muted" />
           </div>
