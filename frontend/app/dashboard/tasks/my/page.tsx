@@ -22,6 +22,7 @@ import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // Read the backend's real message (the completion gate, an already-closed task, etc.)
 // instead of a generic failure — same convention as the task detail page.
@@ -201,8 +202,10 @@ export default function MyTasksPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-14 w-full rounded-control" />
+        ))}
       </div>
     )
   }

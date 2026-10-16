@@ -17,6 +17,7 @@ import { exportScorecardsXlsx } from '@/lib/reports/scorecard-export'
 import { Search, Download, ChevronRight, UserSquare2, Lock } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 function initials(name: string) {
   return name.split(' ').filter(Boolean).map((n) => n[0]).join('').slice(0, 2).toUpperCase() || '?'
@@ -118,11 +119,7 @@ export default function ScorecardRosterPage() {
   }
 
   if (redirecting) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
+    return <Skeleton className="h-64 w-full rounded-card" />
   }
 
   return (
@@ -164,7 +161,7 @@ export default function ScorecardRosterPage() {
 
       {/* Roster */}
       {loading ? (
-        <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+        <Skeleton className="h-48 w-full rounded-card" />
       ) : people.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-card py-12 flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
