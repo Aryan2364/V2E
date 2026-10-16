@@ -18,6 +18,9 @@ import {
 import { tasksApi } from '@/lib/api/tasks'
 import { toast } from 'sonner'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Skeleton } from '@/components/ui/skeleton'
 import { computeNodeColors } from '@/lib/org-chart-colors'
 import { flattenTree } from '@/lib/dept-tree'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
@@ -38,20 +41,7 @@ const roleLabel = (r: string) =>
 // ─── Small shared controls ──────────────────────────────────────────────────────
 
 function Toggle({ on, onChange, disabled }: { on: boolean; onChange: () => void; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onChange}
-      disabled={disabled}
-      role="switch"
-      aria-checked={on}
-      className={`relative w-9 h-5 rounded-full transition-colors shrink-0 disabled:opacity-50 ${on ? 'bg-primary' : 'bg-surface-control-pressed'}`}
-    >
-      <span
-        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-surface shadow-xs transition-transform ${on ? 'translate-x-4' : 'translate-x-0'}`}
-      />
-    </button>
-  )
+  return <Switch checked={on} onCheckedChange={onChange} disabled={disabled} />
 }
 
 function Chip({ label, active, color = 'blue', onClick }: { label: string; active: boolean; color?: 'blue' | 'red'; onClick: () => void }) {
@@ -179,8 +169,10 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
 
   if (loading || !view || !settings) {
     return (
-      <div className="flex items-center justify-center h-48">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-4 max-w-3xl">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
       </div>
     )
   }
@@ -196,15 +188,18 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
       <div>
         <div className="flex items-center gap-1.5">
           <h2 className="text-card-heading font-medium text-text-primary">Assignee visibility</h2>
-          <button
-            type="button"
-            onClick={() => setShowRules((v) => !v)}
-            aria-label="How the default assignee list works"
-            aria-expanded={showRules}
-            className="w-7 h-7 flex items-center justify-center rounded-full text-primary-text hover:bg-primary-subtle transition-colors"
-          >
-            <Info size={16} />
-          </button>
+          <Tooltip label="How the default assignee list works">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setShowRules((v) => !v)}
+              aria-label="How the default assignee list works"
+              aria-expanded={showRules}
+            >
+              <Info size={16} />
+            </Button>
+          </Tooltip>
           <span className="ml-auto flex items-center gap-1.5 text-meta text-text-muted">
             {saveState === 'saving' ? (
               <>
@@ -222,14 +217,9 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
           <div className="mt-2 rounded-xl border border-primary-border bg-primary-subtle p-4 text-body">
             <div className="flex items-start justify-between gap-3">
               <p className="font-medium text-text-primary">How the default list is built</p>
-              <button
-                type="button"
-                onClick={() => setShowRules(false)}
-                aria-label="Close"
-                className="w-6 h-6 flex items-center justify-center rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-surface/60 transition-colors shrink-0"
-              >
+              <Button type="button" variant="ghost" size="icon-sm" onClick={() => setShowRules(false)} aria-label="Close" className="shrink-0">
                 <X size={15} />
-              </button>
+              </Button>
             </div>
             <p className="text-text-secondary mt-1">
               When no override, bridge, or exception applies, each person&apos;s Assignees &amp; CC list is built from just
@@ -559,13 +549,16 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
               <Search size={14} />
             </span>
             {searchQuery && (
-              <button
+              <Button
                 type="button"
+                variant="in-field"
+                size="icon-sm"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
+                aria-label="Clear search"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2"
               >
                 <X size={14} />
-              </button>
+              </Button>
             )}
           </div>
 
@@ -727,9 +720,9 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
           <label className="block text-meta font-medium text-text-secondary mb-1">Into</label>
           <DepartmentSelect value={to} onChange={setTo} departments={toOptions} placeholder="Select…" inline />
         </div>
-        <button type="button" onClick={add} disabled={!from || !to || adding} className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors h-[38px]">
-          {adding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Add
-        </button>
+        <Button type="button" onClick={add} disabled={!from || !to} loading={adding}>
+          <Plus size={14} /> Add
+        </Button>
       </div>
       <div>
         <label className="block text-meta font-medium text-text-secondary mb-1">Reach into target</label>
@@ -786,9 +779,11 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
                   )}
                 </div>
                 </Tooltip>
-                <button type="button" onClick={() => remove(b)} className="p-1.5 rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
-                  <Trash2 size={15} />
-                </button>
+                <Tooltip label="Remove bridge">
+                  <Button type="button" variant="ghost" size="icon-sm" onClick={() => remove(b)} aria-label="Remove bridge" className="hover:text-danger hover:bg-danger-bg">
+                    <Trash2 size={15} />
+                  </Button>
+                </Tooltip>
               </div>
             </div>
             )
