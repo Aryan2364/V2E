@@ -165,6 +165,39 @@ Each agent appends its own self-contained section. Do not edit another agent's s
   by design, per P3/ADAPTERS.md).
 - `fixed inset-0`: 10 files remain (see "Kept for owner decision").
 
+### Wave 2 finishing pass (this pass)
+
+- Type scale and surface tokens finished across the whole module: `text-xs/sm/base/lg/
+  xl/2xl/3xl` and `text-[Npx]` (the "not in scope" item above) are now fully converted to
+  `text-meta/body/label/card-heading/section/page-title` (0 raw hits left in
+  `components/tasks/**`/`lib/tasks/**`), and `bg-white`/`text-white`/stray
+  `bg-black`/`text-black` are gone (0 left). `components/tasks/overview/TaskRow.tsx`
+  (the half-finished edit flagged as reverted) was redone cleanly: title → `text-body`,
+  deadline chip → `text-meta`, selection tick icon → `text-primary-foreground`.
+- Raw `<button>` count for the two folders cut from 200 to 100 — every clearly-actionable
+  button (modal/dialog footers, icon actions, add/remove, retry/undo/import, toolbar
+  Filter/Reset/Apply, search-clear, "Load more") is now kit `Button` with the matching
+  variant/size, `loading` for async actions, and `Tooltip` on icon-only ones. Two
+  hand-rolled toggles (`AssigneeVisibilityTab`'s `Toggle`, `ProofRequirementField`'s
+  switch) became kit `Switch`; `ChecklistAccessEditor`'s "include sub-departments"
+  control did too.
+- The remaining ~100 raw buttons are the justified exceptions called for in the brief,
+  not oversights: whole row/card/cell click targets (list rows, dashboard tiles, chart
+  bars, tree rows, drill-down cards), segmented/toggle controls that are already a kit
+  pattern (`LensToggle`, `ScopeSwitcher`, `ViewToggle`, status/kind/mode pill tabs,
+  the all/some/none `CheckToggle` filter headers), calendar/matrix grid cells
+  (`CrossDeptMatrix`'s heatmap), disclosure headers (the collapsible
+  Reminders/Checklist/Escalation/Attachments cards — toggling the whole header, not a
+  separate button), inline text actions (Retry/Reactivate/Hide-History/Clear-deadline,
+  styled per §6.6/§6.7), and chip-remove icons too small for any kit `Button` size
+  (18–24px pills in `ChecklistAccessEditor`, `RecurringFilterToolbar`,
+  `TaskFilterChips`, `AssigneeSelector`, `TagList`) — kept raw with their existing
+  styled hover/focus rather than forcing a 32px kit icon button into an 18px chip.
+  `TaskCard.tsx`'s hand-rolled colour-pill status dropdown and `TaskSortControl.tsx`'s
+  composite field+direction control are kept as deliberate custom interactions (D12) —
+  not mechanically equivalent to `select.tsx`/`dropdown-menu.tsx`.
+- `tsc --noEmit` filtered to `components/tasks/|lib/tasks/`: clean throughout.
+
 ## Tickets, workflows, projects
 
 ### Kept for owner decision
