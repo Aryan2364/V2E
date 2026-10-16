@@ -308,7 +308,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
         <DialogHeader>
           <div>
             <DialogTitle>Edit Recurring Template</DialogTitle>
-            <p className="text-sm text-on-brand-muted mt-0.5">Changes apply to future task instances only.</p>
+            <p className="text-body text-on-brand-muted mt-0.5">Changes apply to future task instances only.</p>
           </div>
         </DialogHeader>
 
@@ -316,9 +316,9 @@ export default function EditRecurringModal({ template, orgId, categories, priori
         <form id="edit-recurring-form" onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-6">
           <div className="flex gap-3 bg-warning-bg border border-warning-border rounded-lg px-4 py-3">
             <Info size={16} className="text-text-secondary shrink-0 mt-0.5" />
-            <div className="text-sm text-warning space-y-1">
+            <div className="text-body text-warning space-y-1">
               <p className="font-medium">What happens when you save?</p>
-              <ul className="list-disc list-inside space-y-0.5 text-[13px]">
+              <ul className="list-disc list-inside space-y-0.5 text-body">
                 <li>
                   Already-created task instances are{' '}
                   <span className="font-medium">
@@ -335,20 +335,20 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           </div>
 
           {error && (
-            <div className="bg-danger-bg border border-danger-border rounded-lg px-4 py-3 text-sm text-danger">{error}</div>
+            <div className="bg-danger-bg border border-danger-border rounded-lg px-4 py-3 text-body text-danger">{error}</div>
           )}
 
           <div className="space-y-4">
-            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Task Details</p>
+            <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Task Details</p>
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
+              <label className="block text-label font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
               <div className="relative">
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value.slice(0, 50))}
                   maxLength={50}
-                  className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-base sm:text-sm text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
+                  className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-body sm:text-body text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
                 />
                 <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-meta ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
                   {title.length}/50
@@ -356,7 +356,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Assignees & CC</label>
+              <label className="block text-label font-medium text-text-secondary mb-1.5">Assignees & CC</label>
               <AssigneeSelector orgId={orgId} value={assignees} onChange={setAssignees} disabled={!assigneesLoaded} />
               <p className="text-meta text-text-secondary mt-1">
                 {assigneesLoaded
@@ -369,7 +369,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                   should feel familiar. */}
               {rosterChanged && (
                 <div className="mt-3 rounded-lg border border-border-light bg-surface-control px-4 py-3">
-                  <p className="text-sm font-medium text-text-secondary mb-2">
+                  <p className="text-label font-medium text-text-secondary mb-2">
                     You changed who this task goes to. Apply that to existing occurrences?
                   </p>
                   <div className="space-y-2">
@@ -395,7 +395,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                           className="accent-primary mt-0.5"
                         />
                         <span>
-                          <span className="block text-sm text-text-primary">{opt.label}</span>
+                          <span className="block text-body text-text-primary">{opt.label}</span>
                           <span className="block text-meta text-text-secondary">{opt.hint}</span>
                         </span>
                       </label>
@@ -406,24 +406,24 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             </div>
             {primaryAssigneeCount > 1 && (
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">Completion Mode</label>
+                <label className="block text-label font-medium text-text-secondary mb-2">Completion Mode</label>
                 <div className="flex gap-4">
                   {(['any_can_complete', 'all_must_complete'] as CompletionMode[]).map((mode) => (
                     <label key={mode} className="flex items-center gap-2 cursor-pointer">
                       <input type="radio" name="editCompletionMode" value={mode} checked={completionMode === mode} onChange={() => setCompletionMode(mode)} className="accent-primary" />
-                      <span className="text-sm text-text-primary">{mode === 'any_can_complete' ? 'Any assignee can complete' : 'All must complete'}</span>
+                      <span className="text-body text-text-primary">{mode === 'any_can_complete' ? 'Any assignee can complete' : 'All must complete'}</span>
                     </label>
                   ))}
                 </div>
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Description</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value.slice(0, 2000))} maxLength={2000} placeholder="Add a description..." rows={2} className="w-full border border-border rounded-lg px-3 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface resize-none" />
+              <label className="block text-label font-medium text-text-secondary mb-1.5">Description</label>
+              <textarea value={description} onChange={(e) => setDescription(e.target.value.slice(0, 2000))} maxLength={2000} placeholder="Add a description..." rows={2} className="w-full border border-border rounded-lg px-3 py-[10px] text-body sm:text-body text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface resize-none" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1.5">Priority</label>
+                <label className="block text-label font-medium text-text-secondary mb-1.5">Priority</label>
                 <StyledSelect
                   value={priorityId}
                   onChange={(v) => setPriorityId(v)}
@@ -435,7 +435,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1.5">Category</label>
+                <label className="block text-label font-medium text-text-secondary mb-1.5">Category</label>
                 <StyledSelect
                   value={categoryId}
                   onChange={(v) => setCategoryId(v)}
@@ -449,7 +449,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             </div>
             {/* Tags — full width, directly under Category/Priority. */}
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Tags</label>
+              <label className="block text-label font-medium text-text-secondary mb-1.5">Tags</label>
               <TagPicker orgId={orgId} value={tagIds} onChange={setTagIds} disabled={submitting} knownTags={template.tags} />
               <p className="text-meta text-text-secondary mt-1">Copied onto every new occurrence.</p>
             </div>
@@ -457,12 +457,12 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           </div>
 
           <div className="space-y-3">
-            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Schedule</p>
+            <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Schedule</p>
             <ScheduleEntryList entries={scheduleEntries} onChange={setScheduleEntries} />
           </div>
 
           <div className="space-y-3">
-            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Completion & Alerts</p>
+            <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Completion & Alerts</p>
             <ProofRequirementField
               proofRequired={proofRequired}
               onProofRequiredChange={setProofRequired}
@@ -486,7 +486,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           </div>
 
           <div className="space-y-3">
-            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Repeats On Every Instance</p>
+            <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Repeats On Every Instance</p>
             <ChecklistBuilderField
               groups={checklistGroups}
               onChange={setChecklistGroups}
@@ -503,10 +503,10 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                 aria-expanded={attachmentsOpen}
                 className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-surface-sunken transition-colors"
               >
-                <label className="text-sm font-medium text-text-secondary cursor-pointer">Attachments</label>
-                <span className="text-xs font-normal text-text-secondary">Optional</span>
+                <label className="text-label font-medium text-text-secondary cursor-pointer">Attachments</label>
+                <span className="text-meta font-normal text-text-secondary">Optional</span>
                 {(attachments.length + pendingFiles.length) > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
                     {attachments.length + pendingFiles.length}
                   </span>
                 )}
@@ -522,7 +522,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
               </button>
               {attachmentsOpen && (
                 <div className="px-3 pb-3 pt-0 space-y-2">
-                  <p className="text-xs text-text-secondary">
+                  <p className="text-meta text-text-secondary">
                     Removing a file takes effect immediately; new files upload when you save. Already-created instances keep their copies.
                   </p>
                   {attachments.length > 0 && (
@@ -564,13 +564,13 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           {/* Saved, but some open occurrences were deliberately left alone. */}
           {skippedNote.length > 0 && (
             <div className="rounded-lg border border-warning-border bg-warning-bg px-4 py-3">
-              <p className="text-sm font-medium text-warning">
+              <p className="text-body font-medium text-warning">
                 Saved. {skippedNote.length} open{' '}
                 {skippedNote.length === 1 ? 'occurrence was' : 'occurrences were'} left unchanged:
               </p>
               <ul className="mt-1.5 space-y-1 max-h-[140px] overflow-y-auto">
                 {skippedNote.map((s, i) => (
-                  <li key={i} className="text-[12px] text-warning">
+                  <li key={i} className="text-meta text-warning">
                     <span className="font-medium">{s.title}</span> — {s.reason}
                   </li>
                 ))}

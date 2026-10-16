@@ -838,7 +838,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                   <ArrowLeft size={18} />
                 </button>
               )}
-              <h2 className="text-[18px] font-medium text-text-primary">
+              <h2 className="text-card-heading font-medium text-text-primary">
                 {phase === 'preview' ? 'Review before importing'
                   : phase === 'history' ? 'Import history'
                   : phase === 'batch-detail' ? 'Import details'
@@ -851,7 +851,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
               {phase === 'upload' && !embedded && (
                 <button
                   onClick={openHistory}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[13px] font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-body font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
                 >
                   <History size={15} /> History
                 </button>
@@ -873,8 +873,8 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
               <div className="flex items-start gap-3 p-4 rounded-lg bg-primary-subtle border border-primary-border">
                 <FileText size={18} className="text-primary-text mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary">Step 1 — Download the Excel template</p>
-                  <p className="text-[13px] text-text-secondary mt-0.5">
+                  <p className="text-body font-medium text-text-primary">Step 1 — Download the Excel template</p>
+                  <p className="text-body text-text-secondary mt-0.5">
                     Required columns (<span className="font-medium text-primary-text">blue header, marked *</span>): title,
                     deadline_date, assignee_1. <strong>Priority</strong>, <strong>category</strong>, <strong>assignees</strong>,{' '}
                     <strong>CC</strong>, <strong>escalation</strong>, <strong>goal</strong> and <strong>checklist template</strong>{' '}
@@ -887,11 +887,11 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                     <div className="mt-3 flex items-start gap-2 p-3 rounded-lg bg-danger-bg border border-danger-border">
                       <AlertCircle size={15} className="text-danger mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] text-danger">{optionsError}</p>
+                        <p className="text-body text-danger">{optionsError}</p>
                         <button
                           onClick={loadOptions}
                           disabled={loadingOptions}
-                          className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                          className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                         >
                           {loadingOptions ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
                           {loadingOptions ? 'Retrying…' : 'Retry'}
@@ -902,7 +902,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                     <button
                       onClick={downloadTemplate}
                       disabled={building || loadingOptions || !options}
-                      className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                      className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                     >
                       {building || loadingOptions ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
                       {loadingOptions ? 'Loading options…' : building ? 'Building…' : 'Download Excel template'}
@@ -915,11 +915,11 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                 {/* Step 2 heading row — History sits on the right (embedded only; the
                     standalone modal keeps History in its own header). */}
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-text-primary">Step 2 — Upload the filled file to review</p>
+                  <p className="text-body font-medium text-text-primary">Step 2 — Upload the filled file to review</p>
                   {embedded && (
                     <button
                       onClick={openHistory}
-                      className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[13px] font-medium text-primary-text hover:bg-primary-subtle transition-colors"
+                      className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-body font-medium text-primary-text hover:bg-primary-subtle transition-colors"
                     >
                       <History size={15} /> History
                     </button>
@@ -931,7 +931,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                   className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-lg border-2 border-dashed border-border hover:border-primary hover:bg-surface-sunken transition-colors"
                 >
                   {validating ? <Loader2 size={26} className="text-primary-text animate-spin" /> : <UploadCloud size={26} className="text-text-muted" />}
-                  <span className="text-sm font-medium text-text-secondary">
+                  <span className="text-label font-medium text-text-secondary">
                     {validating ? 'Checking your file…' : fileName || 'Click to choose an .xlsx or .csv file'}
                   </span>
                 </button>
@@ -945,7 +945,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
               </div>
 
               {parseError && (
-                <div className="p-3 bg-danger-bg border border-danger-border rounded-lg text-sm text-danger">{parseError}</div>
+                <div className="p-3 bg-danger-bg border border-danger-border rounded-lg text-body text-danger">{parseError}</div>
               )}
             </>
           )}
@@ -962,13 +962,13 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                 {validation.warnings > 0 && (
                   <FilterChip color="amber" label={`${validation.warnings} warning`} active={chipFilter === 'warning'} onClick={() => setChipFilter('warning')} />
                 )}
-                <span className="ml-auto text-xs text-text-muted">from {fileName}</span>
+                <span className="ml-auto text-meta text-text-muted">from {fileName}</span>
               </div>
 
               {/* Row table */}
               <div className="border border-border-light rounded-lg overflow-hidden">
                 <div className="max-h-[60vh] overflow-auto">
-                  <table className="w-full text-[13px]">
+                  <table className="w-full text-body">
                     <thead className="bg-surface-sunken sticky top-0 z-10">
                       <tr className="text-left text-text-muted">
                         <th className="px-3 py-2 font-medium">#</th>
@@ -981,7 +981,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                     </thead>
                     <tbody className="divide-y divide-surface-control-pressed">
                       {visibleRows.length === 0 ? (
-                        <tr><td colSpan={6} className="px-3 py-8 text-center text-[13px] text-text-muted">No rows in this category.</td></tr>
+                        <tr><td colSpan={6} className="px-3 py-8 text-center text-body text-text-muted">No rows in this category.</td></tr>
                       ) : (
                         visibleRows.map((r, i) => {
                           const s = STATUS_STYLES[r.status]
@@ -1036,13 +1036,13 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                 <div className="rounded-lg border border-border-light bg-surface p-4 space-y-3">
                   <div className="flex items-center gap-2">
                     <Paperclip size={16} className="text-primary-text" />
-                    <p className="text-sm font-medium text-text-primary">Attachments</p>
-                    <span className="text-xs text-text-secondary">
+                    <p className="text-body font-medium text-text-primary">Attachments</p>
+                    <span className="text-meta text-text-secondary">
                       {referencedFileNames.size} file{referencedFileNames.size !== 1 ? 's' : ''} referenced ·{' '}
                       {referencedFileNames.size - missingFileNames.length} matched
                     </span>
                   </div>
-                  <p className="text-[13px] text-text-secondary">
+                  <p className="text-body text-text-secondary">
                     Your sheet references files in the <strong>attachments</strong> column. Drop those exact files here — each
                     is matched to its row by filename and uploaded to the created task.
                   </p>
@@ -1058,7 +1058,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                   {missingFileNames.length > 0 && (
                     <div className="flex items-start gap-2 p-3 rounded-lg bg-warning-bg border border-warning-border">
                       <AlertTriangle size={15} className="text-warning mt-0.5 shrink-0" />
-                      <p className="text-[13px] text-warning">
+                      <p className="text-body text-warning">
                         {missingFileNames.length} referenced file{missingFileNames.length !== 1 ? 's are' : ' is'} not uploaded yet
                         and will be skipped: <strong>{missingFileNames.join(', ')}</strong>. The tasks still import.
                       </p>
@@ -1076,14 +1076,14 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
                   <div className="flex items-start gap-3 p-3.5 rounded-lg bg-primary-subtle border border-primary-border">
                     <Wrench size={18} className="text-primary-text mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] text-primary-text">
+                      <p className="text-body text-primary-text">
                         <strong>{validation.ready} of {validation.total} rows are ready</strong> and will be imported now.
                         The other <strong>{notReady} {rowWord}</strong> {notReady === 1 ? 'has a problem' : 'have problems'} and
                         will be skipped.
                       </p>
                       <button
                         onClick={downloadFailures}
-                        className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+                        className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
                       >
                         <Download size={14} /> Download {notReady} {rowWord} to fix
                       </button>
@@ -1122,7 +1122,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
           <div className="flex items-center gap-4 px-6 py-4 border-t border-border-light">
             <div className="flex items-start gap-2 flex-1 min-w-0">
               <ShieldAlert size={16} className="text-warning mt-0.5 shrink-0" />
-              <p className="text-[12px] leading-snug text-warning">
+              <p className="text-meta leading-snug text-warning">
                 Importing creates live tasks and notifies assignees. Only the <strong>{validation.ready} ready</strong> row
                 {validation.ready !== 1 ? 's' : ''} import; the rest are skipped. A short-lived undo is available right after.
               </p>
@@ -1130,7 +1130,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
             <button
               type="button"
               onClick={() => setPhase('upload')}
-              className="shrink-0 px-4 py-2.5 rounded-lg text-sm font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
+              className="shrink-0 px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               Choose another file
             </button>
@@ -1138,7 +1138,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
               type="button"
               onClick={() => setConfirmOpen(true)}
               disabled={validation.ready === 0 || importing}
-              className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {importing && <Loader2 size={15} className="animate-spin" />}
               {importing ? 'Importing…' : `Import ${validation.ready} ready`}
@@ -1149,10 +1149,10 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
         {/* Footer — result */}
         {phase === 'result' && (
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
-            <button onClick={resetToUpload} className="px-4 py-2.5 rounded-lg text-sm font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors">
+            <button onClick={resetToUpload} className="px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors">
               Import another file
             </button>
-            <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors">
+            <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors">
               Done
             </button>
           </div>
@@ -1231,13 +1231,13 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
 
 function FilterChip({ color, label, active, onClick }: { color: 'slate' | 'green' | 'red' | 'amber'; label: string; active: boolean; onClick: () => void }) {
   const palette = {
-    slate: { on: 'bg-text-primary text-white border-text-primary', off: 'bg-surface-control text-text-secondary border-border-light hover:bg-surface-control-pressed' },
-    green: { on: 'bg-success text-white border-success', off: 'bg-success-bg text-success border-success-border hover:bg-success-bg' },
-    red: { on: 'bg-danger text-white border-danger', off: 'bg-danger-bg text-danger border-danger-border hover:bg-danger-bg' },
-    amber: { on: 'bg-warning text-white border-warning-border', off: 'bg-warning-bg text-warning border-warning-border hover:bg-warning-bg' },
+    slate: { on: 'bg-text-primary text-primary-foreground border-text-primary', off: 'bg-surface-control text-text-secondary border-border-light hover:bg-surface-control-pressed' },
+    green: { on: 'bg-success text-primary-foreground border-success', off: 'bg-success-bg text-success border-success-border hover:bg-success-bg' },
+    red: { on: 'bg-danger text-primary-foreground border-danger', off: 'bg-danger-bg text-danger border-danger-border hover:bg-danger-bg' },
+    amber: { on: 'bg-warning text-primary-foreground border-warning-border', off: 'bg-warning-bg text-warning border-warning-border hover:bg-warning-bg' },
   }[color]
   return (
-    <button type="button" onClick={onClick} aria-pressed={active} className={`inline-flex items-center px-2.5 py-1 rounded-lg border text-xs font-medium transition-colors ${active ? palette.on : palette.off}`}>
+    <button type="button" onClick={onClick} aria-pressed={active} className={`inline-flex items-center px-2.5 py-1 rounded-lg border text-meta font-medium transition-colors ${active ? palette.on : palette.off}`}>
       {label}
     </button>
   )
@@ -1257,18 +1257,18 @@ function ResultView({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success-bg text-success text-sm font-medium border border-success-border">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success-bg text-success text-body font-medium border border-success-border">
           <CheckCircle2 size={15} /> {result.created} created
         </span>
         {result.failed > 0 && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger-bg text-danger text-sm font-medium border border-danger-border">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger-bg text-danger text-body font-medium border border-danger-border">
             <AlertCircle size={15} /> {result.failed} failed
           </span>
         )}
       </div>
 
       {undoResult && (
-        <div className="p-3.5 rounded-lg bg-surface-sunken border border-border-light text-[13px] text-text-secondary">
+        <div className="p-3.5 rounded-lg bg-surface-sunken border border-border-light text-body text-text-secondary">
           Undo removed <strong className="text-text-primary">{undoResult.undone}</strong> task{undoResult.undone !== 1 ? 's' : ''}.
           {undoResult.kept.length > 0 && (
             <> <strong className="text-text-primary">{undoResult.kept.length}</strong> kept because they’ve been acted on:
@@ -1285,14 +1285,14 @@ function ResultView({
       {failed.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-text-primary">Rows that didn’t import</p>
-            <button onClick={onDownloadFailures} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-white bg-primary hover:bg-primary-hover transition-colors">
+            <p className="text-body font-medium text-text-primary">Rows that didn’t import</p>
+            <button onClick={onDownloadFailures} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors">
               <Download size={13} /> Download to fix
             </button>
           </div>
           <div className="border border-border-light rounded-lg max-h-[280px] overflow-auto divide-y divide-surface-control-pressed">
             {failed.map((r) => (
-              <div key={r.row} className="px-3 py-2 text-[13px] bg-danger-bg">
+              <div key={r.row} className="px-3 py-2 text-body bg-danger-bg">
                 <span className="text-text-muted">Row {rowLabel(r.row)}</span> · <span className="font-medium text-text-primary">{r.title || '—'}</span>
                 <div className="text-danger">{r.error}</div>
               </div>
@@ -1305,7 +1305,7 @@ function ResultView({
         <button
           onClick={onUndo}
           disabled={undoing}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-danger bg-surface border-2 border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium text-danger bg-surface border-2 border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
         >
           {undoing ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />} Undo this import
         </button>
@@ -1326,8 +1326,8 @@ function HistoryView({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center mb-3"><History size={20} className="text-text-muted" /></div>
-        <p className="text-sm font-medium text-text-primary">No imports yet</p>
-        <p className="text-[13px] text-text-secondary mt-1">Task imports you run will appear here.</p>
+        <p className="text-body font-medium text-text-primary">No imports yet</p>
+        <p className="text-body text-text-secondary mt-1">Task imports you run will appear here.</p>
       </div>
     )
   }
@@ -1346,10 +1346,10 @@ function HistoryView({
         <div key={b.id} className="flex items-center gap-3 p-3 rounded-lg border border-border-light hover:bg-surface-sunken transition-colors">
           <button onClick={() => onOpen(b.id, 'history')} className="flex-1 min-w-0 text-left">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-medium text-text-primary truncate">{b.file_name || 'Task import'}</p>
+              <p className="text-body font-medium text-text-primary truncate">{b.file_name || 'Task import'}</p>
               {statusBadge(b.status)}
             </div>
-            <p className="text-[12px] text-text-secondary mt-0.5">
+            <p className="text-meta text-text-secondary mt-0.5">
               {b.created_count} created{b.failed_count > 0 ? ` · ${b.failed_count} failed` : ''} · {b.remaining} present · by {b.imported_by} · {formatDateTime(b.created_at)}
             </p>
           </button>
@@ -1357,7 +1357,7 @@ function HistoryView({
             <button
               onClick={() => onUndo(b.id)}
               disabled={undoingId === b.id}
-              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
             >
               {undoingId === b.id ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />} Undo
             </button>
@@ -1382,14 +1382,14 @@ function BatchDetailView({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success-bg text-success text-sm font-medium border border-success-border">{detail.created_count} created</span>
-        {detail.failed_count > 0 && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger-bg text-danger text-sm font-medium border border-danger-border">{detail.failed_count} failed</span>}
-        <span className="text-[13px] text-text-secondary">{detail.remaining} still present</span>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success-bg text-success text-body font-medium border border-success-border">{detail.created_count} created</span>
+        {detail.failed_count > 0 && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-danger-bg text-danger text-body font-medium border border-danger-border">{detail.failed_count} failed</span>}
+        <span className="text-body text-text-secondary">{detail.remaining} still present</span>
         {detail.can_undo && (
           <button
             onClick={() => onUndo(detail.id)}
             disabled={undoing}
-            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
+            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
           >
             {undoing ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />} Undo import
           </button>
@@ -1397,7 +1397,7 @@ function BatchDetailView({
       </div>
       <div className="border border-border-light rounded-lg max-h-[52vh] overflow-auto divide-y divide-surface-control-pressed">
         {detail.rows.map((r) => (
-          <div key={r.row} className={`px-3 py-2 text-[13px] ${r.status === 'failed' ? 'bg-danger-bg' : 'bg-surface'}`}>
+          <div key={r.row} className={`px-3 py-2 text-body ${r.status === 'failed' ? 'bg-danger-bg' : 'bg-surface'}`}>
             <div className="flex items-center gap-2">
               <span className="text-text-muted">Row {r.row}</span>
               <span className="font-medium text-text-primary">{r.title || '—'}</span>

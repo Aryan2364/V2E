@@ -16,9 +16,9 @@ export default function PrioritySpreadChart({
 
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-4 flex flex-col h-[320px]">
-      <h3 className="text-[15px] font-medium text-text-primary mb-3 shrink-0">Priority spread</h3>
+      <h3 className="text-body font-medium text-text-primary mb-3 shrink-0">Priority spread</h3>
       {data.length === 0 ? (
-        <p className="text-sm text-text-secondary flex-1 grid place-items-center">No tasks in this view.</p>
+        <p className="text-label text-text-secondary flex-1 grid place-items-center">No tasks in this view.</p>
       ) : (
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">

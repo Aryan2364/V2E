@@ -72,7 +72,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium text-text-primary">
+        <h2 className="text-card-heading font-medium text-text-primary">
           {MONTHS[month]} {year}
         </h2>
         <div className="flex items-center gap-1">
@@ -84,7 +84,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
           </button>
           <button
             onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); setSelectedKey(null) }}
-            className="px-3 h-8 text-sm font-medium text-primary-text hover:bg-primary-subtle rounded-[6px] transition-colors"
+            className="px-3 h-8 text-body font-medium text-primary-text hover:bg-primary-subtle rounded-[6px] transition-colors"
           >
             Today
           </button>
@@ -102,7 +102,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-border-light">
           {DAYS.map((d) => (
-            <div key={d} className="py-2 text-center text-xs font-medium text-text-muted uppercase tracking-wider">
+            <div key={d} className="py-2 text-center text-meta font-medium text-text-muted uppercase tracking-wider">
               {d}
             </div>
           ))}
@@ -133,9 +133,9 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                 {/* Day number */}
                 <div className="flex items-center justify-between mb-1">
                   <span
-                    className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full ${
+                    className={`text-meta font-medium w-6 h-6 flex items-center justify-center rounded-full ${
                       isToday
-                        ? 'bg-primary text-white'
+                        ? 'bg-primary text-primary-foreground'
                         : isPastDay
                           ? 'text-text-muted'
                           : 'text-text-primary'
@@ -183,12 +183,12 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
       {selectedKey && selectedTasks.length > 0 && (
         <div className="bg-surface border border-border-light rounded-xl shadow-card p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-medium text-text-primary">
+            <h3 className="text-body font-medium text-text-primary">
               {(() => {
                 const [y, mo, d] = selectedKey.split('-').map(Number)
                 return new Date(y, mo, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
               })()}
-              <span className="ml-2 text-sm font-normal text-text-muted">
+              <span className="ml-2 text-body font-normal text-text-muted">
                 {selectedTasks.length} task{selectedTasks.length !== 1 ? 's' : ''}
               </span>
             </h3>
@@ -220,8 +220,8 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-text-primary truncate">{task.title}</p>
-                    <p className="text-xs text-text-muted mt-0.5">
+                    <p className="text-body font-medium text-text-primary truncate">{task.title}</p>
+                    <p className="text-meta text-text-muted mt-0.5">
                       {task.status?.label ?? '—'}
                       {isOverdue && ' · '}
                       {isOverdue && <span className="text-danger font-medium">Overdue</span>}

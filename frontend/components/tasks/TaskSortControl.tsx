@@ -65,7 +65,7 @@ export default function TaskSortControl({ sort, onChange }: { sort: TaskSort; on
           onClick={() => setOpen((v) => !v)}
           aria-haspopup="listbox"
           aria-expanded={open}
-          className="flex items-center gap-1.5 pl-3 pr-2 py-2 text-sm text-text-primary"
+          className="flex items-center gap-1.5 pl-3 pr-2 py-2 text-body text-text-primary"
         >
           <ArrowUpDown size={15} className="text-text-secondary" />
           <span className="font-medium">{FIELD_LABEL[sort.field]}</span>
@@ -100,7 +100,7 @@ export default function TaskSortControl({ sort, onChange }: { sort: TaskSort; on
                   onChange({ ...sort, field: f.value })
                   setOpen(false)
                 }}
-                className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${
+                className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-body transition-colors ${
                   active ? 'bg-primary-subtle text-primary-text font-medium' : 'text-text-primary hover:bg-surface-sunken'
                 }`}
               >

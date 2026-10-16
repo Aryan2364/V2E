@@ -145,7 +145,7 @@ export default function CalendarReportPage() {
           <>
             One row per task and person, one square per day — green done on time, amber late, red missed, white not due yet.
             {report && (
-              <span className="block mt-1.5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-text">
+              <span className="block mt-1.5 inline-flex items-center gap-1.5 text-body font-medium text-primary-text">
                 <CalendarClock size={15} /> Position as on {fmtAsOn(report.as_on_date)}
               </span>
             )}
@@ -169,13 +169,13 @@ export default function CalendarReportPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-1.5">
           <button onClick={() => month && setMonth(shiftMonth(month, -1))} disabled={!month} className="w-9 h-9 rounded-control border border-border flex items-center justify-center text-text-secondary hover:bg-surface-control disabled:opacity-50" title="Previous month"><ChevronLeft size={17} /></button>
-          <div className="px-3 min-w-[150px] text-center text-[15px] font-medium text-text-primary">{report?.month_label ?? '—'}</div>
+          <div className="px-3 min-w-[150px] text-center text-body font-medium text-text-primary">{report?.month_label ?? '—'}</div>
           <button onClick={() => month && setMonth(shiftMonth(month, 1))} disabled={!month} className="w-9 h-9 rounded-control border border-border flex items-center justify-center text-text-secondary hover:bg-surface-control disabled:opacity-50" title="Next month"><ChevronRight size={17} /></button>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           {RESULT_ORDER.map((k) => (
-            <span key={k} className="inline-flex items-center gap-1.5 text-xs font-medium text-text-secondary">
-              <span className="w-5 h-5 rounded-[5px] flex items-center justify-center text-[11px] font-medium" style={{ backgroundColor: RESULT_META[k].bg, color: RESULT_META[k].fg, border: `1px solid ${RESULT_META[k].border}` }}>{RESULT_META[k].code}</span>
+            <span key={k} className="inline-flex items-center gap-1.5 text-meta font-medium text-text-secondary">
+              <span className="w-5 h-5 rounded-[5px] flex items-center justify-center text-meta font-medium" style={{ backgroundColor: RESULT_META[k].bg, color: RESULT_META[k].fg, border: `1px solid ${RESULT_META[k].border}` }}>{RESULT_META[k].code}</span>
               {RESULT_META[k].label}
             </span>
           ))}
@@ -186,7 +186,7 @@ export default function CalendarReportPage() {
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search task or person…" className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search task or person…" className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
         <div className="w-[210px]"><DepartmentMultiSelect selected={deptIds} onChange={setDeptIds} departments={departments} allLabel="All departments" /></div>
         <div className="w-[180px]"><StyledSelect value={freq} onChange={setFreq} options={freqOptions} /></div>
@@ -218,20 +218,20 @@ export default function CalendarReportPage() {
         <div className="bg-surface border border-border-light rounded-card py-12 flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-primary-subtle flex items-center justify-center mb-4">{report ? <CalendarClock size={24} className="text-primary-text" /> : <Lock size={24} className="text-danger" />}</div>
           <p className="font-medium text-text-primary">{report ? 'Nothing scheduled this month' : 'No access'}</p>
-          <p className="text-sm text-text-secondary mt-1 max-w-sm">{report ? 'No task fell due in this month for anyone in your scope. Try another month.' : 'You can only see the calendar for people within your visibility.'}</p>
+          <p className="text-body text-text-secondary mt-1 max-w-sm">{report ? 'No task fell due in this month for anyone in your scope. Try another month.' : 'You can only see the calendar for people within your visibility.'}</p>
         </div>
       ) : (
         <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
           <div ref={gridRef} className="overflow-x-auto">
-            <table className="text-sm border-collapse w-max">
+            <table className="text-body border-collapse w-max">
               <thead>
                 <tr className="bg-surface-sunken text-text-secondary text-left whitespace-nowrap">
                   <th className="px-3 py-2.5 font-medium sticky left-0 bg-surface-sunken z-20 w-[264px] border border-border shadow-[1px_0_0_var(--border)]">Task · Person</th>
                   <th className="px-2 py-2.5 font-medium text-center bg-surface-sunken border border-border" title="Earlier occurrences still open coming into the month">BF</th>
                   {report.days.map((d) => (
                     <th key={d.day} className={`px-0 py-2 font-medium text-center w-8 border border-border ${d.weekend ? 'bg-surface-control' : ''}`}>
-                      <div className="text-[12px] leading-none">{d.day}</div>
-                      <div className="text-[10px] text-text-muted leading-tight mt-0.5">{d.dow}</div>
+                      <div className="text-meta leading-none">{d.day}</div>
+                      <div className="text-meta text-text-muted leading-tight mt-0.5">{d.dow}</div>
                     </th>
                   ))}
                   <th className="px-2 py-2.5 font-medium text-center bg-surface-sunken border border-border" title="Scheduled this month">Sch</th>
@@ -248,7 +248,7 @@ export default function CalendarReportPage() {
                       <td className="px-3 py-2 sticky left-0 bg-surface group-hover:bg-surface-sunken z-10 w-[264px] border border-border shadow-[1px_0_0_var(--border)]">
                         <div className="w-[240px]">
                           <p className="font-medium text-text-primary truncate leading-tight" title={row.title}>{row.title}</p>
-                          <p className="text-[12px] text-text-muted truncate">{row.person} · {row.frequency}</p>
+                          <p className="text-meta text-text-muted truncate">{row.person} · {row.frequency}</p>
                         </div>
                       </td>
                       <td className="px-2 py-2 text-center tabular-nums border border-border" style={{ color: row.brought_forward ? 'var(--danger)' : 'var(--border)' }}>{row.brought_forward || ''}</td>
@@ -263,7 +263,7 @@ export default function CalendarReportPage() {
                             <button
                               onClick={() => openTask(c.task_id)}
                               title={tip}
-                              className="w-full h-full text-[11px] font-medium flex items-center justify-center hover:ring-2 hover:ring-inset hover:ring-primary transition-all"
+                              className="w-full h-full text-meta font-medium flex items-center justify-center hover:ring-2 hover:ring-inset hover:ring-primary transition-all"
                               style={{ color: meta.fg }}
                             >
                               {meta.code}
@@ -288,7 +288,7 @@ export default function CalendarReportPage() {
       )}
 
       {report && report.rows.length > 0 && (
-        <p className="text-xs text-text-muted">Showing {formatNumber(rows.length)} of {formatNumber(report.rows.length)} task·person rows. Click any square to open that task.</p>
+        <p className="text-meta text-text-muted">Showing {formatNumber(rows.length)} of {formatNumber(report.rows.length)} task·person rows. Click any square to open that task.</p>
       )}
     </div>
   )
@@ -297,8 +297,8 @@ export default function CalendarReportPage() {
 function Stat({ label, value, color = 'var(--text-primary)' }: { label: string; value: number | string; color?: string }) {
   return (
     <div>
-      <div className="text-lg font-medium tabular-nums leading-none" style={{ color }}>{typeof value === 'number' ? formatNumber(value) : value}</div>
-      <div className="text-xs mt-1 text-text-muted">{label}</div>
+      <div className="text-card-heading font-medium tabular-nums leading-none" style={{ color }}>{typeof value === 'number' ? formatNumber(value) : value}</div>
+      <div className="text-meta mt-1 text-text-muted">{label}</div>
     </div>
   )
 }

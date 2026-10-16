@@ -26,7 +26,7 @@ function Pill({ active, onClick, color, dotClassName, count, children }: { activ
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 text-[12px] px-2.5 py-1 rounded-full border transition-colors ${
+      className={`inline-flex items-center gap-1.5 text-meta px-2.5 py-1 rounded-full border transition-colors ${
         active ? 'bg-primary-subtle text-primary-text border-primary-border font-medium' : 'bg-surface text-text-secondary border-border-light hover:border-border-strong'
       }`}
     >
@@ -42,7 +42,7 @@ function Section({ title, right, children }: { title: string; right?: React.Reac
   return (
     <div className="px-3.5 py-2 border-b border-border-light last:border-b-0">
       <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[12px] font-medium text-text-secondary">{title}</p>
+        <p className="text-meta font-medium text-text-secondary">{title}</p>
         {right}
       </div>
       {children}
@@ -347,14 +347,14 @@ export default function TaskFilterPopover({
         onClick={toggle}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className={`flex items-center gap-2 h-[38px] px-3 rounded-lg border text-sm font-medium transition-colors ${
+        className={`flex items-center gap-2 h-[38px] px-3 rounded-lg border text-body font-medium transition-colors ${
           activeCount > 0 || open ? 'bg-primary-subtle text-primary-text border-primary-border' : 'bg-surface-sunken text-text-secondary border-border hover:border-border-strong'
         }`}
       >
         <Filter size={16} />
         Filters
         {activeCount > 0 && (
-          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-meta font-medium">{activeCount}</span>
+          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-meta font-medium">{activeCount}</span>
         )}
       </button>
 
@@ -368,18 +368,18 @@ export default function TaskFilterPopover({
           <div className="sticky top-0 z-10 px-3.5 py-2.5 border-b border-border-light bg-surface">
             <div className="flex items-center justify-between">
               <div className="min-w-0">
-                <span className="text-[13px] font-medium text-text-primary">Filters</span>
+                <span className="text-body font-medium text-text-primary">Filters</span>
                 <p className="text-meta text-text-muted mt-0.5">
                   <span className="font-medium text-text-primary tabular-nums">{matchCount}</span> of {tasks.length} task{tasks.length !== 1 ? 's' : ''} match
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={clearAll} className="text-[12px] font-medium text-text-secondary hover:text-text-primary">Reset</button>
+                <button type="button" onClick={clearAll} className="text-meta font-medium text-text-secondary hover:text-text-primary">Reset</button>
                 <button
                   type="button"
                   onClick={apply}
                   disabled={empties.length > 0}
-                  className="text-[12px] font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:cursor-not-allowed rounded-lg px-3 py-1 transition-colors"
+                  className="text-meta font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:cursor-not-allowed rounded-lg px-3 py-1 transition-colors"
                 >
                   Apply
                 </button>

@@ -61,7 +61,7 @@ export default function CollectivePage() {
           <Globe size={24} className="text-text-muted" />
         </div>
         <p className="font-medium text-text-primary">No organizations found</p>
-        <p className="text-sm text-text-secondary mt-1">You don't appear to be a member of any organization.</p>
+        <p className="text-body text-text-secondary mt-1">You don't appear to be a member of any organization.</p>
       </div>
     )
   }
@@ -79,7 +79,7 @@ export default function CollectivePage() {
         {/* All tab */}
         <button
           onClick={() => setActiveOrg('all')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap -mb-px ${
+          className={`flex items-center gap-2 px-4 py-2.5 text-body font-medium border-b-2 transition-colors whitespace-nowrap -mb-px ${
             activeOrg === 'all'
               ? 'border-primary text-primary-text'
               : 'border-transparent text-text-muted hover:text-text-primary'
@@ -87,7 +87,7 @@ export default function CollectivePage() {
         >
           <Globe size={14} />
           All Organizations
-          <span className="ml-1 text-xs bg-surface-control text-text-secondary px-1.5 py-0.5 rounded-full font-medium">
+          <span className="ml-1 text-meta bg-surface-control text-text-secondary px-1.5 py-0.5 rounded-full font-medium">
             {allTasks.length}
           </span>
         </button>
@@ -97,7 +97,7 @@ export default function CollectivePage() {
           <button
             key={d.organization.id}
             onClick={() => setActiveOrg(d.organization.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap -mb-px ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-body font-medium border-b-2 transition-colors whitespace-nowrap -mb-px ${
               activeOrg === d.organization.id
                 ? 'border-primary text-primary-text'
                 : 'border-transparent text-text-muted hover:text-text-primary'
@@ -105,7 +105,7 @@ export default function CollectivePage() {
           >
             <Building2 size={14} />
             {d.organization.name}
-            <span className="ml-1 text-xs bg-surface-control text-text-secondary px-1.5 py-0.5 rounded-full font-medium">
+            <span className="ml-1 text-meta bg-surface-control text-text-secondary px-1.5 py-0.5 rounded-full font-medium">
               {d.tasks.length}
             </span>
           </button>
@@ -113,7 +113,7 @@ export default function CollectivePage() {
       </div>
 
       {/* Task count */}
-      <p className="text-sm text-text-secondary">
+      <p className="text-body text-text-secondary">
         {displayTasks.length} task{displayTasks.length !== 1 ? 's' : ''}
       </p>
 
@@ -124,7 +124,7 @@ export default function CollectivePage() {
             <Globe size={24} className="text-text-muted" />
           </div>
           <p className="font-medium text-text-primary">No tasks</p>
-          <p className="text-sm text-text-secondary mt-1">This organization has no tasks yet.</p>
+          <p className="text-body text-text-secondary mt-1">This organization has no tasks yet.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
@@ -134,7 +134,7 @@ export default function CollectivePage() {
               <div key={task.id} className="relative">
                 {activeOrg === 'all' && org && (
                   <div className="absolute top-0 right-3 z-10">
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-b-[6px] bg-surface-control text-text-secondary border border-border-light border-t-0">
+                    <span className="text-meta font-medium px-2 py-0.5 rounded-b-[6px] bg-surface-control text-text-secondary border border-border-light border-t-0">
                       {org.name}
                     </span>
                   </div>

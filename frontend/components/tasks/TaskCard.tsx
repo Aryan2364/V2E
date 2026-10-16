@@ -143,7 +143,7 @@ export function StatusControl({
                 role="option"
                 aria-selected={active}
                 onClick={() => pick(s.id)}
-                className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${
+                className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-body transition-colors ${
                   active ? 'bg-surface-control' : 'hover:bg-surface-sunken'
                 }`}
               >
@@ -164,7 +164,7 @@ export function StatusControl({
             <button
               type="button"
               onClick={() => { setOpen(false); onComplete() }}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-success hover:bg-success-bg transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-body text-success hover:bg-success-bg transition-colors"
             >
               <CheckCircle2 size={14} className="shrink-0" />
               <span className="flex-1">Mark Complete</span>
@@ -174,7 +174,7 @@ export function StatusControl({
             <button
               type="button"
               onClick={() => { setOpen(false); onMarkIncomplete() }}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-danger hover:bg-danger-bg transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-body text-danger hover:bg-danger-bg transition-colors"
             >
               <XCircle size={14} className="shrink-0" />
               <span className="flex-1">Mark Incomplete</span>
@@ -231,7 +231,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
     >
       {/* Title + Category + Priority */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
+        <p className="text-body font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
           {task.title}
         </p>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -269,11 +269,11 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
               : `${commentCount} comment${commentCount !== 1 ? 's' : ''}${unread > 0 ? ` · ${unread} unread` : ''}`
           }
         >
-          <div className="flex items-center gap-2 text-xs text-text-muted">
+          <div className="flex items-center gap-2 text-meta text-text-muted">
             <span className="relative inline-flex shrink-0">
               <MessageSquare size={14} className={unread > 0 ? 'text-primary-text' : ''} />
               {unread > 0 && (
-                <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-white text-meta font-medium leading-none ring-2 ring-white">
+                <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-primary-foreground text-meta font-medium leading-none ring-2 ring-white">
                   {unread > 9 ? '9+' : unread}
                 </span>
               )}
@@ -284,7 +284,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
 
         {/* Attachments — shows "None" when there are no files */}
         <Tooltip label={attachmentCount === 0 ? 'No attachments' : `${attachmentCount} attachment${attachmentCount !== 1 ? 's' : ''}`}>
-          <div className="flex items-center gap-1 text-xs text-text-muted">
+          <div className="flex items-center gap-1 text-meta text-text-muted">
             <Paperclip size={14} className={attachmentCount === 0 ? 'text-text-muted' : ''} />
             {attachmentCount === 0 ? <span className="text-text-muted">None</span> : <span>{attachmentCount}</span>}
           </div>
@@ -313,7 +313,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
 
       {/* Deadline */}
       {task.deadline && (
-        <div className={`shrink-0 flex items-center gap-1 text-xs ${deadlineClass(task.deadline)}`}>
+        <div className={`shrink-0 flex items-center gap-1 text-meta ${deadlineClass(task.deadline)}`}>
           <Calendar size={12} />
           <span>{formatDeadline(task.deadline)}</span>
         </div>

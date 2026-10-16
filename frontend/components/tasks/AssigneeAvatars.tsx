@@ -34,7 +34,7 @@ function getInitials(name: string): string {
 }
 
 const SIZES = {
-  sm: { circle: 'w-5 h-5 text-[8px]', overlap: '-space-x-1.5' },
+  sm: { circle: 'w-5 h-5 text-meta', overlap: '-space-x-1.5' },
   md: { circle: 'w-7 h-7 text-meta', overlap: '-space-x-2' },
 } as const
 
@@ -65,11 +65,11 @@ export default function AssigneeAvatars({
           label={
             <span className="block text-left">
               <span className="flex items-center gap-2">
-                <span className="font-medium text-white whitespace-nowrap">{p.name}</span>
+                <span className="font-medium text-primary-foreground whitespace-nowrap">{p.name}</span>
                 <span
                   className={[
                     'inline-flex items-center rounded-full px-1.5 py-0.5 text-meta font-medium uppercase tracking-wide',
-                    p.isCC ? 'bg-on-brand-hover text-on-brand-muted' : 'bg-primary text-white',
+                    p.isCC ? 'bg-on-brand-hover text-on-brand-muted' : 'bg-primary text-primary-foreground',
                   ].join(' ')}
                 >
                   {p.isCC ? 'CC' : 'Assignee'}
@@ -86,7 +86,7 @@ export default function AssigneeAvatars({
           <div
             className={[
               `${s.circle} rounded-full flex items-center justify-center font-medium border-2 border-white cursor-default`,
-              p.isCC ? 'bg-surface-control text-text-muted ring-1 ring-border' : `${avatarColor(p.name)} text-white`,
+              p.isCC ? 'bg-surface-control text-text-muted ring-1 ring-border' : `${avatarColor(p.name)} text-primary-foreground`,
             ].join(' ')}
           >
             {getInitials(p.name)}

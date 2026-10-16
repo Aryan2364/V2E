@@ -158,7 +158,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
   function FileRow({ a, showUploader }: { a: TaskAttachment; showUploader?: boolean }) {
     const mine = a.uploaded_by_user_id === user?.id
     return (
-      <div className="flex items-center gap-2 text-[12px]">
+      <div className="flex items-center gap-2 text-meta">
         <span className="shrink-0 inline-flex items-center justify-center w-8 h-5 rounded-xs bg-primary-subtle text-primary-text text-meta font-medium">
           {fileKindLabel(a.file_name)}
         </span>
@@ -204,7 +204,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-6">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-[15px] font-medium text-text-primary flex items-center gap-2">
+        <h3 className="text-body font-medium text-text-primary flex items-center gap-2">
           <ShieldCheck size={15} className="text-primary-text" />
           Proof of Completion
         </h3>
@@ -239,7 +239,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
             return (
               <div key={a.id} className="border-l-2 border-border-light pl-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-text-primary">{name}{isMe && <span className="text-text-muted font-normal"> (you)</span>}</span>
+                  <span className="text-body font-medium text-text-primary">{name}{isMe && <span className="text-text-muted font-normal"> (you)</span>}</span>
                   {submitted ? (
                     <span className="inline-flex items-center gap-1 text-meta font-medium text-success"><CheckCircle2 size={12} /> Submitted</span>
                   ) : (
@@ -262,7 +262,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
           {proofs.length > 0 ? (
             proofs.map((p) => <FileRow key={p.id} a={p} showUploader />)
           ) : (
-            <p className="text-[13px] text-text-muted">
+            <p className="text-body text-text-muted">
               {isAllMust ? 'No proof yet. Upload yours above.' : 'No proof submitted yet. One proof file from anyone on the task is enough.'}
             </p>
           )}
@@ -283,7 +283,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
         <DialogBody>
         {queue[0] && (
           <div>
-            <p className="text-[13px] text-text-secondary mb-3 break-all">
+            <p className="text-body text-text-secondary mb-3 break-all">
               <span className="font-medium text-text-primary">{queue[0].name}</span>
             </p>
             <div className="space-y-2">
@@ -294,7 +294,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
                 <label key={o.v} className={`flex items-start gap-2.5 rounded-lg border p-2.5 cursor-pointer transition-colors ${choice === o.v ? 'border-primary bg-primary-subtle' : 'border-border-light hover:bg-surface-sunken'}`}>
                   <input type="radio" name="proof-visibility" className="accent-primary mt-0.5" checked={choice === o.v} onChange={() => setChoice(o.v)} />
                   <span>
-                    <span className="block text-sm font-medium text-text-primary">{o.label}</span>
+                    <span className="block text-body font-medium text-text-primary">{o.label}</span>
                     <span className="block text-meta text-text-muted">{o.hint}</span>
                   </span>
                 </label>
@@ -307,7 +307,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
               <button
                 onClick={confirmCurrent}
                 disabled={uploading}
-                className="text-sm font-medium text-white bg-primary rounded-lg px-4 py-2 hover:bg-primary-hover disabled:opacity-60 transition-colors"
+                className="text-body font-medium text-primary-foreground bg-primary rounded-lg px-4 py-2 hover:bg-primary-hover disabled:opacity-60 transition-colors"
               >
                 {uploading ? 'Uploading…' : 'Upload'}
               </button>

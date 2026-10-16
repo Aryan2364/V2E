@@ -244,7 +244,7 @@ export default function AgeingReportPage() {
           <>
             Only open work — Overdue or Ongoing — sorted into age bands so the oldest pile stands out.
             {report && (
-              <span className="block mt-1.5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-text">
+              <span className="block mt-1.5 inline-flex items-center gap-1.5 text-body font-medium text-primary-text">
                 <CalendarClock size={15} /> Position as on {fmtAsOn(report.as_on_date)}
               </span>
             )}
@@ -273,13 +273,13 @@ export default function AgeingReportPage() {
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            className={`px-4 py-2.5 text-body font-medium border-b-2 -mb-px transition-colors ${
               tab === id ? 'border-primary text-primary-text' : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             {label}
             {report && (
-              <span className="ml-1.5 text-xs font-medium text-text-muted">
+              <span className="ml-1.5 text-meta font-medium text-text-muted">
                 {id === 'person' ? report.people.length : id === 'task' ? report.tasks.length : report.totals.total_pending}
               </span>
             )}
@@ -288,7 +288,7 @@ export default function AgeingReportPage() {
       </div>
 
       {report?.list_truncated && tab === 'pending' && (
-        <div className="flex items-start gap-2 rounded-control border border-warning-border bg-warning-bg px-4 py-2.5 text-sm text-warning">
+        <div className="flex items-start gap-2 rounded-control border border-warning-border bg-warning-bg px-4 py-2.5 text-body text-warning">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           <span>This view is very large, so the detail list is capped at the newest {formatNumber(report.pending.length)} rows. The By&nbsp;Person and By&nbsp;Task totals above are still complete — narrow the scope for a full drill-down.</span>
         </div>
@@ -300,7 +300,7 @@ export default function AgeingReportPage() {
         <div className="bg-surface border border-border-light rounded-card py-12 flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
           <p className="font-medium text-text-primary">{report ? 'No pending work in your scope' : 'No access'}</p>
-          <p className="text-sm text-text-secondary mt-1 max-w-sm">{report ? 'Everyone you can see is up to date — nothing is overdue or ongoing.' : 'You can only see ageing for people within your visibility.'}</p>
+          <p className="text-body text-text-secondary mt-1 max-w-sm">{report ? 'Everyone you can see is up to date — nothing is overdue or ongoing.' : 'You can only see ageing for people within your visibility.'}</p>
         </div>
       ) : tab === 'person' ? (
         // ── By Person ──────────────────────────────────────────────────────────────
@@ -310,7 +310,7 @@ export default function AgeingReportPage() {
             <div className="w-[230px]"><DepartmentMultiSelect selected={personDeptIds} onChange={setPersonDeptIds} departments={departments} allLabel="All departments" /></div>
           </Toolbar>
           <GridCard>
-            <table className="w-full text-sm">
+            <table className="w-full text-label">
               <thead>
                 <tr className="bg-surface-sunken border-b border-border-light text-text-secondary text-left whitespace-nowrap">
                   <SortHead sort={personSort} id="name" className="px-4 sticky left-0 bg-surface-sunken z-10">Person</SortHead>
@@ -323,7 +323,7 @@ export default function AgeingReportPage() {
                     <td className="px-4 py-3 sticky left-0 bg-surface group-hover:bg-surface-sunken z-10">
                       <button onClick={() => drillPerson(p, null, null)} className="text-left min-w-0 hover:text-primary-text">
                         <p className="font-medium text-text-primary group-hover:text-primary-text truncate">{p.name}</p>
-                        {p.role_title && <p className="text-[12px] text-text-muted truncate">{p.role_title}</p>}
+                        {p.role_title && <p className="text-meta text-text-muted truncate">{p.role_title}</p>}
                       </button>
                     </td>
                     <BandCells b={p} onDrill={(buckets, label) => drillPerson(p, buckets, label)} />
@@ -345,7 +345,7 @@ export default function AgeingReportPage() {
             <div className="w-[200px]"><StyledSelect value={taskFreq} onChange={setTaskFreq} options={freqOptions} /></div>
           </Toolbar>
           <GridCard>
-            <table className="w-full text-sm">
+            <table className="w-full text-body">
               <thead>
                 <tr className="bg-surface-sunken border-b border-border-light text-text-secondary text-left whitespace-nowrap">
                   <SortHead sort={taskSort} id="title" className="px-4 sticky left-0 bg-surface-sunken z-10">Task</SortHead>
@@ -383,7 +383,7 @@ export default function AgeingReportPage() {
             <div className="w-[210px]"><StyledSelect value={pendingBand} onChange={setPendingBand} options={bandOptions} /></div>
           </Toolbar>
           <GridCard>
-            <table className="w-full text-sm">
+            <table className="w-full text-body">
               <thead>
                 <tr className="bg-surface-sunken border-b border-border-light text-text-secondary text-left whitespace-nowrap">
                   <SortHead sort={pendingSort} id="title" className="px-4">Task</SortHead>
@@ -408,7 +408,7 @@ export default function AgeingReportPage() {
                     <td className="px-3 py-3 text-text-primary whitespace-nowrap">
                       {r.assigned_to}
                       {r.handover && (
-                        <span className="block text-[11px] font-normal text-text-secondary" title={`Taken off ${r.assigned_to} on ${fmtDate(r.handover.at)}. This is no longer pending on them.`}>
+                        <span className="block text-meta font-normal text-text-secondary" title={`Taken off ${r.assigned_to} on ${fmtDate(r.handover.at)}. This is no longer pending on them.`}>
                           → now with {r.handover.to.length ? r.handover.to.join(', ') : 'no one'}
                         </span>
                       )}
@@ -422,13 +422,13 @@ export default function AgeingReportPage() {
                           against the original. Say so when the two differ, rather than letting
                           a moved deadline quietly explain away the Days Late figure. */}
                       {r.deadline_revision_count > 0 && (
-                        <span className="block text-[11px] font-medium text-warning" title={`Originally due ${fmtDate(r.original_deadline)} — aged from that date`}>
+                        <span className="block text-meta font-medium text-warning" title={`Originally due ${fmtDate(r.original_deadline)} — aged from that date`}>
                           Revised {r.deadline_revision_count}× · was {fmtDate(r.original_deadline)}
                         </span>
                       )}
                     </td>
                     <td className="px-3 py-3 text-center tabular-nums font-medium whitespace-nowrap" style={{ color: r.days_late === null ? 'var(--text-muted)' : r.days_late > 30 ? 'var(--danger)' : 'var(--warning)' }}>{r.days_late ?? '—'}</td>
-                    <td className="px-3 py-3 whitespace-nowrap"><span className={`text-xs font-medium ${r.status === 'Overdue' ? 'text-danger' : 'text-text-secondary'}`}>{r.bucket_label}</span></td>
+                    <td className="px-3 py-3 whitespace-nowrap"><span className={`text-meta font-medium ${r.status === 'Overdue' ? 'text-danger' : 'text-text-secondary'}`}>{r.bucket_label}</span></td>
                   </tr>
                 ))}
                 {pendingSort.sorted.length === 0 && (
@@ -437,7 +437,7 @@ export default function AgeingReportPage() {
               </tbody>
             </table>
           </GridCard>
-          <p className="text-xs text-text-muted">Showing {formatNumber(pendingSort.sorted.length)} of {formatNumber(report.pending.length)} pending {report.pending.length === 1 ? 'task' : 'tasks'}. Click a row to open the task.</p>
+          <p className="text-meta text-text-muted">Showing {formatNumber(pendingSort.sorted.length)} of {formatNumber(report.pending.length)} pending {report.pending.length === 1 ? 'task' : 'tasks'}. Click a row to open the task.</p>
         </>
       )}
 
@@ -468,7 +468,7 @@ function SearchBox({ value, onChange, placeholder }: { value: string; onChange: 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+        className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
       />
     </div>
   )

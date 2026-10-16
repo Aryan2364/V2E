@@ -29,8 +29,8 @@ export default function OverdueAgingPanel({
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-4">
       <div className="flex items-center gap-2 mb-3">
         <span className="w-7 h-7 rounded-lg bg-danger-bg text-danger grid place-items-center"><AlertTriangle size={15} /></span>
-        <h3 className="text-[15px] font-medium text-text-primary">Overdue aging</h3>
-        <span className="text-xs text-text-muted ml-auto">{total} open & past due</span>
+        <h3 className="text-body font-medium text-text-primary">Overdue aging</h3>
+        <span className="text-meta text-text-muted ml-auto">{total} open & past due</span>
       </div>
       <div className="grid grid-cols-3 gap-2.5">
         {bands.map((b) => {
@@ -41,8 +41,8 @@ export default function OverdueAgingPanel({
               {...(onSelect ? { type: 'button' as const, onClick: () => onSelect(b.key) } : {})}
               className={`text-left rounded-lg border border-border-light px-3.5 py-3 transition-colors ${onSelect ? 'hover:border-primary hover:bg-surface-sunken' : ''}`}
             >
-              <div className="text-2xl font-medium tabular-nums leading-none" style={{ color: b.value > 0 ? b.color : 'var(--text-muted)' }}>{b.value}</div>
-              <div className="text-[13px] text-text-secondary mt-1">{b.label}</div>
+              <div className="text-page-title font-medium tabular-nums leading-none" style={{ color: b.value > 0 ? b.color : 'var(--text-muted)' }}>{b.value}</div>
+              <div className="text-body text-text-secondary mt-1">{b.label}</div>
             </Tag>
           )
         })}

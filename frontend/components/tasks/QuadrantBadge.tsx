@@ -49,7 +49,7 @@ export default function QuadrantBadge({ quadrant, size = 'sm' }: QuadrantBadgePr
           cfg.border,
         ].join(' ')}
       >
-        <span className="text-sm font-medium leading-tight">{cfg.label}</span>
+        <span className="text-body font-medium leading-tight">{cfg.label}</span>
         <span className="text-meta font-medium leading-tight opacity-80">{cfg.sublabel}</span>
       </span>
     )

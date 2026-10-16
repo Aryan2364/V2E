@@ -86,14 +86,14 @@ export default function ReportsIndexPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-[17px] font-medium text-text-primary">{r.title}</h2>
+                  <h2 className="text-card-heading font-medium text-text-primary">{r.title}</h2>
                   {r.badge && (
-                    <span className="text-[10px] font-medium uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
+                    <span className="text-meta font-medium uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
                       {r.badge}
                     </span>
                   )}
                 </div>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">{r.blurb}</p>
+                <p className="mt-1.5 text-body leading-relaxed text-text-secondary">{r.blurb}</p>
               </div>
               <ArrowRight
                 size={18}

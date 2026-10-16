@@ -93,7 +93,7 @@ function DeleteConfirmDialog({
             <span className="font-medium text-text-primary">"{template.title}"</span> — {copy.body}
           </AlertDialogDescription>
           {error && (
-            <div className="bg-danger-bg border border-danger-border rounded-control px-3 py-2 text-sm text-danger">{error}</div>
+            <div className="bg-danger-bg border border-danger-border rounded-control px-3 py-2 text-body text-danger">{error}</div>
           )}
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -182,12 +182,12 @@ function RecurringCard({
       <div className="mb-3">
         <div className="flex items-center justify-between gap-3 flex-wrap mb-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className={['inline-flex items-center rounded-[999px] px-2 py-0.5 text-[11px] font-medium',
+            <span className={['inline-flex items-center rounded-[999px] px-2 py-0.5 text-meta font-medium',
               template.is_active ? 'bg-success-bg text-success border border-success-border' : 'bg-danger-bg text-danger border border-danger-border'].join(' ')}>
               {template.is_active ? 'Active' : 'Paused'}
             </span>
             {entries.length > 1 && (
-              <span className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[11px] font-medium bg-primary-subtle text-primary-text border border-primary-border">
+              <span className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text border border-primary-border">
                 {entries.length} schedules
               </span>
             )}
@@ -212,14 +212,14 @@ function RecurringCard({
             {template.can_edit && template.is_active && (
               <Tooltip label="Spawn today's task now">
                 <button onClick={(e) => { e.stopPropagation(); handleSpawnToday() }} disabled={spawning}
-                  className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium rounded-control text-primary-text bg-primary-subtle border border-primary-border hover:bg-primary-subtle disabled:opacity-60 transition-colors">
+                  className="flex items-center gap-1 px-2 py-1.5 text-meta font-medium rounded-control text-primary-text bg-primary-subtle border border-primary-border hover:bg-primary-subtle disabled:opacity-60 transition-colors">
                   <Zap size={11} />{spawning ? '...' : spawnMsg ?? 'Run Today'}
                 </button>
               </Tooltip>
             )}
             {template.can_edit && (
               <button onClick={(e) => { e.stopPropagation(); handleToggle() }} disabled={toggling}
-                className={['flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-control transition-colors disabled:opacity-60',
+                className={['flex items-center gap-1 px-2.5 py-1.5 text-meta font-medium rounded-control transition-colors disabled:opacity-60',
                   template.is_active ? 'text-warning bg-warning-bg border border-warning-border hover:bg-warning-bg' : 'text-success bg-success-bg border border-success-border hover:bg-success-bg'].join(' ')}>
                 {template.is_active ? <Pause size={11} /> : <Play size={11} />}
                 {toggling ? '...' : template.is_active ? 'Pause' : 'Resume'}
@@ -234,16 +234,16 @@ function RecurringCard({
               {showDeleteMenu && (
                 <div className="absolute right-0 top-full mt-1 z-20 bg-surface border border-border-light rounded-control shadow-dialog p-1.5 min-w-[220px]">
                   <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('stop') }} className="w-full text-left px-3 py-2 rounded-control hover:bg-surface-control">
-                    <span className="block text-sm font-medium text-text-primary">Stop (keep all tasks)</span>
-                    <span className="block text-[11px] text-text-secondary">No new tasks; existing ones stay</span>
+                    <span className="block text-body font-medium text-text-primary">Stop (keep all tasks)</span>
+                    <span className="block text-meta text-text-secondary">No new tasks; existing ones stay</span>
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('delete-future') }} className="w-full text-left px-3 py-2 rounded-control hover:bg-danger-bg">
-                    <span className="block text-sm font-medium text-danger">Stop & remove open tasks</span>
-                    <span className="block text-[11px] text-text-secondary">Completed ones are kept</span>
+                    <span className="block text-body font-medium text-danger">Stop & remove open tasks</span>
+                    <span className="block text-meta text-text-secondary">Completed ones are kept</span>
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); setShowDeleteMenu(false); onDelete('delete-all') }} className="w-full text-left px-3 py-2 rounded-control hover:bg-danger-bg">
-                    <span className="block text-sm font-medium text-danger">Delete everything</span>
-                    <span className="block text-[11px] text-text-secondary">Removes it and every task it created</span>
+                    <span className="block text-body font-medium text-danger">Delete everything</span>
+                    <span className="block text-meta text-text-secondary">Removes it and every task it created</span>
                   </button>
                 </div>
               )}
@@ -251,17 +251,17 @@ function RecurringCard({
             )}
           </div>
         </div>
-        <h3 className="text-[15px] font-medium text-text-primary wrap-break-word group-hover:text-primary-text transition-colors line-clamp-1">{template.title}</h3>
-        {template.description && <p className="text-sm text-text-secondary mt-0.5 line-clamp-2">{template.description}</p>}
-        {toggleErr && <p className="text-[12px] text-danger mt-1">{toggleErr}</p>}
+        <h3 className="text-body font-medium text-text-primary wrap-break-word group-hover:text-primary-text transition-colors line-clamp-1">{template.title}</h3>
+        {template.description && <p className="text-body text-text-secondary mt-0.5 line-clamp-2">{template.description}</p>}
+        {toggleErr && <p className="text-meta text-danger mt-1">{toggleErr}</p>}
       </div>
 
       <div className="space-y-1 mb-3 overflow-y-auto flex-1 min-h-0">
         {entries.length === 0 ? (
-          <p className="text-sm text-text-muted">No schedule configured</p>
+          <p className="text-body text-text-muted">No schedule configured</p>
         ) : (
           entries.map((entry, i) => (
-            <div key={i} className="flex items-center gap-1.5 text-sm text-text-secondary">
+            <div key={i} className="flex items-center gap-1.5 text-label text-text-secondary">
               <RotateCcw size={12} className="text-text-muted shrink-0" />
               <span>{entryLabel(entry)}</span>
             </div>
@@ -269,7 +269,7 @@ function RecurringCard({
         )}
       </div>
 
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-text-secondary shrink-0">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-label text-text-secondary shrink-0">
         <span>By {template.created_by_name ?? 'Unknown'}</span>
         <span className="text-text-muted">·</span>
         {earliestStart && (
@@ -285,7 +285,7 @@ function RecurringCard({
         <div className="mt-3 flex items-center gap-2 shrink-0">
           <Users size={12} className="text-text-muted" />
           <AssigneeAvatars people={people} max={5} size="sm" />
-          <span className="text-xs text-text-secondary">
+          <span className="text-meta text-text-secondary">
             {template.assignee_user_ids.length} assignee{template.assignee_user_ids.length !== 1 ? 's' : ''}
             {(template.cc_user_ids?.length ?? 0) > 0 && ` · ${template.cc_user_ids.length} CC`}
           </span>
@@ -504,7 +504,7 @@ export default function RecurringPage() {
             const active = relation === key
             return (
               <button key={key} onClick={() => setRelation(key)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-sm font-medium transition-colors ${active ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'}`}>
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-body font-medium transition-colors ${active ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'}`}>
                 {icon}<span>{label}</span>
               </button>
             )
@@ -527,15 +527,15 @@ export default function RecurringPage() {
       {/* Count + view toggle */}
       {!loading && visibleTemplates.length > 0 && (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-text-secondary"><span className="font-medium text-text-primary tabular-nums">{visibleTemplates.length}</span> template{visibleTemplates.length !== 1 ? 's' : ''}</p>
+          <p className="text-body text-text-secondary"><span className="font-medium text-text-primary tabular-nums">{visibleTemplates.length}</span> template{visibleTemplates.length !== 1 ? 's' : ''}</p>
           <div className="inline-flex items-center border border-border-light rounded-control bg-surface p-0.5 gap-0.5 shrink-0">
             <Tooltip label="Cards">
               <button onClick={() => switchView('cards')} aria-label="Cards"
-                className={`flex items-center justify-center w-8 h-8 rounded-control transition-colors ${view === 'cards' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-control'}`}><LayoutGrid size={15} /></button>
+                className={`flex items-center justify-center w-8 h-8 rounded-control transition-colors ${view === 'cards' ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:bg-surface-control'}`}><LayoutGrid size={15} /></button>
             </Tooltip>
             <Tooltip label="Table">
               <button onClick={() => switchView('table')} aria-label="Table"
-                className={`flex items-center justify-center w-8 h-8 rounded-control transition-colors ${view === 'table' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-control'}`}><TableIcon size={15} /></button>
+                className={`flex items-center justify-center w-8 h-8 rounded-control transition-colors ${view === 'table' ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:bg-surface-control'}`}><TableIcon size={15} /></button>
             </Tooltip>
           </div>
         </div>
@@ -548,14 +548,14 @@ export default function RecurringPage() {
         <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">{emptyState.icon}</div>
           <p className="font-medium text-text-primary">{emptyState.title}</p>
-          <p className="text-sm text-text-secondary mt-1 mb-4">{emptyState.sub}</p>
+          <p className="text-body text-text-secondary mt-1 mb-4">{emptyState.sub}</p>
           {filtersActive ? (
             <button onClick={() => { setSearchInput(''); setFilters({ ...EMPTY_RECURRING_FILTERS }) }}
-              className="px-4 py-[10px] text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">
+              className="px-4 py-[10px] text-body font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">
               Clear filters
             </button>
           ) : (
-            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-[10px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors">
+            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-[10px] bg-primary text-primary-foreground rounded-control text-body font-medium hover:bg-primary-hover transition-colors">
               <Plus size={16} /> New Recurring Task
             </button>
           )}

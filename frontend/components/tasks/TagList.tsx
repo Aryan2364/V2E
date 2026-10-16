@@ -116,7 +116,7 @@ export function TagList({ tags, max = 2, className = '' }: TagListProps) {
             e.preventDefault()
             setOpen((o) => !o)
           }}
-          className="shrink-0 inline-flex items-center h-5 px-2 rounded-full border border-border bg-surface text-xs font-medium text-secondary hover:border-input hover:text-heading focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary transition-colors"
+          className="shrink-0 inline-flex items-center h-5 px-2 rounded-full border border-border bg-surface text-meta font-medium text-secondary hover:border-input hover:text-heading focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary transition-colors"
         >
           +{rest.length}
         </button>

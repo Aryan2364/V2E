@@ -63,7 +63,7 @@ export default function DeptBreakdownChart({
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card flex flex-col h-[460px]">
       <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0 gap-2">
-        <h3 className="text-[15px] font-medium text-text-primary truncate">
+        <h3 className="text-body font-medium text-text-primary truncate">
           {node.name} — {dim === 'dept' ? 'by sub-department' : dim === 'role' ? 'by job role' : 'by person'}
         </h3>
         <div className="inline-flex rounded-[6px] p-0.5 bg-surface-control border border-border-light shrink-0">
@@ -75,8 +75,8 @@ export default function DeptBreakdownChart({
                 key={key}
                 onClick={() => !disabled && onDim(key)}
                 disabled={disabled}
-                className={`text-xs font-medium rounded-[5px] px-2.5 py-1 transition-colors ${
-                  active ? 'bg-primary text-white' : disabled ? 'text-text-muted cursor-not-allowed' : 'text-text-secondary hover:text-text-primary'
+                className={`text-meta font-medium rounded-[5px] px-2.5 py-1 transition-colors ${
+                  active ? 'bg-primary text-primary-foreground' : disabled ? 'text-text-muted cursor-not-allowed' : 'text-text-secondary hover:text-text-primary'
                 }`}
               >
                 {lbl}
@@ -88,7 +88,7 @@ export default function DeptBreakdownChart({
 
       <div className="flex-1 overflow-y-auto px-4 space-y-2.5">
         {rows.length === 0 ? (
-          <p className="text-sm text-text-secondary py-12 text-center">
+          <p className="text-label text-text-secondary py-12 text-center">
             {dim === 'dept' ? 'No sub-department work here.' : dim === 'role' ? 'No role data for this unit.' : 'No people with work here.'}
           </p>
         ) : (
@@ -105,11 +105,11 @@ export default function DeptBreakdownChart({
                 className="w-full text-left rounded-lg border border-border-light px-3.5 py-3 hover:border-primary hover:bg-surface-sunken transition-colors group"
               >
                 <div className="flex items-center justify-between gap-3 mb-2">
-                  <span className="font-medium text-sm text-text-primary truncate flex items-center gap-1.5">
+                  <span className="font-medium text-body text-text-primary truncate flex items-center gap-1.5">
                     {r.label}
                     {drillable && <ChevronRight size={14} className="text-text-muted group-hover:text-primary-text" />}
                   </span>
-                  <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: overdueRate >= 25 ? 'var(--danger)' : 'var(--text-secondary)' }}>
+                  <span className="text-meta tabular-nums whitespace-nowrap" style={{ color: overdueRate >= 25 ? 'var(--danger)' : 'var(--text-secondary)' }}>
                     <span className="font-medium">{overdueRate}%</span> overdue · {r.total}
                   </span>
                 </div>

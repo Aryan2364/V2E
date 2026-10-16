@@ -46,11 +46,11 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 const GRID = 'lg:grid lg:items-center lg:gap-4 lg:grid-cols-[minmax(0,1fr)_10rem_6rem_10.5rem] xl:grid-cols-[minmax(0,1fr)_10rem_11rem_6rem_10.5rem]'
 
 const primaryBtn =
-  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn bg-primary text-sm font-medium text-white hover:bg-primary-hover disabled:bg-border disabled:text-secondary disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn bg-primary text-body font-medium text-primary-foreground hover:bg-primary-hover disabled:bg-border disabled:text-secondary disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 const secondaryBtn =
-  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn border border-primary bg-surface text-sm font-medium text-primary hover:bg-slate-50 active:bg-slate-100 disabled:border-border disabled:text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn border border-primary bg-surface text-body font-medium text-primary hover:bg-slate-50 active:bg-slate-100 disabled:border-border disabled:text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 const fieldCls =
-  'w-full rounded-btn border bg-surface px-3 text-base lg:text-sm text-heading placeholder:text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-[border-color]'
+  'w-full rounded-btn border bg-surface px-3 text-body text-heading placeholder:text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-[border-color]'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -92,7 +92,7 @@ function StatusBadge({ active }: { active: boolean }) {
   return (
     <span
       className={[
-        'inline-flex items-center h-6 rounded-full border px-2.5 text-xs font-medium whitespace-nowrap',
+        'inline-flex items-center h-6 rounded-full border px-2.5 text-meta font-medium whitespace-nowrap',
         active ? 'border-green-200 bg-green-50 text-green-800' : 'border-border bg-slate-100 text-secondary',
       ].join(' ')}
     >
@@ -150,8 +150,8 @@ function RowAction({
 function EmptyState({ title, line, action }: { title: string; line: string; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center gap-1 px-4 py-12 text-center">
-      <p className="text-base font-medium text-heading">{title}</p>
-      <p className="max-w-md text-sm text-secondary">{line}</p>
+      <p className="text-body font-medium text-heading">{title}</p>
+      <p className="max-w-md text-body text-secondary">{line}</p>
       {action && <div className="mt-3">{action}</div>}
     </div>
   )
@@ -224,7 +224,7 @@ function ColorSwatches({ value, onChange, labelledBy }: { value: TagColor; onCha
             ].join(' ')}
           >
             <span className={`inline-flex h-7 w-7 lg:h-6 lg:w-6 items-center justify-center rounded-full ${tagDotClass(c)}`}>
-              {selected && <Check size={14} strokeWidth={3} className="text-white" aria-hidden="true" />}
+              {selected && <Check size={14} strokeWidth={3} className="text-primary-foreground" aria-hidden="true" />}
             </span>
           </button>
         )
@@ -386,10 +386,10 @@ function TagFormModal({
           {/* Name */}
           <div>
             <div className="mb-1.5 flex items-baseline justify-between gap-2">
-              <label htmlFor={nameId} className="text-sm font-medium text-label">
+              <label htmlFor={nameId} className="text-body font-medium text-label">
                 Name <span className="text-danger" aria-hidden="true">*</span>
               </label>
-              <span className="text-xs tabular-nums text-helper" aria-hidden="true">
+              <span className="text-meta tabular-nums text-helper" aria-hidden="true">
                 {name.length}/{NAME_MAX}
               </span>
             </div>
@@ -414,12 +414,12 @@ function TagFormModal({
               className={`${fieldCls} h-11 lg:h-9 ${nameInvalid ? 'border-danger' : 'border-input hover:border-secondary'}`}
             />
             {nameErr && (
-              <p id={nameErrId} role="alert" className="mt-1 text-sm text-danger">
+              <p id={nameErrId} role="alert" className="mt-1 text-body text-danger">
                 {nameErr}
               </p>
             )}
             {conflict && (
-              <div id={nameErrId} role="alert" className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-danger">
+              <div id={nameErrId} role="alert" className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body text-danger">
                 <span>‘{conflict.name}’ exists but is deactivated.</span>
                 {conflict.tagId && canReactivate === true ? (
                   <button
@@ -439,7 +439,7 @@ function TagFormModal({
 
           {/* Colour */}
           <div>
-            <p id={colorLabelId} className="mb-1.5 text-sm font-medium text-label">
+            <p id={colorLabelId} className="mb-1.5 text-body font-medium text-label">
               Colour <span className="font-normal text-helper">· {TAG_COLOR_LABELS[color]}</span>
             </p>
             <ColorSwatches value={color} onChange={setColor} labelledBy={colorLabelId} />
@@ -448,10 +448,10 @@ function TagFormModal({
           {/* Description */}
           <div>
             <div className="mb-1.5 flex items-baseline justify-between gap-2">
-              <label htmlFor={descId} className="text-sm font-medium text-label">
+              <label htmlFor={descId} className="text-body font-medium text-label">
                 Description
               </label>
-              <span className="text-xs tabular-nums text-helper" aria-hidden="true">
+              <span className="text-meta tabular-nums text-helper" aria-hidden="true">
                 {description.length}/{DESCRIPTION_MAX}
               </span>
             </div>
@@ -468,12 +468,12 @@ function TagFormModal({
 
           {/* Preview — the real chip, same component the task lists render */}
           <div>
-            <p className="mb-1.5 text-sm font-medium text-label">Preview</p>
+            <p className="mb-1.5 text-body font-medium text-label">Preview</p>
             <TagChip tag={preview} size="md" />
           </div>
 
           {formErr && (
-            <p role="alert" className="rounded-btn border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <p role="alert" className="rounded-btn border border-red-200 bg-red-50 px-3 py-2 text-body text-red-800">
               {formErr}
             </p>
           )}
@@ -526,12 +526,12 @@ function MergePickModal({
   return (
     <Modal isOpen onClose={onCancel} title={`Merge ‘${source.name}’`} size="md">
       <div className="flex flex-col gap-6">
-        <p className="text-sm text-secondary">
+        <p className="text-body text-secondary">
           Pick the tag to keep. Every task tagged ‘{source.name}’ moves to it, then ‘{source.name}’ is deleted. Use this to
           clean up duplicates such as “urgent” and “Urgent!”.
         </p>
         <div>
-          <p className="mb-1.5 text-sm font-medium text-label">
+          <p className="mb-1.5 text-body font-medium text-label">
             Merge into <span className="text-danger" aria-hidden="true">*</span>
           </p>
           <StyledSelect value={intoId} onChange={setIntoId} options={options} placeholder="Choose a tag" searchPlaceholder="Search tags…" />
@@ -606,11 +606,11 @@ function TagRow({
             <StatusBadge active={tag.is_active} />
           </span>
         </div>
-        {tag.description && <p className="mt-1 wrap-break-word text-sm text-secondary">{tag.description}</p>}
+        {tag.description && <p className="mt-1 wrap-break-word text-body text-secondary">{tag.description}</p>}
       </div>
 
       {/* Usage (+ creator below xl) */}
-      <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm lg:mt-0">
+      <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-body lg:mt-0">
         {used > 0 ? (
           <Link
             href={`/dashboard/tasks?tag_ids=${encodeURIComponent(tag.id)}`}
@@ -625,7 +625,7 @@ function TagRow({
       </div>
 
       {/* Created by (xl column) */}
-      <div className="hidden min-w-0 truncate text-sm text-body xl:block">{creator}</div>
+      <div className="hidden min-w-0 truncate text-body text-body xl:block">{creator}</div>
 
       {/* Status (lg column) */}
       <div className="hidden lg:block">
@@ -1021,10 +1021,10 @@ export function TagsTab({ orgId }: { orgId: string }) {
       {/* Header: what this is + the one primary action */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="text-sm text-secondary">
+          <p className="text-body text-secondary">
             People add tags while tagging tasks. Rename, recolour, merge or retire them here.
           </p>
-          <p className="mt-0.5 text-xs text-helper" aria-live="polite">
+          <p className="mt-0.5 text-meta text-helper" aria-live="polite">
             {totalLine}
           </p>
         </div>
@@ -1056,10 +1056,10 @@ export function TagsTab({ orgId }: { orgId: string }) {
             </button>
           )}
         </div>
-        {tags && q && <span className="text-sm text-secondary whitespace-nowrap">{plural(visible.length, 'result')}</span>}
+        {tags && q && <span className="text-body text-secondary whitespace-nowrap">{plural(visible.length, 'result')}</span>}
 
         <div className="flex items-center gap-2 sm:ml-auto">
-          <span className="text-sm text-secondary">Sort</span>
+          <span className="text-body text-secondary">Sort</span>
           <StyledSelect
             value={sort}
             onChange={(v) => setSort(v as SortKey)}
@@ -1069,7 +1069,7 @@ export function TagsTab({ orgId }: { orgId: string }) {
           />
         </div>
 
-        <label className="inline-flex h-11 lg:h-9 cursor-pointer select-none items-center gap-2 rounded-btn border border-border bg-surface px-3 text-sm text-body hover:bg-slate-50">
+        <label className="inline-flex h-11 lg:h-9 cursor-pointer select-none items-center gap-2 rounded-btn border border-border bg-surface px-3 text-body text-body hover:bg-slate-50">
           <input
             type="checkbox"
             checked={showInactive}
@@ -1078,7 +1078,7 @@ export function TagsTab({ orgId }: { orgId: string }) {
           />
           Show inactive
           {inactiveCount > 0 && (
-            <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-white">
+            <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1.5 text-meta font-medium text-primary-foreground">
               {inactiveCount > 99 ? '99+' : inactiveCount}
             </span>
           )}
@@ -1088,7 +1088,7 @@ export function TagsTab({ orgId }: { orgId: string }) {
       {/* List: header pinned, rows scroll inside their own box */}
       <div className="overflow-hidden rounded-card border border-border bg-surface">
         <div
-          className={`hidden border-b border-border bg-slate-50 px-4 py-2 text-xs font-medium text-secondary ${GRID}`}
+          className={`hidden border-b border-border bg-slate-50 px-4 py-2 text-meta font-medium text-secondary ${GRID}`}
           aria-hidden="true"
         >
           <span>Tag</span>

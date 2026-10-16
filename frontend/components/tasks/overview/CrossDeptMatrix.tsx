@@ -23,14 +23,14 @@ export default function CrossDeptMatrix({
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-4 flex flex-col h-[460px]">
       <div className="flex items-center justify-between mb-3 gap-2 shrink-0">
-        <h3 className="text-[15px] font-medium text-text-primary">Cross-department work flow</h3>
-        <span className="text-xs text-text-muted">rows give → columns receive</span>
+        <h3 className="text-body font-medium text-text-primary">Cross-department work flow</h3>
+        <span className="text-meta text-text-muted">rows give → columns receive</span>
       </div>
       {!hasAny ? (
-        <p className="text-sm text-text-secondary flex-1 grid place-items-center">No cross-department work in this view.</p>
+        <p className="text-label text-text-secondary flex-1 grid place-items-center">No cross-department work in this view.</p>
       ) : (
         <div className="flex-1 overflow-auto">
-          <table className="text-xs border-collapse">
+          <table className="text-meta border-collapse">
             <thead>
               <tr>
                 <th className="sticky left-0 bg-surface z-10" />
@@ -81,7 +81,7 @@ export default function CrossDeptMatrix({
           </table>
         </div>
       )}
-      <p className="text-xs text-text-muted mt-2 shrink-0">
+      <p className="text-meta text-text-muted mt-2 shrink-0">
         <span className="inline-block w-2.5 h-2.5 rounded-xs align-middle mr-1" style={{ background: 'color-mix(in srgb, var(--primary) 60%, transparent)' }} /> within a department ·
         <span className="inline-block w-2.5 h-2.5 rounded-xs align-middle mx-1" style={{ background: 'color-mix(in srgb, var(--danger) 60%, transparent)' }} /> handed across departments
       </p>

@@ -202,7 +202,7 @@ export default function ChecklistBuilderField({
   }
 
   const countBadge = groups.length > 0 && (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
       {groups.length}
     </span>
   )
@@ -213,8 +213,8 @@ export default function ChecklistBuilderField({
         {inline ? (
           // Inline header — always open, so nothing to toggle.
           <div className="flex items-center gap-2 px-3 py-3">
-            <span className="text-sm font-medium text-text-secondary">Checklist</span>
-            <span className="text-xs font-normal text-text-secondary">Optional</span>
+            <span className="text-label font-medium text-text-secondary">Checklist</span>
+            <span className="text-meta font-normal text-text-secondary">Optional</span>
             {countBadge}
           </div>
         ) : (
@@ -225,8 +225,8 @@ export default function ChecklistBuilderField({
             aria-expanded={open}
             className="w-full flex items-center gap-2 px-3 py-3 text-left rounded-t-[12px] hover:bg-surface-sunken transition-colors"
           >
-            <label className="text-sm font-medium text-text-secondary cursor-pointer">Checklist</label>
-            <span className="text-xs font-normal text-text-secondary">Optional</span>
+            <label className="text-label font-medium text-text-secondary cursor-pointer">Checklist</label>
+            <span className="text-meta font-normal text-text-secondary">Optional</span>
             {countBadge}
             <span
               className={[
@@ -242,12 +242,12 @@ export default function ChecklistBuilderField({
 
         {!open ? null : groups.length === 0 ? (
           readOnly ? (
-            <p className="px-4 pb-4 text-sm text-text-secondary">No checklist.</p>
+            <p className="px-4 pb-4 text-label text-text-secondary">No checklist.</p>
           ) : (
           <>
             {/* Body — explain the choice, then the two ways to add one */}
             <div className="px-4 pb-4 pt-0">
-              <p className="text-xs text-text-secondary mb-3">{intro}</p>
+              <p className="text-meta text-text-secondary mb-3">{intro}</p>
               <div className="flex flex-col sm:flex-row gap-2">
                 {templateOptions.length > 0 && (
                   <StyledSelect
@@ -261,7 +261,7 @@ export default function ChecklistBuilderField({
                 <button
                   type="button"
                   onClick={addBlankGroup}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors whitespace-nowrap"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-body font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors whitespace-nowrap"
                 >
                   <Plus size={14} />
                   Blank checklist
@@ -290,10 +290,10 @@ export default function ChecklistBuilderField({
                           value={g.title}
                           onChange={(e) => updateGroupTitle(g.key, e.target.value)}
                           placeholder="Checklist name"
-                          className="flex-1 min-w-0 border-b border-transparent hover:border-border-light focus:border-primary px-0.5 py-0.5 text-sm font-medium text-text-primary placeholder:text-text-muted focus:outline-hidden bg-transparent"
+                          className="flex-1 min-w-0 border-b border-transparent hover:border-border-light focus:border-primary px-0.5 py-0.5 text-body font-medium text-text-primary placeholder:text-text-muted focus:outline-hidden bg-transparent"
                         />
                       ) : (
-                        <span className="flex-1 text-sm font-medium text-text-primary">{g.title.trim() || 'Checklist'}</span>
+                        <span className="flex-1 text-body font-medium text-text-primary">{g.title.trim() || 'Checklist'}</span>
                       )}
                       {g.source === 'template' && (
                         <span className="shrink-0 inline-flex items-center gap-1 text-meta font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
@@ -318,7 +318,7 @@ export default function ChecklistBuilderField({
                     {g.items.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-2 mb-1.5">
                         <div className="w-4 h-4 rounded-xs border border-border shrink-0" />
-                        <span className="flex-1 min-w-0 wrap-break-word text-sm text-text-primary">{item.title}</span>
+                        <span className="flex-1 min-w-0 wrap-break-word text-body text-text-primary">{item.title}</span>
                         {!locked && (
                           <button
                             type="button"
@@ -331,7 +331,7 @@ export default function ChecklistBuilderField({
                         )}
                       </div>
                     ))}
-                    {g.items.length === 0 && locked && <p className="text-[13px] text-text-secondary">This template has no items.</p>}
+                    {g.items.length === 0 && locked && <p className="text-body text-text-secondary">This template has no items.</p>}
 
                     {/* Add item to this group */}
                     {!locked && (
@@ -342,12 +342,12 @@ export default function ChecklistBuilderField({
                         onChange={(e) => updateGroupDraft(g.key, e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addItemToGroup(g.key) } }}
                         placeholder="Add an item…"
-                        className="flex-1 border border-border rounded-lg px-3 py-[8px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
+                        className="flex-1 border border-border rounded-lg px-3 py-[8px] text-body sm:text-body text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
                       />
                       <button
                         type="button"
                         onClick={() => addItemToGroup(g.key)}
-                        className="flex items-center gap-1.5 px-3 py-[8px] text-sm font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-[8px] text-body font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors"
                       >
                         <Plus size={14} />
                         Add
@@ -374,7 +374,7 @@ export default function ChecklistBuilderField({
               <button
                 type="button"
                 onClick={addBlankGroup}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium text-primary-text border border-primary rounded-lg bg-surface hover:bg-primary-subtle transition-colors whitespace-nowrap"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-body font-medium text-primary-text border border-primary rounded-lg bg-surface hover:bg-primary-subtle transition-colors whitespace-nowrap"
               >
                 <Plus size={14} />
                 Add checklist

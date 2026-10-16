@@ -17,9 +17,9 @@ export default function TrendChart({ trend }: { trend: TrendPoint[] }) {
 
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-4">
-      <p className="text-[13px] font-medium text-text-primary mb-3">Trend · created vs completed (8 weeks)</p>
+      <p className="text-body font-medium text-text-primary mb-3">Trend · created vs completed (8 weeks)</p>
       {empty ? (
-        <p className="text-[13px] text-text-muted py-8 text-center">No activity in this window.</p>
+        <p className="text-body text-text-muted py-8 text-center">No activity in this window.</p>
       ) : (
         <div style={{ width: '100%', height: 220 }}>
           <ResponsiveContainer>

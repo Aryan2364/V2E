@@ -61,15 +61,15 @@ function UserRow({
     >
       {/* Avatar */}
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(user.name)}`}
+        className={`w-8 h-8 rounded-full flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 ${avatarColor(user.name)}`}
       >
         {getInitials(user.name)}
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-text-primary truncate">{user.name}</p>
-        <p className="text-xs text-text-muted truncate">{user.role_title}</p>
+        <p className="text-body font-medium text-text-primary truncate">{user.name}</p>
+        <p className="text-meta text-text-muted truncate">{user.role_title}</p>
       </div>
 
       {/* Badges */}
@@ -95,7 +95,7 @@ function UserRow({
         </Tooltip>
         {selected && (
           <span className="w-4 h-4 flex items-center justify-center bg-primary rounded-full shrink-0">
-            <Check size={10} className="text-white" strokeWidth={3} />
+            <Check size={10} className="text-primary-foreground" strokeWidth={3} />
           </span>
         )}
       </div>
@@ -123,12 +123,12 @@ function AssigneeChip({
       className="inline-flex items-center gap-1.5 bg-surface-sunken border border-border-light rounded-lg pl-1.5 pr-1 py-1 max-w-[180px]"
     >
       <div
-        className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(assignee.name)}`}
+        className={`w-5 h-5 rounded-full flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 ${avatarColor(assignee.name)}`}
       >
         {getInitials(assignee.name)}
       </div>
-      <span className="text-xs font-medium text-text-primary truncate hidden sm:inline">{assignee.name.split(' ')[0]}</span>
-      <span className="text-xs font-medium text-text-primary truncate sm:hidden">{assignee.name.split(' ')[0]}</span>
+      <span className="text-meta font-medium text-text-primary truncate hidden sm:inline">{assignee.name.split(' ')[0]}</span>
+      <span className="text-meta font-medium text-text-primary truncate sm:hidden">{assignee.name.split(' ')[0]}</span>
       {allowCC && <Tooltip label={assignee.is_cc ? 'Click to make Assignee' : 'Click to make CC'}>
         <button
           type="button"
@@ -298,13 +298,13 @@ export default function AssigneeSelector({
           />
         ))}
         {value.length === 0 && !leading && placeholder && (
-          <span className="px-1.5 text-sm text-text-muted">{placeholder}</span>
+          <span className="px-1.5 text-body text-text-muted">{placeholder}</span>
         )}
         <button
           type="button"
           disabled={disabled}
           onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-xs font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-meta font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus size={12} />
           {addLabel}
@@ -330,7 +330,7 @@ export default function AssigneeSelector({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by name, role, or department…"
-                  className="w-full pl-8 pr-3 py-[7px] text-sm text-text-primary placeholder:text-text-muted border border-border-light rounded-lg focus:border-primary focus:outline-hidden bg-surface"
+                  className="w-full pl-8 pr-3 py-[7px] text-body text-text-primary placeholder:text-text-muted border border-border-light rounded-lg focus:border-primary focus:outline-hidden bg-surface"
                 />
               </div>
 
@@ -342,7 +342,7 @@ export default function AssigneeSelector({
                     type="button"
                     onClick={() => setSort(s)}
                     className={`px-2 py-1 rounded-tick text-meta font-medium transition-colors ${
-                      sort === s ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-control'
+                      sort === s ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:bg-surface-control'
                     }`}
                   >
                     {s === 'frequency' ? 'Frequent' : s === 'workload' ? 'Workload' : 'A-Z'}
@@ -376,7 +376,7 @@ export default function AssigneeSelector({
                   onClick={() => {
                     onChange([...value, { user_id: currentUser.user_id, name: currentUser.name, is_cc: false }])
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium text-primary-text hover:bg-primary-subtle border-b border-border-light transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-2 text-body font-medium text-primary-text hover:bg-primary-subtle border-b border-border-light transition-colors"
                 >
                   <UserPlus size={13} />
                   {selfLabel}
@@ -392,10 +392,10 @@ export default function AssigneeSelector({
                   <div className="w-10 h-10 rounded-full bg-surface-control flex items-center justify-center mb-3">
                     <Search size={16} className="text-text-muted" />
                   </div>
-                  <p className="text-sm font-medium text-text-primary">
+                  <p className="text-body font-medium text-text-primary">
                     {search ? 'No users found' : allowCC ? 'No eligible assignees' : 'No one to choose from'}
                   </p>
-                  <p className="text-xs text-text-secondary mt-1">
+                  <p className="text-meta text-text-secondary mt-1">
                     {search ? 'Try a different search term.' : 'Check visibility settings in Task Masters.'}
                   </p>
                 </div>
@@ -429,7 +429,7 @@ export default function AssigneeSelector({
 
           {/* Footer: selected count + confirm (tick) */}
           <DialogFooter className="justify-between">
-            <p className="text-xs text-text-secondary min-w-0 truncate">
+            <p className="text-meta text-text-secondary min-w-0 truncate">
               {!allowCC ? (
                 value.length > 0 ? (
                   <><span className="font-medium text-text-primary">{value.length}</span> selected</>

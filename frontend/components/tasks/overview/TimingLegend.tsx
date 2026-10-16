@@ -29,7 +29,7 @@ export default function TimingLegend({
             type="button"
             disabled={!interactive}
             onClick={() => onPick?.(t)}
-            className={`flex items-center gap-1.5 text-[12px] transition-colors ${
+            className={`flex items-center gap-1.5 text-meta transition-colors ${
               interactive ? 'cursor-pointer hover:text-text-primary' : 'cursor-default'
             } ${isActive ? 'font-medium text-text-primary' : 'text-text-secondary'}`}
           >

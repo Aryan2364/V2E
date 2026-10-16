@@ -82,12 +82,12 @@ export default function PeopleLeaderboard({
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card flex flex-col h-[460px]">
       <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0">
-        <h3 className="text-[15px] font-medium text-text-primary">People · personal vs team</h3>
-        <span className="text-xs text-text-muted">click a manager to drill in</span>
+        <h3 className="text-body font-medium text-text-primary">People · personal vs team</h3>
+        <span className="text-meta text-text-muted">click a manager to drill in</span>
       </div>
       <div className="flex-1 overflow-y-auto px-4 space-y-2">
         {rows.length === 0 ? (
-          <p className="text-sm text-text-secondary py-12 text-center">No people in this view.</p>
+          <p className="text-label text-text-secondary py-12 text-center">No people in this view.</p>
         ) : (
           rows.map((s) => (
             <div key={s.user_id} className="rounded-lg border border-border-light px-3.5 py-2.5 hover:border-border transition-colors">
@@ -96,7 +96,7 @@ export default function PeopleLeaderboard({
                   onClick={() => (s.isManager ? onDrill(s.user_id) : onOpenReport(s.user_id))}
                   className="flex items-center gap-2 min-w-0 group text-left"
                 >
-                  <span className="font-medium text-sm text-text-primary truncate group-hover:text-primary-text">{s.name}</span>
+                  <span className="font-medium text-body text-text-primary truncate group-hover:text-primary-text">{s.name}</span>
                   {s.isManager ? (
                     <span className="text-meta font-medium rounded-full px-2 py-0.5 bg-primary-subtle text-primary-text shrink-0">team of {s.teamSize}</span>
                   ) : (
@@ -105,7 +105,7 @@ export default function PeopleLeaderboard({
                   {s.isManager && <ChevronRight size={14} className="text-text-muted group-hover:text-primary-text shrink-0" />}
                 </button>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: s.teamOverdueRate >= 25 ? 'var(--danger)' : 'var(--text-secondary)' }}>
+                  <span className="text-meta tabular-nums whitespace-nowrap" style={{ color: s.teamOverdueRate >= 25 ? 'var(--danger)' : 'var(--text-secondary)' }}>
                     <span className="font-medium">{s.teamOverdueRate}%</span> overdue{s.isManager ? ' (team)' : ''}
                   </span>
                   <Tooltip label="Open report">
@@ -116,14 +116,14 @@ export default function PeopleLeaderboard({
                 </div>
               </div>
               <div className="grid items-center gap-x-2.5 gap-y-1" style={{ gridTemplateColumns: '58px 1fr auto' }}>
-                <span className="text-xs text-text-muted">Personal</span>
+                <span className="text-meta text-text-muted">Personal</span>
                 <TimingMiniBar timing={s.personal} />
-                <span className="text-xs tabular-nums text-text-secondary">{s.personalTotal}</span>
+                <span className="text-meta tabular-nums text-text-secondary">{s.personalTotal}</span>
                 {s.isManager && (
                   <>
-                    <span className="text-xs font-medium text-primary-text">Team</span>
+                    <span className="text-meta font-medium text-primary-text">Team</span>
                     <TimingMiniBar timing={s.team} />
-                    <span className="text-xs tabular-nums font-medium text-text-primary">{s.teamTotal}</span>
+                    <span className="text-meta tabular-nums font-medium text-text-primary">{s.teamTotal}</span>
                   </>
                 )}
               </div>

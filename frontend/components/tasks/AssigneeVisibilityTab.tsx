@@ -55,12 +55,12 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: () => void;
 }
 
 function Chip({ label, active, color = 'blue', onClick }: { label: string; active: boolean; color?: 'blue' | 'red'; onClick: () => void }) {
-  const activeCls = color === 'red' ? 'bg-danger text-white border-danger' : 'bg-primary text-white border-primary'
+  const activeCls = color === 'red' ? 'bg-danger text-primary-foreground border-danger' : 'bg-primary text-primary-foreground border-primary'
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-[6px] text-xs font-medium border capitalize transition-colors ${active ? activeCls : 'bg-surface text-text-secondary border-border hover:border-primary'}`}
+      className={`px-3 py-1.5 rounded-[6px] text-meta font-medium border capitalize transition-colors ${active ? activeCls : 'bg-surface text-text-secondary border-border hover:border-primary'}`}
     >
       {label}
     </button>
@@ -79,10 +79,10 @@ function SegTabs<T extends string>({ value, onChange, tabs }: { value: T; onChan
             onClick={() => onChange(t.value)}
             aria-pressed={active}
             className={[
-              'px-4 py-1.5 text-sm font-medium rounded-lg transition-colors',
+              'px-4 py-1.5 text-body font-medium rounded-lg transition-colors',
               active
                 ? 'bg-surface text-primary-text shadow-xs'
-                : 'bg-transparent text-white hover:bg-primary-hover',
+                : 'bg-transparent text-primary-foreground hover:bg-primary-hover',
             ].join(' ')}
           >
             {t.label}
@@ -97,8 +97,8 @@ function Card({ title, description, children }: { title: string; description?: s
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-4 space-y-4">
       <div>
-        <h3 className="text-[15px] font-medium text-text-primary">{title}</h3>
-        {description && <p className="text-[13px] text-text-secondary mt-0.5 leading-relaxed">{description}</p>}
+        <h3 className="text-body font-medium text-text-primary">{title}</h3>
+        {description && <p className="text-body text-text-secondary mt-0.5 leading-relaxed">{description}</p>}
       </div>
       {children}
     </div>
@@ -195,7 +195,7 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
       {/* Default-rules info */}
       <div>
         <div className="flex items-center gap-1.5">
-          <h2 className="text-[18px] font-medium text-text-primary">Assignee visibility</h2>
+          <h2 className="text-card-heading font-medium text-text-primary">Assignee visibility</h2>
           <button
             type="button"
             onClick={() => setShowRules((v) => !v)}
@@ -205,7 +205,7 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
           >
             <Info size={16} />
           </button>
-          <span className="ml-auto flex items-center gap-1.5 text-xs text-text-muted">
+          <span className="ml-auto flex items-center gap-1.5 text-meta text-text-muted">
             {saveState === 'saving' ? (
               <>
                 <Loader2 size={12} className="animate-spin" /> Saving…
@@ -219,7 +219,7 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
         </div>
 
         {showRules && (
-          <div className="mt-2 rounded-xl border border-primary-border bg-primary-subtle p-4 text-sm">
+          <div className="mt-2 rounded-xl border border-primary-border bg-primary-subtle p-4 text-body">
             <div className="flex items-start justify-between gap-3">
               <p className="font-medium text-text-primary">How the default list is built</p>
               <button
@@ -267,14 +267,14 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
         description="When on, every user can assign to every active employee. Department & role rules are ignored — except per-employee manual edits (Employee tab), which still apply on top."
       >
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-body">
             <ShieldAlert size={16} className={overrideOn ? 'text-warning' : 'text-text-muted'} />
             <span className="text-text-primary">{overrideOn ? 'Override is ON — everyone sees everyone.' : 'Override is off.'}</span>
           </div>
           <Toggle on={overrideOn} onChange={() => commitNow({ ...settings, master_override: !overrideOn })} />
         </div>
         {overrideOn && (
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-warning-bg border border-warning-border text-[13px] text-warning">
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-warning-bg border border-warning-border text-body text-warning">
             <AlertTriangle size={15} className="mt-0.5 shrink-0" />
             <span>While the override is on, exceptions, bridges and the upward switch have no effect — but per-employee manual additions/removals (Employee tab) still apply.</span>
           </div>
@@ -297,7 +297,7 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
             />
           ))}
         </div>
-        <p className="text-xs text-text-muted">At least one role is required. Saved automatically.</p>
+        <p className="text-meta text-text-muted">At least one role is required. Saved automatically.</p>
       </Card>
 
       {/* Three configuration tabs + body — disabled + dimmed (values preserved) while the master override is on */}
@@ -392,8 +392,8 @@ function UpwardSection({ orgId, view, onChange, apiError }: { orgId: string; vie
                 {depth > 0 && <CornerDownRight size={13} className="shrink-0 text-text-muted -mr-0.5" />}
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorOf(dept.id) }} />
                 <div className="min-w-0">
-                  <p className={`text-sm truncate ${covered ? 'text-text-secondary' : 'font-medium text-text-primary'}`}>{dept.name}</p>
-                  <p className="text-xs text-text-muted truncate">
+                  <p className={`text-label truncate ${covered ? 'text-text-secondary' : 'font-medium text-text-primary'}`}>{dept.name}</p>
+                  <p className="text-meta text-text-muted truncate">
                     {covered
                       ? `Merged into ${covered.name} — upward not applied`
                       : d.assignee_allow_upward
@@ -418,7 +418,7 @@ function UpwardSection({ orgId, view, onChange, apiError }: { orgId: string; vie
             </div>
           )
         })}
-        {depts.length === 0 && <p className="text-xs text-text-muted py-2">No departments configured.</p>}
+        {depts.length === 0 && <p className="text-meta text-text-muted py-2">No departments configured.</p>}
       </div>
     </Card>
   )
@@ -541,9 +541,9 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
   return (
     <Card title="Merge a department with its sub-departments" description="Turn a department on to merge it with everything beneath it into one pool — everyone in the sub-tree can assign to everyone else. Sub-departments are then covered automatically (shown locked under the one you switched on).">
       {depts.length === 0 ? (
-        <p className="text-xs text-text-muted py-1">No departments configured.</p>
+        <p className="text-meta text-text-muted py-1">No departments configured.</p>
       ) : !anyParent ? (
-        <p className="text-xs text-text-muted py-1">No departments have sub-departments to unify.</p>
+        <p className="text-meta text-text-muted py-1">No departments have sub-departments to unify.</p>
       ) : (
         <div className="space-y-3">
           {/* Search bar */}
@@ -553,7 +553,7 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
               placeholder="Search departments..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-8 py-1.5 border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
+              className="w-full pl-8 pr-8 py-1.5 border border-border rounded-lg text-body text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
             />
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
               <Search size={14} />
@@ -570,7 +570,7 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
           </div>
 
           {filteredRows.length === 0 ? (
-            <p className="text-xs text-text-muted py-3 text-center">No matching departments found.</p>
+            <p className="text-meta text-text-muted py-3 text-center">No matching departments found.</p>
           ) : (
             <div className="max-h-[320px] overflow-y-auto -mr-1 pr-1 divide-y divide-surface-control">
               {filteredRows.map(({ dept, depth }) => {
@@ -584,10 +584,10 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
                       {depth > 0 && <CornerDownRight size={13} className="shrink-0 text-text-muted -mr-0.5" />}
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorOf(dept.id) }} />
                       <div className="min-w-0">
-                        <p className={`text-sm truncate ${unified ? 'font-medium text-text-primary' : covered ? 'text-text-secondary' : parent ? 'font-medium text-text-primary' : 'text-text-muted'}`}>
+                        <p className={`text-label truncate ${unified ? 'font-medium text-text-primary' : covered ? 'text-text-secondary' : parent ? 'font-medium text-text-primary' : 'text-text-muted'}`}>
                           {dept.name}
                         </p>
-                        <p className="text-xs text-text-muted">
+                        <p className="text-meta text-text-muted">
                           {covered
                             ? `In ${covered.name}'s pool`
                             : unified
@@ -714,7 +714,7 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
     <Card title="Cross-department assignment" description="Let one department assign into another. One-directional by default — turn on “Both ways” on an entry to also open the reverse (B → A).">
       <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end pt-1">
         <div>
-          <label className="block text-xs font-medium text-text-secondary mb-1">From</label>
+          <label className="block text-meta font-medium text-text-secondary mb-1">From</label>
           <DepartmentSelect
             value={from}
             onChange={(id) => { setFrom(id); if (id === to) setTo('') }}
@@ -724,15 +724,15 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-text-secondary mb-1">Into</label>
+          <label className="block text-meta font-medium text-text-secondary mb-1">Into</label>
           <DepartmentSelect value={to} onChange={setTo} departments={toOptions} placeholder="Select…" inline />
         </div>
-        <button type="button" onClick={add} disabled={!from || !to || adding} className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors h-[38px]">
+        <button type="button" onClick={add} disabled={!from || !to || adding} className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors h-[38px]">
           {adding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Add
         </button>
       </div>
       <div>
-        <label className="block text-xs font-medium text-text-secondary mb-1">Reach into target</label>
+        <label className="block text-meta font-medium text-text-secondary mb-1">Reach into target</label>
         <div className="flex gap-2">
           <Chip label="Whole department" active={depth === 'whole_dept'} onClick={() => setDepth('whole_dept')} />
           <Chip label="Head & senior roles" active={depth === 'head_senior'} onClick={() => setDepth('head_senior')} />
@@ -740,8 +740,8 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
       </div>
       <div className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border-light bg-surface-sunken">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-text-primary">Include sub-departments</p>
-          <p className="text-xs text-text-secondary">Also reach every department beneath the target — adapts automatically as sub-departments change.</p>
+          <p className="text-body font-medium text-text-primary">Include sub-departments</p>
+          <p className="text-meta text-text-secondary">Also reach every department beneath the target — adapts automatically as sub-departments change.</p>
         </div>
         <Toggle on={includeSub} onChange={() => setIncludeSub((v) => !v)} />
       </div>
@@ -754,7 +754,7 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
             return (
             <div key={b.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border-light bg-surface-sunken">
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-sm font-medium text-text-primary flex-wrap">
+                <div className="flex items-center gap-2 text-body font-medium text-text-primary flex-wrap">
                   <span>{b.from_department_name ?? deptName(b.from_department_id)}</span>
                   {bothWays ? <ArrowLeftRight size={14} className="text-primary-text" /> : <ArrowRight size={14} className="text-text-muted" />}
                   <span>{b.to_department_name ?? deptName(b.to_department_id)}</span>
@@ -768,11 +768,11 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
                   )}
                 </div>
                 {b.match_count === 0 ? (
-                  <p className="flex items-center gap-1 text-xs text-warning mt-1">
+                  <p className="flex items-center gap-1 text-meta text-warning mt-1">
                     <AlertTriangle size={12} /> Matches 0 people — set a department head or a senior role.
                   </p>
                 ) : (
-                  <p className="text-xs text-text-secondary mt-1">Currently reaches {b.match_count} {b.match_count === 1 ? 'person' : 'people'}.</p>
+                  <p className="text-meta text-text-secondary mt-1">Currently reaches {b.match_count} {b.match_count === 1 ? 'person' : 'people'}.</p>
                 )}
               </div>
               <div className="flex items-center gap-3 shrink-0">

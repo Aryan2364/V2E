@@ -84,7 +84,7 @@ export default function TagSelect({
 
   if (error && !pool) {
     return (
-      <div role="alert" className={`flex items-center gap-2 h-[42px] rounded-lg border border-border bg-surface px-3 text-sm text-secondary ${wrapperClassName}`}>
+      <div role="alert" className={`flex items-center gap-2 h-[42px] rounded-lg border border-border bg-surface px-3 text-body text-secondary ${wrapperClassName}`}>
         <span className="truncate">Couldn’t load tags</span>
         <span aria-hidden="true">·</span>
         <button

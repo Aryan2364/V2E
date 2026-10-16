@@ -135,7 +135,7 @@ export default function KanbanView({
     <div>
       {/* Touch devices can't HTML5-drag — tell them to open the card instead, shown
           only on coarse pointers so it's not noise on desktop. */}
-      <div className="pointer-fine:hidden mb-3 flex items-center gap-2 text-[12px] text-warning bg-warning-bg border border-warning-border rounded-lg px-3 py-2">
+      <div className="pointer-fine:hidden mb-3 flex items-center gap-2 text-meta text-warning bg-warning-bg border border-warning-border rounded-lg px-3 py-2">
         <Hand size={13} className="shrink-0" />
         Drag isn’t available on touch — tap a card to open it and change its status there.
       </div>
@@ -159,9 +159,9 @@ export default function KanbanView({
               }`}
             >
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: status.color }} />
-              <span className="text-sm font-medium text-text-primary flex-1">{status.label}</span>
+              <span className="text-body font-medium text-text-primary flex-1">{status.label}</span>
               {isPartialCol && <Lock size={12} className="text-text-muted shrink-0" aria-label="Set automatically" />}
-              <span className="text-xs font-medium text-text-muted bg-surface-control px-2 py-0.5 rounded-full">{colTasks.length}</span>
+              <span className="text-meta font-medium text-text-muted bg-surface-control px-2 py-0.5 rounded-full">{colTasks.length}</span>
             </div>
 
             {/* Cards */}
@@ -191,7 +191,7 @@ export default function KanbanView({
                       locked ? 'cursor-pointer opacity-90' : 'cursor-grab active:cursor-grabbing'
                     } ${draggingId === task.id ? 'opacity-40 border-primary' : 'border-border-light hover:border-border hover:shadow-menu'} ${isUpdating ? 'opacity-60' : ''}`}
                   >
-                    <p className="text-sm font-medium text-text-primary leading-snug mb-2 line-clamp-2">{task.title}</p>
+                    <p className="text-body font-medium text-text-primary leading-snug mb-2 line-clamp-2">{task.title}</p>
 
                     {/* Badges row — urgency (quadrant + priority), then tags. The column is the
                         status (kit §35.5), so the card stays at title · urgency · tags · one
@@ -248,7 +248,7 @@ export default function KanbanView({
 
               {isOver && (
                 <div className="h-16 border-2 border-dashed border-primary rounded-lg bg-primary-subtle flex items-center justify-center">
-                  <span className="text-xs text-primary-text font-medium">Drop here</span>
+                  <span className="text-meta text-primary-text font-medium">Drop here</span>
                 </div>
               )}
             </div>
@@ -276,7 +276,7 @@ export default function KanbanView({
               placeholder="Reason (required)"
               rows={3}
               autoFocus
-              className="mt-1 w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-danger resize-none"
+              className="mt-1 w-full border border-border rounded-lg px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-danger resize-none"
             />
           </AlertDialogHeader>
           <AlertDialogFooter>

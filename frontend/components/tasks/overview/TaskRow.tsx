@@ -88,7 +88,7 @@ export default function TaskRow({
           className={`w-[18px] h-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors ${selected ? 'bg-primary border-primary' : 'border-border hover:border-primary bg-surface'}`}
           aria-label={selected ? 'Deselect' : 'Select'}
         >
-          {selected && <Check size={12} className="text-white" />}
+          {selected && <Check size={12} className="text-primary-foreground" />}
         </button>
       )}
 
@@ -101,7 +101,7 @@ export default function TaskRow({
       {/* Title + meta */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 min-w-0">
-          <p className="text-sm font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
+          <p className="text-body font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
             {task.title}
           </p>
           {task.type === 'recurring' && (
@@ -131,7 +131,7 @@ export default function TaskRow({
 
       {/* Deadline */}
       {task.deadline && (
-        <div className={`shrink-0 hidden md:flex items-center gap-1 text-xs ${deadlineClass(task.deadline)}`}>
+        <div className={`shrink-0 hidden md:flex items-center gap-1 text-meta ${deadlineClass(task.deadline)}`}>
           <Calendar size={12} />
           <span className="whitespace-nowrap">{formatDeadline(task.deadline)}</span>
         </div>

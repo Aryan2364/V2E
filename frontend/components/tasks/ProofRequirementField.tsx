@@ -61,13 +61,13 @@ export default function ProofRequirementField({
             ].join(' ')}
           />
         </button>
-        <span className="text-sm text-text-primary font-medium">Proof of completion required</span>
+        <span className="text-body text-text-primary font-medium">Proof of completion required</span>
 
         {proofRequired && (
           <button
             type="button"
             onClick={() => setShowTypes((v) => !v)}
-            className="ml-auto inline-flex items-center gap-1.5 text-[12px] font-medium text-text-secondary hover:text-primary-text transition-colors"
+            className="ml-auto inline-flex items-center gap-1.5 text-meta font-medium text-text-secondary hover:text-primary-text transition-colors"
             aria-expanded={showTypes}
           >
             <SlidersHorizontal size={13} />
@@ -82,7 +82,7 @@ export default function ProofRequirementField({
           <p className="text-meta font-medium text-text-muted uppercase tracking-wide mb-2">Allowed proof types</p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
             {FILE_TYPE_GROUPS.map((g) => (
-              <label key={g.key} className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
+              <label key={g.key} className="flex items-center gap-2 text-label text-text-secondary cursor-pointer">
                 <input
                   type="checkbox"
                   className="accent-primary w-4 h-4"

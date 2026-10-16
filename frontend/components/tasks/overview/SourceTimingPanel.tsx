@@ -26,11 +26,11 @@ export default function SourceTimingPanel({
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-4 flex flex-col">
       <div className="flex items-center justify-between mb-3 gap-2">
-        <h3 className="text-[15px] font-medium text-text-primary">{title}</h3>
-        {hint && <span className="text-xs text-text-muted">{hint}</span>}
+        <h3 className="text-body font-medium text-text-primary">{title}</h3>
+        {hint && <span className="text-meta text-text-muted">{hint}</span>}
       </div>
       {items.length === 0 ? (
-        <p className="text-sm text-text-secondary py-8 text-center">{emptyText}</p>
+        <p className="text-label text-text-secondary py-8 text-center">{emptyText}</p>
       ) : (
         <div className="space-y-2.5">
           {items.map((it) => {
@@ -43,8 +43,8 @@ export default function SourceTimingPanel({
                 className={`w-full text-left rounded-lg border border-border-light px-3.5 py-2.5 transition-colors ${onSelect ? 'hover:border-primary hover:bg-surface-sunken' : ''}`}
               >
                 <div className="flex items-center justify-between gap-3 mb-1.5">
-                  <span className="font-medium text-sm text-text-primary truncate">{it.label}</span>
-                  <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: overdueRate >= 25 ? 'var(--danger)' : 'var(--text-secondary)' }}>
+                  <span className="font-medium text-body text-text-primary truncate">{it.label}</span>
+                  <span className="text-meta tabular-nums whitespace-nowrap" style={{ color: overdueRate >= 25 ? 'var(--danger)' : 'var(--text-secondary)' }}>
                     <span className="font-medium">{overdueRate}%</span> overdue · {it.total}
                   </span>
                 </div>

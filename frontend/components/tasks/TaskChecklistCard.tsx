@@ -95,13 +95,13 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-6 overflow-visible">
       <div className="flex items-center gap-2 mb-1">
         <CheckSquare size={16} className="text-primary-text" />
-        <h3 className="text-[15px] font-medium text-text-primary">Checklist</h3>
-        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
+        <h3 className="text-body font-medium text-text-primary">Checklist</h3>
+        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
           {resolvedCount}/{items.length}
         </span>
       </div>
       {isAllMust && (
-        <p className="text-[13px] text-text-secondary mb-4 flex items-center gap-1.5">
+        <p className="text-body text-text-secondary mb-4 flex items-center gap-1.5">
           <Users size={13} className="text-text-muted" />
           Everyone must complete — each person ticks their own. Counts show how many of {workerCount} are done.
         </p>
@@ -113,7 +113,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
           return (
             <div key={key || '__ungrouped'} className="space-y-2">
               {grouped && (
-                <div className="text-[13px] font-medium text-text-secondary">{key || 'Checklist'}</div>
+                <div className="text-body font-medium text-text-secondary">{key || 'Checklist'}</div>
               )}
               {groupItems.map((item) =>
                 isAllMust
@@ -139,7 +139,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
               rows={3}
               autoFocus
               placeholder="Reason (required)"
-              className="w-full rounded-lg border border-border focus:border-primary focus:outline-hidden focus:ring-0 px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted"
+              className="w-full rounded-lg border border-border focus:border-primary focus:outline-hidden focus:ring-0 px-3 py-2 text-body text-text-primary placeholder:text-text-muted"
             />
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -200,7 +200,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
     return (
       <div className="mt-1.5 ml-6 mr-2 rounded-lg border border-border-light bg-surface-sunken overflow-hidden">
         <div className="max-h-[240px] overflow-y-auto divide-y divide-surface-control">
-          {workers.length === 0 && <div className="px-3 py-2 text-[12px] text-text-muted">No assignees yet</div>}
+          {workers.length === 0 && <div className="px-3 py-2 text-meta text-text-muted">No assignees yet</div>}
           {workers.map((a) => {
             const st = states.find((s) => s.user_id === a.user_id)
             return (
@@ -254,20 +254,20 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
             role="checkbox"
             aria-checked={done}
           >
-            {done && <Check size={11} className="text-white" strokeWidth={3} />}
-            {cantDo && <Ban size={10} className="text-white" strokeWidth={2.5} />}
+            {done && <Check size={11} className="text-primary-foreground" strokeWidth={3} />}
+            {cantDo && <Ban size={10} className="text-primary-foreground" strokeWidth={2.5} />}
           </button>
         </Tooltip>
 
         <div className="flex-1 min-w-0">
-          <span className={`text-sm ${done ? 'line-through text-text-muted' : cantDo ? 'line-through text-warning' : 'text-text-primary'}`}>
+          <span className={`text-body ${done ? 'line-through text-text-muted' : cantDo ? 'line-through text-warning' : 'text-text-primary'}`}>
             {item.title}
           </span>
           {done && item.completed_by?.name && (
-            <span className="text-[12px] text-text-muted"> · {item.completed_by.name}</span>
+            <span className="text-meta text-text-muted"> · {item.completed_by.name}</span>
           )}
           {cantDo && item.cant_do_reason && (
-            <p className="text-[12px] text-warning mt-0.5">Can’t do — {item.cant_do_reason}</p>
+            <p className="text-meta text-warning mt-0.5">Can’t do — {item.cant_do_reason}</p>
           )}
         </div>
 
@@ -277,7 +277,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
             <button
               type="button"
               onClick={() => run(key, () => tasksApi.uncheckChecklistItem(orgId, taskId, item.id))}
-              className="shrink-0 mt-0.5 text-[12px] font-medium text-text-secondary hover:underline"
+              className="shrink-0 mt-0.5 text-meta font-medium text-text-secondary hover:underline"
             >
               Clear can’t-do
             </button>
@@ -348,8 +348,8 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
                 role="checkbox"
                 aria-checked={my === 'done'}
               >
-                {my === 'done' && <Check size={11} className="text-white" strokeWidth={3} />}
-                {my === 'skipped' && <Ban size={10} className="text-white" strokeWidth={2.5} />}
+                {my === 'done' && <Check size={11} className="text-primary-foreground" strokeWidth={3} />}
+                {my === 'skipped' && <Ban size={10} className="text-primary-foreground" strokeWidth={2.5} />}
               </button>
             </Tooltip>
           ) : (
@@ -360,7 +360,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`text-sm ${my === 'done' ? 'text-text-secondary' : my === 'skipped' ? 'line-through text-warning' : 'text-text-primary'}`}>
+              <span className={`text-label ${my === 'done' ? 'text-text-secondary' : my === 'skipped' ? 'line-through text-warning' : 'text-text-primary'}`}>
                 {item.title}
               </span>
 
@@ -385,7 +385,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
 
             {/* My own skip reason, always visible inline */}
             {my === 'skipped' && myReason && (
-              <p className="text-[12px] text-warning mt-0.5">Can’t do — {myReason}</p>
+              <p className="text-meta text-warning mt-0.5">Can’t do — {myReason}</p>
             )}
           </div>
 
@@ -406,7 +406,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
               <button
                 type="button"
                 onClick={() => run(`amust:${item.id}:self`, () => tasksApi.uncheckChecklistItem(orgId, taskId, item.id))}
-                className="shrink-0 mt-0.5 text-[12px] font-medium text-text-secondary hover:underline"
+                className="shrink-0 mt-0.5 text-meta font-medium text-text-secondary hover:underline"
               >
                 Clear can’t-do
               </button>
@@ -421,7 +421,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
                   type="button"
                   disabled={!!rowBusy}
                   onClick={() => run(`amust:${item.id}:clearoverride`, () => tasksApi.clearChecklistOverride(orgId, taskId, item.id))}
-                  className="shrink-0 inline-flex items-center gap-1 text-[12px] font-medium text-text-secondary hover:text-text-primary px-2 py-1 rounded-[6px] hover:bg-surface-control"
+                  className="shrink-0 inline-flex items-center gap-1 text-meta font-medium text-text-secondary hover:text-text-primary px-2 py-1 rounded-[6px] hover:bg-surface-control"
                 >
                   <RotateCcw size={12} /> Undo override
                 </button>
@@ -432,7 +432,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
                   type="button"
                   disabled={!!rowBusy}
                   onClick={() => run(`amust:${item.id}:override`, () => tasksApi.overrideChecklistItem(orgId, taskId, item.id))}
-                  className="shrink-0 inline-flex items-center gap-1 text-[12px] font-medium text-primary-text hover:text-primary-text px-2 py-1 rounded-[6px] hover:bg-primary-subtle"
+                  className="shrink-0 inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text px-2 py-1 rounded-[6px] hover:bg-primary-subtle"
                 >
                   <ShieldCheck size={12} /> Done for all
                 </button>
@@ -464,7 +464,7 @@ function PersonRow({
       <span className="w-6 h-6 rounded-full bg-primary-subtle text-text-secondary text-meta font-medium flex items-center justify-center shrink-0">
         {initials(name)}
       </span>
-      <span className="text-[13px] text-text-primary flex-1 min-w-0 truncate">{name}</span>
+      <span className="text-body text-text-primary flex-1 min-w-0 truncate">{name}</span>
       {state?.state === 'done' ? (
         <span className="inline-flex items-center gap-1 text-meta font-medium text-success">
           {state.is_override ? <ShieldCheck size={12} /> : <Check size={12} strokeWidth={3} />}

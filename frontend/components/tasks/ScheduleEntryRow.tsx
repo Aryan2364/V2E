@@ -85,8 +85,8 @@ interface Props {
   canDelete: boolean
 }
 
-const inputCls = 'border border-border rounded-lg px-3 py-[8px] text-sm text-text-primary bg-surface focus:border-2 focus:border-primary focus:outline-hidden'
-const labelCls = 'text-sm font-medium text-text-secondary'
+const inputCls = 'border border-border rounded-lg px-3 py-[8px] text-body text-text-primary bg-surface focus:border-2 focus:border-primary focus:outline-hidden'
+const labelCls = 'text-label font-medium text-text-secondary'
 
 export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, canDelete }: Props) {
   const [isCustom, setIsCustom] = useState(() => entry.every > 1)
@@ -138,7 +138,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-text-muted uppercase tracking-wider">Entry #{index + 1}</span>
+        <span className="text-meta font-medium text-text-muted uppercase tracking-wider">Entry #{index + 1}</span>
         <Tooltip label={canDelete ? 'Remove entry' : 'Cannot remove last entry'}>
         <button
           type="button"
@@ -170,7 +170,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 onUpdate({ every: 1 })
               }
             }}
-            className="text-xs font-medium text-primary-text hover:underline"
+            className="text-meta font-medium text-primary-text hover:underline"
           >
             {isCustom ? 'Use standard interval' : 'Set custom interval...'}
           </button>
@@ -196,9 +196,9 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 onUpdate(patch)
               }}
               className={[
-                'flex-1 py-1.5 text-sm font-medium rounded-[6px] transition-colors',
+                'flex-1 py-1.5 text-body font-medium rounded-[6px] transition-colors',
                 entry.schedule_type === t.value
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-primary-foreground'
                   : 'text-text-secondary hover:bg-surface-control',
               ].join(' ')}
             >
@@ -220,7 +220,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
             onChange={(e) => onUpdate({ every: Math.max(1, Number(e.target.value)) })}
             className={`w-20 text-center ${inputCls}`}
           />
-          <span className="text-sm text-text-secondary">day{entry.every !== 1 ? 's' : ''}</span>
+          <span className="text-label text-text-secondary">day{entry.every !== 1 ? 's' : ''}</span>
         </div>
       )}
 
@@ -238,7 +238,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 onChange={(e) => onUpdate({ every: Math.max(1, Number(e.target.value)) })}
                 className={`w-20 text-center ${inputCls}`}
               />
-              <span className="text-sm text-text-secondary">week{entry.every !== 1 ? 's' : ''} on</span>
+              <span className="text-label text-text-secondary">week{entry.every !== 1 ? 's' : ''} on</span>
             </div>
           )}
           {!isCustom && (
@@ -251,9 +251,9 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 type="button"
                 onClick={() => toggleDow(d)}
                 className={[
-                  'px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors',
+                  'px-3 py-1.5 text-body font-medium rounded-lg border transition-colors',
                   entry.days.includes(d)
-                    ? 'bg-primary text-white border-primary'
+                    ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-surface text-text-secondary border-border hover:border-primary hover:text-primary-text',
                 ].join(' ')}
               >
@@ -278,7 +278,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 onChange={(e) => onUpdate({ every: Math.max(1, Number(e.target.value)) })}
                 className={`w-20 text-center ${inputCls}`}
               />
-              <span className="text-sm text-text-secondary">month{entry.every !== 1 ? 's' : ''} on day(s)</span>
+              <span className="text-label text-text-secondary">month{entry.every !== 1 ? 's' : ''} on day(s)</span>
             </div>
           )}
           {!isCustom && (
@@ -291,9 +291,9 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 type="button"
                 onClick={() => toggleMonthDay(d)}
                 className={[
-                  'h-8 w-full text-xs font-medium rounded-[6px] border transition-colors',
+                  'h-8 w-full text-meta font-medium rounded-[6px] border transition-colors',
                   isMonthDaySelected(d)
-                    ? 'bg-primary text-white border-primary'
+                    ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-surface text-text-secondary border-border hover:border-primary hover:text-primary-text',
                 ].join(' ')}
               >
@@ -309,7 +309,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
             const show29 = isMonthDaySelected(29) && !show31 && !show30
 
             return (
-              <div className="p-3 bg-surface-sunken border border-border-light rounded-lg text-[12px] text-text-secondary space-y-3">
+              <div className="p-3 bg-surface-sunken border border-border-light rounded-lg text-meta text-text-secondary space-y-3">
                 <p className="font-medium text-text-primary flex items-center gap-1">
                   <span>📅</span> Month-End Adjustment Options:
                 </p>
@@ -401,7 +401,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                 onChange={(e) => onUpdate({ every: Math.max(1, Number(e.target.value)) })}
                 className={`w-20 text-center ${inputCls}`}
               />
-              <span className="text-sm text-text-secondary">year{entry.every !== 1 ? 's' : ''} on date(s)</span>
+              <span className="text-label text-text-secondary">year{entry.every !== 1 ? 's' : ''} on date(s)</span>
             </div>
           )}
           {!isCustom && (
@@ -430,7 +430,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
             <button
               type="button"
               onClick={addYearlyDate}
-              className="text-sm text-primary-text hover:underline font-medium"
+              className="text-body text-primary-text hover:underline font-medium"
             >
               + Add date
             </button>
@@ -466,9 +466,9 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
               type="button"
               onClick={() => onUpdate({ end_condition: v })}
               className={[
-                'flex-1 py-1.5 text-sm font-medium rounded-[6px] transition-colors',
+                'flex-1 py-1.5 text-body font-medium rounded-[6px] transition-colors',
                 entry.end_condition === v
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-primary-foreground'
                   : 'text-text-secondary hover:bg-surface-control',
               ].join(' ')}
             >
@@ -492,7 +492,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
               onChange={(e) => onUpdate({ end_after: Math.max(1, Number(e.target.value)) })}
               className={`w-24 text-center ${inputCls}`}
             />
-            <span className="text-sm text-text-secondary">occurrences</span>
+            <span className="text-label text-text-secondary">occurrences</span>
           </div>
         )}
       </div>

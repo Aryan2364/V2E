@@ -38,13 +38,13 @@ function completionRate(completed: number, total: number): string {
 function SectionHeader({ icon, title, onExport }: { icon: React.ReactNode; title: string; onExport: () => void }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="flex items-center gap-2 text-[17px] font-medium text-text-primary">
+      <h2 className="flex items-center gap-2 text-card-heading font-medium text-text-primary">
         {icon}
         {title}
       </h2>
       <button
         onClick={onExport}
-        className="flex items-center gap-1.5 px-3 py-[7px] text-sm font-medium text-primary-text border border-primary rounded-control hover:bg-primary-subtle transition-colors"
+        className="flex items-center gap-1.5 px-3 py-[7px] text-body font-medium text-primary-text border border-primary rounded-control hover:bg-primary-subtle transition-colors"
       >
         <Download size={14} />
         Export CSV
@@ -80,8 +80,8 @@ function StatBanner({ data }: { data: TaskReportData }) {
             {s.icon}
           </div>
           <div>
-            <p className="text-3xl font-medium text-text-primary leading-tight tabular-nums">{s.value}</p>
-            <p className="text-sm text-text-secondary mt-0.5">{s.label}</p>
+            <p className="text-page-title font-medium text-text-primary leading-tight tabular-nums">{s.value}</p>
+            <p className="text-label text-text-secondary mt-0.5">{s.label}</p>
           </div>
         </div>
       ))}
@@ -122,7 +122,7 @@ function UserPerformanceSection({ data }: { data: TaskReportData }) {
       <SectionHeader icon={<Users size={16} className="text-primary-text" />} title="User Performance" onExport={handleExport} />
 
       {rows.length === 0 ? (
-        <p className="text-sm text-text-secondary text-center py-8">No user data available for this period.</p>
+        <p className="text-body text-text-secondary text-center py-8">No user data available for this period.</p>
       ) : (
         <div className="space-y-6">
           <div className="h-64">
@@ -196,7 +196,7 @@ const userPerfColumns: ResponsiveColumn<UserPerfRow>[] = [
           <div className="flex-1 h-1.5 bg-surface-control rounded-full overflow-hidden">
             <div className="h-full bg-success rounded-full" style={{ width: `${rate}%` }} />
           </div>
-          <span className="text-xs font-medium text-text-secondary w-8 shrink-0">{rate}%</span>
+          <span className="text-meta font-medium text-text-secondary w-8 shrink-0">{rate}%</span>
         </div>
       )
     },
@@ -233,7 +233,7 @@ function DeptPerformanceSection({ data }: { data: TaskReportData }) {
       <SectionHeader icon={<Building2 size={16} className="text-text-secondary" />} title="Department Performance" onExport={handleExport} />
 
       {rows.length === 0 ? (
-        <p className="text-sm text-text-secondary text-center py-8">No department data available for this period.</p>
+        <p className="text-body text-text-secondary text-center py-8">No department data available for this period.</p>
       ) : (
         <div className="space-y-6">
           <div className="h-56">
@@ -301,7 +301,7 @@ const deptPerfColumns: ResponsiveColumn<DeptPerfRow>[] = [
           <div className="flex-1 h-1.5 bg-surface-control rounded-full overflow-hidden">
             <div className="h-full bg-success rounded-full" style={{ width: `${rate}%` }} />
           </div>
-          <span className="text-xs font-medium text-text-secondary w-8 shrink-0">{rate}%</span>
+          <span className="text-meta font-medium text-text-secondary w-8 shrink-0">{rate}%</span>
         </div>
       )
     },
@@ -332,7 +332,7 @@ function BreakdownSection({
       <SectionHeader icon={icon} title={title} onExport={handleExport} />
 
       {rows.length === 0 ? (
-        <p className="text-sm text-text-secondary text-center py-8">No data available for this period.</p>
+        <p className="text-body text-text-secondary text-center py-8">No data available for this period.</p>
       ) : (
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           <div className="w-full lg:w-48 shrink-0 h-48">
@@ -416,7 +416,7 @@ function StatusBreakdownSection({ data }: { data: TaskReportData }) {
       <SectionHeader icon={<CheckCircle2 size={16} className="text-success" />} title="Status Distribution" onExport={handleExport} />
 
       {rows.length === 0 ? (
-        <p className="text-sm text-text-secondary text-center py-8">No status data available.</p>
+        <p className="text-body text-text-secondary text-center py-8">No status data available.</p>
       ) : (
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           <div className="w-full lg:w-48 shrink-0 h-48">
@@ -438,9 +438,9 @@ function StatusBreakdownSection({ data }: { data: TaskReportData }) {
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
-                      <span className="text-sm font-medium text-text-primary">{r.label}</span>
+                      <span className="text-body font-medium text-text-primary">{r.label}</span>
                     </div>
-                    <span className="text-sm text-text-secondary tabular-nums">{r.total} ({pct}%)</span>
+                    <span className="text-label text-text-secondary tabular-nums">{r.total} ({pct}%)</span>
                   </div>
                   <div className="h-1.5 bg-surface-control rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: r.color }} />
@@ -507,13 +507,13 @@ function FrequencySection({ data }: { data: TaskReportData }) {
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-medium text-text-primary">{label}</span>
                   <span
-                    className="text-xs font-medium px-2 py-0.5 rounded-full"
+                    className="text-meta font-medium px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: color + '18', color }}
                   >
                     {pct}% of all tasks
                   </span>
                 </div>
-                <div className="flex gap-4 text-sm">
+                <div className="flex gap-4 text-body">
                   <span className="text-text-secondary">Total: <strong className="text-text-primary">{d.total}</strong></span>
                   <span className="text-text-secondary">Completed: <strong className="text-success">{d.completed}</strong></span>
                   <span className="text-text-secondary">Rate: <strong className="text-text-primary">{rate}%</strong></span>

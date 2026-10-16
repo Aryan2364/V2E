@@ -109,7 +109,7 @@ export default function TaskFilterChips({
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className="inline-flex items-center gap-1.5 text-[12px] pl-2.5 pr-1.5 py-1 rounded-full bg-primary-subtle text-primary-text border border-primary-border"
+          className="inline-flex items-center gap-1.5 text-meta pl-2.5 pr-1.5 py-1 rounded-full bg-primary-subtle text-primary-text border border-primary-border"
         >
           {chip.label}
           <button
@@ -125,7 +125,7 @@ export default function TaskFilterChips({
       <button
         type="button"
         onClick={() => onChange({ ...EMPTY_TASK_FILTERS })}
-        className="text-[12px] font-medium text-text-secondary hover:text-text-primary px-1.5 py-1 transition-colors"
+        className="text-meta font-medium text-text-secondary hover:text-text-primary px-1.5 py-1 transition-colors"
       >
         Reset
       </button>

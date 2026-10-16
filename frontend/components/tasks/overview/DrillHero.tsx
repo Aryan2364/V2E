@@ -30,28 +30,28 @@ export default function DrillHero({
   onBack: () => void
 }) {
   return (
-    <div className="rounded-xl p-4 sm:p-6 bg-primary text-white shadow-menu">
-      <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-medium mb-3 text-white/85 hover:text-white transition-colors">
+    <div className="rounded-xl p-4 sm:p-6 bg-primary text-primary-foreground shadow-menu">
+      <button onClick={onBack} className="inline-flex items-center gap-1 text-meta font-medium mb-3 text-primary-foreground/85 hover:text-primary-foreground transition-colors">
         <ChevronLeft size={14} /> Back
       </button>
-      <div className="flex items-center flex-wrap gap-1.5 mb-1.5 text-xs text-white/75">
-        <button onClick={onRoot} className="font-medium underline hover:text-white">{rootLabel}</button>
+      <div className="flex items-center flex-wrap gap-1.5 mb-1.5 text-meta text-primary-foreground/75">
+        <button onClick={onRoot} className="font-medium underline hover:text-primary-foreground">{rootLabel}</button>
         {crumbs.map((c, i) => (
           <span key={c.id} className="flex items-center gap-1.5">
             <span>›</span>
             {i < crumbs.length - 1 ? (
-              <button onClick={() => onCrumb(c.id)} className="font-medium underline hover:text-white">{c.name}</button>
+              <button onClick={() => onCrumb(c.id)} className="font-medium underline hover:text-primary-foreground">{c.name}</button>
             ) : (
-              <span className="font-medium text-white">{c.name}</span>
+              <span className="font-medium text-primary-foreground">{c.name}</span>
             )}
           </span>
         ))}
       </div>
       <div className="flex items-center gap-2 flex-wrap">
-        <h2 className="text-2xl sm:text-[26px] font-medium tracking-tight text-white">{title}</h2>
-        {badge && <span className="text-xs font-medium rounded-full px-2 py-0.5 bg-surface/20 text-white">{badge}</span>}
+        <h2 className="text-page-title font-medium tracking-tight text-primary-foreground">{title}</h2>
+        {badge && <span className="text-meta font-medium rounded-full px-2 py-0.5 bg-surface/20 text-primary-foreground">{badge}</span>}
       </div>
-      {stats && <p className="text-sm mt-1.5 text-white/90">{stats}</p>}
+      {stats && <p className="text-body mt-1.5 text-primary-foreground/90">{stats}</p>}
     </div>
   )
 }

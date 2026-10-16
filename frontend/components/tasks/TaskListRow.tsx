@@ -105,7 +105,7 @@ export default function TaskListRow({
     const d = new Date(task.deadline)
     if (task.is_overdue) {
       deadlineNode = (
-        <span className="text-[13px] font-medium text-danger whitespace-nowrap">
+        <span className="text-body font-medium text-danger whitespace-nowrap">
           Overdue {overdueDays(task.deadline)}d
         </span>
       )
@@ -113,7 +113,7 @@ export default function TaskListRow({
       const dueToday = startOfDay(d) === startOfDay(getNow())
       const text = deadlineDisplay === 'time' ? timeLabel(d) : `${dateLabel(d)}, ${timeLabel(d)}`
       deadlineNode = (
-        <span className={`text-[13px] whitespace-nowrap ${dueToday ? 'text-warning font-medium' : 'text-text-secondary'}`}>
+        <span className={`text-body whitespace-nowrap ${dueToday ? 'text-warning font-medium' : 'text-text-secondary'}`}>
           {text}
         </span>
       )
@@ -131,7 +131,7 @@ export default function TaskListRow({
       <div className="flex-1 min-w-0">
         {/* Line 1 — title + deadline */}
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-[15px] font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
+          <span className="text-body font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
             {task.title}
           </span>
           {deadlineNode}
@@ -139,7 +139,7 @@ export default function TaskListRow({
 
         {/* Line 2 — meta cluster + status */}
         <div className="flex items-center justify-between gap-3 mt-1.5">
-          <div className="flex items-center gap-2.5 flex-wrap min-w-0 text-[12px] text-text-secondary">
+          <div className="flex items-center gap-2.5 flex-wrap min-w-0 text-meta text-text-secondary">
             {priority && (
               <span
                 className="inline-flex items-center rounded-full px-2 py-0.5 text-meta font-medium"
@@ -182,7 +182,7 @@ export default function TaskListRow({
                 <span className="relative inline-flex shrink-0">
                   <MessageSquare size={14} className={unread > 0 ? 'text-primary-text' : ''} />
                   {unread > 0 && (
-                    <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-white text-meta font-medium leading-none ring-2 ring-white">
+                    <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-primary-foreground text-meta font-medium leading-none ring-2 ring-white">
                       {unread > 9 ? '9+' : unread}
                     </span>
                   )}

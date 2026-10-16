@@ -25,7 +25,7 @@ const TERMINAL = new Set(['completed', 'partially_completed', 'incomplete'])
 function Chip({ label, color }: { label: string; color: string }) {
   return (
     <span
-      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium"
+      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium"
       style={{ backgroundColor: color + '22', color, border: `1px solid ${color}44` }}
     >
       {label}
@@ -185,7 +185,7 @@ export default function TaskDrawer({
         {!loading && task && (
             <SheetBody className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
               {isFutureTask && (
-                <div className="-mx-6 -mt-4 mb-2 bg-danger-bg border-b border-danger-border px-6 py-3 text-xs font-medium text-danger">
+                <div className="-mx-6 -mt-4 mb-2 bg-danger-bg border-b border-danger-border px-6 py-3 text-meta font-medium text-danger">
                   This task was created in a simulated future ({formatDate(task.created_at)}). To interact with it, please time-travel to this date or later.
                 </div>
               )}
@@ -197,7 +197,7 @@ export default function TaskDrawer({
               </div>
 
               {/* Meta grid */}
-              <div className="grid grid-cols-2 gap-4 text-[13px]">
+              <div className="grid grid-cols-2 gap-4 text-body">
                 <div>
                   <p className="text-text-muted mb-1">Assigned by</p>
                   {(() => {
@@ -214,7 +214,7 @@ export default function TaskDrawer({
                     return (
                       <>
                         <p className="text-text-primary font-medium wrap-break-word">{workflowSourceText(wf)}</p>
-                        {setUpBy && <p className="text-[12px] text-text-secondary">set up by {setUpBy}</p>}
+                        {setUpBy && <p className="text-meta text-text-secondary">set up by {setUpBy}</p>}
                       </>
                     )
                   })()}
@@ -245,18 +245,18 @@ export default function TaskDrawer({
               {/* Description */}
               {task.description && (
                 <div>
-                  <p className="text-[13px] text-text-muted mb-1">Description</p>
-                  <p className="text-[14px] text-text-primary whitespace-pre-wrap leading-relaxed">{task.description}</p>
+                  <p className="text-body text-text-muted mb-1">Description</p>
+                  <p className="text-body text-text-primary whitespace-pre-wrap leading-relaxed">{task.description}</p>
                 </div>
               )}
 
               {/* Attachments */}
               <div>
-                <p className="text-[13px] font-medium text-text-primary mb-2 flex items-center gap-1.5">
+                <p className="text-body font-medium text-text-primary mb-2 flex items-center gap-1.5">
                   <Paperclip size={14} className="text-text-secondary" />
                   Attachments
                   {attachments.length > 0 && (
-                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-meta font-medium">
+                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-meta font-medium">
                       {attachments.length}
                     </span>
                   )}
@@ -277,14 +277,14 @@ export default function TaskDrawer({
               {/* Checklist */}
               {task.checklist && task.checklist.length > 0 && (
                 <div>
-                  <p className="text-[13px] text-text-muted mb-2">
+                  <p className="text-body text-text-muted mb-2">
                     Checklist · {task.checklist.filter((i) => i.is_completed).length}/{task.checklist.length}
                   </p>
                   <div className="space-y-1.5">
                     {task.checklist.map((item) => (
-                      <div key={item.id} className="flex items-center gap-2 text-[14px]">
+                      <div key={item.id} className="flex items-center gap-2 text-body">
                         <span className={`w-4 h-4 rounded-tick border flex items-center justify-center shrink-0 ${item.is_completed ? 'bg-success border-success' : 'border-border'}`}>
-                          {item.is_completed && <CheckCircle2 size={12} className="text-white" />}
+                          {item.is_completed && <CheckCircle2 size={12} className="text-primary-foreground" />}
                         </span>
                         <span className={item.is_completed ? 'text-text-muted line-through' : 'text-text-primary'}>{item.title}</span>
                       </div>
@@ -295,25 +295,25 @@ export default function TaskDrawer({
 
               {/* Comments */}
               <div>
-                <p className="text-[13px] font-medium text-text-primary mb-3 flex items-center gap-1.5">
+                <p className="text-body font-medium text-text-primary mb-3 flex items-center gap-1.5">
                   <MessageSquare size={14} className="text-text-secondary" />
                   Comments
                 </p>
                 {comments.length === 0 ? (
-                  <p className="text-[13px] text-text-muted">No comments yet. Start the conversation below.</p>
+                  <p className="text-body text-text-muted">No comments yet. Start the conversation below.</p>
                 ) : (
                   <div className="space-y-3">
                     {comments.map((c) => (
                       <div key={c.id} className="flex gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-meta font-medium flex items-center justify-center shrink-0">
                           {(c.user_name ?? '?').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-[13px]">
+                          <p className="text-body">
                             <span className="font-medium text-text-primary">{c.user_name ?? 'Unknown'}</span>
                             <span className="text-text-muted ml-2 text-meta">{formatWhen(c.created_at)}</span>
                           </p>
-                          <p className="text-[14px] text-text-primary whitespace-pre-wrap wrap-break-word mt-0.5">{c.body}</p>
+                          <p className="text-body text-text-primary whitespace-pre-wrap wrap-break-word mt-0.5">{c.body}</p>
                           {c.attachments && c.attachments.length > 0 && (
                             <AttachmentChips
                               attachments={c.attachments}
@@ -343,7 +343,7 @@ export default function TaskDrawer({
                   <button
                     onClick={complete}
                     disabled={busy || isFutureTask}
-                    className="shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg bg-success text-white text-sm font-medium hover:bg-success disabled:opacity-60 transition-colors"
+                    className="shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg bg-success text-primary-foreground text-body font-medium hover:bg-success disabled:opacity-60 transition-colors"
                   >
                     <CheckCircle2 size={15} /> Complete
                   </button>
@@ -367,12 +367,12 @@ export default function TaskDrawer({
                   rows={1}
                   disabled={isFutureTask}
                   placeholder={isFutureTask ? "Comments are locked on future tasks..." : "Write a comment…"}
-                  className="flex-1 resize-none rounded-lg border border-border bg-surface px-3 py-2.5 text-[14px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary max-h-28"
+                  className="flex-1 resize-none rounded-lg border border-border bg-surface px-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary max-h-28"
                 />
                 <button
                   onClick={send}
                   disabled={!draft.trim() || sending || isFutureTask}
-                  className="shrink-0 w-[42px] h-[42px] rounded-lg bg-primary text-white flex items-center justify-center hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                  className="shrink-0 w-[42px] h-[42px] rounded-lg bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                 >
                   <Send size={16} />
                 </button>

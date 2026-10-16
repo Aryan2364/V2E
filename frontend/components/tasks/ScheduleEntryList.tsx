@@ -58,7 +58,7 @@ export default function ScheduleEntryList({ entries, onChange }: Props) {
       <button
         type="button"
         onClick={addEntry}
-        className="flex items-center gap-2 text-sm font-medium text-primary-text hover:text-primary-text transition-colors"
+        className="flex items-center gap-2 text-body font-medium text-primary-text hover:text-primary-text transition-colors"
       >
         <Plus size={15} />
         Add schedule entry

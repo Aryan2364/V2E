@@ -21,7 +21,7 @@ function initials(name: string): string {
 
 function Avatar({ name }: { name: string }) {
   return (
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(name)}`}>
+    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 ${avatarColor(name)}`}>
       {initials(name)}
     </div>
   )
@@ -115,7 +115,7 @@ export default function ManageAccessModal({
             <Shield size={17} className="shrink-0" />
             <div className="min-w-0">
               <DialogTitle>Manage access</DialogTitle>
-              {panel && <p className="text-[13px] text-on-brand-muted truncate">“{panel.title}”</p>}
+              {panel && <p className="text-body text-on-brand-muted truncate">“{panel.title}”</p>}
             </div>
           </div>
         </DialogHeader>
@@ -123,7 +123,7 @@ export default function ManageAccessModal({
         {/* Body */}
         <DialogBody className="space-y-4">
           {error && (
-            <div className="bg-danger-bg border border-danger-border rounded-lg px-3 py-2 text-sm text-danger">{error}</div>
+            <div className="bg-danger-bg border border-danger-border rounded-lg px-3 py-2 text-body text-danger">{error}</div>
           )}
 
           {loading ? (
@@ -136,7 +136,7 @@ export default function ManageAccessModal({
             <>
               {/* Add people */}
               <div className="bg-surface-sunken border border-border-light rounded-lg p-3">
-                <div className="flex items-center gap-1.5 mb-2 text-[13px] font-medium text-text-primary">
+                <div className="flex items-center gap-1.5 mb-2 text-body font-medium text-text-primary">
                   <UserPlus size={14} className="text-primary-text" /> Add or remove a person
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -163,12 +163,12 @@ export default function ManageAccessModal({
                   <button
                     onClick={handleAdd}
                     disabled={!addUser || busyUser === addUser}
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                    className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                   >
                     Apply
                   </button>
                 </div>
-                <p className="mt-2 flex items-start gap-1 text-[12px] text-text-muted">
+                <p className="mt-2 flex items-start gap-1 text-meta text-text-muted">
                   <Info size={12} className="mt-0.5 shrink-0" />
                   “No access” hides the template from someone the rules would otherwise let see it. It does not change who does the work — edit the assignees for that.
                 </p>
@@ -176,24 +176,24 @@ export default function ManageAccessModal({
 
               {/* Has access */}
               <div>
-                <p className="text-[12px] font-medium uppercase tracking-wide text-text-muted mb-2">Has access</p>
+                <p className="text-meta font-medium uppercase tracking-wide text-text-muted mb-2">Has access</p>
                 <div className="space-y-1.5">
                   {panel.rule_viewers.map((p) => (
                     <div key={`rv-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-surface-sunken">
                       <Avatar name={p.name} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
-                        <p className="text-[12px] text-text-muted">{SOURCE_LABEL[p.source ?? ''] ?? 'Viewer'} · by rule</p>
+                        <p className="text-body font-medium text-text-primary truncate">{p.name}</p>
+                        <p className="text-meta text-text-muted">{SOURCE_LABEL[p.source ?? ''] ?? 'Viewer'} · by rule</p>
                       </div>
                       {p.source === 'creator' ? (
-                        <span className="text-[12px] font-medium text-text-muted px-2">Full access</span>
+                        <span className="text-meta font-medium text-text-muted px-2">Full access</span>
                       ) : p.source === 'assignee' ? (
-                        <span className="text-[12px] text-text-muted px-2">Does the work</span>
+                        <span className="text-meta text-text-muted px-2">Does the work</span>
                       ) : (
                         <button
                           onClick={() => revoke(p.user_id)}
                           disabled={busyUser === p.user_id}
-                          className="text-[13px] font-medium text-danger hover:underline disabled:opacity-50"
+                          className="text-body font-medium text-danger hover:underline disabled:opacity-50"
                         >
                           Remove
                         </button>
@@ -205,8 +205,8 @@ export default function ManageAccessModal({
                     <div key={`sh-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-surface-sunken">
                       <Avatar name={p.name} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
-                        <p className="text-[12px] text-primary-text">Shared</p>
+                        <p className="text-body font-medium text-text-primary truncate">{p.name}</p>
+                        <p className="text-meta text-primary-text">Shared</p>
                       </div>
                       <StyledSelect
                         value={p.level ?? 'view'}
@@ -217,7 +217,7 @@ export default function ManageAccessModal({
                       <button
                         onClick={() => clear(p.user_id)}
                         disabled={busyUser === p.user_id}
-                        className="text-[13px] font-medium text-danger hover:underline disabled:opacity-50"
+                        className="text-body font-medium text-danger hover:underline disabled:opacity-50"
                       >
                         Remove
                       </button>
@@ -229,19 +229,19 @@ export default function ManageAccessModal({
               {/* Removed */}
               {panel.revokes.length > 0 && (
                 <div>
-                  <p className="text-[12px] font-medium uppercase tracking-wide text-text-muted mb-2">Hidden from</p>
+                  <p className="text-meta font-medium uppercase tracking-wide text-text-muted mb-2">Hidden from</p>
                   <div className="space-y-1.5">
                     {panel.revokes.map((p) => (
                       <div key={`rk-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-surface-sunken">
                         <Avatar name={p.name} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
-                          <p className="text-[12px] text-text-muted">No access</p>
+                          <p className="text-body font-medium text-text-primary truncate">{p.name}</p>
+                          <p className="text-meta text-text-muted">No access</p>
                         </div>
                         <button
                           onClick={() => clear(p.user_id)}
                           disabled={busyUser === p.user_id}
-                          className="text-[13px] font-medium text-primary-text hover:underline disabled:opacity-50"
+                          className="text-body font-medium text-primary-text hover:underline disabled:opacity-50"
                         >
                           Restore
                         </button>

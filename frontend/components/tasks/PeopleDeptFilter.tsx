@@ -103,7 +103,7 @@ export default function PeopleDeptFilter({
   return (
     <div className="px-3.5 py-2 border-b border-border-light last:border-b-0">
       <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[12px] font-medium text-text-secondary">{title}</p>
+        <p className="text-meta font-medium text-text-secondary">{title}</p>
         <div className="flex items-center gap-2.5">
           <span className="text-meta text-text-muted">{allIds.length} {allIds.length === 1 ? 'person' : 'people'}</span>
           <button type="button" onClick={toggleAll} className="flex items-center gap-1.5 group">
@@ -121,7 +121,7 @@ export default function PeopleDeptFilter({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search department, name or role"
-          className="flex-1 min-w-0 bg-transparent text-[12px] text-text-primary placeholder:text-text-muted focus:outline-hidden"
+          className="flex-1 min-w-0 bg-transparent text-meta text-text-primary placeholder:text-text-muted focus:outline-hidden"
         />
       </div>
 
@@ -153,7 +153,7 @@ export default function PeopleDeptFilter({
                 >
                   {checked ? <SquareCheck size={16} className="text-primary-text shrink-0" /> : <Square size={16} className="text-text-muted shrink-0" />}
                   <span className="flex-1 min-w-0 flex items-center gap-1.5">
-                    <span className={`min-w-0 truncate text-[13px] ${checked ? 'text-text-primary font-medium' : 'text-text-secondary'}`}>{p.name}</span>
+                    <span className={`min-w-0 truncate text-body ${checked ? 'text-text-primary font-medium' : 'text-text-secondary'}`}>{p.name}</span>
                     {counts && <span className="shrink-0 tabular-nums text-meta text-text-muted">{counts.get(p.id) ?? 0}</span>}
                   </span>
                   {p.role && <span className="shrink-0 max-w-[38%] truncate text-meta text-text-muted">{p.role}</span>}
@@ -163,7 +163,7 @@ export default function PeopleDeptFilter({
           </div>
         ))}
         {filteredGroups.length === 0 && (
-          <p className="px-1.5 py-2 text-[12px] text-text-muted">No people match “{query}”.</p>
+          <p className="px-1.5 py-2 text-meta text-text-muted">No people match “{query}”.</p>
         )}
       </div>
     </div>

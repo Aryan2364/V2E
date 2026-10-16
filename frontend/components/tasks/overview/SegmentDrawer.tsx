@@ -64,7 +64,7 @@ export default function SegmentDrawer({
       <SheetContent side="right" className="w-full max-w-[460px] flex flex-col p-0">
         <SheetHeader>
           <div className="min-w-0">
-            {subtitle && <div className="text-xs font-medium text-on-brand-muted">{subtitle}</div>}
+            {subtitle && <div className="text-meta font-medium text-on-brand-muted">{subtitle}</div>}
             <SheetTitle className="truncate">{title}</SheetTitle>
           </div>
         </SheetHeader>
@@ -96,14 +96,14 @@ export default function SegmentDrawer({
                   className="w-full text-left px-4 py-3.5 border-b border-border-light hover:bg-primary-subtle transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3 mb-1.5">
-                    <div className="font-medium text-sm leading-snug text-text-primary">{r.title}</div>
+                    <div className="font-medium text-body leading-snug text-text-primary">{r.title}</div>
                     {r.priority && (
                       <span className="text-meta font-medium rounded-full px-2 py-0.5 shrink-0" style={{ backgroundColor: (r.priority.color || 'var(--text-secondary)') + '22', color: r.priority.color || 'var(--text-secondary)' }}>
                         {r.priority.label}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-text-secondary mb-2 flex-wrap">
+                  <div className="flex items-center gap-1.5 text-meta text-text-secondary mb-2 flex-wrap">
                     {r.assignees?.filter((a) => !a.is_cc).slice(0, 2).map((a) => (
                       <span key={a.user_id} className="font-medium text-text-primary">{a.user?.name ?? a.user_name ?? 'Unknown'}</span>
                     ))}
@@ -113,7 +113,7 @@ export default function SegmentDrawer({
                       r.created_by?.name && <><span className="text-text-muted">·</span><span>by {r.created_by.name}</span></>
                     )}
                   </div>
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center justify-between text-meta">
                     <span className="inline-flex items-center gap-1.5 font-medium" style={{ color: TIMING_META[t].color }}>
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TIMING_META[t].color }} />
                       {TIMING_META[t].label}
@@ -136,8 +136,8 @@ export default function SegmentDrawer({
 function Stat({ label, value, color = 'var(--text-primary)' }: { label: string; value: number; color?: string }) {
   return (
     <div>
-      <div className="text-lg font-medium tabular-nums leading-none" style={{ color }}>{value}</div>
-      <div className="text-xs mt-0.5 text-text-muted">{label}</div>
+      <div className="text-card-heading font-medium tabular-nums leading-none" style={{ color }}>{value}</div>
+      <div className="text-meta mt-0.5 text-text-muted">{label}</div>
     </div>
   )
 }

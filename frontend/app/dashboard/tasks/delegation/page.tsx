@@ -35,11 +35,11 @@ function DelegationCard({ d, onClick }: { d: Delegation; onClick: () => void }) 
       className="text-left bg-surface border border-border-light rounded-card p-4 hover:border-border hover:shadow-card transition-all flex flex-col gap-3"
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="text-[15px] font-medium text-text-primary leading-snug line-clamp-2">{d.title}</h3>
+        <h3 className="text-body font-medium text-text-primary leading-snug line-clamp-2">{d.title}</h3>
         <StatusPill status={d.status} />
       </div>
-      <p className="text-sm text-text-secondary line-clamp-2">{d.outcome}</p>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-text-muted mt-auto pt-1">
+      <p className="text-body text-text-secondary line-clamp-2">{d.outcome}</p>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-meta text-text-muted mt-auto pt-1">
         <span className="inline-flex items-center gap-1.5">
           <User size={13} className="text-text-muted" />
           {d.owner?.name ?? 'Unknown'}
@@ -170,8 +170,8 @@ export default function DelegationPage() {
         <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
           <Lock size={26} className="text-text-muted" />
         </div>
-        <h1 className="text-[18px] font-medium text-text-primary mb-1">Delegation isn’t enabled</h1>
-        <p className="text-sm text-text-secondary max-w-sm">
+        <h1 className="text-card-heading font-medium text-text-primary mb-1">Delegation isn’t enabled</h1>
+        <p className="text-body text-text-secondary max-w-sm">
           This module isn’t part of your organization’s plan yet. Contact your administrator to have it turned on.
         </p>
       </div>
@@ -188,8 +188,8 @@ export default function DelegationPage() {
         <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
           <Lock size={26} className="text-text-muted" />
         </div>
-        <h1 className="text-[18px] font-medium text-text-primary mb-1">Delegation isn’t available to you</h1>
-        <p className="text-sm text-text-secondary max-w-sm">
+        <h1 className="text-card-heading font-medium text-text-primary mb-1">Delegation isn’t available to you</h1>
+        <p className="text-body text-text-secondary max-w-sm">
           You don’t have permission to delegate. Contact your administrator if you need it.
         </p>
       </div>
@@ -233,13 +233,13 @@ export default function DelegationPage() {
                 type="button"
                 onClick={() => setView(t)}
                 className={[
-                  'relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors',
+                  'relative flex items-center gap-2 px-4 py-2.5 text-body font-medium transition-colors',
                   active ? 'text-primary-text' : 'text-text-muted hover:text-text-primary',
                 ].join(' ')}
               >
                 {TAB_META[t].label}
                 {count > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-[999px] bg-primary text-white text-[11px] font-medium">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-[999px] bg-primary text-primary-foreground text-meta font-medium">
                     {count}
                   </span>
                 )}
@@ -263,8 +263,8 @@ export default function DelegationPage() {
             <div className="w-16 h-16 rounded-full bg-primary-subtle flex items-center justify-center mb-4">
               <ArrowRightLeft size={28} className="text-primary-text" />
             </div>
-            <h2 className="text-[18px] font-medium text-text-primary mb-1">{TAB_META[view].empty}</h2>
-            <p className="text-sm text-text-secondary max-w-xs">
+            <h2 className="text-card-heading font-medium text-text-primary mb-1">{TAB_META[view].empty}</h2>
+            <p className="text-body text-text-secondary max-w-xs">
               {canDelegate
                 ? 'Create a delegation to hand an outcome to someone with clear success criteria.'
                 : 'Delegations others hand to you will appear here.'}
@@ -276,7 +276,7 @@ export default function DelegationPage() {
                   setEditing(null)
                   setModalOpen(true)
                 }}
-                className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-control text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+                className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-control text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
               >
                 <Plus size={16} /> New delegation
               </button>

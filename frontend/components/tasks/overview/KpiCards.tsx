@@ -33,17 +33,17 @@ function Card({
         <span className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: iconColor + '18', color: iconColor }}>
           {icon}
         </span>
-        {onClick && <span className="text-text-muted text-sm">›</span>}
+        {onClick && <span className="text-text-muted text-body">›</span>}
       </div>
-      <p className="text-2xl font-medium leading-none tabular-nums" style={{ color: valueColor }}>{value}</p>
-      <p className="text-[13px] mt-1.5 text-text-secondary">{label}</p>
+      <p className="text-page-title font-medium leading-none tabular-nums" style={{ color: valueColor }}>{value}</p>
+      <p className="text-body mt-1.5 text-text-secondary">{label}</p>
       {delta != null && (
-        <p className="text-[12px] mt-1 font-medium flex items-center gap-1" style={{ color: delta >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+        <p className="text-meta mt-1 font-medium flex items-center gap-1" style={{ color: delta >= 0 ? 'var(--success)' : 'var(--danger)' }}>
           {delta >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
           {Math.abs(delta)} pts <span className="text-text-muted font-normal">vs last month</span>
         </p>
       )}
-      {sub && delta == null && <p className="text-[12px] mt-1 text-text-muted">{sub}</p>}
+      {sub && delta == null && <p className="text-meta mt-1 text-text-muted">{sub}</p>}
     </button>
   )
 }

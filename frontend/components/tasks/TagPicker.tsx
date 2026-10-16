@@ -184,7 +184,7 @@ export function TagPicker({
 
   if (error) {
     return (
-      <div role="alert" className="flex items-center gap-2 h-[42px] w-full rounded-lg border border-border bg-surface px-3 text-sm text-secondary">
+      <div role="alert" className="flex items-center gap-2 h-[42px] w-full rounded-lg border border-border bg-surface px-3 text-body text-secondary">
         <span>Couldn’t load tags</span>
         <span aria-hidden="true">·</span>
         <button
@@ -226,7 +226,7 @@ export function TagPicker({
       />
 
       {notice?.kind === 'conflict' && (
-        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-secondary">
+        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body text-secondary">
           {canReactivate && notice.tagId ? (
             <>
               <span>‘{notice.name}’ exists but is deactivated.</span>
@@ -245,7 +245,7 @@ export function TagPicker({
         </p>
       )}
       {notice?.kind === 'error' && (
-        <p role="alert" className="mt-1 text-sm text-danger">
+        <p role="alert" className="mt-1 text-body text-danger">
           {notice.message}
         </p>
       )}

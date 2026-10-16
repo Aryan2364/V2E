@@ -396,14 +396,14 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
         <form id="edit-task-form" onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
+            <label className="block text-label font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
             <div className="relative">
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value.slice(0, 50))}
                 maxLength={50}
-                className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-base sm:text-sm text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
+                className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-body sm:text-body text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
               />
               <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-meta ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
                 {title.length}/50
@@ -418,11 +418,11 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {(canReassign || canEditCc) && (
             <div>
               <div className="flex items-center gap-2 mb-1.5">
-                <label className="text-sm font-medium text-text-secondary">
+                <label className="text-label font-medium text-text-secondary">
                   Assignees &amp; CC <span className="text-danger">*</span>
                 </label>
                 {roster.length > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
                     {roster.length}
                   </span>
                 )}
@@ -434,7 +434,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                     {roster.map((a) => (
                       <span
                         key={a.user_id}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-border-light bg-surface-sunken pl-2 pr-2.5 py-1 text-[13px] text-text-primary"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border-light bg-surface-sunken pl-2 pr-2.5 py-1 text-body text-text-primary"
                       >
                         {a.name}
                         {a.is_cc && (
@@ -471,7 +471,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                     {primaryAssignees.map((a) => (
                       <span
                         key={a.user_id}
-                        className="inline-flex items-center rounded-full border border-border-light bg-surface-sunken px-2.5 py-1 text-[13px] text-text-primary"
+                        className="inline-flex items-center rounded-full border border-border-light bg-surface-sunken px-2.5 py-1 text-body text-text-primary"
                       >
                         {a.name}
                       </span>
@@ -501,7 +501,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                   <p className="text-meta font-medium text-text-secondary mb-1">Previously on this task</p>
                   <ul className="space-y-0.5">
                     {task.removed_assignees!.map((a) => (
-                      <li key={a.id} className="text-[12px] text-text-secondary">
+                      <li key={a.id} className="text-meta text-text-secondary">
                         <span className="text-text-primary">{a.user?.name ?? a.user_name ?? 'Unknown'}</span>
                         {a.is_cc ? ' (CC)' : ''}
                         {a.removed_at ? ` · removed ${fmtDate(a.removed_at)}` : ''}
@@ -517,12 +517,12 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {/* Completion mode */}
           {assigneeCount > 1 && (
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">Completion Mode</label>
+              <label className="block text-label font-medium text-text-secondary mb-2">Completion Mode</label>
               <div className="flex gap-3">
                 {(['any_can_complete', 'all_must_complete'] as CompletionMode[]).map((mode) => (
                   <label key={mode} className="flex items-center gap-2 cursor-pointer">
                     <input type="radio" name="completionMode" value={mode} checked={completionMode === mode} onChange={() => setCompletionMode(mode)} className="accent-primary" />
-                    <span className="text-sm text-text-primary">{mode === 'any_can_complete' ? 'Any assignee can complete' : 'All assignees must complete'}</span>
+                    <span className="text-body text-text-primary">{mode === 'any_can_complete' ? 'Any assignee can complete' : 'All assignees must complete'}</span>
                   </label>
                 ))}
               </div>
@@ -532,7 +532,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {/* Deadline */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-text-secondary">Deadline <span className="text-danger">*</span></label>
+              <label className="text-label font-medium text-text-secondary">Deadline <span className="text-danger">*</span></label>
               {deadlineDate && (
                 <button type="button" onClick={() => { setDeadlineDate(''); setDeadlineTime('') }} className="flex items-center gap-1 text-meta text-text-muted hover:text-danger transition-colors">
                   <X size={10} /> Clear
@@ -580,7 +580,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
             {(task.deadline_revision_count ?? 0) > 0 && task.original_deadline && (
               <div className="mt-2 rounded-lg border border-warning-border bg-warning-bg px-3 py-2">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-[12px] text-warning">
+                  <p className="text-meta text-warning">
                     Originally due <strong className="font-medium">{fmtDate(task.original_deadline)}</strong>
                     {' · '}revised {task.deadline_revision_count}
                     {task.deadline_revision_count === 1 ? ' time' : ' times'}.
@@ -620,7 +620,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 an existing one — a note attached to nothing is just noise. */}
             {task.deadline && deadline !== task.deadline && (
               <div className="mt-2">
-                <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                <label className="block text-label font-medium text-text-secondary mb-1.5">
                   Why is the deadline changing? <span className="text-text-secondary font-normal">Optional</span>
                 </label>
                 <input
@@ -629,7 +629,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                   onChange={(e) => setDeadlineReason(e.target.value.slice(0, 500))}
                   maxLength={500}
                   placeholder="e.g. client pushed the review to next week"
-                  className="w-full border border-border rounded-lg px-3 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
+                  className="w-full border border-border rounded-lg px-3 py-[10px] text-body sm:text-body text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
                 />
                 <p className="text-meta text-text-secondary mt-1">
                   Recorded against this change, and everyone on the task is told the date moved.
@@ -640,14 +640,14 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Description</label>
+            <label className="block text-label font-medium text-text-secondary mb-1.5">Description</label>
             <div className="relative">
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value.slice(0, 2000))}
                 maxLength={2000}
                 rows={3}
-                className="w-full border border-border rounded-lg px-3 pt-[10px] pb-6 text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface resize-none"
+                className="w-full border border-border rounded-lg px-3 pt-[10px] pb-6 text-body sm:text-body text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface resize-none"
               />
               <span className={`pointer-events-none absolute right-3 bottom-2 text-meta ${description.length >= 2000 ? 'text-danger' : 'text-text-muted'}`}>
                 {description.length}/2000
@@ -658,7 +658,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {/* Priority + Category + Status */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Priority</label>
+              <label className="block text-label font-medium text-text-secondary mb-1.5">Priority</label>
               <StyledSelect
                 value={priorityId}
                 onChange={(v) => setPriorityId(v)}
@@ -670,7 +670,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Category</label>
+              <label className="block text-label font-medium text-text-secondary mb-1.5">Category</label>
               <StyledSelect
                 value={categoryId}
                 onChange={(v) => setCategoryId(v)}
@@ -682,11 +682,11 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Status</label>
+              <label className="block text-label font-medium text-text-secondary mb-1.5">Status</label>
               {taskIsTerminal && currentStatus ? (
                 <div className="flex items-center h-[42px]">
                   <span
-                    className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium"
+                    className="inline-flex items-center rounded-full px-3 py-1 text-body font-medium"
                     style={{ backgroundColor: currentStatus.color + '22', color: currentStatus.color, border: `1px solid ${currentStatus.color}44` }}
                   >
                     {currentStatus.label}
@@ -704,7 +704,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
 
           {/* Tags — full width, directly under Priority/Category/Status. */}
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Tags</label>
+            <label className="block text-label font-medium text-text-secondary mb-1.5">Tags</label>
             <TagPicker orgId={orgId} value={tagIds} onChange={setTagIds} disabled={submitting} knownTags={task.tags} />
           </div>
 
@@ -744,10 +744,10 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 aria-expanded={attachmentsOpen}
                 className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-surface-sunken transition-colors"
               >
-                <label className="text-sm font-medium text-text-secondary cursor-pointer">Attachments</label>
-                <span className="text-xs font-normal text-text-secondary">Optional</span>
+                <label className="text-label font-medium text-text-secondary cursor-pointer">Attachments</label>
+                <span className="text-meta font-normal text-text-secondary">Optional</span>
                 {existingAttachments.length + attachmentFiles.length > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
                     {existingAttachments.length + attachmentFiles.length}
                   </span>
                 )}
@@ -797,7 +797,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
             the fold when the form is scrolled down. */}
         <DialogFooter className="flex-col items-stretch space-y-3 sm:items-stretch">
           {error && (
-            <div className="bg-danger-bg border border-danger-border rounded-lg px-4 py-3 text-sm text-danger">{error}</div>
+            <div className="bg-danger-bg border border-danger-border rounded-lg px-4 py-3 text-body text-danger">{error}</div>
           )}
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
             <Button type="submit" form="edit-task-form" disabled={submitting} loading={submitting} loadingLabel="Saving" className="w-full sm:w-auto">

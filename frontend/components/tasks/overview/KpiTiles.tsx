@@ -59,8 +59,8 @@ export default function KpiTiles({
               </span>
             </div>
             <div>
-              <p className="text-2xl font-medium text-text-primary leading-tight tabular-nums">{value}</p>
-              <p className="text-[13px] mt-0.5" style={{ color: isActive ? t.color : 'var(--text-secondary)' }}>{t.label}</p>
+              <p className="text-page-title font-medium text-text-primary leading-tight tabular-nums">{value}</p>
+              <p className="text-body mt-0.5" style={{ color: isActive ? t.color : 'var(--text-secondary)' }}>{t.label}</p>
             </div>
           </button>
         )

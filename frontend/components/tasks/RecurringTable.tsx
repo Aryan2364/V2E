@@ -33,8 +33,8 @@ export default function RecurringTable({
   const catMap = new Map(categories.map((c) => [c.id, c]))
   const prioMap = new Map(priorities.map((p) => [p.id, p]))
 
-  const TH = 'text-left text-[12px] font-medium uppercase tracking-wide text-text-muted px-3 py-2.5 whitespace-nowrap'
-  const TD = 'px-3 py-3 text-sm text-text-primary align-middle'
+  const TH = 'text-left text-meta font-medium uppercase tracking-wide text-text-muted px-3 py-2.5 whitespace-nowrap'
+  const TD = 'px-3 py-3 text-body text-text-primary align-middle'
 
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card overflow-hidden">
@@ -68,7 +68,7 @@ export default function RecurringTable({
                 >
                   <td className={`${TD} max-w-[260px]`}>
                     <p className="font-medium text-text-primary truncate">{t.title}</p>
-                    {t.description && <p className="text-[12px] text-text-muted truncate">{t.description}</p>}
+                    {t.description && <p className="text-meta text-text-muted truncate">{t.description}</p>}
                   </td>
                   <td className={`${TD} whitespace-nowrap`}>{t.created_by_name ?? '—'}</td>
                   <Tooltip label={(t.assignee_names ?? []).join(', ')}>

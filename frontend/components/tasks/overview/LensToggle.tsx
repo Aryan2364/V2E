@@ -20,8 +20,8 @@ export default function LensToggle({ value, onChange }: { value: Lens; onChange:
             key={key}
             type="button"
             onClick={() => onChange(key)}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-[6px] text-sm font-medium transition-colors ${
-              active ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-[6px] text-body font-medium transition-colors ${
+              active ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
             }`}
           >
             {icon}

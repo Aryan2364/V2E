@@ -584,14 +584,14 @@ export default function TasksOverviewPage() {
   // Active-filter chips — multiple filters stack and each is individually removable.
   const pillsBar = pills.length > 0 ? (
     <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-[12px] text-text-muted font-medium">Active filters:</span>
+      <span className="text-meta text-text-muted font-medium">Active filters:</span>
       {pills.map((p, i) => (
-        <span key={i} className="inline-flex items-center gap-1.5 rounded-[999px] bg-primary-subtle border border-primary-border text-primary-text text-[12px] font-medium pl-2.5 pr-1.5 py-1">
+        <span key={i} className="inline-flex items-center gap-1.5 rounded-[999px] bg-primary-subtle border border-primary-border text-primary-text text-meta font-medium pl-2.5 pr-1.5 py-1">
           {p.label}
-          <button onClick={p.clear} className="w-4 h-4 rounded-full hover:bg-primary hover:text-white flex items-center justify-center transition-colors"><X size={11} /></button>
+          <button onClick={p.clear} className="w-4 h-4 rounded-full hover:bg-primary hover:text-primary-foreground flex items-center justify-center transition-colors"><X size={11} /></button>
         </span>
       ))}
-      <button onClick={clearFilters} className="text-[12px] text-danger font-medium hover:underline">Clear all</button>
+      <button onClick={clearFilters} className="text-meta text-danger font-medium hover:underline">Clear all</button>
     </div>
   ) : null
 
@@ -660,7 +660,7 @@ export default function TasksOverviewPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
         <p className="font-medium text-text-primary">No organization found</p>
-        <p className="text-sm text-text-secondary mt-1">You are not a member of any organization.</p>
+        <p className="text-body text-text-secondary mt-1">You are not a member of any organization.</p>
       </div>
     )
   }
@@ -708,7 +708,7 @@ export default function TasksOverviewPage() {
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <LensToggle value={lens} onChange={switchLens} />
           <button onClick={() => setShowInsights((v) => !v)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-control border text-sm font-medium transition-colors ${showInsights ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-control border text-body font-medium transition-colors ${showInsights ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
             <BarChart3 size={15} /> Insights
           </button>
         </div>
@@ -805,14 +805,14 @@ export default function TasksOverviewPage() {
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search tasks…"
-            className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
+            className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
         <button onClick={() => setShowFilters((v) => !v)}
-          className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border text-sm font-medium transition-colors ${showFilters || filtersActive ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
+          className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border text-body font-medium transition-colors ${showFilters || filtersActive ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary hover:bg-surface-control'}`}>
           <SlidersHorizontal size={15} /> Filters{filtersActive && <span className="ml-0.5 w-1.5 h-1.5 rounded-full bg-primary" />}
         </button>
         <button onClick={exportCsv} disabled={exporting}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-control disabled:opacity-60 transition-colors">
+          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border border-border-light text-body font-medium text-text-secondary hover:bg-surface-control disabled:opacity-60 transition-colors">
           <Download size={15} /> {exporting ? 'Exporting…' : 'Export'}
         </button>
         <StyledSelect
@@ -911,15 +911,15 @@ export default function TasksOverviewPage() {
         <div className="flex items-center gap-3">
           {rows.length > 0 && (
             <button onClick={() => setSelected((prev) => prev.size === rows.length ? new Set() : new Set(rows.map((r) => r.id)))}
-              className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
+              className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors">
               <ListChecks size={15} /> {selected.size === rows.length && rows.length > 0 ? 'Deselect' : 'Select'} page
             </button>
           )}
-          <p className="text-sm text-text-secondary">
+          <p className="text-body text-text-secondary">
             {loadingList ? 'Loading…' : <><span className="font-medium text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}{bucket ? ' in this bucket' : ''}</>}
           </p>
         </div>
-        {bucket && <button onClick={() => setBucket(null)} className="text-sm text-primary-text hover:underline flex items-center gap-1"><X size={13} /> Clear bucket</button>}
+        {bucket && <button onClick={() => setBucket(null)} className="text-body text-primary-text hover:underline flex items-center gap-1"><X size={13} /> Clear bucket</button>}
       </div>
 
       {/* Result surface */}
@@ -928,8 +928,8 @@ export default function TasksOverviewPage() {
       ) : rows.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4"><CheckSquare size={24} className="text-text-muted" /></div>
-          <p className="font-medium text-text-primary text-base">{filtersActive || bucket || drilled ? 'No tasks match this view' : 'No tasks here yet'}</p>
-          <p className="text-text-secondary text-sm mt-1 text-center max-w-xs">{filtersActive || bucket || drilled ? 'Try adjusting your filters or scope.' : 'Create a task to get started.'}</p>
+          <p className="font-medium text-text-primary text-body">{filtersActive || bucket || drilled ? 'No tasks match this view' : 'No tasks here yet'}</p>
+          <p className="text-text-secondary text-body mt-1 text-center max-w-xs">{filtersActive || bucket || drilled ? 'Try adjusting your filters or scope.' : 'Create a task to get started.'}</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
@@ -938,7 +938,7 @@ export default function TasksOverviewPage() {
           ))}
           {hasMore && (
             <button onClick={() => fetchList(page + 1, false)} disabled={loadingMore}
-              className="mt-2 mx-auto px-4 py-2.5 rounded-control border border-border-light bg-surface text-sm font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
+              className="mt-2 mx-auto px-4 py-2.5 rounded-control border border-border-light bg-surface text-body font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
               {loadingMore ? 'Loading…' : `Load more (${total - rows.length} left)`}
             </button>
           )}
@@ -952,10 +952,10 @@ export default function TasksOverviewPage() {
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search tasks…"
-            className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
+            className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
         <button onClick={exportCsv} disabled={exporting}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-control disabled:opacity-60 transition-colors">
+          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-control border border-border-light text-body font-medium text-text-secondary hover:bg-surface-control disabled:opacity-60 transition-colors">
           <Download size={15} /> {exporting ? 'Exporting…' : 'Export'}
         </button>
       </div>
@@ -964,13 +964,13 @@ export default function TasksOverviewPage() {
 
       {/* Live entry count — reads at any point, before or after filters. */}
       <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1 rounded-[999px] bg-primary text-white text-[13px] font-medium px-2.5 py-1 tabular-nums">
+        <span className="inline-flex items-center gap-1 rounded-[999px] bg-primary text-primary-foreground text-body font-medium px-2.5 py-1 tabular-nums">
           {loadingList ? '…' : total}
           {!loadingList && filtersActive && scopeTotal != null && scopeTotal !== total && (
-            <span className="font-medium text-white/80">of {scopeTotal}</span>
+            <span className="font-medium text-primary-foreground/80">of {scopeTotal}</span>
           )}
         </span>
-        <span className="text-sm text-text-secondary">
+        <span className="text-body text-text-secondary">
           {filtersActive ? 'entries match your filters' : `entr${total === 1 ? 'y' : 'ies'} in this view`}
         </span>
       </div>

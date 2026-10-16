@@ -243,15 +243,15 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
           aria-expanded={open}
           className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-surface-sunken transition-colors"
         >
-          <label className="text-sm font-medium text-text-secondary cursor-pointer shrink-0">Reminders</label>
-          <span className="text-xs font-normal text-text-secondary shrink-0">Optional</span>
+          <label className="text-label font-medium text-text-secondary cursor-pointer shrink-0">Reminders</label>
+          <span className="text-meta font-normal text-text-secondary shrink-0">Optional</span>
           {available && reminders.length > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium shrink-0">
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium shrink-0">
               {reminders.length}
             </span>
           )}
           {!open && available && (
-            <span className="min-w-0 flex-1 truncate text-xs text-text-secondary">
+            <span className="min-w-0 flex-1 truncate text-meta text-text-secondary">
               {reminders.length === 0
                 ? 'None'
                 : reminders.length === 1
@@ -270,7 +270,7 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
         {open && (
           <div className="px-3 pb-3 pt-0 space-y-2 max-h-[340px] overflow-y-auto">
             {reminders.length === 0 ? (
-              <p className="text-xs text-text-secondary px-1 py-2">No reminders — the assignee won’t be nudged before the deadline.</p>
+              <p className="text-meta text-text-secondary px-1 py-2">No reminders — the assignee won’t be nudged before the deadline.</p>
             ) : (
               reminders.map((r) => {
                 let hint: string | null = null
@@ -307,8 +307,8 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
                             type="button"
                             onClick={() => update(r.key, { kind: k })}
                             className={[
-                              'px-2 py-1.5 rounded-[6px] text-xs font-medium transition-colors',
-                              active ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface',
+                              'px-2 py-1.5 rounded-[6px] text-meta font-medium transition-colors',
+                              active ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:bg-surface',
                             ].join(' ')}
                           >
                             {label}
@@ -324,13 +324,13 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
                           <OffsetDaysInput
                             value={r.offsetDays}
                             onChange={(n) => update(r.key, { offsetDays: n })}
-                            className="w-11 text-center border border-border rounded-lg px-2 py-1.5 text-[13px] text-text-primary bg-surface-sunken hover:bg-surface hover:border-border-strong focus:bg-surface focus:border-2 focus:border-primary focus:outline-hidden"
+                            className="w-11 text-center border border-border rounded-lg px-2 py-1.5 text-body text-text-primary bg-surface-sunken hover:bg-surface hover:border-border-strong focus:bg-surface focus:border-2 focus:border-primary focus:outline-hidden"
                           />
-                          <span className="text-[13px] text-text-secondary">days before</span>
+                          <span className="text-body text-text-secondary">days before</span>
                           <div className="w-[104px]">
                             <TimeField value={r.time} onChange={(v) => update(r.key, { time: v })} label="Reminder time" compact />
                           </div>
-                          {hint && <span className="text-xs font-medium text-primary-text">→ {hint}</span>}
+                          {hint && <span className="text-meta font-medium text-primary-text">→ {hint}</span>}
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
@@ -352,14 +352,14 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
 
                       {/* recipients — sit at the right of the same row, wrap under if tight */}
                       <div className="flex items-center gap-1.5 ml-auto">
-                        <span className="text-xs text-text-secondary">Notify:</span>
-                        <span className="px-2.5 py-1 rounded-full text-meta font-medium bg-primary text-white">Assignee</span>
+                        <span className="text-meta text-text-secondary">Notify:</span>
+                        <span className="px-2.5 py-1 rounded-full text-meta font-medium bg-primary text-primary-foreground">Assignee</span>
                         <button
                           type="button"
                           onClick={() => update(r.key, { toAssigner: !r.toAssigner })}
                           className={[
                             'px-2.5 py-1 rounded-full text-meta font-medium border transition-colors',
-                            r.toAssigner ? 'bg-primary text-white border-primary' : 'bg-surface text-text-secondary border-border hover:border-border-strong',
+                            r.toAssigner ? 'bg-primary text-primary-foreground border-primary' : 'bg-surface text-text-secondary border-border hover:border-border-strong',
                           ].join(' ')}
                         >
                           Assigner
@@ -369,7 +369,7 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
                           onClick={() => update(r.key, { toCc: !r.toCc })}
                           className={[
                             'px-2.5 py-1 rounded-full text-meta font-medium border transition-colors',
-                            r.toCc ? 'bg-primary text-white border-primary' : 'bg-surface text-text-secondary border-border hover:border-border-strong',
+                            r.toCc ? 'bg-primary text-primary-foreground border-primary' : 'bg-surface text-text-secondary border-border hover:border-border-strong',
                           ].join(' ')}
                         >
                           CC
@@ -389,14 +389,14 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
             <button
               type="button"
               onClick={add}
-              className="flex items-center justify-center gap-1.5 w-full px-3 py-2 text-sm font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors"
+              className="flex items-center justify-center gap-1.5 w-full px-3 py-2 text-body font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors"
             >
               <Plus size={14} /> Add reminder
             </button>
           </div>
         )}
       </div>
-      {gate && <p className="mt-1.5 text-xs text-danger">{gate}</p>}
+      {gate && <p className="mt-1.5 text-meta text-danger">{gate}</p>}
     </div>
   )
 }

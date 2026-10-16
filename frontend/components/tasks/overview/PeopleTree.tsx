@@ -36,7 +36,7 @@ function initials(name: string) {
 function Stat({ icon, value, color, title }: { icon: React.ReactNode; value: number; color: string; title: string }) {
   return (
     <Tooltip label={title}>
-      <span className="inline-flex items-center gap-1 text-[12px] font-medium tabular-nums" style={{ color }}>
+      <span className="inline-flex items-center gap-1 text-meta font-medium tabular-nums" style={{ color }}>
         {icon}{value}
       </span>
     </Tooltip>
@@ -60,13 +60,13 @@ function Row({ node, depth }: { node: TreeNode; depth: number }) {
         >
           {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </button>
-        <div className="w-7 h-7 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center shrink-0">
+        <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-meta font-medium flex items-center justify-center shrink-0">
           {initials(node.name)}
         </div>
         <button onClick={() => router.push(`/dashboard/tasks/people/${node.user_id}`)} className="min-w-0 flex-1 text-left group">
-          <p className="text-[14px] font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">{node.name}</p>
+          <p className="text-body font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">{node.name}</p>
           {(node.role_title || node.department_name) && (
-            <p className="text-[12px] text-text-muted truncate">{[node.role_title, node.department_name].filter(Boolean).join(' · ')}</p>
+            <p className="text-meta text-text-muted truncate">{[node.role_title, node.department_name].filter(Boolean).join(' · ')}</p>
           )}
         </button>
         <div className="flex items-center gap-3 shrink-0 pl-2">
@@ -93,12 +93,12 @@ function Row({ node, depth }: { node: TreeNode; depth: number }) {
 export default function PeopleTree({ data }: { data: PeopleTreeData }) {
   const forest = useMemo(() => buildForest(data.nodes, data.root_user_id), [data])
   if (!data.nodes.length) {
-    return <p className="text-[13px] text-text-muted py-6 text-center">No people in this view.</p>
+    return <p className="text-body text-text-muted py-6 text-center">No people in this view.</p>
   }
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-3 flex flex-col h-[420px]">
       <div className="flex items-center justify-between px-1 pb-2 mb-1 border-b border-border-light shrink-0">
-        <p className="text-[13px] font-medium text-text-primary">Reporting tree · workload</p>
+        <p className="text-body font-medium text-text-primary">Reporting tree · workload</p>
         <p className="text-meta text-text-muted hidden sm:flex items-center gap-3">
           <span className="inline-flex items-center gap-1"><Users size={11} /> assigned</span>
           <span className="inline-flex items-center gap-1 text-danger"><AlertTriangle size={11} /> overdue</span>

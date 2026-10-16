@@ -40,7 +40,7 @@ export default function GoalSelectField({ orgId, value, onChange, hint }: Props)
 
   return (
     <div>
-      <label className="block text-sm font-medium text-text-secondary mb-1.5">Link to goal</label>
+      <label className="block text-label font-medium text-text-secondary mb-1.5">Link to goal</label>
       <StyledSelect
         value={value}
         onChange={onChange}

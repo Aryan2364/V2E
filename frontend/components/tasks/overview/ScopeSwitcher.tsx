@@ -44,8 +44,8 @@ export default function ScopeSwitcher({
             key={scope}
             type="button"
             onClick={() => onChange(scope)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-sm font-medium transition-colors ${
-              active ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-body font-medium transition-colors ${
+              active ? 'bg-primary text-primary-foreground' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
             }`}
           >
             {icon}

@@ -109,7 +109,7 @@ export default function TaskTable({
       onChange={(v) => onFilter(key, v)}
       placeholder={allLabel}
       wrapperClassName="w-full"
-      triggerClassName="py-1! text-[12px]!"
+      triggerClassName="py-1! text-meta!"
       options={[{ value: '', label: allLabel }, ...options]}
     />
   )
@@ -117,7 +117,7 @@ export default function TaskTable({
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse">
+        <table className="w-full text-body border-collapse">
           <thead>
             <tr className="bg-surface-sunken border-b border-border-light">
               <Th>Task</Th>
@@ -196,7 +196,7 @@ export default function TaskTable({
                 <td colSpan={11} className="py-12 text-center">
                   <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center mx-auto mb-3"><CheckSquare size={20} className="text-text-muted" /></div>
                   <p className="font-medium text-text-primary">No tasks match these filters</p>
-                  <p className="text-sm text-text-secondary mt-1">Clear a filter to widen the view.</p>
+                  <p className="text-label text-text-secondary mt-1">Clear a filter to widen the view.</p>
                 </td>
               </tr>
             ) : (
@@ -210,7 +210,7 @@ export default function TaskTable({
                       <div className="text-meta text-text-muted">{t.type === 'recurring' ? 'Recurring' : 'One-time'}</div>
                     </td>
                     <td className="px-3 py-2.5 align-top max-w-[260px]">
-                      <div className="text-[13px] text-text-secondary line-clamp-2">{t.description || '—'}</div>
+                      <div className="text-body text-text-secondary line-clamp-2">{t.description || '—'}</div>
                     </td>
                     <td className="px-3 py-2.5 align-top text-text-primary whitespace-nowrap">{assigneeLabel(t)}</td>
                     <td className="px-3 py-2.5 align-top text-text-secondary whitespace-nowrap">
@@ -227,7 +227,7 @@ export default function TaskTable({
                     <td className="px-3 py-2.5 align-top">{t.priority ? <Badge label={t.priority.label} color={t.priority.color} /> : '—'}</td>
                     <td className="px-3 py-2.5 align-top">{t.status ? <Badge label={t.status.label} color={t.status.color} /> : '—'}</td>
                     <td className="px-3 py-2.5 align-top whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1.5 text-[12px] font-medium" style={{ color: TIMING_META[timing].color }}>
+                      <span className="inline-flex items-center gap-1.5 text-meta font-medium" style={{ color: TIMING_META[timing].color }}>
                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TIMING_META[timing].color }} />
                         {TIMING_META[timing].label}
                       </span>
@@ -241,9 +241,9 @@ export default function TaskTable({
         </table>
       </div>
       <div className="flex items-center justify-between px-4 py-3 border-t border-border-light bg-surface-sunken">
-        <span className="text-xs text-text-secondary"><span className="font-medium text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}</span>
+        <span className="text-meta text-text-secondary"><span className="font-medium text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}</span>
         {hasMore && (
-          <button onClick={onLoadMore} disabled={loadingMore} className="px-4 py-2 rounded-lg border border-border-light bg-surface text-sm font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
+          <button onClick={onLoadMore} disabled={loadingMore} className="px-4 py-2 rounded-lg border border-border-light bg-surface text-label font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
             {loadingMore ? 'Loading…' : `Load more (${total - rows.length} left)`}
           </button>
         )}
@@ -253,5 +253,5 @@ export default function TaskTable({
 }
 
 function Th({ children }: { children: React.ReactNode }) {
-  return <th className="text-left font-medium text-[12px] text-text-secondary px-3 py-2.5 whitespace-nowrap select-none">{children}</th>
+  return <th className="text-left font-medium text-meta text-text-secondary px-3 py-2.5 whitespace-nowrap select-none">{children}</th>
 }

@@ -153,7 +153,7 @@ export default function ScorecardRosterPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search people…"
-            className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+            className="w-full rounded-control border border-border bg-surface pl-8 pr-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>
         <div className="w-[230px]">
@@ -169,12 +169,12 @@ export default function ScorecardRosterPage() {
         <div className="bg-surface border border-border-light rounded-card py-12 flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
           <p className="font-medium text-text-primary">No people in your scope</p>
-          <p className="text-sm text-text-secondary mt-1 max-w-sm">You can only see scorecards for people within your visibility.</p>
+          <p className="text-body text-text-secondary mt-1 max-w-sm">You can only see scorecards for people within your visibility.</p>
         </div>
       ) : (
         <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-body">
               <thead>
                 <tr className="bg-surface-sunken border-b border-border-light text-text-secondary text-left whitespace-nowrap">
                   <th className="px-4 py-3 font-medium sticky left-0 bg-surface-sunken">Person</th>
@@ -204,10 +204,10 @@ export default function ScorecardRosterPage() {
                   >
                     <td className="px-4 py-3 sticky left-0 bg-surface group-hover:bg-surface-sunken">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary text-white text-xs font-medium flex items-center justify-center shrink-0">{initials(p.name)}</div>
+                        <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground text-meta font-medium flex items-center justify-center shrink-0">{initials(p.name)}</div>
                         <div className="min-w-0">
                           <p className="font-medium text-text-primary truncate">{p.name}</p>
-                          {p.role_title && <p className="text-[12px] text-text-muted truncate">{p.role_title}</p>}
+                          {p.role_title && <p className="text-meta text-text-muted truncate">{p.role_title}</p>}
                         </div>
                       </div>
                     </td>

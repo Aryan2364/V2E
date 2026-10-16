@@ -44,7 +44,7 @@ function BreakdownCard({
 
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-4">
-      <p className="text-[13px] font-medium text-text-primary mb-3">{title}</p>
+      <p className="text-body font-medium text-text-primary mb-3">{title}</p>
       <div className="space-y-2">
         {top.map((it) => {
           const id = it.id ?? '__none__'
@@ -58,10 +58,10 @@ function BreakdownCard({
               className={`w-full text-left group rounded-lg px-2 py-1.5 transition-colors ${isActive ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'}`}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className={`text-[13px] truncate ${isActive ? 'font-medium text-primary-text' : 'text-text-secondary group-hover:text-text-primary'}`}>
+                <span className={`text-body truncate ${isActive ? 'font-medium text-primary-text' : 'text-text-secondary group-hover:text-text-primary'}`}>
                   {it.label}
                 </span>
-                <span className="text-[12px] font-medium tabular-nums text-text-secondary shrink-0">{it.total}</span>
+                <span className="text-meta font-medium tabular-nums text-text-secondary shrink-0">{it.total}</span>
               </div>
               <div className="mt-1 h-1.5 rounded-full bg-surface-control overflow-hidden">
                 <div className="h-full rounded-full transition-all" style={{ width: `${(it.total / max) * 100}%`, backgroundColor: color }} />

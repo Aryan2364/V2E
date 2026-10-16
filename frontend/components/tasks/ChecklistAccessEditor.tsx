@@ -40,9 +40,9 @@ interface Props {
 
 const pill = (active: boolean) =>
   [
-    'px-3.5 py-1.5 text-sm font-medium rounded-lg border transition-colors',
+    'px-3.5 py-1.5 text-body font-medium rounded-lg border transition-colors',
     active
-      ? 'bg-primary text-white border-primary'
+      ? 'bg-primary text-primary-foreground border-primary'
       : 'bg-surface text-text-secondary border-border-light hover:bg-surface-control',
   ].join(' ')
 
@@ -51,7 +51,7 @@ const pill = (active: boolean) =>
 function CountBadge({ n }: { n: number }) {
   if (!n) return null
   return (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium leading-none">
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium leading-none">
       {n}
     </span>
   )
@@ -76,7 +76,7 @@ function SubDepartmentList({ subs }: { subs: ReturnType<typeof descendantsOf> })
       {open && (
         <div className="mt-1.5 space-y-1">
           {subs.map(({ dept, depth }) => (
-            <div key={dept.id} className="flex items-center gap-1.5 text-xs text-text-secondary" style={{ paddingLeft: depth * 14 }}>
+            <div key={dept.id} className="flex items-center gap-1.5 text-meta text-text-secondary" style={{ paddingLeft: depth * 14 }}>
               <CornerDownRight size={12} className="text-text-muted shrink-0" />
               <span className="truncate">{dept.name}</span>
             </div>
@@ -136,7 +136,7 @@ function AddPicker({
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-label={label}
-          className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-colors shrink-0"
+          className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground flex items-center justify-center transition-colors shrink-0"
         >
           <Plus size={16} />
         </button>
@@ -153,11 +153,11 @@ function AddPicker({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search…"
-              className="flex-1 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden bg-transparent"
+              className="flex-1 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden bg-transparent"
             />
           </div>
           <div className="max-h-56 overflow-y-auto py-1">
-            {filtered.length === 0 && <div className="px-3 py-3 text-sm text-text-muted text-center">Nothing to add.</div>}
+            {filtered.length === 0 && <div className="px-3 py-3 text-body text-text-muted text-center">Nothing to add.</div>}
             {filtered.map((o) => (
               <button
                 key={o.id}
@@ -170,8 +170,8 @@ function AddPicker({
                 className="w-full flex items-center justify-between gap-2 px-3 py-2 text-left hover:bg-surface-sunken transition-colors"
               >
                 <span className="min-w-0">
-                  <span className="block text-sm text-text-primary truncate">{o.label}</span>
-                  {o.sublabel && <span className="block text-xs text-text-muted truncate">{o.sublabel}</span>}
+                  <span className="block text-body text-text-primary truncate">{o.label}</span>
+                  {o.sublabel && <span className="block text-meta text-text-muted truncate">{o.sublabel}</span>}
                 </span>
                 <Plus size={14} className="text-text-muted shrink-0" />
               </button>
@@ -356,7 +356,7 @@ export default function ChecklistAccessEditor({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-text-secondary mb-1.5">Who can use this checklist</label>
+      <label className="block text-label font-medium text-text-secondary mb-1.5">Who can use this checklist</label>
       <div className="flex gap-2 mb-1">
         <button type="button" className={pill(mode === 'everyone')} onClick={() => onModeChange('everyone')}>
           Everyone
@@ -367,10 +367,10 @@ export default function ChecklistAccessEditor({
       </div>
 
       {mode === 'everyone' ? (
-        <p className="text-xs text-text-muted mt-1.5">Anyone creating a task can apply this checklist.</p>
+        <p className="text-meta text-text-muted mt-1.5">Anyone creating a task can apply this checklist.</p>
       ) : (
         <div className="mt-3">
-          <p className="text-xs text-text-muted">
+          <p className="text-meta text-text-muted">
             A person can use this checklist if they match <span className="font-medium">any</span> rule below — by
             department, role, or being named directly.
           </p>
@@ -383,7 +383,7 @@ export default function ChecklistAccessEditor({
           <div className="bg-surface border border-border-light rounded-xl p-3.5 flex flex-col min-h-[360px]">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium uppercase tracking-wide text-text-muted">Departments</span>
+                <span className="text-meta font-medium uppercase tracking-wide text-text-muted">Departments</span>
                 <CountBadge n={deptRules.length} />
               </div>
               <Tooltip label={hasEmptyDept ? 'Select a department in the blank row first' : 'Add department'}>
@@ -392,14 +392,14 @@ export default function ChecklistAccessEditor({
                 disabled={hasEmptyDept}
                 onClick={() => add({ kind: 'department', department_id: '', include_sub_departments: true })}
                 aria-label="Add department"
-                className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-colors shrink-0 disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground flex items-center justify-center transition-colors shrink-0 disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 <Plus size={16} />
               </button>
               </Tooltip>
             </div>
             <div className="mt-2 space-y-2 flex-1">
-            {deptRules.length === 0 && <p className="text-xs text-text-muted">No departments added.</p>}
+            {deptRules.length === 0 && <p className="text-meta text-text-muted">No departments added.</p>}
             {deptRules.map((r) => {
               const cascade = r.include_sub_departments ?? true
               const subs = r.department_id ? descendantsOf(departments, r.department_id) : []
@@ -427,7 +427,7 @@ export default function ChecklistAccessEditor({
                   <button
                     type="button"
                     onClick={() => update(r._key, { include_sub_departments: !cascade })}
-                    className="flex items-center gap-2 text-xs text-text-secondary"
+                    className="flex items-center gap-2 text-meta text-text-secondary"
                   >
                     <span
                       className={[
@@ -462,18 +462,18 @@ export default function ChecklistAccessEditor({
           <div className="bg-surface border border-border-light rounded-xl p-3.5 flex flex-col h-[360px]">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium uppercase tracking-wide text-text-muted">Roles</span>
+                <span className="text-meta font-medium uppercase tracking-wide text-text-muted">Roles</span>
                 <CountBadge n={inScopeRoles.length} />
               </div>
               <AddPicker label="Add role" options={roleOptions} onPick={addRole} />
             </div>
             <div className="mt-2 space-y-2 flex-1 overflow-y-auto min-h-0 -mr-1 pr-1">
             <div className="flex flex-wrap gap-1.5">
-              {inScopeRoles.length === 0 && <p className="text-xs text-text-muted">Pick a department to fill in its roles, or add one.</p>}
+              {inScopeRoles.length === 0 && <p className="text-meta text-text-muted">Pick a department to fill in its roles, or add one.</p>}
               {inScopeRoles.map(({ role, via }) => (
                 <Tooltip key={role.id} label={`via ${via}`}>
                 <span
-                  className="inline-flex items-center gap-1.5 bg-surface border border-border-light rounded-full pl-2.5 pr-1.5 py-1 text-xs text-text-primary"
+                  className="inline-flex items-center gap-1.5 bg-surface border border-border-light rounded-full pl-2.5 pr-1.5 py-1 text-meta text-text-primary"
                 >
                   {role.title}
                   <button type="button" onClick={() => removeRoleChip(role.id)} className="text-text-muted hover:text-danger">
@@ -489,7 +489,7 @@ export default function ChecklistAccessEditor({
                 {excludedRolesList.map(({ ruleKey, role }) => (
                   <span
                     key={ruleKey}
-                    className="inline-flex items-center gap-1.5 bg-warning-bg border border-warning-border rounded-full pl-2.5 pr-1.5 py-1 text-xs text-text-secondary"
+                    className="inline-flex items-center gap-1.5 bg-warning-bg border border-warning-border rounded-full pl-2.5 pr-1.5 py-1 text-meta text-text-secondary"
                   >
                     <span className="line-through">{role.title}</span>
                     <button type="button" onClick={() => remove(ruleKey)} className="text-primary-text hover:text-primary-text font-medium">
@@ -506,20 +506,20 @@ export default function ChecklistAccessEditor({
           <div className="bg-surface border border-border-light rounded-xl p-3.5 flex flex-col h-[360px]">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium uppercase tracking-wide text-text-muted">People with access</span>
+                <span className="text-meta font-medium uppercase tracking-wide text-text-muted">People with access</span>
                 <CountBadge n={effectivePeople.length} />
               </div>
               <AddPicker label="Add person" options={personOptions} onPick={addPerson} />
             </div>
             <div className="mt-2 flex-1 overflow-y-auto min-h-0 -mr-1 pr-1">
             {effectivePeople.length === 0 ? (
-              <p className="text-xs text-text-muted">No one yet — add a department, role, or person.</p>
+              <p className="text-meta text-text-muted">No one yet — add a department, role, or person.</p>
             ) : (
               <div className="space-y-1">
                 {effectivePeople.map((p) => (
                   <div key={p.uid} className="flex items-center gap-2 bg-surface-sunken border border-border-light rounded-lg px-2.5 py-1.5">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-text-primary truncate">{p.name}</p>
+                      <p className="text-body text-text-primary truncate">{p.name}</p>
                       {p.sources.length > 0 && <p className="text-meta text-text-muted truncate">via {p.sources.join(', ')}</p>}
                     </div>
                     <button type="button" onClick={() => removePerson(p.uid)} aria-label={`Remove ${p.name}`} className="text-text-muted hover:text-danger shrink-0">
@@ -538,7 +538,7 @@ export default function ChecklistAccessEditor({
           {removedPeople.length > 0 && (
             <div className="mt-4 space-y-2 rounded-lg border border-warning-border bg-warning-bg p-3">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium uppercase tracking-wide text-warning">Removed</span>
+                <span className="text-meta font-medium uppercase tracking-wide text-warning">Removed</span>
                 <span className="text-meta text-warning">{removedPeople.length}</span>
               </div>
               <p className="text-meta text-warning">These people match a department or role above but are excluded. Restore to give access back.</p>
@@ -546,10 +546,10 @@ export default function ChecklistAccessEditor({
                 {removedPeople.map((p) => (
                   <div key={p.ruleKey} className="flex items-center gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-text-secondary line-through truncate">{p.name}</p>
+                      <p className="text-label text-text-secondary line-through truncate">{p.name}</p>
                       {p.sources.length > 0 && <p className="text-meta text-warning truncate">would be via {p.sources.join(', ')}</p>}
                     </div>
-                    <button type="button" onClick={() => remove(p.ruleKey)} className="text-xs font-medium text-primary-text hover:text-primary-text shrink-0">
+                    <button type="button" onClick={() => remove(p.ruleKey)} className="text-meta font-medium text-primary-text hover:text-primary-text shrink-0">
                       Restore
                     </button>
                   </div>

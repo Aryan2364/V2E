@@ -38,7 +38,7 @@ export default function TagSpreadChart({
 
   return (
     <div className="bg-surface border border-border rounded-card shadow-card p-4 flex flex-col h-[320px]">
-      <h3 className="text-[15px] font-medium text-heading mb-3 shrink-0">By tag</h3>
+      <h3 className="text-body font-medium text-heading mb-3 shrink-0">By tag</h3>
       <ul className="flex-1 min-h-0 flex flex-col gap-1">
         {shown.map((t) => (
           <li key={t.id!}>
@@ -49,7 +49,7 @@ export default function TagSpreadChart({
               aria-label={`${t.label}: ${t.total} task${t.total === 1 ? '' : 's'}`}
             >
               <Tooltip label={t.label}>
-                <span className="text-xs text-secondary truncate">{t.label}</span>
+                <span className="text-meta text-secondary truncate">{t.label}</span>
               </Tooltip>
               <span className="h-3 rounded-full bg-border/60 overflow-hidden">
                 <span
@@ -57,12 +57,12 @@ export default function TagSpreadChart({
                   style={{ width: `${Math.max(4, (t.total / max) * 100)}%` }}
                 />
               </span>
-              <span className="text-xs font-medium text-heading tabular-nums min-w-[2ch] text-right">{t.total}</span>
+              <span className="text-meta font-medium text-heading tabular-nums min-w-[2ch] text-right">{t.total}</span>
             </button>
           </li>
         ))}
       </ul>
-      <p className="mt-2 shrink-0 text-xs text-secondary">
+      <p className="mt-2 shrink-0 text-meta text-secondary">
         {hidden > 0 ? `Top ${MAX_ROWS} of ${data.length} tags. ` : ''}A task with several tags counts under each.
       </p>
     </div>
