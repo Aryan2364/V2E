@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { X, Plus, Calendar, RotateCcw, CheckCircle2, FilePlus2, Table } from 'lucide-react'
 import { toast } from 'sonner'
@@ -15,6 +14,8 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import StyledSelect from '@/components/ui/StyledSelect'
@@ -185,10 +186,6 @@ export default function CreateTaskModal({
   // Reminders — one seeded from the admin default on open, all editable/removable.
   const [reminders, setReminders] = useState<ReminderRow[]>([])
 
-  // Portal target only exists on the client — guard against SSR mismatch.
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-
   // Load the checklist templates this user is allowed to apply, when the modal opens.
   useEffect(() => {
     if (!isOpen || !orgId) return
@@ -240,23 +237,8 @@ export default function CreateTaskModal({
     }
   }, [selectableStatuses, statusId])
 
-  // Close on Escape
-  useEffect(() => {
-    if (!isOpen) return
-    function handle(e: KeyboardEvent) {
-      // Escape inside an open picker (e.g. the Tags search) closes only that picker.
-      if (e.key === 'Escape' && !isListboxOpen()) onClose()
-    }
-    document.addEventListener('keydown', handle)
-    return () => document.removeEventListener('keydown', handle)
-  }, [isOpen, onClose])
-
-  // Prevent body scroll
-  useEffect(() => {
-    if (isOpen) document.body.style.overflow = 'hidden'
-    else document.body.style.overflow = ''
-    return () => { document.body.style.overflow = '' }
-  }, [isOpen])
+  // Escape (except inside an open picker), the backdrop and body-scroll-lock are now
+  // the kit Dialog's own behaviour — see the Dialog's onOpenChange below.
 
   // Holiday check on deadline change (debounced 300ms)
   useEffect(() => {
@@ -493,18 +475,13 @@ export default function CreateTaskModal({
     }
   }
 
-  if (!isOpen || !mounted) return null
+  if (!isOpen) return null
 
   // ── Success confirmation (recurring only) ───────────────────────────────────
   if (createdRecurring) {
-    return createPortal(
-      <div
-        className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
-        onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
-        role="dialog"
-        aria-modal="true"
-      >
-        <div className="relative w-full max-w-md bg-surface rounded-t-xl sm:rounded-xl shadow-dialog border border-border-light p-6">
+    return (
+      <Dialog open onOpenChange={(next) => { if (!next) handleClose() }}>
+        <DialogContent size="sm" showCloseButton={false} className="p-6">
           <div className="flex flex-col items-center text-center">
             <div className="w-14 h-14 rounded-full bg-success-bg flex items-center justify-center mb-4">
               <CheckCircle2 size={28} className="text-success" />
@@ -521,54 +498,49 @@ export default function CreateTaskModal({
               </div>
             )}
             <div className="flex flex-col-reverse sm:flex-row gap-2 w-full mt-6">
-              <button
-                type="button"
-                onClick={() => { onCreated(); handleClose() }}
-                className="w-full sm:flex-1 px-4 py-[10px] text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-lg hover:bg-primary-subtle transition-colors"
-              >
+              <Button variant="secondary" onClick={() => { onCreated(); handleClose() }} className="w-full sm:flex-1">
                 Done
-              </button>
-              <button
-                type="button"
-                onClick={() => { onCreated(); handleClose(); router.push('/dashboard/tasks/recurring') }}
-                className="w-full sm:flex-1 px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
-              >
+              </Button>
+              <Button onClick={() => { onCreated(); handleClose(); router.push('/dashboard/tasks/recurring') }} className="w-full sm:flex-1">
                 Go to Recurring
-              </button>
+              </Button>
             </div>
           </div>
-        </div>
-      </div>,
-      document.body,
+        </DialogContent>
+      </Dialog>
     )
   }
 
-  return createPortal(
+  return (
     <>
-    <div
-      className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
-      role="dialog"
-      aria-modal="true"
+    <Dialog
+      open
+      onOpenChange={(open, eventDetails) => {
+        if (open) return
+        // Escape inside an open picker (e.g. the Tags search) closes only that
+        // picker, exactly as before.
+        if (eventDetails.reason === 'escape-key' && isListboxOpen()) {
+          eventDetails.cancel()
+          return
+        }
+        handleClose()
+      }}
     >
-      {/* When the Bulk-upload tab exists, the card is a FIXED size so switching tabs only
-          swaps the inner content — the frame never resizes (no width/height glitch). The
-          recurring/lock-mode modal (no bulk tab) keeps its natural content-driven height. */}
-      <div className={`relative w-full bg-surface rounded-t-xl sm:rounded-xl shadow-dialog border border-border-light flex flex-col ${showBulkTab ? 'max-w-3xl h-[88vh]' : 'max-w-2xl max-h-[92vh]'}`}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-light shrink-0">
-          <h2 className="text-[22px] font-medium text-text-primary">
+      <DialogContent
+        size="lg"
+        className={showBulkTab ? 'max-w-3xl h-[88vh] max-h-[88vh] p-0' : 'max-w-2xl max-h-[92vh] p-0'}
+      >
+        {/* Header — same fixed-size frame regardless of tab, so switching tabs never
+            resizes the dialog (no width/height glitch). The recurring/lock-mode modal
+            (no bulk tab) keeps its natural content-driven height via DialogContent's own
+            80dvh cap. */}
+        <DialogHeader>
+          <DialogTitle>
             {lockMode && mode === 'recurring' ? 'Create Recurring Task' : 'Create Task'}
-          </h2>
-          <button
-            onClick={handleClose}
-            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
-            aria-label="Close"
-          >
-            <X size={18} />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
+        <DialogBody className="p-0 flex flex-1 flex-col overflow-hidden">
         {/* Single task | Bulk upload — bulk swaps the whole body to the Excel import flow. */}
         {showBulkTab && (
           <div className="shrink-0 px-6 pt-4">
@@ -609,7 +581,7 @@ export default function CreateTaskModal({
         ) : (
         <>
         {/* Body */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
+        <form id="create-task-form" onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1.5">
@@ -950,31 +922,37 @@ export default function CreateTaskModal({
             onOpenChange={setChecklistOpen}
           />
         </form>
+        </>
+        )}
+        </DialogBody>
 
-        {/* Footer — no Cancel button; the header X closes the modal (see DESIGN_RULES).
+        {/* Footer — no Cancel button; the header close button closes the modal.
             The error lives here (not at the top of the scrollable body) so it's
-            always visible right next to Save — never hidden above the fold. */}
-        <div className="shrink-0 px-6 py-4 border-t border-border-light space-y-3">
+            always visible right next to Save — never hidden above the fold. Bulk
+            upload has its own footer inside ImportTasksModal, so none here. */}
+        {tab !== 'bulk' && (
+        <DialogFooter className="flex-col items-stretch space-y-3">
           {error && (
             <div className="bg-danger-bg border border-danger-border rounded-lg px-4 py-3 text-sm text-danger">
               {error}
             </div>
           )}
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-            <button
-              type="button"
-              onClick={handleSubmit}
+            <Button
+              type="submit"
+              form="create-task-form"
               disabled={submitting || (mode === 'one_time' && holidayCheck?.action === 'skip_create' && !holidayCheck.is_working_day && !holidayOverride)}
-              className="w-full sm:w-auto px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              loading={submitting}
+              loadingLabel="Creating"
+              className="w-full sm:w-auto"
             >
-              {submitting ? 'Creating...' : mode === 'recurring' ? 'Create Recurring Task' : 'Create Task'}
-            </button>
+              {mode === 'recurring' ? 'Create Recurring Task' : 'Create Task'}
+            </Button>
           </div>
-        </div>
-        </>
+        </DialogFooter>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
     <AlertDialog open={!!confirmPrompt} onOpenChange={(open) => { if (!open) { confirmPrompt?.resolve(false); setConfirmPrompt(null) } }}>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -989,7 +967,6 @@ export default function CreateTaskModal({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-    </>,
-    document.body,
+    </>
   )
 }
