@@ -5,10 +5,20 @@ import { useAuth } from '@/lib/auth/context'
 import { tasksApi } from '@/lib/api/tasks'
 import type { TaskArchiveItem } from '@/lib/types/tasks'
 // import QuadrantBadge from '@/components/tasks/QuadrantBadge'
-import { Archive, X } from 'lucide-react'
+import { Archive } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import { formatDateTime } from '@/lib/format'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogBody,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -21,37 +31,15 @@ function formatDate(str: string): string {
 function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () => void }) {
   const task = item.task_snapshot
 
-  useEffect(() => {
-    function handle(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', handle)
-    return () => document.removeEventListener('keydown', handle)
-  }, [onClose])
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
-  }, [])
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div className="relative w-full max-w-2xl bg-surface rounded-card shadow-dialog border border-border-light max-h-[85vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-light shrink-0">
-          <div>
-            <h2 className="text-[18px] font-medium text-text-primary">Archived Task Snapshot</h2>
-            <p className="text-xs text-text-muted mt-0.5">Read-only view of deleted task</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-control flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
-          >
-            <X size={18} />
-          </button>
-        </div>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent size="lg">
+        <DialogHeader>
+          <DialogTitle>Archived Task Snapshot</DialogTitle>
+          <DialogDescription>Read-only view of deleted task</DialogDescription>
+        </DialogHeader>
 
-        <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
+        <DialogBody className="space-y-4">
           {/* Title */}
           <div className="flex items-start gap-3">
             {/* <QuadrantBadge quadrant={task.quadrant} /> */}
@@ -144,18 +132,13 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
               </p>
             )}
           </div>
-        </div>
+        </DialogBody>
 
-        <div className="shrink-0 flex justify-end px-6 py-4 border-t border-border-light">
-          <button
-            onClick={onClose}
-            className="px-4 py-[10px] text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button variant="secondary" onClick={onClose}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
