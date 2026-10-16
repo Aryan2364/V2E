@@ -300,15 +300,10 @@ export default function AssigneeSelector({
         {value.length === 0 && !leading && placeholder && (
           <span className="px-1.5 text-body text-text-muted">{placeholder}</span>
         )}
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-meta font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <Button type="button" variant="secondary" size="sm" disabled={disabled} onClick={() => setOpen((v) => !v)}>
           <Plus size={12} />
           {addLabel}
-        </button>
+        </Button>
       </div>
 
       {/* Picker — kit Dialog (small), matching its previous centered-overlay shape. */}
