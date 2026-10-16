@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/lib/auth/context'
 import { ticketsApi } from '@/lib/api/tickets'
 import HoverTip from '@/components/ui/tooltip'
+import { Skeleton } from '@/components/ui/skeleton'
 import type {
   TicketReportResolutionTime,
   TicketReportBreakdown,
@@ -721,11 +722,7 @@ const reopenColumns: ResponsiveColumn<ReopenRow>[] = [
 // ─── Shared micro-components ──────────────────────────────────────────────────
 
 function Spinner() {
-  return (
-    <div className="flex items-center justify-center h-40">
-      <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  )
+  return <Skeleton className="h-40" />
 }
 
 function Empty() {
