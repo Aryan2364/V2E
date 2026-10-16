@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import {
   X,
   Download,
@@ -21,7 +20,19 @@ import {
 } from 'lucide-react'
 import FileDropzone, { AttachmentErrorBox } from '@/components/ui/FileDropzone'
 import { PendingFileList } from '@/components/ui/AttachmentList'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from 'sonner'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog'
+import { formatDateTime } from '@/lib/format'
 import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
 import TagList from '@/components/tasks/TagList'
@@ -264,18 +275,10 @@ function normName(s: string): string {
 }
 
 export default function ImportTasksModal({ orgId, onClose, onImported, embedded = false }: Props) {
-  const { addToast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  useEffect(() => {
-    // Embedded inside another modal — the host already locks body scroll.
-    if (embedded) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
-  }, [embedded])
+  // Body-scroll-lock, Escape and the backdrop are the kit Dialog's own behaviour when
+  // standalone; when embedded, the host modal already owns all three.
 
   const [options, setOptions] = useState<TaskImportOptions | null>(null)
   const [loadingOptions, setLoadingOptions] = useState(true)
@@ -505,7 +508,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      addToast('Could not build the template. Please try again.', 'error')
+      toast.error('Could not build the template. Please try again.')
     } finally {
       setBuilding(false)
     }
@@ -657,7 +660,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      addToast('Could not build the file.', 'error')
+      toast.error('Could not build the file.')
     }
   }
 
@@ -689,7 +692,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
     try {
       setBatchDetail(await getTaskImportBatchDetail(orgId, batchId))
     } catch {
-      addToast('Could not load this import’s details.', 'error')
+      toast.error('Could not load this import’s details.')
       if (origin === 'history') setPhase('history')
     } finally {
       setLoadingDetail(false)
@@ -720,19 +723,18 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
       }
       setCommitResult(res)
       if (res.created > 0) {
-        addToast(
+        toast[res.failed > 0 || attachFailures > 0 ? 'warning' : 'success'](
           `Imported ${res.created} task${res.created !== 1 ? 's' : ''}` +
-            (attachFailures > 0 ? ` — ${attachFailures} attachment${attachFailures !== 1 ? 's' : ''} failed to upload` : ''),
-          res.failed > 0 || attachFailures > 0 ? 'warning' : 'success',
+            (attachFailures > 0 ? ` — ${attachFailures} attachment${attachFailures !== 1 ? 's' : ''} failed to upload` : '')
         )
         onImported()
       } else {
-        addToast('No tasks were imported', 'error')
+        toast.error('No tasks were imported')
       }
       setPhase('result')
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? 'Import failed. Please try again.'
-      addToast(Array.isArray(msg) ? msg.join(', ') : msg, 'error')
+      toast.error(Array.isArray(msg) ? msg.join(', ') : msg)
     } finally {
       setImporting(false)
     }
@@ -751,9 +753,8 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
     try {
       const res = await undoTaskImport(orgId, batchId)
       setUndoResult(res)
-      addToast(
-        res.undone > 0 ? `Removed ${res.undone} imported task${res.undone !== 1 ? 's' : ''}` : 'Nothing was removed',
-        res.kept.length > 0 ? 'warning' : 'success',
+      toast[res.kept.length > 0 ? 'warning' : 'success'](
+        res.undone > 0 ? `Removed ${res.undone} imported task${res.undone !== 1 ? 's' : ''}` : 'Nothing was removed'
       )
       onImported()
       setBatches(await listTaskImportBatches(orgId))
@@ -762,7 +763,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
       }
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? 'Undo failed.'
-      addToast(Array.isArray(msg) ? msg.join(', ') : msg, 'error')
+      toast.error(Array.isArray(msg) ? msg.join(', ') : msg)
     } finally {
       setUndoingId(null)
     }
@@ -812,8 +813,6 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
       default: return rows
     }
   }, [validation, chipFilter])
-
-  if (!mounted) return null
 
   // Full-page preview only makes sense as a standalone overlay; when embedded the host
   // modal owns the frame, so the preview stays within it and scrolls internally.
@@ -1161,72 +1160,70 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
       </div>
 
       {/* Confirm popup */}
-      {confirmOpen && validation && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-surface rounded-xl shadow-xl max-w-md w-full p-6">
+      <AlertDialog open={confirmOpen && !!validation} onOpenChange={(next) => { if (!next) setConfirmOpen(false) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-primary-subtle flex items-center justify-center shrink-0">
                 <CheckCircle2 size={20} className="text-primary-text" />
               </div>
               <div>
-                <h3 className="text-[16px] font-medium text-text-primary">Import {validation.ready} task{validation.ready !== 1 ? 's' : ''}?</h3>
-                <p className="text-[13px] text-text-secondary mt-1">
+                <AlertDialogTitle>Import {validation?.ready ?? 0} task{validation?.ready !== 1 ? 's' : ''}?</AlertDialogTitle>
+                <AlertDialogDescription>
                   This creates live tasks and notifies each assignee. A guarded undo is available for a short window afterward
                   (it can only remove tasks nobody has acted on yet).
-                </p>
+                </AlertDialogDescription>
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setConfirmOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary bg-surface border border-border-light hover:bg-surface-sunken transition-colors">
-                Go back
-              </button>
-              <button onClick={handleImport} className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors">
-                Yes, import now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Go back</AlertDialogCancel>
+            <AlertDialogAction variant="primary" onClick={handleImport}>Yes, import now</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Undo confirmation */}
-      {undoConfirm && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-surface rounded-xl shadow-xl max-w-md w-full p-6">
+      <AlertDialog open={!!undoConfirm} onOpenChange={(next) => { if (!next) setUndoConfirm(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
                 <Undo2 size={20} className="text-danger" />
               </div>
               <div>
-                <h3 className="text-[16px] font-medium text-text-primary">Undo this import?</h3>
-                <p className="text-[13px] text-text-secondary mt-1">
+                <AlertDialogTitle>Undo this import?</AlertDialogTitle>
+                <AlertDialogDescription>
                   This removes the tasks created by this import. Any task that has already been acted on — worked on, commented,
                   or completed — is <strong>kept</strong> and listed afterward. This can’t be reversed.
-                </p>
+                </AlertDialogDescription>
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setUndoConfirm(null)} className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary bg-surface border border-border-light hover:bg-surface-sunken transition-colors">
-                Go back
-              </button>
-              <button
-                onClick={() => { const id = undoConfirm; setUndoConfirm(null); handleUndo(id) }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white bg-danger hover:bg-danger-hover transition-colors"
-              >
-                <Undo2 size={14} /> Yes, undo import
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Go back</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { const id = undoConfirm; setUndoConfirm(null); if (id) handleUndo(id) }}>
+              <Undo2 size={14} /> Yes, undo import
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 
   if (embedded) return shell
-  return createPortal(
-    <div className={`fixed inset-0 z-60 flex justify-center bg-black/40 ${isFullPage ? 'items-stretch p-0' : 'items-end sm:items-center p-0 sm:p-4'}`}>
-      {shell}
-    </div>,
-    document.body,
+  return (
+    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
+      <DialogContent
+        size="lg"
+        showCloseButton={false}
+        className={isFullPage
+          ? 'max-w-none! w-screen h-[100dvh] max-h-[100dvh]! rounded-none! p-0'
+          : 'max-w-3xl max-h-[92vh] p-0'}
+      >
+        {shell}
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -1353,7 +1350,7 @@ function HistoryView({
               {statusBadge(b.status)}
             </div>
             <p className="text-[12px] text-text-secondary mt-0.5">
-              {b.created_count} created{b.failed_count > 0 ? ` · ${b.failed_count} failed` : ''} · {b.remaining} present · by {b.imported_by} · {new Date(b.created_at).toLocaleString()}
+              {b.created_count} created{b.failed_count > 0 ? ` · ${b.failed_count} failed` : ''} · {b.remaining} present · by {b.imported_by} · {formatDateTime(b.created_at)}
             </p>
           </button>
           {b.can_undo && (
