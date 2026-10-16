@@ -371,7 +371,7 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
           <p className="text-body text-text-secondary">{items.length} priorit{items.length !== 1 ? 'ies' : 'y'}</p>
           {items.length > 1 && <p className="text-meta text-text-muted mt-0.5">Ordered highest → lowest. Drag the handle or use the arrows to rearrange.</p>}
         </div>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover transition-colors shrink-0"><Plus size={14} /> Add Priority</button>
+        <Button onClick={() => setCreating(true)} className="shrink-0"><Plus size={14} /> Add Priority</Button>
       </div>
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
@@ -386,8 +386,8 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
           </div>
           <p className="text-meta text-text-muted">Added to the bottom of the list. Drag it into position afterwards — the rank number updates automatically.</p>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
+            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
+            <Button variant="secondary" onClick={() => setCreating(false)}>Cancel</Button>
           </div>
         </div>
       )}
@@ -413,8 +413,8 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
               {rankLabel && <span className="hidden sm:inline text-meta font-medium text-text-secondary">{rankLabel}</span>}
               <span className={`text-meta font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
               <div className="flex flex-col shrink-0">
-                <button type="button" disabled={idx === 0 || savingOrder} onClick={() => move(idx, idx - 1)} aria-label="Move up" className="w-7 h-5 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-text-muted disabled:hover:bg-transparent transition-colors"><ChevronUp size={15} /></button>
-                <button type="button" disabled={idx === items.length - 1 || savingOrder} onClick={() => move(idx, idx + 1)} aria-label="Move down" className="w-7 h-5 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-text-muted disabled:hover:bg-transparent transition-colors"><ChevronDown size={15} /></button>
+                <Button type="button" variant="ghost" size="icon-sm" className="h-5" disabled={idx === 0 || savingOrder} onClick={() => move(idx, idx - 1)} aria-label="Move up"><ChevronUp size={15} /></Button>
+                <Button type="button" variant="ghost" size="icon-sm" className="h-5" disabled={idx === items.length - 1 || savingOrder} onClick={() => move(idx, idx + 1)} aria-label="Move down"><ChevronDown size={15} /></Button>
               </div>
             </div>
           )
@@ -518,8 +518,8 @@ function StatusesTab({ orgId }: { orgId: string }) {
           <FormField label="Color"><ColorPicker value={editForm.color} onChange={(c) => setEditForm({ ...editForm, color: c })} /></FormField>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => handleSaveEdit(id)} disabled={submitting} className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"><Save size={14} /> {submitting ? 'Saving...' : 'Save'}</button>
-          <button onClick={() => setEditingId(null)} className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
+          <Button onClick={() => handleSaveEdit(id)} loading={submitting} loadingLabel="Saving"><Save size={14} /> Save</Button>
+          <Button variant="secondary" onClick={() => setEditingId(null)}>Cancel</Button>
         </div>
       </div>
     )
@@ -547,13 +547,15 @@ function StatusesTab({ orgId }: { orgId: string }) {
         <span className="flex-1 min-w-0 truncate text-body font-medium text-text-primary">{item.label}</span>
         {stage && (
           <div className="flex items-center shrink-0">
-            <button type="button" disabled={idx === 0 || savingOrder} onClick={() => move(idx, -1)} aria-label="Move up" className="w-6 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-text-muted disabled:hover:bg-transparent transition-colors"><ChevronUp size={15} /></button>
-            <button type="button" disabled={idx === inProgress.length - 1 || savingOrder} onClick={() => move(idx, 1)} aria-label="Move down" className="w-6 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control disabled:text-text-muted disabled:hover:bg-transparent transition-colors"><ChevronDown size={15} /></button>
+            <Button type="button" variant="ghost" size="icon-sm" disabled={idx === 0 || savingOrder} onClick={() => move(idx, -1)} aria-label="Move up"><ChevronUp size={15} /></Button>
+            <Button type="button" variant="ghost" size="icon-sm" disabled={idx === inProgress.length - 1 || savingOrder} onClick={() => move(idx, 1)} aria-label="Move down"><ChevronDown size={15} /></Button>
           </div>
         )}
-        <button type="button" onClick={() => startEdit(item)} aria-label="Rename" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"><Pencil size={13} /></button>
+        <Button type="button" variant="ghost" size="icon-sm" className="shrink-0" onClick={() => startEdit(item)} aria-label="Rename"><Pencil size={13} /></Button>
         {stage && (
-          <Tooltip label={inProgress.length <= 1 ? 'At least one In Progress stage is required' : 'Remove stage'}><button type="button" onClick={() => setConfirmDeleteId(item.id)} disabled={inProgress.length <= 1} aria-label="Remove stage" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg disabled:text-text-muted disabled:hover:bg-transparent transition-colors shrink-0"><Trash2 size={13} /></button></Tooltip>
+          <Tooltip label={inProgress.length <= 1 ? 'At least one In Progress stage is required' : 'Remove stage'}>
+            <Button type="button" variant="ghost" size="icon-sm" className="shrink-0 hover:text-danger hover:bg-danger-bg" onClick={() => setConfirmDeleteId(item.id)} disabled={inProgress.length <= 1} aria-label="Remove stage"><Trash2 size={13} /></Button>
+          </Tooltip>
         )}
       </div>
     )
@@ -580,13 +582,13 @@ function StatusesTab({ orgId }: { orgId: string }) {
           <span className="w-[78px] shrink-0" />
           <input type="color" value={addForm.color} onChange={(e) => setAddForm({ ...addForm, color: e.target.value })} className="w-7 h-7 shrink-0 rounded-control border border-border cursor-pointer p-0" />
           <input type="text" autoFocus value={addForm.label} onChange={(e) => setAddForm({ ...addForm, label: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAdding(false); setAddForm({ label: '', color: 'var(--text-secondary)' }) } }} placeholder="New stage name (e.g. In Review)" className="flex-1 min-w-0 border border-border rounded-control px-2.5 py-1.5 text-body text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface" />
-          <button onClick={handleAdd} disabled={submitting || !addForm.label.trim()} className="px-3 py-1.5 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors shrink-0">{submitting ? 'Adding…' : 'Add'}</button>
-          <button onClick={() => { setAdding(false); setAddForm({ label: '', color: 'var(--text-secondary)' }) }} aria-label="Cancel" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"><X size={15} /></button>
+          <Button size="sm" className="shrink-0" onClick={handleAdd} disabled={!addForm.label.trim()} loading={submitting} loadingLabel="Adding">Add</Button>
+          <Button variant="ghost" size="icon-sm" className="shrink-0" onClick={() => { setAdding(false); setAddForm({ label: '', color: 'var(--text-secondary)' }) }} aria-label="Cancel"><X size={15} /></Button>
         </div>
       ) : (
         <div className="flex items-center gap-2.5">
           <span className="w-[78px] shrink-0" />
-          <button onClick={() => { setAdding(true); setError(null) }} className="flex items-center gap-1.5 text-body font-medium text-primary-text hover:text-primary-text py-1 transition-colors"><Plus size={14} /> Add In Progress stage</button>
+          <Button variant="ghost" size="sm" onClick={() => { setAdding(true); setError(null) }}><Plus size={14} /> Add In Progress stage</Button>
         </div>
       )}
 
