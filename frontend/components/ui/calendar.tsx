@@ -11,6 +11,15 @@ import {
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
+import Tooltip from "@/components/ui/tooltip"
+
+/** yyyy-MM-dd for a local day, with no time-zone shift (matches date-picker.tsx's own NATIVE_DATE_FORMAT). */
+function toIsoDay(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
+}
 
 function Calendar({
   className,
@@ -23,11 +32,25 @@ function Calendar({
   locale,
   formatters,
   components,
+  /**
+   * v2e addition (section 4 rule 4): days flagged with a dot, e.g. a
+   * selected assignee's leave days on a task deadline calendar. ISO
+   * yyyy-MM-dd strings. See FRONTEND_RULES.md section 4.1 "v2e additions".
+   */
+  markedDates,
+  /** Tooltip shown on a marked day. */
+  markedHint,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
+  markedDates?: string[] | Set<string>
+  markedHint?: string
 }) {
   const defaultClassNames = getDefaultClassNames()
+  const markedSet = React.useMemo(
+    () => (markedDates instanceof Set ? markedDates : new Set(markedDates ?? [])),
+    [markedDates]
+  )
 
   return (
     <DayPicker
@@ -168,7 +191,12 @@ function Calendar({
           )
         },
         DayButton: ({ ...props }) => (
-          <CalendarDayButton locale={locale} {...props} />
+          <CalendarDayButton
+            locale={locale}
+            marked={markedSet.has(toIsoDay(props.day.date))}
+            markedHint={markedHint}
+            {...props}
+          />
         ),
         WeekNumber: ({ children, ...props }) => {
           return (
@@ -191,8 +219,14 @@ function CalendarDayButton({
   day,
   modifiers,
   locale,
+  marked,
+  markedHint,
   ...props
-}: React.ComponentProps<typeof DayButton> & { locale?: Partial<Locale> }) {
+}: React.ComponentProps<typeof DayButton> & {
+  locale?: Partial<Locale>
+  marked?: boolean
+  markedHint?: string
+}) {
   const defaultClassNames = getDefaultClassNames()
 
   const ref = React.useRef<HTMLButtonElement>(null)
@@ -200,7 +234,7 @@ function CalendarDayButton({
     if (modifiers.focused) ref.current?.focus()
   }, [modifiers.focused])
 
-  return (
+  const button = (
     <button
       ref={ref}
       type="button"
@@ -214,6 +248,7 @@ function CalendarDayButton({
       data-range-start={modifiers.range_start}
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
+      data-marked={marked || undefined}
       className={cn(
         // A day cell is not a Button. Section 6.1 rule 4 makes every
         // Button carry a fill and a border, which turns a month grid
@@ -233,8 +268,27 @@ function CalendarDayButton({
         className
       )}
       {...props}
-    />
+    >
+      {props.children}
+      {marked && (
+        <span
+          aria-hidden="true"
+          className="absolute bottom-1 left-1/2 -translate-x-1/2 size-1 rounded-full bg-warning data-[selected-single=true]:bg-primary-foreground"
+          data-selected-single={
+            modifiers.selected &&
+            !modifiers.range_start &&
+            !modifiers.range_end &&
+            !modifiers.range_middle
+          }
+        />
+      )}
+    </button>
   )
+
+  if (marked && markedHint) {
+    return <Tooltip label={markedHint}>{button}</Tooltip>
+  }
+  return button
 }
 
 export { Calendar, CalendarDayButton }

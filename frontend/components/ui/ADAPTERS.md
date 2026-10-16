@@ -11,6 +11,9 @@ pre-kit implementation, not yet touched.
 |---|---|---|---|
 | `Toast.tsx` | `sonner.tsx` (`toast`) | ~75 | `useToast().addToast(message, type)` now calls sonner's `toast.success/error/warning/message`. `<Toaster />` is mounted once in `app/layout.tsx`. `ToastProvider` is a no-op passthrough. |
 | `PermissionTooltip.tsx` | `tooltip.tsx` | 9 | Already delegates to the kit's `Tooltip` (`./tooltip`). Takes `allowed`/`reason` like the kit's `permission-tooltip.tsx`; call sites unchanged. New code should prefer `@/components/ui/permission-tooltip` directly, wired via `@/lib/auth/permission-tooltip-adapter.ts` (`useCanWithReason`). |
+| `DatePicker.tsx` | `date-picker.tsx` | 28 | Converts v2e's ISO `yyyy-mm-dd` string value to/from the kit's `Date`. `min`/`max` and `markedDates`/`markedHint` were added to `date-picker.tsx`/`calendar.tsx` for this (FRONTEND_RULES.md section 4.1 "v2e additions"). Deviation: `compact`, `hideClear` and `bare` (borderless toolbar trigger) have no kit equivalent and are accepted but unused — the field always renders the kit's one appearance now. |
+| `DateRangePicker.tsx` | `calendar.tsx` (`mode="range"`) / `popover.tsx` | 9 | Keeps v2e's `{from, to}` ISO-string contract. Built directly on the kit calendar's existing range mode (range_start/range_middle/range_end classes already shipped in `calendar.tsx`; no kit change needed). Presets (Today, Last 7/30 days, …) are v2e's own list, kept as-is in the adapter rather than moved into the kit. |
+| `TimeField.tsx` | `time-picker.tsx` | 9 | Converts v2e's `"HH:MM"` 24-hour string to/from the kit's 12-hour `TimeValue`. Deviation: the old centered analog-clock dialog (`ClockTimePicker.tsx`) is replaced by the kit's inline popover with hour/minute/AM-PM lists; `label` and `compact` have no kit equivalent and are accepted but unused. Minutes now step to the kit's 15-minute grid on typed entry (section 20.2) instead of accepting any minute. |
 | `Modal.tsx` | `dialog.tsx` | 32 | Same `isOpen`/`onClose`/`title`/`size`/`closeOnEscape`/`bodyScroll`/`elevated`/children API; now composes `Dialog`/`DialogContent`/`DialogHeader`/`DialogTitle`. `size` maps onto the kit's sm/md/lg. Escape vs backdrop-click behaviour preserved via `onOpenChange`'s close reason. `elevated` is kept for its one call site (`components/goals/QuickCreateProjectModal.tsx`) but is a no-op: Base UI's portals already paint in mount order, so a modal opened from within one still lands on top. |
 | `ConfirmDialog.tsx` | `alert-dialog.tsx` | 21 | Same `open`/`title`/`message`/`confirmLabel`/`cancelLabel`/`danger`/`loading`/`error`/`onConfirm`/`onCancel` API; now composes `AlertDialog`/`AlertDialogContent`/`Header`/`Footer`/`Title`/`Description`/`Action`/`Cancel`. Danger by default. Escape and the backdrop are ignored by the kit's `AlertDialog` itself (section 24 rule 3) - accepted per the brief, not a regression (the old version also only closed via its two buttons). The loading spinner on the confirm button and the inline error banner aren't modelled by `alert-dialog.tsx`, so both are added inside this adapter, not the kit file. |
 
@@ -25,17 +28,19 @@ partial conversion.
 | File | Kit equivalent | Call sites | Why not done this pass |
 |---|---|---|---|
 | `StyledSelect.tsx` | `searchable-select.tsx` | 42 | `StyledSelectOption` supports colour dots, dividers, danger variant and non-selectable "action" options — richer than the kit's option shape. Needs those variants added to `searchable-select.tsx` (kit-component-variant rule, FRONTEND_RULES.md §4 rule 4) before call sites can move, not a wrapper. |
-| `DatePicker.tsx` | `date-picker.tsx` | 28 | v2e's takes ISO string + `markedDates`/`markedHint` (leave-day dots) which `date-picker.tsx` doesn't support yet. |
 | `ResponsiveTable.tsx` | `table.tsx` | 23 | `ResponsiveTable` already implements the kit's mobile card-list rule itself (desktop table collapses to cards below a breakpoint); `table.tsx` has no such mode. Needs a deliberate design decision, not a mechanical swap. |
-| `DateRangePicker.tsx` | `date-picker.tsx` / `calendar.tsx` | 9 | Needs the "range variant on top of kit calendar" called for in the brief; not started. |
-| `TimeField.tsx` | `time-picker.tsx` | 9 | Different value shape; not started. |
 | `MultiSelect.tsx` | `multi-select.tsx` | 5 | Supports `color`/`colorClassName` dots and `hint` lines not in the kit version yet. |
 | `ViewToggle.tsx` | `view-switcher.tsx` | 3 | Not started; likely a near-mechanical swap, low priority given the small count. |
 | `useHoverTip.tsx` | `tooltip.tsx` | 2 | Hand-rolled portal tooltip with an inline hex colour (`#0F172A`) — violates kit §1 rule 1. Small count; migrate call sites directly to `tooltip.tsx` rather than adapting. |
 | `SelectField.tsx` | `select.tsx` | 1 | Single call site — migrate directly, don't adapt. |
-| `MonthDayPicker.tsx` | `calendar.tsx` | 1 | Single call site — migrate directly. |
 | `FilterButton.tsx` | `popover.tsx` | 1 | Single call site — migrate directly. |
-| `ClockTimePicker.tsx` | `time-picker.tsx` | 0 (dead code found this pass) | No remaining call sites — safe to delete outright in a follow-up rather than adapt. |
+| `ClockTimePicker.tsx` | `time-picker.tsx` | 0 (dead code, found in P3; its last caller `TimeField.tsx` was converted to an adapter this pass) | No remaining call sites — safe to delete outright in a follow-up rather than adapt. |
+
+## Migrated directly (component file removed)
+
+| File | Migrated to | Call sites | Notes |
+|---|---|---|---|
+| `MonthDayPicker.tsx` | `calendar.tsx` (inline, in `components/tasks/ScheduleEntryRow.tsx`) | 1 | Its one call site now uses a small local `MonthDayPicker` wrapper (kit `Calendar` + `Popover`) built directly into `ScheduleEntryRow.tsx`; the shared file was deleted. Maps `{month, day}` to/from a `Date` in a fixed leap year (2000, discarded on read) so 29 Feb stays pickable. |
 
 ## Phone duplicates to consolidate (not forced this phase)
 

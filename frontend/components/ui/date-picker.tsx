@@ -194,6 +194,10 @@ function DatePicker({
   onInvalidEntry,
   placeholder = "12 Aug 2026",
   className,
+  min,
+  max,
+  markedDates,
+  markedHint,
 }: {
   value?: Date
   onValueChange?: (date: Date | undefined) => void
@@ -208,6 +212,16 @@ function DatePicker({
    * shows the section 11.3 rule 6 inline error and does not save.
    */
   onInvalidEntry?: (typed: string) => void
+  /**
+   * v2e additions (section 4 rule 4). min/max bound the pickable range
+   * (days outside it are faded and not clickable, section 20.1); markedDates/
+   * markedHint flag days with a dot and a tooltip (e.g. leave days). See
+   * FRONTEND_RULES.md section 4.1 "v2e additions" and calendar.tsx.
+   */
+  min?: Date
+  max?: Date
+  markedDates?: string[] | Set<string>
+  markedHint?: string
 }) {
   const phone = useLayout().layout === "phone"
   const [open, setOpen] = React.useState(false)
@@ -334,6 +348,17 @@ function DatePicker({
             mode="single"
             selected={value}
             defaultMonth={value}
+            disabled={
+              min && max
+                ? { before: min, after: max }
+                : min
+                  ? { before: min }
+                  : max
+                    ? { after: max }
+                    : undefined
+            }
+            markedDates={markedDates}
+            markedHint={markedHint}
             onSelect={(date) => {
               onValueChange?.(date)
               setText(formatDate(date))

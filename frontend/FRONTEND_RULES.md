@@ -261,6 +261,17 @@ Read this table before adding any file to components/ui. Names here do not alway
 
 Anything added to components/ui is added to this table, and rendered on /kitchen-sink, in the same commit (section 6.4).
 
+### 4.1.1 v2e additions
+
+Capabilities this product added to a kit component, under section 4 rule 4 (a variant on the existing file, never a second component). Kept here so the next product built from this kit can see what moved from "v2e adapter" to "kit feature" and decide whether to carry it forward.
+
+| File | Capability added | Why |
+|---|---|---|
+| calendar.tsx | `markedDates` (ISO yyyy-MM-dd strings or a Set) and `markedHint`: flags a day with a small dot and, when `markedHint` is given, a tooltip on it. | v2e's task deadline calendar flags a selected assignee's leave days. Implemented as a `DayButton` variant (`data-marked`), not a new component. |
+| date-picker.tsx | `min`/`max` (Date): bounds the pickable range, passed through to `calendar.tsx`'s `disabled` matcher. `markedDates`/`markedHint`: passed straight through to `calendar.tsx`. | Needed by `components/ui/DatePicker.tsx`'s adapter (the product's ISO-string date field, ~28 call sites) to keep its existing `min`/`max`/`markedDates`/`markedHint` props working unchanged. |
+
+`components/ui/DatePicker.tsx`, `DateRangePicker.tsx` and `TimeField.tsx` are this product's own adapters over `date-picker.tsx`/`calendar.tsx`/`time-picker.tsx` (ISO-string and `"HH:MM"` value contracts instead of `Date`/`TimeValue`); see `components/ui/ADAPTERS.md` for what each keeps and what it deliberately drops (`compact`, `hideClear`, `bare`, the old analog-clock dialog).
+
 **On phone.** Each shared component switches to its phone form itself, through useLayout() (section 41.3 rule 4); its caller never chooses. Built: select, searchable-select, multi-select, inline-choice, dropdown-menu and popover become bottom sheets, or steps inside one (section 41.8); dialog becomes a bottom sheet when small and a full-screen layer when medium or large (rule 10); alert-dialog stays centred; date-picker and time-picker open the phone's own picker (section 41.9 rule 10); tooltip shows only disabled reasons (rules 16 to 18); sonner follows rules 12 to 14. Truncate clamps to two lines in phone rows. Phone-only parts (phone-list, action-bar, record-summary, approval-select and the like) are different: the screen chooses them, with useLayout(), as its phone arrangement (section 41.3 rule 2).
 
 **lib/utils.ts** is part of the same contract. Its cn() function is extended with this project's type-scale token names. Without the extension, tailwind-merge treats a class such as text-label as a colour and silently drops the font size. Anything added to the type scale in globals.css is added to the extension in lib/utils.ts in the same commit.
