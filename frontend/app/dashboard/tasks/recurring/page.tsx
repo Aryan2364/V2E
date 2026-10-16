@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
-import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { tasksApi } from '@/lib/api/tasks'
@@ -31,6 +30,16 @@ import RecurringFilterToolbar, {
 import { useSessionState } from '@/lib/tasks/useSessionState'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import ScopeSwitcher from '@/components/tasks/overview/ScopeSwitcher'
 import Tooltip from '@/components/ui/tooltip'
 import { entryLabel, formatDate } from '@/lib/tasks/recurrence-label'
@@ -75,42 +84,35 @@ function DeleteConfirmDialog({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const copy = DELETE_COPY[mode]
-  return createPortal(
-    <div
-      className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/40"
-      onClick={(e) => { if (e.target === e.currentTarget && !busy) onCancel() }}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="w-full max-w-sm bg-surface rounded-card shadow-dialog border border-border-light p-4">
-        <h3 className="text-[16px] font-medium text-text-primary">{copy.title}</h3>
-        <p className="text-sm text-text-secondary mt-1.5">
-          <span className="font-medium text-text-primary">“{template.title}”</span> — {copy.body}
-        </p>
-        {error && (
-          <div className="mt-3 bg-danger-bg border border-danger-border rounded-control px-3 py-2 text-sm text-danger">{error}</div>
-        )}
-        <div className="flex justify-end gap-2 mt-4">
-          <button type="button" onClick={onCancel} disabled={busy}
-            className="px-4 py-2 text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle disabled:opacity-60 transition-colors">
-            Cancel
-          </button>
-          <button type="button"
+  return (
+    <AlertDialog open onOpenChange={(open) => { if (!open && !busy) onCancel() }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{copy.title}</AlertDialogTitle>
+          <AlertDialogDescription>
+            <span className="font-medium text-text-primary">"{template.title}"</span> — {copy.body}
+          </AlertDialogDescription>
+          {error && (
+            <div className="bg-danger-bg border border-danger-border rounded-control px-3 py-2 text-sm text-danger">{error}</div>
+          )}
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            variant={copy.danger ? 'danger' : 'primary'}
+            disabled={busy}
             onClick={async () => {
               setBusy(true); setError(null)
               try { await onConfirm() }
               catch (e: any) { setError(e?.response?.data?.message ?? 'Could not do this — please try again.') }
               finally { setBusy(false) }
             }}
-            disabled={busy}
-            className={['px-4 py-2 text-sm font-medium text-white rounded-control disabled:opacity-60 transition-colors',
-              copy.danger ? 'bg-danger hover:bg-danger-hover' : 'bg-primary hover:bg-primary-hover'].join(' ')}>
+          >
             {busy ? 'Working…' : copy.confirm}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
