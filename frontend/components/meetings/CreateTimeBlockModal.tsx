@@ -7,9 +7,9 @@ import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import { timeBlocksApi, type TimeBlock } from '@/lib/api/time-blocks'
 
-const labelClass = 'block text-sm font-medium text-text-secondary mb-1.5'
+const labelClass = 'block text-body font-medium text-text-secondary mb-1.5'
 const inputClass =
-  'w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  'w-full border border-border rounded-[8px] px-3 py-2 text-body text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 function timeToMin(hhmm: string): number {
@@ -120,12 +120,12 @@ export default function CreateTimeBlockModal({
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Edit time-block' : 'New time-block'} size="md" closeOnEscape={false}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
         {isGoogle ? (
-          <div className="flex items-start gap-2 text-xs text-text-muted bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2">
+          <div className="flex items-start gap-2 text-meta text-text-muted bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2">
             <RefreshCw size={15} className="text-primary-text mt-0.5 shrink-0" />
             <span>Synced from your Google Calendar. Editing or deleting it here updates Google too. Colleagues only see &ldquo;Busy&rdquo;.</span>
           </div>
         ) : (
-          <div className="flex items-start gap-2 text-xs text-text-muted bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2">
+          <div className="flex items-start gap-2 text-meta text-text-muted bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2">
             <CalendarClock size={15} className="text-primary-text mt-0.5 shrink-0" />
             <span>Blocks your time so nobody double-books you. Only you see the name — colleagues just see &ldquo;Busy&rdquo;. Synced to your Google Calendar.</span>
           </div>
@@ -156,14 +156,14 @@ export default function CreateTimeBlockModal({
           <textarea className={`${inputClass} min-h-[64px] resize-y`} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything you want to remember" />
         </div>
 
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <p className="text-body text-danger">{error}</p>}
 
         {confirmDelete && (
           <div className="flex items-center justify-between gap-3 bg-danger-bg border border-danger-border rounded-[8px] px-3 py-2.5">
-            <span className="text-sm text-danger">Delete this block? It is also removed from your Google Calendar.</span>
+            <span className="text-body text-danger">Delete this block? It is also removed from your Google Calendar.</span>
             <div className="flex items-center gap-2 shrink-0">
-              <button type="button" onClick={() => setConfirmDelete(false)} className="px-3 py-1.5 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] bg-white hover:bg-surface-sunken">Cancel</button>
-              <button type="button" onClick={handleDelete} disabled={busy} className="px-3 py-1.5 text-sm font-medium text-white bg-danger hover:bg-danger-hover rounded-[8px] disabled:opacity-50">Delete</button>
+              <button type="button" onClick={() => setConfirmDelete(false)} className="px-3 py-1.5 text-body font-medium text-text-secondary border border-border-light rounded-[8px] bg-surface hover:bg-surface-sunken">Cancel</button>
+              <button type="button" onClick={handleDelete} disabled={busy} className="px-3 py-1.5 text-body font-medium text-primary-foreground bg-danger hover:bg-danger-hover rounded-[8px] disabled:opacity-50">Delete</button>
             </div>
           </div>
         )}
@@ -171,14 +171,14 @@ export default function CreateTimeBlockModal({
         <div className="flex items-center justify-between gap-2 pt-1">
           <div>
             {isEditing && !confirmDelete && (
-              <button type="button" onClick={() => setConfirmDelete(true)} className="inline-flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-danger border border-danger-border rounded-[8px] hover:bg-danger-bg">
+              <button type="button" onClick={() => setConfirmDelete(true)} className="inline-flex items-center gap-1.5 px-3 py-2.5 text-body font-medium text-danger border border-danger-border rounded-[8px] hover:bg-danger-bg">
                 <Trash2 size={15} /> Delete
               </button>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken">Cancel</button>
-            <button type="submit" disabled={busy} className="px-4 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50">
+            <button type="button" onClick={onClose} className="px-4 py-2.5 text-body font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken">Cancel</button>
+            <button type="submit" disabled={busy} className="px-4 py-2.5 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50">
               {busy ? 'Saving…' : isEditing ? 'Save changes' : 'Create time-block'}
             </button>
           </div>

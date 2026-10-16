@@ -88,7 +88,7 @@ function EventRow({
   return (
     <div className="h-14 flex items-center gap-3 px-4 border-b border-border-light last:border-b-0">
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(event.name)}`}
+        className={`w-8 h-8 rounded-full flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 ${avatarColor(event.name)}`}
       >
         {getInitials(event.name)}
       </div>
@@ -194,8 +194,8 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
                 className={[
                   'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-meta font-medium transition-colors relative',
                   isActive
-                    ? 'text-primary-text bg-white'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-white/60',
+                    ? 'text-primary-text bg-surface'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface/60',
                 ].join(' ')}
               >
                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${tab.dot}`} />
@@ -221,7 +221,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
         {/* Event list with auto-scroll */}
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 px-4 text-center" style={{ minHeight: containerHeight }}>
-            <div className={`w-8 h-8 rounded-full ${activeConfig.dot} opacity-20 flex items-center justify-center text-white mb-2`}>
+            <div className={`w-8 h-8 rounded-full ${activeConfig.dot} opacity-20 flex items-center justify-center text-primary-foreground mb-2`}>
               {activeConfig.icon}
             </div>
             <p className="text-[13px] text-text-secondary">{activeConfig.emptyText}</p>

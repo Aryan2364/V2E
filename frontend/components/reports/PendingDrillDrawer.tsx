@@ -120,8 +120,8 @@ export default function PendingDrillDrawer({
               <ArrowLeft size={16} />
             </button>
             <div className="min-w-0">
-              <div className="text-xs font-medium text-primary-text">{sub}</div>
-              <h3 className="text-lg font-medium tracking-tight text-text-primary truncate">{heading}</h3>
+              <div className="text-meta font-medium text-primary-text">{sub}</div>
+              <h3 className="text-section font-medium tracking-tight text-text-primary truncate">{heading}</h3>
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-lg border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control shrink-0">
@@ -134,7 +134,7 @@ export default function PendingDrillDrawer({
           {filter.personName && <Chip label={filter.personName} onRemove={clearPerson} />}
           {filter.taskTitle && <Chip label={filter.taskTitle} onRemove={clearTask} />}
           {filter.bandLabel && <Chip label={filter.bandLabel} onRemove={clearBand} />}
-          <span className="inline-flex items-center rounded-full bg-primary-subtle border border-primary-border px-2.5 py-1 text-xs font-medium text-primary-text">
+          <span className="inline-flex items-center rounded-full bg-primary-subtle border border-primary-border px-2.5 py-1 text-meta font-medium text-primary-text">
             As on {fmtAsOn(asOn)}
           </span>
         </div>
@@ -151,10 +151,10 @@ export default function PendingDrillDrawer({
           {rows.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-center text-text-muted">
               <Inbox size={26} className="mb-2" />
-              <p className="text-sm">No pending tasks in this view.</p>
+              <p className="text-body">No pending tasks in this view.</p>
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full text-body">
               <thead className="sticky top-0 z-10 bg-surface-sunken shadow-card">
                 <tr className="text-left text-text-secondary">
                   {!singleTask && <SortTh id="title" label="Task" />}
@@ -197,7 +197,7 @@ export default function PendingDrillDrawer({
                       {r.days_late === null ? '—' : r.days_late}
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap">
-                      <span className={`text-xs font-medium ${r.status === 'Overdue' ? 'text-danger' : 'text-text-secondary'}`}>{r.bucket_label}</span>
+                      <span className={`text-meta font-medium ${r.status === 'Overdue' ? 'text-danger' : 'text-text-secondary'}`}>{r.bucket_label}</span>
                     </td>
                     <td className="px-2 py-3 text-right"><ChevronRight size={15} className="text-muted group-hover:text-primary-text" /></td>
                   </tr>
@@ -214,7 +214,7 @@ export default function PendingDrillDrawer({
 
 function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border pl-3 pr-1.5 py-1 text-xs font-medium text-text-primary max-w-[260px]">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border pl-3 pr-1.5 py-1 text-meta font-medium text-text-primary max-w-[260px]">
       <span className="truncate">{label}</span>
       <button onClick={onRemove} className="w-4 h-4 rounded-full flex items-center justify-center text-text-muted hover:bg-danger-bg hover:text-danger transition-colors shrink-0" title="Remove filter">
         <X size={12} strokeWidth={3} />
@@ -226,8 +226,8 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
 function Stat({ label, value, color = 'var(--text-primary)' }: { label: string; value: number | string; color?: string }) {
   return (
     <div>
-      <div className="text-lg font-medium tabular-nums leading-none" style={{ color }}>{value}</div>
-      <div className="text-xs mt-1 text-text-muted">{label}</div>
+      <div className="text-section font-medium tabular-nums leading-none" style={{ color }}>{value}</div>
+      <div className="text-meta mt-1 text-text-muted">{label}</div>
     </div>
   )
 }

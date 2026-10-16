@@ -93,8 +93,8 @@ function StatCard({
         {icon}
       </div>
       <div>
-        <p className="text-3xl font-medium text-text-primary leading-tight tabular-nums">{value}</p>
-        <p className="text-sm text-text-secondary mt-0.5">{label}</p>
+        <p className="text-page-title font-medium text-text-primary leading-tight tabular-nums">{value}</p>
+        <p className="text-body text-text-secondary mt-0.5">{label}</p>
       </div>
     </div>
   )
@@ -122,8 +122,8 @@ function QuickNavCard({ label, description, href, icon, iconBg }: QuickNavCardPr
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-text-primary text-sm">{label}</p>
-        <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{description}</p>
+        <p className="font-medium text-text-primary text-body">{label}</p>
+        <p className="text-meta text-text-secondary mt-0.5 leading-relaxed">{description}</p>
       </div>
       <ChevronRight
         size={16}
@@ -195,16 +195,16 @@ export default function DashboardPage() {
         <div className="bg-primary-subtle border border-primary-border rounded-xl p-4">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
-              <p className="font-medium text-primary-text text-sm">
+              <p className="font-medium text-primary-text text-body">
                 Complete your organization setup
               </p>
-              <p className="text-xs text-primary-text mt-0.5">
+              <p className="text-meta text-primary-text mt-0.5">
                 {setupProgress}% complete — finish setting up to unlock all features.
               </p>
             </div>
             <Link
               href="/settings/organization/company"
-              className="flex items-center gap-1.5 text-sm font-medium text-primary-text hover:text-primary-text transition-colors shrink-0 whitespace-nowrap"
+              className="flex items-center gap-1.5 text-body font-medium text-primary-text hover:text-primary-text transition-colors shrink-0 whitespace-nowrap"
             >
               Continue setup
               <ArrowRight size={14} />
@@ -232,7 +232,7 @@ export default function DashboardPage() {
 
       {/* Quick nav */}
       <div>
-        <h2 className="text-base font-medium text-text-primary mb-4">Quick access</h2>
+        <h2 className="text-body font-medium text-text-primary mb-4">Quick access</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           <QuickNavCard
             label="Identity"

@@ -40,7 +40,7 @@ export default function WorkLogLayout({ children }: { children: React.ReactNode 
               key={t.href}
               href={t.href}
               className={[
-                'px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors',
+                'px-4 py-2.5 text-body font-medium whitespace-nowrap border-b-2 transition-colors',
                 active
                   ? 'border-primary text-primary-text'
                   : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border',

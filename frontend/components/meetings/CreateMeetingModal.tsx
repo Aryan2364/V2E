@@ -21,7 +21,7 @@ import { DurationField } from './shared'
 
 const inputClass =
   'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
-const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
+const labelClass = 'block text-body font-medium text-text-secondary mb-1'
 const sectionLabel = 'text-[13px] font-medium text-text-secondary'
 
 interface Props {
@@ -257,8 +257,8 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
 
   // Segmented control button
   const seg = (active: boolean) =>
-    ['px-3.5 py-1.5 text-sm font-medium inline-flex items-center gap-1.5 transition-colors',
-      active ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-surface-sunken'].join(' ')
+    ['px-3.5 py-1.5 text-body font-medium inline-flex items-center gap-1.5 transition-colors',
+      active ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-sunken'].join(' ')
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="New meeting" size="lg" closeOnEscape={false}>
@@ -273,12 +273,12 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
         <div>
           <label className={labelClass}>Attendees</label>
           <MeetingAttendeeSelector options={people} value={attendees} onChange={setAttendees} optional={optional} onToggleOptional={toggleOptional} placeholder="Add attendees" hostId={hostId} hostLabel="You" ineligibleReasons={ineligibleReasons} />
-          <p className="text-xs text-text-muted mt-1.5">You’re the host — always in the meeting. Everyone you add is attending; they can mark “can’t make it” with a reason. Toggle who’s optional.</p>
+          <p className="text-meta text-text-muted mt-1.5">You’re the host — always in the meeting. Everyone you add is attending; they can mark “can’t make it” with a reason. Toggle who’s optional.</p>
           {callMode === 'fixed' && recurMode === 'one_time' && attendees.length > 0 && (
             <button
               type="button"
               onClick={openFinder}
-              className="mt-2.5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-text hover:text-primary-text"
+              className="mt-2.5 inline-flex items-center gap-1.5 text-body font-medium text-primary-text hover:text-primary-text"
             >
               <Sparkles size={15} /> Find a time that works for everyone →
             </button>
@@ -389,10 +389,10 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
 
         {/* Quiet actions: link (left) · reminder (right) */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <button type="button" onClick={() => setShowLinker((v) => !v)} className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary">
+          <button type="button" onClick={() => setShowLinker((v) => !v)} className="inline-flex items-center gap-1.5 text-meta text-text-secondary hover:text-text-primary">
             <Link2 size={14} /> Link to a goal, task, or ticket
           </button>
-          <label className="inline-flex items-center gap-2 text-xs text-text-secondary cursor-pointer select-none">
+          <label className="inline-flex items-center gap-2 text-meta text-text-secondary cursor-pointer select-none">
             <input type="checkbox" checked={remind} onChange={(e) => setRemind(e.target.checked)} className="w-4 h-4 accent-primary" />
             <Bell size={14} /> Remind 15 min before
           </label>
@@ -513,13 +513,13 @@ function ClashNudge({
 
   if (hard.length === 0 && soft.length === 0) {
     return (
-      <p className="inline-flex items-center gap-1.5 text-xs text-success">
+      <p className="inline-flex items-center gap-1.5 text-meta text-success">
         <span className="w-1.5 h-1.5 rounded-full bg-success" /> Everyone looks free at this time.
       </p>
     )
   }
   return (
-    <div className="flex items-start gap-1.5 text-xs bg-warning-bg border border-warning-border rounded-[8px] px-3 py-2">
+    <div className="flex items-start gap-1.5 text-meta bg-warning-bg border border-warning-border rounded-[8px] px-3 py-2">
       <AlertTriangle size={13} className="mt-0.5 shrink-0 text-warning" />
       <span className="text-text-secondary">
         {hard.length > 0 && <span className="text-warning font-medium">{hard.join(', ')} {hard.length === 1 ? 'is' : 'are'} busy then.</span>}

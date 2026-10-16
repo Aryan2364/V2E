@@ -53,7 +53,7 @@ function avatarColor(name: string): string {
 
 function StatusBadge({ active }: { active: boolean }) {
   return (
-    <span className={`inline-flex items-center rounded-[999px] px-3 py-1 text-xs font-medium ${active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>
+    <span className={`inline-flex items-center rounded-[999px] px-3 py-1 text-meta font-medium ${active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>
       {active ? 'Active' : 'Inactive'}
     </span>
   )
@@ -62,8 +62,8 @@ function StatusBadge({ active }: { active: boolean }) {
 function InfoCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-sm text-text-primary font-medium wrap-break-word">{value ?? '—'}</p>
+      <p className="text-meta font-medium text-text-secondary uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-body text-text-primary font-medium wrap-break-word">{value ?? '—'}</p>
     </div>
   )
 }
@@ -72,8 +72,8 @@ function Section({ title, subtitle, children }: { title: string; subtitle?: stri
   return (
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-6">
       <div className="mb-4 pb-3 border-b border-border-light flex items-baseline gap-2 flex-wrap">
-        <h2 className="text-base font-medium text-text-primary">{title}</h2>
-        {subtitle && <span className="text-xs text-text-secondary">{subtitle}</span>}
+        <h2 className="text-body font-medium text-text-primary">{title}</h2>
+        {subtitle && <span className="text-meta text-text-secondary">{subtitle}</span>}
       </div>
       {children}
     </div>
@@ -93,7 +93,7 @@ function ReportingChain({ me, allEmployees }: { me: EmployeeProfile; allEmployee
     current = manager
     depth++
   }
-  if (chain.length === 0) return <p className="text-sm text-text-muted italic">No reporting chain found.</p>
+  if (chain.length === 0) return <p className="text-body text-text-muted italic">No reporting chain found.</p>
   return (
     <div className="space-y-2">
       {chain.map((mgr, i) => {
@@ -101,14 +101,14 @@ function ReportingChain({ me, allEmployees }: { me: EmployeeProfile; allEmployee
         return (
           <div key={mgr.id} className="flex items-start gap-3">
             <div className="flex flex-col items-center">
-              <div className={`w-8 h-8 rounded-full ${avatarColor(mgrName)} flex items-center justify-center text-white text-xs font-medium shrink-0`}>
+              <div className={`w-8 h-8 rounded-full ${avatarColor(mgrName)} flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0`}>
                 {getInitials(mgrName)}
               </div>
               {i < chain.length - 1 && <div className="w-px h-4 bg-surface-control-pressed mt-1" />}
             </div>
             <div className="pt-1">
-              <p className="text-sm font-medium text-text-primary">{mgrName}</p>
-              <p className="text-xs text-text-secondary">{mgr.role?.title ?? '—'}</p>
+              <p className="text-body font-medium text-text-primary">{mgrName}</p>
+              <p className="text-meta text-text-secondary">{mgr.role?.title ?? '—'}</p>
             </div>
           </div>
         )
@@ -140,7 +140,7 @@ function ProfileTabs({ active, onChange }: { active: ProfileTab; onChange: (t: P
               aria-selected={on}
               onClick={() => onChange(t.key)}
               className={[
-                '-mb-px h-11 sm:h-10 border-b-2 text-sm transition-colors duration-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-t-[4px]',
+                '-mb-px h-11 sm:h-10 border-b-2 text-body transition-colors duration-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-t-[4px]',
                 on
                   ? 'border-primary text-primary-text font-medium'
                   : 'border-transparent text-text-secondary font-medium hover:text-text-primary',
@@ -282,24 +282,24 @@ function MyProfileContent() {
       {/* Profile header — mirrors the employee-detail page */}
       <div className="bg-surface border border-border-light rounded-xl shadow-card p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className={`w-20 h-20 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-2xl font-medium shrink-0`}>
+          <div className={`w-20 h-20 rounded-full ${avatarColor(name)} flex items-center justify-center text-primary-foreground text-page-title font-medium shrink-0`}>
             {getInitials(name)}
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-[28px] font-medium text-text-primary leading-tight">{name || 'My Profile'}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-1.5">
-              {role?.title && <span className="text-sm text-text-secondary font-medium">{role.title}</span>}
+              {role?.title && <span className="text-body text-text-secondary font-medium">{role.title}</span>}
               {profile?.department?.name && (
                 <>
                   <span className="text-muted">·</span>
-                  <span className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-xs font-medium bg-primary-subtle text-primary-text">
+                  <span className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text">
                     {profile.department.name}
                   </span>
                 </>
               )}
               {profile && <StatusBadge active={isActive} />}
             </div>
-            {email && <p className="text-sm text-text-secondary mt-1">{email}</p>}
+            {email && <p className="text-body text-text-secondary mt-1">{email}</p>}
           </div>
         </div>
       </div>
@@ -330,12 +330,12 @@ function MyProfileContent() {
       {profile?.reporting_to && (
         <Section title="Reports to">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full ${avatarColor(profile.reporting_to.name)} flex items-center justify-center text-white text-sm font-medium shrink-0`}>
+            <div className={`w-10 h-10 rounded-full ${avatarColor(profile.reporting_to.name)} flex items-center justify-center text-primary-foreground text-body font-medium shrink-0`}>
               {getInitials(profile.reporting_to.name)}
             </div>
             <div className="min-w-0">
-              <p className="font-medium text-text-primary text-sm truncate">{profile.reporting_to.name}</p>
-              {profile.reporting_to.email && <p className="text-xs text-text-secondary truncate">{profile.reporting_to.email}</p>}
+              <p className="font-medium text-text-primary text-body truncate">{profile.reporting_to.name}</p>
+              {profile.reporting_to.email && <p className="text-meta text-text-secondary truncate">{profile.reporting_to.email}</p>}
             </div>
           </div>
         </Section>
@@ -354,14 +354,14 @@ function MyProfileContent() {
           <div className="flex items-center gap-3 flex-wrap mb-3">
             <h3 className="font-medium text-text-primary">{role.title}</h3>
             {role.level && (
-              <span className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-xs font-medium bg-primary-subtle text-primary-text">
+              <span className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text">
                 {roleLevelLabel[role.level] ?? role.level}
               </span>
             )}
           </div>
           {role.job_description
-            ? <p className="text-sm text-text-primary whitespace-pre-wrap leading-relaxed">{role.job_description}</p>
-            : <p className="text-sm text-text-muted italic">No job description set for this role.</p>}
+            ? <p className="text-body text-text-primary whitespace-pre-wrap leading-relaxed">{role.job_description}</p>
+            : <p className="text-body text-text-muted italic">No job description set for this role.</p>}
         </Section>
       )}
 
@@ -371,9 +371,9 @@ function MyProfileContent() {
           <ol className="space-y-3">
             {kraItems.map((k, i) => (
               <li key={i} className="flex gap-3">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-primary-subtle flex items-center justify-center text-xs font-medium text-primary-text">{i + 1}</span>
+                <span className="shrink-0 w-6 h-6 rounded-full bg-primary-subtle flex items-center justify-center text-meta font-medium text-primary-text">{i + 1}</span>
                 <div>
-                  <p className="text-sm font-medium text-text-primary">{k.title}</p>
+                  <p className="text-body font-medium text-text-primary">{k.title}</p>
                   {k.description && <p className="text-[13px] text-text-secondary mt-0.5 whitespace-pre-wrap">{k.description}</p>}
                 </div>
               </li>
@@ -399,11 +399,11 @@ function MyProfileContent() {
         <Section title="Personal details" subtitle="Only you can edit these">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Date of birth</label>
+              <label className="block text-body font-medium text-text-secondary mb-1.5">Date of birth</label>
               <DatePicker value={dob} onChange={setDob} max={new Date().toISOString().slice(0, 10)} placeholder="Select date" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Marriage date</label>
+              <label className="block text-body font-medium text-text-secondary mb-1.5">Marriage date</label>
               <DatePicker value={marriage} onChange={setMarriage} max={new Date().toISOString().slice(0, 10)} placeholder="Select date" />
             </div>
           </div>
@@ -411,7 +411,7 @@ function MyProfileContent() {
             type="button"
             onClick={savePersonal}
             disabled={savingPersonal}
-            className="mt-4 flex items-center gap-2 px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+            className="mt-4 flex items-center gap-2 px-4 py-[10px] text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
           >
             {savingPersonal ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
             {savingPersonal ? 'Saving…' : 'Save personal details'}
@@ -423,7 +423,7 @@ function MyProfileContent() {
       <Section title="Change password">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">New password</label>
+            <label className="block text-body font-medium text-text-secondary mb-1.5">New password</label>
             <div className="relative">
               <input
                 type={showNew ? 'text' : 'password'}
@@ -431,17 +431,17 @@ function MyProfileContent() {
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="At least 8 characters"
                 autoComplete="new-password"
-                className={`w-full px-3 py-2 pr-8 text-sm rounded-lg border ${passwordTooShort ? 'border-danger' : 'border-border'} focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted`}
+                className={`w-full px-3 py-2 pr-8 text-body rounded-lg border ${passwordTooShort ? 'border-danger' : 'border-border'} focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted`}
               />
               <button type="button" onClick={() => setShowNew((v) => !v)} aria-label={showNew ? 'Hide password' : 'Show password'}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary">
                 {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
-            {passwordTooShort && <p className="text-xs text-danger mt-1">Use at least {MIN_PASSWORD} characters.</p>}
+            {passwordTooShort && <p className="text-meta text-danger mt-1">Use at least {MIN_PASSWORD} characters.</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Confirm new password</label>
+            <label className="block text-body font-medium text-text-secondary mb-1.5">Confirm new password</label>
             <div className="relative">
               <input
                 type={showConfirm ? 'text' : 'password'}
@@ -449,21 +449,21 @@ function MyProfileContent() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter the new password"
                 autoComplete="new-password"
-                className={`w-full px-3 py-2 pr-8 text-sm rounded-lg border ${passwordMismatch ? 'border-danger' : 'border-border'} focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted`}
+                className={`w-full px-3 py-2 pr-8 text-body rounded-lg border ${passwordMismatch ? 'border-danger' : 'border-border'} focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted`}
               />
               <button type="button" onClick={() => setShowConfirm((v) => !v)} aria-label={showConfirm ? 'Hide password' : 'Show password'}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary">
                 {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
-            {passwordMismatch && <p className="text-xs text-danger mt-1">Passwords don&apos;t match.</p>}
+            {passwordMismatch && <p className="text-meta text-danger mt-1">Passwords don&apos;t match.</p>}
           </div>
         </div>
         <button
           type="button"
           onClick={savePassword}
           disabled={!canChangePassword}
-          className="mt-4 flex items-center gap-2 px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+          className="mt-4 flex items-center gap-2 px-4 py-[10px] text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
         >
           {savingPassword ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
           {savingPassword ? 'Updating…' : 'Update password'}

@@ -50,7 +50,7 @@ export default function SkipHolidaysField({
 
   return (
     <div className="mt-3 pt-3 border-t border-border-light">
-      <label className="inline-flex items-center gap-2 text-sm font-medium text-text-secondary cursor-pointer select-none">
+      <label className="inline-flex items-center gap-2 text-body font-medium text-text-secondary cursor-pointer select-none">
         <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} className="w-4 h-4 accent-primary" />
         Skip company holidays
         <button type="button" onClick={() => setShowInfo((v) => !v)} className="text-text-muted hover:text-primary-text" aria-label="What does this do?">
@@ -66,13 +66,13 @@ export default function SkipHolidaysField({
 
       {value && (loading || preview.length > 0) && (
         <div className="mt-2">
-          <p className="text-xs text-text-secondary font-medium mb-1">
+          <p className="text-meta text-text-secondary font-medium mb-1">
             {loading ? 'Checking holidays…' : `${preview.length} upcoming occurrence${preview.length === 1 ? '' : 's'} will be skipped:`}
           </p>
           {!loading && (
             <div className="flex flex-col gap-1 max-h-[128px] overflow-y-auto pr-1">
               {preview.map((p) => (
-                <div key={p.date} className="flex items-center gap-2 text-xs">
+                <div key={p.date} className="flex items-center gap-2 text-meta">
                   <span className="w-1.5 h-1.5 rounded-full bg-warning shrink-0" />
                   <span className="text-text-primary">{new Date(`${p.date}T00:00`).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                   <span className="text-text-muted truncate">· {p.name}</span>

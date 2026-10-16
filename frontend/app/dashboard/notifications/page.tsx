@@ -113,7 +113,7 @@ export default function NotificationsPage() {
             key={m}
             onClick={() => setModuleFilter(m)}
             className={[
-              'px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors',
+              'px-3 py-1.5 rounded-full text-meta font-medium capitalize transition-colors',
               moduleFilter === m
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-surface border border-border-light text-text-secondary hover:border-border',
@@ -131,7 +131,7 @@ export default function NotificationsPage() {
             <Bell size={24} className="text-text-muted" />
           </div>
           <p className="font-medium text-text-primary">No notifications</p>
-          <p className="text-sm text-text-secondary mt-1">Activity on your tasks and projects will appear here.</p>
+          <p className="text-body text-text-secondary mt-1">Activity on your tasks and projects will appear here.</p>
         </div>
       ) : (
         <div className="bg-surface border border-border-light rounded-xl shadow-card divide-y divide-surface-control overflow-hidden">
@@ -148,15 +148,15 @@ export default function NotificationsPage() {
                 {!n.is_read && <span className="mt-2 w-2 h-2 rounded-full bg-primary shrink-0" />}
                 <div className={`flex-1 min-w-0 ${n.is_read ? 'pl-4' : ''}`}>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium text-text-primary">{n.title}</p>
+                    <p className="text-body font-medium text-text-primary">{n.title}</p>
                     <span
                       className={`inline-flex rounded-full border px-2 py-0.5 text-meta font-medium uppercase tracking-wide ${MODULE_COLORS[n.module] ?? MODULE_COLORS.system}`}
                     >
                       {n.module}
                     </span>
                   </div>
-                  <p className="text-sm text-text-secondary mt-0.5 whitespace-pre-line">{n.body}</p>
-                  <p className="text-xs text-text-muted mt-1.5">{formatWhen(n.created_at)}</p>
+                  <p className="text-body text-text-secondary mt-0.5 whitespace-pre-line">{n.body}</p>
+                  <p className="text-meta text-text-muted mt-1.5">{formatWhen(n.created_at)}</p>
                 </div>
               </div>
             </button>
@@ -168,7 +168,7 @@ export default function NotificationsPage() {
         <button
           onClick={loadMore}
           disabled={loadingMore}
-          className="w-full py-2.5 text-sm font-medium text-primary-text bg-surface border border-border-light rounded-xl hover:bg-surface-sunken disabled:opacity-60 transition-colors"
+          className="w-full py-2.5 text-body font-medium text-primary-text bg-surface border border-border-light rounded-xl hover:bg-surface-sunken disabled:opacity-60 transition-colors"
         >
           {loadingMore ? 'Loading…' : 'Load older notifications'}
         </button>

@@ -28,7 +28,7 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 
 const selectClass =
-  'border border-border rounded-lg px-3 py-2 text-sm text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  'border border-border rounded-lg px-3 py-2 text-body text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 
 type View = 'day' | 'week' | 'month' | 'list'
 const VIEWS: { key: View; label: string }[] = [
@@ -72,7 +72,7 @@ const meetingColumns: ResponsiveColumn<Meeting>[] = [
           {m.type === 'offline' ? <MapPin size={14} className="text-text-muted" /> : <Video size={14} className="text-text-muted" />}
           <span className="font-medium text-text-primary text-[15px]">{m.title}</span>
         </div>
-        <div className="text-xs text-text-muted mt-0.5 flex items-center gap-2">
+        <div className="text-meta text-text-muted mt-0.5 flex items-center gap-2">
           <span>{TYPE_LABEL[m.type]}</span>
           <span className="inline-flex items-center gap-1"><Users size={11} /> {m._count?.attendees ?? 0}</span>
           {m.rhythm_id && <span className="inline-flex items-center gap-1 text-text-secondary"><Repeat size={11} /> rhythm</span>}
@@ -84,9 +84,9 @@ const meetingColumns: ResponsiveColumn<Meeting>[] = [
     key: 'when',
     header: 'When',
     desktopHiddenBelow: 'md',
-    render: (m) => <span className="text-sm text-text-secondary">{fmtDateTime(m.scheduled_start)}</span>,
+    render: (m) => <span className="text-body text-text-secondary">{fmtDateTime(m.scheduled_start)}</span>,
   },
-  { key: 'organizer', header: 'Organizer', render: (m) => <span className="text-sm text-text-primary">{m.organizer?.name ?? '—'}</span> },
+  { key: 'organizer', header: 'Organizer', render: (m) => <span className="text-body text-text-primary">{m.organizer?.name ?? '—'}</span> },
   { key: 'status', header: 'Status', render: (m) => <StatusBadge status={m.status} /> },
 ]
 
@@ -248,18 +248,18 @@ export default function MeetingsPage() {
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <h1 className="text-[26px] font-medium text-text-primary leading-tight">Meetings</h1>
-          <p className="text-sm text-text-secondary mt-1">Schedule, run and record meetings — with action items and decisions.</p>
+          <p className="text-body text-text-secondary mt-1">Schedule, run and record meetings — with action items and decisions.</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {/* Frequent actions grouped as a segmented control; occasional ones live under "More". */}
           <div className="relative" ref={menuRef}>
             <div className="inline-flex items-center border border-border-light rounded-lg overflow-hidden">
-              <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-text-secondary hover:bg-surface-sunken">
+              <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-2 px-3 py-2.5 text-body font-medium text-text-secondary hover:bg-surface-sunken">
                 <Repeat size={16} /> Rhythms
               </Link>
               <span className="w-px self-stretch bg-surface-control-pressed" aria-hidden />
               <Tooltip label="Block your time (only you see the name; colleagues see Busy)">
-              <button onClick={() => { setEditBlock(null); setTbStart(undefined); setTbOpen(true) }} className="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-text-secondary hover:bg-surface-sunken">
+              <button onClick={() => { setEditBlock(null); setTbStart(undefined); setTbOpen(true) }} className="inline-flex items-center gap-2 px-3 py-2.5 text-body font-medium text-text-secondary hover:bg-surface-sunken">
                 <CalendarClock size={16} /> Time-Block
               </button>
               </Tooltip>
@@ -270,11 +270,11 @@ export default function MeetingsPage() {
             </div>
             {menuOpen && (
               <div role="menu" className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border-light rounded-[10px] shadow-lg p-1.5 z-50">
-                <Link href="/dashboard/governance/meetings/reports" onClick={() => setMenuOpen(false)} role="menuitem" className="w-full flex items-center gap-2.5 px-2.5 py-2 text-sm text-text-secondary rounded-[6px] hover:bg-surface-control">
+                <Link href="/dashboard/governance/meetings/reports" onClick={() => setMenuOpen(false)} role="menuitem" className="w-full flex items-center gap-2.5 px-2.5 py-2 text-body text-text-secondary rounded-[6px] hover:bg-surface-control">
                   <BarChart3 size={16} className="text-text-muted" /> Governance
                 </Link>
                 {gcal?.configured && (
-                  <button onClick={() => { setMenuOpen(false); setGcalOpen(true) }} role="menuitem" className="w-full flex items-center gap-2.5 px-2.5 py-2 text-sm text-text-secondary rounded-[6px] hover:bg-surface-control">
+                  <button onClick={() => { setMenuOpen(false); setGcalOpen(true) }} role="menuitem" className="w-full flex items-center gap-2.5 px-2.5 py-2 text-body text-text-secondary rounded-[6px] hover:bg-surface-control">
                     <Calendar size={16} className="text-text-muted" />
                     <span className="flex-1 text-left">Google Calendar</span>
                     <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: gcal.connected ? 'var(--success)' : 'var(--border)' }} />
@@ -284,7 +284,7 @@ export default function MeetingsPage() {
             )}
           </div>
           {perms.write && (
-            <button onClick={() => openCreate()} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg">
+            <button onClick={() => openCreate()} className="inline-flex items-center gap-2 px-4 py-2.5 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg">
               <Plus size={16} /> New Meeting
             </button>
           )}
@@ -310,7 +310,7 @@ export default function MeetingsPage() {
             <Tooltip label="Toggle work week / full week">
             <button
               onClick={() => setWeekDaysPersist(weekDays === 5 ? 7 : 5)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary border border-border-light rounded-lg hover:bg-surface-sunken"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-text-secondary border border-border-light rounded-lg hover:bg-surface-sunken"
             >
               <Columns3 size={15} /> {weekDays === 5 ? '5-day' : '7-day'}
             </button>
@@ -322,7 +322,7 @@ export default function MeetingsPage() {
                 key={v.key}
                 onClick={() => setView(v.key)}
                 aria-pressed={view === v.key}
-                className={['px-3 py-2 text-sm font-medium', view === v.key ? 'bg-primary text-white' : 'bg-surface text-text-secondary hover:bg-surface-sunken'].join(' ')}
+                className={['px-3 py-2 text-body font-medium', view === v.key ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-sunken'].join(' ')}
               >
                 {v.label}
               </button>
@@ -333,7 +333,7 @@ export default function MeetingsPage() {
 
       {/* Thin stat strip + filter chips (no card wrapper) */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-4 text-body">
           <span className="text-text-primary font-medium">{stats.total} <span className="font-normal text-text-muted">{view === 'month' || view === 'list' ? 'total' : 'this ' + view}</span></span>
           <span className="inline-flex items-center gap-1.5 text-text-secondary"><span className="w-2 h-2 rounded-full bg-success" /> {stats.live} live</span>
           <span className="inline-flex items-center gap-1.5 text-text-secondary"><span className="w-2 h-2 rounded-full bg-primary" /> {stats.scheduled} scheduled</span>
@@ -381,7 +381,7 @@ export default function MeetingsPage() {
       {!permsLoading && !perms.read ? (
         <AccessHiddenState orgId={orgId} leaf="meetings" moduleLabel="Meetings" />
       ) : loading && (view === 'day' || view === 'week') ? (
-        <div className="bg-surface border border-border-light rounded-xl p-8 text-center text-sm text-text-secondary">Loading…</div>
+        <div className="bg-surface border border-border-light rounded-xl p-8 text-center text-body text-text-secondary">Loading…</div>
       ) : view === 'day' || view === 'week' ? (
         <>
           <WeekGrid
@@ -396,7 +396,7 @@ export default function MeetingsPage() {
             onBlockSelect={(b) => { setEditBlock(b); setTbStart(undefined); setTbOpen(true) }}
           />
           {/* legend */}
-          <div className="flex flex-wrap items-center gap-4 mt-3 px-1 text-xs text-text-muted">
+          <div className="flex flex-wrap items-center gap-4 mt-3 px-1 text-meta text-text-muted">
             {LEGEND.map((l) => (
               <span key={l.label} className="inline-flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-[3px] border-l-[3px]" style={{ background: l.fill, borderLeftColor: l.stripe }} />
@@ -416,14 +416,14 @@ export default function MeetingsPage() {
           rowKey={(m) => m.id}
           loading={loading}
           headerRowClassName="bg-primary border-b border-primary-hover"
-          headerCellClassName="text-white bg-primary"
+          headerCellClassName="text-primary-foreground bg-primary"
           maxBodyHeight="calc(100vh - 320px)"
           onRowClick={(m) => router.push(`/dashboard/governance/meetings/${m.id}`)}
           emptyState={
             <div className="bg-surface border border-border-light rounded-xl p-12 text-center">
               <div className="w-14 h-14 rounded-xl bg-primary-subtle flex items-center justify-center text-primary-text mx-auto mb-3"><CalendarDays size={26} /></div>
               <h3 className="text-[18px] font-medium text-text-primary">No meetings</h3>
-              <p className="text-sm text-text-secondary mt-1">Create one to get started.</p>
+              <p className="text-body text-text-secondary mt-1">Create one to get started.</p>
             </div>
           }
         />

@@ -57,13 +57,13 @@ export default function MeetingCalendarView({
   const openDayMeetings = openDay ? byDate.get(`${openDay.getFullYear()}-${openDay.getMonth()}-${openDay.getDate()}`) ?? [] : []
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] overflow-hidden">
+    <div className="bg-surface border border-border-light rounded-[12px] overflow-hidden">
       {/* Weekday header — outside the scroll body so the scrollbar starts BELOW it
           (like Day/Week). Both header and body reserve a stable scrollbar gutter so
           their columns stay aligned. */}
       <div className="grid grid-cols-7 gap-px bg-surface-control-pressed border-b border-primary-hover overflow-hidden" style={{ scrollbarGutter: 'stable' }}>
         {WEEKDAYS.map((w) => (
-          <div key={w} className="bg-primary text-center text-xs font-medium uppercase tracking-wide text-white py-2.5">{w}</div>
+          <div key={w} className="bg-primary text-center text-meta font-medium uppercase tracking-wide text-primary-foreground py-2.5">{w}</div>
         ))}
       </div>
       <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 320px)', minHeight: 420, scrollbarGutter: 'stable' }}>
@@ -79,14 +79,14 @@ export default function MeetingCalendarView({
               // bubble up here too (they're plain divs, not buttons), so anywhere works.
               onClick={day ? () => setOpenDay(new Date(cursor.year, cursor.month, day)) : undefined}
               className={[
-                'bg-white min-h-[96px] p-1.5 align-top transition-colors',
+                'bg-surface min-h-[96px] p-1.5 align-top transition-colors',
                 day ? 'cursor-pointer hover:bg-surface-sunken' : '',
                 isOpen ? 'ring-2 ring-inset ring-primary' : '',
               ].join(' ')}
             >
               {day && (
                 <>
-                  <div className={['text-xs font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full', isToday(day) ? 'bg-primary text-white' : 'text-text-secondary'].join(' ')}>{day}</div>
+                  <div className={['text-meta font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full', isToday(day) ? 'bg-primary text-primary-foreground' : 'text-text-secondary'].join(' ')}>{day}</div>
                   <div className="flex flex-col gap-1">
                     {items.slice(0, 3).map((m) => {
                       const meta = MEETING_STATUS_META[m.status]

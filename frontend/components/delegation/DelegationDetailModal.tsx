@@ -83,26 +83,26 @@ export default function DelegationDetailModal({
           {/* Status + owner line */}
           <div className="flex flex-wrap items-center gap-3">
             <StatusPill status={delegation.status} />
-            <span className="inline-flex items-center gap-1.5 text-sm text-text-secondary">
+            <span className="inline-flex items-center gap-1.5 text-body text-text-secondary">
               <User size={14} className="text-text-muted" />
               Owner: <span className="font-medium text-text-primary">{delegation.owner?.name ?? 'Unknown'}</span>
             </span>
-            <span className="text-sm text-text-muted">·</span>
-            <span className="text-sm text-text-secondary">
+            <span className="text-body text-text-muted">·</span>
+            <span className="text-body text-text-secondary">
               By <span className="font-medium text-text-primary">{delegation.created_by?.name ?? 'Unknown'}</span>
             </span>
           </div>
 
           {/* Outcome */}
           <section>
-            <h4 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Outcome</h4>
+            <h4 className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Outcome</h4>
             <p className="text-[15px] text-text-primary whitespace-pre-wrap">{delegation.outcome}</p>
           </section>
 
           {/* KRA */}
           {delegation.kra && (
             <section>
-              <h4 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">KRA</h4>
+              <h4 className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">KRA</h4>
               <p className="text-[15px] text-text-primary whitespace-pre-wrap">{delegation.kra}</p>
             </section>
           )}
@@ -110,15 +110,15 @@ export default function DelegationDetailModal({
           {/* Dates */}
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-[10px] border border-border-light p-3">
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">Fully running by</p>
-              <p className="text-sm font-medium text-text-primary flex items-center gap-1.5">
+              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Fully running by</p>
+              <p className="text-body font-medium text-text-primary flex items-center gap-1.5">
                 <CalendarClock size={14} className="text-text-muted" />
                 {fmtDate(delegation.running_by)}
               </p>
             </div>
             <div className="rounded-[10px] border border-border-light p-3">
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1">First check-in</p>
-              <p className="text-sm font-medium text-text-primary flex items-center gap-1.5">
+              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">First check-in</p>
+              <p className="text-body font-medium text-text-primary flex items-center gap-1.5">
                 <CalendarClock size={14} className="text-text-muted" />
                 {fmtDate(delegation.first_check_in)}
               </p>
@@ -129,8 +129,8 @@ export default function DelegationDetailModal({
           {delegation.criteria.length > 0 && (
             <section>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-medium text-text-muted uppercase tracking-wider">Success criteria</h4>
-                <span className="text-xs font-medium text-text-secondary">
+                <h4 className="text-meta font-medium text-text-muted uppercase tracking-wider">Success criteria</h4>
+                <span className="text-meta font-medium text-text-secondary">
                   {metCount}/{delegation.criteria.length} met
                 </span>
               </div>
@@ -153,10 +153,10 @@ export default function DelegationDetailModal({
                     </button>
                     </Tooltip>
                     <div className="min-w-0">
-                      <p className={`text-sm ${c.is_met ? 'text-text-muted line-through' : 'text-text-primary'}`}>
+                      <p className={`text-body ${c.is_met ? 'text-text-muted line-through' : 'text-text-primary'}`}>
                         {c.description}
                       </p>
-                      {c.target && <p className="text-xs text-text-muted">Target: {c.target}</p>}
+                      {c.target && <p className="text-meta text-text-muted">Target: {c.target}</p>}
                     </div>
                   </li>
                 ))}
@@ -169,7 +169,7 @@ export default function DelegationDetailModal({
             <button
               type="button"
               onClick={() => router.push(`/dashboard/tasks/${delegation.review_task_id}`)}
-              className="flex items-center gap-2 text-sm font-medium text-primary-text hover:text-primary-text transition-colors self-start"
+              className="flex items-center gap-2 text-body font-medium text-primary-text hover:text-primary-text transition-colors self-start"
             >
               <CheckSquare size={15} /> Open review task <ExternalLink size={13} />
             </button>
@@ -182,7 +182,7 @@ export default function DelegationDetailModal({
                 <button
                   type="button"
                   onClick={onEdit}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium text-primary-text border-2 border-primary hover:bg-primary-subtle transition-colors"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-body font-medium text-primary-text border-2 border-primary hover:bg-primary-subtle transition-colors"
                 >
                   <Pencil size={14} /> Edit
                 </button>
@@ -194,7 +194,7 @@ export default function DelegationDetailModal({
                       addToast('Delegation marked complete.', 'success'),
                     )
                   }
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium text-white bg-success hover:bg-success disabled:opacity-60 transition-colors"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-body font-medium text-primary-foreground bg-success hover:bg-success disabled:opacity-60 transition-colors"
                 >
                   {busy === 'complete' ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                   Mark complete
@@ -205,7 +205,7 @@ export default function DelegationDetailModal({
               <button
                 type="button"
                 onClick={() => setConfirm('delete')}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium text-danger hover:bg-danger-bg transition-colors ml-auto"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-body font-medium text-danger hover:bg-danger-bg transition-colors ml-auto"
               >
                 <Trash2 size={14} /> Delete
               </button>

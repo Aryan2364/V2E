@@ -104,7 +104,7 @@ export default function GoogleCalendarConnect({
         <Tooltip label={connected ? 'Google Calendar — connected' : 'Connect Google Calendar'}>
         <button
           onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken"
+          className="inline-flex items-center gap-2 px-3 py-2.5 text-body font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken"
         >
           <span
             className="w-2 h-2 rounded-full shrink-0"
@@ -126,12 +126,12 @@ export default function GoogleCalendarConnect({
               <div className="w-9 h-9 rounded-lg bg-primary-subtle flex items-center justify-center text-primary-text shrink-0">
                 <Calendar size={18} />
               </div>
-              <p className="text-xs text-text-muted mt-2">
+              <p className="text-meta text-text-muted mt-2">
                 {connected ? 'Connected — syncing both ways' : 'Not connected'}
               </p>
             </div>
 
-            <p className="text-sm text-text-secondary leading-relaxed mb-4">
+            <p className="text-body text-text-secondary leading-relaxed mb-4">
               {connected ? (
                 <>
                   Your meetings are mirrored to your Google Calendar, and attendees receive Google invites.
@@ -147,7 +147,7 @@ export default function GoogleCalendarConnect({
 
             {connected ? (
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
+                <span className="inline-flex items-center gap-1.5 text-body font-medium text-success">
                   <Check size={16} /> Connected
                 </span>
                 <div className="flex-1" />

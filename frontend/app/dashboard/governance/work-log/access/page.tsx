@@ -70,7 +70,7 @@ export default function WorkLogAccessPage() {
     await load()
   }
 
-  if (!config) return <p className="text-sm text-text-muted">Loading…</p>
+  if (!config) return <p className="text-body text-text-muted">Loading…</p>
 
   const writerAllow = new Set(config.settings.writer_user_ids ?? [])
 
@@ -81,12 +81,12 @@ export default function WorkLogAccessPage() {
         <h2 className="text-[18px] font-medium text-text-primary flex items-center gap-2 mb-1">
           <ShieldCheck size={17} className="text-primary-text" /> Read access
         </h2>
-        <p className="text-sm text-text-secondary mb-4">Control who can read whose Daily Updates and demanded logs.</p>
+        <p className="text-body text-text-secondary mb-4">Control who can read whose Daily Updates and demanded logs.</p>
 
         <label className="flex items-center justify-between gap-4 py-2">
-          <span className="text-sm text-text-primary">
+          <span className="text-body text-text-primary">
             Managers automatically read their reports
-            <span className="block text-xs text-text-muted">Everyone below them in the reporting hierarchy.</span>
+            <span className="block text-meta text-text-muted">Everyone below them in the reporting hierarchy.</span>
           </span>
           <Switch
             checked={config.settings.managers_read_reports}
@@ -95,10 +95,10 @@ export default function WorkLogAccessPage() {
         </label>
 
         <div className="border-t border-border-light mt-4 pt-4">
-          <h3 className="text-sm font-medium text-text-primary mb-2">Explicit reader → writer grants</h3>
+          <h3 className="text-body font-medium text-text-primary mb-2">Explicit reader → writer grants</h3>
           <div className="flex flex-wrap items-end gap-2 mb-3">
             <div className="w-[200px]">
-              <label className="text-xs font-medium text-text-secondary block mb-1">Reader</label>
+              <label className="text-meta font-medium text-text-secondary block mb-1">Reader</label>
               <SearchableSelect
                 value={newReader}
                 onValueChange={setNewReader}
@@ -107,7 +107,7 @@ export default function WorkLogAccessPage() {
               />
             </div>
             <div className="w-[200px]">
-              <label className="text-xs font-medium text-text-secondary block mb-1">Can read</label>
+              <label className="text-meta font-medium text-text-secondary block mb-1">Can read</label>
               <SearchableSelect
                 value={newWriter}
                 onValueChange={setNewWriter}
@@ -124,12 +124,12 @@ export default function WorkLogAccessPage() {
           </div>
 
           {config.grants.length === 0 ? (
-            <p className="text-xs text-text-muted">No explicit grants.</p>
+            <p className="text-meta text-text-muted">No explicit grants.</p>
           ) : (
             <ul className="divide-y divide-surface-control">
               {config.grants.map((g) => (
                 <li key={g.id} className="flex items-center justify-between py-2">
-                  <span className="text-sm text-text-primary">
+                  <span className="text-body text-text-primary">
                     <span className="font-medium">{g.reader_name}</span> can read{' '}
                     <span className="font-medium">{g.writer_name}</span>
                   </span>
@@ -151,10 +151,10 @@ export default function WorkLogAccessPage() {
       {/* Write access */}
       <div className={`${cardCls} p-6`}>
         <h2 className="text-[18px] font-medium text-text-primary mb-1">Write access</h2>
-        <p className="text-sm text-text-secondary mb-4">By default everyone has a Daily Update. Restrict it to a specific set if needed.</p>
+        <p className="text-body text-text-secondary mb-4">By default everyone has a Daily Update. Restrict it to a specific set if needed.</p>
 
         <label className="flex items-center justify-between gap-4 py-2">
-          <span className="text-sm text-text-primary">Restrict who can write Daily Updates</span>
+          <span className="text-body text-text-primary">Restrict who can write Daily Updates</span>
           <Switch
             checked={restrictWriters}
             onCheckedChange={(checked) => setRestrict(checked)}
@@ -163,7 +163,7 @@ export default function WorkLogAccessPage() {
 
         {restrictWriters && (
           <div className="border-t border-border-light mt-4 pt-4">
-            <p className="text-xs text-text-muted mb-3">Only the selected people will be able to fill a Daily Update.</p>
+            <p className="text-meta text-text-muted mb-3">Only the selected people will be able to fill a Daily Update.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-72 overflow-y-auto">
               {config.members.map((m) => (
                 <label key={m.user_id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-surface-sunken cursor-pointer">
@@ -171,7 +171,7 @@ export default function WorkLogAccessPage() {
                     checked={writerAllow.has(m.user_id)}
                     onCheckedChange={() => toggleWriter(m.user_id)}
                   />
-                  <span className="text-sm text-text-primary">{m.name}</span>
+                  <span className="text-body text-text-primary">{m.name}</span>
                 </label>
               ))}
             </div>

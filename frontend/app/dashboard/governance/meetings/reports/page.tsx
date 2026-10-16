@@ -14,8 +14,8 @@ function Stat({ label, value, color = 'var(--text-primary)', sub }: { label: str
   return (
     <div className="bg-surface border border-border-light rounded-xl p-4">
       <p className="text-[26px] font-medium leading-none" style={{ color }}>{value}</p>
-      <p className="text-sm text-text-secondary mt-1">{label}</p>
-      {sub && <p className="text-xs text-text-muted mt-0.5">{sub}</p>}
+      <p className="text-body text-text-secondary mt-1">{label}</p>
+      {sub && <p className="text-meta text-text-muted mt-0.5">{sub}</p>}
     </div>
   )
 }
@@ -53,7 +53,7 @@ export default function MeetingReportsPage() {
         actions={<div className="w-[260px] shrink-0"><DateRangePicker from={from} to={to} onChange={(s, e) => { setFrom(s); setTo(e) }} /></div>}
       />
 
-      <div className="flex items-start gap-2 text-xs text-text-secondary bg-surface-sunken border border-border-light rounded-lg px-3 py-2 mb-4">
+      <div className="flex items-start gap-2 text-meta text-text-secondary bg-surface-sunken border border-border-light rounded-lg px-3 py-2 mb-4">
         <Info size={14} className="mt-0.5 shrink-0 text-text-muted" />
         <span>You see only the meetings and rhythms you created. Attendance rates count only meetings where attendance was actually recorded — an ungraded meeting is never counted as everyone no-showing.</span>
       </div>
@@ -61,9 +61,9 @@ export default function MeetingReportsPage() {
       {!permsLoading && !perms.read ? (
         <AccessHiddenState orgId={orgId} leaf="meetings" moduleLabel="Meetings" />
       ) : loading ? (
-        <div className="p-8 text-center text-sm text-text-secondary">Loading…</div>
+        <div className="p-8 text-center text-body text-text-secondary">Loading…</div>
       ) : !report ? (
-        <div className="p-8 text-center text-sm text-text-muted">No data.</div>
+        <div className="p-8 text-center text-body text-text-muted">No data.</div>
       ) : (
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -83,7 +83,7 @@ export default function MeetingReportsPage() {
               <Stat label="Started on time" value={`${report.attendance.started_on_time_rate}%`} />
             </div>
             {report.attendance.unrecorded_meetings > 0 && (
-              <div className="flex items-start gap-2 bg-surface-control border border-border-light rounded-lg px-3 py-2 text-sm text-text-secondary mt-3">
+              <div className="flex items-start gap-2 bg-surface-control border border-border-light rounded-lg px-3 py-2 text-body text-text-secondary mt-3">
                 <AlertTriangle size={15} className="mt-0.5 shrink-0 text-text-muted" />
                 <span>{report.attendance.unrecorded_meetings} meeting(s) have no attendance recorded — excluded from the rates above, not counted as no-shows.</span>
               </div>
@@ -94,7 +94,7 @@ export default function MeetingReportsPage() {
           <div className="bg-surface border border-border-light rounded-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-border-light"><h2 className="text-[16px] font-medium text-text-primary">Per person</h2></div>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-body">
                 <thead>
                   <tr className="text-left text-text-secondary border-b border-border-light">
                     <th className="px-4 py-2 font-medium">Person</th>

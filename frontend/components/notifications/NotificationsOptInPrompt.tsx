@@ -80,7 +80,7 @@ export default function NotificationsOptInPrompt() {
 
   return (
     <div className="fixed bottom-4 right-4 left-4 sm:left-auto z-60 sm:w-[360px]">
-      <div className="relative rounded-xl border border-border-light bg-white p-4 shadow-dialog">
+      <div className="relative rounded-xl border border-border-light bg-surface p-4 shadow-dialog">
         <button
           onClick={dismiss}
           aria-label="Dismiss"
@@ -112,7 +112,7 @@ export default function NotificationsOptInPrompt() {
           <button
             onClick={turnOn}
             disabled={busy}
-            className="rounded-lg bg-primary px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
+            className="rounded-lg bg-primary px-4 py-2 text-[13px] font-medium text-primary-foreground transition-colors hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
           >
             {busy ? 'Enabling…' : 'Turn on'}
           </button>

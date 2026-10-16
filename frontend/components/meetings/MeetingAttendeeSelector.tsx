@@ -45,10 +45,10 @@ function initials(name: string): string {
 function HostChip({ name }: { name: string }) {
   return (
     <div className="inline-flex items-center gap-1.5 bg-primary-subtle border border-primary-border rounded-lg pl-1.5 pr-2 py-1 max-w-[220px]">
-      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(name)}`}>
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 ${avatarColor(name)}`}>
         {initials(name)}
       </div>
-      <span className="text-xs font-medium text-text-primary truncate">{name.split(' ')[0]}</span>
+      <span className="text-meta font-medium text-text-primary truncate">{name.split(' ')[0]}</span>
       <span className="text-meta font-medium rounded-[4px] px-1.5 py-0.5 bg-surface text-primary-text border border-primary-border shrink-0">Host</span>
     </div>
   )
@@ -65,10 +65,10 @@ function AttendeeChip({
 }) {
   return (
     <div className="inline-flex items-center gap-1.5 bg-surface-sunken border border-border-light rounded-lg pl-1.5 pr-1 py-1 max-w-[200px]">
-      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(person.name)}`}>
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 ${avatarColor(person.name)}`}>
         {initials(person.name)}
       </div>
-      <span className="text-xs font-medium text-text-primary truncate">{person.name.split(' ')[0]}</span>
+      <span className="text-meta font-medium text-text-primary truncate">{person.name.split(' ')[0]}</span>
       {showToggle && (
         <Tooltip label={isOptional ? 'Click to make Required' : 'Click to make Optional'}>
           <button
@@ -152,7 +152,7 @@ export default function MeetingAttendeeSelector({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-xs font-medium text-primary-text hover:bg-primary-subtle transition-colors"
+          className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-meta font-medium text-primary-text hover:bg-primary-subtle transition-colors"
         >
           <Plus size={12} /> {chipValue.length === 0 ? placeholder : 'Add'}
         </button>
@@ -175,7 +175,7 @@ export default function MeetingAttendeeSelector({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search by name or email…"
-                  className="w-full pl-8 pr-3 py-[7px] text-sm text-text-primary placeholder:text-text-muted border border-border-light rounded-lg focus:border-primary focus:outline-hidden bg-surface"
+                  className="w-full pl-8 pr-3 py-[7px] text-body text-text-primary placeholder:text-text-muted border border-border-light rounded-lg focus:border-primary focus:outline-hidden bg-surface"
                 />
               </div>
             </div>
@@ -206,8 +206,8 @@ export default function MeetingAttendeeSelector({
               {list.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center px-4">
                   <div className="w-10 h-10 rounded-full bg-surface-control flex items-center justify-center mb-3"><Search size={16} className="text-text-muted" /></div>
-                  <p className="text-sm font-medium text-text-primary">{query ? 'No people found' : 'No one to add'}</p>
-                  {query && <p className="text-xs text-text-secondary mt-1">Try a different search term.</p>}
+                  <p className="text-body font-medium text-text-primary">{query ? 'No people found' : 'No one to add'}</p>
+                  {query && <p className="text-meta text-text-secondary mt-1">Try a different search term.</p>}
                 </div>
               ) : (
                 list.map((p) => {
@@ -224,22 +224,22 @@ export default function MeetingAttendeeSelector({
                         blocked ? 'opacity-55 cursor-not-allowed' : selected ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                       }`}
                     >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${blocked ? 'bg-text-muted' : avatarColor(p.name)}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 ${blocked ? 'bg-text-muted' : avatarColor(p.name)}`}>
                         {initials(p.name)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
+                        <p className="text-body font-medium text-text-primary truncate">{p.name}</p>
                         {blocked ? (
-                          <p className="text-xs text-danger truncate">{reason}</p>
+                          <p className="text-meta text-danger truncate">{reason}</p>
                         ) : (
-                          p.email && <p className="text-xs text-text-muted truncate">{p.email}</p>
+                          p.email && <p className="text-meta text-text-muted truncate">{p.email}</p>
                         )}
                       </div>
                       {blocked ? (
                         <span className="text-meta font-medium text-text-muted uppercase tracking-wide shrink-0">Can't invite</span>
                       ) : selected && (
                         <span className="w-4 h-4 flex items-center justify-center bg-primary rounded-full shrink-0">
-                          <Check size={10} className="text-white" strokeWidth={3} />
+                          <Check size={10} className="text-primary-foreground" strokeWidth={3} />
                         </span>
                       )}
                     </button>
@@ -251,7 +251,7 @@ export default function MeetingAttendeeSelector({
 
             {/* Footer: count + Done */}
             <div className="px-4 py-2.5 border-t border-border-light bg-surface-sunken shrink-0 flex items-center justify-between gap-3">
-              <p className="text-xs text-text-secondary min-w-0 truncate">
+              <p className="text-meta text-text-secondary min-w-0 truncate">
                 {value.length > 0 ? (
                   <>
                     <span className="font-medium text-text-primary">{value.length}</span> attendee{value.length !== 1 ? 's' : ''}

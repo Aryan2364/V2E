@@ -10,7 +10,7 @@ import { format as formatDateFns } from 'date-fns'
 
 const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
 const inputCls =
-  'w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary bg-surface placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden'
+  'w-full border border-border rounded-lg px-3 py-2 text-body text-text-primary bg-surface placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden'
 
 function freqLabel(d: WorkLogDemand): string {
   if (d.kind === 'one_time') return d.deadline ? `One-time · due ${formatDateFns(new Date(d.deadline), 'd MMM')}` : 'One-time'
@@ -77,10 +77,10 @@ export default function WorkLogDemandsPage() {
             {mine.map((s) => (
               <div key={s.id} className="border border-border-light rounded-[10px] p-4 bg-surface-sunken">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-text-primary">{s.demand?.title}</span>
-                  <span className="text-xs text-text-muted">due {s.period_label}</span>
+                  <span className="text-body font-medium text-text-primary">{s.demand?.title}</span>
+                  <span className="text-meta text-text-muted">due {s.period_label}</span>
                 </div>
-                {s.assigner_name && <p className="text-xs text-text-muted mb-2">Asked by {s.assigner_name}</p>}
+                {s.assigner_name && <p className="text-meta text-text-muted mb-2">Asked by {s.assigner_name}</p>}
                 <textarea
                   value={drafts[s.id] ?? ''}
                   onChange={(e) => setDrafts((m) => ({ ...m, [s.id]: e.target.value }))}
@@ -92,7 +92,7 @@ export default function WorkLogDemandsPage() {
                   <button
                     type="button"
                     onClick={() => submitMine(s.id)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover"
                   >
                     <Send size={14} /> Submit
                   </button>
@@ -111,7 +111,7 @@ export default function WorkLogDemandsPage() {
             <button
               type="button"
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover"
             >
               <Plus size={15} /> Demand
             </button>
@@ -119,7 +119,7 @@ export default function WorkLogDemandsPage() {
 
           {demands.length === 0 ? (
             <div className={`${cardCls} p-6 text-center`}>
-              <p className="text-sm text-text-secondary">You haven&apos;t demanded any logs yet.</p>
+              <p className="text-body text-text-secondary">You haven&apos;t demanded any logs yet.</p>
             </div>
           ) : (
             <ul className="space-y-2">
@@ -131,16 +131,16 @@ export default function WorkLogDemandsPage() {
                     className={`w-full text-left ${cardCls} p-4 transition-colors ${selected?.id === d.id ? 'ring-2 ring-primary' : 'hover:bg-surface-sunken'}`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium text-text-primary truncate">{d.title}</span>
+                      <span className="text-body font-medium text-text-primary truncate">{d.title}</span>
                       {!d.is_active && (
                         <span className="text-meta font-medium px-1.5 py-0.5 rounded-full bg-danger-bg text-danger border border-danger-border shrink-0">Paused</span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-text-muted">
+                    <div className="flex items-center gap-2 mt-1 text-meta text-text-muted">
                       {d.kind === 'recurring' ? <Repeat size={12} /> : <Clock size={12} />}
                       <span>{freqLabel(d)}</span>
                     </div>
-                    <p className="text-xs text-text-secondary mt-1">
+                    <p className="text-meta text-text-secondary mt-1">
                       For {d.assignee_name ?? 'someone'} · {d._count?.submissions ?? 0} submission{(d._count?.submissions ?? 0) !== 1 ? 's' : ''}
                     </p>
                   </button>
@@ -154,14 +154,14 @@ export default function WorkLogDemandsPage() {
         <div className="flex-1 min-w-0">
           {!selected ? (
             <div className={`${cardCls} p-8 text-center`}>
-              <p className="text-sm text-text-secondary">Select a demand to view its submission series.</p>
+              <p className="text-body text-text-secondary">Select a demand to view its submission series.</p>
             </div>
           ) : (
             <div className={`${cardCls} p-6`}>
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div>
                   <h2 className="text-[18px] font-medium text-text-primary">{selected.title}</h2>
-                  <p className="text-sm text-text-muted mt-0.5">
+                  <p className="text-body text-text-muted mt-0.5">
                     {freqLabel(selected)} · for {selected.assignee_name ?? 'someone'}
                   </p>
                 </div>
@@ -170,7 +170,7 @@ export default function WorkLogDemandsPage() {
                     <button
                       type="button"
                       onClick={() => toggle(selected)}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-text-secondary border border-border-light hover:bg-surface-control"
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-body font-medium text-text-secondary border border-border-light hover:bg-surface-control"
                     >
                       {selected.is_active ? <><Pause size={13} /> Pause</> : <><Play size={13} /> Resume</>}
                     </button>
@@ -178,23 +178,23 @@ export default function WorkLogDemandsPage() {
                   <button
                     type="button"
                     onClick={() => remove(selected.id)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-danger border border-danger-border hover:bg-danger-bg"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-body font-medium text-danger border border-danger-border hover:bg-danger-bg"
                   >
                     <Trash2 size={13} /> Delete
                   </button>
                 </div>
               </div>
-              {selected.description && <p className="text-sm text-text-primary mb-4">{selected.description}</p>}
+              {selected.description && <p className="text-body text-text-primary mb-4">{selected.description}</p>}
 
-              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Submission series</h3>
+              <h3 className="text-meta font-medium text-text-muted uppercase tracking-wide mb-2">Submission series</h3>
               {(selected.submissions ?? []).length === 0 ? (
-                <p className="text-sm text-text-muted">No submissions yet.</p>
+                <p className="text-body text-text-muted">No submissions yet.</p>
               ) : (
                 <ul className="divide-y divide-surface-control">
                   {(selected.submissions ?? []).map((s) => (
                     <li key={s.id} className="py-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-text-primary">{s.period_label}</span>
+                        <span className="text-body font-medium text-text-primary">{s.period_label}</span>
                         <span
                           className={`text-meta font-medium px-1.5 py-0.5 rounded-full ${
                             s.status === 'submitted'
@@ -205,7 +205,7 @@ export default function WorkLogDemandsPage() {
                           {s.status}
                         </span>
                       </div>
-                      {s.body && <p className="text-sm text-text-primary whitespace-pre-wrap mt-1">{s.body}</p>}
+                      {s.body && <p className="text-body text-text-primary whitespace-pre-wrap mt-1">{s.body}</p>}
                     </li>
                   ))}
                 </ul>

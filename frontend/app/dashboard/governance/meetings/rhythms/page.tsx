@@ -102,12 +102,12 @@ export default function RhythmsPage() {
       {!permsLoading && !perms.read ? (
         <AccessHiddenState orgId={orgId} leaf="meetings" moduleLabel="Meetings" />
       ) : loading ? (
-        <div className="p-8 text-center text-sm text-text-secondary">Loading…</div>
+        <div className="p-8 text-center text-body text-text-secondary">Loading…</div>
       ) : rhythms.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-xl p-12 text-center">
           <div className="w-14 h-14 rounded-xl bg-surface-control flex items-center justify-center text-text-secondary mx-auto mb-3"><Repeat size={26} /></div>
           <h3 className="text-[18px] font-medium text-text-primary">No rhythms yet</h3>
-          <p className="text-sm text-text-secondary mt-1">Set up a recurring meeting to build a cadence.</p>
+          <p className="text-body text-text-secondary mt-1">Set up a recurring meeting to build a cadence.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -120,13 +120,13 @@ export default function RhythmsPage() {
                   {r.is_active ? 'Active' : 'Paused'}
                 </span>
               </div>
-              <div className="flex flex-col gap-1.5 mt-3 text-sm text-text-secondary">
+              <div className="flex flex-col gap-1.5 mt-3 text-body text-text-secondary">
                 <span className="inline-flex items-center gap-1.5"><Clock size={14} /> {cadence(r)}</span>
                 <span className="inline-flex items-center gap-1.5"><CalendarClock size={14} /> Next: {fmt(r.next_run)}</span>
                 <span className="inline-flex items-center gap-1.5"><Users size={14} /> {(r.attendee_user_ids ?? []).length} attendee(s) · {r.occurrences ?? 0} held</span>
               </div>
               <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border-light">
-                <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-sm font-medium text-primary-text hover:underline">View details &amp; history</Link>
+                <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-body font-medium text-primary-text hover:underline">View details &amp; history</Link>
                 {r.can_manage && (
                   <div className="ml-auto flex items-center gap-1">
                     <Tooltip label="Edit"><button onClick={() => setEditing(r)} aria-label="Edit" className="p-1.5 text-text-secondary hover:bg-surface-control rounded-lg"><Pencil size={16} /></button></Tooltip>
@@ -148,7 +148,7 @@ export default function RhythmsPage() {
       <CreateRhythmModal isOpen={!!editing} onClose={() => setEditing(null)} orgId={orgId} people={people} rhythm={editing} onCreated={() => { setEditing(null); load() }} />
 
       <Modal isOpen={!!stopping} onClose={() => setStopping(null)} title="Stop rhythm" size="sm">
-        <p className="text-sm text-text-primary">Stop “{stopping?.title}”? No new occurrences will be created. Past meetings are kept.</p>
+        <p className="text-body text-text-primary">Stop “{stopping?.title}”? No new occurrences will be created. Past meetings are kept.</p>
         <div className="flex flex-col gap-2 mt-4">
           <Button variant="primary" onClick={() => stop('stop')}>Stop — keep upcoming meetings</Button>
           <Button variant="danger" onClick={() => stop('delete-future')}>Stop &amp; remove upcoming (still-scheduled) meetings</Button>

@@ -14,7 +14,7 @@ import { delegationsApi, type Delegation, type DelegationInput } from '@/lib/api
 const fieldBase =
   'border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 const inputClass = `w-full ${fieldBase}`
-const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
+const labelClass = 'block text-body font-medium text-text-secondary mb-1'
 
 interface EmployeeOption {
   user_id: string
@@ -176,7 +176,7 @@ export default function DelegationModal({
           <div>
             <label className={labelClass}>First check-in</label>
             <DatePicker value={firstCheckIn} onChange={setFirstCheckIn} placeholder="First review date" />
-            <p className="text-xs text-text-muted mt-1">A review task is created for you on this date.</p>
+            <p className="text-meta text-text-muted mt-1">A review task is created for you on this date.</p>
           </div>
         </div>
 
@@ -191,13 +191,13 @@ export default function DelegationModal({
               type="button"
               onClick={() => setCriteria((r) => [...r, emptyRow()])}
               aria-label="Add criterion"
-              className="w-7 h-7 flex items-center justify-center rounded-[8px] bg-primary text-white hover:bg-primary-hover transition-colors"
+              className="w-7 h-7 flex items-center justify-center rounded-[8px] bg-primary text-primary-foreground hover:bg-primary-hover transition-colors"
             >
               <Plus size={15} />
             </button>
             </Tooltip>
           </div>
-          <p className="text-xs text-text-muted mb-2">What does “done” look like — measurably?</p>
+          <p className="text-meta text-text-muted mb-2">What does “done” look like — measurably?</p>
           <div className="flex flex-col gap-2">
             {criteria.map((row, i) => (
               <div key={i} className="flex items-start gap-2">
@@ -236,7 +236,7 @@ export default function DelegationModal({
             type="button"
             onClick={handleSubmit}
             disabled={!canSubmit || saving}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
           >
             {saving && <Loader2 size={15} className="animate-spin" />}
             {isEdit ? 'Save changes' : 'Create delegation'}

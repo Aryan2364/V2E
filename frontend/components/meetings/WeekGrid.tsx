@@ -201,11 +201,11 @@ export default function WeekGrid({
               onClick={() => onSelectDay?.(day)}
               className="py-2 text-center border-r border-white/20 last:border-r-0 transition-colors hover:bg-surface/10"
             >
-              <div className="text-meta font-medium uppercase tracking-wide text-white">
+              <div className="text-meta font-medium uppercase tracking-wide text-primary-foreground">
                 {day.toLocaleDateString(undefined, { weekday: 'short' })}
               </div>
               <div className="mt-0.5 flex items-center justify-center">
-                <span className={['w-8 h-8 flex items-center justify-center rounded-full text-[18px] font-medium leading-none', today ? 'bg-surface text-primary-text' : 'text-white'].join(' ')}>
+                <span className={['w-8 h-8 flex items-center justify-center rounded-full text-[18px] font-medium leading-none', today ? 'bg-surface text-primary-text' : 'text-primary-foreground'].join(' ')}>
                   {day.getDate()}
                 </span>
               </div>
@@ -381,17 +381,17 @@ function MeetingPopover({ meeting, onClose, onOpen }: { meeting: Meeting; onClos
           <button onClick={onClose} className="text-text-muted hover:text-text-secondary shrink-0"><X size={16} /></button>
         </div>
 
-        <div className="text-sm text-text-secondary flex items-center gap-2 mb-1">
+        <div className="text-body text-text-secondary flex items-center gap-2 mb-1">
           {lk.live ? <span className="text-success font-medium">Live now</span>
             : <span>{fmtTime(meeting.scheduled_start)}{meeting.scheduled_end ? ` – ${fmtTime(meeting.scheduled_end)}` : ''}</span>}
         </div>
-        <div className="text-sm text-text-secondary flex items-center gap-2 mb-3">
+        <div className="text-body text-text-secondary flex items-center gap-2 mb-3">
           {online ? <Video size={14} className="text-text-muted" /> : <MapPin size={14} className="text-text-muted" />}
           <span className="truncate">{online ? (meeting.location ? `Online · ${meeting.location}` : 'Online') : (meeting.location || 'In person')}</span>
         </div>
 
         {/* governance summary */}
-        <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted border-t border-border-light pt-2 mb-3">
+        <div className="flex flex-wrap items-center gap-3 text-meta text-text-muted border-t border-border-light pt-2 mb-3">
           <span className="inline-flex items-center gap-1"><Users size={12} /> {attendees} {attendees === 1 ? 'person' : 'people'}</span>
           {meeting.rhythm_id && <span className="inline-flex items-center gap-1 text-text-secondary"><Repeat size={12} /> Rhythm</span>}
           {decisions > 0 && <span>{decisions} decision{decisions === 1 ? '' : 's'}</span>}
@@ -399,11 +399,11 @@ function MeetingPopover({ meeting, onClose, onOpen }: { meeting: Meeting; onClos
         </div>
 
         <div className="flex items-center gap-2">
-          <button onClick={onOpen} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg">
+          <button onClick={onOpen} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg">
             <ArrowUpRight size={15} /> Open meeting
           </button>
           {online && meeting.online_link && (
-            <a href={meeting.online_link} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-text border-2 border-primary hover:bg-primary-subtle rounded-lg">
+            <a href={meeting.online_link} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-body font-medium text-primary-text border-2 border-primary hover:bg-primary-subtle rounded-lg">
               <ExternalLink size={15} /> Join
             </a>
           )}

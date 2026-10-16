@@ -14,7 +14,7 @@ function LineItemDisabled({ label }: { label: string }) {
         <Lock size={24} />
       </div>
       <h2 className="text-[18px] font-medium text-text-primary">{label} isn’t enabled</h2>
-      <p className="text-sm text-text-secondary max-w-sm">
+      <p className="text-body text-text-secondary max-w-sm">
         {label} is not part of your organization’s plan. Contact your administrator if you think this
         is a mistake.
       </p>

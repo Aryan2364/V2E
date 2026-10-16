@@ -32,7 +32,7 @@ function ParticipantAvatars({ people, max = 6 }: { people: Person[]; max?: numbe
           <div
             className={[
               'w-6 h-6 rounded-full flex items-center justify-center text-meta font-medium border-2 border-white',
-              p.declined ? 'bg-surface-control text-text-muted ring-1 ring-border-light' : `${avatarColor(p.name)} text-white`,
+              p.declined ? 'bg-surface-control text-text-muted ring-1 ring-border-light' : `${avatarColor(p.name)} text-primary-foreground`,
               p.isHost ? 'ring-2 ring-warning-border' : '',
             ].join(' ')}
           >
@@ -42,11 +42,11 @@ function ParticipantAvatars({ people, max = 6 }: { people: Person[]; max?: numbe
           <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/av:block z-80">
             <div className="rounded-lg bg-text-primary px-2.5 py-1.5 shadow-lg w-max max-w-[220px]">
               <div className="flex items-center gap-1.5">
-                <p className="text-xs font-medium text-white whitespace-nowrap">{p.name}</p>
+                <p className="text-meta font-medium text-primary-foreground whitespace-nowrap">{p.name}</p>
                 <span
                   className={[
                     'inline-flex items-center rounded-full px-1.5 py-0.5 text-meta font-medium uppercase tracking-wide',
-                    p.isHost ? 'bg-text-secondary text-white' : p.declined ? 'bg-text-secondary text-muted' : 'bg-primary text-white',
+                    p.isHost ? 'bg-text-secondary text-primary-foreground' : p.declined ? 'bg-text-secondary text-muted' : 'bg-primary text-primary-foreground',
                   ].join(' ')}
                 >
                   {p.isHost ? 'Host' : p.declined ? "Won't make it" : 'Attending'}
@@ -130,7 +130,7 @@ export default function MonthDayPanel({
         <div className="flex items-start justify-between gap-3 px-4 py-3.5 border-b border-border-light">
           <div>
             <h3 className="text-[17px] font-medium text-text-primary leading-tight">{dateLabel}</h3>
-            <p className="text-sm text-text-muted mt-0.5">{meetings.length} meeting{meetings.length === 1 ? '' : 's'}</p>
+            <p className="text-body text-text-muted mt-0.5">{meetings.length} meeting{meetings.length === 1 ? '' : 's'}</p>
           </div>
           <button onClick={close} className="p-1 -mr-1 text-text-muted hover:text-text-secondary"><X size={18} /></button>
         </div>
@@ -140,11 +140,11 @@ export default function MonthDayPanel({
           {sorted.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center py-12 px-4">
               <div className="w-12 h-12 rounded-[14px] bg-primary-subtle flex items-center justify-center text-primary-text mb-3"><CalendarDays size={22} /></div>
-              <p className="text-sm font-medium text-text-primary">No meetings this day</p>
+              <p className="text-body font-medium text-text-primary">No meetings this day</p>
               {onCreate && (
                 <button
                   onClick={() => { const d = new Date(day); d.setHours(10, 0, 0, 0); onCreate(d.toISOString()) }}
-                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg"
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg"
                 >
                   <Plus size={14} /> Schedule a meeting
                 </button>
@@ -166,7 +166,7 @@ export default function MonthDayPanel({
                     <span className="mt-1 w-2.5 h-2.5 rounded-full shrink-0" style={{ background: meta.text }} />
                     <div className="min-w-0 flex-1">
                       <p className="text-[15px] font-medium text-text-primary leading-snug">{m.title}</p>
-                      <p className="text-sm text-text-secondary mt-0.5 flex items-center gap-1.5">
+                      <p className="text-body text-text-secondary mt-0.5 flex items-center gap-1.5">
                         {online ? <Video size={13} className="text-text-muted" /> : <MapPin size={13} className="text-text-muted" />}
                         {m.scheduled_start ? `${fmtTime(m.scheduled_start)}${m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}` : 'No time set'}
                       </p>
@@ -175,7 +175,7 @@ export default function MonthDayPanel({
                   <div className="flex items-center justify-between gap-2 mt-2.5">
                     <ParticipantAvatars people={people} />
                     {host && (
-                      <span className="inline-flex items-center gap-1 text-xs text-warning font-medium shrink-0">
+                      <span className="inline-flex items-center gap-1 text-meta text-warning font-medium shrink-0">
                         <Crown size={12} /> {host.name.split(' ')[0]}
                       </span>
                     )}

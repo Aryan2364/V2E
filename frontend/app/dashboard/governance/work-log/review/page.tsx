@@ -84,13 +84,13 @@ export default function WorkLogReviewPage() {
       {/* Writers */}
       <aside className="lg:w-64 shrink-0">
         <div className={`${cardCls} p-3`}>
-          <h3 className="text-sm font-medium text-text-primary flex items-center gap-2 px-1 mb-2">
+          <h3 className="text-body font-medium text-text-primary flex items-center gap-2 px-1 mb-2">
             <Users size={15} className="text-primary-text" /> People below me
           </h3>
           {loadingWriters ? (
-            <p className="text-xs text-text-muted px-1 py-2">Loading…</p>
+            <p className="text-meta text-text-muted px-1 py-2">Loading…</p>
           ) : writers.length === 0 ? (
-            <p className="text-xs text-text-secondary px-1 py-2">No one&apos;s logs are shared with you yet.</p>
+            <p className="text-meta text-text-secondary px-1 py-2">No one&apos;s logs are shared with you yet.</p>
           ) : (
             <ul className="space-y-0.5">
               {writers.map((w) => (
@@ -102,8 +102,8 @@ export default function WorkLogReviewPage() {
                       writerId === w.user_id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                     }`}
                   >
-                    <span className="block text-sm font-medium text-text-primary">{w.name}</span>
-                    {w.role_title && <span className="block text-xs text-text-muted">{w.role_title}</span>}
+                    <span className="block text-body font-medium text-text-primary">{w.name}</span>
+                    {w.role_title && <span className="block text-meta text-text-muted">{w.role_title}</span>}
                   </button>
                 </li>
               ))}
@@ -117,14 +117,14 @@ export default function WorkLogReviewPage() {
         {!writerId ? (
           <div className={`${cardCls} p-8 text-center`}>
             <FileText size={28} className="text-muted mx-auto mb-2" />
-            <p className="text-sm text-text-secondary">Pick a person to review their logs.</p>
+            <p className="text-body text-text-secondary">Pick a person to review their logs.</p>
           </div>
         ) : (
           <div className="space-y-4">
             <div className={`${cardCls} p-3`}>
-              <h4 className="text-xs font-medium text-text-muted uppercase tracking-wide px-1 mb-2">Daily updates</h4>
+              <h4 className="text-meta font-medium text-text-muted uppercase tracking-wide px-1 mb-2">Daily updates</h4>
               {dailies.length === 0 ? (
-                <p className="text-xs text-text-muted px-1 py-1">No daily updates.</p>
+                <p className="text-meta text-text-muted px-1 py-1">No daily updates.</p>
               ) : (
                 <ul className="space-y-0.5">
                   {dailies.map((d) => (
@@ -136,7 +136,7 @@ export default function WorkLogReviewPage() {
                           selected?.kind === 'daily' && selected.daily.id === d.id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                         }`}
                       >
-                        <span className="text-sm text-text-primary">{prettyDate(d.log_date)}</span>
+                        <span className="text-body text-text-primary">{prettyDate(d.log_date)}</span>
                         {d.submitted_at && <Tooltip label="Submitted"><span className="w-2 h-2 rounded-full bg-success shrink-0" aria-label="Submitted" /></Tooltip>}
                       </button>
                     </li>
@@ -147,7 +147,7 @@ export default function WorkLogReviewPage() {
 
             {submissions.length > 0 && (
               <div className={`${cardCls} p-3`}>
-                <h4 className="text-xs font-medium text-text-muted uppercase tracking-wide px-1 mb-2">Demanded logs</h4>
+                <h4 className="text-meta font-medium text-text-muted uppercase tracking-wide px-1 mb-2">Demanded logs</h4>
                 <ul className="space-y-0.5">
                   {submissions.map((s) => (
                     <li key={s.id}>
@@ -158,7 +158,7 @@ export default function WorkLogReviewPage() {
                           selected?.kind === 'submission' && selected.submission.id === s.id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                         }`}
                       >
-                        <span className="text-sm text-text-primary truncate">{s.demand?.title ?? s.period_label}</span>
+                        <span className="text-body text-text-primary truncate">{s.demand?.title ?? s.period_label}</span>
                         <span
                           className={`text-meta font-medium px-1.5 py-0.5 rounded-full shrink-0 ${
                             s.status === 'submitted'
@@ -183,7 +183,7 @@ export default function WorkLogReviewPage() {
         {!selected ? (
           <div className={`${cardCls} p-8 text-center`}>
             <ChevronRight size={28} className="text-muted mx-auto mb-2" />
-            <p className="text-sm text-text-secondary">Select a log to read it and leave remarks.</p>
+            <p className="text-body text-text-secondary">Select a log to read it and leave remarks.</p>
           </div>
         ) : selected.kind === 'daily' ? (
           <div className="space-y-4">
@@ -193,8 +193,8 @@ export default function WorkLogReviewPage() {
                 <div className="space-y-3 mb-4">
                   {(selected.daily.notes ?? []).map((n) => (
                     <div key={n.id} className="border border-border-light rounded-[10px] p-3 bg-surface-sunken">
-                      <p className="text-sm font-medium text-text-primary">{n.title}</p>
-                      {n.description && <p className="text-sm text-text-primary whitespace-pre-wrap mt-0.5">{n.description}</p>}
+                      <p className="text-body font-medium text-text-primary">{n.title}</p>
+                      {n.description && <p className="text-body text-text-primary whitespace-pre-wrap mt-0.5">{n.description}</p>}
                     </div>
                   ))}
                 </div>
@@ -206,7 +206,7 @@ export default function WorkLogReviewPage() {
             </div>
 
             <div className={`${cardCls} p-6`}>
-              <h3 className="text-sm font-medium text-text-primary flex items-center gap-2 mb-2">
+              <h3 className="text-body font-medium text-text-primary flex items-center gap-2 mb-2">
                 <MessageSquare size={15} className="text-primary-text" /> Remarks
               </h3>
               <WorkLogRemarkThread remarks={remarks} currentUserId={myId} onAdd={addRemark} onDelete={deleteRemark} />
@@ -216,16 +216,16 @@ export default function WorkLogReviewPage() {
           <div className="space-y-4">
             <div className={`${cardCls} p-6`}>
               <h2 className="text-[18px] font-medium text-text-primary">{selected.submission.demand?.title}</h2>
-              <p className="text-xs text-text-muted mb-4">{selected.submission.period_label}</p>
+              <p className="text-meta text-text-muted mb-4">{selected.submission.period_label}</p>
               {selected.submission.body ? (
-                <p className="text-sm text-text-primary whitespace-pre-wrap">{selected.submission.body}</p>
+                <p className="text-body text-text-primary whitespace-pre-wrap">{selected.submission.body}</p>
               ) : (
-                <p className="text-sm text-text-muted">Not yet submitted.</p>
+                <p className="text-body text-text-muted">Not yet submitted.</p>
               )}
             </div>
 
             <div className={`${cardCls} p-6`}>
-              <h3 className="text-sm font-medium text-text-primary flex items-center gap-2 mb-2">
+              <h3 className="text-body font-medium text-text-primary flex items-center gap-2 mb-2">
                 <MessageSquare size={15} className="text-primary-text" /> Remarks
               </h3>
               <WorkLogRemarkThread remarks={remarks} currentUserId={myId} onAdd={addRemark} onDelete={deleteRemark} />
@@ -241,8 +241,8 @@ function Field({ label, value }: { label: string; value: string | null }) {
   if (!value) return null
   return (
     <div className="mb-3">
-      <p className="text-xs font-medium text-text-muted uppercase tracking-wide">{label}</p>
-      <p className="text-sm text-text-primary whitespace-pre-wrap mt-0.5">{value}</p>
+      <p className="text-meta font-medium text-text-muted uppercase tracking-wide">{label}</p>
+      <p className="text-body text-text-primary whitespace-pre-wrap mt-0.5">{value}</p>
     </div>
   )
 }

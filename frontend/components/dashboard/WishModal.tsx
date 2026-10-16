@@ -107,8 +107,8 @@ export default function WishModal({ open, onClose, recipient, eventType }: WishM
                 {getInitials(recipient.name)}
               </div>
               <div>
-                <p className="text-sm font-medium text-text-primary">{recipient.name}</p>
-                <p className="text-xs text-text-secondary">{recipient.label}</p>
+                <p className="text-body font-medium text-text-primary">{recipient.name}</p>
+                <p className="text-meta text-text-secondary">{recipient.label}</p>
               </div>
             </div>
 
@@ -122,7 +122,7 @@ export default function WishModal({ open, onClose, recipient, eventType }: WishM
               />
             </div>
 
-            {error && <p className="text-xs text-danger">{error}</p>}
+            {error && <p className="text-meta text-danger">{error}</p>}
           </div>
         </DialogBody>
         <DialogFooter>

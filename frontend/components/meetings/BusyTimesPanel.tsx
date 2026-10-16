@@ -52,7 +52,7 @@ export default function BusyTimesPanel({
   if (userIds.length === 0) return null
 
   return (
-    <div className="border border-border-light rounded-[12px] bg-white">
+    <div className="border border-border-light rounded-[12px] bg-surface">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border-light">
         <CalendarDays size={16} className="text-primary-text" />
         <h4 className="text-[15px] font-medium text-text-primary">Busy times</h4>
@@ -60,17 +60,17 @@ export default function BusyTimesPanel({
       </div>
 
       <div className="px-4 py-3">
-        <div className="flex items-start gap-2 text-xs text-text-secondary bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2 mb-3">
+        <div className="flex items-start gap-2 text-meta text-text-secondary bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2 mb-3">
           <Info size={14} className="mt-0.5 shrink-0 text-text-muted" />
           <span>{data?.caveat ?? 'Shows only meetings, leave and holidays this app knows about — not a guarantee someone is free.'}</span>
         </div>
 
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <p className="text-body text-danger">{error}</p>}
 
         {/* Ranked suggestions (organiser still picks) */}
         {data && data.suggestions.length > 0 && (
           <div className="mb-3">
-            <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-2">Clearest times</p>
+            <p className="text-meta font-medium text-text-secondary uppercase tracking-wider mb-2">Clearest times</p>
             <div className="flex flex-col gap-1.5 max-h-[132px] overflow-y-auto">
               {data.suggestions.map((s, i) => {
                 const clean = s.hard_conflicts.length === 0
@@ -83,8 +83,8 @@ export default function BusyTimesPanel({
                     className="flex items-center justify-between gap-2 text-left border rounded-[8px] px-3 py-2 hover:border-primary disabled:cursor-default"
                     style={{ borderColor: clean ? 'var(--success-bg)' : 'var(--warning-bg)', backgroundColor: clean ? 'var(--success-bg)' : 'var(--warning-bg)' }}
                   >
-                    <span className="text-sm text-text-primary">{fmt(s.start)}</span>
-                    <span className="text-xs" style={{ color: clean ? 'var(--success)' : 'var(--warning)' }}>
+                    <span className="text-body text-text-primary">{fmt(s.start)}</span>
+                    <span className="text-meta" style={{ color: clean ? 'var(--success)' : 'var(--warning)' }}>
                       {clean
                         ? 'No required clashes'
                         : `${s.hard_conflicts.length} required clash${s.hard_conflicts.length > 1 ? 'es' : ''}`}
@@ -108,13 +108,13 @@ export default function BusyTimesPanel({
                   : <span className="text-meta font-medium text-text-muted bg-surface-control rounded-full px-2 py-0.5">Optional</span>}
               </div>
               {p.busy.length === 0 ? (
-                <p className="text-xs text-success">Nothing on the calendar in this window.</p>
+                <p className="text-meta text-success">Nothing on the calendar in this window.</p>
               ) : (
                 <div className="flex flex-col gap-1">
                   {p.busy.map((b, i) => {
                     const meta = KIND_META[b.kind]
                     return (
-                      <div key={i} className="flex items-center gap-2 text-xs">
+                      <div key={i} className="flex items-center gap-2 text-meta">
                         <span className="rounded-full px-2 py-0.5 font-medium shrink-0" style={{ backgroundColor: meta.bg, color: meta.text }}>{meta.label}</span>
                         <span className="text-text-secondary truncate">{b.kind === 'holiday' || b.kind === 'leave' ? b.label : `${fmt(b.start)} — ${b.label}`}</span>
                       </div>
@@ -125,7 +125,7 @@ export default function BusyTimesPanel({
             </div>
           ))}
           {data && data.people.length === 0 && !loading && (
-            <p className="text-sm text-text-muted flex items-center gap-1.5"><AlertTriangle size={14} /> Add people to see their busy times.</p>
+            <p className="text-body text-text-muted flex items-center gap-1.5"><AlertTriangle size={14} /> Add people to see their busy times.</p>
           )}
         </div>
       </div>

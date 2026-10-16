@@ -73,7 +73,7 @@ function StatCard({ icon, value, label, tint }: { icon: React.ReactNode; value: 
       <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ backgroundColor: tint }}>{icon}</div>
       <div className="min-w-0">
         <div className="text-[20px] font-medium text-text-primary leading-none">{value}</div>
-        <div className="text-xs text-text-muted mt-1 truncate">{label}</div>
+        <div className="text-meta text-text-muted mt-1 truncate">{label}</div>
       </div>
     </div>
   )
@@ -169,14 +169,14 @@ export default function RhythmDetailPage() {
     } catch (e: any) { addToast(e?.response?.data?.message ?? 'Failed', 'error') }
   }
 
-  if (loading) return <div className="p-8 text-center text-sm text-text-secondary">Loading…</div>
+  if (loading) return <div className="p-8 text-center text-body text-text-secondary">Loading…</div>
   if (notFound || !rhythm) {
     return (
       <div className="max-w-2xl">
-        <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary mb-4"><ArrowLeft size={15} /> Rhythms</Link>
+        <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-1.5 text-body font-medium text-text-secondary hover:text-text-primary mb-4"><ArrowLeft size={15} /> Rhythms</Link>
         <div className="bg-surface border border-border-light rounded-xl p-12 text-center">
           <h3 className="text-[18px] font-medium text-text-primary">Rhythm not found</h3>
-          <p className="text-sm text-text-secondary mt-1">It may have been removed, or you don’t have access to it.</p>
+          <p className="text-body text-text-secondary mt-1">It may have been removed, or you don’t have access to it.</p>
         </div>
       </div>
     )
@@ -187,7 +187,7 @@ export default function RhythmDetailPage() {
 
   return (
     <div className="max-w-[1200px]">
-      <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary w-fit mb-4"><ArrowLeft size={15} /> Rhythms</Link>
+      <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-1.5 text-body font-medium text-text-secondary hover:text-text-primary w-fit mb-4"><ArrowLeft size={15} /> Rhythms</Link>
 
       {/* Sticky header: title + cadence + actions */}
       <div className="sticky top-0 z-10 bg-surface-sunken -mx-1 px-1 pb-4 mb-1">
@@ -200,17 +200,17 @@ export default function RhythmDetailPage() {
                 {rhythm.is_active ? 'Active' : 'Paused'}
               </span>
             </h1>
-            <p className="text-sm text-text-secondary mt-1 flex items-center gap-1.5"><Clock size={14} /> {cadence(rhythm)}</p>
+            <p className="text-body text-text-secondary mt-1 flex items-center gap-1.5"><Clock size={14} /> {cadence(rhythm)}</p>
           </div>
           {rhythm.can_manage && (
             <div className="flex items-center gap-2 shrink-0">
-              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg"><Pencil size={15} /> Edit</button>
+              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 px-3.5 py-2 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg"><Pencil size={15} /> Edit</button>
               <Tooltip label={rhythm.is_active ? 'Pause' : 'Resume'}>
-              <button onClick={toggleActive} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary border border-border-light hover:bg-surface-control rounded-lg">
+              <button onClick={toggleActive} className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-text-secondary border border-border-light hover:bg-surface-control rounded-lg">
                 {rhythm.is_active ? <><Pause size={15} /> Pause</> : <><Play size={15} /> Resume</>}
               </button>
               </Tooltip>
-              <Tooltip label="Stop"><button onClick={() => setStopping(true)} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-danger border border-danger-border hover:bg-danger-bg rounded-lg"><Square size={15} /> Stop</button></Tooltip>
+              <Tooltip label="Stop"><button onClick={() => setStopping(true)} className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-danger border border-danger-border hover:bg-danger-bg rounded-lg"><Square size={15} /> Stop</button></Tooltip>
             </div>
           )}
         </div>
@@ -232,7 +232,7 @@ export default function RhythmDetailPage() {
             <div className="flex items-center gap-1 flex-wrap">
               {STATUS_FILTERS.map((f) => (
                 <button key={f.key} onClick={() => setFilter(f.key)}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-[6px] border transition-colors ${filter === f.key ? 'bg-primary text-white border-primary' : 'bg-surface text-text-secondary border-border-light hover:border-border'}`}>
+                  className={`px-2.5 py-1 text-meta font-medium rounded-[6px] border transition-colors ${filter === f.key ? 'bg-primary text-primary-foreground border-primary' : 'bg-surface text-text-secondary border-border-light hover:border-border'}`}>
                   {f.label}
                 </button>
               ))}
@@ -242,8 +242,8 @@ export default function RhythmDetailPage() {
           {sorted.length === 0 ? (
             <div className="p-12 text-center">
               <div className="w-12 h-12 rounded-[14px] bg-surface-control flex items-center justify-center text-text-secondary mx-auto mb-3"><CalendarDays size={22} /></div>
-              <p className="text-sm font-medium text-text-primary">No meetings {filter === 'all' ? 'yet' : `in “${STATUS_FILTERS.find((f) => f.key === filter)?.label}”`}</p>
-              <p className="text-xs text-text-muted mt-1">Occurrences spawn automatically up to 60 days ahead.</p>
+              <p className="text-body font-medium text-text-primary">No meetings {filter === 'all' ? 'yet' : `in “${STATUS_FILTERS.find((f) => f.key === filter)?.label}”`}</p>
+              <p className="text-meta text-text-muted mt-1">Occurrences spawn automatically up to 60 days ahead.</p>
             </div>
           ) : (
             <div className="divide-y divide-surface-control max-h-[640px] overflow-y-auto">
@@ -257,8 +257,8 @@ export default function RhythmDetailPage() {
                       <div className="text-[18px] font-medium text-text-primary leading-none">{m.scheduled_start ? new Date(m.scheduled_start).getDate() : '·'}</div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text-primary truncate">{m.title}</p>
-                      <p className="text-xs text-text-muted flex items-center gap-1.5 mt-0.5">
+                      <p className="text-body font-medium text-text-primary truncate">{m.title}</p>
+                      <p className="text-meta text-text-muted flex items-center gap-1.5 mt-0.5">
                         <span>{fmtDate(m.scheduled_start)}{fmtTime(m.scheduled_start) ? ` · ${fmtTime(m.scheduled_start)}` : ''}</span>
                         <span className="inline-flex items-center gap-1">· {m.type === 'offline' ? <MapPin size={11} /> : <Video size={11} />} {m._count?.attendees ?? (m.attendees?.length ?? 0)}</span>
                       </p>
@@ -275,23 +275,23 @@ export default function RhythmDetailPage() {
         {/* Sidebar */}
         <div className="flex flex-col gap-4">
           <SidebarCard title="Schedule">
-            <div className="flex flex-col gap-2 text-sm text-text-secondary">
+            <div className="flex flex-col gap-2 text-body text-text-secondary">
               <div className="flex items-center gap-2"><Clock size={14} className="text-text-muted" /> {cadence(rhythm)}</div>
               <div className="flex items-center gap-2"><CalendarClock size={14} className="text-text-muted" /> Next: {rhythm.is_active ? fmtDate(rhythm.next_run) : 'Paused'}</div>
               {e?.start_date && <div className="flex items-center gap-2 text-text-muted"><CalendarDays size={14} className="text-text-muted" /> Since {fmtDate(e.start_date)}</div>}
-              {e && e.end_condition === 'on_date' && e.end_date && <div className="text-xs text-text-muted">Ends {fmtDate(e.end_date)}</div>}
-              {e && e.end_condition === 'after_n' && e.end_after != null && <div className="text-xs text-text-muted">Ends after {e.end_after} occurrences</div>}
+              {e && e.end_condition === 'on_date' && e.end_date && <div className="text-meta text-text-muted">Ends {fmtDate(e.end_date)}</div>}
+              {e && e.end_condition === 'after_n' && e.end_after != null && <div className="text-meta text-text-muted">Ends after {e.end_after} occurrences</div>}
             </div>
           </SidebarCard>
 
           <SidebarCard title="Format">
-            <div className="flex flex-col gap-2 text-sm text-text-secondary">
+            <div className="flex flex-col gap-2 text-body text-text-secondary">
               <div className="flex items-center gap-2">
                 {rhythm.type === 'offline' ? <MapPin size={14} className="text-text-muted" /> : <Video size={14} className="text-text-muted" />}
                 {rhythm.type === 'offline' ? 'In person' : rhythm.type === 'hybrid' ? 'Hybrid' : 'Online'} · {rhythm.duration_min} min
               </div>
-              {rhythm.type !== 'offline' && rhythm.online_link && <a href={rhythm.online_link} target="_blank" rel="noreferrer" className="text-sm text-primary-text hover:underline truncate">{rhythm.online_link}</a>}
-              {rhythm.type !== 'online' && rhythm.location && <div className="text-sm text-text-muted">{rhythm.location}</div>}
+              {rhythm.type !== 'offline' && rhythm.online_link && <a href={rhythm.online_link} target="_blank" rel="noreferrer" className="text-body text-primary-text hover:underline truncate">{rhythm.online_link}</a>}
+              {rhythm.type !== 'online' && rhythm.location && <div className="text-body text-text-muted">{rhythm.location}</div>}
             </div>
           </SidebarCard>
 
@@ -299,8 +299,8 @@ export default function RhythmDetailPage() {
             <div className="flex flex-col gap-2">
               {/* Host is always in. */}
               <div className="flex items-center gap-2.5">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(rhythm.created_by_name ?? 'Host')}`}>{initials(rhythm.created_by_name ?? 'H')}</div>
-                <span className="text-sm text-text-primary truncate">{rhythm.created_by_user_id === user?.id ? 'You' : (rhythm.created_by_name ?? 'Host')}</span>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 ${avatarColor(rhythm.created_by_name ?? 'Host')}`}>{initials(rhythm.created_by_name ?? 'H')}</div>
+                <span className="text-body text-text-primary truncate">{rhythm.created_by_user_id === user?.id ? 'You' : (rhythm.created_by_name ?? 'Host')}</span>
                 <span className="text-meta font-medium rounded-[4px] px-1.5 py-0.5 bg-primary-subtle text-primary-text border border-primary-border ml-auto shrink-0">Host</span>
               </div>
               {attendeeIds.map((id) => {
@@ -308,19 +308,19 @@ export default function RhythmDetailPage() {
                 const opt = (rhythm.optional_user_ids ?? []).includes(id)
                 return (
                   <div key={id} className="flex items-center gap-2.5">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(name)}`}>{initials(name)}</div>
-                    <span className="text-sm text-text-secondary truncate">{name}</span>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0 ${avatarColor(name)}`}>{initials(name)}</div>
+                    <span className="text-body text-text-secondary truncate">{name}</span>
                     {opt && <span className="text-meta font-medium rounded-[4px] px-1.5 py-0.5 bg-surface-control text-text-muted ml-auto shrink-0">Optional</span>}
                   </div>
                 )
               })}
-              {attendeeIds.length === 0 && <p className="text-xs text-text-muted">No other attendees — just the host.</p>}
+              {attendeeIds.length === 0 && <p className="text-meta text-text-muted">No other attendees — just the host.</p>}
             </div>
           </SidebarCard>
 
           {rhythm.agenda && (
             <SidebarCard title="Standing agenda">
-              <p className="text-sm text-text-secondary whitespace-pre-wrap">{rhythm.agenda}</p>
+              <p className="text-body text-text-secondary whitespace-pre-wrap">{rhythm.agenda}</p>
             </SidebarCard>
           )}
         </div>
@@ -329,7 +329,7 @@ export default function RhythmDetailPage() {
       <CreateRhythmModal isOpen={editing} onClose={() => setEditing(false)} orgId={orgId} people={people} rhythm={rhythm} onCreated={() => { setEditing(false); load() }} />
 
       <Modal isOpen={stopping} onClose={() => setStopping(false)} title="Stop rhythm" size="sm">
-        <p className="text-sm text-text-primary">Stop “{rhythm.title}”? No new occurrences will be created. Past meetings are kept.</p>
+        <p className="text-body text-text-primary">Stop “{rhythm.title}”? No new occurrences will be created. Past meetings are kept.</p>
         <div className="flex flex-col gap-2 mt-4">
           <Button variant="primary" onClick={() => stop('stop')}>Stop — keep upcoming meetings</Button>
           <Button variant="danger" onClick={() => stop('delete-future')}>Stop &amp; remove upcoming (still-scheduled) meetings</Button>

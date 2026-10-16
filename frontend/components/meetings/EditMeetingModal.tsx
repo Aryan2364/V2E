@@ -12,9 +12,9 @@ import type { Meeting, MeetingType } from '@/lib/types/meetings'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
 import { DurationField } from './shared'
 
-const labelClass = 'block text-sm font-medium text-text-secondary mb-1.5'
+const labelClass = 'block text-body font-medium text-text-secondary mb-1.5'
 const inputClass =
-  'w-full border border-border rounded-[8px] px-3 py-2.5 text-[15px] text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  'w-full border border-border rounded-[8px] px-3 py-2.5 text-[15px] text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 function timeToMin(hhmm: string): number {
@@ -132,7 +132,7 @@ export default function EditMeetingModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Edit meeting" size="lg" closeOnEscape={false}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
         {isOccurrence && (
-          <div className="flex items-start gap-2 text-xs text-primary-text bg-primary-subtle border border-primary-border rounded-[8px] px-3 py-2">
+          <div className="flex items-start gap-2 text-meta text-primary-text bg-primary-subtle border border-primary-border rounded-[8px] px-3 py-2">
             <CalendarClock size={15} className="mt-0.5 shrink-0" />
             <span>You’re editing <b>this occurrence only</b>. The rest of the series is unchanged. It updates just this event on Google Calendar too.</span>
           </div>
@@ -195,14 +195,14 @@ export default function EditMeetingModal({
         <div>
           <label className={labelClass}>Attendees</label>
           <MeetingAttendeeSelector options={people} value={attendees} onChange={setAttendees} optional={optional} onToggleOptional={toggleOptional} />
-          <p className="text-xs text-text-muted mt-1">Everyone is on it by default. Toggle who’s optional.</p>
+          <p className="text-meta text-text-muted mt-1">Everyone is on it by default. Toggle who’s optional.</p>
         </div>
 
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <p className="text-body text-danger">{error}</p>}
 
         <div className="flex items-center justify-end gap-2 pt-1 border-t border-border-light mt-1">
-          <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken">Cancel</button>
-          <button type="submit" disabled={saving} className="px-4 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50">
+          <button type="button" onClick={onClose} className="px-4 py-2.5 text-body font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken">Cancel</button>
+          <button type="submit" disabled={saving} className="px-4 py-2.5 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50">
             {saving ? 'Saving…' : 'Save changes'}
           </button>
         </div>

@@ -175,30 +175,30 @@ export function DurationField({
 
   const chip = (active: boolean) =>
     [
-      'px-3 py-1.5 min-h-[36px] text-sm rounded-[8px] border transition-colors',
+      'px-3 py-1.5 min-h-[36px] text-body rounded-[8px] border transition-colors',
       disabled
         ? 'bg-surface-control-pressed text-text-muted border-border-light cursor-not-allowed'
         : active
-          ? 'bg-primary text-white border-primary'
-          : 'bg-white text-text-secondary border-border-light hover:border-border',
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-surface text-text-secondary border-border-light hover:border-border',
     ].join(' ')
 
   const unitBtn = (active: boolean) =>
     [
-      'px-2.5 min-h-[36px] text-sm transition-colors',
+      'px-2.5 min-h-[36px] text-body transition-colors',
       disabled
         ? 'bg-surface-control-pressed text-text-muted cursor-not-allowed'
         : active
-          ? 'bg-primary text-white font-medium'
-          : 'bg-white text-text-secondary hover:bg-surface-control',
+          ? 'bg-primary text-primary-foreground font-medium'
+          : 'bg-surface text-text-secondary hover:bg-surface-control',
     ].join(' ')
 
   return (
     <div className={inline ? 'flex flex-wrap items-center gap-2' : ''}>
       {inline ? (
-        <span className="text-sm text-text-secondary">{label}</span>
+        <span className="text-body text-text-secondary">{label}</span>
       ) : (
-        <label className="block text-sm font-medium text-text-secondary mb-1.5">{label}</label>
+        <label className="block text-body font-medium text-text-secondary mb-1.5">{label}</label>
       )}
       <div className="flex flex-wrap items-center gap-1.5">
         {DURATION_PRESETS.map((d) => (
@@ -233,7 +233,7 @@ export function DurationField({
               onChange={(e) => setDraft(e.target.value)}
               onBlur={(e) => commit(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commit((e.target as HTMLInputElement).value) } }}
-              className="w-[76px] border border-border rounded-[8px] px-2.5 py-1.5 min-h-[36px] text-sm text-text-primary bg-white focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface-control"
+              className="w-[76px] border border-border rounded-[8px] px-2.5 py-1.5 min-h-[36px] text-body text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-surface-control"
               aria-label={unit === 'hr' ? `${label} in hours` : `${label} in minutes`}
             />
             {/* Type it in minutes or in hours — 90 min and 1.5 hrs are the same thing. */}

@@ -128,7 +128,7 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
             <div>
               <Label className="mb-1.5">Who must write this log</Label>
               <AssigneeSelector orgId={orgId} value={assignees} onChange={handleAssigneeChange} />
-              <p className="text-xs text-text-muted mt-1">Must be someone below you in the hierarchy.</p>
+              <p className="text-meta text-text-muted mt-1">Must be someone below you in the hierarchy.</p>
             </div>
 
             {/* Kind */}
@@ -182,7 +182,7 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
               </div>
             )}
 
-            {error && <p className="text-sm text-danger">{error}</p>}
+            {error && <p className="text-body text-danger">{error}</p>}
           </div>
         </DialogBody>
         <DialogFooter>

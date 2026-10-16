@@ -21,7 +21,7 @@ function Stat({ label, value, color = 'var(--text-primary)', flag }: { label: st
   return (
     <div className={['bg-surface border rounded-xl p-4', flag ? 'border-danger-border' : 'border-border-light'].join(' ')}>
       <p className="text-[26px] font-medium leading-none flex items-center gap-1" style={{ color }}>{flag && <AlertTriangle size={18} className="text-danger" />}{value}</p>
-      <p className="text-sm text-text-secondary mt-1">{label}</p>
+      <p className="text-body text-text-secondary mt-1">{label}</p>
     </div>
   )
 }
@@ -99,7 +99,7 @@ export default function MeetingReportsPage() {
         }
       />
 
-      {loading ? <div className="p-8 text-center text-sm text-text-secondary">Loading…</div> : !data ? <div className="p-8 text-center text-sm text-text-muted">No data.</div> : (
+      {loading ? <div className="p-8 text-center text-body text-text-secondary">Loading…</div> : !data ? <div className="p-8 text-center text-body text-text-muted">No data.</div> : (
         <>
           <Section title="Activity">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
@@ -109,8 +109,8 @@ export default function MeetingReportsPage() {
               <Stat label="Avg overrun (min)" value={data.activity.avg_overrun_min} color={data.activity.avg_overrun_min > 0 ? 'var(--warning)' : 'var(--success)'} />
             </div>
             {loadData.length > 0 && (
-              <div className="bg-white border border-border-light rounded-[12px] p-4">
-                <p className="text-sm font-medium text-text-secondary mb-2">Meeting load per person</p>
+              <div className="bg-surface border border-border-light rounded-[12px] p-4">
+                <p className="text-body font-medium text-text-secondary mb-2">Meeting load per person</p>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={loadData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
@@ -145,9 +145,9 @@ export default function MeetingReportsPage() {
 
           <Section title="Linkage">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="bg-white border border-border-light rounded-[12px] p-4">
-                <p className="text-sm font-medium text-text-secondary mb-2">Meeting hours by linkage</p>
-                {linkData.length === 0 ? <p className="text-sm text-text-muted">No data.</p> : (
+              <div className="bg-surface border border-border-light rounded-[12px] p-4">
+                <p className="text-body font-medium text-text-secondary mb-2">Meeting hours by linkage</p>
+                {linkData.length === 0 ? <p className="text-body text-text-muted">No data.</p> : (
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
                       <Pie data={linkData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={(e: any) => `${e.name} (${e.value}h)`}>
@@ -158,12 +158,12 @@ export default function MeetingReportsPage() {
                   </ResponsiveContainer>
                 )}
               </div>
-              <div className="bg-white border border-border-light rounded-[12px] p-4">
-                <p className="text-sm font-medium text-text-secondary mb-2">Goals getting attention</p>
-                {data.linkage.goal_attention.length === 0 ? <p className="text-sm text-text-muted">No goal-linked meetings.</p> : (
+              <div className="bg-surface border border-border-light rounded-[12px] p-4">
+                <p className="text-body font-medium text-text-secondary mb-2">Goals getting attention</p>
+                {data.linkage.goal_attention.length === 0 ? <p className="text-body text-text-muted">No goal-linked meetings.</p> : (
                   <div className="flex flex-col gap-1.5">
                     {data.linkage.goal_attention.slice(0, 8).map((g) => (
-                      <div key={g.goal_id} className="flex items-center justify-between text-sm">
+                      <div key={g.goal_id} className="flex items-center justify-between text-body">
                         <span className="text-text-primary truncate">{goals.get(g.goal_id) ?? 'Goal'}</span>
                         <span className="text-text-secondary shrink-0">{g.meetings} mtg · {g.hours}h</span>
                       </div>

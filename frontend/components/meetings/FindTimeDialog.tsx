@@ -182,7 +182,7 @@ export default function FindTimeDialog({
             <button aria-label="Previous day" onClick={() => shiftDay(-1)} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control"><ChevronLeft size={18} /></button>
             <DatePicker value={date} onChange={onChangeDate} min={todayStr()} placeholder="Pick a date" bare hideClear />
             <button aria-label="Next day" onClick={() => shiftDay(1)} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control"><ChevronRight size={18} /></button>
-            <button onClick={() => onChangeDate(todayStr())} className="px-2.5 py-1 text-sm font-medium text-text-secondary rounded-[6px] hover:bg-surface-control">Today</button>
+            <button onClick={() => onChangeDate(todayStr())} className="px-2.5 py-1 text-body font-medium text-text-secondary rounded-[6px] hover:bg-surface-control">Today</button>
             <button onClick={onClose} className="p-1.5 text-text-muted hover:text-text-secondary ml-1"><X size={18} /></button>
           </div>
         </div>
@@ -197,15 +197,15 @@ export default function FindTimeDialog({
           {/* left rail */}
           <aside className="w-[300px] shrink-0 border-r border-border-light overflow-y-auto p-4 flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1">Participants</label>
+              <label className="block text-body font-medium text-text-secondary mb-1">Participants</label>
               <MeetingAttendeeSelector options={people} value={attendees} onChange={onChangeAttendees} optional={optional} onToggleOptional={toggleOptional} />
             </div>
 
             {/* best times */}
             <div>
-              <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-2">Best times</p>
+              <p className="text-meta font-medium text-text-secondary uppercase tracking-wider mb-2">Best times</p>
               {!data || data.suggestions.length === 0 ? (
-                <p className="text-sm text-text-muted">{attendees.length === 0 ? 'Add people to see suggestions.' : 'No clear slot on this day — try another day or trim the guest list.'}</p>
+                <p className="text-body text-text-muted">{attendees.length === 0 ? 'Add people to see suggestions.' : 'No clear slot on this day — try another day or trim the guest list.'}</p>
               ) : (
                 <div className="flex flex-col gap-1.5">
                   {data.suggestions.slice(0, 6).map((s, i) => {
@@ -218,8 +218,8 @@ export default function FindTimeDialog({
                         className="flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2 hover:border-primary"
                         style={{ borderColor: clean ? 'var(--success-bg)' : 'var(--warning-bg)', background: clean ? 'var(--success-bg)' : 'var(--warning-bg)' }}
                       >
-                        <span className="text-sm text-text-primary">{minLabel(sMin)}</span>
-                        <span className="text-xs" style={{ color: clean ? 'var(--success)' : 'var(--warning)' }}>
+                        <span className="text-body text-text-primary">{minLabel(sMin)}</span>
+                        <span className="text-meta" style={{ color: clean ? 'var(--success)' : 'var(--warning)' }}>
                           {clean ? 'No required clashes' : `${s.hard_conflicts.length} required`}
                           {s.soft_conflicts.length > 0 ? ` · ${s.soft_conflicts.length} optional` : ''}
                         </span>
@@ -233,21 +233,21 @@ export default function FindTimeDialog({
             {/* Who's free at the selected slot — vertical list scales to any headcount */}
             {useAgg && perPerson.length > 0 && (
               <div>
-                <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-2">At {minLabel(cand)} – {minLabel(candEnd)}</p>
+                <p className="text-meta font-medium text-text-secondary uppercase tracking-wider mb-2">At {minLabel(cand)} – {minLabel(candEnd)}</p>
                 <div className="flex flex-col gap-1 max-h-[240px] overflow-y-auto pr-1">
                   {[...perPerson].sort((a, b) => Number(b.conflict) - Number(a.conflict)).map((p) => (
-                    <div key={p.user_id} className="flex items-center gap-2 text-sm">
+                    <div key={p.user_id} className="flex items-center gap-2 text-body">
                       <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.conflict ? 'var(--danger)' : 'var(--success)' }} />
                       <span className="text-text-primary truncate">{p.name}</span>
                       {!p.required && <span className="text-meta text-text-muted">optional</span>}
-                      <span className="ml-auto text-xs shrink-0" style={{ color: p.conflict ? 'var(--danger)' : 'var(--success)' }}>{p.conflict ? 'Busy' : 'Free'}</span>
+                      <span className="ml-auto text-meta shrink-0" style={{ color: p.conflict ? 'var(--danger)' : 'var(--success)' }}>{p.conflict ? 'Busy' : 'Free'}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            <div className="flex items-start gap-2 text-xs text-text-secondary bg-surface-sunken border border-border-light rounded-lg px-3 py-2">
+            <div className="flex items-start gap-2 text-meta text-text-secondary bg-surface-sunken border border-border-light rounded-lg px-3 py-2">
               <Info size={14} className="mt-0.5 shrink-0 text-text-muted" />
               <span>{data?.caveat ?? 'Shows only meetings, leave and holidays this app knows about — not a guarantee someone is free.'}</span>
             </div>
@@ -257,7 +257,7 @@ export default function FindTimeDialog({
           <div className="flex-1 min-w-0 flex flex-col p-4 gap-3">
             {/* candidate summary + confirm */}
             <div className="flex items-center justify-between gap-3 px-4 py-2.5 border border-border-light rounded-[10px] bg-surface-sunken shrink-0">
-              <div className="text-sm">
+              <div className="text-body">
                 <span className="font-medium text-text-primary">{minLabel(cand)} – {minLabel(candEnd)}</span>
                 {clashes.hard.length === 0 && clashes.soft.length === 0 ? (
                   <span className="ml-2 text-success">Everyone’s free</span>
@@ -269,7 +269,7 @@ export default function FindTimeDialog({
                   </span>
                 )}
               </div>
-              <button onClick={confirm} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg">
+              <button onClick={confirm} className="inline-flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg">
                 <Check size={15} /> Use this time
               </button>
             </div>
@@ -282,9 +282,9 @@ export default function FindTimeDialog({
               <div className="w-[54px] shrink-0 border-r border-white/20" />
               <div className="flex-1 min-w-0">
                 {perPerson.length === 0 ? (
-                  <div className="py-2 text-center text-sm text-white">Add participants to see availability</div>
+                  <div className="py-2 text-center text-body text-primary-foreground">Add participants to see availability</div>
                 ) : useAgg ? (
-                  <div className="py-2.5 px-3 flex items-center justify-center gap-4 text-white flex-wrap">
+                  <div className="py-2.5 px-3 flex items-center justify-center gap-4 text-primary-foreground flex-wrap">
                     <span className="text-[13px] font-medium">Team availability · {perPerson.length} people</span>
                     <span className="flex items-center gap-3 text-meta">
                       <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm" style={{ background: 'color-mix(in srgb, var(--success) 50%, transparent)' }} /> all free</span>
@@ -295,9 +295,9 @@ export default function FindTimeDialog({
                   <div className="grid" style={{ gridTemplateColumns: `repeat(${cols}, minmax(80px,1fr))` }}>
                     {perPerson.map((p) => (
                       <div key={p.user_id} className="py-1.5 px-2 text-center border-r border-white/20 last:border-r-0">
-                        <div className="text-[13px] font-medium text-white truncate">{p.name.split(' ')[0]}</div>
+                        <div className="text-[13px] font-medium text-primary-foreground truncate">{p.name.split(' ')[0]}</div>
                         <div className="flex items-center justify-center gap-1 mt-0.5">
-                          <span className="text-meta text-white">{p.required ? 'Required' : 'Optional'}</span>
+                          <span className="text-meta text-primary-foreground">{p.required ? 'Required' : 'Optional'}</span>
                           {p.conflict && <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.required ? 'var(--warning-border)' : 'color-mix(in srgb, white 60%, transparent)' }} />}
                         </div>
                       </div>

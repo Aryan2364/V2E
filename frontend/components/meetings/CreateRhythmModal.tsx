@@ -16,7 +16,7 @@ import { DurationField } from './shared'
 
 const inputClass =
   'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
-const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
+const labelClass = 'block text-body font-medium text-text-secondary mb-1'
 const todayStr = () => new Date().toISOString().slice(0, 10)
 const freshSched = (): ScheduleEntryDraft => ({
   schedule_type: 'weekly', every: 1, days: [new Date().getDay()], month_days: [], yearly_dates: [],
@@ -267,7 +267,7 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
             hostLabel={hostId === user?.id ? 'You' : rhythm?.created_by_name}
             ineligibleReasons={ineligibleReasons}
           />
-          <p className="text-xs text-text-muted mt-1">The host is on every occurrence by default. Everyone you add is too — toggle who is optional.</p>
+          <p className="text-meta text-text-muted mt-1">The host is on every occurrence by default. Everyone you add is too — toggle who is optional.</p>
         </div>
 
         {/* Recurrence — the SAME shared editor as recurring tasks and meetings */}
@@ -283,7 +283,7 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
             />
             <SkipHolidaysField orgId={orgId} sched={sched} value={skipHolidays} onChange={setSkipHolidays} />
           </div>
-          <p className="mt-2 flex items-start gap-2 text-sm text-primary-text font-medium bg-primary-subtle border border-primary-border rounded-[8px] px-3 py-2">
+          <p className="mt-2 flex items-start gap-2 text-body text-primary-text font-medium bg-primary-subtle border border-primary-border rounded-[8px] px-3 py-2">
             <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
             <span>{recurrenceSummary(sched)}</span>
           </p>
