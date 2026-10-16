@@ -1788,16 +1788,16 @@ export default function TaskDetailPage() {
                 {/* Only the assigner / admin may add files here — solid blue + button. */}
                 {canEdit && (
                   <Tooltip label="Add attachment">
-                    <button
+                    <Button
                       type="button"
+                      size="sm"
                       onClick={() => attachInputRef.current?.click()}
                       disabled={uploadingAttachment}
                       aria-label="Add attachment"
-                      className="flex items-center gap-1 text-meta font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control pl-1.5 pr-2 py-1 disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                     >
                       <Plus size={14} />
                       Add
-                    </button>
+                    </Button>
                   </Tooltip>
                 )}
               </div>
@@ -1810,14 +1810,16 @@ export default function TaskDetailPage() {
                       <div key={a.id} className="flex items-start gap-2.5">
                         {/* Download */}
                         <Tooltip label="Download">
-                          <button
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={() => tasksApi.downloadAttachment(orgId, taskId, a.id)}
                             aria-label="Download"
-                            className="w-7 h-7 rounded-control bg-primary-subtle flex items-center justify-center shrink-0 hover:bg-primary-subtle outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                            className="shrink-0 bg-primary-subtle text-primary-text hover:bg-primary-subtle"
                           >
-                            <Download size={13} className="text-primary-text" />
-                          </button>
+                            <Download size={13} />
+                          </Button>
                         </Tooltip>
                         <div className="min-w-0 flex-1">
                           <Tooltip label={a.file_name}>
@@ -1838,14 +1840,16 @@ export default function TaskDetailPage() {
                         {/* Remove — uploader only */}
                         {a.uploaded_by_user_id === user?.id && !isFutureTask && (
                           <Tooltip label="Remove">
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="icon-sm"
                               onClick={() => setAttachmentToDelete(a)}
                               aria-label="Remove"
-                              className="text-text-muted hover:text-danger shrink-0 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                              className="shrink-0"
                             >
                               <Trash2 size={14} />
-                            </button>
+                            </Button>
                           </Tooltip>
                         )}
                       </div>
@@ -1884,8 +1888,11 @@ export default function TaskDetailPage() {
                 {/* The creator / admin may change who the work is assigned to; anyone
                     on the task may manage CC (see canManageCc). */}
                 {canManageCc && (!editingAssignees ? (
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-success hover:text-success"
                     onClick={() => {
                       setEditAssigneesList((task.assignees ?? []).map((a) => ({
                         user_id: a.user_id,
@@ -1895,27 +1902,29 @@ export default function TaskDetailPage() {
                       setAssigneeError(null)
                       setEditingAssignees(true)
                     }}
-                    className="text-meta font-medium text-success hover:text-success outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                   >
                     Edit
-                  </button>
+                  </Button>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
                       type="button"
+                      size="sm"
+                      className="bg-success border-success text-primary-foreground hover:bg-success hover:border-success"
                       onClick={handleSaveAssignees}
-                      disabled={savingAssignees}
-                      className="text-meta font-medium text-primary-foreground bg-success px-2.5 py-1 rounded-control hover:bg-success disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                      loading={savingAssignees}
+                      loadingLabel="Saving"
                     >
-                      {savingAssignees ? 'Saving…' : 'Save'}
-                    </button>
-                    <button
+                      Save
+                    </Button>
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => { setEditingAssignees(false); setAssigneeError(null) }}
-                      className="text-meta font-medium text-text-secondary hover:text-text-primary"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>
