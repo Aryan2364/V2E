@@ -1296,7 +1296,7 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
       />
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} priorit{items.length !== 1 ? 'ies' : 'y'}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Priority</button>
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add Priority</Button>
       </div>
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
@@ -1312,8 +1312,8 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
             <FormField label="Order"><input type="number" value={form.order_index} onChange={(e) => setForm({ ...form, order_index: parseInt(e.target.value) || 0 })} className={inputCls} /></FormField>
           </div>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
+            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
+            <Button variant="secondary" onClick={() => setCreating(false)}>Cancel</Button>
           </div>
         </div>
       )}
@@ -1326,7 +1326,7 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
             {item.sla_days && <span className="text-meta text-text-secondary">SLA: {item.sla_days}d</span>}
             <span className="text-meta text-text-secondary">Order: {item.order_index}</span>
             <span className={`text-meta font-medium rounded-[999px] px-2 py-0.5 ${item.is_active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>{item.is_active ? 'Active' : 'Inactive'}</span>
-            <button onClick={() => setConfirmDeleteId(item.id)} className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+            <Button variant="ghost" size="icon-sm" className="hover:text-danger hover:bg-danger-bg" onClick={() => setConfirmDeleteId(item.id)}><Trash2 size={13} /></Button>
           </div>
         ))}
       </div>
@@ -1364,7 +1364,7 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} status{items.length !== 1 ? 'es' : ''}</p>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Status</button>
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add Status</Button>
       </div>
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
@@ -1390,8 +1390,8 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
             <span className="text-body text-text-primary">Set as default status</span>
           </label>
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={submitting} className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Creating...' : 'Create'}</button>
-            <button onClick={() => setCreating(false)} className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
+            <Button onClick={handleCreate} loading={submitting} loadingLabel="Creating">Create</Button>
+            <Button variant="secondary" onClick={() => setCreating(false)}>Cancel</Button>
           </div>
         </div>
       )}
