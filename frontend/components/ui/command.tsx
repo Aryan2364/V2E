@@ -284,14 +284,24 @@ function CommandSeparator({
   )
 }
 
+/**
+ * v2e addition (FRONTEND_RULES.md 4.1 "v2e additions"): a danger variant,
+ * for a row that performs a destructive or closing action inside a
+ * searchable list (StyledSelect's `variant: 'danger'`). A kit-component
+ * variant (section 4 rule 4), not a second component.
+ */
 function CommandItem({
   className,
   children,
+  variant = "default",
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Item>) {
+}: React.ComponentProps<typeof CommandPrimitive.Item> & {
+  variant?: "default" | "danger"
+}) {
   return (
     <CommandPrimitive.Item
       data-slot="command-item"
+      data-variant={variant}
       className={cn(
         // Section 16.2 rows: 36px, 12px sides. data-selected is cmdk's
         // HIGHLIGHT (pointer or arrow keys), so it takes the neutral
@@ -303,6 +313,7 @@ function CommandItem({
         // the text wraps; square, edge to edge, 16px sides; pressed is
         // the feedback (41.9 rule 1).
         "phone:h-auto phone:min-h-12 phone:rounded-none phone:px-4 phone:py-2 phone:active:bg-surface-control",
+        variant === "danger" && "text-danger data-selected:bg-danger-bg",
         className
       )}
       {...props}

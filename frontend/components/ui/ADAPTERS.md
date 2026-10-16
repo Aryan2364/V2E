@@ -16,6 +16,7 @@ pre-kit implementation, not yet touched.
 | `TimeField.tsx` | `time-picker.tsx` | 9 | Converts v2e's `"HH:MM"` 24-hour string to/from the kit's 12-hour `TimeValue`. Deviation: the old centered analog-clock dialog (`ClockTimePicker.tsx`) is replaced by the kit's inline popover with hour/minute/AM-PM lists; `label` and `compact` have no kit equivalent and are accepted but unused. Minutes now step to the kit's 15-minute grid on typed entry (section 20.2) instead of accepting any minute. |
 | `Modal.tsx` | `dialog.tsx` | 32 | Same `isOpen`/`onClose`/`title`/`size`/`closeOnEscape`/`bodyScroll`/`elevated`/children API; now composes `Dialog`/`DialogContent`/`DialogHeader`/`DialogTitle`. `size` maps onto the kit's sm/md/lg. Escape vs backdrop-click behaviour preserved via `onOpenChange`'s close reason. `elevated` is kept for its one call site (`components/goals/QuickCreateProjectModal.tsx`) but is a no-op: Base UI's portals already paint in mount order, so a modal opened from within one still lands on top. |
 | `ConfirmDialog.tsx` | `alert-dialog.tsx` | 21 | Same `open`/`title`/`message`/`confirmLabel`/`cancelLabel`/`danger`/`loading`/`error`/`onConfirm`/`onCancel` API; now composes `AlertDialog`/`AlertDialogContent`/`Header`/`Footer`/`Title`/`Description`/`Action`/`Cancel`. Danger by default. Escape and the backdrop are ignored by the kit's `AlertDialog` itself (section 24 rule 3) - accepted per the brief, not a regression (the old version also only closed via its two buttons). The loading spinner on the confirm button and the inline error banner aren't modelled by `alert-dialog.tsx`, so both are added inside this adapter, not the kit file. |
+| `StyledSelect.tsx` | `select.tsx` (6 options or fewer) / `searchable-select.tsx` (7 or more) | 42 | Same `value`/`onChange`/`options`/`placeholder`/`wrapperClassName`/`triggerClassName`/`size`/`disabled`/`searchable`/`searchPlaceholder` API (`searchable` is now accepted but unused: section 16.3's 6-option line decides, not the caller). `StyledSelectOption`'s colour dot, divider, danger variant and non-selectable "action" row are real variants on the kit files themselves — `select.tsx`'s `SelectItem` and `command.tsx`'s `CommandItem` both gained `variant?: "danger"`, and `searchable-select.tsx`'s `options` now also accepts the richer `{value, label, color?, divider?, variant?, action?}` entry shape alongside its original value-to-label map — see FRONTEND_RULES.md section 4.1 "v2e additions". `size="sm"` (compact chip-scale rows) has no kit equivalent and is kept as an adapter-only trigger-height override. |
 
 ## Still the original v2e implementation — not yet adapted or migrated
 
@@ -27,12 +28,10 @@ partial conversion.
 
 | File | Kit equivalent | Call sites | Why not done this pass |
 |---|---|---|---|
-| `StyledSelect.tsx` | `searchable-select.tsx` | 42 | `StyledSelectOption` supports colour dots, dividers, danger variant and non-selectable "action" options — richer than the kit's option shape. Needs those variants added to `searchable-select.tsx` (kit-component-variant rule, FRONTEND_RULES.md §4 rule 4) before call sites can move, not a wrapper. |
 | `ResponsiveTable.tsx` | `table.tsx` | 23 | `ResponsiveTable` already implements the kit's mobile card-list rule itself (desktop table collapses to cards below a breakpoint); `table.tsx` has no such mode. Needs a deliberate design decision, not a mechanical swap. |
 | `MultiSelect.tsx` | `multi-select.tsx` | 5 | Supports `color`/`colorClassName` dots and `hint` lines not in the kit version yet. |
 | `ViewToggle.tsx` | `view-switcher.tsx` | 3 | Not started; likely a near-mechanical swap, low priority given the small count. |
 | `useHoverTip.tsx` | `tooltip.tsx` | 2 | Hand-rolled portal tooltip with an inline hex colour (`#0F172A`) — violates kit §1 rule 1. Small count; migrate call sites directly to `tooltip.tsx` rather than adapting. |
-| `SelectField.tsx` | `select.tsx` | 1 | Single call site — migrate directly, don't adapt. |
 | `FilterButton.tsx` | `popover.tsx` | 1 | Single call site — migrate directly. |
 | `ClockTimePicker.tsx` | `time-picker.tsx` | 0 (dead code, found in P3; its last caller `TimeField.tsx` was converted to an adapter this pass) | No remaining call sites — safe to delete outright in a follow-up rather than adapt. |
 
@@ -41,6 +40,7 @@ partial conversion.
 | File | Migrated to | Call sites | Notes |
 |---|---|---|---|
 | `MonthDayPicker.tsx` | `calendar.tsx` (inline, in `components/tasks/ScheduleEntryRow.tsx`) | 1 | Its one call site now uses a small local `MonthDayPicker` wrapper (kit `Calendar` + `Popover`) built directly into `ScheduleEntryRow.tsx`; the shared file was deleted. Maps `{month, day}` to/from a `Date` in a fixed leap year (2000, discarded on read) so 29 Feb stays pickable. |
+| `SelectField.tsx` | `select.tsx` (inline, in `app/settings/system/audit-logs/page.tsx`) | 1 | Its one call site (5 filter dropdowns) now composes `Select`/`SelectTrigger`/`SelectValue`/`SelectContent`/`SelectItem` directly; the shared file was deleted. Each filter's "All ..." option is mapped to/from a local `ALL_VALUE` sentinel rather than `''`, because Base UI's `Select` treats an item whose value stringifies to `''` as "nothing selected" and falls back to the trigger's placeholder instead of showing that item's own label. |
 
 ## Phone duplicates to consolidate (not forced this phase)
 

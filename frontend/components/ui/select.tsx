@@ -906,11 +906,19 @@ function SelectLabel({ className, ...props }: SelectPrimitive.GroupLabel.Props) 
   )
 }
 
+/**
+ * v2e addition (FRONTEND_RULES.md 4.1 "v2e additions"): a danger variant
+ * for an item that performs a destructive or closing action rather than
+ * choosing an ordinary value (e.g. "Mark whole task incomplete" at the
+ * bottom of a status select, per StyledSelect's `variant: 'danger'`).
+ * A kit-component variant (section 4 rule 4), not a second component.
+ */
 function SelectItem({
   className,
   children,
+  variant = "default",
   ...props
-}: SelectPrimitive.Item.Props) {
+}: SelectPrimitive.Item.Props & { variant?: "default" | "danger" }) {
   const phoneList = React.useContext(PhoneSelectListContext)
   if (phoneList) {
     return (
@@ -918,7 +926,7 @@ function SelectItem({
         list={phoneList}
         value={props.value}
         disabled={props.disabled}
-        className={typeof className === "string" ? className : undefined}
+        className={cn(variant === "danger" && "text-danger", typeof className === "string" ? className : undefined)}
       >
         {children}
       </PhoneSelectItem>
@@ -928,6 +936,7 @@ function SelectItem({
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
+      data-variant={variant}
       className={cn(
         "relative flex h-control w-full cursor-pointer items-center gap-2 rounded-lg pr-8 pl-3 text-body outline-hidden select-none",
         // Hovered and keyboard-highlighted: neutral grey. Only when the
@@ -937,6 +946,8 @@ function SelectItem({
         "[&[aria-selected='true']]:bg-primary-subtle [&[aria-selected='true']]:text-primary-text",
         "data-disabled:pointer-events-none data-disabled:text-text-muted",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        variant === "danger" &&
+          "text-danger [&[data-highlighted]:not([aria-selected='true'])]:bg-danger-bg",
         className
       )}
       {...props}

@@ -12,6 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
@@ -52,6 +53,34 @@ import {
  * instead (41.8 rules 8 and 9). The caller never chooses (41.3 rule 4).
  * That phone form is useSearchPicker below, shared with MultiSelect.
  */
+/**
+ * v2e addition (FRONTEND_RULES.md 4.1 "v2e additions"): the richer entry
+ * shape StyledSelect's options carried (colour dot, divider, danger
+ * variant, a non-selectable "action" row) is accepted here as an
+ * alternative to the plain value-to-label map, so a caller with those
+ * needs still uses this one component (section 4 rule 4) rather than a
+ * second one.
+ */
+type SearchableSelectEntry = {
+  value: string
+  label: string
+  /** A small colour dot before the label (e.g. a status or priority colour). */
+  color?: string
+  /** Renders a divider above this row (ignored while a search is narrowing the list). */
+  divider?: boolean
+  /** Danger styling, for a destructive or closing row. */
+  variant?: "danger"
+  /** Fires onValueChange but is never shown as the selected value in the trigger. */
+  action?: boolean
+}
+
+function normalizeEntries(
+  options: Record<string, string> | SearchableSelectEntry[]
+): SearchableSelectEntry[] {
+  if (Array.isArray(options)) return options
+  return Object.entries(options).map(([value, label]) => ({ value, label }))
+}
+
 function SearchableSelect({
   options,
   value,
@@ -63,8 +92,8 @@ function SearchableSelect({
   disabled,
   className,
 }: {
-  /** value to label. */
-  options: Record<string, string>
+  /** value to label, or the richer entry shape above. */
+  options: Record<string, string> | SearchableSelectEntry[]
   value?: string
   onValueChange?: (value: string) => void
   id?: string
@@ -74,7 +103,11 @@ function SearchableSelect({
   disabled?: boolean
   className?: string
 }) {
-  const entries = Object.entries(options)
+  const entries = normalizeEntries(options)
+  // An action row never represents the current value (26.1-style: the
+  // caller's value prop does not change when one is picked, but this
+  // keeps the trigger correct either way).
+  const current = entries.find((e) => e.value === value && !e.action)
 
   const { phone, open, setOpen, onOpenChange, trigger, sheet } = useSearchPicker((close) => (
     <SearchableOptions
@@ -100,13 +133,20 @@ function SearchableSelect({
             disabled={disabled}
             aria-haspopup="listbox"
             data-slot="searchable-select-trigger"
-            data-placeholder={value ? undefined : ""}
+            data-placeholder={current ? undefined : ""}
             className={cn(selectTriggerClassName, className)}
           />
         }
       >
+        {current?.color && (
+          <span
+            aria-hidden="true"
+            className="size-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: current.color }}
+          />
+        )}
         <span className="flex-1 truncate text-left">
-          {value ? options[value] : placeholder}
+          {current ? current.label : placeholder}
         </span>
         <ChevronDownIcon className="pointer-events-none size-4 shrink-0 text-text-secondary transition-transform data-popup-open:rotate-180" />
       </PopoverTrigger>
@@ -223,14 +263,16 @@ function SearchableOptions({
   searchPlaceholder,
   emptyMessage,
 }: {
-  entries: [string, string][]
+  entries: SearchableSelectEntry[]
   value?: string
   onPick: (value: string) => void
   searchPlaceholder: string
   emptyMessage: string
 }) {
-  // The chosen row's cmdk value, which is its label.
-  const chosenLabel = entries.find(([v]) => v === value)?.[1]
+  // The chosen row's cmdk value, which is its label. Never an action row
+  // (StyledSelect's `action` option, 4.1 "v2e additions"): it fires onPick
+  // but is never the selected value.
+  const chosenLabel = entries.find((e) => e.value === value && !e.action)?.label
   return (
     // Phone: the chosen row is the one cmdk marks while no key has moved
     // its highlight, so it alone is aria-selected and no other row turns
@@ -242,35 +284,47 @@ function SearchableOptions({
       <CommandList className="max-h-menu-max overflow-y-auto">
         <CommandEmpty>{emptyMessage}</CommandEmpty>
         <CommandGroup>
-          {entries.map(([v, label]) => {
-            const isSelected = v === value
+          {entries.map((entry) => {
+            const { value: v, label, color, divider, variant, action } = entry
+            const isSelected = !action && v === value
             return (
-              <CommandItem
-                key={v}
-                value={label}
-                // Not aria-selected: cmdk owns that attribute for
-                // its own highlight, and section 16.2 needs the
-                // chosen row and the highlighted row to stay
-                // visually distinct. `data-chosen` carries ours.
-                data-chosen={isSelected || undefined}
-                // CommandItem already renders the tick, keyed to
-                // data-checked. Rule 4: do not build it twice.
-                data-checked={isSelected}
-                onSelect={() => onPick(v)}
-                className={cn(
-                  "h-control rounded-lg px-3",
-                  // data-selected is cmdk's highlight. Without restating the
-                  // chosen fill under it, the chosen row turned hover
-                  // grey when highlighted - the 16.2 defect again.
-                  isSelected &&
-                    "bg-primary-subtle text-primary-text data-selected:bg-primary-subtle data-selected:text-primary-text"
-                )}
-              >
-                {/* Phone: the label wraps rather than truncating (41.9 rule 7). */}
-                <span className="flex-1 truncate phone:break-words phone:whitespace-normal">
-                  {label}
-                </span>
-              </CommandItem>
+              <React.Fragment key={v}>
+                {divider && <CommandSeparator />}
+                <CommandItem
+                  value={label}
+                  variant={variant}
+                  // Not aria-selected: cmdk owns that attribute for
+                  // its own highlight, and section 16.2 needs the
+                  // chosen row and the highlighted row to stay
+                  // visually distinct. `data-chosen` carries ours.
+                  data-chosen={isSelected || undefined}
+                  // CommandItem already renders the tick, keyed to
+                  // data-checked. Rule 4: do not build it twice. An
+                  // action row never shows one.
+                  data-checked={isSelected}
+                  onSelect={() => onPick(v)}
+                  className={cn(
+                    "h-control rounded-lg px-3",
+                    // data-selected is cmdk's highlight. Without restating the
+                    // chosen fill under it, the chosen row turned hover
+                    // grey when highlighted - the 16.2 defect again.
+                    isSelected &&
+                      "bg-primary-subtle text-primary-text data-selected:bg-primary-subtle data-selected:text-primary-text"
+                  )}
+                >
+                  {color && (
+                    <span
+                      aria-hidden="true"
+                      className="size-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: color }}
+                    />
+                  )}
+                  {/* Phone: the label wraps rather than truncating (41.9 rule 7). */}
+                  <span className="flex-1 truncate phone:break-words phone:whitespace-normal">
+                    {label}
+                  </span>
+                </CommandItem>
+              </React.Fragment>
             )
           })}
         </CommandGroup>
@@ -280,3 +334,4 @@ function SearchableOptions({
 }
 
 export { SearchableSelect, useSearchPicker }
+export type { SearchableSelectEntry }
