@@ -58,7 +58,7 @@ export default function WorkingDaysStrip({
                   active
                     ? pillsDisabled
                       ? 'bg-primary-subtle text-primary-text border-primary-border'
-                      : 'bg-primary text-white border-primary'
+                      : 'bg-primary text-primary-foreground border-primary'
                     : 'bg-surface text-text-muted border-border-light ' + (pillsDisabled ? '' : 'hover:border-primary hover:text-primary-text'),
                 ].join(' ')}
               >

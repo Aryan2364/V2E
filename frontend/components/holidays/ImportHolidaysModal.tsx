@@ -125,7 +125,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
   const errorCount = rows.filter((r) => r._error).length
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-backdrop backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="relative w-full max-w-3xl bg-surface rounded-t-xl sm:rounded-card shadow-menu border border-border-light max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-4 pb-4 border-b border-border-light shrink-0">
@@ -149,7 +149,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="flex items-center gap-2 h-9 px-4 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="flex items-center gap-2 h-9 px-4 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
             >
               <Upload size={14} />
               {rows.length > 0 ? 'Replace CSV' : 'Upload CSV'}
@@ -249,7 +249,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
                 type="button"
                 onClick={handleImport}
                 disabled={importing || validSelected === 0}
-                className="w-full sm:w-auto px-4 py-2 text-body font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                className="w-full sm:w-auto px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
               >
                 {importing ? 'Importing...' : `Import ${validSelected} Holiday${validSelected !== 1 ? 's' : ''}`}
               </button>

@@ -126,7 +126,7 @@ export default function OrgCalendarPage() {
                 <button
                   type="button"
                   onClick={() => setShowAdd(true)}
-                  className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+                  className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
                 >
                   <Plus size={15} />
                   Add Holiday

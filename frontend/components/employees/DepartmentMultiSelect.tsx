@@ -119,7 +119,7 @@ export default function DepartmentMultiSelect({
       className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] border transition-colors ${
         state === 'none'
           ? 'border-border bg-surface'
-          : 'border-primary bg-primary text-white'
+          : 'border-primary bg-primary text-primary-foreground'
       }`}
     >
       {state === 'all' && <Check size={12} strokeWidth={3} />}
@@ -135,7 +135,7 @@ export default function DepartmentMultiSelect({
       <button type="button" onClick={() => setOpen((o) => !o)} className={triggerCls}>
         <span className="flex-1 min-w-0 truncate text-text-primary">{triggerLabel}</span>
         {selected.length > 0 && (
-          <span className="inline-flex items-center justify-center rounded-full bg-primary px-1.5 min-w-[20px] h-5 text-meta font-medium text-white">
+          <span className="inline-flex items-center justify-center rounded-full bg-primary px-1.5 min-w-[20px] h-5 text-meta font-medium text-primary-foreground">
             {selected.length}
           </span>
         )}

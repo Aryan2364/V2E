@@ -101,7 +101,7 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
           type="button"
           disabled={saving || selected.size === 0}
           onClick={apply}
-          className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-body font-medium text-white bg-warning hover:bg-warning disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+          className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-body font-medium text-primary-foreground bg-warning hover:bg-warning disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
         >
           <Check size={14} />
           Activate {selected.size > 0 ? `${selected.size} Selected` : ''}

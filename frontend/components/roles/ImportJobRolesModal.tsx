@@ -445,7 +445,7 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
   if (!mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
+    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-backdrop p-0 sm:p-4">
       <div className="bg-surface w-full sm:max-w-2xl sm:rounded-card rounded-t-xl shadow-xl max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
@@ -544,7 +544,7 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-4 py-2.5 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+                  className="px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
                 >
                   Done
                 </button>
@@ -568,7 +568,7 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
                   <button
                     onClick={downloadTemplate}
                     disabled={building}
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                   >
                     {building ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
                     {building ? 'Building…' : 'Download Excel template'}
@@ -634,7 +634,7 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
               type="button"
               onClick={handleImport}
               disabled={rows.length === 0 || importing}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {importing && <Loader2 size={15} className="animate-spin" />}
               {importing ? 'Importing…' : `Import${rows.length > 0 ? ` ${rows.length}` : ''}`}

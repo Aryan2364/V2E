@@ -756,7 +756,7 @@ export default function AccessControlPage() {
             onClick={() => setTab(t)}
             className={[
               'px-4 py-2 text-body font-medium transition-colors',
-              tab === t ? 'bg-primary text-white' : 'bg-surface text-text-secondary hover:bg-surface-sunken',
+              tab === t ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-sunken',
             ].join(' ')}
           >
             {t === 'roles' ? 'Roles & Permissions' : 'Subject eligibility'}

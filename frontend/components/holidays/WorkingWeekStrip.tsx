@@ -66,7 +66,7 @@ export default function WorkingWeekStrip({ value, onSave, disabled }: Props) {
                   'h-8 w-8 rounded-full text-meta font-medium border transition-colors duration-150',
                   disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
                   active
-                    ? 'bg-primary text-white border-primary'
+                    ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-surface text-text-muted border-border-light hover:border-primary hover:text-primary-text',
                 ].join(' ')}
               >

@@ -178,7 +178,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
           type="button"
           onClick={apply}
           disabled={submitting || readOnly}
-          className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-[10px] min-h-[44px] sm:min-h-0 text-body font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+          className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-[10px] min-h-[44px] sm:min-h-0 text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
         >
           {submitting ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
           {submitting ? 'Submitting…' : declare ? 'Declare leave' : 'Submit request'}

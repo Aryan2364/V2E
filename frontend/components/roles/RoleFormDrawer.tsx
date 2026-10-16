@@ -204,7 +204,7 @@ export default function RoleFormDrawer({
 
   return createPortal(
     <>
-      {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
+      {open && <div className="fixed inset-0 bg-backdrop z-60" onClick={onClose} />}
 
       <div
         className={`fixed inset-y-0 right-0 z-70 w-full max-w-lg bg-surface border-l border-border-light shadow-menu flex flex-col transition-transform duration-300 ease-in-out ${

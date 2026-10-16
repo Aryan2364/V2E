@@ -66,7 +66,7 @@ export default function HolidayConfigurationsPage() {
               type="button"
               disabled={saving}
               onClick={save}
-              className="flex items-center gap-2 h-10 px-4 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+              className="flex items-center gap-2 h-10 px-4 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
             >
               <Save size={15} />
               {saving ? 'Saving...' : 'Save Settings'}

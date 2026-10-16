@@ -293,7 +293,7 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
               <button
                 type="button"
                 onClick={() => setShowAdd(true)}
-                className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+                className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
               >
                 <Plus size={15} />
                 New Holiday
@@ -321,7 +321,7 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
                 <button
                   type="button"
                   onClick={() => { setScopeSubtree(true); setConfirmOpen(true) }}
-                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-body font-medium text-white bg-danger hover:bg-danger-hover transition-colors"
+                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-body font-medium text-on-danger bg-danger hover:bg-danger-hover transition-colors"
                 >
                   <Trash2 size={14} /> Remove selected
                 </button>
@@ -448,7 +448,7 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
           >
             <Undo2 size={14} /> Undo
           </button>
-          <button type="button" onClick={() => setUndoToast(null)} className="text-text-muted hover:text-white transition-colors"><X size={14} /></button>
+          <button type="button" onClick={() => setUndoToast(null)} className="text-text-muted hover:text-text-primary transition-colors"><X size={14} /></button>
         </div>
       )}
     </div>

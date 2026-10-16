@@ -73,7 +73,7 @@ function UserMultiSelect({ people, selected, onToggle }: { people: Person[]; sel
               className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-body transition-colors ${on ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'}`}
             >
               <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 ${on ? 'bg-primary border-primary' : 'border-border'}`}>
-                {on && <span className="text-white text-meta leading-none">✓</span>}
+                {on && <span className="text-primary-foreground text-meta leading-none">✓</span>}
               </span>
               <span className="text-text-primary">{p.name}</span>
             </button>
@@ -222,7 +222,7 @@ export default function LeaveRulesPage() {
         type="button"
         onClick={save}
         disabled={saving}
-        className="flex items-center gap-2 px-4 py-[10px] text-body font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+        className="flex items-center gap-2 px-4 py-[10px] text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
       >
         {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
         {saving ? 'Saving…' : 'Save leave rules'}

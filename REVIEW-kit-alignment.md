@@ -982,3 +982,59 @@ module's folders was clean at every commit.
 98e87a4, 7a050ee, 6d87a94, 55ed44d, 494b6d2, 7cecdee, f49510b, 113164e, 4149faa, a7ffb6b,
 plus the identity/culture/org-chart PageHeader follow-ups and the DeptInfoPanel spacing fix
 committed after this entry was drafted.
+
+## Settings / People (Wave 2 finishing pass)
+Folders: `frontend/app/settings/**`, `frontend/app/dashboard/{employees,roles}/**`,
+`frontend/components/{employees,roles,role-builder,permissions,holidays,leave,audit}/**`.
+
+### What changed this pass
+- All `bg/text-white`, `bg/text-black` violations fixed except avatar initials (see below):
+  `text-white bg-primary` → `text-primary-foreground bg-primary` (and reverse order),
+  `text-white bg-danger` → `text-on-danger bg-danger`, `bg-warning`/`bg-success` fills with
+  `text-white` → `text-primary-foreground`, hand-rolled backdrop opacities
+  (`bg-black/40`, `/50`, `/20`) → `bg-backdrop`, `bg-white/85` → `bg-surface/85`, a stray
+  `hover:text-white` on toast close buttons → `hover:text-text-primary`.
+- Starting count of `bg/text-white|black` in these folders was 63; after this pass: 7, all
+  of the same kind (see Kept below). `tsc --noEmit` filtered to this folder set: clean.
+
+### Kept for owner decision
+- Avatar initials (`EmployeeNode`, `EmployeeTreeView`, `ReportsToSelect`,
+  `dashboard/employees/page.tsx`, `dashboard/employees/[employeeId]/page.tsx`): `text-white`
+  on a dynamically-generated `avatarColor(name)` background. The kit has no
+  foreground-on-arbitrary-fill token; white is the only reliably readable choice against
+  the generated palette, so these were left as-is rather than mapped to a token that may
+  not contrast correctly against every generated color.
+
+### Not done / follow-up (honest — this pass only completed the colour-token checklist item)
+- **Raw `<button>` → kit `Button` (checklist item 2):** not started. ~176 raw buttons across
+  this folder set still need per-button variant/size classification (§6.1) — this is the
+  largest remaining item and needs file-by-file judgment (primary/secondary/ghost/danger,
+  icon-only + Tooltip + aria-label), not mechanical.
+- **PageHeader (checklist item 1):** not started. 20 `page.tsx` files listed as missing
+  `PageHeader` at scan time still are: `settings/page.tsx`, `settings/organization/{company,
+  culture,employees,employees/[employeeId],structure,roles,roles/[roleId]}/page.tsx`,
+  `settings/organization/holidays/{page,configurations,departments,individuals,leave-rules,
+  org}/page.tsx`, `settings/system/{access-rights,audit-logs}/page.tsx`,
+  `dashboard/employees/{page,[employeeId]/page}.tsx`, `dashboard/roles/{page,[roleId]/page}.tsx`.
+- **Type scale tokens (item 3)** and **Surfaces beyond white/black (item 4 remainder)**: not
+  audited/converted this pass.
+- **States → Skeleton/EmptyState/Badge/Tooltip/Banner/Label/Input/Textarea/checkbox-switch-
+  radio (item 5):** not done.
+- **Overlay → Dialog/Sheet migration (item 6):** not done. Confirmed hand-rolled
+  `fixed inset-0` still present in: `AddEmployeeModal.tsx`, `ImportEmployeesModal.tsx`,
+  `ImportJobRolesModal.tsx`, `components/holidays/ImportHolidaysModal.tsx`,
+  `RoleFormDrawer.tsx`, `RoleInfoPanel.tsx`, `dashboard/employees/[employeeId]/page.tsx`
+  (two overlays) — these are exactly the ones named in the W2 brief as needing Dialog(lg)/
+  Sheet(side right) conversion.
+- Reason: this pass was time-boxed to the mechanical, lowest-risk, highest-confidence item
+  (colour tokens) and verified it fully rather than attempting the much larger button/
+  PageHeader/overlay conversions shallowly. Those remain open and should be picked up next.
+
+### Visual changes the owner will notice
+- Primary/danger/warning/success filled buttons and pills: text color token changed from
+  literal white to `text-primary-foreground`/`text-on-danger` — same visual white in the
+  current theme, but now theme-aware.
+- Modal/drawer backdrops standardized to the kit's `bg-backdrop` token instead of ad-hoc
+  `bg-black/NN` opacities — backdrop darkness may shift slightly to match the kit's value.
+- Toast "dismiss" (X) buttons in holiday screens: hover color changed from white (invisible
+  on a light toast) to `text-text-primary`, fixing what looks like a pre-existing contrast bug.

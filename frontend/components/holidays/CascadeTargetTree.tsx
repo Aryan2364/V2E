@@ -123,7 +123,7 @@ export default function CascadeTargetTree({ departments, originDeptId, originDep
         {/* Origin — locked-checked */}
         <div className="flex items-center gap-2.5 px-3 py-2 bg-surface-sunken">
           <span className="flex items-center justify-center w-4 h-4 rounded-[4px] bg-primary shrink-0">
-            <Check size={12} className="text-white" strokeWidth={3} />
+            <Check size={12} className="text-primary-foreground" strokeWidth={3} />
           </span>
           <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorFor(originDeptId) }} />
           <span className="flex-1 min-w-0 truncate text-body font-medium text-text-primary">{originDeptName}</span>
@@ -149,7 +149,7 @@ export default function CascadeTargetTree({ departments, originDeptId, originDep
                   isChecked ? 'bg-primary border-primary' : 'bg-surface border-border',
                 ].join(' ')}
               >
-                {isChecked && <Check size={12} className="text-white" strokeWidth={3} />}
+                {isChecked && <Check size={12} className="text-primary-foreground" strokeWidth={3} />}
               </span>
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorFor(row.dept.id) }} />
               <span className={`flex-1 min-w-0 truncate text-body ${isChecked ? 'font-medium text-text-primary' : 'text-text-secondary'}`}>

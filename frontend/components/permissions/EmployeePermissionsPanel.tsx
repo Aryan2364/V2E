@@ -40,8 +40,8 @@ function TriToggle({
 }) {
   const opts: { v: OverrideState; label: string; on: string }[] = [
     { v: null, label: 'Inherit', on: 'bg-text-secondary text-surface' },
-    { v: 'grant', label: grantLabel, on: 'bg-success text-white' },
-    { v: 'revoke', label: revokeLabel, on: 'bg-danger text-white' },
+    { v: 'grant', label: grantLabel, on: 'bg-success text-primary-foreground' },
+    { v: 'revoke', label: revokeLabel, on: 'bg-danger text-on-danger' },
   ]
   return (
     <div className="inline-flex rounded-[7px] border border-border-light overflow-hidden">

@@ -33,7 +33,7 @@ export default function RoleInfoPanel({ role, departmentName, canEdit, onEdit, o
 
   return createPortal(
     <>
-      {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
+      {open && <div className="fixed inset-0 bg-backdrop z-60" onClick={onClose} />}
 
       <div
         className={`fixed inset-y-0 right-0 z-70 w-full max-w-lg bg-surface border-l border-border-light shadow-menu flex flex-col transition-transform duration-300 ease-in-out ${
@@ -185,7 +185,7 @@ export default function RoleInfoPanel({ role, departmentName, canEdit, onEdit, o
           <div className="px-4 py-4 border-t border-border-light">
             <button
               onClick={() => onEdit(role)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
             >
               <Pencil size={15} /> Edit job role
             </button>

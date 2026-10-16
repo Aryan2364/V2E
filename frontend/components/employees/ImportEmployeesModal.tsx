@@ -797,7 +797,7 @@ export default function ImportEmployeesModal({
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-60 flex justify-center bg-black/40 ${
+      className={`fixed inset-0 z-60 flex justify-center bg-backdrop ${
         isFullPage ? 'items-stretch p-0' : 'items-end sm:items-center p-0 sm:p-4'
       }`}
     >
@@ -877,7 +877,7 @@ export default function ImportEmployeesModal({
                   <button
                     onClick={downloadTemplate}
                     disabled={building}
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                   >
                     {building ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
                     {building ? 'Building…' : 'Download Excel template'}
@@ -1040,7 +1040,7 @@ export default function ImportEmployeesModal({
                       </p>
                       <button
                         onClick={downloadFailures}
-                        className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-label font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+                        className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
                       >
                         <Download size={14} /> Download {notReady} {rowWord} to fix
                       </button>
@@ -1110,7 +1110,7 @@ export default function ImportEmployeesModal({
               type="button"
               onClick={() => setConfirmOpen(true)}
               disabled={validation.ready === 0 || importing}
-              className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {importing && <Loader2 size={15} className="animate-spin" />}
               {importing ? 'Importing…' : `Import ${validation.ready} ready`}
@@ -1128,7 +1128,7 @@ export default function ImportEmployeesModal({
             </button>
             <button
               onClick={onClose}
-              className="px-4 py-2.5 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
             >
               Done
             </button>
@@ -1147,7 +1147,7 @@ export default function ImportEmployeesModal({
             </button>
             <button
               onClick={onClose}
-              className="px-4 py-2.5 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
             >
               Done
             </button>
@@ -1157,7 +1157,7 @@ export default function ImportEmployeesModal({
 
       {/* Confirm popup */}
       {confirmOpen && validation && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-70 flex items-center justify-center bg-backdrop p-4">
           <div className="bg-surface rounded-card shadow-xl max-w-md w-full p-6">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
@@ -1181,7 +1181,7 @@ export default function ImportEmployeesModal({
               </button>
               <button
                 onClick={handleImport}
-                className="px-4 py-2 rounded-lg text-body font-medium text-white bg-danger hover:bg-danger-hover transition-colors"
+                className="px-4 py-2 rounded-lg text-body font-medium text-on-danger bg-danger hover:bg-danger-hover transition-colors"
               >
                 Yes, import now
               </button>
@@ -1192,7 +1192,7 @@ export default function ImportEmployeesModal({
 
       {/* Undo confirmation */}
       {undoConfirm && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-70 flex items-center justify-center bg-backdrop p-4">
           <div className="bg-surface rounded-card shadow-xl max-w-md w-full p-6">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
@@ -1220,7 +1220,7 @@ export default function ImportEmployeesModal({
                   setUndoConfirm(null)
                   handleUndo(id)
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium text-white bg-danger hover:bg-danger-hover transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium text-on-danger bg-danger hover:bg-danger-hover transition-colors"
               >
                 <Undo2 size={14} /> Yes, undo import
               </button>
@@ -1248,9 +1248,9 @@ function FilterChip({
 }) {
   const palette = {
     slate: { on: 'bg-text-primary text-surface border-text-primary', off: 'bg-surface-control text-text-secondary border-border-light hover:bg-surface-control-pressed' },
-    green: { on: 'bg-success text-white border-success', off: 'bg-success-bg text-success border-success-border hover:bg-success-bg' },
-    red: { on: 'bg-danger text-white border-danger', off: 'bg-danger-bg text-danger border-danger-border hover:bg-danger-bg' },
-    amber: { on: 'bg-warning text-white border-warning-border', off: 'bg-warning-bg text-warning border-warning-border hover:bg-warning-bg' },
+    green: { on: 'bg-success text-primary-foreground border-success', off: 'bg-success-bg text-success border-success-border hover:bg-success-bg' },
+    red: { on: 'bg-danger text-on-danger border-danger', off: 'bg-danger-bg text-danger border-danger-border hover:bg-danger-bg' },
+    amber: { on: 'bg-warning text-primary-foreground border-warning-border', off: 'bg-warning-bg text-warning border-warning-border hover:bg-warning-bg' },
   }[color]
   return (
     <button

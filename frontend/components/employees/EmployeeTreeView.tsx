@@ -256,7 +256,7 @@ function Flow({
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--border-light)" />
       <Panel position="bottom-center">
         <div
-          className={`pointer-events-none select-none rounded-full border border-border-light bg-white/85 px-3 py-1 text-meta font-medium text-text-muted shadow-xs backdrop-blur transition-opacity duration-500 ${
+          className={`pointer-events-none select-none rounded-full border border-border-light bg-surface/85 px-3 py-1 text-meta font-medium text-text-muted shadow-xs backdrop-blur transition-opacity duration-500 ${
             interacted ? 'opacity-0' : 'opacity-100'
           }`}
         >
