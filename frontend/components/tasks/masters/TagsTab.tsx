@@ -5,6 +5,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, type Keyboard
 import { Check, GitMerge, Pencil, Plus, Power, RotateCcw, Search, Trash2, X } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { Button } from '@/components/ui/button'
 import StyledSelect from '@/components/ui/StyledSelect'
 import Tooltip from '@/components/ui/tooltip'
 import TagChip from '@/components/ui/TagChip'
@@ -45,10 +46,6 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 // Below lg each row stacks as a card; "Created by" gets its own column only from xl.
 const GRID = 'lg:grid lg:items-center lg:gap-4 lg:grid-cols-[minmax(0,1fr)_10rem_6rem_10.5rem] xl:grid-cols-[minmax(0,1fr)_10rem_11rem_6rem_10.5rem]'
 
-const primaryBtn =
-  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn bg-primary text-body font-medium text-primary-foreground hover:bg-primary-hover disabled:bg-border disabled:text-secondary disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
-const secondaryBtn =
-  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn border border-primary bg-surface text-body font-medium text-primary hover:bg-slate-50 active:bg-slate-100 disabled:border-border disabled:text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 const fieldCls =
   'w-full rounded-btn border bg-surface px-3 text-body text-heading placeholder:text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-[border-color]'
 
@@ -124,20 +121,17 @@ function RowAction({
   onClick: () => void
 }) {
   const button = (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="icon"
       aria-label={label}
       onClick={onClick}
-      disabled={allowed !== true || busy}
-      className={[
-        'inline-flex h-11 w-11 lg:h-9 lg:w-9 items-center justify-center rounded-btn text-secondary transition-colors',
-        'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary',
-        'disabled:text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed',
-        danger ? 'hover:bg-red-50 hover:text-danger active:bg-red-100' : 'hover:bg-slate-100 hover:text-heading active:bg-slate-200',
-      ].join(' ')}
+      disabled={allowed !== true}
+      loading={busy}
+      className={danger ? 'hover:bg-danger-bg hover:text-danger active:bg-danger-bg' : undefined}
     >
       {icon}
-    </button>
+    </Button>
   )
   if (allowed === true) return <Tooltip label={label}>{button}</Tooltip>
   return (
@@ -479,12 +473,12 @@ function TagFormModal({
           )}
 
           <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
-            <button type="button" onClick={requestClose} disabled={submitting || reactivating} className={secondaryBtn}>
+            <Button type="button" variant="secondary" onClick={requestClose} disabled={submitting || reactivating}>
               Cancel
-            </button>
-            <button type="submit" disabled={submitting || reactivating} className={primaryBtn}>
-              {submitting ? (editing ? 'Saving…' : 'Creating…') : editing ? 'Save changes' : 'Create tag'}
-            </button>
+            </Button>
+            <Button type="submit" disabled={reactivating} loading={submitting} loadingLabel={editing ? 'Saving…' : 'Creating…'}>
+              {editing ? 'Save changes' : 'Create tag'}
+            </Button>
           </div>
         </form>
       </Modal>
@@ -537,12 +531,12 @@ function MergePickModal({
           <StyledSelect value={intoId} onChange={setIntoId} options={options} placeholder="Choose a tag" searchPlaceholder="Search tags…" />
         </div>
         <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
-          <button type="button" onClick={onCancel} className={secondaryBtn}>
+          <Button type="button" variant="secondary" onClick={onCancel}>
             Cancel
-          </button>
-          <button type="button" disabled={!into} onClick={() => into && onContinue(into)} className={primaryBtn}>
+          </Button>
+          <Button type="button" disabled={!into} onClick={() => into && onContinue(into)}>
             Continue
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>
@@ -937,14 +931,9 @@ export function TagsTab({ orgId }: { orgId: string }) {
 
   const createButton = (variant: 'primary' | 'secondary') => (
     <PermissionTooltip allowed={canCreate} reason={CREATE_TAG_REASON}>
-      <button
-        type="button"
-        disabled={canCreate !== true}
-        onClick={() => setForm({ mode: 'create' })}
-        className={variant === 'primary' ? primaryBtn : secondaryBtn}
-      >
+      <Button type="button" variant={variant} disabled={canCreate !== true} onClick={() => setForm({ mode: 'create' })}>
         <Plus size={16} aria-hidden="true" /> Create tag
-      </button>
+      </Button>
     </PermissionTooltip>
   )
 
@@ -957,9 +946,9 @@ export function TagsTab({ orgId }: { orgId: string }) {
         title="Couldn’t load tags"
         line={loadError}
         action={
-          <button type="button" onClick={() => void load()} className={secondaryBtn}>
+          <Button type="button" variant="secondary" onClick={() => void load()}>
             <RotateCcw size={16} aria-hidden="true" /> Retry
-          </button>
+          </Button>
         }
       />
     )
@@ -977,9 +966,9 @@ export function TagsTab({ orgId }: { orgId: string }) {
         title={`No tags match ‘${debounced.trim()}’`}
         line="Check the spelling, or search by another word from the name or description."
         action={
-          <button type="button" onClick={clearSearch} className={secondaryBtn}>
+          <Button type="button" variant="secondary" onClick={clearSearch}>
             Clear search
-          </button>
+          </Button>
         }
       />
     )
@@ -989,9 +978,9 @@ export function TagsTab({ orgId }: { orgId: string }) {
         title="No active tags"
         line={`${plural(inactiveCount, 'inactive tag is', 'inactive tags are')} hidden.`}
         action={
-          <button type="button" onClick={() => setShowInactive(true)} className={secondaryBtn}>
+          <Button type="button" variant="secondary" onClick={() => setShowInactive(true)}>
             Show inactive
-          </button>
+          </Button>
         }
       />
     )
@@ -1046,14 +1035,16 @@ export function TagsTab({ orgId }: { orgId: string }) {
             />
           </Tooltip>
           {query && (
-            <button
+            <Button
               type="button"
+              variant="in-field"
+              size="icon-sm"
               onClick={clearSearch}
               aria-label="Clear search"
-              className="absolute right-1 top-1/2 inline-flex h-9 w-9 lg:h-7 lg:w-7 -translate-y-1/2 items-center justify-center rounded-btn text-secondary hover:bg-slate-100 hover:text-heading focus:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+              className="absolute right-1 top-1/2 -translate-y-1/2"
             >
               <X size={16} aria-hidden="true" />
-            </button>
+            </Button>
           )}
         </div>
         {tags && q && <span className="text-body text-secondary whitespace-nowrap">{plural(visible.length, 'result')}</span>}
