@@ -2190,33 +2190,38 @@ export default function TaskDetailPage() {
                 </div>
                 {/* Editable only when it matters — 2+ assignees — and the viewer can edit. */}
                 {canEdit && assignees.length > 1 && (!editingCompletionMode ? (
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-warning hover:text-warning"
                     onClick={() => {
                       setCompletionModeDraft(task.completion_mode === 'all_must_complete' ? 'all_must_complete' : 'any_can_complete')
                       setEditingCompletionMode(true)
                     }}
-                    className="text-meta font-medium text-warning hover:text-warning outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
                   >
                     Edit
-                  </button>
+                  </Button>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
                       type="button"
+                      size="sm"
+                      className="bg-warning border-warning text-primary-foreground hover:bg-warning hover:border-warning"
                       onClick={handleSaveCompletionMode}
-                      disabled={savingCompletionMode}
-                      className="text-meta font-medium text-primary-foreground bg-warning px-2.5 py-1 rounded-control hover:bg-warning disabled:opacity-60 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                      loading={savingCompletionMode}
+                      loadingLabel="Saving"
                     >
-                      {savingCompletionMode ? 'Saving…' : 'Save'}
-                    </button>
-                    <button
+                      Save
+                    </Button>
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setEditingCompletionMode(false)}
-                      className="text-meta font-medium text-text-secondary hover:text-text-primary"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>
