@@ -7,7 +7,8 @@ import { getBoard, getPosts, createPost, togglePinPost, deletePost, toggleReacti
 import type { BulletinBoard, BulletinPost } from '@/lib/types/communication'
 import { formatDate } from '@/lib/format'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Pin, Trash2 } from 'lucide-react'
+import { Plus, Pin, Trash2 } from 'lucide-react'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 
 const REACTIONS = ['👍', '❤️', '😂', '🎉', '🔥']
 
@@ -69,10 +70,17 @@ export default function BulletinBoardPage() {
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-3xl mx-auto">
-        <Link href="/communication/bulletin" className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary mb-6 w-fit">
-          <ArrowLeft size={16} />
-          Bulletin Boards
-        </Link>
+        <Breadcrumb className="mb-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink render={<Link href="/communication/bulletin" />}>Bulletin boards</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{board?.name ?? "Board"}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {loading ? (
           <div className="flex items-center justify-center py-12">

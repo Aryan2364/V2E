@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { createKnowledgePost } from '@/lib/api/knowledge'
 import Link from 'next/link'
-import { ArrowLeft, X } from 'lucide-react'
+import { X } from 'lucide-react'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import StyledSelect from '@/components/ui/StyledSelect'
 
 export default function NewKnowledgePostPage() {
@@ -53,10 +54,17 @@ export default function NewKnowledgePostPage() {
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-2xl mx-auto">
-        <Link href="/communication/knowledge" className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary mb-6 w-fit">
-          <ArrowLeft size={16} />
-          Back to Knowledge Hub
-        </Link>
+        <Breadcrumb className="mb-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink render={<Link href="/communication/knowledge" />}>Knowledge hub</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>New post</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <div className="bg-surface border border-border-light rounded-card p-6">
           <h1 className="text-xl font-medium text-text-primary mb-6">Share Knowledge</h1>

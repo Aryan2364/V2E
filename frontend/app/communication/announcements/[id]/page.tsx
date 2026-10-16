@@ -7,7 +7,8 @@ import { getAnnouncement, markAnnouncementRead, getReadStatus } from '@/lib/api/
 import type { Announcement } from '@/lib/types/communication'
 import { formatDate, formatDateTime } from '@/lib/format'
 import Link from 'next/link'
-import { ArrowLeft, Pin, Users } from 'lucide-react'
+import { Pin, Users } from 'lucide-react'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 
 const PRIORITY_BADGE: Record<string, string> = {
   urgent: 'bg-danger-bg text-danger',
@@ -52,13 +53,17 @@ export default function AnnouncementDetailPage() {
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-2xl mx-auto">
-        <Link
-          href="/communication/announcements"
-          className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary mb-6 w-fit"
-        >
-          <ArrowLeft size={16} />
-          Back to Announcements
-        </Link>
+        <Breadcrumb className="mb-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink render={<Link href="/communication/announcements" />}>Announcements</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{ann.title}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <div className="bg-surface border border-border-light rounded-card p-6">
           <div className="flex items-center gap-2 mb-3 flex-wrap">
