@@ -68,20 +68,20 @@ export function ActorCell({ entry }: { entry: AuditEntry }) {
   if (entry.actor_type === 'system') {
     return (
       <span
-        className="inline-flex items-center gap-1 text-[12px] font-medium rounded-full px-2 py-0.5"
+        className="inline-flex items-center gap-1 text-meta font-medium rounded-full px-2 py-0.5"
         style={{ backgroundColor: 'var(--primary-subtle)', color: 'var(--text-secondary)' }}
       >
         <Settings2 size={12} /> System
       </span>
     )
   }
-  return <span className="text-sm text-text-primary">{entry.actor?.name ?? '—'}</span>
+  return <span className="text-body text-text-primary">{entry.actor?.name ?? '—'}</span>
 }
 
 export function ActionBadge({ action }: { action: string }) {
   const am = ACTION_META[action] ?? { label: action, bg: 'var(--surface-control)', text: 'var(--text-secondary)' }
   return (
-    <span className="text-[12px] font-medium rounded-full px-2.5 py-0.5" style={{ backgroundColor: am.bg, color: am.text }}>
+    <span className="text-meta font-medium rounded-full px-2.5 py-0.5" style={{ backgroundColor: am.bg, color: am.text }}>
       {am.label}
     </span>
   )
@@ -99,14 +99,14 @@ export function AuditExpandedDetail({ entry }: { entry: AuditEntry }) {
   return (
     <div className="rounded-xl border border-border-light bg-surface p-4">
       {/* Meta strip */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3 text-[13px] text-text-secondary">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3 text-label text-text-secondary">
         <span className="flex items-center gap-1.5">
           <span className="font-medium text-text-secondary">By:</span>
           <ActorCell entry={entry} />
         </span>
         {entry.actor_type === 'system' && entry.trigger_source && (
           <span
-            className="text-[12px] font-medium rounded-full px-2 py-0.5"
+            className="text-meta font-medium rounded-full px-2 py-0.5"
             style={{ backgroundColor: 'var(--surface-control)', color: 'var(--text-secondary)' }}
           >
             Triggered by: {triggerLabel(entry.trigger_source)}
@@ -124,7 +124,7 @@ export function AuditExpandedDetail({ entry }: { entry: AuditEntry }) {
       {Object.keys(changes).length > 0 ? (
         <div className="flex flex-col gap-1.5">
           {Object.entries(changes).map(([field, ch]) => (
-            <div key={field} className="text-sm flex items-start gap-2 flex-wrap">
+            <div key={field} className="text-body flex items-start gap-2 flex-wrap">
               <span className="font-medium text-text-secondary">{humanizeField(field)}:</span>
               <span className="text-danger line-through break-all">{formatValue(ch.before)}</span>
               <span className="text-text-muted">→</span>
@@ -133,7 +133,7 @@ export function AuditExpandedDetail({ entry }: { entry: AuditEntry }) {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-text-muted">No field-level changes recorded.</p>
+        <p className="text-body text-text-muted">No field-level changes recorded.</p>
       )}
     </div>
   )

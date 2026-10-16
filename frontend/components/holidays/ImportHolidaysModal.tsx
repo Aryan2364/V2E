@@ -129,7 +129,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
       <div className="relative w-full max-w-3xl bg-surface rounded-t-xl sm:rounded-card shadow-menu border border-border-light max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-4 pb-4 border-b border-border-light shrink-0">
-          <h2 className="text-[20px] font-medium text-text-primary">Import Holidays</h2>
+          <h2 className="text-section font-medium text-text-primary">Import Holidays</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-md flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors">
             <X size={18} />
           </button>
@@ -141,7 +141,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
             <button
               type="button"
               onClick={downloadTemplate}
-              className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-medium text-text-secondary border border-border bg-surface hover:bg-surface-sunken transition-colors"
+              className="flex items-center gap-2 h-9 px-4 rounded-lg text-body font-medium text-text-secondary border border-border bg-surface hover:bg-surface-sunken transition-colors"
             >
               <Download size={14} />
               Download Template
@@ -149,18 +149,18 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="flex items-center gap-2 h-9 px-4 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
             >
               <Upload size={14} />
               {rows.length > 0 ? 'Replace CSV' : 'Upload CSV'}
             </button>
             <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={handleFile} className="hidden" />
-            <p className="text-xs text-text-muted">Columns: Name, Date (YYYY-MM-DD), Type, Recurring Yearly (yes/no), Description</p>
+            <p className="text-meta text-text-muted">Columns: Name, Date (YYYY-MM-DD), Type, Recurring Yearly (yes/no), Description</p>
           </div>
 
           {/* Error summary */}
           {errorCount > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-danger-bg border border-danger-border rounded-lg text-sm text-danger">
+            <div className="flex items-center gap-2 px-3 py-2 bg-danger-bg border border-danger-border rounded-lg text-body text-danger">
               <AlertCircle size={14} className="shrink-0" />
               {errorCount} row{errorCount !== 1 ? 's' : ''} have errors and will be skipped. Fix in your CSV and re-upload.
             </div>
@@ -168,7 +168,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
 
           {/* Result */}
           {result && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-success-bg border border-success-border rounded-lg text-sm text-success">
+            <div className="flex items-center gap-2 px-3 py-2 bg-success-bg border border-success-border rounded-lg text-body text-success">
               <CheckCircle2 size={14} className="shrink-0" />
               {result.imported} imported, {result.skipped} skipped (duplicates or invalid dates).
             </div>
@@ -177,7 +177,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
           {/* Preview table */}
           {rows.length > 0 && (
             <div className="border border-border-light rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
+              <table className="w-full text-body">
                 <thead className="bg-surface-sunken border-b border-border-light">
                   <tr>
                     <th className="w-10 px-3 py-2.5 text-left">
@@ -188,10 +188,10 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
                         className="accent-primary"
                       />
                     </th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-text-muted uppercase tracking-wide">Name</th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-text-muted uppercase tracking-wide">Date</th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-text-muted uppercase tracking-wide">Type</th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-text-muted uppercase tracking-wide">Recurring</th>
+                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted uppercase tracking-wide">Name</th>
+                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted uppercase tracking-wide">Date</th>
+                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted uppercase tracking-wide">Type</th>
+                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted uppercase tracking-wide">Recurring</th>
                     <th className="w-8 px-2 py-2.5"></th>
                   </tr>
                 </thead>
@@ -209,7 +209,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
                       </td>
                       <td className="px-3 py-2 font-medium text-text-primary">
                         {row.name}
-                        {row._error && <p className="text-[11px] text-danger mt-0.5">{row._error}</p>}
+                        {row._error && <p className="text-meta text-danger mt-0.5">{row._error}</p>}
                       </td>
                       <td className="px-3 py-2 text-text-secondary">{row.date}</td>
                       <td className="px-3 py-2 text-text-secondary capitalize">{row.type}</td>
@@ -229,19 +229,19 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
           {rows.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-border-light rounded-card">
               <Upload size={28} className="text-text-muted mb-3" />
-              <p className="text-sm font-medium text-text-primary">Upload a CSV file to preview holidays</p>
-              <p className="text-xs text-text-secondary mt-1">Download the template above to get started</p>
+              <p className="text-body font-medium text-text-primary">Upload a CSV file to preview holidays</p>
+              <p className="text-meta text-text-secondary mt-1">Download the template above to get started</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 border-t border-border-light">
-          <p className="text-sm text-text-secondary">
+          <p className="text-body text-text-secondary">
             {rows.length > 0 ? <><span className="font-medium text-text-primary">{validSelected}</span> of {rows.length} rows selected</> : 'No file uploaded'}
           </p>
           <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
-            <button type="button" onClick={onClose} className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-primary-text border-2 border-primary rounded-lg hover:bg-primary-subtle transition-colors">
+            <button type="button" onClick={onClose} className="w-full sm:w-auto px-4 py-2 text-body font-medium text-primary-text border-2 border-primary rounded-lg hover:bg-primary-subtle transition-colors">
               {result ? 'Close' : 'Cancel'}
             </button>
             {!result && (
@@ -249,7 +249,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
                 type="button"
                 onClick={handleImport}
                 disabled={importing || validSelected === 0}
-                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                className="w-full sm:w-auto px-4 py-2 text-body font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
               >
                 {importing ? 'Importing...' : `Import ${validSelected} Holiday${validSelected !== 1 ? 's' : ''}`}
               </button>

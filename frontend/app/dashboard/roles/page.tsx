@@ -104,8 +104,8 @@ export default function RolesPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Job Roles</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">
+          <h1 className="text-page-title font-medium text-text-primary leading-tight">Job Roles</h1>
+          <p className="mt-1 text-body text-text-secondary">
             Every job role across the organisation, with its KRAs and KPIs.
           </p>
         </div>
@@ -113,14 +113,14 @@ export default function RolesPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowImport(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               <Upload size={16} />
               Import
             </button>
             <button
               onClick={() => setFormTarget({ mode: 'create' })}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
             >
               <Plus size={16} />
               Add Job Role
@@ -135,7 +135,7 @@ export default function RolesPage() {
             <Building2 size={24} className="text-text-muted" />
           </div>
           <p className="font-medium text-text-primary">No departments yet</p>
-          <p className="text-text-secondary text-sm mt-1">
+          <p className="text-text-secondary text-body mt-1">
             Create departments in the org chart first — job roles live inside them.
           </p>
         </div>
@@ -150,14 +150,14 @@ export default function RolesPage() {
                 placeholder="Search job roles, levels, departments…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-[10px] text-sm rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted"
+                className="w-full pl-8 pr-3 py-[10px] text-body rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted"
               />
             </div>
           </div>
 
           {/* Count + view toggle */}
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-text-secondary">
+            <p className="text-body text-text-secondary">
               {query.trim()
                 ? `${matchCount} of ${roles.length} job roles`
                 : `${roles.length} job role${roles.length !== 1 ? 's' : ''}`}

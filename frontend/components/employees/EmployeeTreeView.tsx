@@ -126,7 +126,7 @@ function FrLabelNode({ data }: { data: { label: string; color: string } }) {
     <div className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border-light px-2.5 py-1 shadow-xs">
       <Zap size={11} className="text-warning" />
       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: data.color }} />
-      <span className="text-[11px] font-medium text-text-secondary">Unlinked · {data.label}</span>
+      <span className="text-meta font-medium text-text-secondary">Unlinked · {data.label}</span>
     </div>
   )
 }
@@ -256,7 +256,7 @@ function Flow({
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--border-light)" />
       <Panel position="bottom-center">
         <div
-          className={`pointer-events-none select-none rounded-full border border-border-light bg-white/85 px-3 py-1 text-[11px] font-medium text-text-muted shadow-xs backdrop-blur transition-opacity duration-500 ${
+          className={`pointer-events-none select-none rounded-full border border-border-light bg-white/85 px-3 py-1 text-meta font-medium text-text-muted shadow-xs backdrop-blur transition-opacity duration-500 ${
             interacted ? 'opacity-0' : 'opacity-100'
           }`}
         >
@@ -316,7 +316,7 @@ function EmpCard({
         </Tooltip>
       )}
       <span
-        className="w-9 h-9 shrink-0 rounded-full inline-flex items-center justify-center text-[11px] font-medium text-white"
+        className="w-9 h-9 shrink-0 rounded-full inline-flex items-center justify-center text-meta font-medium text-white"
         style={{ backgroundColor: color }}
       >
         {initials(name)}
@@ -324,13 +324,13 @@ function EmpCard({
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot[emp.status]}`} />
-          <span className="block text-sm font-medium text-text-primary truncate">{name}</span>
+          <span className="block text-body font-medium text-text-primary truncate">{name}</span>
         </span>
         <span className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-xs text-text-muted truncate">{emp.role?.title ?? 'No role'}</span>
+          <span className="text-meta text-text-muted truncate">{emp.role?.title ?? 'No role'}</span>
           {emp.role?.level && (
             <span
-              className={`inline-flex items-center rounded-full px-1.5 py-px text-[10px] font-medium capitalize shrink-0 ${levelColors[emp.role.level]}`}
+              className={`inline-flex items-center rounded-full px-1.5 py-px text-meta font-medium capitalize shrink-0 ${levelColors[emp.role.level]}`}
             >
               {emp.role.level}
             </span>
@@ -499,7 +499,7 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
     return (
       <div className="bg-surface border border-border-light rounded-card flex flex-col items-center justify-center py-12 text-center">
         <Users size={26} className="text-text-muted mb-2" />
-        <p className="text-sm text-text-muted">No employees to chart.</p>
+        <p className="text-body text-text-muted">No employees to chart.</p>
       </div>
     )
   }
@@ -509,7 +509,7 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
   return (
     <div className="space-y-3">
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-text-secondary">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-meta text-text-secondary">
         <span className="font-medium text-text-muted">Departments:</span>
         {legend.map((d) => (
           <span key={d.id} className="inline-flex items-center gap-1.5">
@@ -534,7 +534,7 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
             <button
               type="button"
               onClick={() => fitRef.current?.()}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border-light bg-surface px-2.5 py-1 text-[11px] font-medium text-text-secondary transition-colors hover:bg-surface-sunken hover:text-text-primary"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border-light bg-surface px-2.5 py-1 text-meta font-medium text-text-secondary transition-colors hover:bg-surface-sunken hover:text-text-primary"
             >
               <Maximize2 size={12} /> Fit
             </button>
@@ -568,13 +568,13 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
 
           {freeRadicalClusters.length > 0 && (
             <div>
-              <div className="flex items-center gap-1.5 mb-2 text-xs font-medium text-text-muted">
+              <div className="flex items-center gap-1.5 mb-2 text-meta font-medium text-text-muted">
                 <Zap size={13} className="text-warning" /> Free radicals (no manager &amp; no reports)
               </div>
               <div className="space-y-4">
                 {freeRadicalClusters.map((c) => (
                   <div key={c.dept?.id ?? 'none'}>
-                    <div className="flex items-center gap-1.5 mb-1.5 text-xs text-text-secondary">
+                    <div className="flex items-center gap-1.5 mb-1.5 text-meta text-text-secondary">
                       <span
                         className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: c.dept ? colorFor(c.dept.id) : 'var(--text-muted)' }}

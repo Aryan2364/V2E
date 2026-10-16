@@ -78,7 +78,7 @@ export default function RolesTableView({
       render: (r) => (
         <span
           className={[
-            'inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize',
+            'inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium capitalize',
             levelColors[r.level],
           ].join(' ')}
         >
@@ -163,7 +163,7 @@ export default function RolesTableView({
           <p className="font-medium text-text-primary">
             {query.trim() ? 'No job roles match your search' : 'No job roles yet'}
           </p>
-          <p className="text-text-secondary text-sm mt-1">
+          <p className="text-text-secondary text-body mt-1">
             {query.trim() ? 'Try a different name, level, or department.' : 'Add a job role to get started.'}
           </p>
         </div>

@@ -26,18 +26,18 @@ export default function KpiBuilder({ items, onChange, readOnly }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-text-primary">Key Performance Indicators (KPI)</h4>
+        <h4 className="text-body font-medium text-text-primary">Key Performance Indicators (KPI)</h4>
         {!readOnly && (
-          <button type="button" onClick={add} className="flex items-center gap-1 text-xs text-primary-text hover:underline font-medium">
+          <button type="button" onClick={add} className="flex items-center gap-1 text-meta text-primary-text hover:underline font-medium">
             <Plus size={14} /> Add KPI
           </button>
         )}
       </div>
       {items.length > 0 && (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body">
             <thead>
-              <tr className="text-xs text-text-secondary border-b border-border-light">
+              <tr className="text-meta text-text-secondary border-b border-border-light">
                 <th className="text-left py-2 font-medium">Title</th>
                 <th className="text-left py-2 font-medium">Metric</th>
                 <th className="text-left py-2 font-medium">Target</th>
@@ -51,7 +51,7 @@ export default function KpiBuilder({ items, onChange, readOnly }: Props) {
                   {(['title', 'metric', 'target', 'unit'] as const).map((field) => (
                     <td key={field} className="py-1 pr-2">
                       <input
-                        className="w-full border border-border rounded-xs px-2 py-1 text-xs text-text-primary focus:outline-hidden focus:border-primary"
+                        className="w-full border border-border rounded-xs px-2 py-1 text-meta text-text-primary focus:outline-hidden focus:border-primary"
                         placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
                         value={item[field]}
                         onChange={(e) => update(i, field, e.target.value)}
@@ -72,7 +72,7 @@ export default function KpiBuilder({ items, onChange, readOnly }: Props) {
           </table>
         </div>
       )}
-      {items.length === 0 && <p className="text-xs text-text-muted">No KPIs added yet.</p>}
+      {items.length === 0 && <p className="text-meta text-text-muted">No KPIs added yet.</p>}
     </div>
   );
 }

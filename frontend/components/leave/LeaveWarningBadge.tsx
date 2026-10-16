@@ -46,7 +46,7 @@ export default function LeaveWarningBadge({ availability, deadline, today }: Pro
   return (
     <div className="flex items-start gap-2 mt-1.5 px-3 py-2 rounded-lg bg-warning-bg border border-warning-border">
       <CalendarOff size={14} className="text-warning shrink-0 mt-0.5" />
-      <div className="text-xs text-warning font-medium space-y-0.5">
+      <div className="text-meta text-warning font-medium space-y-0.5">
         {onDeadline.length > 0 && (
           <p>
             On the deadline: <span className="font-medium">{onDeadline.join(', ')}</span>

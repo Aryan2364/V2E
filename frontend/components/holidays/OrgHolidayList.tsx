@@ -76,7 +76,7 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
   }
 
   if (holidays.length === 0) {
-    return <p className="text-sm text-text-muted py-6 text-center">{emptyText}</p>
+    return <p className="text-body text-text-muted py-6 text-center">{emptyText}</p>
   }
 
   return (
@@ -101,7 +101,7 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
               <input
                 value={editing.name}
                 onChange={(e) => setEditing((s) => s ? { ...s, name: e.target.value } : s)}
-                className="flex-1 h-8 px-2 rounded-md border border-border text-sm text-text-primary bg-surface focus:border-primary outline-hidden"
+                className="flex-1 h-8 px-2 rounded-md border border-border text-body text-text-primary bg-surface focus:border-primary outline-hidden"
               />
               <button
                 type="button"
@@ -140,18 +140,18 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
 
             {/* Date chip — weekday over day/month (start date) */}
             <div className="shrink-0 w-14 flex flex-col items-center justify-center rounded-lg border border-border-light bg-surface-sunken py-1">
-              <span className="text-[10px] font-medium tracking-wide text-text-muted leading-tight">{weekday}</span>
-              <span className="text-[13px] font-medium text-text-primary leading-tight">{dayMonth}</span>
+              <span className="text-meta font-medium tracking-wide text-text-muted leading-tight">{weekday}</span>
+              <span className="text-label font-medium text-text-primary leading-tight">{dayMonth}</span>
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-text-primary truncate">{h.name}</p>
+              <p className="text-body font-medium text-text-primary truncate">{h.name}</p>
               {isRange && (
-                <p className="text-xs text-text-muted truncate">{dayMonth} – {endDayMonth}</p>
+                <p className="text-meta text-text-muted truncate">{dayMonth} – {endDayMonth}</p>
               )}
               {h.inherited && (
                 <span
-                  className={`mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2 py-0.5 border ${
+                  className={`mt-0.5 inline-flex items-center gap-1 text-meta font-medium rounded-full px-2 py-0.5 border ${
                     h.origin === 'org'
                       ? 'text-text-secondary bg-surface-control border-border-light'
                       : 'text-text-secondary bg-surface-control border-border-light'
@@ -163,7 +163,7 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
               )}
               {!h.inherited && (h.cascade_target_count ?? 0) > 0 && (
                 <Tooltip label="Cascaded to sub-departments">
-                  <span className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-text-secondary">
+                  <span className="mt-0.5 inline-flex items-center gap-1 text-meta font-medium text-text-secondary">
                     <GitBranch size={11} className="text-text-muted" />
                     Shared with {h.cascade_target_count} sub-department{h.cascade_target_count === 1 ? '' : 's'}
                   </span>
@@ -171,11 +171,11 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
               )}
             </div>
 
-            <span className={`shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full border ${TYPE_COLORS[h.type]}`}>
+            <span className={`shrink-0 text-meta font-medium px-2 py-0.5 rounded-full border ${TYPE_COLORS[h.type]}`}>
               {typeLabel(h.type)}
             </span>
             {h.status === 'pending_review' && (
-              <span className="shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-warning-bg text-warning border-warning-border">
+              <span className="shrink-0 text-meta font-medium px-2 py-0.5 rounded-full border bg-warning-bg text-warning border-warning-border">
                 pending
               </span>
             )}
@@ -236,7 +236,7 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
       title="Delete holiday"
       size="sm"
     >
-      <p className="text-sm text-text-primary">
+      <p className="text-body text-text-primary">
         Delete <span className="font-medium">{toDelete?.name}</span>? This can&apos;t be undone.
       </p>
       <div className="flex items-center justify-end gap-2 mt-4">

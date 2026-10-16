@@ -20,7 +20,7 @@ export default function HolidayConfigCard({ action, onActionChange, disabled }: 
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-sm font-medium text-text-primary mb-2">When a deadline falls on a holiday…</p>
+        <p className="text-body font-medium text-text-primary mb-2">When a deadline falls on a holiday…</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {ACTIONS.map((a) => (
             <button
@@ -36,8 +36,8 @@ export default function HolidayConfigCard({ action, onActionChange, disabled }: 
                   : 'border-border-light bg-surface hover:border-primary/40',
               ].join(' ')}
             >
-              <p className={`text-sm font-medium ${action === a.value ? 'text-primary-text' : 'text-text-primary'}`}>{a.label}</p>
-              <p className="text-xs text-text-secondary mt-0.5">{a.desc}</p>
+              <p className={`text-body font-medium ${action === a.value ? 'text-primary-text' : 'text-text-primary'}`}>{a.label}</p>
+              <p className="text-meta text-text-secondary mt-0.5">{a.desc}</p>
             </button>
           ))}
         </div>
@@ -45,7 +45,7 @@ export default function HolidayConfigCard({ action, onActionChange, disabled }: 
 
       <div className="flex items-start gap-2.5 rounded-lg bg-surface-sunken border border-border-light p-3">
         <Info size={16} className="text-primary-text mt-0.5 shrink-0" />
-        <p className="text-sm text-text-secondary">
+        <p className="text-body text-text-secondary">
           Holidays now cascade automatically: <span className="font-medium text-text-primary">org holidays apply to every department and employee</span>,
           departments and individuals add their own on top, and any level can remove the ones it doesn&apos;t observe.
           There is no priority setting to configure.

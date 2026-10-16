@@ -47,12 +47,12 @@ export default function HolidayConfigurationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-medium text-text-primary">Configurations</h1>
-        <p className="text-[15px] text-text-secondary mt-1">Configure how deadlines across tasks, recurring tasks, workflows and tickets behave when they fall on a holiday.</p>
+        <h1 className="text-page-title font-medium text-text-primary">Configurations</h1>
+        <p className="text-body text-text-secondary mt-1">Configure how deadlines across tasks, recurring tasks, workflows and tickets behave when they fall on a holiday.</p>
       </div>
 
       <div className="bg-surface border border-border-light rounded-card p-6 shadow-card">
-        <h2 className="text-[18px] font-medium text-text-primary mb-4">Behavior</h2>
+        <h2 className="text-section font-medium text-text-primary mb-4">Behavior</h2>
 
         <HolidayConfigCard
           action={config.holiday_on_task_action}
@@ -66,7 +66,7 @@ export default function HolidayConfigurationsPage() {
               type="button"
               disabled={saving}
               onClick={save}
-              className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+              className="flex items-center gap-2 h-10 px-4 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
             >
               <Save size={15} />
               {saving ? 'Saving...' : 'Save Settings'}

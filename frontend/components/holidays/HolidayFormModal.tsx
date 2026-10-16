@@ -120,7 +120,7 @@ export default function HolidayFormModal({
         {/* Span selector — single day vs range */}
         {allowRange && (
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1.5">Duration</label>
+            <label className="block text-meta font-medium text-text-secondary mb-1.5">Duration</label>
             <div className="inline-flex p-0.5 rounded-lg bg-surface-control border border-border-light">
               {(['single', 'range'] as Span[]).map((s) => (
                 <button
@@ -128,7 +128,7 @@ export default function HolidayFormModal({
                   type="button"
                   onClick={() => setSpan(s)}
                   className={[
-                    'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                    'px-3 py-1.5 rounded-md text-body font-medium transition-colors',
                     span === s ? 'bg-surface text-primary-text shadow-card' : 'text-text-muted hover:text-text-primary',
                   ].join(' ')}
                 >
@@ -140,26 +140,26 @@ export default function HolidayFormModal({
         )}
 
         <div>
-          <label className="block text-xs font-medium text-text-secondary mb-1">Name *</label>
+          <label className="block text-meta font-medium text-text-secondary mb-1">Name *</label>
           <input
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
             placeholder="e.g. Republic Day"
             autoFocus
-            className="w-full h-[42px] px-3 rounded-lg border border-border bg-surface-sunken text-[15px] text-text-primary placeholder:text-text-muted focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
+            className="w-full h-[42px] px-3 rounded-lg border border-border bg-surface-sunken text-body text-text-primary placeholder:text-text-muted focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
           />
         </div>
 
         {/* Date(s) */}
         {span === 'single' ? (
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1">Date *</label>
+            <label className="block text-meta font-medium text-text-secondary mb-1">Date *</label>
             <DatePicker value={form.date} onChange={(iso) => set('date', iso)} placeholder="Select date" />
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">Start date *</label>
+              <label className="block text-meta font-medium text-text-secondary mb-1">Start date *</label>
               <DatePicker
                 value={form.date}
                 onChange={(iso) => set('date', iso)}
@@ -168,7 +168,7 @@ export default function HolidayFormModal({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">End date *</label>
+              <label className="block text-meta font-medium text-text-secondary mb-1">End date *</label>
               <DatePicker
                 value={form.end_date}
                 onChange={(iso) => set('end_date', iso)}
@@ -181,7 +181,7 @@ export default function HolidayFormModal({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1">Type</label>
+            <label className="block text-meta font-medium text-text-secondary mb-1">Type</label>
             <StyledSelect
               value={form.type}
               onChange={(v) => set('type', v as HolidayType)}
@@ -189,12 +189,12 @@ export default function HolidayFormModal({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-1">Description</label>
+            <label className="block text-meta font-medium text-text-secondary mb-1">Description</label>
             <input
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
               placeholder="Optional"
-              className="w-full h-[42px] px-3 rounded-lg border border-border bg-surface-sunken text-[15px] text-text-primary placeholder:text-text-muted focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
+              className="w-full h-[42px] px-3 rounded-lg border border-border bg-surface-sunken text-body text-text-primary placeholder:text-text-muted focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
             />
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function HolidayFormModal({
             onChange={(e) => set('is_recurring_yearly', e.target.checked)}
             className="w-4 h-4 accent-primary"
           />
-          <span className="text-sm text-text-secondary">Repeat yearly{span === 'range' ? ' on these dates' : ' on this date'}</span>
+          <span className="text-body text-text-secondary">Repeat yearly{span === 'range' ? ' on these dates' : ' on this date'}</span>
         </label>
 
         {showCascade && (
@@ -219,7 +219,7 @@ export default function HolidayFormModal({
           />
         )}
 
-        {error && <p className="text-xs text-danger">{error}</p>}
+        {error && <p className="text-meta text-danger">{error}</p>}
 
         <div className="flex gap-2 justify-end pt-1">
           <Button variant="secondary" onClick={close} disabled={saving}>Cancel</Button>

@@ -94,7 +94,7 @@ export default function CascadeTargetTree({ departments, originDeptId, originDep
 
   return (
     <div>
-      <label className="block text-xs font-medium text-text-secondary mb-1.5">Apply to sub-departments</label>
+      <label className="block text-meta font-medium text-text-secondary mb-1.5">Apply to sub-departments</label>
 
       {/* Quick selectors — All / Some / None */}
       <div className="inline-flex p-0.5 rounded-lg bg-surface-control border border-border-light mb-2">
@@ -107,7 +107,7 @@ export default function CascadeTargetTree({ departments, originDeptId, originDep
               onClick={() => (q.key === 'all' ? setAll() : q.key === 'none' ? setNone() : undefined)}
               aria-pressed={active}
               className={[
-                'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                'px-3 py-1.5 rounded-md text-body font-medium transition-colors',
                 active ? 'bg-surface text-primary-text shadow-card' : 'text-text-muted hover:text-text-primary',
                 q.key === 'some' ? 'cursor-default' : '',
               ].join(' ')}
@@ -126,8 +126,8 @@ export default function CascadeTargetTree({ departments, originDeptId, originDep
             <Check size={12} className="text-white" strokeWidth={3} />
           </span>
           <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorFor(originDeptId) }} />
-          <span className="flex-1 min-w-0 truncate text-sm font-medium text-text-primary">{originDeptName}</span>
-          <span className="shrink-0 inline-flex items-center gap-1 text-[11px] text-text-muted">
+          <span className="flex-1 min-w-0 truncate text-body font-medium text-text-primary">{originDeptName}</span>
+          <span className="shrink-0 inline-flex items-center gap-1 text-meta text-text-muted">
             <Lock size={11} /> this department
           </span>
         </div>
@@ -152,7 +152,7 @@ export default function CascadeTargetTree({ departments, originDeptId, originDep
                 {isChecked && <Check size={12} className="text-white" strokeWidth={3} />}
               </span>
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorFor(row.dept.id) }} />
-              <span className={`flex-1 min-w-0 truncate text-sm ${isChecked ? 'font-medium text-text-primary' : 'text-text-secondary'}`}>
+              <span className={`flex-1 min-w-0 truncate text-body ${isChecked ? 'font-medium text-text-primary' : 'text-text-secondary'}`}>
                 {row.dept.name}
               </span>
             </button>
@@ -161,7 +161,7 @@ export default function CascadeTargetTree({ departments, originDeptId, originDep
       </div>
 
       {/* Plain-English summary */}
-      <p className="mt-2 text-xs text-text-secondary leading-relaxed">
+      <p className="mt-2 text-meta text-text-secondary leading-relaxed">
         <span className="font-medium text-text-secondary">Applies to</span> {summary}.
       </p>
     </div>

@@ -39,7 +39,7 @@ interface DeptGroup {
 function Avatar({ name, color }: { name?: string; color: string }) {
   return (
     <span
-      className="w-7 h-7 shrink-0 rounded-full inline-flex items-center justify-center text-[10px] font-medium text-white"
+      className="w-7 h-7 shrink-0 rounded-full inline-flex items-center justify-center text-meta font-medium text-white"
       style={{ backgroundColor: color }}
     >
       <span className="translate-y-[0.5px]">{initials(name)}</span>
@@ -145,7 +145,7 @@ export default function ReportsToSelect({
   }
 
   const triggerCls =
-    'w-full flex items-center gap-2.5 border border-border rounded-lg px-3 py-2 text-[15px] text-left bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
+    'w-full flex items-center gap-2.5 border border-border rounded-lg px-3 py-2 text-body text-left bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
 
   const PersonRow = ({ p }: { p: EmployeeProfile }) => {
     const isSel = p.user_id === value
@@ -159,10 +159,10 @@ export default function ReportsToSelect({
       >
         <Avatar name={p.user?.name} color={colorFor(p.department_id)} />
         <span className="flex-1 min-w-0">
-          <span className="block text-sm font-medium text-text-primary truncate">
+          <span className="block text-body font-medium text-text-primary truncate">
             {p.user?.name ?? 'Unknown'}
           </span>
-          <span className="block text-xs text-text-muted truncate">
+          <span className="block text-meta text-text-muted truncate">
             {p.role?.title ?? 'No role'}
             {p.department?.name ? ` · ${p.department.name}` : ''}
           </span>
@@ -176,10 +176,10 @@ export default function ReportsToSelect({
     <div>
       <div className="sticky top-0 z-1 flex items-center gap-2 px-3 py-1.5 bg-surface-control border-y border-border-light">
         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: colorFor(g.dept.id) }} />
-        <span className="text-[11px] font-medium uppercase tracking-wide text-text-secondary truncate">
+        <span className="text-meta font-medium uppercase tracking-wide text-text-secondary truncate">
           {g.dept.name}
         </span>
-        <span className="ml-auto text-[11px] text-text-muted">{g.people.length}</span>
+        <span className="ml-auto text-meta text-text-muted">{g.people.length}</span>
       </div>
       {g.people.map((p) => (
         <PersonRow key={p.id} p={p} />
@@ -199,10 +199,10 @@ export default function ReportsToSelect({
           <>
             <Avatar name={selected.user?.name} color={colorFor(selected.department_id)} />
             <span className="flex-1 min-w-0">
-              <span className="block text-sm font-medium text-text-primary truncate">
+              <span className="block text-body font-medium text-text-primary truncate">
                 {selected.user?.name ?? 'Unknown'}
               </span>
-              <span className="block text-xs text-text-muted truncate">
+              <span className="block text-meta text-text-muted truncate">
                 {selected.role?.title ?? 'No role'}
                 {selected.department?.name ? ` · ${selected.department.name}` : ''}
               </span>
@@ -214,8 +214,8 @@ export default function ReportsToSelect({
               <UserX size={14} />
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block text-sm font-medium text-text-primary truncate">No manager</span>
-              <span className="block text-xs text-text-muted truncate">Reports to no one</span>
+              <span className="block text-body font-medium text-text-primary truncate">No manager</span>
+              <span className="block text-meta text-text-muted truncate">Reports to no one</span>
             </span>
           </>
         ) : (
@@ -242,7 +242,7 @@ export default function ReportsToSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search people…"
-              className="w-full pl-8 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+              className="w-full pl-8 pr-8 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden"
               autoFocus
             />
             {query && (
@@ -270,14 +270,14 @@ export default function ReportsToSelect({
                   <UserX size={14} />
                 </span>
                 <span className="flex-1 min-w-0">
-                  <span className="block text-sm font-medium text-text-secondary">No manager</span>
-                  <span className="block text-xs text-text-muted">Reports to no one</span>
+                  <span className="block text-body font-medium text-text-secondary">No manager</span>
+                  <span className="block text-meta text-text-muted">Reports to no one</span>
                 </span>
                 {touched && !value && <Check size={15} className="text-primary-text shrink-0" />}
               </button>
 
               {fSuggested.length > 0 && (
-              <div className="px-3 pt-2 pb-1 text-[10px] font-medium uppercase tracking-wider text-primary-text">
+              <div className="px-3 pt-2 pb-1 text-meta font-medium uppercase tracking-wider text-primary-text">
                 Reporting line
               </div>
             )}
@@ -286,7 +286,7 @@ export default function ReportsToSelect({
             ))}
 
             {fOthers.length > 0 && (
-              <div className="px-3 pt-2 pb-1 text-[10px] font-medium uppercase tracking-wider text-text-muted">
+              <div className="px-3 pt-2 pb-1 text-meta font-medium uppercase tracking-wider text-text-muted">
                 Other departments
               </div>
             )}
@@ -295,7 +295,7 @@ export default function ReportsToSelect({
             ))}
 
             {noResults && (
-              <p className="px-3 py-6 text-center text-sm text-text-muted">No people found.</p>
+              <p className="px-3 py-6 text-center text-body text-text-muted">No people found.</p>
             )}
             </div>
           </div>,

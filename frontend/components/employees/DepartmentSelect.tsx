@@ -92,7 +92,7 @@ export default function DepartmentSelect({
   }
 
   const triggerCls =
-    'w-full flex items-center gap-2.5 border border-border rounded-lg px-3 py-2.5 text-[15px] text-left bg-surface-sunken hover:bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
+    'w-full flex items-center gap-2.5 border border-border rounded-lg px-3 py-2.5 text-body text-left bg-surface-sunken hover:bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
 
   const lockOf = (id: string) => (id === value ? null : lockedReason?.(id) ?? null)
   const allLocked =
@@ -108,8 +108,8 @@ export default function DepartmentSelect({
     >
       <span className="w-2.5 h-2.5 rounded-full shrink-0 opacity-40" style={{ backgroundColor: colorFor(dept.id) }} />
       <span className="flex-1 min-w-0">
-        <span className="block text-sm font-medium text-text-muted truncate">{dept.name}</span>
-        <span className="block text-[11px] text-text-muted truncate">{sub ? `${reason} · ${sub}` : reason}</span>
+        <span className="block text-body font-medium text-text-muted truncate">{dept.name}</span>
+        <span className="block text-meta text-text-muted truncate">{sub ? `${reason} · ${sub}` : reason}</span>
       </span>
       <Lock size={13} className="text-text-muted shrink-0" />
     </div>
@@ -126,7 +126,7 @@ export default function DepartmentSelect({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search departments…"
-          className="w-full pl-8 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+          className="w-full pl-8 pr-8 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden"
           autoFocus
         />
         {query && (
@@ -143,7 +143,7 @@ export default function DepartmentSelect({
 
       <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
         {allLocked && !q && (
-          <p className="px-3 pt-2 pb-1 text-[11px] text-text-muted">Every department is already covered by another rule.</p>
+          <p className="px-3 pt-2 pb-1 text-meta text-text-muted">Every department is already covered by another rule.</p>
         )}
         {allLabel && !q && (
           <button
@@ -155,7 +155,7 @@ export default function DepartmentSelect({
           >
             <span className="w-2.5 h-2.5 rounded-full shrink-0 border border-border" />
             <span
-              className={`flex-1 min-w-0 truncate text-sm font-medium ${
+              className={`flex-1 min-w-0 truncate text-body font-medium ${
                 !value ? 'text-primary-text' : 'text-text-primary'
               }`}
             >
@@ -168,11 +168,11 @@ export default function DepartmentSelect({
         {departments.length === 0 ? (
           <div className="flex flex-col items-center gap-1 py-8 text-center">
             <Building2 size={22} className="text-text-muted" />
-            <p className="text-xs text-text-muted">No departments yet.</p>
+            <p className="text-meta text-text-muted">No departments yet.</p>
           </div>
         ) : q ? (
           filtered.length === 0 ? (
-            <p className="px-3 py-6 text-center text-sm text-text-muted">No departments found.</p>
+            <p className="px-3 py-6 text-center text-body text-text-muted">No departments found.</p>
           ) : (
             filtered.map((d) => {
               const path = ancestorsOf(departments, d.id)
@@ -196,11 +196,11 @@ export default function DepartmentSelect({
                     style={{ backgroundColor: colorFor(d.id) }}
                   />
                   <span className="flex-1 min-w-0">
-                    <span className="block text-sm font-medium text-text-primary truncate">
+                    <span className="block text-body font-medium text-text-primary truncate">
                       {d.name}
                     </span>
                     {path && (
-                      <span className="block text-xs text-text-muted truncate">{path}</span>
+                      <span className="block text-meta text-text-muted truncate">{path}</span>
                     )}
                   </span>
                   {isSel && <Check size={15} className="text-primary-text shrink-0" />}
@@ -228,7 +228,7 @@ export default function DepartmentSelect({
                   style={{ backgroundColor: colorFor(dept.id) }}
                 />
                 <span
-                  className={`flex-1 min-w-0 truncate text-sm font-medium ${
+                  className={`flex-1 min-w-0 truncate text-body font-medium ${
                     isSel ? 'text-primary-text' : 'text-text-primary'
                   }`}
                 >

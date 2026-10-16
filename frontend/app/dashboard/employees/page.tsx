@@ -54,7 +54,7 @@ function StatusBadge({ status }: { status: EmployeeStatus }) {
   const cfg = statusConfig[status] ?? statusConfig.inactive
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.bg} ${cfg.text}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium ${cfg.bg} ${cfg.text}`}
     >
       {cfg.label}
     </span>
@@ -66,7 +66,7 @@ function StatusBadge({ status }: { status: EmployeeStatus }) {
 function Avatar({ name }: { name: string }) {
   return (
     <div
-      className={`w-9 h-9 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-xs font-medium shrink-0`}
+      className={`w-9 h-9 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}
     >
       {getInitials(name)}
     </div>
@@ -84,7 +84,7 @@ function EmptyState({ filtered }: { filtered: boolean }) {
       <p className="font-medium text-text-primary">
         {filtered ? 'No employees match your filter' : 'No employees yet'}
       </p>
-      <p className="text-text-secondary text-sm mt-1">
+      <p className="text-text-secondary text-body mt-1">
         {filtered
           ? 'Try adjusting your search or department filter.'
           : 'Employees will appear here once added.'}
@@ -346,7 +346,7 @@ export default function EmployeesPage() {
             <Avatar name={name} />
             <div className="min-w-0">
               <p className="font-medium text-text-primary truncate">{name}</p>
-              <p className="text-xs text-text-secondary truncate">{email}</p>
+              <p className="text-meta text-text-secondary truncate">{email}</p>
             </div>
           </div>
         )
@@ -388,7 +388,7 @@ export default function EmployeesPage() {
             e.stopPropagation()
             markNavigating()
           }}
-          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-primary-text text-xs font-medium hover:text-primary-text transition-colors rounded-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-primary-text text-meta font-medium hover:text-primary-text transition-colors rounded-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
         >
           View
           <ChevronRight size={13} />
@@ -404,8 +404,8 @@ export default function EmployeesPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Employees</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">
+          <h1 className="text-page-title font-medium text-text-primary leading-tight">Employees</h1>
+          <p className="mt-1 text-body text-text-secondary">
             Browse and manage all employee profiles.
           </p>
         </div>
@@ -413,14 +413,14 @@ export default function EmployeesPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowImport(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               <Upload size={16} />
               Import
             </button>
             <button
               onClick={() => setShowAdd(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
             >
               <UserPlus size={16} />
               Add Employee
@@ -435,8 +435,8 @@ export default function EmployeesPage() {
           <div className="flex items-start gap-3">
             <AlertTriangle size={20} className="text-warning shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-warning">Profile Setup Required</p>
-              <p className="text-xs text-warning mt-0.5">
+              <p className="text-body font-medium text-warning">Profile Setup Required</p>
+              <p className="text-meta text-warning mt-0.5">
                 You do not have an employee profile in the directory yet. Set up your profile to assign yourself to a department, role, and enable full task assignments.
               </p>
             </div>
@@ -447,7 +447,7 @@ export default function EmployeesPage() {
               setPrefillSelf(true)
               setShowAdd(true)
             }}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium text-white bg-warning hover:bg-warning transition-colors whitespace-nowrap self-start sm:self-center"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-meta font-medium text-white bg-warning hover:bg-warning transition-colors whitespace-nowrap self-start sm:self-center"
           >
             Setup Profile
           </button>
@@ -466,7 +466,7 @@ export default function EmployeesPage() {
             placeholder="Search by name or email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-[10px] text-sm rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted"
+            className="w-full pl-8 pr-3 py-[10px] text-body rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted"
           />
         </div>
         <div className="w-full sm:w-60">
@@ -481,7 +481,7 @@ export default function EmployeesPage() {
 
       {/* Count + view toggle */}
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-text-secondary">
+        <p className="text-body text-text-secondary">
           {filtered.length} employee{filtered.length !== 1 ? 's' : ''}
         </p>
         <ViewToggle value={view} onChange={setView} />

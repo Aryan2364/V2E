@@ -38,8 +38,8 @@ function Card({ title, description, children }: { title: string; description?: s
   return (
     <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
       <div>
-        <h3 className="text-[15px] font-medium text-text-primary">{title}</h3>
-        {description && <p className="text-[13px] text-text-secondary mt-0.5 leading-relaxed">{description}</p>}
+        <h3 className="text-body font-medium text-text-primary">{title}</h3>
+        {description && <p className="text-label text-text-secondary mt-0.5 leading-relaxed">{description}</p>}
       </div>
       {children}
     </div>
@@ -57,11 +57,11 @@ function UserMultiSelect({ people, selected, onToggle }: { people: Person[]; sel
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search people…"
-          className="w-full pl-8 pr-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+          className="w-full pl-8 pr-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden"
         />
       </div>
       <div className="max-h-48 overflow-y-auto divide-y divide-surface-control">
-        {filtered.length === 0 && <p className="px-3 py-3 text-xs text-text-muted">No people found.</p>}
+        {filtered.length === 0 && <p className="px-3 py-3 text-meta text-text-muted">No people found.</p>}
         {filtered.map((p) => {
           const on = selected.includes(p.user_id)
           return (
@@ -69,10 +69,10 @@ function UserMultiSelect({ people, selected, onToggle }: { people: Person[]; sel
               key={p.user_id}
               type="button"
               onClick={() => onToggle(p.user_id)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors ${on ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'}`}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-body transition-colors ${on ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'}`}
             >
               <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 ${on ? 'bg-primary border-primary' : 'border-border'}`}>
-                {on && <span className="text-white text-[10px] leading-none">✓</span>}
+                {on && <span className="text-white text-meta leading-none">✓</span>}
               </span>
               <span className="text-text-primary">{p.name}</span>
             </button>
@@ -143,7 +143,7 @@ export default function LeaveRulesPage() {
 
   return (
     <div className="space-y-4 max-w-3xl">
-      <div className="flex items-start gap-2 rounded-card border border-primary-border bg-primary-subtle p-4 text-sm text-text-primary">
+      <div className="flex items-start gap-2 rounded-card border border-primary-border bg-primary-subtle p-4 text-body text-text-primary">
         <Info size={16} className="text-primary-text shrink-0 mt-0.5" />
         <p>
           These rules govern how employees apply for leave from <span className="font-medium">My Profile → Leave</span>, and approvers decide requests under <span className="font-medium">Work → Leave Approvals</span>.
@@ -164,8 +164,8 @@ export default function LeaveRulesPage() {
                 className="accent-primary mt-0.5"
               />
               <span>
-                <span className="text-sm font-medium text-text-primary">{m.label}</span>
-                <span className="block text-xs text-text-secondary">{m.hint}</span>
+                <span className="text-body font-medium text-text-primary">{m.label}</span>
+                <span className="block text-meta text-text-secondary">{m.hint}</span>
               </span>
             </label>
           ))}
@@ -173,7 +173,7 @@ export default function LeaveRulesPage() {
 
         {showApprovers && (
           <div>
-            <label className="block text-xs font-medium text-text-secondary mb-2">Named approvers</label>
+            <label className="block text-meta font-medium text-text-secondary mb-2">Named approvers</label>
             <UserMultiSelect
               people={people}
               selected={master.approver_user_ids}
@@ -190,7 +190,7 @@ export default function LeaveRulesPage() {
 
         {showAnyOne && (
           <div className="flex items-center justify-between gap-4">
-            <span className="text-sm text-text-primary">Any one approver can decide (vs. requiring all)</span>
+            <span className="text-body text-text-primary">Any one approver can decide (vs. requiring all)</span>
             <Toggle on={master.any_one_can_approve} onChange={() => patch({ any_one_can_approve: !master.any_one_can_approve })} />
           </div>
         )}
@@ -198,23 +198,23 @@ export default function LeaveRulesPage() {
 
       <Card title="Unplanned leave & overrides" description="Allows an employee to declare leave directly (e.g. a sick day) and to take leave even after a rejection. The leave is flagged so approvers can see it.">
         <div className="flex items-center justify-between gap-4">
-          <span className="text-sm text-text-primary">Allow self-declared leave and override of a rejection</span>
+          <span className="text-body text-text-primary">Allow self-declared leave and override of a rejection</span>
           <Toggle on={master.allow_override} onChange={() => patch({ allow_override: !master.allow_override })} />
         </div>
       </Card>
 
       <Card title="Recurring task warnings" description="For recurring tasks, warn the task’s creator in advance when an assignee will be on leave on an upcoming occurrence.">
         <div className="flex items-center gap-3">
-          <label className="text-sm text-text-primary">Notify</label>
+          <label className="text-body text-text-primary">Notify</label>
           <input
             type="number"
             min={0}
             max={60}
             value={master.recurring_notice_days}
             onChange={(e) => patch({ recurring_notice_days: Math.max(0, Math.min(60, Number(e.target.value) || 0)) })}
-            className="w-20 border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
+            className="w-20 border border-border rounded-lg px-3 py-2 text-body text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
           />
-          <span className="text-sm text-text-primary">day(s) before the occurrence</span>
+          <span className="text-body text-text-primary">day(s) before the occurrence</span>
         </div>
       </Card>
 
@@ -222,7 +222,7 @@ export default function LeaveRulesPage() {
         type="button"
         onClick={save}
         disabled={saving}
-        className="flex items-center gap-2 px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+        className="flex items-center gap-2 px-4 py-[10px] text-body font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
       >
         {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
         {saving ? 'Saving…' : 'Save leave rules'}

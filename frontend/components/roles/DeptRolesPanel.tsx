@@ -17,10 +17,10 @@ function RoleCard({ role, onClick }: { role: Role; onClick?: () => void }) {
   const body = (
     <>
       <div className="flex items-center gap-2 flex-wrap">
-        <h4 className="font-medium text-sm text-text-primary">{role.title}</h4>
+        <h4 className="font-medium text-body text-text-primary">{role.title}</h4>
         <span
           className={[
-            'inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize',
+            'inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium capitalize',
             levelColors[role.level],
           ].join(' ')}
         >
@@ -28,16 +28,16 @@ function RoleCard({ role, onClick }: { role: Role; onClick?: () => void }) {
         </span>
       </div>
       {role.job_description && (
-        <p className="text-xs text-text-secondary mt-1.5 line-clamp-2">{role.job_description}</p>
+        <p className="text-meta text-text-secondary mt-1.5 line-clamp-2">{role.job_description}</p>
       )}
       <div className="flex gap-3 mt-2">
         {role.kra && role.kra.length > 0 && (
-          <span className="text-xs text-text-muted">
+          <span className="text-meta text-text-muted">
             {role.kra.length} KRA{role.kra.length !== 1 ? 's' : ''}
           </span>
         )}
         {role.kpi && role.kpi.length > 0 && (
-          <span className="text-xs text-text-muted">
+          <span className="text-meta text-text-muted">
             {role.kpi.length} KPI{role.kpi.length !== 1 ? 's' : ''}
           </span>
         )}
@@ -120,7 +120,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
           <Building2 size={24} className="text-text-muted" />
         </div>
         <p className="font-medium text-text-primary">No departments yet</p>
-        <p className="text-text-secondary text-sm mt-1">
+        <p className="text-text-secondary text-body mt-1">
           Create departments in the org chart first — job roles live inside them.
         </p>
       </div>
@@ -133,7 +133,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
         {/* Left: department tree */}
         <div className="md:w-[260px] shrink-0 bg-surface border border-border-light rounded-card overflow-hidden self-start w-full">
           <div className="px-4 py-3 border-b border-border-light">
-            <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">
+            <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">
               Departments
             </p>
           </div>
@@ -155,9 +155,9 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
                     className="w-2.5 h-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: swatch }}
                   />
-                  <span className="text-sm font-medium truncate flex-1">{dept.name}</span>
+                  <span className="text-body font-medium truncate flex-1">{dept.name}</span>
                   {typeof dept._count?.roles === 'number' && (
-                    <span className="text-xs text-text-muted">{dept._count.roles}</span>
+                    <span className="text-meta text-text-muted">{dept._count.roles}</span>
                   )}
                   {active && <ChevronRight size={14} className="shrink-0" />}
                 </button>
@@ -171,7 +171,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
           {!selectedDept ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center p-8">
               <Briefcase size={28} className="text-text-muted" />
-              <p className="text-sm text-text-muted">Select a department to manage its job roles.</p>
+              <p className="text-body text-text-muted">Select a department to manage its job roles.</p>
             </div>
           ) : (
             <>
@@ -179,7 +179,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
               <div className="flex items-start justify-between gap-3 px-4 py-4 border-b border-border-light">
                 <div className="min-w-0">
                   {breadcrumb.length > 1 && (
-                    <nav className="flex items-center flex-wrap gap-1 text-xs text-text-muted mb-1">
+                    <nav className="flex items-center flex-wrap gap-1 text-meta text-text-muted mb-1">
                       {breadcrumb.slice(0, -1).map((a) => (
                         <span key={a.id} className="flex items-center gap-1">
                           <button
@@ -195,7 +195,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
                     </nav>
                   )}
                   <h3 className="font-medium text-text-primary truncate">{selectedDept.name}</h3>
-                  <p className="text-xs text-text-muted mt-0.5">
+                  <p className="text-meta text-text-muted mt-0.5">
                     {roles.length} job role{roles.length !== 1 ? 's' : ''}
                   </p>
                 </div>
@@ -219,11 +219,11 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
                 ) : roles.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-12">
                     <Briefcase size={28} className="text-text-muted" />
-                    <p className="text-sm text-text-muted">No job roles in this department yet.</p>
+                    <p className="text-body text-text-muted">No job roles in this department yet.</p>
                     {canEdit && (
                       <button
                         onClick={() => setDrawerTarget({ mode: 'create', deptId: selectedDept.id })}
-                        className="text-sm text-primary-text font-medium hover:text-primary-text"
+                        className="text-body text-primary-text font-medium hover:text-primary-text"
                       >
                         Add the first job role
                       </button>

@@ -19,7 +19,7 @@ interface Props {
 function LevelBadge({ level }: { level: Role['level'] }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize shrink-0 ${levelColors[level]}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium capitalize shrink-0 ${levelColors[level]}`}
     >
       {level}
     </span>
@@ -67,7 +67,7 @@ export default function RoleSelect({
     setQuery('')
   }
 
-  const triggerCls = `w-full flex items-center gap-2.5 border rounded-lg px-3 py-2.5 text-[15px] text-left transition-colors ${
+  const triggerCls = `w-full flex items-center gap-2.5 border rounded-lg px-3 py-2.5 text-body text-left transition-colors ${
     disabled
       ? 'bg-surface-control border-border-light cursor-not-allowed'
       : 'bg-surface-sunken border-border hover:bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
@@ -113,7 +113,7 @@ export default function RoleSelect({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search roles…"
-                className="w-full pl-8 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+                className="w-full pl-8 pr-8 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden"
                 autoFocus
               />
               {query && (
@@ -132,7 +132,7 @@ export default function RoleSelect({
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center gap-1 py-8 text-center">
                   <Briefcase size={22} className="text-text-muted" />
-                  <p className="text-xs text-text-muted">
+                  <p className="text-meta text-text-muted">
                     {roles.length === 0 ? 'No roles in this department yet.' : 'No roles found.'}
                   </p>
                 </div>
@@ -149,7 +149,7 @@ export default function RoleSelect({
                       }`}
                     >
                       <span
-                        className={`flex-1 min-w-0 truncate text-sm font-medium ${
+                        className={`flex-1 min-w-0 truncate text-body font-medium ${
                           isSel ? 'text-primary-text' : 'text-text-primary'
                         }`}
                       >

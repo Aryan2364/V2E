@@ -64,17 +64,17 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
   return (
     <div className="bg-surface border border-border-light rounded-card p-4 shadow-card">
       <div className="flex items-center gap-2 mb-1">
-        <h2 className="text-[18px] font-medium text-text-primary">Department sync</h2>
+        <h2 className="text-section font-medium text-text-primary">Department sync</h2>
         {rows.length > 0 && (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-warning-bg text-warning border-warning-border">
+          <span className="inline-flex items-center gap-1 text-meta font-medium px-2 py-0.5 rounded-full border bg-warning-bg text-warning border-warning-border">
             <AlertTriangle size={11} /> {rows.length} out of sync
           </span>
         )}
       </div>
-      <p className="text-sm text-text-secondary mb-4">Departments that have removed one or more org holidays from their calendar.</p>
+      <p className="text-body text-text-secondary mb-4">Departments that have removed one or more org holidays from their calendar.</p>
 
       {rows.length === 0 ? (
-        <div className="flex items-center gap-2 text-sm text-success py-3">
+        <div className="flex items-center gap-2 text-body text-success py-3">
           <CheckCircle2 size={16} />
           All departments are in sync with the org calendar.
         </div>
@@ -89,7 +89,7 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                   <button
                     type="button"
                     onClick={() => toggle(d.department_id)}
-                    className="flex items-center gap-1.5 text-sm font-medium text-text-primary hover:text-primary-text"
+                    className="flex items-center gap-1.5 text-body font-medium text-text-primary hover:text-primary-text"
                   >
                     {isOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                     {d.department_name}
@@ -100,7 +100,7 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                       type="button"
                       onClick={() => reEnforce(d.department_id, allIds)}
                       disabled={busy === `${d.department_id}:${allIds.join(',')}`}
-                      className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-sm font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-body font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
                     >
                       <RotateCcw size={13} /> Re-enforce all
                     </button>
@@ -112,8 +112,8 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                     {d.removed.map((r) => (
                       <div key={r.org_holiday_id} className="flex items-center gap-3 py-1.5 px-2 rounded-lg bg-surface-sunken">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-text-primary truncate">{r.name}</p>
-                          <p className="text-[11px] text-text-muted">
+                          <p className="text-body text-text-primary truncate">{r.name}</p>
+                          <p className="text-meta text-text-muted">
                             {r.date ? formatDate(parseLocalDate(r.date)) : ''}
                             {r.applies_to_subtree ? ' · applied to sub-departments' : ''}
                             {r.opted_out_by_name ? ` · by ${r.opted_out_by_name}` : ''}
@@ -124,7 +124,7 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                             type="button"
                             onClick={() => reEnforce(d.department_id, [r.org_holiday_id])}
                             disabled={busy === `${d.department_id}:${r.org_holiday_id}`}
-                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-sm font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-body font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
                           >
                             <RotateCcw size={13} /> Re-enforce
                           </button>

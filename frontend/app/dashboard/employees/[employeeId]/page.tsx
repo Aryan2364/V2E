@@ -90,7 +90,7 @@ const statusConfig: Record<EmployeeStatus, { bg: string; text: string; label: st
 function StatusBadge({ status }: { status: EmployeeStatus }) {
   const cfg = statusConfig[status] ?? statusConfig.inactive
   return (
-    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${cfg.bg} ${cfg.text}`}>
+    <span className={`inline-flex items-center rounded-full px-3 py-1 text-meta font-medium ${cfg.bg} ${cfg.text}`}>
       {cfg.label}
     </span>
   )
@@ -99,8 +99,8 @@ function StatusBadge({ status }: { status: EmployeeStatus }) {
 function InfoCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-sm text-text-primary font-medium">{value ?? '—'}</p>
+      <p className="text-meta font-medium text-text-secondary uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-body text-text-primary font-medium">{value ?? '—'}</p>
     </div>
   )
 }
@@ -108,7 +108,7 @@ function InfoCell({ label, value }: { label: string; value: React.ReactNode }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
-      <h2 className="text-base font-medium text-text-primary mb-4 pb-3 border-b border-border-light">{title}</h2>
+      <h2 className="text-card-heading font-medium text-text-primary mb-4 pb-3 border-b border-border-light">{title}</h2>
       {children}
     </div>
   )
@@ -125,7 +125,7 @@ function ReportingChain({ emp, allEmployees }: { emp: EmployeeProfile; allEmploy
     current = manager
     depth++
   }
-  if (chain.length === 0) return <p className="text-sm text-text-muted italic">No reporting chain found.</p>
+  if (chain.length === 0) return <p className="text-body text-text-muted italic">No reporting chain found.</p>
   return (
     <div className="space-y-2">
       {chain.map((mgr, i) => {
@@ -133,16 +133,16 @@ function ReportingChain({ emp, allEmployees }: { emp: EmployeeProfile; allEmploy
         return (
           <div key={mgr.id} className="flex items-start gap-3">
             <div className="flex flex-col items-center">
-              <div className={`w-8 h-8 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-xs font-medium shrink-0`}>
+              <div className={`w-8 h-8 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}>
                 {getInitials(name)}
               </div>
               {i < chain.length - 1 && <div className="w-px h-4 bg-surface-control-pressed mt-1" />}
             </div>
             <div className="pt-1">
-              <Link href={`/settings/organization/employees/${mgr.id}`} className="text-sm font-medium text-text-primary hover:text-primary-text transition-colors">
+              <Link href={`/settings/organization/employees/${mgr.id}`} className="text-body font-medium text-text-primary hover:text-primary-text transition-colors">
                 {name}
               </Link>
-              <p className="text-xs text-text-secondary">{mgr.role?.title ?? 'N/A'}</p>
+              <p className="text-meta text-text-secondary">{mgr.role?.title ?? 'N/A'}</p>
             </div>
           </div>
         )
@@ -349,9 +349,9 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
     }
   }
 
-  const inputClass = 'w-full px-3 py-2.5 border border-border rounded-lg text-sm text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  const inputClass = 'w-full px-3 py-2.5 border border-border rounded-lg text-body text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
   const selectClass = inputClass
-  const labelClass = 'block text-sm font-medium text-text-secondary mb-1.5'
+  const labelClass = 'block text-body font-medium text-text-secondary mb-1.5'
 
   const otherEmployees = allEmployees.filter((e) => e.id !== employee.id)
 
@@ -362,7 +362,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
       <div className="bg-surface rounded-[16px] w-full max-w-lg shadow-xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border-light shrink-0">
-          <h2 className="text-lg font-medium text-text-primary">Edit Employee</h2>
+          <h2 className="text-section font-medium text-text-primary">Edit Employee</h2>
           <button onClick={onClose} className="p-1.5 text-text-muted hover:text-text-primary hover:bg-surface-control rounded-md transition-colors">
             <X size={18} />
           </button>
@@ -371,14 +371,14 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
         {/* Body */}
         <div className="overflow-y-auto px-6 py-4 flex flex-col gap-4 flex-1 min-h-0">
           {error && (
-            <div className="text-sm text-danger bg-danger-bg border border-danger-border rounded-lg px-4 py-3">
+            <div className="text-body text-danger bg-danger-bg border border-danger-border rounded-lg px-4 py-3">
               {error}
             </div>
           )}
 
           {/* Cross-firm notice — this person's login is shared across firms. */}
           {orgCount !== null && orgCount > 1 && (
-            <div className="flex items-start gap-2 rounded-lg bg-warning-bg border border-warning-border px-4 py-3 text-sm text-warning">
+            <div className="flex items-start gap-2 rounded-lg bg-warning-bg border border-warning-border px-4 py-3 text-body text-warning">
               <Users size={16} className="shrink-0 mt-0.5" />
               <p>
                 This person also works in {orgCount - 1} other {orgCount - 1 === 1 ? 'firm' : 'firms'}.
@@ -434,7 +434,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                 className={`${inputClass} flex-1`}
               />
             </div>
-            <p className="mt-1 text-xs text-text-muted">
+            <p className="mt-1 text-meta text-text-muted">
               They can sign in with this number. Leave it empty to remove phone sign-in. Changing it updates their login everywhere they work.
             </p>
           </div>
@@ -526,7 +526,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                 ]}
               />
               {(isPrimaryAdmin || isSelf) && (
-                <p className="text-[11px] text-text-muted mt-1">
+                <p className="text-meta text-text-muted mt-1">
                   {isPrimaryAdmin ? 'Primary administrator cannot be deactivated.' : 'You cannot deactivate your own account.'}
                 </p>
               )}
@@ -595,7 +595,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
             <div className="rounded-lg border border-danger-border bg-danger-bg p-3">
               {deleteBlocked ? (
                 <>
-                  <p className="text-sm text-danger mb-2.5">
+                  <p className="text-body text-danger mb-2.5">
                     Deleting <span className="font-medium">{employee.user?.name}</span> would
                     leave these behind. You can clear them and delete anyway — both are allowed
                     states, and you can set them again later.
@@ -603,20 +603,20 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                   <div className="flex flex-col gap-2 mb-3">
                     {deleteBlocked.blockers.reports.length > 0 && (
                       <div className="rounded-md bg-surface border border-danger-border px-3 py-2">
-                        <p className="text-xs font-medium text-danger uppercase tracking-wide mb-1">
+                        <p className="text-meta font-medium text-danger uppercase tracking-wide mb-1">
                           Left without a manager
                         </p>
-                        <p className="text-sm text-danger">
+                        <p className="text-body text-danger">
                           {deleteBlocked.blockers.reports.map((r) => r.name).join(', ')}
                         </p>
                       </div>
                     )}
                     {deleteBlocked.blockers.departments.length > 0 && (
                       <div className="rounded-md bg-surface border border-danger-border px-3 py-2">
-                        <p className="text-xs font-medium text-danger uppercase tracking-wide mb-1">
+                        <p className="text-meta font-medium text-danger uppercase tracking-wide mb-1">
                           Left without a head
                         </p>
-                        <p className="text-sm text-danger">
+                        <p className="text-body text-danger">
                           {deleteBlocked.blockers.departments.map((d) => d.name).join(', ')}
                         </p>
                       </div>
@@ -626,7 +626,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     <button
                       onClick={() => handleDelete(true)}
                       disabled={deleting}
-                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-danger hover:bg-danger-hover rounded-lg transition-colors disabled:opacity-60"
+                      className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-white bg-danger hover:bg-danger-hover rounded-lg transition-colors disabled:opacity-60"
                     >
                       {deleting && <Loader2 size={14} className="animate-spin" />}
                       Clear links and delete
@@ -634,7 +634,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     <button
                       onClick={() => { setConfirmDelete(false); setDeleteBlocked(null) }}
                       disabled={deleting}
-                      className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-lg hover:bg-surface-sunken transition-colors"
+                      className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-lg hover:bg-surface-sunken transition-colors"
                     >
                       Cancel
                     </button>
@@ -642,7 +642,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-danger mb-2.5">
+                  <p className="text-body text-danger mb-2.5">
                     Delete <span className="font-medium">{employee.user?.name}</span> permanently?
                     This removes them from the organization and can’t be undone. If they have any
                     history, use <span className="font-medium">Inactive</span> instead.
@@ -651,7 +651,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     <button
                       onClick={() => handleDelete()}
                       disabled={deleting}
-                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-danger hover:bg-danger-hover rounded-lg transition-colors disabled:opacity-60"
+                      className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-white bg-danger hover:bg-danger-hover rounded-lg transition-colors disabled:opacity-60"
                     >
                       {deleting && <Loader2 size={14} className="animate-spin" />}
                       Delete employee
@@ -659,7 +659,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     <button
                       onClick={() => setConfirmDelete(false)}
                       disabled={deleting}
-                      className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-lg hover:bg-surface-sunken transition-colors"
+                      className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-lg hover:bg-surface-sunken transition-colors"
                     >
                       Cancel
                     </button>
@@ -674,7 +674,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
               {!isSelf && !isPrimaryAdmin ? (
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="flex items-center gap-1.5 text-sm font-medium text-danger hover:text-danger transition-colors"
+                  className="flex items-center gap-1.5 text-body font-medium text-danger hover:text-danger transition-colors"
                 >
                   <Trash2 size={15} /> Delete
                 </button>
@@ -684,7 +684,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2.5 text-body font-medium text-white bg-primary hover:bg-primary-hover rounded-lg transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 {saving && <Loader2 size={15} className="animate-spin" />}
                 Save Changes
@@ -698,10 +698,10 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
       {showPwWarning && (
         <div className="fixed inset-0 z-70 flex items-center justify-center px-4 bg-black/50">
           <div className="bg-surface w-full max-w-md rounded-card shadow-xl p-6">
-            <h3 className="text-[17px] font-medium text-text-primary">
+            <h3 className="text-card-heading font-medium text-text-primary">
               Change {employee.user?.name ?? 'this person'}’s password?
             </h3>
-            <p className="mt-2 text-sm text-text-secondary leading-relaxed">
+            <p className="mt-2 text-body text-text-secondary leading-relaxed">
               {orgCount && orgCount > 1 ? (
                 <>
                   This is their <strong>one login password</strong> for{' '}
@@ -719,14 +719,14 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
             <div className="mt-4 flex items-center justify-end gap-3">
               <button
                 onClick={() => setShowPwWarning(false)}
-                className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
+                className="px-4 py-2 text-body font-medium text-text-secondary hover:text-text-primary transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={doSave}
                 disabled={saving}
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted"
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-body font-medium text-white bg-primary hover:bg-primary-hover rounded-lg transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted"
               >
                 {saving && <Loader2 size={15} className="animate-spin" />}
                 {orgCount && orgCount > 1 ? 'Change password everywhere' : 'Change password'}
@@ -805,7 +805,7 @@ export default function EmployeeDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <Users size={36} className="text-text-muted mb-3" />
-        <p className="text-lg font-medium text-text-primary">Employee not found</p>
+        <p className="text-section font-medium text-text-primary">Employee not found</p>
         <Link href="/settings/organization/employees" className="mt-4">
           <Button variant="secondary" size="sm"><ArrowLeft size={14} /> Back to employees</Button>
         </Link>
@@ -824,7 +824,7 @@ export default function EmployeeDetailPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <button onClick={handleBack} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
+      <button onClick={handleBack} className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors">
         <ArrowLeft size={15} />
         Back
       </button>
@@ -832,29 +832,29 @@ export default function EmployeeDetailPage() {
       {/* Profile header */}
       <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className={`w-20 h-20 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-2xl font-medium shrink-0`}>
+          <div className={`w-20 h-20 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-page-title font-medium shrink-0`}>
             {getInitials(name)}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-[28px] font-medium text-text-primary leading-tight">{name}</h1>
+            <h1 className="text-page-title font-medium text-text-primary leading-tight">{name}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-1.5">
-              {employee.role?.title && <span className="text-sm text-text-secondary font-medium">{employee.role.title}</span>}
+              {employee.role?.title && <span className="text-body text-text-secondary font-medium">{employee.role.title}</span>}
               {employee.department?.name && (
                 <>
                   <span className="text-text-muted">·</span>
-                  <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary-subtle text-primary-text">
+                  <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text">
                     {employee.department.name}
                   </span>
                 </>
               )}
               <StatusBadge status={employee.status} />
             </div>
-            {email && <p className="text-sm text-text-secondary mt-1">{email}</p>}
+            {email && <p className="text-body text-text-secondary mt-1">{email}</p>}
           </div>
           {isHR && (
             <button
               onClick={() => setShowEdit(true)}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-text-secondary bg-surface border border-border-light rounded-lg hover:border-primary hover:text-primary-text transition-colors shrink-0"
+              className="flex items-center gap-2 px-4 py-2.5 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-lg hover:border-primary hover:text-primary-text transition-colors shrink-0"
             >
               <Pencil size={15} />
               Edit
@@ -878,12 +878,12 @@ export default function EmployeeDetailPage() {
       {employee.reporting_to && (
         <Section title="Reports To">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full ${avatarColor(employee.reporting_to.name)} flex items-center justify-center text-white text-sm font-medium shrink-0`}>
+            <div className={`w-10 h-10 rounded-full ${avatarColor(employee.reporting_to.name)} flex items-center justify-center text-white text-body font-medium shrink-0`}>
               {getInitials(employee.reporting_to.name)}
             </div>
             <div>
-              <p className="font-medium text-text-primary text-sm">{employee.reporting_to.name}</p>
-              <p className="text-xs text-text-secondary">{employee.reporting_to.email}</p>
+              <p className="font-medium text-text-primary text-body">{employee.reporting_to.name}</p>
+              <p className="text-meta text-text-secondary">{employee.reporting_to.email}</p>
             </div>
           </div>
         </Section>
@@ -899,13 +899,13 @@ export default function EmployeeDetailPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <h3 className="font-medium text-text-primary">{employee.role.title}</h3>
               {employee.role.level && (
-                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary-subtle text-primary-text">
+                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text">
                   {employee.role.level.charAt(0).toUpperCase() + employee.role.level.slice(1)}
                 </span>
               )}
             </div>
-            {jdPreview && <p className="text-sm text-text-secondary leading-relaxed">{jdPreview}</p>}
-            <Link href={`/settings/organization/roles/${employee.role_id}`} className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-text hover:text-primary-text transition-colors">
+            {jdPreview && <p className="text-body text-text-secondary leading-relaxed">{jdPreview}</p>}
+            <Link href={`/settings/organization/roles/${employee.role_id}`} className="inline-flex items-center gap-1.5 text-meta font-medium text-primary-text hover:text-primary-text transition-colors">
               View full role
               <ChevronDown size={12} className="-rotate-90" />
             </Link>
@@ -918,10 +918,10 @@ export default function EmployeeDetailPage() {
           <ol className="space-y-3">
             {employee.role.kra.map((kra, i) => (
               <li key={i} className="flex gap-3">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-primary-subtle flex items-center justify-center text-xs font-medium text-primary-text">{i + 1}</span>
+                <span className="shrink-0 w-6 h-6 rounded-full bg-primary-subtle flex items-center justify-center text-meta font-medium text-primary-text">{i + 1}</span>
                 <div>
-                  <p className="font-medium text-text-primary text-sm">{kra.title}</p>
-                  {kra.description && <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{kra.description}</p>}
+                  <p className="font-medium text-text-primary text-body">{kra.title}</p>
+                  {kra.description && <p className="text-meta text-text-secondary mt-0.5 leading-relaxed">{kra.description}</p>}
                 </div>
               </li>
             ))}

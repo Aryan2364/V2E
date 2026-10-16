@@ -53,7 +53,7 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
   }
 
   if (holidays.length === 0) {
-    return <p className="text-sm text-text-muted py-3 text-center">{emptyText}</p>
+    return <p className="text-body text-text-muted py-3 text-center">{emptyText}</p>
   }
 
   return (
@@ -75,7 +75,7 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
                 <input
                   value={editing.name}
                   onChange={(e) => setEditing((s) => s ? { ...s, name: e.target.value } : s)}
-                  className="flex-1 h-8 px-2 rounded-md border border-border text-sm text-text-primary bg-surface focus:border-primary outline-hidden"
+                  className="flex-1 h-8 px-2 rounded-md border border-border text-body text-text-primary bg-surface focus:border-primary outline-hidden"
                 />
                 <button
                   type="button"
@@ -94,13 +94,13 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
               </>
             ) : (
               <>
-                <span className="w-28 shrink-0 text-sm text-text-secondary">{dateDisplay}</span>
-                <span className="flex-1 text-sm font-medium text-text-primary truncate">{h.name}</span>
-                <span className={`shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full border ${TYPE_COLORS[h.type]}`}>
+                <span className="w-28 shrink-0 text-body text-text-secondary">{dateDisplay}</span>
+                <span className="flex-1 text-body font-medium text-text-primary truncate">{h.name}</span>
+                <span className={`shrink-0 text-meta font-medium px-2 py-0.5 rounded-full border ${TYPE_COLORS[h.type]}`}>
                   {h.type}
                 </span>
                 {h.status === 'pending_review' && (
-                  <span className="shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-warning-bg text-warning border-warning-border">
+                  <span className="shrink-0 text-meta font-medium px-2 py-0.5 rounded-full border bg-warning-bg text-warning border-warning-border">
                     pending
                   </span>
                 )}

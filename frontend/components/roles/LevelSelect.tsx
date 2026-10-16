@@ -37,7 +37,7 @@ export default function LevelSelect({ value, onChange, showHead = true }: Props)
     setOpen(false)
   }
 
-  const triggerCls = `w-full flex items-center gap-2.5 border rounded-lg px-3 py-2.5 text-[15px] text-left transition-colors bg-surface-sunken border-border hover:bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary`
+  const triggerCls = `w-full flex items-center gap-2.5 border rounded-lg px-3 py-2.5 text-body text-left transition-colors bg-surface-sunken border-border hover:bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary`
 
   return (
     <div>
@@ -75,7 +75,7 @@ export default function LevelSelect({ value, onChange, showHead = true }: Props)
                     }`}
                   >
                     <span
-                      className={`flex-1 min-w-0 truncate text-sm font-medium ${
+                      className={`flex-1 min-w-0 truncate text-body font-medium ${
                         isSel ? 'text-primary-text' : 'text-text-primary'
                       }`}
                     >

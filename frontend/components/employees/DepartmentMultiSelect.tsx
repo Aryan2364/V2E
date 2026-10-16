@@ -128,14 +128,14 @@ export default function DepartmentMultiSelect({
   )
 
   const triggerCls =
-    'w-full flex items-center gap-2.5 border border-border rounded-lg px-3 py-2.5 text-[15px] text-left bg-surface-sunken hover:bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
+    'w-full flex items-center gap-2.5 border border-border rounded-lg px-3 py-2.5 text-body text-left bg-surface-sunken hover:bg-surface hover:border-border-strong focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
 
   return (
     <div ref={wrapRef} className="relative">
       <button type="button" onClick={() => setOpen((o) => !o)} className={triggerCls}>
         <span className="flex-1 min-w-0 truncate text-text-primary">{triggerLabel}</span>
         {selected.length > 0 && (
-          <span className="inline-flex items-center justify-center rounded-full bg-primary px-1.5 min-w-[20px] h-5 text-xs font-medium text-white">
+          <span className="inline-flex items-center justify-center rounded-full bg-primary px-1.5 min-w-[20px] h-5 text-meta font-medium text-white">
             {selected.length}
           </span>
         )}
@@ -154,7 +154,7 @@ export default function DepartmentMultiSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search departments…"
-              className="w-full pl-8 pr-8 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+              className="w-full pl-8 pr-8 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden"
               autoFocus
             />
             {query && (
@@ -181,7 +181,7 @@ export default function DepartmentMultiSelect({
               >
                 <span className="w-2.5 h-2.5 rounded-full shrink-0 border border-border" />
                 <span
-                  className={`flex-1 min-w-0 truncate text-sm font-medium ${
+                  className={`flex-1 min-w-0 truncate text-body font-medium ${
                     selected.length === 0 ? 'text-primary-text' : 'text-text-primary'
                   }`}
                 >
@@ -194,11 +194,11 @@ export default function DepartmentMultiSelect({
             {departments.length === 0 ? (
               <div className="flex flex-col items-center gap-1 py-8 text-center">
                 <Building2 size={22} className="text-text-muted" />
-                <p className="text-xs text-text-muted">No departments yet.</p>
+                <p className="text-meta text-text-muted">No departments yet.</p>
               </div>
             ) : q ? (
               searchRows.length === 0 ? (
-                <p className="px-3 py-6 text-center text-sm text-text-muted">No departments found.</p>
+                <p className="px-3 py-6 text-center text-body text-text-muted">No departments found.</p>
               ) : (
                 searchRows.map((d) => {
                   const path = ancestorsOf(departments, d.id)
@@ -219,8 +219,8 @@ export default function DepartmentMultiSelect({
                         style={{ backgroundColor: colorFor(d.id) }}
                       />
                       <span className="flex-1 min-w-0">
-                        <span className="block text-sm font-medium text-text-primary truncate">{d.name}</span>
-                        {path && <span className="block text-xs text-text-muted truncate">{path}</span>}
+                        <span className="block text-body font-medium text-text-primary truncate">{d.name}</span>
+                        {path && <span className="block text-meta text-text-muted truncate">{path}</span>}
                       </span>
                     </button>
                   )
@@ -243,7 +243,7 @@ export default function DepartmentMultiSelect({
                       style={{ backgroundColor: colorFor(dept.id) }}
                     />
                     <span
-                      className={`flex-1 min-w-0 truncate text-sm font-medium ${
+                      className={`flex-1 min-w-0 truncate text-body font-medium ${
                         state !== 'none' ? 'text-text-primary' : 'text-text-secondary'
                       }`}
                     >
@@ -258,13 +258,13 @@ export default function DepartmentMultiSelect({
           {/* Footer: quick clear when something is selected */}
           {selected.length > 0 && (
             <div className="flex items-center justify-between gap-2 border-t border-border-light px-3 py-2 shrink-0">
-              <span className="text-xs text-text-muted">
+              <span className="text-meta text-text-muted">
                 {selected.length} selected
               </span>
               <button
                 type="button"
                 onClick={selectAll}
-                className="text-xs font-medium text-primary-text hover:text-primary-text"
+                className="text-meta font-medium text-primary-text hover:text-primary-text"
               >
                 Clear
               </button>

@@ -74,7 +74,7 @@ export default function RolesTreeView({
         <p className="font-medium text-text-primary">
           {q ? 'No job roles match your search' : 'No job roles yet'}
         </p>
-        <p className="text-text-secondary text-sm mt-1">
+        <p className="text-text-secondary text-body mt-1">
           {q ? 'Try a different name, level, or department.' : 'Add a job role to get started.'}
         </p>
       </div>
@@ -93,14 +93,14 @@ export default function RolesTreeView({
               style={{ paddingLeft: 16 + depth * 18 }}
             >
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: base }} />
-              <span className="text-sm font-medium text-text-primary truncate">{dept.name}</span>
-              <span className="text-xs text-text-muted">
+              <span className="text-body font-medium text-text-primary truncate">{dept.name}</span>
+              <span className="text-meta text-text-muted">
                 {deptRoles.length} job role{deptRoles.length !== 1 ? 's' : ''}
               </span>
               {canEdit && (
                 <button
                   onClick={() => onAddRole(dept.id)}
-                  className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text transition-colors"
+                  className="ml-auto inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text transition-colors"
                 >
                   <Plus size={13} /> Add job role
                 </button>
@@ -110,7 +110,7 @@ export default function RolesTreeView({
             {/* Roles in this department */}
             {deptRoles.length === 0 ? (
               <p
-                className="text-xs text-text-muted italic py-2.5"
+                className="text-meta text-text-muted italic py-2.5"
                 style={{ paddingLeft: 16 + (depth + 1) * 18 + 18 }}
               >
                 No job roles in this department.
@@ -123,16 +123,16 @@ export default function RolesTreeView({
                   style={{ paddingLeft: 16 + (depth + 1) * 18 + 18 }}
                   className="group w-full flex items-center gap-3 pr-4 py-2.5 text-left hover:bg-surface-sunken transition-colors"
                 >
-                  <span className="font-medium text-sm text-text-primary truncate">{role.title}</span>
+                  <span className="font-medium text-body text-text-primary truncate">{role.title}</span>
                   <span
                     className={[
-                      'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium capitalize shrink-0',
+                      'inline-flex items-center rounded-full px-2 py-0.5 text-meta font-medium capitalize shrink-0',
                       levelColors[role.level],
                     ].join(' ')}
                   >
                     {role.level}
                   </span>
-                  <span className="text-xs text-text-muted shrink-0 hidden sm:inline">
+                  <span className="text-meta text-text-muted shrink-0 hidden sm:inline">
                     {role.kra?.length ?? 0} KRA · {role.kpi?.length ?? 0} KPI
                   </span>
                   <span className="ml-auto flex items-center gap-1 shrink-0">

@@ -41,13 +41,13 @@ export default function EntityAuditHistory({ orgId, resource, entityId, title = 
       .finally(() => setLoading(false))
   }, [orgId, resource, entityId])
 
-  if (loading) return <p className="text-sm text-text-muted py-4">Loading history…</p>
-  if (items.length === 0) return <p className="text-sm text-text-muted text-center py-6">No activity yet.</p>
+  if (loading) return <p className="text-body text-text-muted py-4">Loading history…</p>
+  if (items.length === 0) return <p className="text-body text-text-muted text-center py-6">No activity yet.</p>
 
   return (
     <div>
       {title && (
-        <h3 className="flex items-center gap-2 text-[15px] font-medium text-text-primary mb-3">
+        <h3 className="flex items-center gap-2 text-body font-medium text-text-primary mb-3">
           <History size={16} className="text-primary-text" /> {title}
         </h3>
       )}
@@ -66,18 +66,18 @@ export default function EntityAuditHistory({ orgId, resource, entityId, title = 
                     <ActionBadge action={e.action} />
                     {e.actor_type === 'system' && e.trigger_source && (
                       <span
-                        className="text-[11px] font-medium rounded-full px-2 py-0.5"
+                        className="text-meta font-medium rounded-full px-2 py-0.5"
                         style={{ backgroundColor: 'var(--surface-control)', color: 'var(--text-secondary)' }}
                       >
                         {triggerLabel(e.trigger_source)}
                       </span>
                     )}
                   </div>
-                  <div className="mt-1 text-xs text-text-secondary flex items-center gap-1.5">
+                  <div className="mt-1 text-meta text-text-secondary flex items-center gap-1.5">
                     <ActorCell entry={e} />
                   </div>
                 </div>
-                <span className="shrink-0 text-xs text-text-muted whitespace-nowrap">{fmtDateTime(e.occurred_at)}</span>
+                <span className="shrink-0 text-meta text-text-muted whitespace-nowrap">{fmtDateTime(e.occurred_at)}</span>
               </button>
               {open && (
                 <div className="pb-3">

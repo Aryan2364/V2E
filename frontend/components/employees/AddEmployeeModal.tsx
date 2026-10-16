@@ -61,8 +61,8 @@ const EMPLOYMENT_TYPES: { value: EmploymentType; label: string }[] = [
 ]
 
 const inputClass =
-  'w-full border border-border rounded-lg px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
-const labelClass = 'block text-sm font-medium text-text-secondary mb-1'
+  'w-full border border-border rounded-lg px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+const labelClass = 'block text-body font-medium text-text-secondary mb-1'
 
 export default function AddEmployeeModal({
   orgId,
@@ -331,7 +331,7 @@ export default function AddEmployeeModal({
       <div className="bg-surface w-full sm:max-w-2xl sm:rounded-card rounded-t-xl shadow-xl max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
-          <h2 className="text-[18px] font-medium text-text-primary">Add Employee</h2>
+          <h2 className="text-section font-medium text-text-primary">Add Employee</h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-md text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
@@ -345,7 +345,7 @@ export default function AddEmployeeModal({
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="px-6 py-4 overflow-y-auto space-y-4">
             {error && (
-              <div className="p-3 bg-danger-bg border border-danger-border rounded-lg text-sm text-danger">
+              <div className="p-3 bg-danger-bg border border-danger-border rounded-lg text-body text-danger">
                 {error}
               </div>
             )}
@@ -361,7 +361,7 @@ export default function AddEmployeeModal({
                   disabled={prefillSelf || existingAccount}
                 />
                 {existingAccount && (
-                  <p className="mt-1 text-xs text-text-muted">Name comes from their existing account.</p>
+                  <p className="mt-1 text-meta text-text-muted">Name comes from their existing account.</p>
                 )}
               </div>
               <div>
@@ -402,20 +402,20 @@ export default function AddEmployeeModal({
                     disabled={prefillSelf}
                   />
                 </div>
-                <p className="mt-1 text-xs text-text-muted">Email or phone — at least one. They can sign in with either.</p>
+                <p className="mt-1 text-meta text-text-muted">Email or phone — at least one. They can sign in with either.</p>
               </div>
               <div className="flex items-start">
                 <div className="w-full">
                   {!prefillSelf && checkingAccount && (
-                    <p className="mt-6 text-xs text-text-muted">Checking…</p>
+                    <p className="mt-6 text-meta text-text-muted">Checking…</p>
                   )}
                   {!prefillSelf && duplicateInOrg && (
-                    <p className="mt-6 text-xs text-danger">
+                    <p className="mt-6 text-meta text-danger">
                       This person is already an employee in this firm.
                     </p>
                   )}
                   {!prefillSelf && existingAccount && !duplicateInOrg && (
-                    <p className="mt-6 text-xs text-success">
+                    <p className="mt-6 text-meta text-success">
                       Existing V2E account — they’ll use their current login. No password needed here.
                     </p>
                   )}
@@ -473,7 +473,7 @@ export default function AddEmployeeModal({
                         onChange={(e) => set('make_dep_head', e.target.checked)}
                         className="w-4 h-4 rounded-xs border-border text-primary-text focus:ring-primary"
                       />
-                      <span className="text-xs font-medium text-text-secondary">
+                      <span className="text-meta font-medium text-text-secondary">
                         Make this employee the Head of this department
                       </span>
                     </label>
@@ -483,7 +483,7 @@ export default function AddEmployeeModal({
                   <button
                     type="button"
                     onClick={() => setCreatingDept(true)}
-                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text"
+                    className="mt-1.5 inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text"
                   >
                     <Plus size={12} /> New department
                   </button>
@@ -510,7 +510,7 @@ export default function AddEmployeeModal({
                   }}
                 />
                 {isHeadRoleSelected && deptHasHead && (
-                  <p className="mt-1.5 text-xs text-warning bg-warning-bg border border-warning-border rounded-md px-2.5 py-1.5 font-medium">
+                  <p className="mt-1.5 text-meta text-warning bg-warning-bg border border-warning-border rounded-md px-2.5 py-1.5 font-medium">
                     Already there is a head here.
                   </p>
                 )}
@@ -521,7 +521,7 @@ export default function AddEmployeeModal({
                   <button
                     type="button"
                     onClick={() => setCreatingRole(true)}
-                    className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text"
+                    className="mt-1.5 inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text"
                   >
                     <Plus size={12} /> New job role
                   </button>
@@ -572,7 +572,7 @@ export default function AddEmployeeModal({
                   }`}
                 />
                 {codeTaken && (
-                  <p className="mt-1 text-xs text-danger">This code is already in use.</p>
+                  <p className="mt-1 text-meta text-danger">This code is already in use.</p>
                 )}
               </div>
             </div>
@@ -612,7 +612,7 @@ export default function AddEmployeeModal({
             <button
               type="submit"
               disabled={saving || duplicateInOrg || checkingAccount}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {saving && <Loader2 size={15} className="animate-spin" />}
               {saving ? 'Adding…' : existingAccount ? 'Add to firm' : 'Add Employee'}

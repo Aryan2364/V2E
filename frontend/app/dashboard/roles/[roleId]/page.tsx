@@ -60,7 +60,7 @@ function LevelBadge({ level }: { level: RoleLevel }) {
   const cfg = levelConfig[level] ?? levelConfig.mid
   return (
     <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${cfg.bg} ${cfg.text}`}
+      className={`inline-flex items-center rounded-full px-3 py-1 text-meta font-medium ${cfg.bg} ${cfg.text}`}
     >
       {cfg.label}
     </span>
@@ -72,7 +72,7 @@ function LevelBadge({ level }: { level: RoleLevel }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
-      <h2 className="text-base font-medium text-text-primary mb-4 pb-3 border-b border-border-light">
+      <h2 className="text-card-heading font-medium text-text-primary mb-4 pb-3 border-b border-border-light">
         {title}
       </h2>
       {children}
@@ -116,7 +116,7 @@ export default function RoleDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <Briefcase size={36} className="text-text-muted mb-3" />
-        <p className="text-lg font-medium text-text-primary">Job role not found</p>
+        <p className="text-section font-medium text-text-primary">Job role not found</p>
         <Link href="/dashboard/roles" className="mt-4">
           <Button variant="secondary" size="sm">
             <ArrowLeft size={14} /> Back to job roles
@@ -131,7 +131,7 @@ export default function RoleDetailPage() {
       {/* Back link */}
       <Link
         href="/settings/organization/roles"
-        className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
+        className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors"
       >
         <ArrowLeft size={15} />
         All Job Roles
@@ -140,10 +140,10 @@ export default function RoleDetailPage() {
       {/* Role header */}
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">{role.title}</h1>
+          <h1 className="text-page-title font-medium text-text-primary leading-tight">{role.title}</h1>
           <div className="flex flex-wrap items-center gap-2">
             {role.department?.name && (
-              <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-primary-subtle text-primary-text">
+              <span className="inline-flex items-center rounded-full px-3 py-1 text-meta font-medium bg-primary-subtle text-primary-text">
                 {role.department.name}
               </span>
             )}
@@ -163,7 +163,7 @@ export default function RoleDetailPage() {
       {/* Job Description */}
       {role.job_description && (
         <Section title="Job Description">
-          <p className="text-text-primary leading-relaxed whitespace-pre-wrap text-sm">
+          <p className="text-text-primary leading-relaxed whitespace-pre-wrap text-body">
             {role.job_description}
           </p>
         </Section>
@@ -175,13 +175,13 @@ export default function RoleDetailPage() {
           <ol className="space-y-4">
             {role.kra.map((kra, i) => (
               <li key={i} className="flex gap-4">
-                <span className="shrink-0 w-7 h-7 rounded-full bg-primary-subtle flex items-center justify-center text-xs font-medium text-primary-text">
+                <span className="shrink-0 w-7 h-7 rounded-full bg-primary-subtle flex items-center justify-center text-meta font-medium text-primary-text">
                   {i + 1}
                 </span>
                 <div>
-                  <p className="font-medium text-text-primary text-sm">{kra.title}</p>
+                  <p className="font-medium text-text-primary text-body">{kra.title}</p>
                   {kra.description && (
-                    <p className="text-text-secondary text-xs mt-1 leading-relaxed">
+                    <p className="text-text-secondary text-meta mt-1 leading-relaxed">
                       {kra.description}
                     </p>
                   )}

@@ -53,7 +53,7 @@ function TriToggle({
             disabled={busy}
             onClick={() => onChange(o.v)}
             className={[
-              'px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50',
+              'px-2.5 py-1 text-meta font-medium transition-colors disabled:opacity-50',
               active ? o.on : 'bg-surface text-text-secondary hover:bg-surface-sunken',
             ].join(' ')}
           >
@@ -69,7 +69,7 @@ function EffectiveDot({ allowed }: { allowed: boolean }) {
   return (
     <span
       className={[
-        'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium border',
+        'inline-flex items-center rounded-full px-2 py-0.5 text-meta font-medium border',
         allowed ? 'bg-success-bg text-success border-success-border' : 'bg-danger-bg text-danger border-danger-border',
       ].join(' ')}
     >
@@ -171,9 +171,9 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
         className="w-full flex items-center gap-2 px-6 py-4 text-left"
       >
         <ShieldCheck size={18} className="text-primary-text" />
-        <span className="flex-1 text-base font-medium text-text-primary">Access &amp; Permissions</span>
+        <span className="flex-1 text-card-heading font-medium text-text-primary">Access &amp; Permissions</span>
         {data?.is_admin && (
-          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium bg-surface-control text-text-secondary border border-border-light">
+          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium bg-surface-control text-text-secondary border border-border-light">
             Administrator
           </span>
         )}
@@ -187,10 +187,10 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
               <Loader2 size={18} className="animate-spin" />
             </div>
           ) : !data ? (
-            <p className="py-8 text-sm text-text-muted text-center">No permission data.</p>
+            <p className="py-8 text-body text-text-muted text-center">No permission data.</p>
           ) : (
             <>
-              <p className="text-sm text-text-secondary mt-4 mb-4">
+              <p className="text-body text-text-secondary mt-4 mb-4">
                 Baseline flows from the <span className="font-medium text-text-primary">{systemRoleName}</span> system role.
                 Add a personal <span className="text-success font-medium">grant</span> or{' '}
                 <span className="text-danger font-medium">revoke</span> only where this person should differ.
@@ -206,7 +206,7 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
                       className="w-full flex items-center gap-1.5 px-4 py-2.5 bg-surface-sunken text-left"
                     >
                       <ChevronRight size={15} className={['text-text-muted transition-transform', isCollapsed ? '' : 'rotate-90'].join(' ')} />
-                      <span className="text-sm font-medium text-text-primary">{mod.label}</span>
+                      <span className="text-body font-medium text-text-primary">{mod.label}</span>
                     </button>
                     {!isCollapsed &&
                       mod.subModules.map((sub) =>
@@ -215,8 +215,8 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
                           if (!ul) return null
                           return (
                             <div key={f.key} className="px-4 py-3 border-t border-border-light">
-                              <p className="text-sm font-medium text-text-primary">{f.label}</p>
-                              {f.description && <p className="text-xs text-text-muted mt-0.5 mb-2">{f.description}</p>}
+                              <p className="text-body font-medium text-text-primary">{f.label}</p>
+                              {f.description && <p className="text-meta text-text-muted mt-0.5 mb-2">{f.description}</p>}
                               <div className="flex flex-col gap-2 mt-2">
                                 {f.actions.map((a) => {
                                   const ov = ul.overrides[a]
@@ -224,7 +224,7 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
                                   const showScope = !!ul.scopable && a === 'read'
                                   return (
                                     <div key={a} className="flex flex-wrap items-center gap-3">
-                                      <span className="w-14 text-xs font-medium text-text-secondary">{ACTION_LABEL[a]}</span>
+                                      <span className="w-14 text-meta font-medium text-text-secondary">{ACTION_LABEL[a]}</span>
                                       <TriToggle
                                         value={ov}
                                         busy={busyKey === key}
@@ -240,24 +240,24 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
                                       {showScope && ov === 'grant' && (
                                         <StyledSelect
                                           size="sm"
-                                          triggerClassName="text-xs"
+                                          triggerClassName="text-meta"
                                           disabled={busyKey === key}
                                           value={ul.override_scopes?.read ?? defaultReadScope(ul)}
                                           onChange={(v) => changeOverride(f.key, 'read', 'grant', v as DataScope)}
                                           options={DATA_SCOPES.map((s) => ({ value: s, label: DATA_SCOPE_LABEL[s] }))}
                                         />
                                       )}
-                                      <span className="text-[11px] text-text-muted">
+                                      <span className="text-meta text-text-muted">
                                         inherited: {ul.inherited[a] ? 'Allowed' : 'Denied'}
                                       </span>
                                       <EffectiveDot allowed={ul.effective[a]} />
                                       {showScope && ul.effective[a] && (
-                                        <span className="text-[11px] text-text-muted">
+                                        <span className="text-meta text-text-muted">
                                           sees: {DATA_SCOPE_LABEL[ul.effective_scopes?.read ?? 'own']}
                                         </span>
                                       )}
                                       {ov && (
-                                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-warning-bg text-warning border border-warning-border">
+                                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-meta font-medium bg-warning-bg text-warning border border-warning-border">
                                           Override
                                         </span>
                                       )}
@@ -276,15 +276,15 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
               {/* Subject eligibility */}
               {data.subject_overrides.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-sm font-medium text-text-primary mb-1">Subject eligibility</h3>
-                  <p className="text-xs text-text-muted mb-3 max-w-xl">
+                  <h3 className="text-body font-medium text-text-primary mb-1">Subject eligibility</h3>
+                  <p className="text-meta text-text-muted mb-3 max-w-xl">
                     Whether this person can be assigned or targeted by others — independent of whether they can
                     open the module themselves.
                   </p>
                   <div className="border border-border-light rounded-xl overflow-hidden">
                     {data.subject_overrides.map((s) => (
                       <div key={s.subject_key} className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-border-light last:border-0">
-                        <span className="flex-1 min-w-[160px] text-sm font-medium text-text-primary">{s.label}</span>
+                        <span className="flex-1 min-w-[160px] text-body font-medium text-text-primary">{s.label}</span>
                         <TriToggle
                           value={s.override}
                           busy={busyKey === `subj:${s.subject_key}`}

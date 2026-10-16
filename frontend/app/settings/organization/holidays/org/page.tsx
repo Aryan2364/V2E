@@ -77,8 +77,8 @@ export default function OrgCalendarPage() {
   return (
     <div className="space-y-4 pb-12">
       <div>
-        <h1 className="text-[28px] font-medium text-text-primary">Org Calendar</h1>
-        <p className="text-[15px] text-text-secondary mt-1">Set your working days and holidays. They drive deadlines, leave, and reports.</p>
+        <h1 className="text-page-title font-medium text-text-primary">Org Calendar</h1>
+        <p className="text-body text-text-secondary mt-1">Set your working days and holidays. They drive deadlines, leave, and reports.</p>
       </div>
 
       {/* Working days — slim, auto-saving strip */}
@@ -90,7 +90,7 @@ export default function OrgCalendarPage() {
         <div className="bg-surface border border-border-light rounded-card p-4 shadow-card flex flex-col">
           <div className="flex items-center justify-between gap-3 flex-wrap mb-4 shrink-0">
             <div className="flex items-center gap-3">
-              <h2 className="text-[18px] font-medium text-text-primary">Holidays</h2>
+              <h2 className="text-section font-medium text-text-primary">Holidays</h2>
               {/* Year stepper — < 2026 > */}
               <div className="flex items-center gap-1 rounded-lg border border-border bg-surface">
                 <button
@@ -101,7 +101,7 @@ export default function OrgCalendarPage() {
                 >
                   <ChevronLeft size={15} />
                 </button>
-                <span className="min-w-[44px] text-center text-sm font-medium text-text-primary tabular-nums">{selectedYear}</span>
+                <span className="min-w-[44px] text-center text-body font-medium text-text-primary tabular-nums">{selectedYear}</span>
                 <button
                   type="button"
                   onClick={() => setSelectedYear((y) => y + 1)}
@@ -118,7 +118,7 @@ export default function OrgCalendarPage() {
                 <button
                   type="button"
                   onClick={() => setShowImport(true)}
-                  className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-sm font-medium text-text-secondary hover:border-primary hover:text-primary-text transition-colors"
+                  className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-body font-medium text-text-secondary hover:border-primary hover:text-primary-text transition-colors"
                 >
                   <Upload size={14} />
                   Import CSV
@@ -126,7 +126,7 @@ export default function OrgCalendarPage() {
                 <button
                   type="button"
                   onClick={() => setShowAdd(true)}
-                  className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+                  className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-body font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
                 >
                   <Plus size={15} />
                   Add Holiday

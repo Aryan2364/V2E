@@ -51,10 +51,10 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
       <div className="flex items-start gap-2">
         <AlertTriangle size={16} className="text-warning shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-warning">
+          <p className="text-body font-medium text-warning">
             {pending.length} national holiday{pending.length !== 1 ? 's' : ''} pending review for {year}
           </p>
-          <p className="text-xs text-warning mt-0.5">
+          <p className="text-meta text-warning mt-0.5">
             Select which to activate. Unselected holidays will be dismissed.
           </p>
         </div>
@@ -68,7 +68,7 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
             onChange={toggleAll}
             className="w-4 h-4 accent-warning"
           />
-          <span className="text-xs font-medium text-text-secondary">Select all ({pending.length})</span>
+          <span className="text-meta font-medium text-text-secondary">Select all ({pending.length})</span>
         </div>
         {pending.map((h) => (
           <label key={h.id} className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-warning-bg transition-colors">
@@ -78,10 +78,10 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
               onChange={() => toggle(h.id)}
               className="w-4 h-4 accent-warning"
             />
-            <span className="w-28 shrink-0 text-xs text-text-secondary">
+            <span className="w-28 shrink-0 text-meta text-text-secondary">
               {new Date(h.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
             </span>
-            <span className="flex-1 text-sm text-text-primary font-medium">{h.name}</span>
+            <span className="flex-1 text-body text-text-primary font-medium">{h.name}</span>
           </label>
         ))}
       </div>
@@ -91,7 +91,7 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
           type="button"
           disabled={saving}
           onClick={dismiss}
-          className="flex items-center gap-1.5 h-9 px-4 rounded-lg border border-warning-border text-sm font-medium text-warning bg-surface hover:bg-warning-bg disabled:opacity-50 transition-colors"
+          className="flex items-center gap-1.5 h-9 px-4 rounded-lg border border-warning-border text-body font-medium text-warning bg-surface hover:bg-warning-bg disabled:opacity-50 transition-colors"
         >
           <X size={14} />
           Dismiss All
@@ -100,7 +100,7 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
           type="button"
           disabled={saving || selected.size === 0}
           onClick={apply}
-          className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-sm font-medium text-white bg-warning hover:bg-warning disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+          className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-body font-medium text-white bg-warning hover:bg-warning disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
         >
           <Check size={14} />
           Activate {selected.size > 0 ? `${selected.size} Selected` : ''}

@@ -49,13 +49,13 @@ type RoleFormValues = z.infer<typeof roleSchema>
 // ─── Shared styles ──────────────────────────────────────────────────────────────
 
 const inputCls =
-  'w-full rounded-lg border border-border bg-surface px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
+  'w-full rounded-lg border border-border bg-surface px-3 py-[10px] text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
 const smInputCls =
-  'w-full rounded-lg border border-border bg-surface px-2.5 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
+  'w-full rounded-lg border border-border bg-surface px-2.5 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
 const textareaCls =
-  'w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors resize-none'
-const labelCls = 'text-sm font-medium text-text-secondary mb-1.5 block'
-const fieldLabelCls = 'text-[11px] font-medium text-text-muted uppercase tracking-wide mb-1 block'
+  'w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors resize-none'
+const labelCls = 'text-body font-medium text-text-secondary mb-1.5 block'
+const fieldLabelCls = 'text-meta font-medium text-text-muted uppercase tracking-wide mb-1 block'
 
 const EMPTY: RoleFormValues = {
   department_id: '',
@@ -243,7 +243,7 @@ export default function RoleFormDrawer({
                   )}
                 />
                 {errors.department_id && (
-                  <p className="text-xs text-danger mt-1">{errors.department_id.message}</p>
+                  <p className="text-meta text-danger mt-1">{errors.department_id.message}</p>
                 )}
               </div>
             )}
@@ -259,7 +259,7 @@ export default function RoleFormDrawer({
                   autoFocus
                 />
                 {errors.title && (
-                  <p className="text-xs text-danger mt-1">{errors.title.message}</p>
+                  <p className="text-meta text-danger mt-1">{errors.title.message}</p>
                 )}
               </div>
               <div>
@@ -291,25 +291,25 @@ export default function RoleFormDrawer({
             {/* KRA builder */}
             <div className="bg-surface-sunken border border-border-light rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-medium text-text-primary">Key Result Areas (KRA)</h4>
+                <h4 className="text-body font-medium text-text-primary">Key Result Areas (KRA)</h4>
                 <button
                   type="button"
                   onClick={() => kraArray.append({ title: '', description: '' })}
-                  className="inline-flex items-center gap-1 text-xs text-primary-text font-medium hover:text-primary-text"
+                  className="inline-flex items-center gap-1 text-meta text-primary-text font-medium hover:text-primary-text"
                 >
                   <Plus size={13} /> Add KRA
                 </button>
               </div>
               <div className="flex flex-col gap-3">
                 {kraArray.fields.length === 0 && (
-                  <p className="text-xs text-text-muted text-center py-3">No KRAs added yet.</p>
+                  <p className="text-meta text-text-muted text-center py-3">No KRAs added yet.</p>
                 )}
                 {kraArray.fields.map((field, i) => (
                   <div
                     key={field.id}
                     className="bg-surface border border-border-light rounded-lg p-3 flex gap-3"
                   >
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-xs font-medium text-primary-text">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-meta font-medium text-primary-text">
                       {i + 1}
                     </span>
                     <div className="flex-1 flex flex-col gap-2">
@@ -341,25 +341,25 @@ export default function RoleFormDrawer({
             {/* KPI builder */}
             <div className="bg-surface-sunken border border-border-light rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-medium text-text-primary">Key Performance Indicators (KPI)</h4>
+                <h4 className="text-body font-medium text-text-primary">Key Performance Indicators (KPI)</h4>
                 <button
                   type="button"
                   onClick={() => kpiArray.append({ title: '', metric: '', target: '', unit: '' })}
-                  className="inline-flex items-center gap-1 text-xs text-primary-text font-medium hover:text-primary-text"
+                  className="inline-flex items-center gap-1 text-meta text-primary-text font-medium hover:text-primary-text"
                 >
                   <Plus size={13} /> Add KPI
                 </button>
               </div>
               <div className="flex flex-col gap-3">
                 {kpiArray.fields.length === 0 && (
-                  <p className="text-xs text-text-muted text-center py-3">No KPIs added yet.</p>
+                  <p className="text-meta text-text-muted text-center py-3">No KPIs added yet.</p>
                 )}
                 {kpiArray.fields.map((field, i) => (
                   <div
                     key={field.id}
                     className="bg-surface border border-border-light rounded-lg p-3 flex gap-3"
                   >
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-xs font-medium text-primary-text">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-meta font-medium text-primary-text">
                       {i + 1}
                     </span>
                     <div className="flex-1 flex flex-col gap-2.5">
@@ -412,7 +412,7 @@ export default function RoleFormDrawer({
             </div>
 
             {formError && (
-              <p className="text-sm text-danger rounded-lg bg-danger-bg border border-danger-border px-4 py-3">
+              <p className="text-body text-danger rounded-lg bg-danger-bg border border-danger-border px-4 py-3">
                 {formError}
               </p>
             )}
@@ -422,7 +422,7 @@ export default function RoleFormDrawer({
               <div className="border-t border-border-light pt-4">
                 {confirmDelete ? (
                   <div className="flex items-center gap-3">
-                    <p className="text-sm text-text-secondary flex-1">Delete this job role permanently?</p>
+                    <p className="text-body text-text-secondary flex-1">Delete this job role permanently?</p>
                     <Button variant="danger" size="sm" isLoading={deleting} onClick={handleDelete}>
                       Confirm delete
                     </Button>
@@ -439,7 +439,7 @@ export default function RoleFormDrawer({
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(true)}
-                    className="inline-flex items-center gap-1.5 text-sm text-danger font-medium hover:text-danger transition-colors"
+                    className="inline-flex items-center gap-1.5 text-body text-danger font-medium hover:text-danger transition-colors"
                   >
                     <Trash2 size={14} /> Delete job role
                   </button>
