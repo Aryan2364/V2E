@@ -4,6 +4,8 @@ import { useMemo, useRef, useState, useEffect } from 'react'
 import { Plus, X, Search, CornerDownRight, ChevronRight } from 'lucide-react'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -132,14 +134,9 @@ function AddPicker({
   return (
     <div ref={wrapRef} className="relative">
       <Tooltip label={label}>
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={label}
-          className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground flex items-center justify-center transition-colors shrink-0"
-        >
+        <Button type="button" size="icon" onClick={() => setOpen((v) => !v)} aria-label={label}>
           <Plus size={16} />
-        </button>
+        </Button>
       </Tooltip>
       {open && (
         // Absolute panel anchored under the top-right trigger; right-aligned so it
@@ -387,15 +384,15 @@ export default function ChecklistAccessEditor({
                 <CountBadge n={deptRules.length} />
               </div>
               <Tooltip label={hasEmptyDept ? 'Select a department in the blank row first' : 'Add department'}>
-              <button
-                type="button"
-                disabled={hasEmptyDept}
-                onClick={() => add({ kind: 'department', department_id: '', include_sub_departments: true })}
-                aria-label="Add department"
-                className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground flex items-center justify-center transition-colors shrink-0 disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
-              >
-                <Plus size={16} />
-              </button>
+                <Button
+                  type="button"
+                  size="icon"
+                  disabled={hasEmptyDept}
+                  onClick={() => add({ kind: 'department', department_id: '', include_sub_departments: true })}
+                  aria-label="Add department"
+                >
+                  <Plus size={16} />
+                </Button>
               </Tooltip>
             </div>
             <div className="mt-2 space-y-2 flex-1">
@@ -407,14 +404,16 @@ export default function ChecklistAccessEditor({
                 <div key={r._key} className="bg-surface-sunken border border-border-light rounded-lg p-2.5 space-y-2">
                   {/* Remove sits at the top-right of the row, above the picker */}
                   <div className="flex justify-end -mt-1 -mb-1">
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={() => removeDept(r)}
                       aria-label="Remove department"
-                      className="p-1 -mr-1 text-text-muted hover:text-danger transition-colors shrink-0"
+                      className="hover:text-danger"
                     >
                       <X size={14} />
-                    </button>
+                    </Button>
                   </div>
                   <DepartmentSelect
                     value={r.department_id ?? ''}
@@ -424,26 +423,13 @@ export default function ChecklistAccessEditor({
                     inline
                     lockedReason={(id) => lockReasonFor(r._key, id)}
                   />
-                  <button
-                    type="button"
-                    onClick={() => update(r._key, { include_sub_departments: !cascade })}
-                    className="flex items-center gap-2 text-meta text-text-secondary"
-                  >
-                    <span
-                      className={[
-                        'relative w-9 h-5 rounded-full transition-colors duration-200 shrink-0',
-                        cascade ? 'bg-primary' : 'bg-surface-control-pressed',
-                      ].join(' ')}
-                    >
-                      <span
-                        className={[
-                          'absolute top-0.5 left-0.5 w-4 h-4 bg-surface rounded-full shadow-sm transition-transform duration-200',
-                          cascade ? 'translate-x-4' : 'translate-x-0',
-                        ].join(' ')}
-                      />
-                    </span>
+                  <label className="flex items-center gap-2 text-meta text-text-secondary cursor-pointer">
+                    <Switch
+                      checked={cascade}
+                      onCheckedChange={(checked) => update(r._key, { include_sub_departments: checked })}
+                    />
                     Include sub-departments
-                  </button>
+                  </label>
                   {/* When cascading, spell out exactly which sub-departments are swept in. */}
                   {r.department_id && cascade && (
                     subs.length === 0 ? (
