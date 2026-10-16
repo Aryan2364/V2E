@@ -128,6 +128,25 @@ function formatDate(value: Date | string): string {
   return `${parts.day} ${MONTH_NAMES_SHORT[parts.month - 1]} ${parts.year}`
 }
 
+/**
+ * v2e addition: the day and month of DD Mon YYYY without the year, e.g. "12 Aug",
+ * for calendar strips and lists already grouped by year. Same parts as formatDate.
+ */
+function formatDayMonth(value: Date | string): string {
+  const parts = readParts(value)
+  if (!parts) return ""
+  return `${parts.day} ${MONTH_NAMES_SHORT[parts.month - 1]}`
+}
+
+const WEEKDAY_NAMES_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const
+
+/** v2e addition: short weekday of the calendar date in TIME_ZONE, e.g. "Mon". */
+function formatWeekday(value: Date | string): string {
+  const parts = readParts(value)
+  if (!parts) return ""
+  return WEEKDAY_NAMES_SHORT[new Date(Date.UTC(parts.year, parts.month - 1, parts.day)).getUTCDay()]
+}
+
 /** h:mm A, e.g. "3:45 PM". Empty string when the input cannot be read. */
 function formatTime(value: Date | string): string {
   const parts = readParts(value)
@@ -367,6 +386,8 @@ function zonedMidnightInstant(year: number, month: number, day: number): number 
 export {
   TIME_ZONE,
   formatDate,
+  formatDayMonth,
+  formatWeekday,
   formatTime,
   formatDateTime,
   parseDate,
