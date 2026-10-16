@@ -23,7 +23,7 @@ export default function RatingWidget({ onSubmit, submitting, existingRating, exi
             <Star key={n} size={20} className={n <= existingRating ? 'text-warning fill-warning' : 'text-muted'} />
           ))}
         </div>
-        {existingComment && <p className="text-sm text-text-secondary italic">"{existingComment}"</p>}
+        {existingComment && <p className="text-body text-text-secondary italic">"{existingComment}"</p>}
       </div>
     )
   }
@@ -52,13 +52,13 @@ export default function RatingWidget({ onSubmit, submitting, existingRating, exi
         onChange={(e) => setComment(e.target.value)}
         placeholder="Add a comment (optional)"
         rows={2}
-        className="w-full px-3 py-2 border border-border rounded-[8px] text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden resize-none"
+        className="w-full px-3 py-2 border border-border rounded-[8px] text-body text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden resize-none"
       />
       <button
         type="button"
         onClick={() => rating > 0 && onSubmit(rating, comment)}
         disabled={rating === 0 || submitting}
-        className="self-start flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+        className="self-start flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
       >
         {submitting ? 'Submitting...' : 'Submit Rating'}
       </button>

@@ -127,7 +127,7 @@ const resolutionColumns: ResponsiveColumn<TicketReportResolutionTime>[] = [
     key: 'user_id',
     header: 'User ID',
     primary: true,
-    cellClassName: 'font-mono text-xs text-text-secondary',
+    cellClassName: 'font-mono text-meta text-text-secondary',
     render: (d) => d.user_id,
   },
   {
@@ -187,9 +187,9 @@ function BreakdownTab({
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                        <span className="text-sm font-medium text-text-primary">{d.label}</span>
+                        <span className="text-body font-medium text-text-primary">{d.label}</span>
                       </div>
-                      <span className="text-sm text-text-secondary tabular-nums">{d.count} ({pct}%)</span>
+                      <span className="text-body text-text-secondary tabular-nums">{d.count} ({pct}%)</span>
                     </div>
                     <div className="h-1.5 bg-surface-control rounded-full overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: d.color }} />
@@ -236,7 +236,7 @@ function SlaTab({ orgId, from, to }: { orgId: string; from: string; to: string }
       </div>
 
       {data.tickets.length === 0 ? (
-        <div className="text-center py-12 text-sm text-text-secondary">No SLA breaches in this period.</div>
+        <div className="text-center py-12 text-body text-text-secondary">No SLA breaches in this period.</div>
       ) : (
         <>
           <div className="flex justify-end">
@@ -263,7 +263,7 @@ const slaColumns: ResponsiveColumn<SlaTicketRow>[] = [
   {
     key: 'ticket_number',
     header: 'Ticket #',
-    cellClassName: 'font-mono text-xs text-text-secondary',
+    cellClassName: 'font-mono text-meta text-text-secondary',
     render: (t) => t.ticket_number,
   },
   {
@@ -283,7 +283,7 @@ const slaColumns: ResponsiveColumn<SlaTicketRow>[] = [
     key: 'status',
     header: 'Status',
     render: () => (
-      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-danger-bg text-danger">Breached</span>
+      <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-danger-bg text-danger">Breached</span>
     ),
   },
 ]
@@ -316,7 +316,7 @@ function RatingsTab({ orgId, from, to }: { orgId: string; from: string; to: stri
       </div>
 
       {data.total_ratings === 0 ? (
-        <div className="text-center py-12 text-sm text-text-secondary">No ratings in this period.</div>
+        <div className="text-center py-12 text-body text-text-secondary">No ratings in this period.</div>
       ) : (
         <>
           <div className="h-52">
@@ -356,7 +356,7 @@ const ratingsColumns: ResponsiveColumn<RatingTicketRow>[] = [
   {
     key: 'ticket_number',
     header: 'Ticket #',
-    cellClassName: 'font-mono text-xs text-text-secondary',
+    cellClassName: 'font-mono text-meta text-text-secondary',
     render: (t) => t.ticket_number,
   },
   {
@@ -443,7 +443,7 @@ const firstResponseColumns: ResponsiveColumn<TicketReportFirstResponse>[] = [
     key: 'user_id',
     header: 'User ID',
     primary: true,
-    cellClassName: 'font-mono text-xs text-text-secondary',
+    cellClassName: 'font-mono text-meta text-text-secondary',
     render: (d) => d.user_id,
   },
   {
@@ -495,7 +495,7 @@ function BacklogAgingTab({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-6">
-      <p className="text-xs text-text-secondary -mt-1">Live snapshot of currently open tickets — not affected by the date range.</p>
+      <p className="text-meta text-text-secondary -mt-1">Live snapshot of currently open tickets — not affected by the date range.</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <StatCard label="Total Open" value={data.total_open} color="var(--primary-text)" />
@@ -503,7 +503,7 @@ function BacklogAgingTab({ orgId }: { orgId: string }) {
       </div>
 
       {data.total_open === 0 ? (
-        <div className="text-center py-12 text-sm text-text-secondary">No open tickets in the backlog.</div>
+        <div className="text-center py-12 text-body text-text-secondary">No open tickets in the backlog.</div>
       ) : (
         <>
           <div className="h-56">
@@ -522,7 +522,7 @@ function BacklogAgingTab({ orgId }: { orgId: string }) {
 
           {data.oldest.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-text-primary mb-3">Oldest open tickets</h3>
+              <h3 className="text-body font-medium text-text-primary mb-3">Oldest open tickets</h3>
               <ResponsiveTable
                 className={FLAT_TABLE}
                 columns={backlogColumns}
@@ -543,7 +543,7 @@ const backlogColumns: ResponsiveColumn<BacklogRow>[] = [
   {
     key: 'ticket_number',
     header: 'Ticket #',
-    cellClassName: 'font-mono text-xs text-text-secondary',
+    cellClassName: 'font-mono text-meta text-text-secondary',
     render: (t) => t.ticket_number,
   },
   {
@@ -592,7 +592,7 @@ function AgentLoadTab({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-6">
-      <p className="text-xs text-text-secondary -mt-1">Live snapshot of resolver workload — not affected by the date range.</p>
+      <p className="text-meta text-text-secondary -mt-1">Live snapshot of resolver workload — not affected by the date range.</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <StatCard label="Resolvers" value={data.length} color="var(--primary-text)" />
@@ -627,7 +627,7 @@ const agentLoadColumns: ResponsiveColumn<TicketReportAgentLoad>[] = [
     key: 'user_id',
     header: 'User ID',
     primary: true,
-    cellClassName: 'font-mono text-xs text-text-secondary',
+    cellClassName: 'font-mono text-meta text-text-secondary',
     render: (d) => d.user_id,
   },
   { key: 'open', header: 'Open', cellClassName: 'text-text-primary tabular-nums', render: (d) => d.open },
@@ -670,7 +670,7 @@ function ReopenRateTab({ orgId, from, to }: { orgId: string; from: string; to: s
       </div>
 
       {data.most_reopened.length === 0 ? (
-        <div className="text-center py-12 text-sm text-text-secondary">No reopened tickets in this period.</div>
+        <div className="text-center py-12 text-body text-text-secondary">No reopened tickets in this period.</div>
       ) : (
         <>
           <div className="flex justify-end">
@@ -680,7 +680,7 @@ function ReopenRateTab({ orgId, from, to }: { orgId: string; from: string; to: s
             )} />
           </div>
           <div>
-            <h3 className="text-sm font-medium text-text-primary mb-3">Most reopened tickets</h3>
+            <h3 className="text-body font-medium text-text-primary mb-3">Most reopened tickets</h3>
             <ResponsiveTable
               className={FLAT_TABLE}
               columns={reopenColumns}
@@ -700,7 +700,7 @@ const reopenColumns: ResponsiveColumn<ReopenRow>[] = [
   {
     key: 'ticket_number',
     header: 'Ticket #',
-    cellClassName: 'font-mono text-xs text-text-secondary',
+    cellClassName: 'font-mono text-meta text-text-secondary',
     render: (t) => t.ticket_number,
   },
   {
@@ -729,14 +729,14 @@ function Spinner() {
 }
 
 function Empty() {
-  return <p className="text-sm text-text-secondary text-center py-12">No data available for this period.</p>
+  return <p className="text-body text-text-secondary text-center py-12">No data available for this period.</p>
 }
 
 function ExportBtn({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 px-3 py-[7px] text-sm font-medium text-primary-text border border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
+      className="flex items-center gap-1.5 px-3 py-[7px] text-body font-medium text-primary-text border border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
     >
       <Download size={14} />
       Export CSV
@@ -747,8 +747,8 @@ function ExportBtn({ onClick }: { onClick: () => void }) {
 function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
     <div className="bg-surface border border-border-light rounded-card shadow-card p-4">
-      <p className="text-xs font-medium text-text-secondary mb-1">{label}</p>
-      <p className="text-2xl font-medium tabular-nums" style={{ color }}>{value}</p>
+      <p className="text-meta font-medium text-text-secondary mb-1">{label}</p>
+      <p className="text-page-title font-medium tabular-nums" style={{ color }}>{value}</p>
     </div>
   )
 }
@@ -798,8 +798,8 @@ export default function TicketReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div>
-          <h1 className="text-[22px] font-medium text-text-primary">Ticket Reports</h1>
-          <p className="text-sm text-text-secondary mt-0.5">Analytics and insights for your ticket system</p>
+          <h1 className="text-page-title font-medium text-text-primary">Ticket Reports</h1>
+          <p className="text-body text-text-secondary mt-0.5">Analytics and insights for your ticket system</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <div className="w-[220px]">
@@ -808,7 +808,7 @@ export default function TicketReportsPage() {
           {(from || to) && (
             <button
               onClick={() => { setFrom(''); setTo('') }}
-              className="px-3 py-[7px] text-sm font-medium text-danger border border-danger-border bg-danger-bg rounded-[8px] hover:bg-danger-bg transition-colors"
+              className="px-3 py-[7px] text-body font-medium text-danger border border-danger-border bg-danger-bg rounded-[8px] hover:bg-danger-bg transition-colors"
             >
               Clear
             </button>
@@ -825,7 +825,7 @@ export default function TicketReportsPage() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={[
-                'flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-sm font-medium text-left transition-colors',
+                'flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-body font-medium text-left transition-colors',
                 activeTab === tab.key
                   ? 'bg-primary-subtle text-primary-text'
                   : 'text-text-secondary hover:bg-surface-sunken hover:text-text-primary',

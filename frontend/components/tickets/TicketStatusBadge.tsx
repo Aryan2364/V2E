@@ -7,7 +7,7 @@ interface Props {
 export default function TicketStatusBadge({ status }: Props) {
   return (
     <span
-      className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-[11px] font-medium"
+      className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-meta font-medium"
       style={{
         backgroundColor: status.color + '22',
         color: status.color,

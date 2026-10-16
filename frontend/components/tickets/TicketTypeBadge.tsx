@@ -7,7 +7,7 @@ interface Props {
 export default function TicketTypeBadge({ type }: Props) {
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-[999px] px-2 py-0.5 text-[11px] font-medium"
+      className="inline-flex items-center gap-1 rounded-[999px] px-2 py-0.5 text-meta font-medium"
       style={{
         backgroundColor: type.color + '22',
         color: type.color,

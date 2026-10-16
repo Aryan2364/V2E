@@ -16,7 +16,7 @@ function formatDate(iso: string) {
 function SnapshotViewer({ ticket }: { ticket: Ticket }) {
   return (
     <div className="mt-3 p-4 bg-surface-sunken border border-border-light rounded-[10px] space-y-3">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-meta">
         <div>
           <p className="text-text-muted uppercase tracking-wide font-medium mb-0.5">Raised by</p>
           <p className="text-text-primary font-medium">{ticket.raised_by_user_id}</p>
@@ -55,28 +55,28 @@ function SnapshotViewer({ ticket }: { ticket: Ticket }) {
 
       {ticket.description && (
         <div>
-          <p className="text-text-muted uppercase tracking-wide text-xs font-medium mb-1">Description</p>
-          <p className="text-xs text-text-secondary whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
+          <p className="text-text-muted uppercase tracking-wide text-meta font-medium mb-1">Description</p>
+          <p className="text-meta text-text-secondary whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
         </div>
       )}
 
       {ticket.resolution_note && (
         <div>
-          <p className="text-text-muted uppercase tracking-wide text-xs font-medium mb-1">Resolution Note</p>
-          <p className="text-xs text-text-secondary whitespace-pre-wrap leading-relaxed">{ticket.resolution_note}</p>
+          <p className="text-text-muted uppercase tracking-wide text-meta font-medium mb-1">Resolution Note</p>
+          <p className="text-meta text-text-secondary whitespace-pre-wrap leading-relaxed">{ticket.resolution_note}</p>
         </div>
       )}
 
       {ticket.checklist && ticket.checklist.length > 0 && (
         <div>
-          <p className="text-text-muted uppercase tracking-wide text-xs font-medium mb-1">Checklist</p>
+          <p className="text-text-muted uppercase tracking-wide text-meta font-medium mb-1">Checklist</p>
           <div className="space-y-1">
             {ticket.checklist.map((item) => (
               <div key={item.id} className="flex items-center gap-2">
                 <div className={`w-3.5 h-3.5 rounded-xs border shrink-0 flex items-center justify-center ${item.is_completed ? 'bg-success border-success' : 'border-border'}`}>
-                  {item.is_completed && <span className="text-white text-[8px] font-medium">✓</span>}
+                  {item.is_completed && <span className="text-white text-meta font-medium">✓</span>}
                 </div>
-                <span className={`text-xs ${item.is_completed ? 'line-through text-text-muted' : 'text-text-secondary'}`}>{item.title}</span>
+                <span className={`text-meta ${item.is_completed ? 'line-through text-text-muted' : 'text-text-secondary'}`}>{item.title}</span>
               </div>
             ))}
           </div>
@@ -96,22 +96,22 @@ function ArchiveRow({ entry }: { entry: TicketArchiveEntry }) {
         className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-surface-sunken transition-colors"
         onClick={() => setExpanded((v) => !v)}
       >
-        <span className="font-mono text-xs text-text-muted shrink-0">{snapshot.ticket_number}</span>
+        <span className="font-mono text-meta text-text-muted shrink-0">{snapshot.ticket_number}</span>
 
         {snapshot.ticket_type && <TicketTypeBadge type={snapshot.ticket_type} />}
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-text-primary truncate">{snapshot.title}</p>
+          <p className="text-body font-medium text-text-primary truncate">{snapshot.title}</p>
           {snapshot.category && (
-            <p className="text-xs text-text-muted truncate">{snapshot.category.name}</p>
+            <p className="text-meta text-text-muted truncate">{snapshot.category.name}</p>
           )}
         </div>
 
         {snapshot.status && <TicketStatusBadge status={snapshot.status} />}
 
         <div className="text-right shrink-0">
-          <p className="text-xs text-text-secondary">Deleted {formatDate(entry.deleted_at)}</p>
-          <p className="text-xs text-text-muted truncate max-w-[140px]">{entry.deletion_reason}</p>
+          <p className="text-meta text-text-secondary">Deleted {formatDate(entry.deleted_at)}</p>
+          <p className="text-meta text-text-muted truncate max-w-[140px]">{entry.deletion_reason}</p>
         </div>
 
         <span className="text-text-muted shrink-0">
@@ -158,10 +158,10 @@ export default function TicketArchivePage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[22px] font-medium text-text-primary">Ticket Archive</h1>
-          <p className="text-sm text-text-secondary mt-0.5">Read-only snapshots of deleted tickets</p>
+          <h1 className="text-page-title font-medium text-text-primary">Ticket Archive</h1>
+          <p className="text-body text-text-secondary mt-0.5">Read-only snapshots of deleted tickets</p>
         </div>
-        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-xs font-medium text-text-secondary bg-surface-control border border-border-light">
+        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-meta font-medium text-text-secondary bg-surface-control border border-border-light">
           <Archive size={13} />
           {entries.length} archived
         </span>
@@ -172,7 +172,7 @@ export default function TicketArchivePage() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search by ticket number, title, or deletion reason..."
-        className="w-full px-3 py-2 border border-border rounded-[8px] text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden"
+        className="w-full px-3 py-2 border border-border rounded-[8px] text-body text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden"
       />
 
       {loading ? (
@@ -182,8 +182,8 @@ export default function TicketArchivePage() {
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 border border-dashed border-border-light rounded-[12px]">
           <Archive size={28} className="text-muted mb-3" />
-          <p className="text-sm font-medium text-text-primary">{search ? 'No matching archived tickets' : 'No archived tickets'}</p>
-          {search && <p className="text-xs text-text-secondary mt-1">Try a different search term</p>}
+          <p className="text-body font-medium text-text-primary">{search ? 'No matching archived tickets' : 'No archived tickets'}</p>
+          {search && <p className="text-meta text-text-secondary mt-1">Try a different search term</p>}
         </div>
       ) : (
         <div className="flex flex-col gap-2">

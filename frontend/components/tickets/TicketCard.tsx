@@ -30,7 +30,7 @@ export default function TicketCard({ ticket, onClick }: Props) {
       className="bg-surface border border-border-light rounded-card shadow-card px-6 py-3.5 flex items-center gap-4 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group"
     >
       {/* Ticket number */}
-      <span className="shrink-0 font-mono text-xs text-text-muted w-[76px]">{ticket.ticket_number}</span>
+      <span className="shrink-0 font-mono text-meta text-text-muted w-[76px]">{ticket.ticket_number}</span>
 
       {/* Type badge */}
       {ticket.ticket_type && (
@@ -41,12 +41,12 @@ export default function TicketCard({ ticket, onClick }: Props) {
 
       {/* Title + category */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
+        <p className="text-body font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
           {ticket.title}
         </p>
         {ticket.category && (
           <span
-            className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[10px] font-medium mt-0.5"
+            className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-meta font-medium mt-0.5"
             style={{ backgroundColor: ticket.category.color + '22', color: ticket.category.color, border: `1px solid ${ticket.category.color}44` }}
           >
             {ticket.category.name}
@@ -58,7 +58,7 @@ export default function TicketCard({ ticket, onClick }: Props) {
       {ticket.priority && (
         <div className="shrink-0 hidden sm:block">
           <span
-            className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[10px] font-medium"
+            className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-meta font-medium"
             style={{ backgroundColor: ticket.priority.color + '22', color: ticket.priority.color, border: `1px solid ${ticket.priority.color}44` }}
           >
             {ticket.priority.label}
@@ -70,7 +70,7 @@ export default function TicketCard({ ticket, onClick }: Props) {
       <div className="shrink-0 hidden md:flex items-center gap-1.5">
         {ticket.assigned_to_user_id ? (
           <div
-            className={`w-6 h-6 rounded-full ${avatarColor(ticket.assigned_to_user_id)} flex items-center justify-center text-white text-[9px] font-medium`}
+            className={`w-6 h-6 rounded-full ${avatarColor(ticket.assigned_to_user_id)} flex items-center justify-center text-white text-meta font-medium`}
           >
             {getInitials(ticket.assigned_to_user_id.slice(0, 4))}
           </div>
@@ -99,7 +99,7 @@ export default function TicketCard({ ticket, onClick }: Props) {
       )}
 
       {/* Created date */}
-      <div className="shrink-0 hidden lg:flex items-center gap-1 text-xs text-text-secondary">
+      <div className="shrink-0 hidden lg:flex items-center gap-1 text-meta text-text-secondary">
         <Calendar size={11} />
         <span>{formatDate(ticket.created_at)}</span>
       </div>

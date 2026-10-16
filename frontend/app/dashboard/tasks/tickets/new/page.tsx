@@ -114,7 +114,7 @@ export default function NewTicketPage() {
     }
   }
 
-  const inputCls = 'w-full px-3 py-2.5 border border-border rounded-[8px] text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden bg-white'
+  const inputCls = 'w-full px-3 py-2.5 border border-border rounded-[8px] text-body text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden bg-white'
 
   if (loading) {
     return (
@@ -151,7 +151,7 @@ export default function NewTicketPage() {
               value={templateSearch}
               onChange={(e) => setTemplateSearch(e.target.value)}
               placeholder="Search templates..."
-              className="w-full pl-8 pr-3 py-2 border border-border rounded-[8px] text-sm focus:border-primary focus:outline-hidden"
+              className="w-full pl-8 pr-3 py-2 border border-border rounded-[8px] text-body focus:border-primary focus:outline-hidden"
             />
           </div>
 
@@ -160,15 +160,15 @@ export default function NewTicketPage() {
             onClick={() => selectTemplate(null)}
             className="w-full text-left p-4 rounded-[12px] border-2 border-dashed border-border hover:border-primary hover:bg-surface-sunken transition-all"
           >
-            <p className="text-sm font-medium text-text-secondary">Start from scratch</p>
-            <p className="text-xs text-text-muted mt-0.5">Fill in all details manually</p>
+            <p className="text-body font-medium text-text-secondary">Start from scratch</p>
+            <p className="text-meta text-text-muted mt-0.5">Fill in all details manually</p>
           </button>
 
           {groupedTemplates.map((group) => (
             <div key={group.label} className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">{group.label}</p>
-                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
+                <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">{group.label}</p>
+                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
                   {group.items.length}
                 </span>
               </div>
@@ -191,7 +191,7 @@ export default function NewTicketPage() {
         <div className="flex flex-col gap-4">
           {selectedTemplate && (
             <div className="flex items-center gap-2 px-3 py-2 bg-primary-subtle border border-primary-border rounded-[8px]">
-              <span className="text-xs text-primary-text font-medium">Using template: {selectedTemplate.name}</span>
+              <span className="text-meta text-primary-text font-medium">Using template: {selectedTemplate.name}</span>
               <button type="button" onClick={() => setStep('template')} className="ml-auto text-primary-text hover:text-primary-text">
                 <X size={14} />
               </button>
@@ -199,28 +199,28 @@ export default function NewTicketPage() {
           )}
 
           {error && (
-            <div className="px-4 py-3 bg-danger-bg border border-danger-border rounded-[8px] text-sm text-danger">{error}</div>
+            <div className="px-4 py-3 bg-danger-bg border border-danger-border rounded-[8px] text-body text-danger">{error}</div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
+            <label className="block text-body font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Briefly describe the issue" className={inputCls} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Description</label>
+            <label className="block text-body font-medium text-text-secondary mb-1.5">Description</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Provide details..." className={`${inputCls} resize-none`} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">Type <span className="text-danger">*</span></label>
+            <label className="block text-body font-medium text-text-secondary mb-1.5">Type <span className="text-danger">*</span></label>
             <div className="grid grid-cols-2 gap-2">
               {types.map((t) => (
                 <button
                   key={t.id}
                   type="button"
                   onClick={() => { setTypeId(t.id); setCategoryId('') }}
-                  className={`flex items-center gap-2 p-3 rounded-[8px] border-2 text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 p-3 rounded-[8px] border-2 text-body font-medium transition-colors ${
                     typeId === t.id ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary hover:bg-surface-sunken'
                   }`}
                 >
@@ -232,7 +232,7 @@ export default function NewTicketPage() {
 
           {filteredCategories.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Category</label>
+              <label className="block text-body font-medium text-text-secondary mb-1.5">Category</label>
               <StyledSelect
                 value={categoryId}
                 onChange={(v) => setCategoryId(v)}
@@ -247,7 +247,7 @@ export default function NewTicketPage() {
 
           {priorities.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Priority</label>
+              <label className="block text-body font-medium text-text-secondary mb-1.5">Priority</label>
               <StyledSelect
                 value={priorityId}
                 onChange={(v) => setPriorityId(v)}
@@ -259,24 +259,24 @@ export default function NewTicketPage() {
                 ]}
               />
               {priorityLocked && (
-                <p className="text-xs text-text-muted mt-1">Locked by template</p>
+                <p className="text-meta text-text-muted mt-1">Locked by template</p>
               )}
             </div>
           )}
 
           <label className="flex items-center gap-2.5 cursor-pointer">
             <input type="checkbox" checked={proofRequired} onChange={(e) => setProofRequired(e.target.checked)} className="w-4 h-4 rounded-xs border-border text-primary-text" />
-            <span className="text-sm text-text-secondary">Proof of resolution required</span>
+            <span className="text-body text-text-secondary">Proof of resolution required</span>
           </label>
 
           {/* Checklist */}
           {checklist.length > 0 && (
             <div>
-              <p className="text-sm font-medium text-text-secondary mb-2">Checklist</p>
+              <p className="text-body font-medium text-text-secondary mb-2">Checklist</p>
               <div className="flex flex-col gap-1.5">
                 {checklist.map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <input type="text" value={item.title} onChange={(e) => setChecklist((c) => c.map((x, j) => j === i ? { title: e.target.value } : x))} className="flex-1 px-2 py-1.5 border border-border-light rounded-[6px] text-sm" />
+                    <input type="text" value={item.title} onChange={(e) => setChecklist((c) => c.map((x, j) => j === i ? { title: e.target.value } : x))} className="flex-1 px-2 py-1.5 border border-border-light rounded-[6px] text-body" />
                     <button type="button" onClick={() => setChecklist((c) => c.filter((_, j) => j !== i))} className="text-text-muted hover:text-danger"><X size={14} /></button>
                   </div>
                 ))}
@@ -295,17 +295,17 @@ export default function NewTicketPage() {
                 }
               }}
               placeholder="Add checklist item (Enter to add)"
-              className="flex-1 px-3 py-1.5 border border-border-light rounded-[6px] text-sm"
+              className="flex-1 px-3 py-1.5 border border-border-light rounded-[6px] text-body"
             />
             <button type="button" onClick={() => { if (newChecklistItem.trim()) { setChecklist((c) => [...c, { title: newChecklistItem.trim() }]); setNewChecklistItem('') } }}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-[6px] text-sm text-primary-text border border-primary-border hover:bg-primary-subtle">
+              className="flex items-center gap-1 px-2 py-1.5 rounded-[6px] text-body text-primary-text border border-primary-border hover:bg-primary-subtle">
               <Plus size={14} /> Add
             </button>
           </div>
 
           <div className="flex justify-end pt-2">
             <button type="button" onClick={handleSubmit} disabled={submitting}
-              className="flex items-center gap-1.5 px-6 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+              className="flex items-center gap-1.5 px-6 py-2.5 rounded-[8px] text-body font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
               {submitting ? 'Raising...' : 'Raise Ticket'}
             </button>
           </div>
