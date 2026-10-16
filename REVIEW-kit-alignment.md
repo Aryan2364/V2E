@@ -254,6 +254,81 @@ Each agent appends its own self-contained section. Do not edit another agent's s
 - `npx tsc --noEmit` filtered to this module's folders: clean.
 - `npm run test:unit` (components/workflows/__tests__): 69/69 pass.
 
+### Second pass (owner asked for the kit actually followed, not just recoloured)
+
+Done:
+- **Back arrows / breadcrumbs:** removed the two remaining desktop back-arrow buttons
+  (`app/dashboard/tasks/tickets/new/page.tsx`, `[ticketId]/page.tsx`) — replaced with
+  `PageHeader`'s `trail` / a `Breadcrumb`, and (on the ticket wizard) a `SHOW_MORE_LINK`-styled
+  "Back to templates" step control for the in-form wizard step, which is not page
+  navigation.
+- **PageHeader / §11 zones:** `app/dashboard/projects/page.tsx`, `managing/page.tsx`,
+  `my/page.tsx`, `templates/page.tsx` rebuilt onto `PageHeader` (title + meta + the one
+  primary action) with `EmptyState` (`nothing-yet`/`nothing-found`) in place of hand-rolled
+  empty blocks and `Skeleton` in place of spinner divs.
+- **Buttons/Badge/TextLink/Tooltip:** `templates/page.tsx`'s delete icon button →
+  `Button variant="ghost" size="icon"` wrapped in `Tooltip`; its status pill → `Badge`;
+  its "Edit" link → `TextLink`; all four project list pages' "New project"/"New template"
+  →`Button render={<Link/>}`. The 3 native `title=` attributes left after the first pass
+  (`components/workflows/RunView.tsx`, checklist/proof/comment icon hints) → `Tooltip`.
+- **Type tokens:** full sweep. Every `text-xs/sm/base/2xl` and `text-[Npx]` arbitrary size
+  in this module's files mapped to the nearest kit type token (`text-meta` 10-12px,
+  `text-label` 13px, `text-body` 14-15px, `text-card-heading` 16-19px, `text-section` 20px,
+  `text-page-title` 21-30px); the handful of sub-12px avatar-initial glyphs (`text-[8-9px]`)
+  bumped to `text-meta` (12px minimum, per rule "nothing below 12px").
+- **Spinners:** the remaining page-level `border-t-transparent rounded-full animate-spin`
+  full-page loaders (`projects/[id]/page.tsx`, `[id]/settings/page.tsx`,
+  `templates/[id]/page.tsx`, `tasks/tickets/reports/page.tsx`'s `Spinner()`) → `Skeleton`.
+
+Not done (follow-up, in order of what would move the needle most):
+- **~30 adapter call sites** (`StyledSelect`/`DatePicker`/`Modal`/`ConfirmDialog`/
+  `ResponsiveTable`/`Toast`) still import the v2e adapter rather than the raw kit
+  component directly (full list in the first-pass section above). These are visually
+  identical today (the adapters are themselves thin kit wrappers per P3b) so this is a
+  pure import-site cleanup, not a visual change — left for a dedicated pass given the
+  volume relative to the rest of this second pass.
+- **§11 template zones beyond the 4 project list pages:** the ticket list pages
+  (`tickets/page.tsx`, `archive`, `assigned`, `my`), the workflow list page
+  (`workflows/page.tsx`), and every detail/settings page in all three areas
+  (`[ticketId]`, `projects/[id]`, `projects/[id]/settings`, `workflows/[id]`) were not
+  rebuilt onto `PageHeader`/§11's toolbar+content+footer zones — they keep their existing
+  hand-rolled headers (now on tokens/type-scale from the two passes above) rather than the
+  template's exact zone structure. `[ticketId]/page.tsx` and `tickets/new/page.tsx` did
+  get a breadcrumb (above) but not a full `PageHeader`/record-header rebuild.
+- **Hand-rolled `<button>`/`<Link>` with `bg-primary text-white rounded-[8px]`
+  classes → kit `Button`:** fixed on the 4 project list pages' primary actions only;
+  dozens more remain across ticket/workflow/project detail and form pages (e.g. ticket
+  new-ticket submit button, workflow builder's save/cancel row, project settings forms'
+  add-member/save buttons) — same visual result today since they already carry the right
+  tokens, but not the kit component.
+- **Status-as-coloured-text → Badge:** fixed on `templates/page.tsx`'s is_active pill;
+  the ticket priority/category pills in `[ticketId]/page.tsx` (inline `style={{
+  backgroundColor: ... }}` using the record's own colour, not a fixed status) and other
+  ad-hoc status spans across the module were not converted — several of these are
+  user-chosen data colours (D7), not the fixed status vocabulary `Badge`'s variants model,
+  so each needs a per-site judgment call rather than a mechanical swap.
+- **`components/workflows/Sheet.tsx` vs kit `sheet.tsx`:** evaluated for a thin-wrapper
+  rewrite as asked. Kit `sheet.tsx` is a Base UI `Root`/`SheetContent` composition with
+  its own portal, focus-trap, Escape and phone-bottom-sheet behaviour; v2e's `Sheet.tsx`
+  has a parallel but independently-coded version of the same contract, including one
+  behaviour kit `sheet.tsx` has no equivalent knob for: deferring Escape to a nested
+  menu/dialog via a `[data-sheet-blocker="true"]` query (so a dropdown or confirm opened
+  from inside the panel gets Escape first). Rewriting it as a thin wrapper is possible in
+  principle (`side="right"`, `SheetContent`/`SheetHeader`/`SheetBody`/`SheetFooter`,
+  `className` overrides for the 520/640px widths) but risks silently losing that
+  blocker-escape behaviour across its ~23 call sites without a dedicated
+  interaction-testing pass this session didn't have room for — kept as-is (already
+  restyled to tokens in the first pass) rather than risk a regression. Flagged as the one
+  item in this module an owner-reviewed follow-up should prioritise.
+- **`useUnsavedChangesGuard` vs kit `unsaved-changes.tsx`:** re-checked; unchanged from
+  the first pass's finding. Kit's `useUnsavedChanges`/its `alert-dialog.tsx` pairing has
+  no three-button ("Stay" / "Leave without saving" / "Save and leave") form, which this
+  hook's dialog genuinely needs for workflow steps/runs with an offered inline save. Kept,
+  tokens already applied.
+
+Verification (second pass): `npx tsc --noEmit` filtered to this module's folders — clean.
+`npm run test:unit` — 69/69 pass, unchanged.
+
 ## Settings, people, roles, access, holidays, leave, audit
 
 Folders: `app/settings/**`, `app/dashboard/{employees,roles}/**`, `components/{employees,roles,role-builder,permissions,holidays,leave,audit}/**`.
