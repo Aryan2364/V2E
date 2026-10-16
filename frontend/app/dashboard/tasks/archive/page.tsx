@@ -5,7 +5,6 @@ import { useAuth } from '@/lib/auth/context'
 import { tasksApi } from '@/lib/api/tasks'
 import type { TaskArchiveItem } from '@/lib/types/tasks'
 // import QuadrantBadge from '@/components/tasks/QuadrantBadge'
-import { Archive } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import { formatDateTime } from '@/lib/format'
@@ -210,20 +209,30 @@ export default function ArchivePage() {
       align: 'right',
       hideOnMobile: true,
       render: (item) => (
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={(e) => { e.stopPropagation(); setSelected(item) }}
-          className="text-body font-medium text-primary-text hover:text-primary-text transition-colors"
         >
           View
-        </button>
+        </Button>
       ),
     },
   ]
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-6">
+        <PageHeader
+          title="Task Archive"
+          trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+          meta="Deleted tasks stored for record-keeping."
+        />
+        <div className="space-y-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-control" />
+          ))}
+        </div>
       </div>
     )
   }
@@ -242,13 +251,9 @@ export default function ArchivePage() {
         rowKey={(item) => item.id}
         onRowClick={(item) => setSelected(item)}
         emptyState={
-          <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
-            <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
-              <Archive size={24} className="text-text-muted" />
-            </div>
-            <p className="font-medium text-text-primary">Archive is empty</p>
-            <p className="text-body text-text-secondary mt-1">Deleted tasks will appear here.</p>
-          </div>
+          <EmptyState variant="nothing-yet" heading="Archive is empty">
+            Deleted tasks will appear here.
+          </EmptyState>
         }
       />
 
