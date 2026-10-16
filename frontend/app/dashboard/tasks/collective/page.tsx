@@ -7,6 +7,8 @@ import type { CollectiveOrgTasks, Task, TaskPriority, TaskStatus, TaskCategory }
 import TaskCard from '@/components/tasks/TaskCard'
 import { Globe, Building2 } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
+import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 
 export default function CollectivePage() {
   const router = useRouter()
@@ -48,20 +50,32 @@ export default function CollectivePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-6">
+        <PageHeader
+          title="Collective View"
+          trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+          meta="Tasks across all organizations you belong to."
+        />
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full rounded-control" />
+          ))}
+        </div>
       </div>
     )
   }
 
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-center">
-        <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
-          <Globe size={24} className="text-text-muted" />
-        </div>
-        <p className="font-medium text-text-primary">No organizations found</p>
-        <p className="text-body text-text-secondary mt-1">You don't appear to be a member of any organization.</p>
+      <div className="space-y-6">
+        <PageHeader
+          title="Collective View"
+          trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+          meta="Tasks across all organizations you belong to."
+        />
+        <EmptyState variant="nothing-yet" heading="No organizations found">
+          You don't appear to be a member of any organization.
+        </EmptyState>
       </div>
     )
   }
@@ -79,7 +93,7 @@ export default function CollectivePage() {
         {/* All tab */}
         <button
           onClick={() => setActiveOrg('all')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-body font-medium border-b-2 transition-colors whitespace-nowrap -mb-px ${
+          className={`flex items-center gap-2 px-4 py-2.5 text-body font-medium border-b-2 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-[background-color,border-color,color] whitespace-nowrap -mb-px ${
             activeOrg === 'all'
               ? 'border-primary text-primary-text'
               : 'border-transparent text-text-muted hover:text-text-primary'
@@ -97,7 +111,7 @@ export default function CollectivePage() {
           <button
             key={d.organization.id}
             onClick={() => setActiveOrg(d.organization.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-body font-medium border-b-2 transition-colors whitespace-nowrap -mb-px ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-body font-medium border-b-2 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-[background-color,border-color,color] whitespace-nowrap -mb-px ${
               activeOrg === d.organization.id
                 ? 'border-primary text-primary-text'
                 : 'border-transparent text-text-muted hover:text-text-primary'
@@ -119,13 +133,9 @@ export default function CollectivePage() {
 
       {/* Task list */}
       {displayTasks.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
-          <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
-            <Globe size={24} className="text-text-muted" />
-          </div>
-          <p className="font-medium text-text-primary">No tasks</p>
-          <p className="text-body text-text-secondary mt-1">This organization has no tasks yet.</p>
-        </div>
+        <EmptyState variant="nothing-yet" heading="No tasks">
+          This organization has no tasks yet.
+        </EmptyState>
       ) : (
         <div className="flex flex-col gap-2">
           {displayTasks.map((task) => {
