@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import MultiSelect from '@/components/ui/MultiSelect'
+import { MultiSelect } from '@/components/ui/multi-select'
 import { goalsApi } from '@/lib/api/goals'
 import { STATUS_META, type Goal } from '@/lib/types/goals'
 
@@ -52,17 +52,21 @@ export default function GoalsMultiSelectField({
       <label className="block text-sm font-medium text-text-secondary mb-1.5">Goals this serves</label>
       <MultiSelect
         value={value}
-        onChange={onChange}
+        onValueChange={onChange}
         disabled={disabled}
         placeholder="No goals"
         searchPlaceholder="Search goals…"
-        emptyText="No goals yet."
-        options={goals.map((g) => ({
-          value: g.id,
-          label: g.title,
-          hint: `${g.owner?.name ?? '—'} · due ${fmt(g.due_date)}`,
-          color: STATUS_META[g.status]?.dot,
-        }))}
+        emptyMessage="No goals yet."
+        options={Object.fromEntries(
+          goals.map((g) => [
+            g.id,
+            {
+              label: g.title,
+              hint: `${g.owner?.name ?? '—'} · due ${fmt(g.due_date)}`,
+              color: STATUS_META[g.status]?.dot,
+            },
+          ]),
+        )}
       />
       <p className="text-[11px] text-text-secondary mt-1">
         Optional — this project shows on each goal’s page as part of the work behind it.

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Loader2, Plus } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/button'
-import MultiSelect from '@/components/ui/MultiSelect'
+import { MultiSelect } from '@/components/ui/multi-select'
 import { useToast } from '@/components/ui/Toast'
 import { usePermissions } from '@/lib/auth/use-permissions'
 import { goalsApi } from '@/lib/api/goals'
@@ -218,17 +218,21 @@ export default function CreateGoalModal({
               >
                 <MultiSelect
                   value={supportingIds}
-                  onChange={setSupportingIds}
+                  onValueChange={setSupportingIds}
                   disabled={saving}
                   placeholder="No supporting goals"
                   searchPlaceholder="Search goals…"
-                  emptyText="No other goals yet — create the first one with +."
-                  options={goalOptions.map((g) => ({
-                    value: g.id,
-                    label: g.title,
-                    hint: `${g.owner?.name ?? '—'} · due ${formatDate(g.due_date)}`,
-                    color: STATUS_META[g.status]?.dot,
-                  }))}
+                  emptyMessage="No other goals yet — create the first one with +."
+                  options={Object.fromEntries(
+                    goalOptions.map((g) => [
+                      g.id,
+                      {
+                        label: g.title,
+                        hint: `${g.owner?.name ?? '—'} · due ${formatDate(g.due_date)}`,
+                        color: STATUS_META[g.status]?.dot,
+                      },
+                    ]),
+                  )}
                 />
               </FieldWithAdd>
 
@@ -242,16 +246,17 @@ export default function CreateGoalModal({
                 >
                   <MultiSelect
                     value={projectIds}
-                    onChange={setProjectIds}
+                    onValueChange={setProjectIds}
                     disabled={saving}
                     placeholder="No projects"
                     searchPlaceholder="Search projects…"
-                    emptyText="No projects yet — create one with +."
-                    options={projectOptions.map((p) => ({
-                      value: p.id,
-                      label: p.name,
-                      hint: p.end_date ? `ends ${formatDate(p.end_date)}` : undefined,
-                    }))}
+                    emptyMessage="No projects yet — create one with +."
+                    options={Object.fromEntries(
+                      projectOptions.map((p) => [
+                        p.id,
+                        { label: p.name, hint: p.end_date ? `ends ${formatDate(p.end_date)}` : undefined },
+                      ]),
+                    )}
                   />
                 </FieldWithAdd>
               )}

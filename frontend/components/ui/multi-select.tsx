@@ -57,6 +57,33 @@ import { Truncate } from "@/components/ui/truncate"
  * shown on a tap (41.8 rule 17) - see LockedReason. A screen reader hears
  * each row's tick as checked or not checked (41.20 check 24).
  */
+/**
+ * A richer option, for callers that need a secondary hint line or a colour
+ * dot beside the label (v2e kit-alignment follow-up pass: FRONTEND_RULES.md
+ * §4 rule 4 - a variant on the existing component, not a second one).
+ * `options` still accepts the plain `Record<value, label>` shape wherever
+ * neither is needed.
+ */
+type RichOption = {
+  label: string
+  /** Secondary line under the label (e.g. owner · due date). */
+  hint?: string
+  /** Colour dot to the left of the label, as a CSS colour. */
+  color?: string
+  /** Colour dot drawn by a class instead of an inline colour (kit §1 rule 1). */
+  colorClassName?: string
+}
+
+type MultiSelectOptions = Record<string, string> | Record<string, RichOption>
+
+function normalizeOptions(options: MultiSelectOptions): Record<string, RichOption> {
+  const out: Record<string, RichOption> = {}
+  for (const [value, option] of Object.entries(options)) {
+    out[value] = typeof option === "string" ? { label: option } : option
+  }
+  return out
+}
+
 function MultiSelect({
   options,
   value,
@@ -71,8 +98,8 @@ function MultiSelect({
   className,
   describedBy,
 }: {
-  /** value to label, in display order. */
-  options: Record<string, string>
+  /** value to label (or to a `RichOption` with a hint/colour dot), in display order. */
+  options: MultiSelectOptions
   value: string[]
   onValueChange: (value: string[]) => void
   id?: string
@@ -88,7 +115,8 @@ function MultiSelect({
   /** id of the helper or error text under the field. */
   describedBy?: string
 }) {
-  const labels = value.map((v) => options[v]).filter(Boolean)
+  const richOptions = React.useMemo(() => normalizeOptions(options), [options])
+  const labels = value.map((v) => richOptions[v]?.label).filter(Boolean) as string[]
 
   // The rows tick and stay open, so `close` is not used: the sheet's own
   // close button, a swipe, the backdrop or Android back shut it.
@@ -96,7 +124,7 @@ function MultiSelect({
     asStep ? (
       // A step keeps its own ticks, as each tap changes them.
       <MultiOptionsStep
-        options={options}
+        options={richOptions}
         initial={value}
         onValueChange={onValueChange}
         locked={locked}
@@ -105,7 +133,7 @@ function MultiSelect({
       />
     ) : (
       <MultiOptions
-        options={options}
+        options={richOptions}
         value={value}
         onValueChange={onValueChange}
         locked={locked}
@@ -147,7 +175,7 @@ function MultiSelect({
       ) : (
         <PopoverContent align="start" className="w-(--anchor-width) gap-0 p-0">
           <MultiOptions
-            options={options}
+            options={richOptions}
             value={value}
             onValueChange={onValueChange}
             locked={locked}
@@ -161,7 +189,7 @@ function MultiSelect({
 }
 
 type MultiOptionsProps = {
-  options: Record<string, string>
+  options: Record<string, RichOption>
   value: string[]
   onValueChange: (value: string[]) => void
   locked?: Record<string, string>
@@ -222,7 +250,8 @@ function MultiOptions({
       <CommandList className="max-h-menu-max overflow-y-auto" aria-multiselectable>
         <CommandEmpty>{emptyMessage}</CommandEmpty>
         <CommandGroup>
-          {Object.entries(options).map(([v, label], index) => {
+          {Object.entries(options).map(([v, option], index) => {
+            const { label, hint, color, colorClassName } = option
             const isSelected = chosen.has(v)
             const reason = locked?.[v]
             // Phone: a locked row carries its reason itself (LockedReason).
@@ -255,14 +284,21 @@ function MultiOptions({
                     "bg-primary-subtle text-primary-text data-selected:bg-primary-subtle data-selected:text-primary-text",
                 )}
               >
+                {(color || colorClassName) && (
+                  <span
+                    className={cn("size-2 shrink-0 self-center rounded-full", colorClassName)}
+                    style={colorClassName ? undefined : { backgroundColor: color }}
+                  />
+                )}
                 {lockedOnPhone ? (
                   <LockedReason labelId={labelId} reasonId={reasonId} reason={reason ?? ""}>
                     {label}
                   </LockedReason>
                 ) : (
-                  // Phone: the label wraps rather than truncating (41.9 rule 7).
-                  <span className="flex-1 truncate phone:break-words phone:whitespace-normal">
-                    {label}
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    {/* Phone: the label wraps rather than truncating (41.9 rule 7). */}
+                    <span className="truncate phone:break-words phone:whitespace-normal">{label}</span>
+                    {hint && <span className="truncate text-label text-text-secondary phone:whitespace-normal">{hint}</span>}
                   </span>
                 )}
               </CommandItem>
@@ -340,4 +376,4 @@ function LockedReason({
   )
 }
 
-export { MultiSelect }
+export { MultiSelect, type RichOption as MultiSelectRichOption }
