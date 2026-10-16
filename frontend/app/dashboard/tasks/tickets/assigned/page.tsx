@@ -34,7 +34,7 @@ export default function AssignedTicketsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[22px] font-bold text-text-primary">Assigned to Me</h1>
+        <h1 className="text-[22px] font-medium text-text-primary">Assigned to Me</h1>
         <p className="text-sm text-text-secondary mt-0.5">
           {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} assigned
           {needsAcceptance.length > 0 && ` · ${needsAcceptance.length} pending acceptance`}
@@ -47,8 +47,8 @@ export default function AssignedTicketsPage() {
           {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-surface-control rounded-[12px] animate-pulse" />)}
         </div>
       ) : tickets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border-light rounded-[12px]">
-          <TicketIcon size={28} className="text-[#CBD5E1] mb-3" />
+        <div className="flex flex-col items-center justify-center py-12 border border-dashed border-border-light rounded-[12px]">
+          <TicketIcon size={28} className="text-muted mb-3" />
           <p className="text-sm font-medium text-text-primary">No tickets assigned to you</p>
         </div>
       ) : (

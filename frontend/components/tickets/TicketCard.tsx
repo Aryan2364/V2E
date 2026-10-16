@@ -5,6 +5,7 @@ import type { Ticket } from '@/lib/types/tickets'
 import SLAIndicator from './SLAIndicator'
 import TicketTypeBadge from './TicketTypeBadge'
 import TicketStatusBadge from './TicketStatusBadge'
+import { formatDate } from '@/lib/format'
 
 interface Props {
   ticket: Ticket
@@ -22,15 +23,11 @@ function avatarColor(name: string) {
   return avatarColors[hash % avatarColors.length]
 }
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
-
 export default function TicketCard({ ticket, onClick }: Props) {
   return (
     <div
       onClick={onClick}
-      className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-5 py-3.5 flex items-center gap-4 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group"
+      className="bg-surface border border-border-light rounded-card shadow-card px-6 py-3.5 flex items-center gap-4 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-150 group"
     >
       {/* Ticket number */}
       <span className="shrink-0 font-mono text-xs text-text-muted w-[76px]">{ticket.ticket_number}</span>
@@ -44,7 +41,7 @@ export default function TicketCard({ ticket, onClick }: Props) {
 
       {/* Title + category */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-text-primary truncate group-hover:text-primary-text transition-colors">
+        <p className="text-sm font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
           {ticket.title}
         </p>
         {ticket.category && (
@@ -73,7 +70,7 @@ export default function TicketCard({ ticket, onClick }: Props) {
       <div className="shrink-0 hidden md:flex items-center gap-1.5">
         {ticket.assigned_to_user_id ? (
           <div
-            className={`w-6 h-6 rounded-full ${avatarColor(ticket.assigned_to_user_id)} flex items-center justify-center text-white text-[9px] font-bold`}
+            className={`w-6 h-6 rounded-full ${avatarColor(ticket.assigned_to_user_id)} flex items-center justify-center text-white text-[9px] font-medium`}
           >
             {getInitials(ticket.assigned_to_user_id.slice(0, 4))}
           </div>

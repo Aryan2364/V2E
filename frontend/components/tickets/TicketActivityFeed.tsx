@@ -1,6 +1,7 @@
 'use client'
 
 import type { TicketActivityLog, TicketActivityAction } from '@/lib/types/tickets'
+import { formatDateTime } from '@/lib/format'
 
 interface Props {
   logs: TicketActivityLog[]
@@ -35,7 +36,7 @@ const ACTION_CONFIG: Record<TicketActivityAction, { label: string; color: string
 }
 
 function formatTime(d: string) {
-  return new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return formatDateTime(d)
 }
 
 export default function TicketActivityFeed({ logs }: Props) {
@@ -50,7 +51,7 @@ export default function TicketActivityFeed({ logs }: Props) {
         return (
           <div key={log.id} className="flex items-start gap-3 py-2 border-b border-border-light last:border-0">
             <div
-              className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold"
+              className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-medium"
               style={{ backgroundColor: cfg.bg, color: cfg.color }}
             >
               {cfg.label.slice(0, 2).toUpperCase()}

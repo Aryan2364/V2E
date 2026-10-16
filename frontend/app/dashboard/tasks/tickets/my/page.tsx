@@ -38,7 +38,7 @@ export default function MyTicketsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[22px] font-bold text-text-primary">My Tickets</h1>
+        <h1 className="text-[22px] font-medium text-text-primary">My Tickets</h1>
         <p className="text-sm text-text-secondary mt-0.5">Tickets raised by you</p>
       </div>
 
@@ -56,8 +56,8 @@ export default function MyTicketsPage() {
           {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-surface-control rounded-[12px] animate-pulse" />)}
         </div>
       ) : tickets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border-light rounded-[12px]">
-          <TicketIcon size={28} className="text-[#CBD5E1] mb-3" />
+        <div className="flex flex-col items-center justify-center py-12 border border-dashed border-border-light rounded-[12px]">
+          <TicketIcon size={28} className="text-muted mb-3" />
           <p className="text-sm font-medium text-text-primary">No tickets raised yet</p>
         </div>
       ) : (
@@ -67,12 +67,12 @@ export default function MyTicketsPage() {
               <TicketCard ticket={ticket} onClick={() => router.push(`/dashboard/tasks/tickets/${ticket.id}`)} />
               <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
                 {ticket.status?.type === 'resolved' && ticket.requires_raiser_confirmation && !ticket.raiser_confirmed_at && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning-bg text-warning border border-warning-border">
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-warning-bg text-warning border border-warning-border">
                     Confirm?
                   </span>
                 )}
                 {ticket.closed_at && !ticket.rated_at && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning-bg text-warning border border-warning-border">
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-warning-bg text-warning border border-warning-border">
                     Rate?
                   </span>
                 )}

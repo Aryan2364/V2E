@@ -20,7 +20,7 @@ export default function RatingWidget({ onSubmit, submitting, existingRating, exi
       <div className="flex flex-col gap-2">
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((n) => (
-            <Star key={n} size={20} className={n <= existingRating ? 'text-warning fill-warning' : 'text-[#E2E8F0]'} />
+            <Star key={n} size={20} className={n <= existingRating ? 'text-warning fill-warning' : 'text-muted'} />
           ))}
         </div>
         {existingComment && <p className="text-sm text-text-secondary italic">"{existingComment}"</p>}
@@ -42,7 +42,7 @@ export default function RatingWidget({ onSubmit, submitting, existingRating, exi
           >
             <Star
               size={24}
-              className={n <= (hovered || rating) ? 'text-warning fill-warning' : 'text-[#CBD5E1]'}
+              className={n <= (hovered || rating) ? 'text-warning fill-warning' : 'text-muted'}
             />
           </button>
         ))}
@@ -58,7 +58,7 @@ export default function RatingWidget({ onSubmit, submitting, existingRating, exi
         type="button"
         onClick={() => rating > 0 && onSubmit(rating, comment)}
         disabled={rating === 0 || submitting}
-        className="self-start flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+        className="self-start flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
       >
         {submitting ? 'Submitting...' : 'Submit Rating'}
       </button>

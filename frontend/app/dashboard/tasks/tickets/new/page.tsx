@@ -131,7 +131,7 @@ export default function NewTicketPage() {
           <ArrowLeft size={18} />
         </button>
         <div>
-          <h1 className="text-[22px] font-bold text-text-primary">Raise Ticket</h1>
+          <h1 className="text-[22px] font-medium text-text-primary">Raise Ticket</h1>
           <p className="text-sm text-text-secondary mt-0.5">
             {step === 'template' ? 'Step 1: Choose a template or start from scratch' : 'Step 2: Fill in ticket details'}
           </p>
@@ -147,7 +147,7 @@ export default function NewTicketPage() {
               value={templateSearch}
               onChange={(e) => setTemplateSearch(e.target.value)}
               placeholder="Search templates..."
-              className="w-full pl-9 pr-3 py-2 border border-border rounded-[8px] text-sm focus:border-primary focus:outline-hidden"
+              className="w-full pl-8 pr-3 py-2 border border-border rounded-[8px] text-sm focus:border-primary focus:outline-hidden"
             />
           </div>
 
@@ -156,15 +156,15 @@ export default function NewTicketPage() {
             onClick={() => selectTemplate(null)}
             className="w-full text-left p-4 rounded-[12px] border-2 border-dashed border-border hover:border-primary hover:bg-surface-sunken transition-all"
           >
-            <p className="text-sm font-semibold text-text-secondary">Start from scratch</p>
+            <p className="text-sm font-medium text-text-secondary">Start from scratch</p>
             <p className="text-xs text-text-muted mt-0.5">Fill in all details manually</p>
           </button>
 
           {groupedTemplates.map((group) => (
             <div key={group.label} className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{group.label}</p>
-                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
+                <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">{group.label}</p>
+                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
                   {group.items.length}
                 </span>
               </div>
@@ -301,7 +301,7 @@ export default function NewTicketPage() {
 
           <div className="flex justify-end pt-2">
             <button type="button" onClick={handleSubmit} disabled={submitting}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+              className="flex items-center gap-1.5 px-6 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
               {submitting ? 'Raising...' : 'Raise Ticket'}
             </button>
           </div>

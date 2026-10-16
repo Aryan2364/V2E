@@ -14,15 +14,16 @@ import RatingWidget from '@/components/tickets/RatingWidget'
 import TicketCommentThread from '@/components/tickets/TicketCommentThread'
 import TicketActivityFeed from '@/components/tickets/TicketActivityFeed'
 import StyledSelect from '@/components/ui/StyledSelect'
+import { formatDate as formatDateToken, formatDateTime as formatDateTimeToken } from '@/lib/format'
 
 type DetailTab = 'details' | 'activity'
 
 function formatDateTime(d: string) {
-  return new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return formatDateTimeToken(d)
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return formatDateToken(d)
 }
 
 function timeDiff(from: string, to?: string) {
@@ -118,9 +119,9 @@ export default function TicketDetailPage() {
 
   if (!ticket) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <TicketIcon size={36} className="text-[#CBD5E1] mb-3" />
-        <p className="text-text-primary font-semibold">Ticket not found</p>
+      <div className="flex flex-col items-center justify-center py-12">
+        <TicketIcon size={36} className="text-muted mb-3" />
+        <p className="text-text-primary font-medium">Ticket not found</p>
         <button type="button" onClick={() => router.back()} className="mt-4 text-sm text-primary-text hover:underline">Go back</button>
       </div>
     )
@@ -165,7 +166,7 @@ export default function TicketDetailPage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-mono text-sm text-text-muted">{ticket.ticket_number}</span>
-            <h1 className="text-[20px] font-bold text-text-primary truncate">{ticket.title}</h1>
+            <h1 className="text-[20px] font-medium text-text-primary truncate">{ticket.title}</h1>
             {ticket.status && <TicketStatusBadge status={ticket.status} />}
             {ticket.on_hold && (
               <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium bg-warning-bg text-warning border border-warning-border">
@@ -194,15 +195,15 @@ export default function TicketDetailPage() {
             )}
             <SLAIndicator sla_due_at={ticket.sla_due_at} sla_breached={ticket.sla_breached} status_type={ticket.status?.type} created_at={ticket.created_at} />
             {ticket.response_breached ? (
-              <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-danger-bg text-danger border border-danger-border">
+              <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full bg-danger-bg text-danger border border-danger-border">
                 Response breached
               </span>
             ) : ticket.responded_at ? (
-              <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-success-bg text-success border border-success-border">
+              <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full bg-success-bg text-success border border-success-border">
                 Responded {formatDate(ticket.responded_at)}
               </span>
             ) : ticket.response_due_at ? (
-              <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning-bg text-warning border border-warning-border">
+              <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full bg-warning-bg text-warning border border-warning-border">
                 Response due {formatDate(ticket.response_due_at)}
               </span>
             ) : null}
@@ -239,17 +240,17 @@ export default function TicketDetailPage() {
           {/* Tabs */}
           <div className="flex border-b border-border-light">
             {(['details', 'activity'] as DetailTab[]).map((t) => (
-              <button key={t} type="button" onClick={() => setTab(t)} className={`px-5 py-2.5 text-sm font-semibold capitalize border-b-2 transition-colors ${tab === t ? 'border-primary text-primary-text' : 'border-transparent text-text-secondary hover:text-text-primary'}`}>
+              <button key={t} type="button" onClick={() => setTab(t)} className={`px-6 py-2.5 text-sm font-medium capitalize border-b-2 transition-colors ${tab === t ? 'border-primary text-primary-text' : 'border-transparent text-text-secondary hover:text-text-primary'}`}>
                 {t === 'details' ? 'Details' : 'Activity Log'}
               </button>
             ))}
           </div>
 
           {tab === 'details' && (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-6">
               {/* Description */}
-              <div className="bg-white border border-border-light rounded-[12px] p-5">
-                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Description</p>
+              <div className="bg-white border border-border-light rounded-[12px] p-6">
+                <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-3">Description</p>
                 {ticket.description ? (
                   <p className="text-sm text-text-primary whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
                 ) : (
@@ -259,8 +260,8 @@ export default function TicketDetailPage() {
 
               {/* Checklist */}
               {(ticket.checklist ?? []).length > 0 && (
-                <div className="bg-white border border-border-light rounded-[12px] p-5">
-                  <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <div className="bg-white border border-border-light rounded-[12px] p-6">
+                  <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <CheckSquare size={13} /> Checklist
                     <span className="ml-auto text-text-primary">
                       {ticket.checklist!.filter((c) => c.is_completed).length}/{ticket.checklist!.length}
@@ -284,8 +285,8 @@ export default function TicketDetailPage() {
 
               {/* Proof */}
               {ticket.proof_required && (
-                <div className="bg-white border border-border-light rounded-[12px] p-5">
-                  <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Proof of Resolution</p>
+                <div className="bg-white border border-border-light rounded-[12px] p-6">
+                  <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-3">Proof of Resolution</p>
                   {ticket.proof_url ? (
                     <a href={ticket.proof_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-primary-text hover:underline">
                       <Link2 size={14} /> View proof
@@ -294,7 +295,7 @@ export default function TicketDetailPage() {
                     <div className="flex gap-2">
                       <input type="url" value={proofUrl} onChange={(e) => setProofUrl(e.target.value)} placeholder="Paste proof URL..." className="flex-1 px-3 py-1.5 border border-border rounded-[6px] text-sm focus:border-primary focus:outline-hidden" />
                       <button type="button" disabled={!proofUrl.trim() || actionLoading} onClick={() => action(() => ticketsApi.submitProof(orgId, ticketId, proofUrl).then(() => {}))}
-                        className="px-3 py-1.5 rounded-[6px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:opacity-60">
+                        className="px-3 py-1.5 rounded-[6px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:opacity-60">
                         Submit
                       </button>
                     </div>
@@ -306,8 +307,8 @@ export default function TicketDetailPage() {
 
               {/* Resolution note */}
               {ticket.resolution_note && (
-                <div className="bg-white border border-border-light rounded-[12px] p-5">
-                  <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">Resolution Note</p>
+                <div className="bg-white border border-border-light rounded-[12px] p-6">
+                  <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Resolution Note</p>
                   <p className="text-sm text-text-primary whitespace-pre-wrap">{ticket.resolution_note}</p>
                   {ticket.resolved_at && <p className="text-xs text-text-muted mt-2">Resolved {formatDateTime(ticket.resolved_at)}</p>}
                 </div>
@@ -315,8 +316,8 @@ export default function TicketDetailPage() {
 
               {/* Rating */}
               {(showRating || ticket.rated_at) && (
-                <div className="bg-white border border-border-light rounded-[12px] p-5">
-                  <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Satisfaction Rating</p>
+                <div className="bg-white border border-border-light rounded-[12px] p-6">
+                  <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-3">Satisfaction Rating</p>
                   <RatingWidget
                     existingRating={ticket.rating ?? undefined}
                     existingComment={ticket.rating_comment ?? undefined}
@@ -327,8 +328,8 @@ export default function TicketDetailPage() {
               )}
 
               {/* Comments */}
-              <div className="bg-white border border-border-light rounded-[12px] p-5">
-                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-4">Comments</p>
+              <div className="bg-white border border-border-light rounded-[12px] p-6">
+                <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-4">Comments</p>
                 <TicketCommentThread
                   comments={comments}
                   currentUserId={userId}
@@ -348,8 +349,8 @@ export default function TicketDetailPage() {
           )}
 
           {tab === 'activity' && (
-            <div className="bg-white border border-border-light rounded-[12px] p-5">
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-4">Activity Log</p>
+            <div className="bg-white border border-border-light rounded-[12px] p-6">
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-4">Activity Log</p>
               <TicketActivityFeed logs={logs} />
             </div>
           )}
@@ -358,14 +359,14 @@ export default function TicketDetailPage() {
         {/* Right panel */}
         <div className="w-full lg:w-[280px] shrink-0 flex flex-col gap-4">
           {/* Meta */}
-          <div className="bg-white border border-border-light rounded-[12px] p-5 flex flex-col gap-4">
+          <div className="bg-white border border-border-light rounded-[12px] p-6 flex flex-col gap-4">
             <div>
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">Raised By</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Raised By</p>
               <p className="text-sm font-medium text-text-primary">{ticket.raised_by_user_id}</p>
               <p className="text-xs text-text-secondary">{formatDate(ticket.created_at)}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">Assigned To</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Assigned To</p>
               {ticket.assigned_to_user_id ? (
                 <>
                   <p className="text-sm font-medium text-text-primary">{ticket.assigned_to_user_id}</p>
@@ -378,7 +379,7 @@ export default function TicketDetailPage() {
 
             {/* SLA Details */}
             <div>
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <Clock size={11} /> SLA Details
               </p>
               <div className="flex flex-col gap-1">
@@ -403,9 +404,9 @@ export default function TicketDetailPage() {
                 <div className="flex justify-between text-xs">
                   <span className="text-text-secondary">Status</span>
                   {ticket.sla_breached ? (
-                    <span className="font-semibold text-danger">Breached</span>
+                    <span className="font-medium text-danger">Breached</span>
                   ) : (
-                    <span className="font-semibold text-success">Within SLA</span>
+                    <span className="font-medium text-success">Within SLA</span>
                   )}
                 </div>
               </div>
@@ -414,7 +415,7 @@ export default function TicketDetailPage() {
             {/* Escalations */}
             {(ticket.escalations ?? []).length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">Escalation Levels</p>
+                <p className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Escalation Levels</p>
                 <div className="flex flex-col gap-1.5">
                   {ticket.escalations!.map((e) => (
                     <div key={e.id} className="flex items-center justify-between text-xs">
@@ -422,7 +423,7 @@ export default function TicketDetailPage() {
                       <div className="flex items-center gap-1.5">
                         <span className="text-text-primary font-medium">{e.escalate_to_user_id.slice(0, 8)}...</span>
                         {e.escalated_at ? (
-                          <span className="text-danger font-semibold">Escalated</span>
+                          <span className="text-danger font-medium">Escalated</span>
                         ) : (
                           <span className="text-success">Pending</span>
                         )}
@@ -438,7 +439,7 @@ export default function TicketDetailPage() {
           <div className="flex flex-col gap-2">
             {isAssignee && ticket.status?.type === 'assigned' && (
               <button type="button" disabled={actionLoading} onClick={() => action(() => ticketsApi.accept(orgId, ticketId).then(() => {}))}
-                className="w-full py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:opacity-60 transition-colors">
+                className="w-full py-2 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:opacity-60 transition-colors">
                 Accept Ticket
               </button>
             )}
@@ -447,7 +448,7 @@ export default function TicketDetailPage() {
               <>
                 {!showResolveForm ? (
                   <button type="button" onClick={() => setShowResolveForm(true)}
-                    className="w-full py-2 rounded-[8px] text-sm font-semibold text-white bg-success hover:bg-success transition-colors">
+                    className="w-full py-2 rounded-[8px] text-sm font-medium text-white bg-success hover:bg-success transition-colors">
                     Mark Resolved
                   </button>
                 ) : (
@@ -456,17 +457,17 @@ export default function TicketDetailPage() {
                     <div className="flex gap-2">
                       <button type="button" disabled={!resolutionNote.trim() || actionLoading}
                         onClick={() => action(() => ticketsApi.resolve(orgId, ticketId, resolutionNote).then(() => setShowResolveForm(false)))}
-                        className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-white bg-success hover:bg-success disabled:opacity-60">
+                        className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-white bg-success hover:bg-success disabled:opacity-60">
                         Confirm
                       </button>
-                      <button type="button" onClick={() => setShowResolveForm(false)} className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-text-secondary border border-border-light hover:bg-surface-control">
+                      <button type="button" onClick={() => setShowResolveForm(false)} className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-text-secondary border border-border-light hover:bg-surface-control">
                         Cancel
                       </button>
                     </div>
                   </div>
                 )}
                 <button type="button" disabled={actionLoading} onClick={() => action(() => ticketsApi.close(orgId, ticketId, 'closed_unresolved').then(() => {}))}
-                  className="w-full py-2 rounded-[8px] text-sm font-semibold text-danger border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors">
+                  className="w-full py-2 rounded-[8px] text-sm font-medium text-danger border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors">
                   Close — Unresolved
                 </button>
               </>
@@ -476,22 +477,22 @@ export default function TicketDetailPage() {
             {canHold && (
               actionPanel === 'hold' ? (
                 <div className="flex flex-col gap-2 p-3 bg-warning-bg border border-warning-border rounded-[10px]">
-                  <p className="text-xs font-semibold text-text-primary">Put ticket on hold</p>
+                  <p className="text-xs font-medium text-text-primary">Put ticket on hold</p>
                   <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Reason (optional)..." className="w-full px-2 py-1.5 border border-warning-border rounded-[6px] text-sm resize-none focus:border-warning-border focus:outline-hidden bg-white" />
                   <div className="flex gap-2">
                     <button type="button" disabled={actionLoading}
                       onClick={() => action(() => ticketsApi.hold(orgId, ticketId, reason.trim() || undefined).then(() => closePanel()))}
-                      className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-white bg-warning hover:bg-warning disabled:opacity-60">
+                      className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-white bg-warning hover:bg-warning disabled:opacity-60">
                       Put on hold
                     </button>
-                    <button type="button" onClick={closePanel} className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-text-secondary border border-border-light hover:bg-surface-control">
+                    <button type="button" onClick={closePanel} className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-text-secondary border border-border-light hover:bg-surface-control">
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : (
                 <button type="button" disabled={actionLoading} onClick={() => openPanel('hold')}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-sm font-semibold text-warning border border-warning-border hover:bg-warning-bg disabled:opacity-60 transition-colors">
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-sm font-medium text-warning border border-warning-border hover:bg-warning-bg disabled:opacity-60 transition-colors">
                   <PauseCircle size={15} /> Put on Hold
                 </button>
               )
@@ -500,7 +501,7 @@ export default function TicketDetailPage() {
             {/* Resume */}
             {canResume && (
               <button type="button" disabled={actionLoading} onClick={() => action(() => ticketsApi.resume(orgId, ticketId).then(() => {}))}
-                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:opacity-60 transition-colors">
+                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:opacity-60 transition-colors">
                 <PlayCircle size={15} /> Resume
               </button>
             )}
@@ -509,7 +510,7 @@ export default function TicketDetailPage() {
             {canTransfer && (
               actionPanel === 'transfer' ? (
                 <div className="flex flex-col gap-2 p-3 bg-surface-sunken border border-border-light rounded-[10px]">
-                  <p className="text-xs font-semibold text-text-primary">Transfer to resolver group</p>
+                  <p className="text-xs font-medium text-text-primary">Transfer to resolver group</p>
                   <StyledSelect
                     value={transferGroupId}
                     onChange={(v) => setTransferGroupId(v)}
@@ -523,17 +524,17 @@ export default function TicketDetailPage() {
                   <div className="flex gap-2">
                     <button type="button" disabled={!transferGroupId || actionLoading}
                       onClick={() => action(() => ticketsApi.transfer(orgId, ticketId, { resolver_group_id: transferGroupId, reason: reason.trim() || undefined }).then(() => closePanel()))}
-                      className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
+                      className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
                       Transfer
                     </button>
-                    <button type="button" onClick={closePanel} className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-text-secondary border border-border-light hover:bg-surface-control">
+                    <button type="button" onClick={closePanel} className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-text-secondary border border-border-light hover:bg-surface-control">
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : (
                 <button type="button" disabled={actionLoading} onClick={() => openPanel('transfer')}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-sm font-semibold text-primary-text border-2 border-primary hover:bg-primary-subtle disabled:opacity-60 transition-colors">
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-sm font-medium text-primary-text border-2 border-primary hover:bg-primary-subtle disabled:opacity-60 transition-colors">
                   <ArrowRightLeft size={15} /> Transfer
                 </button>
               )
@@ -543,22 +544,22 @@ export default function TicketDetailPage() {
             {canReject && (
               actionPanel === 'reject' ? (
                 <div className="flex flex-col gap-2 p-3 bg-danger-bg border border-danger-border rounded-[10px]">
-                  <p className="text-xs font-semibold text-text-primary">Reject ticket</p>
+                  <p className="text-xs font-medium text-text-primary">Reject ticket</p>
                   <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Reason for rejection (required)..." className="w-full px-2 py-1.5 border border-danger-border rounded-[6px] text-sm resize-none focus:border-danger focus:outline-hidden bg-white" />
                   <div className="flex gap-2">
                     <button type="button" disabled={!reason.trim() || actionLoading}
                       onClick={() => action(() => ticketsApi.reject(orgId, ticketId, reason.trim()).then(() => closePanel()))}
-                      className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-white bg-danger hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
+                      className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-white bg-danger hover:bg-danger-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
                       Reject
                     </button>
-                    <button type="button" onClick={closePanel} className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-text-secondary border border-border-light hover:bg-surface-control">
+                    <button type="button" onClick={closePanel} className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-text-secondary border border-border-light hover:bg-surface-control">
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : (
                 <button type="button" disabled={actionLoading} onClick={() => openPanel('reject')}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-sm font-semibold text-danger border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors">
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-sm font-medium text-danger border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors">
                   <XCircle size={15} /> Reject
                 </button>
               )
@@ -568,22 +569,22 @@ export default function TicketDetailPage() {
             {canReopen && (
               actionPanel === 'reopen' ? (
                 <div className="flex flex-col gap-2 p-3 bg-surface-sunken border border-border-light rounded-[10px]">
-                  <p className="text-xs font-semibold text-text-primary">Reopen ticket</p>
+                  <p className="text-xs font-medium text-text-primary">Reopen ticket</p>
                   <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Reason (optional)..." className="w-full px-2 py-1.5 border border-border rounded-[6px] text-sm resize-none focus:border-primary focus:outline-hidden bg-white" />
                   <div className="flex gap-2">
                     <button type="button" disabled={actionLoading}
                       onClick={() => action(() => ticketsApi.reopen(orgId, ticketId, reason.trim() || undefined).then(() => closePanel()))}
-                      className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-white bg-primary hover:bg-primary-hover disabled:opacity-60">
+                      className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-white bg-primary hover:bg-primary-hover disabled:opacity-60">
                       Reopen
                     </button>
-                    <button type="button" onClick={closePanel} className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-text-secondary border border-border-light hover:bg-surface-control">
+                    <button type="button" onClick={closePanel} className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-text-secondary border border-border-light hover:bg-surface-control">
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : (
                 <button type="button" disabled={actionLoading} onClick={() => openPanel('reopen')}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-sm font-semibold text-primary-text border-2 border-primary hover:bg-primary-subtle disabled:opacity-60 transition-colors">
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-sm font-medium text-primary-text border-2 border-primary hover:bg-primary-subtle disabled:opacity-60 transition-colors">
                   <RotateCcw size={15} /> Reopen
                 </button>
               )
@@ -592,7 +593,7 @@ export default function TicketDetailPage() {
             {isAdminOrHR && !isClosed && (
               <>
                 {!showDeleteForm ? (
-                  <button type="button" onClick={() => setShowDeleteForm(true)} className="w-full py-2 rounded-[8px] text-sm font-semibold text-danger border border-danger-border hover:bg-danger-bg transition-colors">
+                  <button type="button" onClick={() => setShowDeleteForm(true)} className="w-full py-2 rounded-[8px] text-sm font-medium text-danger border border-danger-border hover:bg-danger-bg transition-colors">
                     Delete Ticket
                   </button>
                 ) : (
@@ -601,10 +602,10 @@ export default function TicketDetailPage() {
                     <div className="flex gap-2">
                       <button type="button" disabled={!deleteReason.trim() || actionLoading}
                         onClick={() => action(async () => { await ticketsApi.deleteTicket(orgId, ticketId, deleteReason); router.push('/dashboard/tasks/tickets') })}
-                        className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-white bg-danger hover:bg-danger-hover disabled:opacity-60">
+                        className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-white bg-danger hover:bg-danger-hover disabled:opacity-60">
                         Confirm Delete
                       </button>
-                      <button type="button" onClick={() => setShowDeleteForm(false)} className="flex-1 py-1.5 rounded-[6px] text-xs font-semibold text-text-secondary border border-border-light hover:bg-surface-control">
+                      <button type="button" onClick={() => setShowDeleteForm(false)} className="flex-1 py-1.5 rounded-[6px] text-xs font-medium text-text-secondary border border-border-light hover:bg-surface-control">
                         Cancel
                       </button>
                     </div>

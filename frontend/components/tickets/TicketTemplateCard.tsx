@@ -22,9 +22,9 @@ export default function TicketTemplateCard({ template, selected, onSelect }: Pro
       ].join(' ')}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <p className="text-sm font-semibold text-text-primary">{template.name}</p>
+        <p className="text-sm font-medium text-text-primary">{template.name}</p>
         <span
-          className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+          className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full ${
             template.template_type === 'full'
               ? 'bg-primary-subtle text-primary-text border border-primary-border'
               : 'bg-surface-sunken text-text-secondary border border-border-light'
