@@ -28,12 +28,19 @@ partial conversion.
 
 | File | Kit equivalent | Call sites | Why not done this pass |
 |---|---|---|---|
-| `ResponsiveTable.tsx` | `table.tsx` | 23 | `ResponsiveTable` already implements the kit's mobile card-list rule itself (desktop table collapses to cards below a breakpoint); `table.tsx` has no such mode. Needs a deliberate design decision, not a mechanical swap. |
-| `MultiSelect.tsx` | `multi-select.tsx` | 5 | Supports `color`/`colorClassName` dots and `hint` lines not in the kit version yet. |
-| `ViewToggle.tsx` | `view-switcher.tsx` | 3 | Not started; likely a near-mechanical swap, low priority given the small count. |
-| `useHoverTip.tsx` | `tooltip.tsx` | 2 | Hand-rolled portal tooltip with an inline hex colour (`#0F172A`) — violates kit §1 rule 1. Small count; migrate call sites directly to `tooltip.tsx` rather than adapting. |
-| `FilterButton.tsx` | `popover.tsx` | 1 | Single call site — migrate directly. |
-| `ClockTimePicker.tsx` | `time-picker.tsx` | 0 (dead code, found in P3; its last caller `TimeField.tsx` was converted to an adapter this pass) | No remaining call sites — safe to delete outright in a follow-up rather than adapt. |
+| `MultiSelect.tsx` | `multi-select.tsx` | 3 (down from 5) | `TagSelect.tsx`, `TagPicker.tsx` and `StepCard.tsx` use `renderChip`, `onCreate`/`canCreate` and `maxSelected` — none of which exist on the kit's `multi-select.tsx`, and none of which this pass's brief (colour dots + hint lines) covered. Porting those three features is real feature work, not a mechanical swap, so these three call sites stay on the v2e original. The other 2 (`GoalsMultiSelectField.tsx`, `CreateGoalModal.tsx`) only used `hint`/`color` and are migrated — see below. |
+
+## Converted this pass (v2e kit-alignment follow-up, ResponsiveTable/ViewToggle/MultiSelect/useHoverTip/FilterButton/ClockTimePicker)
+
+| File | What happened |
+|---|---|
+| `ResponsiveTable.tsx` | Kept at its exact exported prop API, so none of its 23 call sites changed, but rewritten as a thin adapter over kit `table.tsx`: the desktop/tablet branch (`md:` and up) now renders `Table`/`TableHeader`/`TableBody`/`TableRow`/`TableHead`/`TableCell`, gaining the section 36 band, sticky header and kit tokens; `onRowClick` passes straight through as a plain `onClick` on `TableRow` (harmless, since no `TableRowLink` is rendered, so `TableRow`'s own record-opening logic stays inert). The mobile card-list branch (below `md`) keeps its own structure — plain kit-token-styled markup — since `table.tsx` has no card mode and real screens depend on the collapse. |
+| `ViewToggle.tsx` | Kept (3 call sites: `app/dashboard/org-chart/page.tsx`, `app/dashboard/roles/page.tsx`, `app/dashboard/employees/page.tsx` via `components/employees/ViewToggle.tsx`'s re-export), rewritten on the same `@base-ui/react` `Toggle`/`ToggleGroup` primitives and kit tokens `view-switcher.tsx` uses. Not merged into `view-switcher.tsx`: that component is specifically the list page's list/card/board switcher (section 11.1 zone 2, with `useListView` persistence); this one toggles a flat table vs. a tree visualisation on non-list pages, a different semantic the kit component doesn't model and shouldn't be stretched to fit. (`components/tasks/overview/ViewToggle.tsx` is an unrelated local "Analytics/Table" toggle — out of scope.) |
+| `multi-select.tsx` (kit) | Gained a variant (FRONTEND_RULES.md §4 rule 4, logged in §4.1 below): `options` now also accepts `Record<value, { label, hint?, color?, colorClassName? }>` alongside the plain `Record<value, label>` shape, rendering a secondary hint line and an optional colour dot per row. |
+| `MultiSelect.tsx` → `multi-select.tsx` | 2 of 5 call sites migrated directly: `components/projects/GoalsMultiSelectField.tsx` and `components/goals/CreateGoalModal.tsx` (both supporting-goal/project pickers), which only used `hint`/`color`. The remaining 3 stay on the v2e original — see the table above. |
+| `useHoverTip.tsx` | Deleted. Its 2 call sites (`components/meetings/MeetingCalendarView.tsx`, `components/meetings/WeekGrid.tsx`) migrated directly to `Tooltip`/`TooltipTrigger`/`TooltipContent` from `tooltip.tsx`, removing the hand-rolled portal tooltip and its inline hex colour (`#0F172A`). |
+| `FilterButton.tsx` | Deleted. Its 1 call site (`components/goals/GoalListView.tsx`) migrated to a new `components/goals/GoalsFilterPopover.tsx`, built on kit `popover.tsx` (`Popover`/`PopoverContent`/`PopoverHeader`/`PopoverFooter`) plus `checkbox.tsx` and `badge.tsx`'s `Count`, reproducing the same per-section search-above-8-options and result-count behaviour. |
+| `ClockTimePicker.tsx` | Deleted. By the time this pass started, `TimeField.tsx` had already been converted (in a concurrent pass) to an adapter over the kit's `time-picker.tsx` and no longer imported it — so it had 0 remaining importers, confirmed by a whole-tree grep, and is genuinely dead code rather than `TimeField`'s dependency. |
 
 ## Migrated directly (component file removed)
 
@@ -68,3 +75,58 @@ and `comment-box.tsx`'s `CommentBox` — see the `Caption` notes left in
 kit's own shell/content-area plumbing. Their demo wrapper functions
 (`NotificationSheetDemo`, `CommentBoxDemo`) were removed rather than left as
 dead code referencing undefined names.
+
+## Outstanding hand-rolled overlays/native controls (counts for P5)
+
+A whole-tree grep (excluding `components/ui/*`, where these patterns are the
+kit's own implementation) for `fixed inset-0` (hand-rolled overlay markup
+instead of `Dialog`/`AlertDialog`/`Sheet`/`Popover`), `confirm(`/`alert(`/
+`prompt(` (native browser dialogs, §1 rule 6) and `<select` (native select
+elements instead of `select.tsx`/`searchable-select.tsx`). Not fixed this
+pass — for the P5 module agents to work through folder by folder.
+
+**`fixed inset-0`**
+
+| Folder | Count |
+|---|---|
+| `components/tasks` | 10 |
+| `app/dashboard` | 6 |
+| `components/meetings` | 5 |
+| `components/roles` | 3 |
+| `components/process-hierarchy` | 3 |
+| `components/org-chart` | 3 |
+| `components/learning` | 3 |
+| `components/workflows` | 2 |
+| `components/phone` | 2 |
+| `components/layout` | 2 |
+| `components/employees` | 2 |
+| `app/communication` | 2 |
+| `components/work-logs` | 1 |
+| `components/reports` | 1 |
+| `components/identity` | 1 |
+| `components/holidays` | 1 |
+| `components/dashboard` | 1 |
+| `components/culture` | 1 |
+| `app/learning` | 1 |
+
+**`confirm(` / `alert(` / `prompt(`**
+
+| Folder | Count |
+|---|---|
+| `app/dashboard` | 9 |
+| `components/tasks` | 5 |
+| `components/phone` | 1 |
+| `components/meetings` | 1 |
+| `app/super-admin` | 1 |
+
+**`<select`**
+
+| Folder | Count |
+|---|---|
+| `app/dashboard` | 3 |
+| `app/communication` | 3 |
+| `app/super-admin` | 2 |
+| `components/phone` | 1 |
+| `components/permissions` | 1 |
+| `components/holidays` | 1 |
+| `app/settings` | 1 |
