@@ -6,7 +6,7 @@ import MonthDayPanel from './MonthDayPanel'
 import type { TimeBlock } from '@/lib/api/time-blocks'
 import { getNow } from '@/lib/clock'
 import { fmtTime } from './shared'
-import { useHoverTip } from '@/components/ui/useHoverTip'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -24,7 +24,6 @@ export default function MeetingCalendarView({
   // share one navigation control rather than the calendar owning its own.
   const cursor = { year: anchor.getFullYear(), month: anchor.getMonth() }
   const [openDay, setOpenDay] = useState<Date | null>(null)
-  const tip = useHoverTip()
 
   const byDate = useMemo(() => {
     const map = new Map<string, Meeting[]>()
@@ -92,22 +91,49 @@ export default function MeetingCalendarView({
                     {items.slice(0, 3).map((m) => {
                       const meta = MEETING_STATUS_META[m.status]
                       return (
-                        <div
-                          key={m.id}
-                          className="w-full text-[11px] leading-tight rounded-xs px-1.5 py-1 truncate"
-                          style={{ backgroundColor: meta.bg, color: meta.text }}
-                          {...tip.bind(<div><div className="font-semibold">{m.title}</div><div className="text-white/70">{fmtTime(m.scheduled_start)}{m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}</div></div>)}
-                        >
-                          {m.title}
-                        </div>
+                        <Tooltip key={m.id}>
+                          <TooltipTrigger
+                            render={
+                              <div
+                                className="w-full text-[11px] leading-tight rounded-xs px-1.5 py-1 truncate"
+                                style={{ backgroundColor: meta.bg, color: meta.text }}
+                              >
+                                {m.title}
+                              </div>
+                            }
+                          />
+                          <TooltipContent>
+                            <div className="font-semibold">{m.title}</div>
+                            <div className="text-surface/70">
+                              {fmtTime(m.scheduled_start)}
+                              {m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
                       )
                     })}
                     {items.length > 3 && <span className="text-[11px] text-primary-text font-medium px-1">+{items.length - 3} more</span>}
                     {(blocksByDate.get(`${cursor.year}-${cursor.month}-${day}`) ?? []).slice(0, 2).map((b) => (
-                      <button key={b.id} type="button" onClick={(e) => { e.stopPropagation(); onBlockSelect?.(b) }} className="w-full text-left text-[11px] leading-tight rounded-xs px-1.5 py-1 truncate border border-dashed border-border bg-surface-sunken text-text-muted flex items-center gap-1 hover:brightness-95" {...tip.bind(<div><div className="font-semibold">{b.title}</div><div className="text-white/70">{b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`} · Time-block</div></div>)}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#94A3B8] shrink-0" />
-                        <span className="truncate">{b.title}</span>
-                      </button>
+                      <Tooltip key={b.id}>
+                        <TooltipTrigger
+                          render={
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); onBlockSelect?.(b) }}
+                              className="w-full text-left text-[11px] leading-tight rounded-xs px-1.5 py-1 truncate border border-dashed border-border bg-surface-sunken text-text-muted flex items-center gap-1 hover:brightness-95"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-text-muted shrink-0" />
+                              <span className="truncate">{b.title}</span>
+                            </button>
+                          }
+                        />
+                        <TooltipContent>
+                          <div className="font-semibold">{b.title}</div>
+                          <div className="text-surface/70">
+                            {b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`} · Time-block
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
                     ))}
                   </div>
                 </>
@@ -127,7 +153,6 @@ export default function MeetingCalendarView({
           onCreate={onCreate}
         />
       )}
-      {tip.portal}
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { Video, MapPin, Users, Repeat, ExternalLink, ArrowUpRight, X } from 'luc
 import type { Meeting } from '@/lib/types/meetings'
 import type { TimeBlock } from '@/lib/api/time-blocks'
 import { getNow } from '@/lib/clock'
-import { useHoverTip } from '@/components/ui/useHoverTip'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { fmtTime } from './shared'
 
 // ── geometry ───────────────────────────────────────────────────────────────────
@@ -115,7 +115,6 @@ export default function WeekGrid({
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [openId, setOpenId] = useState<string | null>(null)
-  const tip = useHoverTip()
   const [now, setNow] = useState<Date>(() => getNow())
 
   // live "now" line — tick every minute
@@ -260,24 +259,34 @@ export default function WeekGrid({
                     const top = (startMs / 60) * PX_PER_HOUR
                     const height = Math.max(MIN_BLOCK_PX, ((endMs - startMs) / 60) * PX_PER_HOUR - 2)
                     return (
-                      <button
-                        key={b.id}
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); onBlockSelect?.(b) }}
-                        className="absolute rounded-[6px] overflow-hidden px-1.5 py-1 border-l-[3px] border-dashed text-left cursor-pointer hover:brightness-95"
-                        style={{ top, height, left: '2px', right: '2px', background: 'repeating-linear-gradient(45deg,#F1F5F9,#F1F5F9 6px,#E2E8F0 6px,#E2E8F0 12px)', borderLeftColor: 'var(--text-muted)', color: 'var(--text-secondary)', zIndex: 6 }}
-                        {...tip.bind(<div><div className="font-semibold">{b.title}</div><div className="text-white/70">{b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`} · Time-block</div></div>)}
-                      >
-                        <div className="text-[12px] font-semibold truncate flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#94A3B8] shrink-0" />
-                          <span className="truncate">{b.title}</span>
-                        </div>
-                        {height >= 40 && (
-                          <div className="text-[11px] opacity-90 truncate">
-                            {b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`}
+                      <Tooltip key={b.id}>
+                        <TooltipTrigger
+                          render={
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); onBlockSelect?.(b) }}
+                              className="absolute rounded-[6px] overflow-hidden px-1.5 py-1 border-l-[3px] border-dashed text-left cursor-pointer hover:brightness-95"
+                              style={{ top, height, left: '2px', right: '2px', background: 'repeating-linear-gradient(45deg,#F1F5F9,#F1F5F9 6px,#E2E8F0 6px,#E2E8F0 12px)', borderLeftColor: 'var(--text-muted)', color: 'var(--text-secondary)', zIndex: 6 }}
+                            >
+                              <div className="text-[12px] font-semibold truncate flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-text-muted shrink-0" />
+                                <span className="truncate">{b.title}</span>
+                              </div>
+                              {height >= 40 && (
+                                <div className="text-[11px] opacity-90 truncate">
+                                  {b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`}
+                                </div>
+                              )}
+                            </button>
+                          }
+                        />
+                        <TooltipContent>
+                          <div className="font-semibold">{b.title}</div>
+                          <div className="text-surface/70">
+                            {b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`} · Time-block
                           </div>
-                        )}
-                      </button>
+                        </TooltipContent>
+                      </Tooltip>
                     )
                   })}
 
@@ -289,33 +298,44 @@ export default function WeekGrid({
                     const widthPct = 100 / cols
                     const compact = height < 40
                     return (
-                      <button
-                        key={m.id}
-                        onClick={(e) => { e.stopPropagation(); setOpenId((id) => (id === m.id ? null : m.id)) }}
-                        className="absolute rounded-[6px] text-left overflow-hidden px-1.5 py-1 border-l-[3px] shadow-xs hover:shadow-md transition-shadow"
-                        style={{
-                          top,
-                          height,
-                          left: `calc(${col * widthPct}% + 2px)`,
-                          width: `calc(${widthPct}% - 4px)`,
-                          background: lk.fill,
-                          borderLeftColor: lk.stripe,
-                          color: lk.text,
-                          zIndex: openId === m.id ? 30 : 10,
-                        }}
-                        {...tip.bind(<div><div className="font-semibold">{m.title}</div><div className="text-white/70">{fmtTime(m.scheduled_start)}{m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}</div></div>)}
-                      >
-                        <div className="flex items-center gap-1 min-w-0">
-                          {lk.live && <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />}
-                          {lk.rhythm && <Repeat size={10} className="shrink-0" />}
-                          <span className={['text-[12px] font-semibold truncate', lk.strike ? 'line-through' : ''].join(' ')}>{m.title}</span>
-                        </div>
-                        {!compact && (
-                          <div className="text-[11px] opacity-90 truncate">
-                            {lk.live ? 'Live now' : `${fmtTime(m.scheduled_start)}${m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}`}
+                      <Tooltip key={m.id}>
+                        <TooltipTrigger
+                          render={
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setOpenId((id) => (id === m.id ? null : m.id)) }}
+                              className="absolute rounded-[6px] text-left overflow-hidden px-1.5 py-1 border-l-[3px] shadow-xs hover:shadow-md transition-shadow"
+                              style={{
+                                top,
+                                height,
+                                left: `calc(${col * widthPct}% + 2px)`,
+                                width: `calc(${widthPct}% - 4px)`,
+                                background: lk.fill,
+                                borderLeftColor: lk.stripe,
+                                color: lk.text,
+                                zIndex: openId === m.id ? 30 : 10,
+                              }}
+                            >
+                              <div className="flex items-center gap-1 min-w-0">
+                                {lk.live && <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />}
+                                {lk.rhythm && <Repeat size={10} className="shrink-0" />}
+                                <span className={['text-[12px] font-semibold truncate', lk.strike ? 'line-through' : ''].join(' ')}>{m.title}</span>
+                              </div>
+                              {!compact && (
+                                <div className="text-[11px] opacity-90 truncate">
+                                  {lk.live ? 'Live now' : `${fmtTime(m.scheduled_start)}${m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}`}
+                                </div>
+                              )}
+                            </button>
+                          }
+                        />
+                        <TooltipContent>
+                          <div className="font-semibold">{m.title}</div>
+                          <div className="text-surface/70">
+                            {fmtTime(m.scheduled_start)}
+                            {m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}
                           </div>
-                        )}
-                      </button>
+                        </TooltipContent>
+                      </Tooltip>
                     )
                   })}
                 </div>
@@ -329,7 +349,6 @@ export default function WeekGrid({
       {openMeeting && (
         <MeetingPopover meeting={openMeeting} onClose={() => setOpenId(null)} onOpen={() => { onSelect(openMeeting.id); setOpenId(null) }} />
       )}
-      {tip.portal}
     </div>
   )
 }
