@@ -60,7 +60,7 @@ function CheckToggle({ state, label, onClick }: { state: TickState; label: strin
   return (
     <button type="button" onClick={onClick} className="flex items-center gap-1.5 group">
       <Tick state={state} />
-      <span className="text-[11px] font-medium uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">{label}</span>
+      <span className="text-meta font-medium uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">{label}</span>
     </button>
   )
 }
@@ -354,7 +354,7 @@ export default function TaskFilterPopover({
         <Filter size={16} />
         Filters
         {activeCount > 0 && (
-          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[11px] font-medium">{activeCount}</span>
+          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-meta font-medium">{activeCount}</span>
         )}
       </button>
 
@@ -369,7 +369,7 @@ export default function TaskFilterPopover({
             <div className="flex items-center justify-between">
               <div className="min-w-0">
                 <span className="text-[13px] font-medium text-text-primary">Filters</span>
-                <p className="text-[11px] text-text-muted mt-0.5">
+                <p className="text-meta text-text-muted mt-0.5">
                   <span className="font-medium text-text-primary tabular-nums">{matchCount}</span> of {tasks.length} task{tasks.length !== 1 ? 's' : ''} match
                 </p>
               </div>
@@ -388,7 +388,7 @@ export default function TaskFilterPopover({
             {empties.length > 0 && (
               <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-warning-bg border border-warning-border px-2.5 py-1.5">
                 <AlertTriangle size={13} className="text-warning shrink-0 mt-0.5" />
-                <p className="text-[11px] text-warning">Select at least one in {empties.join(', ')} to apply.</p>
+                <p className="text-meta text-warning">Select at least one in {empties.join(', ')} to apply.</p>
               </div>
             )}
           </div>

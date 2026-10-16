@@ -246,7 +246,7 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
           <label className="text-sm font-medium text-text-secondary cursor-pointer shrink-0">Reminders</label>
           <span className="text-xs font-normal text-text-secondary shrink-0">Optional</span>
           {available && reminders.length > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium shrink-0">
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium shrink-0">
               {reminders.length}
             </span>
           )}
@@ -353,12 +353,12 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
                       {/* recipients — sit at the right of the same row, wrap under if tight */}
                       <div className="flex items-center gap-1.5 ml-auto">
                         <span className="text-xs text-text-secondary">Notify:</span>
-                        <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-primary text-white">Assignee</span>
+                        <span className="px-2.5 py-1 rounded-full text-meta font-medium bg-primary text-white">Assignee</span>
                         <button
                           type="button"
                           onClick={() => update(r.key, { toAssigner: !r.toAssigner })}
                           className={[
-                            'px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors',
+                            'px-2.5 py-1 rounded-full text-meta font-medium border transition-colors',
                             r.toAssigner ? 'bg-primary text-white border-primary' : 'bg-surface text-text-secondary border-border hover:border-border-strong',
                           ].join(' ')}
                         >
@@ -368,7 +368,7 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
                           type="button"
                           onClick={() => update(r.key, { toCc: !r.toCc })}
                           className={[
-                            'px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors',
+                            'px-2.5 py-1 rounded-full text-meta font-medium border transition-colors',
                             r.toCc ? 'bg-primary text-white border-primary' : 'bg-surface text-text-secondary border-border hover:border-border-strong',
                           ].join(' ')}
                         >
@@ -378,7 +378,7 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
                     </div>
 
                     {past && (
-                      <p className="flex items-start gap-1.5 text-[11px] text-warning bg-warning-bg border border-warning-border rounded-[6px] px-2 py-1.5">
+                      <p className="flex items-start gap-1.5 text-meta text-warning bg-warning-bg border border-warning-border rounded-[6px] px-2 py-1.5">
                         This reminder falls in the past, so it won’t be sent. The task will still save.
                       </p>
                     )}

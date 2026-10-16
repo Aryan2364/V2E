@@ -199,7 +199,7 @@ export default function KanbanView({
                     <div className="flex items-center gap-1.5 flex-wrap mb-2">
                       <QuadrantBadge quadrant={task.quadrant} />
                       {priority && (
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: priority.color + '18', color: priority.color }}>
+                        <span className="text-meta font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: priority.color + '18', color: priority.color }}>
                           {priority.label}
                         </span>
                       )}
@@ -210,12 +210,12 @@ export default function KanbanView({
                     {me && allMust && !terminal && (
                       <div className="flex items-center gap-1.5 flex-wrap mb-2">
                         {me.is_completed ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success bg-success-bg border border-success-border rounded-full px-2 py-0.5"><CheckCircle2 size={11} /> Your part done</span>
+                          <span className="inline-flex items-center gap-1 text-meta font-medium text-success bg-success-bg border border-success-border rounded-full px-2 py-0.5"><CheckCircle2 size={11} /> Your part done</span>
                         ) : me.cannot_complete ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-warning bg-warning-bg border border-warning-border rounded-full px-2 py-0.5"><XCircle size={11} /> You can’t complete</span>
+                          <span className="inline-flex items-center gap-1 text-meta font-medium text-warning bg-warning-bg border border-warning-border rounded-full px-2 py-0.5"><XCircle size={11} /> You can’t complete</span>
                         ) : null}
                         {workers.length > 1 && (
-                          <span className="text-[10px] font-medium text-text-muted">Task {workers.filter((a) => a.is_completed).length}/{workers.length} · still open</span>
+                          <span className="text-meta font-medium text-text-muted">Task {workers.filter((a) => a.is_completed).length}/{workers.length} · still open</span>
                         )}
                       </div>
                     )}
@@ -223,19 +223,19 @@ export default function KanbanView({
                     {/* Undo hint on a freshly-closed card */}
                     {inWindow && (
                       <div className="mb-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-warning bg-warning-bg border border-warning-border rounded-full px-2 py-0.5"><RotateCcw size={10} /> Undo available — drag out to revert</span>
+                        <span className="inline-flex items-center gap-1 text-meta font-medium text-warning bg-warning-bg border border-warning-border rounded-full px-2 py-0.5"><RotateCcw size={10} /> Undo available — drag out to revert</span>
                       </div>
                     )}
                     {locked && (
                       <div className="mb-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-text-muted"><Lock size={10} /> Locked — reopen from the task page</span>
+                        <span className="inline-flex items-center gap-1 text-meta font-medium text-text-muted"><Lock size={10} /> Locked — reopen from the task page</span>
                       </div>
                     )}
 
                     {/* Footer: deadline + avatars */}
                     <div className="flex items-center justify-between mt-1">
                       {task.deadline ? (
-                        <span className={`text-[11px] font-medium ${overdue ? 'text-danger' : 'text-text-muted'}`}>
+                        <span className={`text-meta font-medium ${overdue ? 'text-danger' : 'text-text-muted'}`}>
                           {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           {overdue && ' · Overdue'}
                         </span>

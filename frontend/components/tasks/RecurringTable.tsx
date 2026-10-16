@@ -82,7 +82,7 @@ export default function RecurringTable({
                   </td>
                   <td className={TD}>
                     <span className={[
-                      'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border',
+                      'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-meta font-medium border',
                       t.is_active ? 'bg-success-bg text-success border-success-border' : 'bg-danger-bg text-danger border-danger-border',
                     ].join(' ')}>
                       {t.is_active ? 'Active' : <><Pause size={9} /> Paused</>}

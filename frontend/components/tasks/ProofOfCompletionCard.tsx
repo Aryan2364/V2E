@@ -159,7 +159,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
     const mine = a.uploaded_by_user_id === user?.id
     return (
       <div className="flex items-center gap-2 text-[12px]">
-        <span className="shrink-0 inline-flex items-center justify-center w-8 h-5 rounded-xs bg-primary-subtle text-primary-text text-[9px] font-medium">
+        <span className="shrink-0 inline-flex items-center justify-center w-8 h-5 rounded-xs bg-primary-subtle text-primary-text text-meta font-medium">
           {fileKindLabel(a.file_name)}
         </span>
         <Tooltip label={a.file_name}>
@@ -172,7 +172,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
         <span className="shrink-0 text-text-muted">· {formatWhen(a.created_at)}</span>
         {a.proof_visibility === 'everyone' && (
           <Tooltip label="Visible to everyone on the task">
-            <span className="shrink-0 inline-flex items-center gap-0.5 text-[10px] text-text-muted">
+            <span className="shrink-0 inline-flex items-center gap-0.5 text-meta text-text-muted">
               <Users size={10} /> shared
             </span>
           </Tooltip>
@@ -196,7 +196,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
   const uploader = iAmAssignee && !locked && (
     <div className="mt-3">
       <FileDropzone onFiles={handleFiles} onReject={setErrors} disabled={uploading} compact />
-      {uploading && queue.length === 0 && <p className="mt-1 text-[11px] text-text-muted">Uploading…</p>}
+      {uploading && queue.length === 0 && <p className="mt-1 text-meta text-text-muted">Uploading…</p>}
       {errors.length > 0 && <div className="mt-2"><AttachmentErrorBox errors={errors} onDismiss={() => setErrors([])} /></div>}
     </div>
   )
@@ -209,20 +209,20 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
           Proof of Completion
         </h3>
         {isAllMust ? (
-          <span className={`text-[11px] font-medium rounded-full px-2 py-0.5 ${submittedCount >= requiredCount && requiredCount > 0 ? 'bg-success-bg text-success border border-success-border' : 'bg-warning-bg text-warning border border-warning-border'}`}>
+          <span className={`text-meta font-medium rounded-full px-2 py-0.5 ${submittedCount >= requiredCount && requiredCount > 0 ? 'bg-success-bg text-success border border-success-border' : 'bg-warning-bg text-warning border border-warning-border'}`}>
             {submittedCount}/{requiredCount} submitted
           </span>
         ) : (
           summary?.task_has_any_proof ? (
-            <span className="text-[11px] font-medium rounded-full px-2 py-0.5 bg-success-bg text-success border border-success-border">Submitted</span>
+            <span className="text-meta font-medium rounded-full px-2 py-0.5 bg-success-bg text-success border border-success-border">Submitted</span>
           ) : (
-            <span className="text-[11px] font-medium rounded-full px-2 py-0.5 bg-warning-bg text-warning border border-warning-border">Pending</span>
+            <span className="text-meta font-medium rounded-full px-2 py-0.5 bg-warning-bg text-warning border border-warning-border">Pending</span>
           )
         )}
       </div>
 
       {allowed.length > 0 && (
-        <p className="text-[11px] text-text-muted mb-2">Accepted: {allowed.join(', ')}</p>
+        <p className="text-meta text-text-muted mb-2">Accepted: {allowed.join(', ')}</p>
       )}
 
       {/* Uploader sits up top for an assignee ("upload here"), then the files below. */}
@@ -241,16 +241,16 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-text-primary">{name}{isMe && <span className="text-text-muted font-normal"> (you)</span>}</span>
                   {submitted ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-success"><CheckCircle2 size={12} /> Submitted</span>
+                    <span className="inline-flex items-center gap-1 text-meta font-medium text-success"><CheckCircle2 size={12} /> Submitted</span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-warning"><Clock size={12} /> Pending</span>
+                    <span className="inline-flex items-center gap-1 text-meta font-medium text-warning"><Clock size={12} /> Pending</span>
                   )}
                 </div>
                 {files.length > 0 && (
                   <div className="mt-1.5 space-y-1">{files.map((f) => <FileRow key={f.id} a={f} />)}</div>
                 )}
                 {submitted && files.length === 0 && !isMe && (
-                  <p className="mt-1 text-[11px] text-text-muted inline-flex items-center gap-1"><Lock size={10} /> File visible to the assigner only</p>
+                  <p className="mt-1 text-meta text-text-muted inline-flex items-center gap-1"><Lock size={10} /> File visible to the assigner only</p>
                 )}
               </div>
             )
@@ -295,12 +295,12 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
                   <input type="radio" name="proof-visibility" className="accent-primary mt-0.5" checked={choice === o.v} onChange={() => setChoice(o.v)} />
                   <span>
                     <span className="block text-sm font-medium text-text-primary">{o.label}</span>
-                    <span className="block text-[11px] text-text-muted">{o.hint}</span>
+                    <span className="block text-meta text-text-muted">{o.hint}</span>
                   </span>
                 </label>
               ))}
             </div>
-            {queue.length > 1 && <p className="mt-2 text-[11px] text-text-muted">{queue.length - 1} more file{queue.length - 1 !== 1 ? 's' : ''} after this.</p>}
+            {queue.length > 1 && <p className="mt-2 text-meta text-text-muted">{queue.length - 1} more file{queue.length - 1 !== 1 ? 's' : ''} after this.</p>}
             {/* No footer Cancel — the header X / backdrop dismiss this (both discard the
                 queue), so a duplicate Cancel would break the cancel-vs-X rule. */}
             <div className="mt-4 flex items-center justify-end">

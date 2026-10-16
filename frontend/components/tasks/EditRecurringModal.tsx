@@ -350,7 +350,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                   maxLength={50}
                   className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-base sm:text-sm text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
                 />
-                <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
+                <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-meta ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
                   {title.length}/50
                 </span>
               </div>
@@ -358,7 +358,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1.5">Assignees & CC</label>
               <AssigneeSelector orgId={orgId} value={assignees} onChange={setAssignees} disabled={!assigneesLoaded} />
-              <p className="text-[11px] text-text-secondary mt-1">
+              <p className="text-meta text-text-secondary mt-1">
                 {assigneesLoaded
                   ? 'Add people · click their badge to toggle between Assignee and CC'
                   : 'Loading current assignees…'}
@@ -396,7 +396,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                         />
                         <span>
                           <span className="block text-sm text-text-primary">{opt.label}</span>
-                          <span className="block text-[11px] text-text-secondary">{opt.hint}</span>
+                          <span className="block text-meta text-text-secondary">{opt.hint}</span>
                         </span>
                       </label>
                     ))}
@@ -451,7 +451,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1.5">Tags</label>
               <TagPicker orgId={orgId} value={tagIds} onChange={setTagIds} disabled={submitting} knownTags={template.tags} />
-              <p className="text-[11px] text-text-secondary mt-1">Copied onto every new occurrence.</p>
+              <p className="text-meta text-text-secondary mt-1">Copied onto every new occurrence.</p>
             </div>
             <GoalSelectField orgId={orgId} value={goalId} onChange={setGoalId} />
           </div>
@@ -506,7 +506,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                 <label className="text-sm font-medium text-text-secondary cursor-pointer">Attachments</label>
                 <span className="text-xs font-normal text-text-secondary">Optional</span>
                 {(attachments.length + pendingFiles.length) > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
                     {attachments.length + pendingFiles.length}
                   </span>
                 )}

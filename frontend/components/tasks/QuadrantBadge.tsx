@@ -50,14 +50,14 @@ export default function QuadrantBadge({ quadrant, size = 'sm' }: QuadrantBadgePr
         ].join(' ')}
       >
         <span className="text-sm font-medium leading-tight">{cfg.label}</span>
-        <span className="text-[10px] font-medium leading-tight opacity-80">{cfg.sublabel}</span>
+        <span className="text-meta font-medium leading-tight opacity-80">{cfg.sublabel}</span>
       </span>
     )
   }
   return (
     <span
       className={[
-        'inline-flex items-center rounded-[6px] px-2 py-0.5 text-[11px] font-medium',
+        'inline-flex items-center rounded-[6px] px-2 py-0.5 text-meta font-medium',
         cfg.bg,
         cfg.text,
         cfg.border,

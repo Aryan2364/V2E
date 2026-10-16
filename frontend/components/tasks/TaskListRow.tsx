@@ -142,7 +142,7 @@ export default function TaskListRow({
           <div className="flex items-center gap-2.5 flex-wrap min-w-0 text-[12px] text-text-secondary">
             {priority && (
               <span
-                className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium"
+                className="inline-flex items-center rounded-full px-2 py-0.5 text-meta font-medium"
                 style={{ backgroundColor: priority.color + '22', color: priority.color, border: `1px solid ${priority.color}44` }}
               >
                 {priority.label}
@@ -150,7 +150,7 @@ export default function TaskListRow({
             )}
             {category && (
               <span
-                className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium"
+                className="inline-flex items-center rounded-full px-2 py-0.5 text-meta font-medium"
                 style={{ backgroundColor: category.color + '22', color: category.color, border: `1px solid ${category.color}44` }}
               >
                 {category.name}
@@ -163,7 +163,7 @@ export default function TaskListRow({
             {wf && <WorkflowTaskBadge workflow={wf} />}
             {showAssigner && (
               <Tooltip label={`Assigned by ${assignerName}`}>
-                <span className="text-[11px] text-text-muted truncate max-w-[130px]">
+                <span className="text-meta text-text-muted truncate max-w-[130px]">
                   by {assignerName}
                 </span>
               </Tooltip>
@@ -171,7 +171,7 @@ export default function TaskListRow({
             {otherPeople.length > 0 ? (
               <AssigneeAvatars people={otherPeople} max={3} size="sm" />
             ) : !showAssigner && !wf ? (
-              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-primary-subtle text-primary-text border border-primary-border">
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text border border-primary-border">
                 Self
               </span>
             ) : null}
@@ -182,7 +182,7 @@ export default function TaskListRow({
                 <span className="relative inline-flex shrink-0">
                   <MessageSquare size={14} className={unread > 0 ? 'text-primary-text' : ''} />
                   {unread > 0 && (
-                    <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-white text-[9px] font-medium leading-none ring-2 ring-white">
+                    <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-white text-meta font-medium leading-none ring-2 ring-white">
                       {unread > 9 ? '9+' : unread}
                     </span>
                   )}
@@ -213,7 +213,7 @@ export default function TaskListRow({
               />
             ) : (
               <span
-                className="shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+                className="shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium"
                 style={{ backgroundColor: status.color + '22', color: status.color, border: `1px solid ${status.color}44` }}
               >
                 {status.label}

@@ -144,7 +144,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                     {day}
                   </span>
                   {dayTasks.length > 2 && (
-                    <span className="text-[10px] text-text-muted font-medium">+{dayTasks.length - 2}</span>
+                    <span className="text-meta text-text-muted font-medium">+{dayTasks.length - 2}</span>
                   )}
                 </div>
 
@@ -165,7 +165,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                           onClick={(e) => { e.stopPropagation(); onTaskClick(task.id) }}
                         >
                           <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
-                          <span className="text-[10px] font-medium truncate" style={{ color: dotColor }}>
+                          <span className="text-meta font-medium truncate" style={{ color: dotColor }}>
                             {task.title}
                           </span>
                         </div>
@@ -229,7 +229,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                   </div>
                   {priority && (
                     <span
-                      className="text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0"
+                      className="text-meta font-medium px-2 py-0.5 rounded-full shrink-0"
                       style={{ backgroundColor: priority.color + '18', color: priority.color }}
                     >
                       {priority.label}

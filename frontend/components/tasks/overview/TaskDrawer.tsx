@@ -166,7 +166,7 @@ export default function TaskDrawer({
       <SheetContent side="right" className="w-full sm:max-w-[560px] flex flex-col p-0">
         <SheetHeader>
           <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-on-brand-muted">Task</p>
+            <p className="text-meta font-medium uppercase tracking-wide text-on-brand-muted">Task</p>
             <SheetTitle className="wrap-break-word">
               {loading ? 'Loading…' : task?.title}
             </SheetTitle>
@@ -256,7 +256,7 @@ export default function TaskDrawer({
                   <Paperclip size={14} className="text-text-secondary" />
                   Attachments
                   {attachments.length > 0 && (
-                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[10px] font-medium">
+                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-meta font-medium">
                       {attachments.length}
                     </span>
                   )}
@@ -305,13 +305,13 @@ export default function TaskDrawer({
                   <div className="space-y-3">
                     {comments.map((c) => (
                       <div key={c.id} className="flex gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-primary text-white text-[10px] font-medium flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center shrink-0">
                           {(c.user_name ?? '?').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-[13px]">
                             <span className="font-medium text-text-primary">{c.user_name ?? 'Unknown'}</span>
-                            <span className="text-text-muted ml-2 text-[11px]">{formatWhen(c.created_at)}</span>
+                            <span className="text-text-muted ml-2 text-meta">{formatWhen(c.created_at)}</span>
                           </p>
                           <p className="text-[14px] text-text-primary whitespace-pre-wrap wrap-break-word mt-0.5">{c.body}</p>
                           {c.attachments && c.attachments.length > 0 && (

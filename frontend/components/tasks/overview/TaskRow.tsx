@@ -31,7 +31,7 @@ function formatDeadline(deadline: string): string {
 function Chip({ label, color }: { label: string; color: string }) {
   return (
     <span
-      className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium whitespace-nowrap"
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-meta font-medium whitespace-nowrap"
       style={{ backgroundColor: color + '22', color, border: `1px solid ${color}44` }}
     >
       {label}
@@ -115,7 +115,7 @@ export default function TaskRow({
           <TagList tags={task.tags} max={2} />
           {wf && <WorkflowTaskBadge workflow={wf} />}
           {assigner && (
-            <span className="inline-flex items-center gap-1 text-[11px] text-text-secondary">
+            <span className="inline-flex items-center gap-1 text-meta text-text-secondary">
               <span className="text-text-muted">by</span>
               <span className="font-medium text-text-secondary">{assigner}</span>
               <ArrowRight size={10} className="text-text-muted" />

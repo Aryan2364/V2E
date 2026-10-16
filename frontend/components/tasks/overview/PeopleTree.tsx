@@ -60,7 +60,7 @@ function Row({ node, depth }: { node: TreeNode; depth: number }) {
         >
           {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </button>
-        <div className="w-7 h-7 rounded-full bg-primary text-white text-[10px] font-medium flex items-center justify-center shrink-0">
+        <div className="w-7 h-7 rounded-full bg-primary text-white text-meta font-medium flex items-center justify-center shrink-0">
           {initials(node.name)}
         </div>
         <button onClick={() => router.push(`/dashboard/tasks/people/${node.user_id}`)} className="min-w-0 flex-1 text-left group">
@@ -99,7 +99,7 @@ export default function PeopleTree({ data }: { data: PeopleTreeData }) {
     <div className="bg-surface border border-border-light rounded-xl shadow-card p-3 flex flex-col h-[420px]">
       <div className="flex items-center justify-between px-1 pb-2 mb-1 border-b border-border-light shrink-0">
         <p className="text-[13px] font-medium text-text-primary">Reporting tree · workload</p>
-        <p className="text-[11px] text-text-muted hidden sm:flex items-center gap-3">
+        <p className="text-meta text-text-muted hidden sm:flex items-center gap-3">
           <span className="inline-flex items-center gap-1"><Users size={11} /> assigned</span>
           <span className="inline-flex items-center gap-1 text-danger"><AlertTriangle size={11} /> overdue</span>
           <span className="inline-flex items-center gap-1 text-success"><CheckCircle2 size={11} /> done</span>

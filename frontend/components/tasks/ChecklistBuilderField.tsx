@@ -202,7 +202,7 @@ export default function ChecklistBuilderField({
   }
 
   const countBadge = groups.length > 0 && (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
       {groups.length}
     </span>
   )
@@ -296,7 +296,7 @@ export default function ChecklistBuilderField({
                         <span className="flex-1 text-sm font-medium text-text-primary">{g.title.trim() || 'Checklist'}</span>
                       )}
                       {g.source === 'template' && (
-                        <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
+                        <span className="shrink-0 inline-flex items-center gap-1 text-meta font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
                           {linkedTemplates && <Link2 size={11} aria-hidden />}
                           {linkedTemplates ? 'Linked template' : 'Template'}
                         </span>

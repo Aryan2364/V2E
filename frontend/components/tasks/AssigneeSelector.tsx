@@ -61,7 +61,7 @@ function UserRow({
     >
       {/* Avatar */}
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(user.name)}`}
+        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(user.name)}`}
       >
         {getInitials(user.name)}
       </div>
@@ -76,19 +76,19 @@ function UserRow({
       <div className="flex items-center gap-1.5 shrink-0">
         {user.on_leave_today && (
           <Tooltip label={user.leave_until ? `On leave until ${user.leave_until}` : 'On leave'}>
-            <span className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-warning-bg text-warning">
+            <span className="flex items-center gap-0.5 text-meta font-medium px-1.5 py-0.5 rounded-full bg-warning-bg text-warning">
               On leave
             </span>
           </Tooltip>
         )}
         {user.is_frequent && (
-          <span className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary-subtle text-primary-text">
+          <span className="flex items-center gap-0.5 text-meta font-medium px-1.5 py-0.5 rounded-full bg-primary-subtle text-primary-text">
             <Zap size={9} />
             Frequent
           </span>
         )}
         <Tooltip label="Active tasks">
-          <span className="flex items-center gap-0.5 text-[10px] font-medium text-text-muted bg-surface-control px-1.5 py-0.5 rounded-full">
+          <span className="flex items-center gap-0.5 text-meta font-medium text-text-muted bg-surface-control px-1.5 py-0.5 rounded-full">
             <Briefcase size={9} />
             {user.active_task_count}
           </span>
@@ -123,7 +123,7 @@ function AssigneeChip({
       className="inline-flex items-center gap-1.5 bg-surface-sunken border border-border-light rounded-lg pl-1.5 pr-1 py-1 max-w-[180px]"
     >
       <div
-        className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-medium shrink-0 ${avatarColor(assignee.name)}`}
+        className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(assignee.name)}`}
       >
         {getInitials(assignee.name)}
       </div>
@@ -133,7 +133,7 @@ function AssigneeChip({
         <button
           type="button"
           onClick={onToggleCC}
-          className={`text-[10px] font-medium rounded-tick px-1.5 py-0.5 transition-colors shrink-0 ${
+          className={`text-meta font-medium rounded-tick px-1.5 py-0.5 transition-colors shrink-0 ${
             assignee.is_cc
               ? 'bg-warning-bg text-warning border border-warning-border'
               : 'bg-primary-subtle text-primary-text border border-primary-border'
@@ -341,7 +341,7 @@ export default function AssigneeSelector({
                     key={s}
                     type="button"
                     onClick={() => setSort(s)}
-                    className={`px-2 py-1 rounded-tick text-[10px] font-medium transition-colors ${
+                    className={`px-2 py-1 rounded-tick text-meta font-medium transition-colors ${
                       sort === s ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-control'
                     }`}
                   >
@@ -406,7 +406,7 @@ export default function AssigneeSelector({
                       {/* Department header (hidden for search flat list) */}
                       {dept.department_id !== 'search' && (
                         <div className="px-3 py-1.5 bg-surface-sunken border-b border-border-light">
-                          <span className="text-[11px] font-medium text-text-muted uppercase tracking-wide">
+                          <span className="text-meta font-medium text-text-muted uppercase tracking-wide">
                             {dept.department_name}
                             <span className="ml-1.5 font-normal normal-case text-text-muted">({dept.users.length})</span>
                           </span>

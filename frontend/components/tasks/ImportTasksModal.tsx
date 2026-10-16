@@ -1338,7 +1338,7 @@ function HistoryView({
       partially_undone: 'bg-warning-bg text-warning border-warning-border',
     }[s]
     const label = s === 'partially_undone' ? 'Partly undone' : s === 'undone' ? 'Undone' : 'Committed'
-    return <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${map}`}>{label}</span>
+    return <span className={`text-meta font-medium px-2 py-0.5 rounded-full border ${map}`}>{label}</span>
   }
   return (
     <div className="space-y-2">
@@ -1402,11 +1402,11 @@ function BatchDetailView({
               <span className="text-text-muted">Row {r.row}</span>
               <span className="font-medium text-text-primary">{r.title || '—'}</span>
               {r.status === 'created' ? (
-                <span className={`ml-auto text-[11px] font-medium px-2 py-0.5 rounded-full border ${r.still_present ? 'bg-success-bg text-success border-success-border' : 'bg-surface-control text-text-secondary border-border-light'}`}>
+                <span className={`ml-auto text-meta font-medium px-2 py-0.5 rounded-full border ${r.still_present ? 'bg-success-bg text-success border-success-border' : 'bg-surface-control text-text-secondary border-border-light'}`}>
                   {r.still_present ? 'Present' : 'Removed'}
                 </span>
               ) : (
-                <span className="ml-auto text-[11px] font-medium px-2 py-0.5 rounded-full border bg-danger-bg text-danger border-danger-border">Failed</span>
+                <span className="ml-auto text-meta font-medium px-2 py-0.5 rounded-full border bg-danger-bg text-danger border-danger-border">Failed</span>
               )}
             </div>
             {r.error && <div className="text-danger mt-0.5">{r.error}</div>}

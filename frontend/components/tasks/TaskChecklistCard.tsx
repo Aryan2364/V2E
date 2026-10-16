@@ -96,7 +96,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
       <div className="flex items-center gap-2 mb-1">
         <CheckSquare size={16} className="text-primary-text" />
         <h3 className="text-[15px] font-medium text-text-primary">Checklist</h3>
-        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
+        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
           {resolvedCount}/{items.length}
         </span>
       </div>
@@ -369,7 +369,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
                 type="button"
                 onClick={() => setExpandedId((cur) => (cur === item.id ? null : item.id))}
                 className={[
-                  'inline-flex items-center gap-1 h-[20px] px-2 rounded-full text-[11px] font-medium cursor-pointer transition-colors',
+                  'inline-flex items-center gap-1 h-[20px] px-2 rounded-full text-meta font-medium cursor-pointer transition-colors',
                   allResolved ? 'bg-success-bg text-success border border-success-border' : 'bg-primary-subtle text-primary-text border border-primary-border',
                 ].join(' ')}
                 aria-label="Who has marked this item"
@@ -461,30 +461,30 @@ function PersonRow({
 }) {
   return (
     <div className="flex items-center gap-2 px-3 py-2">
-      <span className="w-6 h-6 rounded-full bg-primary-subtle text-text-secondary text-[10px] font-medium flex items-center justify-center shrink-0">
+      <span className="w-6 h-6 rounded-full bg-primary-subtle text-text-secondary text-meta font-medium flex items-center justify-center shrink-0">
         {initials(name)}
       </span>
       <span className="text-[13px] text-text-primary flex-1 min-w-0 truncate">{name}</span>
       {state?.state === 'done' ? (
-        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-success">
+        <span className="inline-flex items-center gap-1 text-meta font-medium text-success">
           {state.is_override ? <ShieldCheck size={12} /> : <Check size={12} strokeWidth={3} />}
           {state.is_override ? `Done for all${state.marked_by_name ? ` · ${state.marked_by_name}` : ''}` : 'Done'}
         </span>
       ) : state?.state === 'skipped' ? (
         <Tooltip label={state.reason ?? ''}>
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-warning">
+          <span className="inline-flex items-center gap-1 text-meta font-medium text-warning">
             <Ban size={12} /> Can’t do{state.reason ? ` · ${state.reason}` : ''}
           </span>
         </Tooltip>
       ) : (
-        <span className="text-[11px] font-medium text-text-muted">Pending</span>
+        <span className="text-meta font-medium text-text-muted">Pending</span>
       )}
       {canChallenge && (
         <Tooltip label="Reopen this person’s item">
           <button
             type="button"
             onClick={onChallenge}
-            className="ml-1 inline-flex items-center gap-1 text-[11px] font-medium text-primary-text hover:text-primary-text px-1.5 py-0.5 rounded-[6px] hover:bg-primary-subtle shrink-0"
+            className="ml-1 inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text px-1.5 py-0.5 rounded-[6px] hover:bg-primary-subtle shrink-0"
           >
             <RotateCcw size={11} /> Challenge
           </button>

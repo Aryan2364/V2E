@@ -120,7 +120,7 @@ export function StatusControl({
         disabled={busy}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1.5 py-0.5 text-[11px] font-medium transition-shadow hover:shadow-xs disabled:opacity-60"
+        className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1.5 py-0.5 text-meta font-medium transition-shadow hover:shadow-xs disabled:opacity-60"
         style={{
           backgroundColor: status.color + '22',
           color: status.color,
@@ -239,7 +239,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           {category && (
             <span
-              className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium"
+              className="inline-flex items-center rounded-full px-2 py-0.5 text-meta font-medium"
               style={{
                 backgroundColor: category.color + '22',
                 color: category.color,
@@ -252,7 +252,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
           {/* Tags sit with the category as one classification fact (two chips + "+N"). */}
           <TagList tags={task.tags} max={2} />
           {!wf && task.workflow_step?.show_on_card && (
-            <span className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-medium bg-primary-subtle text-primary-text border border-primary-border">
+            <span className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text border border-primary-border">
               <GitBranch size={9} />
               {task.workflow_step.template_name} — Step {task.workflow_step.step_order}
             </span>
@@ -275,7 +275,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
             <span className="relative inline-flex shrink-0">
               <MessageSquare size={14} className={unread > 0 ? 'text-primary-text' : ''} />
               {unread > 0 && (
-                <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-white text-[9px] font-medium leading-none ring-2 ring-white">
+                <span className="absolute -top-2 -right-1.5 inline-flex items-center justify-center min-w-[15px] h-[15px] px-1 rounded-full bg-primary text-white text-meta font-medium leading-none ring-2 ring-white">
                   {unread > 9 ? '9+' : unread}
                 </span>
               )}
@@ -299,7 +299,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
         {wf && <WorkflowTaskBadge workflow={wf} />}
         {showAssigner && (
           <Tooltip label={`Assigned by ${assignerName}`}>
-            <span className="text-[11px] text-text-muted truncate max-w-[120px]">
+            <span className="text-meta text-text-muted truncate max-w-[120px]">
               by {assignerName}
             </span>
           </Tooltip>
@@ -307,7 +307,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
         {otherPeople.length > 0 ? (
           <AssigneeAvatars people={otherPeople} max={3} size="sm" />
         ) : !showAssigner && !wf ? (
-          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-primary-subtle text-primary-text border border-primary-border">
+          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text border border-primary-border">
             Self
           </span>
         ) : null}
@@ -325,7 +325,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
           open. Orthogonal to status, so it rides alongside the status pill. */}
       {task.is_overdue && (
         <div className="shrink-0">
-          <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium bg-danger-bg text-danger border border-danger-border">
+          <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-meta font-medium bg-danger-bg text-danger border border-danger-border">
             <AlertTriangle size={11} />
             Overdue
           </span>
@@ -337,7 +337,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
       {priority && (
         <div className="shrink-0">
           <span
-            className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium"
+            className="inline-flex items-center rounded-full px-2 py-0.5 text-meta font-medium"
             style={{
               backgroundColor: priority.color + '22',
               color: priority.color,
@@ -363,7 +363,7 @@ export default function TaskCard({ task, onClick, priorities, statuses, categori
         ) : (
           <div className="shrink-0">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+              className="inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium"
               style={{
                 backgroundColor: status.color + '22',
                 color: status.color,

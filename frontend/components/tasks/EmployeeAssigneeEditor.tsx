@@ -47,7 +47,7 @@ function ReasonChip({ reason }: { reason: AssigneeReason }) {
   const r = REASON[reason] ?? { label: reason }
   return (
     <span
-      className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full whitespace-nowrap ${
+      className={`text-meta font-medium px-1.5 py-0.5 rounded-full whitespace-nowrap ${
         r.manual ? 'bg-primary-subtle text-primary-text border border-primary-border' : 'bg-surface-control text-text-secondary'
       }`}
     >
@@ -346,7 +346,7 @@ export default function EmployeeAssigneeEditor({
               <div key={g.id}>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-sunken border-b border-border-light sticky top-0">
                   <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorOf(g.id) }} />
-                  <span className="text-[11px] font-medium text-text-muted uppercase tracking-wide truncate">{g.name}</span>
+                  <span className="text-meta font-medium text-text-muted uppercase tracking-wide truncate">{g.name}</span>
                 </div>
                 {g.users.map((e) => (
                   <button
@@ -357,7 +357,7 @@ export default function EmployeeAssigneeEditor({
                       selectedId === e.user_id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                     }`}
                   >
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(e.name)}`}>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(e.name)}`}>
                       {getInitials(e.name)}
                     </div>
                     <div className="min-w-0">
@@ -495,7 +495,7 @@ export default function EmployeeAssigneeEditor({
               {removedRows.length > 0 && (
                 <div className="border-b border-danger-border bg-danger-bg">
                   <div className="flex items-center justify-between px-3 py-2">
-                    <span className="text-[11px] font-medium text-danger uppercase tracking-wide">Removed ({removedRows.length})</span>
+                    <span className="text-meta font-medium text-danger uppercase tracking-wide">Removed ({removedRows.length})</span>
                     <button type="button" onClick={resetToRules} className="inline-flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text transition-colors">
                       <RotateCcw size={13} /> Restore all
                     </button>
@@ -532,7 +532,7 @@ export default function EmployeeAssigneeEditor({
                 {memberGroups.map((g) => (
                   <div key={g.department_id}>
                     <div className="px-3 py-1.5 bg-surface-sunken border-b border-border-light">
-                      <span className="text-[11px] font-medium text-text-muted uppercase tracking-wide">{g.department_name}</span>
+                      <span className="text-meta font-medium text-text-muted uppercase tracking-wide">{g.department_name}</span>
                     </div>
                     {g.users.map((u) => (
                       <Row
@@ -641,7 +641,7 @@ function Row({
 }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5">
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(name)}`}>
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(name)}`}>
         {getInitials(name)}
       </div>
       <div className="flex-1 min-w-0">
@@ -653,15 +653,15 @@ function Row({
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
         {badges?.on_leave_today && (
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-warning-bg text-warning">On leave</span>
+          <span className="text-meta font-medium px-1.5 py-0.5 rounded-full bg-warning-bg text-warning">On leave</span>
         )}
         {badges?.is_frequent && (
-          <span className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary-subtle text-primary-text">
+          <span className="flex items-center gap-0.5 text-meta font-medium px-1.5 py-0.5 rounded-full bg-primary-subtle text-primary-text">
             <Zap size={9} /> Frequent
           </span>
         )}
         {badges && (
-          <span className="flex items-center gap-0.5 text-[10px] font-medium text-text-muted bg-surface-control px-1.5 py-0.5 rounded-full">
+          <span className="flex items-center gap-0.5 text-meta font-medium text-text-muted bg-surface-control px-1.5 py-0.5 rounded-full">
             <Briefcase size={9} /> {badges.active_task_count}
           </span>
         )}

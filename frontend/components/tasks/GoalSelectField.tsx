@@ -51,7 +51,7 @@ export default function GoalSelectField({ orgId, value, onChange, hint }: Props)
           ...goals.map((g) => ({ value: g.id, label: g.title })),
         ]}
       />
-      <p className="text-[11px] text-text-secondary mt-1">
+      <p className="text-meta text-text-secondary mt-1">
         {hint ?? 'Optional — the task shows up on that goal as part of the work behind it.'}
       </p>
     </div>

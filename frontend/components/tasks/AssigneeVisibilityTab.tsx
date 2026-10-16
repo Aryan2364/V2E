@@ -406,7 +406,7 @@ function UpwardSection({ orgId, view, onChange, apiError }: { orgId: string; vie
                 {busy === dept.id && <Loader2 size={13} className="animate-spin text-text-muted" />}
                 {covered ? (
                   <Tooltip label={`Locked — merged into ${covered.name}`}>
-                    <span className="flex items-center gap-1.5 text-[11px] text-text-muted">
+                    <span className="flex items-center gap-1.5 text-meta text-text-muted">
                       <Lock size={12} />
                       <Toggle on disabled onChange={() => {}} />
                     </span>
@@ -602,7 +602,7 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
                       {busy === dept.id && <Loader2 size={13} className="animate-spin text-text-muted" />}
                       {covered ? (
                         <Tooltip label={`Locked — controlled by ${covered.name}`}>
-                          <span className="flex items-center gap-1.5 text-[11px] text-text-muted">
+                          <span className="flex items-center gap-1.5 text-meta text-text-muted">
                             <Lock size={12} />
                             <Toggle on disabled onChange={() => {}} />
                           </span>
@@ -610,7 +610,7 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
                       ) : parent ? (
                         <Toggle on={d.assignee_unify_subtree} disabled={busy === dept.id} onChange={() => toggle(dept.id, !d.assignee_unify_subtree)} />
                       ) : (
-                        <span className="text-[11px] text-text-muted pr-1">—</span>
+                        <span className="text-meta text-text-muted pr-1">—</span>
                       )}
                     </div>
                   </div>
@@ -758,11 +758,11 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
                   <span>{b.from_department_name ?? deptName(b.from_department_id)}</span>
                   {bothWays ? <ArrowLeftRight size={14} className="text-primary-text" /> : <ArrowRight size={14} className="text-text-muted" />}
                   <span>{b.to_department_name ?? deptName(b.to_department_id)}</span>
-                  <span className="text-[11px] font-medium uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
+                  <span className="text-meta font-medium uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
                     {b.depth === 'whole_dept' ? 'Whole dept' : 'Head & seniors'}
                   </span>
                   {b.include_sub_departments && (
-                    <span className="text-[11px] font-medium uppercase tracking-wide text-text-secondary bg-surface-control border border-border-light rounded-full px-2 py-0.5">
+                    <span className="text-meta font-medium uppercase tracking-wide text-text-secondary bg-surface-control border border-border-light rounded-full px-2 py-0.5">
                       + sub-depts
                     </span>
                   )}
@@ -778,7 +778,7 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
               <div className="flex items-center gap-3 shrink-0">
                 <Tooltip label={bothWays ? 'Both directions open — turn off to remove the reverse entry' : 'One-directional — turn on to also create the reverse entry (B → A)'}>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-medium text-text-secondary hidden sm:inline">Both ways</span>
+                  <span className="text-meta font-medium text-text-secondary hidden sm:inline">Both ways</span>
                   {bothBusy === b.id ? (
                     <Loader2 size={14} className="animate-spin text-text-muted" />
                   ) : (

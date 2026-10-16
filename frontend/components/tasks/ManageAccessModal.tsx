@@ -21,7 +21,7 @@ function initials(name: string): string {
 
 function Avatar({ name }: { name: string }) {
   return (
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(name)}`}>
+    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-meta font-medium shrink-0 ${avatarColor(name)}`}>
       {initials(name)}
     </div>
   )

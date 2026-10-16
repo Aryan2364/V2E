@@ -8,12 +8,13 @@ import type { Task, TaskCategory, TaskPriority, TaskStatus } from '@/lib/types/t
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import TaskListRow from '@/components/tasks/TaskListRow'
 import TaskListToolbar from '@/components/tasks/TaskListToolbar'
-import { useTaskListView, GroupedTaskList, ClearNarrowingButton } from '@/components/tasks/taskListView'
+import { useTaskListView, GroupedTaskList } from '@/components/tasks/taskListView'
 import { type TaskSort, DEFAULT_TASK_SORT } from '@/components/tasks/TaskSortControl'
 import { useSessionState } from '@/lib/tasks/useSessionState'
 import { type TaskFilters, EMPTY_TASK_FILTERS, isTaskFiltered, applyTaskFilters, normalizeTaskFilters } from '@/components/tasks/TaskFilterBar'
-import { AlertTriangle } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
+import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 
 export default function EscalatedPage() {
   const { user } = useAuth()
@@ -76,8 +77,14 @@ export default function EscalatedPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-9 w-full" />
+        <div className="space-y-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full" />
+          ))}
+        </div>
       </div>
     )
   }
@@ -130,28 +137,26 @@ export default function EscalatedPage() {
       />
 
       {(isFiltered || search.trim()) && (
-        <p className="text-sm text-text-secondary">
+        <p className="text-label text-text-secondary">
           Showing {sortedTasks.length} of {tasks.length} escalated task{tasks.length !== 1 ? 's' : ''}
         </p>
       )}
 
       {sortedTasks.length === 0 ? (
-        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
-          <div className="w-14 h-14 rounded-full bg-warning-bg flex items-center justify-center mb-4">
-            <AlertTriangle size={24} className="text-warning" />
-          </div>
-          <p className="font-medium text-text-primary">
-            {search.trim() ? `No tasks match ‘${search.trim()}’` : isFiltered ? 'No tasks match your filters' : 'No escalated tasks'}
-          </p>
-          <p className="text-sm text-text-secondary mt-1">
-            {search.trim() ? 'Try a different search term.' : isFiltered ? 'Try adjusting your filters.' : 'Tasks flagged for escalation will appear here.'}
-          </p>
-          <ClearNarrowingButton
-            hasSearch={!!search.trim()}
-            hasFilters={isFiltered}
-            onClear={() => { setSearch(''); setFilters({ ...EMPTY_TASK_FILTERS }) }}
-          />
-        </div>
+        isFiltered || search.trim() ? (
+          <EmptyState
+            variant="nothing-found"
+            heading={search.trim() ? `No tasks match '${search.trim()}'` : 'No tasks match your filters'}
+            actionLabel="Clear filters"
+            onAction={() => { setSearch(''); setFilters({ ...EMPTY_TASK_FILTERS }) }}
+          >
+            {search.trim() ? 'Try a different search term.' : 'Try adjusting your filters.'}
+          </EmptyState>
+        ) : (
+          <EmptyState variant="nothing-waiting" heading="No escalated tasks">
+            Tasks flagged for escalation will appear here.
+          </EmptyState>
+        )
       ) : (
         <GroupedTaskList groups={groups} sortedTasks={sortedTasks} renderRow={renderRow} />
       )}

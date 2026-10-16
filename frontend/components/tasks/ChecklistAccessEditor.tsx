@@ -51,7 +51,7 @@ const pill = (active: boolean) =>
 function CountBadge({ n }: { n: number }) {
   if (!n) return null
   return (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium leading-none">
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium leading-none">
       {n}
     </span>
   )
@@ -67,7 +67,7 @@ function SubDepartmentList({ subs }: { subs: ReturnType<typeof descendantsOf> })
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="w-full flex items-center gap-1.5 text-[11px] font-medium text-text-muted"
+        className="w-full flex items-center gap-1.5 text-meta font-medium text-text-muted"
       >
         <ChevronRight size={12} className={`text-text-muted transition-transform ${open ? 'rotate-90' : ''}`} />
         <span>Sub-departments</span>
@@ -447,7 +447,7 @@ export default function ChecklistAccessEditor({
                   {/* When cascading, spell out exactly which sub-departments are swept in. */}
                   {r.department_id && cascade && (
                     subs.length === 0 ? (
-                      <p className="text-[11px] text-text-muted pl-0.5">No sub-departments — this covers the department only.</p>
+                      <p className="text-meta text-text-muted pl-0.5">No sub-departments — this covers the department only.</p>
                     ) : (
                       <SubDepartmentList subs={subs} />
                     )
@@ -485,7 +485,7 @@ export default function ChecklistAccessEditor({
             </div>
             {excludedRolesList.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] font-medium text-warning">Removed roles:</span>
+                <span className="text-meta font-medium text-warning">Removed roles:</span>
                 {excludedRolesList.map(({ ruleKey, role }) => (
                   <span
                     key={ruleKey}
@@ -520,7 +520,7 @@ export default function ChecklistAccessEditor({
                   <div key={p.uid} className="flex items-center gap-2 bg-surface-sunken border border-border-light rounded-lg px-2.5 py-1.5">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-text-primary truncate">{p.name}</p>
-                      {p.sources.length > 0 && <p className="text-[11px] text-text-muted truncate">via {p.sources.join(', ')}</p>}
+                      {p.sources.length > 0 && <p className="text-meta text-text-muted truncate">via {p.sources.join(', ')}</p>}
                     </div>
                     <button type="button" onClick={() => removePerson(p.uid)} aria-label={`Remove ${p.name}`} className="text-text-muted hover:text-danger shrink-0">
                       <X size={14} />
@@ -539,15 +539,15 @@ export default function ChecklistAccessEditor({
             <div className="mt-4 space-y-2 rounded-lg border border-warning-border bg-warning-bg p-3">
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-medium uppercase tracking-wide text-warning">Removed</span>
-                <span className="text-[11px] text-warning">{removedPeople.length}</span>
+                <span className="text-meta text-warning">{removedPeople.length}</span>
               </div>
-              <p className="text-[11px] text-warning">These people match a department or role above but are excluded. Restore to give access back.</p>
+              <p className="text-meta text-warning">These people match a department or role above but are excluded. Restore to give access back.</p>
               <div className="space-y-1 max-h-[180px] overflow-y-auto -mr-1 pr-1">
                 {removedPeople.map((p) => (
                   <div key={p.ruleKey} className="flex items-center gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-text-secondary line-through truncate">{p.name}</p>
-                      {p.sources.length > 0 && <p className="text-[11px] text-warning truncate">would be via {p.sources.join(', ')}</p>}
+                      {p.sources.length > 0 && <p className="text-meta text-warning truncate">would be via {p.sources.join(', ')}</p>}
                     </div>
                     <button type="button" onClick={() => remove(p.ruleKey)} className="text-xs font-medium text-primary-text hover:text-primary-text shrink-0">
                       Restore

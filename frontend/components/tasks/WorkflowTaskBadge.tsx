@@ -29,7 +29,7 @@ export default function WorkflowTaskBadge({
   const text = workflowBadgeText(workflow, getNow())
   const tip = workflowBadgeTip(workflow)
   const cls = `inline-flex items-center gap-1 min-w-0 max-w-[220px] rounded-full border border-primary-border bg-primary-subtle text-primary-text font-medium ${
-    size === 'xs' ? 'px-2 py-0.5 text-[10px]' : 'px-2 py-0.5 text-[11px]'
+    size === 'xs' ? 'px-2 py-0.5 text-meta' : 'px-2 py-0.5 text-meta'
   } ${className}`
   const body = (
     <>

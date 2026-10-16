@@ -597,7 +597,7 @@ export default function CreateTaskModal({
                 className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
               />
               {/* Count lives inside the field, right-aligned */}
-              <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
+              <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-meta ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
                 {title.length}/50
               </span>
             </div>
@@ -612,7 +612,7 @@ export default function CreateTaskModal({
               onChange={setAssignees}
               currentUser={user ? { user_id: user.id, name: user.name } : undefined}
             />
-            <p className="text-[11px] text-text-secondary mt-1">Add people · click their badge to toggle between Assignee and CC</p>
+            <p className="text-meta text-text-secondary mt-1">Add people · click their badge to toggle between Assignee and CC</p>
           </div>
 
           {/* Completion mode — only relevant when multiple assignees are selected */}
@@ -668,7 +668,7 @@ export default function CreateTaskModal({
                 )
               })}
             </div>
-            <p className="text-[11px] text-text-secondary mt-1.5">
+            <p className="text-meta text-text-secondary mt-1.5">
               {mode === 'one_time'
                 ? 'A single task with a fixed deadline.'
                 : 'Auto-creates task instances on a schedule. Managed in the Recurring tab; attachments repeat on every instance.'}
@@ -684,7 +684,7 @@ export default function CreateTaskModal({
                 <button
                   type="button"
                   onClick={() => { setDeadlineDate(''); setDeadlineTime(''); setRemindersOpen(false) }}
-                  className="flex items-center gap-1 text-[11px] text-text-secondary hover:text-danger transition-colors"
+                  className="flex items-center gap-1 text-meta text-text-secondary hover:text-danger transition-colors"
                 >
                   <X size={10} />
                   Clear
@@ -760,7 +760,7 @@ export default function CreateTaskModal({
                 className="w-full border border-border rounded-lg px-3 pt-[10px] pb-6 text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface resize-none"
               />
               {/* Count lives inside the field, bottom-right */}
-              <span className={`pointer-events-none absolute right-3 bottom-2 text-[11px] ${description.length >= 2000 ? 'text-danger' : 'text-text-muted'}`}>
+              <span className={`pointer-events-none absolute right-3 bottom-2 text-meta ${description.length >= 2000 ? 'text-danger' : 'text-text-muted'}`}>
                 {description.length}/2000
               </span>
             </div>
@@ -786,7 +786,7 @@ export default function CreateTaskModal({
                     ].join(' ')}
                   >
                     <span className="text-sm font-medium">{q.label}</span>
-                    <span className={`text-[10px] leading-tight text-center mt-0.5 ${isSelected ? 'text-white/80' : 'opacity-70'}`}>
+                    <span className={`text-meta leading-tight text-center mt-0.5 ${isSelected ? 'text-white/80' : 'opacity-70'}`}>
                       {q.sublabel}
                     </span>
                   </button>
@@ -869,7 +869,7 @@ export default function CreateTaskModal({
                 <label className="text-sm font-medium text-text-secondary cursor-pointer">Attachments</label>
                 <span className="text-xs font-normal text-text-secondary">Optional</span>
                 {attachmentFiles.length > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
                     {attachmentFiles.length}
                   </span>
                 )}

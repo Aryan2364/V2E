@@ -35,7 +35,7 @@ function getInitials(name: string): string {
 
 const SIZES = {
   sm: { circle: 'w-5 h-5 text-[8px]', overlap: '-space-x-1.5' },
-  md: { circle: 'w-7 h-7 text-[10px]', overlap: '-space-x-2' },
+  md: { circle: 'w-7 h-7 text-meta', overlap: '-space-x-2' },
 } as const
 
 /**
@@ -68,7 +68,7 @@ export default function AssigneeAvatars({
                 <span className="font-medium text-white whitespace-nowrap">{p.name}</span>
                 <span
                   className={[
-                    'inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide',
+                    'inline-flex items-center rounded-full px-1.5 py-0.5 text-meta font-medium uppercase tracking-wide',
                     p.isCC ? 'bg-on-brand-hover text-on-brand-muted' : 'bg-primary text-white',
                   ].join(' ')}
                 >
@@ -76,7 +76,7 @@ export default function AssigneeAvatars({
                 </span>
               </span>
               {(p.role || p.department) && (
-                <span className="mt-0.5 block text-[10px] text-text-muted whitespace-nowrap">
+                <span className="mt-0.5 block text-meta text-text-muted whitespace-nowrap">
                   {[p.role, p.department].filter(Boolean).join(' · ')}
                 </span>
               )}

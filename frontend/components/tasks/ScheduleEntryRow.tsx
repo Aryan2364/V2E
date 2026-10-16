@@ -329,7 +329,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                         </div>
                       </label>
                       {!entry.month_days.includes(-29) && (
-                        <p className="text-[11px] text-danger pl-4">
+                        <p className="text-meta text-danger pl-4">
                           ⚠️ Note: If not selected, this task will be missed in February during non-leap years.
                         </p>
                       )}
@@ -350,7 +350,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                         </div>
                       </label>
                       {!entry.month_days.includes(-30) && (
-                        <p className="text-[11px] text-danger pl-4">
+                        <p className="text-meta text-danger pl-4">
                           ⚠️ Note: If not selected, this task will be missed in February.
                         </p>
                       )}
@@ -368,13 +368,13 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
                         />
                         <div>
                           <span className="font-medium text-text-primary">Automatically run on the last day of shorter months</span>
-                          <p className="text-[10px] text-text-muted mt-0.5">
+                          <p className="text-meta text-text-muted mt-0.5">
                             (Applies to February, April, June, September, and November)
                           </p>
                         </div>
                       </label>
                       {!entry.month_days.includes(-31) && (
-                        <p className="text-[11px] text-danger pl-4">
+                        <p className="text-meta text-danger pl-4">
                           ⚠️ Note: If not selected, this task will be missed in February, April, June, September, and November.
                         </p>
                       )}

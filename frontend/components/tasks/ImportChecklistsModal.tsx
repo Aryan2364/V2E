@@ -429,10 +429,10 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                     <div key={i} className="border border-border-light rounded-lg p-3">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-sm font-medium text-text-primary truncate">{g.name}</span>
-                        <span className="shrink-0 text-[11px] font-medium rounded-full px-2 py-0.5 bg-primary-subtle text-primary-text">{g.items.length} item{g.items.length !== 1 ? 's' : ''}</span>
+                        <span className="shrink-0 text-meta font-medium rounded-full px-2 py-0.5 bg-primary-subtle text-primary-text">{g.items.length} item{g.items.length !== 1 ? 's' : ''}</span>
                       </div>
                       {g.already_exists && (
-                        <span className="inline-block mt-1 text-[11px] font-medium text-warning">A checklist with this name already exists</span>
+                        <span className="inline-block mt-1 text-meta font-medium text-warning">A checklist with this name already exists</span>
                       )}
                       <ul className="mt-1.5 space-y-0.5">
                         {g.items.slice(0, 4).map((it, j) => (

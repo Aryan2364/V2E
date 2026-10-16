@@ -127,7 +127,7 @@ export default function EscalationLevelsField({ orgId, value, onChange, assigner
           <label className="text-sm font-medium text-text-secondary cursor-pointer shrink-0">Escalation</label>
           <span className="text-xs font-normal text-text-secondary shrink-0">Optional</span>
           {filledCount > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium shrink-0">
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium shrink-0">
               {filledCount}
             </span>
           )}
@@ -164,7 +164,7 @@ export default function EscalationLevelsField({ orgId, value, onChange, assigner
                       <div className="flex items-center gap-2 h-[42px] px-3 rounded-lg border border-primary-border bg-primary-subtle">
                         <ShieldAlert size={14} className="text-primary-text shrink-0" />
                         <span className="text-sm font-medium text-text-primary">You (assigner)</span>
-                        <span className="text-[11px] font-medium text-primary-text bg-surface border border-primary-border rounded-full px-1.5 py-0.5">Default</span>
+                        <span className="text-meta font-medium text-primary-text bg-surface border border-primary-border rounded-full px-1.5 py-0.5">Default</span>
                       </div>
                     ) : (
                       <EmployeePicker

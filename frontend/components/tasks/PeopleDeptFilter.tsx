@@ -105,10 +105,10 @@ export default function PeopleDeptFilter({
       <div className="flex items-center justify-between mb-1.5">
         <p className="text-[12px] font-medium text-text-secondary">{title}</p>
         <div className="flex items-center gap-2.5">
-          <span className="text-[11px] text-text-muted">{allIds.length} {allIds.length === 1 ? 'person' : 'people'}</span>
+          <span className="text-meta text-text-muted">{allIds.length} {allIds.length === 1 ? 'person' : 'people'}</span>
           <button type="button" onClick={toggleAll} className="flex items-center gap-1.5 group">
             <Tick state={masterState} />
-            <span className="text-[11px] font-medium uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">All</span>
+            <span className="text-meta font-medium uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">All</span>
           </button>
         </div>
       </div>
@@ -135,10 +135,10 @@ export default function PeopleDeptFilter({
               className="w-full flex items-center gap-2 px-1 pt-1.5 pb-0.5 group"
             >
               <Tick state={deptState(g.people)} />
-              <span className="flex-1 min-w-0 truncate text-left text-[11px] font-medium uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">
+              <span className="flex-1 min-w-0 truncate text-left text-meta font-medium uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">
                 {g.department}
               </span>
-              <span className="shrink-0 text-[11px] text-text-muted tabular-nums">
+              <span className="shrink-0 text-meta text-text-muted tabular-nums">
                 {g.people.filter((p) => effective.has(p.id)).length}/{g.people.length}
               </span>
             </button>
@@ -154,9 +154,9 @@ export default function PeopleDeptFilter({
                   {checked ? <SquareCheck size={16} className="text-primary-text shrink-0" /> : <Square size={16} className="text-text-muted shrink-0" />}
                   <span className="flex-1 min-w-0 flex items-center gap-1.5">
                     <span className={`min-w-0 truncate text-[13px] ${checked ? 'text-text-primary font-medium' : 'text-text-secondary'}`}>{p.name}</span>
-                    {counts && <span className="shrink-0 tabular-nums text-[11px] text-text-muted">{counts.get(p.id) ?? 0}</span>}
+                    {counts && <span className="shrink-0 tabular-nums text-meta text-text-muted">{counts.get(p.id) ?? 0}</span>}
                   </span>
-                  {p.role && <span className="shrink-0 max-w-[38%] truncate text-[11px] text-text-muted">{p.role}</span>}
+                  {p.role && <span className="shrink-0 max-w-[38%] truncate text-meta text-text-muted">{p.role}</span>}
                 </button>
               )
             })}

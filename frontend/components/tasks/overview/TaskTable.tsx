@@ -25,7 +25,7 @@ function fmt(d?: string) {
 function Badge({ label, color }: { label: string; color?: string }) {
   const c = color || 'var(--text-secondary)'
   return (
-    <span className="inline-block text-[11px] font-medium rounded-full px-2 py-0.5 whitespace-nowrap" style={{ backgroundColor: c + '22', color: c }}>
+    <span className="inline-block text-meta font-medium rounded-full px-2 py-0.5 whitespace-nowrap" style={{ backgroundColor: c + '22', color: c }}>
       {label}
     </span>
   )
@@ -207,7 +207,7 @@ export default function TaskTable({
                   <tr key={t.id} onClick={() => onOpenTask(t.id)} className="border-b border-border-light hover:bg-primary-subtle cursor-pointer transition-colors">
                     <td className="px-3 py-2.5 align-top max-w-[240px]">
                       <div className="font-medium text-text-primary truncate">{t.title}</div>
-                      <div className="text-[11px] text-text-muted">{t.type === 'recurring' ? 'Recurring' : 'One-time'}</div>
+                      <div className="text-meta text-text-muted">{t.type === 'recurring' ? 'Recurring' : 'One-time'}</div>
                     </td>
                     <td className="px-3 py-2.5 align-top max-w-[260px]">
                       <div className="text-[13px] text-text-secondary line-clamp-2">{t.description || '—'}</div>

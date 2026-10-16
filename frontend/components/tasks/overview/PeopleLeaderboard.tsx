@@ -98,9 +98,9 @@ export default function PeopleLeaderboard({
                 >
                   <span className="font-medium text-sm text-text-primary truncate group-hover:text-primary-text">{s.name}</span>
                   {s.isManager ? (
-                    <span className="text-[11px] font-medium rounded-full px-2 py-0.5 bg-primary-subtle text-primary-text shrink-0">team of {s.teamSize}</span>
+                    <span className="text-meta font-medium rounded-full px-2 py-0.5 bg-primary-subtle text-primary-text shrink-0">team of {s.teamSize}</span>
                   ) : (
-                    <span className="text-[11px] font-medium rounded-full px-2 py-0.5 bg-surface-control text-text-secondary shrink-0">individual</span>
+                    <span className="text-meta font-medium rounded-full px-2 py-0.5 bg-surface-control text-text-secondary shrink-0">individual</span>
                   )}
                   {s.isManager && <ChevronRight size={14} className="text-text-muted group-hover:text-primary-text shrink-0" />}
                 </button>

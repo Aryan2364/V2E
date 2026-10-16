@@ -98,7 +98,7 @@ export default function SegmentDrawer({
                   <div className="flex items-start justify-between gap-3 mb-1.5">
                     <div className="font-medium text-sm leading-snug text-text-primary">{r.title}</div>
                     {r.priority && (
-                      <span className="text-[11px] font-medium rounded-full px-2 py-0.5 shrink-0" style={{ backgroundColor: (r.priority.color || 'var(--text-secondary)') + '22', color: r.priority.color || 'var(--text-secondary)' }}>
+                      <span className="text-meta font-medium rounded-full px-2 py-0.5 shrink-0" style={{ backgroundColor: (r.priority.color || 'var(--text-secondary)') + '22', color: r.priority.color || 'var(--text-secondary)' }}>
                         {r.priority.label}
                       </span>
                     )}

@@ -405,7 +405,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 maxLength={50}
                 className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-base sm:text-sm text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
               />
-              <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
+              <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-meta ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
                 {title.length}/50
               </span>
             </div>
@@ -422,7 +422,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                   Assignees &amp; CC <span className="text-danger">*</span>
                 </label>
                 {roster.length > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
                     {roster.length}
                   </span>
                 )}
@@ -438,14 +438,14 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                       >
                         {a.name}
                         {a.is_cc && (
-                          <span className="text-[10px] font-medium text-text-secondary bg-surface-control border border-border-light rounded-full px-1.5">
+                          <span className="text-meta font-medium text-text-secondary bg-surface-control border border-border-light rounded-full px-1.5">
                             CC
                           </span>
                         )}
                       </span>
                     ))}
                   </div>
-                  <p className="text-[11px] text-text-secondary mt-1.5">
+                  <p className="text-meta text-text-secondary mt-1.5">
                     This task is closed, so its people are a frozen record. Reopen it to change who is on it.
                   </p>
                 </>
@@ -458,7 +458,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                     disabled={submitting}
                     currentUser={user ? { user_id: user.id, name: user.name } : undefined}
                   />
-                  <p className="text-[11px] text-text-secondary mt-1">
+                  <p className="text-meta text-text-secondary mt-1">
                     Add or remove people · click their badge to toggle between Assignee and CC
                   </p>
                 </>
@@ -486,7 +486,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                     disabled={submitting}
                     currentUser={user ? { user_id: user.id, name: user.name } : undefined}
                   />
-                  <p className="text-[11px] text-text-secondary mt-1">
+                  <p className="text-meta text-text-secondary mt-1">
                     You can CC people in on this task. Changing who it&apos;s assigned to is up to{' '}
                     {task.created_by?.name ?? 'whoever assigned it'}.
                   </p>
@@ -498,7 +498,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                   late can't be quietly removed into a clean scorecard. */}
               {(task.removed_assignees?.length ?? 0) > 0 && (
                 <div className="mt-2.5 rounded-lg border border-border-light bg-surface-sunken px-3 py-2">
-                  <p className="text-[11px] font-medium text-text-secondary mb-1">Previously on this task</p>
+                  <p className="text-meta font-medium text-text-secondary mb-1">Previously on this task</p>
                   <ul className="space-y-0.5">
                     {task.removed_assignees!.map((a) => (
                       <li key={a.id} className="text-[12px] text-text-secondary">
@@ -534,7 +534,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-medium text-text-secondary">Deadline <span className="text-danger">*</span></label>
               {deadlineDate && (
-                <button type="button" onClick={() => { setDeadlineDate(''); setDeadlineTime('') }} className="flex items-center gap-1 text-[11px] text-text-muted hover:text-danger transition-colors">
+                <button type="button" onClick={() => { setDeadlineDate(''); setDeadlineTime('') }} className="flex items-center gap-1 text-meta text-text-muted hover:text-danger transition-colors">
                   <X size={10} /> Clear
                 </button>
               )}
@@ -592,7 +592,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                       type="button"
                       onClick={() => setRevisionsOpen((v) => !v)}
                       aria-expanded={revisionsOpen}
-                      className="flex items-center gap-1 shrink-0 text-[11px] font-medium text-warning hover:text-text-primary transition-colors"
+                      className="flex items-center gap-1 shrink-0 text-meta font-medium text-warning hover:text-text-primary transition-colors"
                     >
                       <History size={12} />
                       {revisionsOpen ? 'Hide' : 'History'}
@@ -602,7 +602,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 {revisionsOpen && (
                   <ul className="mt-2 space-y-1 border-t border-warning-border pt-2 max-h-[160px] overflow-y-auto">
                     {task.deadline_revisions!.map((r) => (
-                      <li key={r.id} className="text-[11px] text-warning">
+                      <li key={r.id} className="text-meta text-warning">
                         {r.from_deadline ? fmtDate(r.from_deadline) : 'no deadline'} →{' '}
                         {r.to_deadline ? fmtDate(r.to_deadline) : 'no deadline'}
                         {r.changed_by?.name ? ` · ${r.changed_by.name}` : ''}
@@ -631,7 +631,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                   placeholder="e.g. client pushed the review to next week"
                   className="w-full border border-border rounded-lg px-3 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
                 />
-                <p className="text-[11px] text-text-secondary mt-1">
+                <p className="text-meta text-text-secondary mt-1">
                   Recorded against this change, and everyone on the task is told the date moved.
                 </p>
               </div>
@@ -649,7 +649,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 rows={3}
                 className="w-full border border-border rounded-lg px-3 pt-[10px] pb-6 text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface resize-none"
               />
-              <span className={`pointer-events-none absolute right-3 bottom-2 text-[11px] ${description.length >= 2000 ? 'text-danger' : 'text-text-muted'}`}>
+              <span className={`pointer-events-none absolute right-3 bottom-2 text-meta ${description.length >= 2000 ? 'text-danger' : 'text-text-muted'}`}>
                 {description.length}/2000
               </span>
             </div>
@@ -747,7 +747,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 <label className="text-sm font-medium text-text-secondary cursor-pointer">Attachments</label>
                 <span className="text-xs font-normal text-text-secondary">Optional</span>
                 {existingAttachments.length + attachmentFiles.length > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-meta font-medium">
                     {existingAttachments.length + attachmentFiles.length}
                   </span>
                 )}
