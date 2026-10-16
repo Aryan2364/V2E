@@ -16,9 +16,10 @@ import {
 } from 'lucide-react'
 import { createDepartment, listImportBatches, createImportBatch, undoImport } from '@/lib/api/departments'
 import { placeUnderParent } from '@/lib/org-chart-layout'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import type { Department, User } from '@/lib/types'
 import Tooltip from '@/components/ui/tooltip'
+import { formatDateTime } from '@/lib/format'
 
 interface Props {
   orgId: string
@@ -124,7 +125,6 @@ export default function ImportDepartmentsModal({
   onClose,
   onImported,
 }: Props) {
-  const { addToast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [mounted, setMounted] = useState(false)
@@ -167,12 +167,12 @@ export default function ImportDepartmentsModal({
     try {
       const res = await undoImport(orgId, batchId)
       setUndoResult(res)
-      addToast('Import undone successfully', 'success')
+      toast.success('Import undone successfully')
       onImported()
       loadHistory()
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? 'Could not undo this import'
-      addToast(msg, 'error')
+      toast.error(msg)
     } finally {
       setUndoingId(null)
     }
@@ -240,7 +240,7 @@ export default function ImportDepartmentsModal({
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      addToast('Could not build the template. Please try again.', 'error')
+      toast.error('Could not build the template. Please try again.')
     } finally {
       setBuilding(false)
     }
@@ -457,13 +457,12 @@ export default function ImportDepartmentsModal({
 
     setResult({ created, failed, results })
     if (created > 0) {
-      addToast(
-        `Imported ${created} department${created !== 1 ? 's' : ''}`,
-        failed > 0 ? 'warning' : 'success',
-      )
+      const message = `Imported ${created} department${created !== 1 ? 's' : ''}`
+      if (failed > 0) toast.warning(message)
+      else toast.success(message)
       onImported()
     } else {
-      addToast('No departments were imported', 'error')
+      toast.error('No departments were imported')
     }
     setImporting(false)
   }
@@ -723,7 +722,7 @@ function HistoryView({
                 )}
               </p>
               <p className="text-xs text-text-muted mt-0.5">
-                {new Date(b.created_at).toLocaleString()} · by {b.imported_by} · {b.created_count} created
+                {formatDateTime(b.created_at)} · by {b.imported_by} · {b.created_count} created
                 {b.failed_count > 0 ? `, ${b.failed_count} failed` : ''} · {b.remaining} still present
               </p>
             </div>

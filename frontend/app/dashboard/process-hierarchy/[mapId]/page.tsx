@@ -4,9 +4,10 @@ import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import StyledSelect from '@/components/ui/StyledSelect'
+import { formatDate, formatDateTime } from '@/lib/format'
 import Tooltip from '@/components/ui/tooltip'
 import {
   processHierarchyApi,
@@ -55,7 +56,6 @@ const LANE_ADD_KINDS: ProcessNodeKind[] = ['task', 'decision', 'subprocess', 'st
 
 export default function ProcessMapExplorerPage() {
   const { user } = useAuth()
-  const { addToast } = useToast()
   const orgId = user?.organizationId ?? ''
   const params = useParams()
   const router = useRouter()
@@ -248,8 +248,8 @@ export default function ProcessMapExplorerPage() {
       }
       await refresh()
       setSelectedNodeId(created.id) // highlight + open the panel, so it's obvious it landed
-    } catch { addToast('Could not add that step. Please try again.', 'error') }
-  }, [flow, orgId, mapId, parentId, selectedNodeId, refresh, addToast])
+    } catch { toast.error('Could not add that step. Please try again.') }
+  }, [flow, orgId, mapId, parentId, selectedNodeId, refresh])
 
   // Copy/paste. Copy just remembers what's on the clipboard; paste duplicates it into
   // the level you're viewing, dropped where you're looking (centre of the canvas).
@@ -258,8 +258,8 @@ export default function ProcessMapExplorerPage() {
     if (!ids.length) return
     setClipboard({ sourceMapId: mapId, nodeIds: ids })
     pasteSeqRef.current = { key: '', n: 0 } // fresh copy restarts the paste cascade
-    addToast(`Copied ${ids.length} item${ids.length !== 1 ? 's' : ''}. Paste from the Add menu.`, 'success')
-  }, [mapId, addToast])
+    toast.success(`Copied ${ids.length} item${ids.length !== 1 ? 's' : ''}. Paste from the Add menu.`)
+  }, [mapId])
 
   const pasteClipboard = useCallback(async () => {
     if (!clipboard) return
@@ -284,9 +284,9 @@ export default function ProcessMapExplorerPage() {
       })
       await refresh()
       // Note: intentionally do NOT select/open the pasted node — pasting shouldn't pop the sidebar.
-      addToast(`Pasted ${pasted_node_ids.length} item${pasted_node_ids.length !== 1 ? 's' : ''}.`, 'success')
-    } catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not paste here.', 'error') }
-  }, [clipboard, orgId, mapId, parentId, refresh, addToast])
+      toast.success(`Pasted ${pasted_node_ids.length} item${pasted_node_ids.length !== 1 ? 's' : ''}.`)
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'Could not paste here.') }
+  }, [clipboard, orgId, mapId, parentId, refresh])
 
   // Create a swimlane (a department lane) straight from the Add step menu, and reveal the
   // swimlane view so the result is visible even if you were on the free-form canvas.
@@ -296,8 +296,8 @@ export default function ProcessMapExplorerPage() {
       await processHierarchyApi.createLane(orgId, mapId, { department_id: deptId, parent_node_id: parentId })
       setShowAdd(false); setAddLanePick(false)
       await refresh()
-    } catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not add the lane.', 'error') }
-  }, [orgId, mapId, parentId, refresh, addToast])
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'Could not add the lane.') }
+  }, [orgId, mapId, parentId, refresh])
 
   // Open the "change a lane's department" dialog (clicking the lane's name).
   const onRenameLane = useCallback((laneId: string, deptId: string, name: string) => {
@@ -311,23 +311,23 @@ export default function ProcessMapExplorerPage() {
     try {
       const { updated } = await processHierarchyApi.reassignLane(orgId, mapId, lr.laneId, newDeptId)
       await refresh()
-      addToast(`Lane changed — ${updated} step${updated !== 1 ? 's' : ''} moved.`, 'success')
-    } catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not change the lane.', 'error') }
-  }, [laneRename, orgId, mapId, refresh, addToast])
+      toast.success(`Lane changed — ${updated} step${updated !== 1 ? 's' : ''} moved.`)
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'Could not change the lane.') }
+  }, [laneRename, orgId, mapId, refresh])
   // Drag a lane's grip → persist the new top→bottom order of the department lanes.
   const onReorderLanes = useCallback(async (laneIds: string[]) => {
     try {
       await processHierarchyApi.reorderLanes(orgId, mapId, laneIds, parentId)
       await refresh()
-    } catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not reorder the lanes.', 'error') }
-  }, [orgId, mapId, parentId, refresh, addToast])
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'Could not reorder the lanes.') }
+  }, [orgId, mapId, parentId, refresh])
   // Drag a pool's grip → persist the new top→bottom order of the pools.
   const onReorderPools = useCallback(async (pools: ProcessPool[]) => {
     try {
       await processHierarchyApi.setPoolOrder(orgId, mapId, pools, parentId)
       await refresh()
-    } catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not reorder the pools.', 'error') }
-  }, [orgId, mapId, parentId, refresh, addToast])
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'Could not reorder the pools.') }
+  }, [orgId, mapId, parentId, refresh])
   // Remove the lane outright (only offered when it's empty).
   const removeLane = useCallback(async () => {
     const lr = laneRename
@@ -336,9 +336,9 @@ export default function ProcessMapExplorerPage() {
     try {
       await processHierarchyApi.deleteLane(orgId, mapId, lr.laneId)
       await refresh()
-      addToast('Lane removed.', 'success')
-    } catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not remove the lane.', 'error') }
-  }, [laneRename, orgId, mapId, refresh, addToast])
+      toast.success('Lane removed.')
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'Could not remove the lane.') }
+  }, [laneRename, orgId, mapId, refresh])
 
   // Output rules: a decision has exactly one Yes + one No. Every other step can fan out from each
   // FREE connector point — a point (a node side) is in use once a line attaches to it (this step's
@@ -379,10 +379,10 @@ export default function ProcessMapExplorerPage() {
   // step from, inheriting its pool + department.
   const appendFromNode = useCallback((nodeId: string, pool: ProcessPool | null, departmentId: string | null, sourceSide?: string) => {
     const rule = outputRuleFor(nodeId, sourceSide)
-    if (!rule.ok) { addToast(rule.reason!, 'error'); return }
+    if (!rule.ok) { toast.error(rule.reason!); return }
     const src = flow?.nodes.find((n) => n.id === nodeId)
     setLaneAdd({ pool, departmentId, fromNodeId: nodeId, fromX: src?.position_x, fromY: src?.position_y, side: sourceSide, autoCond: rule.condition, ask: rule.ask })
-  }, [outputRuleFor, addToast, flow])
+  }, [outputRuleFor, flow])
   const addLaneKind = useCallback(async (kind: ProcessNodeKind) => {
     if (!laneAdd) return
     const { pool, departmentId, fromNodeId, fromX, fromY, side, autoCond, ask } = laneAdd
@@ -426,8 +426,8 @@ export default function ProcessMapExplorerPage() {
       setSelectedNodeId(created.id)
       // Only ask for the branch when the rule said to (a decision's very first branch).
       if (fromNodeId && newConnId && ask) setBranchPick({ mode: 'set', connId: newConnId })
-    } catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not add a step to this lane.', 'error') }
-  }, [laneAdd, orgId, mapId, parentId, refresh, addToast, flow])
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'Could not add a step to this lane.') }
+  }, [laneAdd, orgId, mapId, parentId, refresh, flow])
 
   // Drawing a line FROM a decision to an existing node → ask Yes/No before creating it.
   // Drag a node onto another lane → set its department (Customer/Vendor have none) and keep
@@ -436,8 +436,8 @@ export default function ProcessMapExplorerPage() {
     try {
       await processHierarchyApi.updateNode(orgId, mapId, nodeId, { pool, department_id: departmentId, position_x: positionX })
       await refresh()
-    } catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not move it out of the lane.', 'error') }
-  }, [orgId, mapId, refresh, addToast])
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'Could not move it out of the lane.') }
+  }, [orgId, mapId, refresh])
 
   // A box-selected group dragged across lanes — reassign each node's pool/department (+ x/y) to
   // the lane it landed in. Sequential so the per-node auto-lane create/cleanup can't race, then
@@ -449,12 +449,12 @@ export default function ProcessMapExplorerPage() {
         await processHierarchyApi.updateNode(orgId, mapId, it.id, { pool: it.pool, department_id: it.department_id, position_x: it.position_x, position_y: it.position_y })
       }
       await refresh()
-    } catch (e: any) { addToast(e?.response?.data?.message ?? 'Could not move those to that lane.', 'error') }
-  }, [orgId, mapId, refresh, addToast])
+    } catch (e: any) { toast.error(e?.response?.data?.message ?? 'Could not move those to that lane.') }
+  }, [orgId, mapId, refresh])
 
   const onDecisionConnect = useCallback((source: string, target: string, sourceSide?: string, targetSide?: string) => {
     const rule = outputRuleFor(source, sourceSide)
-    if (!rule.ok) { addToast(rule.reason!, 'error'); return }
+    if (!rule.ok) { toast.error(rule.reason!); return }
     if (rule.ask) { setBranchPick({ mode: 'create', source, target, side: sourceSide, tside: targetSide }); return }
     // One branch already used → this is automatically the other one; no pop-up.
     const cond = rule.condition!
@@ -463,8 +463,8 @@ export default function ProcessMapExplorerPage() {
       condition_kind: cond, label: cond === 'yes' ? 'Yes' : 'No',
       ...(sourceSide ? { source_side: sourceSide } : {}),
       ...(targetSide ? { target_side: targetSide } : {}),
-    }).then(() => refresh()).catch(() => addToast('Could not connect those steps.', 'error'))
-  }, [outputRuleFor, orgId, mapId, parentId, refresh, addToast])
+    }).then(() => refresh()).catch(() => toast.error('Could not connect those steps.'))
+  }, [outputRuleFor, orgId, mapId, parentId, refresh])
   const chooseBranch = useCallback(async (cond: 'yes' | 'no') => {
     const bp = branchPick
     setBranchPick(null)
@@ -481,8 +481,8 @@ export default function ProcessMapExplorerPage() {
         await processHierarchyApi.updateConnection(orgId, mapId, bp.connId, { condition_kind: cond, label })
       }
       await refresh()
-    } catch { addToast('Could not set the branch.', 'error') }
-  }, [branchPick, orgId, mapId, parentId, refresh, addToast])
+    } catch { toast.error('Could not set the branch.') }
+  }, [branchPick, orgId, mapId, parentId, refresh])
   const cancelBranch = useCallback(async () => {
     const bp = branchPick
     setBranchPick(null)
@@ -507,7 +507,7 @@ export default function ProcessMapExplorerPage() {
 
   const onConnect = useCallback(async (source: string, target: string, _condition: ProcessConditionKind, sourceSide?: string, targetSide?: string) => {
     const rule = outputRuleFor(source, sourceSide)
-    if (!rule.ok) { addToast(rule.reason!, 'error'); return }
+    if (!rule.ok) { toast.error(rule.reason!); return }
     const cond = rule.condition ?? 'none'
     try {
       await processHierarchyApi.createConnection(orgId, mapId, {
@@ -517,16 +517,16 @@ export default function ProcessMapExplorerPage() {
         ...(targetSide ? { target_side: targetSide } : {}),
       })
       await refresh()
-    } catch { addToast('Could not connect those steps.', 'error') }
-  }, [orgId, mapId, parentId, refresh, addToast, outputRuleFor])
+    } catch { toast.error('Could not connect those steps.') }
+  }, [orgId, mapId, parentId, refresh, outputRuleFor])
 
   const onNodeDragStop = useCallback(async (nodeId: string, x: number, y: number) => {
     // Update local state too, so a later expand/collapse rebuilds at the new spot
     // (not the stale stored position) — otherwise the node appears to jump.
     setFlow((f) => f ? { ...f, nodes: f.nodes.map((n) => (n.id === nodeId ? { ...n, position_x: x, position_y: y } : n)) } : f)
     try { await processHierarchyApi.bulkPosition(orgId, mapId, [{ id: nodeId, position_x: x, position_y: y }]); historyRecordRef.current() }
-    catch { addToast('Could not save the new position.', 'error') }
-  }, [orgId, mapId, addToast])
+    catch { toast.error('Could not save the new position.') }
+  }, [orgId, mapId])
 
   // Open a document clicked straight on the canvas: links jump out, files/articles preview.
   const openDoc = useCallback(async (artifactId: string) => {
@@ -534,12 +534,12 @@ export default function ProcessMapExplorerPage() {
       const a = await processHierarchyApi.getArtifact(orgId, mapId, artifactId)
       if (a.content_type === 'link' && a.url) { window.open(a.url, '_blank', 'noopener'); return }
       setDocPreview(a)
-    } catch { addToast('Could not open this document.', 'error') }
-  }, [orgId, mapId, addToast])
+    } catch { toast.error('Could not open this document.') }
+  }, [orgId, mapId])
   const downloadDoc = useCallback(async (a: ProcessArtifact) => {
     try { const { url } = await processHierarchyApi.downloadArtifact(orgId, mapId, a.id); window.open(url, '_blank', 'noopener') }
-    catch { addToast('Could not download this file.', 'error') }
-  }, [orgId, mapId, addToast])
+    catch { toast.error('Could not download this file.') }
+  }, [orgId, mapId])
 
   // Box-selected group dragged to a new spot — persist every moved node's position.
   const onNodesMove = useCallback(async (positions: { id: string; position_x: number; position_y: number }[]) => {
@@ -549,8 +549,8 @@ export default function ProcessMapExplorerPage() {
       return p ? { ...n, position_x: p.position_x, position_y: p.position_y } : n
     }) } : f)
     try { await processHierarchyApi.bulkPosition(orgId, mapId, positions); historyRecordRef.current() }
-    catch { addToast('Could not save the new positions.', 'error') }
-  }, [orgId, mapId, addToast])
+    catch { toast.error('Could not save the new positions.') }
+  }, [orgId, mapId])
 
   // Delete a box-selected group (cascades handled server-side; ignore per-node races).
   const deleteNodes = useCallback(async (ids: string[]) => {
@@ -566,27 +566,27 @@ export default function ProcessMapExplorerPage() {
     try {
       await processHierarchyApi.deleteMap(orgId, mapId)
       router.push('/dashboard/process-hierarchy')
-    } catch { addToast('Could not delete this map. Please try again.', 'error'); setDeletingMap(false) }
-  }, [orgId, mapId, router, addToast])
+    } catch { toast.error('Could not delete this map. Please try again.'); setDeletingMap(false) }
+  }, [orgId, mapId, router])
 
 
   const updateConn = useCallback(async (id: string, dto: { label?: string; condition_kind?: ProcessConditionKind }) => {
     try { await processHierarchyApi.updateConnection(orgId, mapId, id, dto); await refresh() }
-    catch { addToast('Could not update the connection.', 'error') }
-  }, [orgId, mapId, parentId, refresh, addToast])
+    catch { toast.error('Could not update the connection.') }
+  }, [orgId, mapId, parentId, refresh])
 
   const deleteConn = useCallback(async (id: string) => {
     try { await processHierarchyApi.deleteConnection(orgId, mapId, id); await refresh() }
-    catch { addToast('Could not delete the connection.', 'error') }
-  }, [orgId, mapId, parentId, refresh, addToast])
+    catch { toast.error('Could not delete the connection.') }
+  }, [orgId, mapId, parentId, refresh])
 
   const runCompare = useCallback(async (base: string, target: string, baseLabel: string, targetLabel: string) => {
     try {
       const d = await processHierarchyApi.diff(orgId, mapId, base, target)
       setDiff(d); setComparing({ base, target, baseLabel, targetLabel })
       setShowVersions(false); setMode('view'); setSelectedNodeId(null)
-    } catch { addToast('Could not compare those versions.', 'error') }
-  }, [orgId, mapId, addToast])
+    } catch { toast.error('Could not compare those versions.') }
+  }, [orgId, mapId])
 
   const exitCompare = useCallback(() => { setDiff(null); setComparing(null) }, [])
 
@@ -1102,7 +1102,6 @@ function MenuItem({ icon, label, onClick, danger }: { icon: React.ReactNode; lab
 function SaveTemplateModal({ orgId, mapId, mapName, onClose }: {
   orgId: string; mapId: string; mapName: string; onClose: () => void
 }) {
-  const { addToast } = useToast()
   const [name, setName] = useState(`${mapName} template`)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
@@ -1115,7 +1114,7 @@ function SaveTemplateModal({ orgId, mapId, mapName, onClose }: {
     if (!name.trim() || busy) return
     setBusy(true)
     try { await processHierarchyApi.saveAsTemplate(orgId, mapId, { name: name.trim() }); setDone(true); setTimeout(onClose, 900) }
-    catch { addToast('Could not save the template. Please try again.', 'error'); setBusy(false) }
+    catch { toast.error('Could not save the template. Please try again.'); setBusy(false) }
   }
   return createPortal(
     <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
@@ -1279,7 +1278,6 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
   orgId: string; mapId: string; canEdit: boolean; onClose: () => void; onRestored: () => void
   onCompare: (base: string, target: string, baseLabel: string, targetLabel: string) => void
 }) {
-  const { addToast } = useToast()
   const [snaps, setSnaps] = useState<SnapshotSummary[] | null>(null)
   const [label, setLabel] = useState('')
   const [busy, setBusy] = useState(false)
@@ -1302,7 +1300,7 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
     if (!label.trim() || busy) return
     setBusy(true)
     try { await processHierarchyApi.createSnapshot(orgId, mapId, { label: label.trim() }); setLabel(''); reload() }
-    catch { addToast('Could not save this version.', 'error') }
+    catch { toast.error('Could not save this version.') }
     finally { setBusy(false) }
   }
   async function restore() {
@@ -1311,7 +1309,7 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
     try {
       await processHierarchyApi.restoreSnapshot(orgId, mapId, confirmRestore.id)
       setConfirmRestore(null); onClose(); onRestored()
-    } catch { addToast('Could not restore that version.', 'error'); setRestoring(false) }
+    } catch { toast.error('Could not restore that version.'); setRestoring(false) }
   }
 
   return (
@@ -1361,7 +1359,7 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
               <div key={s.id} className="flex items-center gap-2 bg-surface-sunken border border-border-light rounded-[6px] px-2 py-1.5">
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-text-primary truncate">{s.label}</p>
-                  <p className="text-[11px] text-text-muted">{new Date(s.created_at).toLocaleDateString()}</p>
+                  <p className="text-[11px] text-text-muted">{formatDate(s.created_at)}</p>
                 </div>
                 {canEdit && (
                   <Tooltip label="Restore this version">
