@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { AlertTriangle, Check, X } from 'lucide-react'
 import type { OrgHoliday } from '@/lib/types/holidays'
+import { formatDayMonth } from '@/lib/format'
 
 interface Props {
   pending: OrgHoliday[]
@@ -79,7 +80,7 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
               className="w-4 h-4 accent-warning"
             />
             <span className="w-28 shrink-0 text-meta text-text-secondary">
-              {new Date(h.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+              {formatDayMonth(new Date(h.date + 'T00:00:00'))}
             </span>
             <span className="flex-1 text-body text-text-primary font-medium">{h.name}</span>
           </label>

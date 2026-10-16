@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Pencil, Trash2, RefreshCw, Check, X, Unlink, GitBranch } from 'lucide-react'
 import type { CalendarHoliday, HolidayType } from '@/lib/types/holidays'
 import { parseLocalDate, dateOnly } from '@/lib/date'
+import { formatDayMonth, formatWeekday } from '@/lib/format'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
@@ -85,10 +86,10 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
       {holidays.map((h) => {
         const isEditing = editing?.id === h.id
         const d = parseLocalDate(h.date)
-        const weekday = d.toLocaleDateString('en-IN', { weekday: 'short' }).toUpperCase()
-        const dayMonth = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+        const weekday = formatWeekday(d).toUpperCase()
+        const dayMonth = formatDayMonth(d)
         const isRange = !!h.end_date && dateOnly(h.end_date) !== dateOnly(h.date)
-        const endDayMonth = h.end_date ? parseLocalDate(h.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : ''
+        const endDayMonth = h.end_date ? formatDayMonth(parseLocalDate(h.end_date)) : ''
 
         if (isEditing) {
           return (
