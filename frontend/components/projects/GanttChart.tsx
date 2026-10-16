@@ -121,9 +121,9 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
   }
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+    <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
       {/* Controls */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-border-light bg-surface-sunken">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-border-light bg-surface-sunken">
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => navigate(-1)} className="p-1.5 rounded-xs hover:bg-surface-control-pressed text-text-secondary transition-colors">
             <ChevronLeft size={16} />
@@ -142,7 +142,7 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
               type="button"
               onClick={() => setZoom(z)}
               className={[
-                'px-3 py-1 rounded-[6px] text-xs font-semibold transition-colors capitalize',
+                'px-3 py-1 rounded-[6px] text-xs font-medium transition-colors capitalize',
                 zoom === z ? 'bg-white text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary',
               ].join(' ')}
             >
@@ -158,7 +158,7 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
           {/* Header row */}
           <div className="flex border-b border-border-light bg-surface-sunken">
             <div className="w-[200px] shrink-0 px-4 py-2 border-r border-border-light">
-              <p className="text-xs font-semibold text-text-secondary">Item</p>
+              <p className="text-xs font-medium text-text-secondary">Item</p>
             </div>
             <div className="flex-1 relative flex">
               {colLabels.map((lbl, i) => (
@@ -207,7 +207,7 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
                   {todayOffset !== null && (
                     <div
                       className="absolute top-0 bottom-0 w-px z-10 pointer-events-none"
-                      style={{ left: `${todayOffset}%`, borderLeft: '2px dashed #DC2626', opacity: 0.6 }}
+                      style={{ left: `${todayOffset}%`, borderLeft: '2px dashed var(--danger)', opacity: 0.6 }}
                     />
                   )}
                   {inWindow && barStart !== null && (

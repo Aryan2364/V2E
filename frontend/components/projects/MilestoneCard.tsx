@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, CheckCircle2, Plus } from 'lucide-react'
 import ProjectProgressBar from './ProjectProgressBar'
 import MilestoneTaskRow from './MilestoneTaskRow'
 import type { ProjectMilestone, ProjectTask, DependencyWarning } from '@/lib/types/projects'
+import { formatDate } from '@/lib/format'
 
 const STATUS_BADGE: Record<string, { bg: string; text: string; border: string; label: string }> = {
   pending: { bg: 'var(--surface-sunken)', text: 'var(--text-muted)', border: 'var(--border-light)', label: 'Pending' },
@@ -26,9 +27,9 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
   const badge = STATUS_BADGE[milestone.status] ?? STATUS_BADGE.pending
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+    <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
       <div
-        className="px-5 py-4 flex items-start gap-3 cursor-pointer hover:bg-surface-sunken transition-colors"
+        className="px-6 py-4 flex items-start gap-3 cursor-pointer hover:bg-surface-sunken transition-colors"
         onClick={() => setExpanded((v) => !v)}
       >
         <button type="button" className="text-text-muted mt-0.5 shrink-0">
@@ -36,7 +37,7 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 className="text-[15px] font-semibold text-text-primary">{milestone.name}</h3>
+            <h3 className="text-[15px] font-medium text-text-primary">{milestone.name}</h3>
             <span
               className="text-[11px] font-medium px-2.5 py-0.5 rounded-full border"
               style={{ backgroundColor: badge.bg, color: badge.text, borderColor: badge.border }}
@@ -47,7 +48,7 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
           </div>
           {milestone.due_date && (
             <p className="text-xs text-text-muted mb-2">
-              Due {new Date(milestone.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              Due {formatDate(milestone.due_date)}
             </p>
           )}
           <div className="flex items-center gap-4">
@@ -64,7 +65,7 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
       {expanded && (
         <>
           {tasks.length === 0 ? (
-            <div className="px-5 py-3 text-sm text-text-muted border-t border-border-light">No tasks yet.</div>
+            <div className="px-6 py-3 text-sm text-text-muted border-t border-border-light">No tasks yet.</div>
           ) : (
             <div className="border-t border-border-light">
               {tasks.map((pt) => (
@@ -78,7 +79,7 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
             </div>
           )}
           {canEdit && (
-            <div className="px-5 py-2.5 border-t border-border-light">
+            <div className="px-6 py-2.5 border-t border-border-light">
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onAddTask(milestone.id) }}

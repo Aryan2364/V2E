@@ -8,8 +8,8 @@ interface ProjectStatCardProps {
 
 export default function ProjectStatCard({ label, value, color = 'var(--primary-text)' }: ProjectStatCardProps) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] px-5 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-      <p className="text-[28px] font-bold" style={{ color }}>{value}</p>
+    <div className="bg-surface border border-border-light rounded-card px-6 py-4 shadow-card">
+      <p className="text-[28px] font-medium" style={{ color }}>{value}</p>
       <p className="text-sm text-text-secondary mt-0.5">{label}</p>
     </div>
   )

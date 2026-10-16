@@ -4,6 +4,7 @@ import { ExternalLink } from 'lucide-react'
 import PendingTaskBadge from './PendingTaskBadge'
 import DependencyWarning from './DependencyWarning'
 import type { ProjectTask, DependencyWarning as DWType } from '@/lib/types/projects'
+import { formatDate } from '@/lib/format'
 
 interface MilestoneTaskRowProps {
   pt: ProjectTask
@@ -37,7 +38,7 @@ export default function MilestoneTaskRow({ pt, warnings, onSetup }: MilestoneTas
         </p>
         {task.deadline && (
           <p className="text-xs text-text-muted mt-0.5">
-            Due {new Date(task.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+            Due {formatDate(task.deadline)}
           </p>
         )}
         <DependencyWarning warnings={warnings} />

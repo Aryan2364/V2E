@@ -5,6 +5,7 @@ import { Send, Trash2, Loader2, CornerDownRight } from 'lucide-react'
 import type { ProjectComment } from '@/lib/types/projects'
 import { projectsApi } from '@/lib/api/projects'
 import { useAuth } from '@/lib/auth/context'
+import { formatDateTime } from '@/lib/format'
 
 interface ProjectCommentThreadProps {
   orgId: string
@@ -54,10 +55,10 @@ export default function ProjectCommentThread({ orgId, projectId, comments, onRef
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-6 h-6 rounded-full bg-primary-subtle border border-primary-border flex items-center justify-center">
-                  <span className="text-[9px] font-semibold text-primary-text">{comment.user_id.charAt(0).toUpperCase()}</span>
+                  <span className="text-[9px] font-medium text-primary-text">{comment.user_id.charAt(0).toUpperCase()}</span>
                 </div>
                 <span className="text-xs text-text-muted">
-                  {new Date(comment.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  {formatDateTime(comment.created_at)}
                 </span>
               </div>
               <p className="text-sm text-text-primary whitespace-pre-wrap">{comment.body}</p>
@@ -123,7 +124,7 @@ export default function ProjectCommentThread({ orgId, projectId, comments, onRef
           type="button"
           disabled={submitting || !body.trim()}
           onClick={handleSubmit}
-          className="h-10 px-3 rounded-[8px] bg-primary hover:bg-primary-hover text-white disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-1.5 text-sm font-semibold self-start"
+          className="h-10 px-3 rounded-[8px] bg-primary hover:bg-primary-hover text-white disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-1.5 text-sm font-medium self-start"
         >
           {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
           Post

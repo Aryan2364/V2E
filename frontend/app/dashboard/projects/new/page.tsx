@@ -29,7 +29,7 @@ export default function NewProjectPage() {
           <ChevronLeft size={15} />
           Back to Projects
         </Link>
-        <h1 className="text-[28px] font-bold text-text-primary leading-tight">New Project</h1>
+        <h1 className="text-[28px] font-medium text-text-primary leading-tight">New Project</h1>
         <p className="mt-1 text-[15px] text-text-secondary">Set up a new project for your team.</p>
       </div>
 

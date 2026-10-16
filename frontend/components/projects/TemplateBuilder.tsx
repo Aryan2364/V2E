@@ -104,7 +104,7 @@ export default function TemplateBuilder({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Template info */}
       <div className="space-y-3">
         <div>
@@ -120,8 +120,8 @@ export default function TemplateBuilder({
       {/* Milestones */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-[15px] font-semibold text-text-primary">Milestones</h3>
-          <button type="button" onClick={addMilestone} className="flex items-center gap-1.5 text-xs font-semibold text-primary-text hover:text-primary-text transition-colors">
+          <h3 className="text-[15px] font-medium text-text-primary">Milestones</h3>
+          <button type="button" onClick={addMilestone} className="flex items-center gap-1.5 text-xs font-medium text-primary-text hover:text-primary-text transition-colors">
             <Plus size={13} /> Add Milestone
           </button>
         </div>
@@ -180,8 +180,8 @@ export default function TemplateBuilder({
       {/* Direct tasks */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-[15px] font-semibold text-text-primary">Direct Tasks (No Milestone)</h3>
-          <button type="button" onClick={addDirectTask} className="flex items-center gap-1.5 text-xs font-semibold text-primary-text hover:text-primary-text transition-colors">
+          <h3 className="text-[15px] font-medium text-text-primary">Direct Tasks (No Milestone)</h3>
+          <button type="button" onClick={addDirectTask} className="flex items-center gap-1.5 text-xs font-medium text-primary-text hover:text-primary-text transition-colors">
             <Plus size={13} /> Add Task
           </button>
         </div>

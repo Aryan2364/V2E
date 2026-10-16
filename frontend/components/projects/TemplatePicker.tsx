@@ -22,7 +22,7 @@ export default function TemplatePicker({ templates, selected, onSelect }: Templa
             : 'border-border-light hover:border-border',
         ].join(' ')}
       >
-        <p className="text-sm font-semibold text-text-primary">Start from scratch</p>
+        <p className="text-sm font-medium text-text-primary">Start from scratch</p>
         <p className="text-xs text-text-secondary mt-0.5">Build your project structure manually</p>
       </button>
 
@@ -41,7 +41,7 @@ export default function TemplatePicker({ templates, selected, onSelect }: Templa
             ].join(' ')}
           >
             <div>
-              <p className="text-sm font-semibold text-text-primary">{t.name}</p>
+              <p className="text-sm font-medium text-text-primary">{t.name}</p>
               {t.description && <p className="text-xs text-text-secondary mt-0.5 line-clamp-1">{t.description}</p>}
               <div className="flex gap-3 mt-1">
                 <span className="text-[11px] text-text-muted">{t._count?.milestones ?? 0} milestones</span>

@@ -1,6 +1,7 @@
 'use client'
 
 import type { ProjectActivityLog, ProjectActivityAction } from '@/lib/types/projects'
+import { formatDateTime } from '@/lib/format'
 
 const ACTION_LABELS: Record<ProjectActivityAction, string> = {
   created: 'created this project',
@@ -39,7 +40,7 @@ interface ProjectActivityFeedProps {
 export default function ProjectActivityFeed({ logs }: ProjectActivityFeedProps) {
   if (!logs.length) {
     return (
-      <div className="text-center py-10">
+      <div className="text-center py-8">
         <p className="text-sm text-text-muted">No activity yet.</p>
       </div>
     )
@@ -61,10 +62,7 @@ export default function ProjectActivityFeed({ logs }: ProjectActivityFeedProps) 
                 {ACTION_LABELS[log.action] ?? log.action}
               </p>
               <p className="text-xs text-text-muted mt-0.5">
-                {new Date(log.created_at).toLocaleString('en-IN', {
-                  day: 'numeric', month: 'short', year: 'numeric',
-                  hour: '2-digit', minute: '2-digit',
-                })}
+                {formatDateTime(log.created_at)}
               </p>
             </div>
           </div>

@@ -10,6 +10,7 @@ import ProjectStatCard from '@/components/projects/ProjectStatCard'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import { usePermissions } from '@/lib/auth/use-permissions'
 import { Plus, Briefcase, Search } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const STATUS_OPTS: { value: 'all' | ProjectStatus; label: string }[] = [
   { value: 'all', label: 'All Statuses' },
@@ -53,7 +54,7 @@ export default function ProjectsPage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-text-primary">No organization found</p>
+        <p className="font-medium text-text-primary">No organization found</p>
       </div>
     )
   }
@@ -61,7 +62,7 @@ export default function ProjectsPage() {
   if (!permsLoading && !can('projects.project.manage', 'read')) {
     return (
       <div className="space-y-6">
-        <h1 className="text-[28px] font-bold text-text-primary leading-tight">Projects</h1>
+        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Projects</h1>
         <AccessHiddenState orgId={orgId} leaf="projects.project.manage" moduleLabel="Projects" />
       </div>
     )
@@ -79,12 +80,12 @@ export default function ProjectsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Projects</h1>
+          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Projects</h1>
           <p className="mt-1 text-[15px] text-text-secondary">All projects across your organization.</p>
         </div>
         <Link
           href="/dashboard/projects/new"
-          className="flex items-center gap-2 px-5 py-[10px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover transition-colors shrink-0"
+          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-sm font-medium hover:bg-primary-hover transition-colors shrink-0"
         >
           <Plus size={16} />
           New Project
@@ -105,34 +106,37 @@ export default function ProjectsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search projects..."
-            className="w-full h-9 pl-8 pr-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden"
+            className="w-full h-9 pl-8 pr-3 rounded-control border border-border text-sm text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden"
           />
         </div>
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value as 'all' | ProjectStatus)}
-          className="h-9 px-3 rounded-[8px] border border-border text-sm text-text-primary bg-white focus:border-primary focus:outline-hidden"
-        >
-          {STATUS_OPTS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
+        <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as 'all' | ProjectStatus)}>
+          <SelectTrigger className="w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_OPTS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <span className="text-sm text-text-secondary">
           {filtered.length} project{filtered.length !== 1 ? 's' : ''}
         </span>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
+        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
             <Briefcase size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-text-primary">No projects found</p>
+          <p className="font-medium text-text-primary">No projects found</p>
           <p className="text-sm text-text-secondary mt-1">
             {projects.length === 0 ? 'Create your first project to get started.' : 'Try adjusting your filters.'}
           </p>
           {projects.length === 0 && (
             <Link
               href="/dashboard/projects/new"
-              className="mt-4 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-[8px] hover:bg-primary-hover transition-colors"
+              className="mt-4 px-4 py-2 bg-primary text-white text-sm font-medium rounded-[8px] hover:bg-primary-hover transition-colors"
             >
               New Project
             </Link>

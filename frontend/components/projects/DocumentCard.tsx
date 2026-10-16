@@ -2,6 +2,7 @@
 
 import { ExternalLink, Trash2, FileText, Link2, Image } from 'lucide-react'
 import type { ProjectDocument } from '@/lib/types/projects'
+import { formatDate } from '@/lib/format'
 
 function typeIcon(type?: string) {
   if (!type) return <Link2 size={18} className="text-text-secondary" />
@@ -18,17 +19,17 @@ interface DocumentCardProps {
 
 export default function DocumentCard({ doc, canDelete, onDelete }: DocumentCardProps) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] p-4 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-start gap-3">
+    <div className="bg-surface border border-border-light rounded-card p-4 shadow-card flex items-start gap-3">
       <div className="w-10 h-10 rounded-[8px] bg-surface-sunken border border-border-light flex items-center justify-center shrink-0">
         {typeIcon(doc.type)}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-text-primary truncate">{doc.name}</p>
+        <p className="text-sm font-medium text-text-primary truncate">{doc.name}</p>
         {doc.type && (
           <p className="text-xs text-text-muted uppercase">{doc.type}</p>
         )}
         <p className="text-xs text-text-muted mt-0.5">
-          {new Date(doc.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+          {formatDate(doc.created_at)}
         </p>
       </div>
       <div className="flex items-center gap-1 shrink-0">

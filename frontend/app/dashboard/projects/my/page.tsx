@@ -26,7 +26,7 @@ export default function MyProjectsPage() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-text-primary">No organization found</p>
+        <p className="font-medium text-text-primary">No organization found</p>
       </div>
     )
   }
@@ -43,12 +43,12 @@ export default function MyProjectsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary leading-tight">My Projects</h1>
+          <h1 className="text-[28px] font-medium text-text-primary leading-tight">My Projects</h1>
           <p className="mt-1 text-[15px] text-text-secondary">Projects you are a member of.</p>
         </div>
         <Link
           href="/dashboard/projects/new"
-          className="flex items-center gap-2 px-5 py-[10px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover transition-colors shrink-0"
+          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-sm font-medium hover:bg-primary-hover transition-colors shrink-0"
         >
           <Plus size={16} />
           New Project
@@ -58,11 +58,11 @@ export default function MyProjectsPage() {
       <p className="text-sm text-text-secondary">{projects.length} project{projects.length !== 1 ? 's' : ''}</p>
 
       {projects.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
+        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
             <Briefcase size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-text-primary">Not a member of any project yet</p>
+          <p className="font-medium text-text-primary">Not a member of any project yet</p>
           <p className="text-sm text-text-secondary mt-1">Projects you join will appear here.</p>
         </div>
       ) : (

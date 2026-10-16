@@ -75,7 +75,7 @@ function UserSearchDropdown({
   if (selected) {
     return (
       <div className="flex items-center gap-2 h-10 px-3 rounded-[8px] border border-border bg-white">
-        <div className={`w-6 h-6 rounded-full ${avatarColor(selected.name)} flex items-center justify-center text-white text-[10px] font-bold shrink-0`}>
+        <div className={`w-6 h-6 rounded-full ${avatarColor(selected.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
           {getInitials(selected.name)}
         </div>
         <span className="text-sm text-text-primary flex-1 truncate">{selected.name}</span>
@@ -100,11 +100,11 @@ function UserSearchDropdown({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
+          className="w-full h-10 pl-8 pr-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
         />
       </div>
       {open && (
-        <div className="absolute z-20 mt-1 w-full bg-white border border-border-light rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.12)] max-h-48 overflow-y-auto">
+        <div className="absolute z-20 mt-1 w-full bg-surface border border-border-light rounded-lg shadow-menu max-h-48 overflow-y-auto">
           {loading ? (
             <div className="px-4 py-3 text-sm text-text-muted">Searching…</div>
           ) : results.length === 0 ? (
@@ -116,7 +116,7 @@ function UserSearchDropdown({
               onClick={() => { onSelect(u); setQuery(''); setOpen(false) }}
               className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-sunken transition-colors text-left"
             >
-              <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-[10px] font-bold shrink-0`}>
+              <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
                 {getInitials(u.name)}
               </div>
               <div className="flex-1 min-w-0">
@@ -182,11 +182,11 @@ function MultiUserSearch({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           placeholder="Search team members to add…"
-          className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
+          className="w-full h-10 pl-8 pr-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
         />
       </div>
       {open && (
-        <div className="absolute z-20 mt-1 w-full bg-white border border-border-light rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.12)] max-h-56 overflow-y-auto">
+        <div className="absolute z-20 mt-1 w-full bg-surface border border-border-light rounded-lg shadow-menu max-h-56 overflow-y-auto">
           {loading ? (
             <div className="px-4 py-3 text-sm text-text-muted">Searching…</div>
           ) : results.length === 0 ? (
@@ -201,7 +201,7 @@ function MultiUserSearch({
                 disabled={already}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${already ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-sunken'}`}
               >
-                <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-[10px] font-bold shrink-0`}>
+                <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
                   {getInitials(u.name)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -351,7 +351,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
       <div className="flex items-center gap-3 mb-8">
         {[1, 2].map((s) => (
           <div key={s} className="flex items-center gap-2">
-            <div className={['w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold', s === step ? 'bg-primary text-white' : s < step ? 'bg-success-bg text-success' : 'bg-surface-control text-text-muted'].join(' ')}>
+            <div className={['w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium', s === step ? 'bg-primary text-white' : s < step ? 'bg-success-bg text-success' : 'bg-surface-control text-text-muted'].join(' ')}>
               {s}
             </div>
             <span className={`text-sm font-medium ${s === step ? 'text-text-primary' : 'text-text-muted'}`}>
@@ -367,7 +367,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
       )}
 
       {step === 1 && (
-        <div className="bg-white border border-border-light rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] space-y-4">
+        <div className="bg-surface border border-border-light rounded-card p-6 shadow-card space-y-4">
           <div>
             <label className={labelCls}>Project name <span className="text-danger">*</span></label>
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Website Redesign Q3" className={inputCls} />
@@ -417,7 +417,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
           {/* The goals this project exists to move — it can serve several. */}
           <GoalsMultiSelectField orgId={orgId} value={goalIds} onChange={setGoalIds} />
           <div className="flex justify-end pt-2">
-            <button type="button" onClick={() => { if (validateStep1()) setStep(2) }} className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-semibold transition-colors">
+            <button type="button" onClick={() => { if (validateStep1()) setStep(2) }} className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-medium transition-colors">
               Next: Add Members
             </button>
           </div>
@@ -425,7 +425,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
       )}
 
       {step === 2 && (
-        <div className="bg-white border border-border-light rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+        <div className="bg-surface border border-border-light rounded-card p-6 shadow-card">
           <p className="text-sm text-text-secondary mb-4">
             You and the project manager are automatically added. Add additional team members below.
           </p>
@@ -434,7 +434,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
           <div className="space-y-2 mb-4">
             {user && (
               <div className="flex items-center gap-3 p-3 bg-surface-sunken rounded-[8px] border border-border-light">
-                <div className={`w-7 h-7 rounded-full ${avatarColor(user.name)} flex items-center justify-center text-white text-[10px] font-bold shrink-0`}>
+                <div className={`w-7 h-7 rounded-full ${avatarColor(user.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
                   {getInitials(user.name)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -446,7 +446,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
             )}
             {pmUser && pmUser.user_id !== user?.id && (
               <div className="flex items-center gap-3 p-3 bg-surface-sunken rounded-[8px] border border-border-light">
-                <div className={`w-7 h-7 rounded-full ${avatarColor(pmUser.name)} flex items-center justify-center text-white text-[10px] font-bold shrink-0`}>
+                <div className={`w-7 h-7 rounded-full ${avatarColor(pmUser.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
                   {getInitials(pmUser.name)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -470,7 +470,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
             <div className="space-y-2 mb-6">
               {members.map((m) => (
                 <div key={m.user_id} className="flex items-center gap-3 p-3 bg-surface-sunken rounded-[8px] border border-border-light">
-                  <div className={`w-7 h-7 rounded-full ${avatarColor(m.name)} flex items-center justify-center text-white text-[10px] font-bold shrink-0`}>
+                  <div className={`w-7 h-7 rounded-full ${avatarColor(m.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
                     {getInitials(m.name)}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -507,14 +507,14 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
           )}
 
           <div className="flex justify-between">
-            <button type="button" onClick={() => setStep(1)} className="h-10 px-4 rounded-[8px] border-2 border-primary text-primary-text text-sm font-semibold hover:bg-primary-subtle transition-colors flex items-center gap-1.5">
+            <button type="button" onClick={() => setStep(1)} className="h-10 px-4 rounded-[8px] border-2 border-primary text-primary-text text-sm font-medium hover:bg-primary-subtle transition-colors flex items-center gap-1.5">
               <ChevronLeft size={16} /> Back
             </button>
             <button
               type="button"
               disabled={saving}
               onClick={handleCreate}
-              className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-semibold disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
+              className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-medium disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
             >
               {saving && <Loader2 size={14} className="animate-spin" />}
               {saving ? 'Creating...' : 'Create Project'}

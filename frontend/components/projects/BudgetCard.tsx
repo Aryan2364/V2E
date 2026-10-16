@@ -18,15 +18,15 @@ export default function BudgetCard({ planned, actual, currency }: BudgetCardProp
   const barColor = over ? 'var(--danger)' : 'var(--primary-text)'
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-      <h3 className="text-[15px] font-semibold text-text-primary mb-3">Budget</h3>
+    <div className="bg-surface border border-border-light rounded-card p-6 shadow-card">
+      <h3 className="text-[15px] font-medium text-text-primary mb-3">Budget</h3>
       <div className="flex justify-between text-sm mb-2">
         <span className="text-text-secondary">Planned</span>
-        <span className="font-semibold text-text-primary">{planned ? fmt(planned, currency) : '—'}</span>
+        <span className="font-medium text-text-primary">{planned ? fmt(planned, currency) : '—'}</span>
       </div>
       <div className="flex justify-between text-sm mb-3">
         <span className="text-text-secondary">Actual Spent</span>
-        <span className={`font-semibold ${over ? 'text-danger' : 'text-text-primary'}`}>
+        <span className={`font-medium ${over ? 'text-danger' : 'text-text-primary'}`}>
           {actual ? fmt(actual, currency) : '—'}
         </span>
       </div>

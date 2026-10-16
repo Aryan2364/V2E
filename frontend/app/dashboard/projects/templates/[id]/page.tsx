@@ -83,7 +83,7 @@ export default function EditTemplatePage() {
   if (!template) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-text-primary">Template not found</p>
+        <p className="font-medium text-text-primary">Template not found</p>
         <Link href="/dashboard/projects/templates" className="mt-2 text-sm text-primary-text hover:underline">
           Back to Templates
         </Link>
@@ -101,7 +101,7 @@ export default function EditTemplatePage() {
           <ChevronLeft size={15} />
           Back to Templates
         </Link>
-        <h1 className="text-[28px] font-bold text-text-primary leading-tight">Edit Template</h1>
+        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Edit Template</h1>
         <p className="mt-1 text-[15px] text-text-secondary">{template.name}</p>
       </div>
 
@@ -111,7 +111,7 @@ export default function EditTemplatePage() {
         </div>
       )}
 
-      <div className="bg-white border border-border-light rounded-[12px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <div className="bg-surface border border-border-light rounded-card p-6 shadow-card">
         <TemplateBuilder
           name={name}
           description={description}
@@ -129,7 +129,7 @@ export default function EditTemplatePage() {
           type="button"
           disabled={saving}
           onClick={handleSave}
-          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-semibold disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
+          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-medium disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
         >
           {saving && <Loader2 size={14} className="animate-spin" />}
           {saving ? 'Saving...' : 'Save Changes'}

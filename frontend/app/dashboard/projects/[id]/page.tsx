@@ -13,6 +13,7 @@ import type {
 import type { TaskCategory, TaskPriority, TaskStatus } from '@/lib/types/tasks'
 import ProjectProgressBar from '@/components/projects/ProjectProgressBar'
 import BudgetCard from '@/components/projects/BudgetCard'
+import { formatDate } from '@/lib/format'
 import MilestoneCard from '@/components/projects/MilestoneCard'
 import GanttChart from '@/components/projects/GanttChart'
 import ProjectCommentThread from '@/components/projects/ProjectCommentThread'
@@ -46,7 +47,7 @@ function StatusBadge({ status }: { status: string }) {
   const c = STATUS_COLORS[status] ?? { bg: 'var(--surface-control)', text: 'var(--text-muted)' }
   return (
     <span
-      className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold capitalize"
+      className="px-2.5 py-0.5 rounded-full text-[11px] font-medium capitalize"
       style={{ backgroundColor: c.bg, color: c.text }}
     >
       {status.replace('_', ' ')}
@@ -148,7 +149,7 @@ export default function ProjectDetailPage() {
   if (!project) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="font-semibold text-text-primary">Project not found</p>
+        <p className="font-medium text-text-primary">Project not found</p>
         <Link href="/dashboard/projects" className="mt-2 text-sm text-primary-text hover:underline">
           Back to Projects
         </Link>
@@ -172,7 +173,7 @@ export default function ProjectDetailPage() {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-[26px] font-bold text-text-primary leading-tight">{project.name}</h1>
+              <h1 className="text-[26px] font-medium text-text-primary leading-tight">{project.name}</h1>
               <StatusBadge status={project.status} />
             </div>
             {project.description && (
@@ -183,7 +184,7 @@ export default function ProjectDetailPage() {
             <button
               type="button"
               onClick={() => openAddTask()}
-              className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold rounded-[8px] transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-[8px] transition-colors"
             >
               <Plus size={15} />
               Add Task
@@ -227,8 +228,8 @@ export default function ProjectDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             {/* Key info */}
-            <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5">
-              <h2 className="text-sm font-semibold text-text-primary mb-4">Project Info</h2>
+            <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
+              <h2 className="text-sm font-medium text-text-primary mb-4">Project Info</h2>
               <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
                 <div>
                   <dt className="text-text-muted text-xs font-medium mb-0.5">Start Date</dt>
@@ -268,7 +269,7 @@ export default function ProjectDetailPage() {
                 )}
                 <div>
                   <dt className="text-text-muted text-xs font-medium mb-0.5">Progress</dt>
-                  <dd className="text-text-primary font-semibold">{Math.round(project.completion_percentage)}%</dd>
+                  <dd className="text-text-primary font-medium">{Math.round(project.completion_percentage)}%</dd>
                 </div>
                 <div>
                   <dt className="text-text-muted text-xs font-medium mb-0.5">Members</dt>
@@ -295,7 +296,7 @@ export default function ProjectDetailPage() {
             <p className="text-sm text-text-secondary">{milestones.length} milestone{milestones.length !== 1 ? 's' : ''}</p>
           </div>
           {milestones.length === 0 ? (
-            <div className="bg-white border border-border-light rounded-[12px] p-12 text-center text-sm text-text-muted">
+            <div className="bg-surface border border-border-light rounded-card p-12 text-center text-sm text-text-muted">
               No milestones yet. Add them in project settings.
             </div>
           ) : (
@@ -329,18 +330,18 @@ export default function ProjectDetailPage() {
             <button
               type="button"
               onClick={() => openAddTask()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary-text border border-primary-border bg-primary-subtle rounded-[6px] hover:bg-primary-subtle transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-text border border-primary-border bg-primary-subtle rounded-[6px] hover:bg-primary-subtle transition-colors"
             >
               <Plus size={12} />
               Add Task
             </button>
           </div>
           {tasks.length === 0 ? (
-            <div className="bg-white border border-border-light rounded-[12px] p-12 text-center text-sm text-text-muted">
+            <div className="bg-surface border border-border-light rounded-card p-12 text-center text-sm text-text-muted">
               No tasks linked yet. Use &quot;Add Task&quot; to link tasks to this project.
             </div>
           ) : (
-            <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] divide-y divide-surface-control">
+            <div className="bg-surface border border-border-light rounded-card shadow-card divide-y divide-surface-control">
               {tasks.map((pt) => {
                 const task = pt.task
                 if (!task) {
@@ -360,7 +361,7 @@ export default function ProjectDetailPage() {
                     <span className="text-sm text-text-primary flex-1 truncate">{task.title}</span>
                     {task.status && (
                       <span
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                        className="text-[10px] font-medium px-2 py-0.5 rounded-full"
                         style={{ backgroundColor: (task.status.color ?? 'var(--text-muted)') + '20', color: task.status.color ?? 'var(--text-muted)' }}
                       >
                         {task.status.label}
@@ -368,7 +369,7 @@ export default function ProjectDetailPage() {
                     )}
                     {task.deadline && (
                       <span className="text-xs text-text-muted shrink-0">
-                        {new Date(task.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                        {formatDate(task.deadline)}
                       </span>
                     )}
                     {pt.milestone_id && (
@@ -404,7 +405,7 @@ export default function ProjectDetailPage() {
             <button
               type="button"
               onClick={() => setShowAddDoc((v) => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary-text border border-primary-border bg-primary-subtle rounded-[6px] hover:bg-primary-subtle transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-text border border-primary-border bg-primary-subtle rounded-[6px] hover:bg-primary-subtle transition-colors"
             >
               <Plus size={12} />
               Add Document
@@ -412,7 +413,7 @@ export default function ProjectDetailPage() {
           </div>
 
           {showAddDoc && (
-            <div className="bg-white border border-border-light rounded-[12px] p-4 shadow-[0_1px_3px_rgba(0,0,0,0.08)] space-y-3">
+            <div className="bg-surface border border-border-light rounded-card p-4 shadow-card space-y-3">
               <p className="text-sm font-medium text-text-primary">Add Document Link</p>
               <input
                 value={docName}
@@ -441,7 +442,7 @@ export default function ProjectDetailPage() {
                   type="button"
                   disabled={docSaving || !docName.trim() || !docUrl.trim()}
                   onClick={handleAddDoc}
-                  className="h-8 px-3 text-xs font-semibold bg-primary text-white rounded-[6px] hover:bg-primary-hover disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                  className="h-8 px-3 text-xs font-medium bg-primary text-white rounded-[6px] hover:bg-primary-hover disabled:opacity-50 transition-colors flex items-center gap-1.5"
                 >
                   {docSaving && <Loader2 size={12} className="animate-spin" />}
                   Save
@@ -451,7 +452,7 @@ export default function ProjectDetailPage() {
           )}
 
           {documents.length === 0 && !showAddDoc ? (
-            <div className="bg-white border border-border-light rounded-[12px] p-12 text-center">
+            <div className="bg-surface border border-border-light rounded-card p-12 text-center">
               <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center mx-auto mb-3">
                 <FileText size={20} className="text-text-muted" />
               </div>

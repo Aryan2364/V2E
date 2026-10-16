@@ -6,35 +6,61 @@ import { useAuth } from '@/lib/auth/context'
 import { projectsApi } from '@/lib/api/projects'
 import type { ProjectTemplate } from '@/lib/types/projects'
 import { Plus, BookTemplate, Trash2 } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 function TemplateCard({ template, onDelete }: { template: ProjectTemplate; onDelete: () => void }) {
   const [deleting, setDeleting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const msCount = template._count?.milestones ?? template.milestones?.length ?? 0
   const taskCount = template._count?.tasks ?? template.tasks?.length ?? 0
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 flex flex-col gap-3">
+    <div className="bg-surface border border-border-light rounded-card shadow-card p-6 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
-        <div className="w-9 h-9 rounded-[8px] bg-primary-subtle border border-primary-border flex items-center justify-center shrink-0">
+        <div className="w-9 h-9 rounded-control bg-primary-subtle border border-primary-border flex items-center justify-center shrink-0">
           <BookTemplate size={18} className="text-primary-text" />
         </div>
         <button
           type="button"
           disabled={deleting}
-          onClick={async () => {
-            if (!confirm('Delete this template?')) return
-            setDeleting(true)
-            try { await onDelete() } finally { setDeleting(false) }
-          }}
+          onClick={() => setConfirmOpen(true)}
           className="p-1.5 rounded-xs hover:bg-danger-bg text-text-muted hover:text-danger transition-colors"
         >
           <Trash2 size={14} />
         </button>
+        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete template</AlertDialogTitle>
+              <AlertDialogDescription>This will permanently delete &ldquo;{template.name}&rdquo;.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  setDeleting(true)
+                  try { await onDelete() } finally { setDeleting(false) }
+                }}
+              >
+                Delete template
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-text-primary leading-snug">{template.name}</h3>
+        <h3 className="text-sm font-medium text-text-primary leading-snug">{template.name}</h3>
         {template.description && (
           <p className="text-xs text-text-secondary mt-0.5 line-clamp-2">{template.description}</p>
         )}
@@ -47,7 +73,7 @@ function TemplateCard({ template, onDelete }: { template: ProjectTemplate; onDel
       </div>
 
       <div className="pt-1 border-t border-border-light flex items-center justify-between">
-        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
           template.is_active
             ? 'bg-success-bg text-success'
             : 'bg-surface-control text-text-muted'
@@ -97,12 +123,12 @@ export default function TemplatesPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-text-primary leading-tight">Project Templates</h1>
+          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Project Templates</h1>
           <p className="mt-1 text-[15px] text-text-secondary">Reusable project structures with predefined milestones and tasks.</p>
         </div>
         <Link
           href="/dashboard/projects/templates/new"
-          className="flex items-center gap-2 px-5 py-[10px] bg-primary text-white rounded-[8px] text-sm font-semibold hover:bg-primary-hover transition-colors shrink-0"
+          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-sm font-medium hover:bg-primary-hover transition-colors shrink-0"
         >
           <Plus size={16} />
           New Template
@@ -110,15 +136,15 @@ export default function TemplatesPage() {
       </div>
 
       {templates.length === 0 ? (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-20">
+        <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
           <div className="w-14 h-14 rounded-full bg-surface-control flex items-center justify-center mb-4">
             <BookTemplate size={24} className="text-text-muted" />
           </div>
-          <p className="font-semibold text-text-primary">No templates yet</p>
+          <p className="font-medium text-text-primary">No templates yet</p>
           <p className="text-sm text-text-secondary mt-1">Create a template to speed up project setup.</p>
           <Link
             href="/dashboard/projects/templates/new"
-            className="mt-4 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-[8px] hover:bg-primary-hover transition-colors"
+            className="mt-4 px-4 py-2 bg-primary text-white text-sm font-medium rounded-[8px] hover:bg-primary-hover transition-colors"
           >
             New Template
           </Link>

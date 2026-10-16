@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { goalsApi } from '@/lib/api/goals'
 import { STATUS_META, type Goal } from '@/lib/types/goals'
+import { formatDate } from '@/lib/format'
 
 /**
  * "Goals this project serves" — the project side of the many-to-many link.
@@ -44,7 +45,7 @@ export default function GoalsMultiSelectField({
     const d = new Date(iso)
     return isNaN(d.getTime())
       ? ''
-      : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
+      : formatDate(d)
   }
 
   return (

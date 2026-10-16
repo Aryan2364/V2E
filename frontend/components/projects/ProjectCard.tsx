@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import type { Project, ProjectStatus } from '@/lib/types/projects'
+import { formatDate } from '@/lib/format'
 import ProjectProgressBar from './ProjectProgressBar'
 import Tooltip from '@/components/ui/tooltip'
 
@@ -23,7 +24,7 @@ export default function ProjectCard({ project, orgId }: ProjectCardProps) {
 
   function fmtDate(d?: string) {
     if (!d) return null
-    return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+    return formatDate(d)
   }
 
   function fmtCurrency(n: number) {
@@ -32,11 +33,11 @@ export default function ProjectCard({ project, orgId }: ProjectCardProps) {
 
   return (
     <div
-      className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 cursor-pointer hover:shadow-[0_4px_12px_rgba(0,0,0,0.10)] hover:border-border transition-all"
+      className="bg-surface border border-border-light rounded-card shadow-card p-6 cursor-pointer hover:shadow-menu hover:border-border transition-all"
       onClick={() => router.push(`/dashboard/projects/${project.id}`)}
     >
       <div className="flex items-start justify-between gap-2 mb-3">
-        <h3 className="text-[16px] font-semibold text-text-primary leading-tight">{project.name}</h3>
+        <h3 className="text-[16px] font-medium text-text-primary leading-tight">{project.name}</h3>
         <span
           className="text-[11px] font-medium px-2.5 py-0.5 rounded-full border shrink-0"
           style={{ backgroundColor: badge.bg, color: badge.text, borderColor: badge.border }}
@@ -61,7 +62,7 @@ export default function ProjectCard({ project, orgId }: ProjectCardProps) {
           {(project.members ?? []).slice(0, 5).map((m, i) => (
             <Tooltip key={m.id} label={m.user_id}>
             <div
-              className="w-6 h-6 rounded-full bg-primary-subtle border-2 border-white flex items-center justify-center text-[9px] font-semibold text-primary-text"
+              className="w-6 h-6 rounded-full bg-primary-subtle border-2 border-white flex items-center justify-center text-[9px] font-medium text-primary-text"
               style={{ marginLeft: i > 0 ? -6 : 0 }}
             >
               {m.user_id.charAt(0).toUpperCase()}
