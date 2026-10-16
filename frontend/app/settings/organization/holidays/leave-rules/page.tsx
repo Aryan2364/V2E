@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Loader2, Save, Search, Info } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
+
 import { leaveApi } from '@/lib/api/leave'
 import { getEmployees } from '@/lib/api/employees'
 import type { LeaveApprovalMode, LeaveMaster } from '@/lib/types/leave'
@@ -86,7 +87,6 @@ function UserMultiSelect({ people, selected, onToggle }: { people: Person[]; sel
 export default function LeaveRulesPage() {
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
-  const { addToast } = useToast()
 
   const [master, setMaster] = useState<LeaveMaster | null>(null)
   const [people, setPeople] = useState<Person[]>([])
@@ -105,8 +105,8 @@ export default function LeaveRulesPage() {
 
   useEffect(() => {
     setLoading(true)
-    load().catch(() => addToast('Could not load leave rules', 'error')).finally(() => setLoading(false))
-  }, [load, addToast])
+    load().catch(() => toast.success('Could not load leave rules', 'error')).finally(() => setLoading(false))
+  }, [load])
 
   if (loading || !master) {
     return (
@@ -132,10 +132,10 @@ export default function LeaveRulesPage() {
         recurring_notice_days: master.recurring_notice_days,
       })
       setMaster(saved)
-      addToast('Leave rules saved', 'success')
+      toast.error('Leave rules saved')
     } catch (e: any) {
       const m = e?.response?.data?.message ?? 'Could not save leave rules'
-      addToast(Array.isArray(m) ? m.join(', ') : m, 'error')
+      toast.error(Array.isArray(m) ? m.join(', ') : m)
     } finally {
       setSaving(false)
     }

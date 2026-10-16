@@ -33,7 +33,7 @@ import {
   type UndoImportResult,
 } from '@/lib/api/employees'
 import { listSystemRoles, type SystemRoleLite } from '@/lib/api/permissions'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import Tooltip from '@/components/ui/tooltip'
 import type { Department, Role, EmployeeProfile } from '@/lib/types'
 import { formatDateTime } from '@/lib/format'
@@ -234,7 +234,6 @@ export default function ImportEmployeesModal({
   onClose,
   onImported,
 }: Props) {
-  const { addToast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [mounted, setMounted] = useState(false)
@@ -446,7 +445,7 @@ export default function ImportEmployeesModal({
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      addToast('Could not build the template. Please try again.', 'error')
+      toast.error('Could not build the template. Please try again.')
     } finally {
       setBuilding(false)
     }
@@ -627,7 +626,7 @@ export default function ImportEmployeesModal({
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      addToast('Could not build the file.', 'error')
+      toast.error('Could not build the file.')
     }
   }
 
@@ -685,7 +684,7 @@ export default function ImportEmployeesModal({
     try {
       setBatchDetail(await getImportBatchDetail(orgId, batchId))
     } catch {
-      addToast('Could not load this import’s details.', 'error')
+      toast.error('Could not load this import’s details.')
       if (origin === 'history') setPhase('history')
     } finally {
       setLoadingDetail(false)
@@ -701,7 +700,7 @@ export default function ImportEmployeesModal({
       const res = await commitImport(orgId, parsedRows, fileName)
       setCommitResult(res)
       if (res.created > 0) {
-        addToast(
+        toast.error(
           `Imported ${res.created} employee${res.created !== 1 ? 's' : ''}`,
           res.failed > 0 ? 'warning' : 'success',
         )
@@ -716,7 +715,7 @@ export default function ImportEmployeesModal({
         // Nothing created (every row failed) — no batch exists; show the result
         // screen so the failed rows and their reasons are still visible.
         setPhase('result')
-        addToast('No employees were imported', 'error')
+        toast.message('No employees were imported')
       }
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? 'Import failed. Please try again.'
@@ -743,7 +742,7 @@ export default function ImportEmployeesModal({
     try {
       const res = await undoImport(orgId, batchId)
       setUndoResult(res)
-      addToast(
+      toast.error(
         res.undone > 0 ? `Removed ${res.undone} imported employee${res.undone !== 1 ? 's' : ''}` : 'Nothing was removed',
         res.kept.length > 0 ? 'warning' : 'success',
       )
@@ -759,7 +758,7 @@ export default function ImportEmployeesModal({
       }
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? 'Undo failed.'
-      addToast(Array.isArray(msg) ? msg.join(', ') : msg, 'error')
+      toast.error(Array.isArray(msg) ? msg.join(', ') : msg)
     } finally {
       setUndoingId(null)
     }

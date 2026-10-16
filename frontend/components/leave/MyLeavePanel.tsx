@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Loader2, Plus, CalendarOff, RefreshCw } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import DatePicker from '@/components/ui/DatePicker'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import LeaveStateBadge from '@/components/leave/LeaveStateBadge'
@@ -43,7 +43,6 @@ function CardHeader({ title, subtitle }: { title: string; subtitle?: string }) {
 export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean }) {
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
-  const { addToast } = useToast()
 
   const [leaves, setLeaves] = useState<Leave[]>([])
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
@@ -85,7 +84,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
     try {
       await leaveApi.apply(orgId, { start_date: start, end_date: end, reason: reason.trim() || undefined, declare })
       setStart(''); setEnd(''); setReason(''); setDeclare(false)
-      addToast(declare ? 'Leave declared' : 'Leave request sent', 'success')
+      toast.success(declare ? 'Leave declared' : 'Leave request sent')
       await load()
     } catch (e) {
       setFormError(errorMessage(e, 'Could not submit your leave. Try again.'))
@@ -98,10 +97,10 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
     setBusyId(l.id)
     try {
       await leaveApi.override(orgId, l.id)
-      addToast('Leave taken anyway', 'success')
+      toast.success('Leave taken anyway')
       await load()
     } catch (e) {
-      addToast(errorMessage(e, 'Could not update this leave'), 'error')
+      toast.success(errorMessage(e, 'Could not update this leave'), 'error')
     } finally {
       setBusyId(null)
     }
@@ -113,7 +112,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
     setCancelError(null)
     try {
       await leaveApi.cancel(orgId, cancelTarget.id)
-      addToast('Leave cancelled', 'success')
+      toast.message('Leave cancelled')
       setCancelTarget(null)
       await load()
     } catch (e) {

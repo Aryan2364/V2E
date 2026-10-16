@@ -15,7 +15,7 @@ import {
   X,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import Button from '@/components/ui/button'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import StyledSelect from '@/components/ui/StyledSelect'
@@ -206,7 +206,6 @@ function deriveFromMatrix(m: RoleMatrix): Derived {
 export default function AccessControlPage() {
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
-  const { addToast } = useToast()
 
   const [tab, setTab] = useState<Tab>('roles')
   const [loading, setLoading] = useState(true)
@@ -259,10 +258,10 @@ export default function AccessControlPage() {
       })
       .catch((err) => {
         if (err?.response?.status === 403) setDenied(true)
-        else addToast(err?.response?.data?.message ?? 'Failed to load access control', 'error')
+        else toast.success(err?.response?.data?.message ?? 'Failed to load access control', 'error')
       })
       .finally(() => setLoading(false))
-  }, [orgId, addToast, applyMatrix])
+  }, [orgId, applyMatrix])
 
   useEffect(() => {
     load()
@@ -543,9 +542,9 @@ export default function AccessControlPage() {
       if (!latest) latest = await getRolePermissions(orgId)
       applyMatrix(latest)
       clearPermissionsCache(orgId)
-      addToast('Access saved', 'success')
+      toast.error('Access saved')
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Failed to save', 'error')
+      toast.success(err?.response?.data?.message ?? 'Failed to save')
     } finally {
       setSaving(false)
     }
@@ -562,9 +561,9 @@ export default function AccessControlPage() {
       if (created) setSelectedRoleId(created.id)
       setCreating(false)
       setNewName('')
-      addToast('Role created', 'success')
+      toast.error('Role created')
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Failed to create role', 'error')
+      toast.success(err?.response?.data?.message ?? 'Failed to create role')
     }
   }
   async function handleRename() {
@@ -577,9 +576,9 @@ export default function AccessControlPage() {
     try {
       applyMatrix(await updateSystemRole(orgId, selectedRole.id, { name }))
       setRenaming(false)
-      addToast('Role renamed', 'success')
+      toast.error('Role renamed')
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Failed to rename', 'error')
+      toast.success(err?.response?.data?.message ?? 'Failed to rename')
     }
   }
   async function performDeleteRole() {
@@ -592,7 +591,7 @@ export default function AccessControlPage() {
       setSelectedRoleId(updated.systemRoles[0]?.id ?? '')
       clearPermissionsCache(orgId)
       setConfirmDeleteRole(false)
-      addToast('Role deleted', 'success')
+      toast.error('Role deleted')
     } catch (err: any) {
       // The server blocks deletion while employees still hold the role — show
       // the plain-language reason here rather than as a toast that vanishes.
@@ -630,9 +629,9 @@ export default function AccessControlPage() {
       const updated = await updateSubjectPolicies(orgId, entries)
       setPolicies(updated.policies)
       setPolicyEdits(Object.fromEntries(updated.policies.map((p) => [p.subject_key, p.default_eligible])))
-      addToast('Subject eligibility saved', 'success')
+      toast.success('Subject eligibility saved')
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Failed to save', 'error')
+      toast.message(err?.response?.data?.message ?? 'Failed to save')
     } finally {
       setSavingPolicies(false)
     }

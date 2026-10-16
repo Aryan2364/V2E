@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronRight, ShieldCheck, Loader2 } from 'lucide-react'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { clearPermissionsCache } from '@/lib/auth/use-permissions'
 import {
@@ -79,7 +79,6 @@ function EffectiveDot({ allowed }: { allowed: boolean }) {
 }
 
 export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: string; userId: string }) {
-  const { addToast } = useToast()
   const [registry, setRegistry] = useState<RegistryModule[]>([])
   const [data, setData] = useState<UserPermissions | null>(null)
   const [loading, setLoading] = useState(true)
@@ -97,10 +96,10 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
         setRegistry(reg.modules)
         setData(perms)
       })
-      .catch(() => { if (!cancelled) addToast('Failed to load permissions', 'error') })
+      .catch(() => { if (!cancelled) toast.error('Failed to load permissions') })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
-  }, [orgId, userId, addToast])
+  }, [orgId, userId])
 
   const leafByKey = useMemo(() => {
     const m = new Map<string, UserPermissionLeaf>()
@@ -141,7 +140,7 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
       setData(updated)
       clearPermissionsCache(orgId)
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Failed to update', 'error')
+      toast.error(err?.response?.data?.message ?? 'Failed to update')
     } finally {
       setBusyKey(null)
     }
@@ -158,7 +157,7 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
       setData(updated)
       clearPermissionsCache(orgId)
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Failed to update', 'error')
+      toast.error(err?.response?.data?.message ?? 'Failed to update')
     } finally {
       setBusyKey(null)
     }

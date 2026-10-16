@@ -15,7 +15,7 @@ import {
   Undo2,
 } from 'lucide-react'
 import { createRole, listImportBatches, createImportBatch, undoImport } from '@/lib/api/roles'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import Tooltip from '@/components/ui/tooltip'
 import type { Department, RoleLevel } from '@/lib/types'
 import { formatDateTime } from '@/lib/format'
@@ -118,7 +118,6 @@ function parseCsv(text: string): string[][] {
 }
 
 export default function ImportJobRolesModal({ orgId, departments, onClose, onImported }: Props) {
-  const { addToast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [mounted, setMounted] = useState(false)
@@ -161,12 +160,12 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
     try {
       const res = await undoImport(orgId, batchId)
       setUndoResult(res)
-      addToast('Import undone successfully', 'success')
+      toast.success('Import undone successfully')
       onImported()
       loadHistory()
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? 'Could not undo this import'
-      addToast(msg, 'error')
+      toast.error(msg)
     } finally {
       setUndoingId(null)
     }
@@ -236,7 +235,7 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      addToast('Could not build the template. Please try again.', 'error')
+      toast.error('Could not build the template. Please try again.')
     } finally {
       setBuilding(false)
     }
@@ -423,13 +422,13 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
 
     setResult({ created, failed, results })
     if (created > 0) {
-      addToast(
+      toast.error(
         `Imported ${created} job role${created !== 1 ? 's' : ''}`,
         failed > 0 ? 'warning' : 'success',
       )
       onImported()
     } else {
-      addToast('No job roles were imported', 'error')
+      toast.message('No job roles were imported')
     }
     setImporting(false)
   }

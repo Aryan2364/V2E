@@ -6,7 +6,8 @@ import { X, Eye, EyeOff, Loader2, Plus } from 'lucide-react'
 import { createEmployee, checkAccount, type AccountCheck } from '@/lib/api/employees'
 import { getUsers } from '@/lib/api/users'
 import { listSystemRoles, type SystemRoleLite } from '@/lib/api/permissions'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
+
 import { useAuth } from '@/lib/auth/context'
 import { usePermissions } from '@/lib/auth/use-permissions'
 import DeptFormDrawer from '@/components/org-chart/DeptFormDrawer'
@@ -75,7 +76,6 @@ export default function AddEmployeeModal({
   onRoleCreated,
   onDeptCreated,
 }: Props) {
-  const { addToast } = useToast()
   const { user } = useAuth()
   const { can } = usePermissions()
   // Role create is @RequireAdmin; department create is the structure-write permission.
@@ -313,7 +313,7 @@ export default function AddEmployeeModal({
         marriage_date: form.marriage_date || undefined,
         make_dep_head: form.make_dep_head || undefined,
       })
-      addToast(`${form.name.trim()} added`, 'success')
+      toast.success(`${form.name.trim()} added`)
       onCreated()
     } catch (err: any) {
       const msg =
@@ -636,7 +636,7 @@ export default function AddEmployeeModal({
             set('role_id', '') // its role list is empty until one is added
             setCreatingRole(false)
             setCreatingDept(false)
-            addToast(`Department "${saved.name}" created`, 'success')
+            toast.success(`Department "${saved.name}" created`)
           }}
           onDeleted={() => {}} // create-only here; delete lives on the org chart
         />
@@ -659,7 +659,7 @@ export default function AddEmployeeModal({
             onRoleCreated?.(saved) // keep the parent page's list fresh for the next entry
             set('role_id', saved.id) // auto-select the new role
             setCreatingRole(false)
-            addToast(`Job role "${saved.title}" created`, 'success')
+            toast.success(`Job role "${saved.title}" created`)
           }}
         />
       )}
