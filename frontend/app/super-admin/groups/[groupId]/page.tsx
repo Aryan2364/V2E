@@ -2,12 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Layers, ChevronLeft, Building2, Plus, X, Users } from 'lucide-react'
+import { LayersIcon, Building2Icon, PlusIcon, XIcon, UsersIcon, OctagonXIcon } from 'lucide-react'
 import { getGroup, addOrgToGroup, removeOrgFromGroup } from '@/lib/api/groups'
 import { getOrganizations } from '@/lib/api/organizations'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import Card from '@/components/ui/card'
 import ResponsiveTable from '@/components/ui/ResponsiveTable'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Banner, BannerDescription } from '@/components/ui/banner'
+import { EmptyState } from '@/components/ui/empty-state'
+import { SearchableSelect } from '@/components/ui/searchable-select'
+import { PageHeader } from '@/components/shell/page-header'
 import type { OrganizationGroup, Organization } from '@/lib/types'
 
 interface GroupUser {
@@ -44,6 +49,10 @@ export default function GroupDetailPage() {
 
   const memberOrgIds = new Set(group?.organizations?.map((o) => o.id) ?? [])
   const availableOrgs = allOrgs.filter((o) => !memberOrgIds.has(o.id))
+  const availableOrgOptions = availableOrgs.reduce<Record<string, string>>((acc, o) => {
+    acc[o.id] = o.name
+    return acc
+  }, {})
 
   async function handleAddOrg() {
     if (!groupId || !addOrgId) return
@@ -78,9 +87,9 @@ export default function GroupDetailPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
-        <div className="h-7 w-48 rounded-md bg-surface-control-pressed animate-pulse" />
-        <div className="h-40 rounded-[12px] bg-surface-control-pressed animate-pulse" />
-        <div className="h-48 rounded-[12px] bg-surface-control-pressed animate-pulse" />
+        <Skeleton className="h-7 w-48" />
+        <Skeleton className="h-40 rounded-card" />
+        <Skeleton className="h-48 rounded-card" />
       </div>
     )
   }
@@ -95,115 +104,111 @@ export default function GroupDetailPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-4xl">
-      <div>
-        <button
-          onClick={() => router.push('/super-admin/groups')}
-          className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary mb-3 transition-colors"
-        >
-          <ChevronLeft size={16} /> Groups
-        </button>
-        <h1 className="text-[28px] font-medium text-text-primary">{group.name}</h1>
-        {group.description && <p className="text-sm text-text-secondary mt-1">{group.description}</p>}
-      </div>
+    <div className="max-w-4xl">
+      <PageHeader
+        title={group.name}
+        meta={group.description}
+        trail={[
+          { label: 'Groups', href: '/super-admin/groups' },
+          { label: group.name, href: `/super-admin/groups/${groupId}` },
+        ]}
+      />
 
-      {/* Overview card */}
-      <Card>
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-[12px] bg-primary-subtle flex items-center justify-center shrink-0">
-            <Layers size={26} className="text-primary-text" />
+      <div className="mt-6 flex flex-col gap-6">
+        {/* Overview card */}
+        <Card>
+          <div className="flex items-center gap-4">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-card bg-primary-subtle">
+              <LayersIcon size={26} className="text-primary-text" />
+            </div>
+            <div>
+              <h2 className="text-section font-medium text-text-primary">{group.name}</h2>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-medium text-text-primary">{group.name}</h2>
+          <div className="mt-4 flex gap-8 border-t border-border-light pt-4">
+            <div>
+              <p className="text-label font-medium uppercase tracking-wider text-text-muted">Organizations</p>
+              <p className="mt-1 text-section font-medium text-text-primary">{group.organizations?.length ?? 0}</p>
+            </div>
           </div>
-        </div>
-        <div className="mt-4 pt-4 border-t border-border-light flex gap-8">
-          <div>
-            <p className="text-xs text-text-muted uppercase tracking-wider font-medium">Organizations</p>
-            <p className="text-2xl font-medium text-text-primary mt-0.5">{group.organizations?.length ?? 0}</p>
-          </div>
-        </div>
-      </Card>
+        </Card>
 
-      {/* Member orgs */}
-      <Card title="Member Organizations">
-        {actionError && (
-          <div className="mb-4 rounded-[8px] bg-danger-bg border border-danger-border px-4 py-2.5 text-sm text-danger">
-            {actionError}
-          </div>
-        )}
+        {/* Member orgs */}
+        <Card title="Member Organizations">
+          {actionError ? (
+            <Banner variant="danger" className="mb-4">
+              <OctagonXIcon />
+              <BannerDescription>{actionError}</BannerDescription>
+            </Banner>
+          ) : null}
 
-        {/* Add org */}
-        {availableOrgs.length > 0 && (
-          <div className="flex gap-3 mb-4 pb-4 border-b border-border-light">
-            <select
-              value={addOrgId}
-              onChange={(e) => setAddOrgId(e.target.value)}
-              className="flex-1 rounded-[8px] bg-white border border-border px-3 py-[10px] text-sm text-text-primary focus:outline-hidden focus:border-2 focus:border-primary"
-            >
-              <option value="">Select organization to add…</option>
-              {availableOrgs.map((o) => (
-                <option key={o.id} value={o.id}>{o.name}</option>
-              ))}
-            </select>
-            <Button variant="primary" onClick={handleAddOrg} isLoading={isAdding} disabled={!addOrgId}>
-              <Plus size={16} /> Add
-            </Button>
-          </div>
-        )}
-
-        {(!group.organizations || group.organizations.length === 0) ? (
-          <div className="flex flex-col items-center gap-2 py-8">
-            <Building2 size={28} className="text-[#CBD5E1]" />
-            <p className="text-sm text-text-muted">No organizations in this group yet.</p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {group.organizations.map((org) => (
-              <div key={org.id} className="flex items-center gap-3 p-3 rounded-[8px] border border-border-light bg-surface-sunken">
-                <div className="w-8 h-8 rounded-[8px] bg-primary-subtle flex items-center justify-center shrink-0">
-                  <Building2 size={16} className="text-primary-text" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{org.name}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => router.push(`/super-admin/organizations/${org.id}`)}
-                    className="text-xs text-primary-text font-medium hover:text-primary-text transition-colors px-2 py-1"
-                  >
-                    View
-                  </button>
-                  <button
-                    onClick={() => handleRemoveOrg(org.id)}
-                    disabled={removingId === org.id}
-                    className="w-6 h-6 rounded-[4px] flex items-center justify-center text-text-muted hover:text-danger hover:bg-danger-bg transition-colors disabled:opacity-50"
-                    aria-label="Remove from group"
-                  >
-                    {removingId === org.id ? (
-                      <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <X size={12} />
-                    )}
-                  </button>
-                </div>
+          {/* Add org */}
+          {availableOrgs.length > 0 && (
+            <div className="mb-4 flex gap-3 border-b border-border-light pb-4">
+              <div className="flex-1">
+                <SearchableSelect
+                  options={availableOrgOptions}
+                  value={addOrgId}
+                  onValueChange={setAddOrgId}
+                  placeholder="Select organization to add…"
+                />
               </div>
-            ))}
-          </div>
-        )}
-      </Card>
+              <Button onClick={handleAddOrg} loading={isAdding} loadingLabel="Adding" disabled={!addOrgId}>
+                <PlusIcon size={16} /> Add
+              </Button>
+            </div>
+          )}
 
-      {/* Users in group */}
-      <Card>
-        <div className="flex items-center gap-2 mb-1">
-          <Users size={16} className="text-text-secondary" />
-          <h3 className="text-[18px] font-medium text-text-primary">Users across group</h3>
-        </div>
-        <p className="text-sm text-text-secondary mb-4">
-          All users who are members of any organization in this group.
-        </p>
-        <GroupUsersTable groupId={groupId} />
-      </Card>
+          {(!group.organizations || group.organizations.length === 0) ? (
+            <EmptyState variant="nothing-yet" heading="No organizations yet">
+              Add an organization above to bring it into this group.
+            </EmptyState>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {group.organizations.map((org) => (
+                <div key={org.id} className="flex items-center gap-3 rounded-lg border border-border-light bg-surface-sunken p-3">
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-subtle">
+                    <Building2Icon size={16} className="text-primary-text" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-body font-medium text-text-primary">{org.name}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => router.push(`/super-admin/organizations/${org.id}`)}
+                      className="px-2 py-1 text-label font-medium text-primary-text hover:text-primary-text"
+                    >
+                      View
+                    </button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveOrg(org.id)}
+                      disabled={removingId === org.id}
+                      aria-label="Remove from group"
+                      className="size-6 text-text-muted hover:bg-danger-bg hover:text-danger"
+                    >
+                      <XIcon size={12} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        {/* Users in group */}
+        <Card>
+          <div className="mb-1 flex items-center gap-2">
+            <UsersIcon size={16} className="text-text-secondary" />
+            <h3 className="text-section font-medium text-text-primary">Users across group</h3>
+          </div>
+          <p className="mb-4 text-body text-text-secondary">
+            All users who are members of any organization in this group.
+          </p>
+          <GroupUsersTable groupId={groupId} />
+        </Card>
+      </div>
     </div>
   )
 }
@@ -226,7 +231,7 @@ function GroupUsersTable({ groupId }: { groupId: string }) {
 
   return (
     <ResponsiveTable<GroupUser>
-      className="border-0 shadow-none rounded-none -mx-6 -mb-6 md:mx-0 md:mb-0"
+      className="-mx-6 -mb-6 rounded-none border-0 shadow-none md:mx-0 md:mb-0"
       loading={isLoading}
       skeletonRows={3}
       columns={[
@@ -245,12 +250,12 @@ function GroupUsersTable({ groupId }: { groupId: string }) {
           key: 'member_of',
           header: 'Member of',
           render: (u) => (
-            <div className="flex flex-wrap gap-1 md:justify-start justify-end">
+            <div className="flex flex-wrap justify-end gap-1 md:justify-start">
               {u.orgs.map((org) => (
                 <button
                   key={org.id}
                   onClick={() => router.push(`/super-admin/organizations/${org.id}`)}
-                  className="inline-flex items-center rounded-[999px] bg-surface-control text-text-secondary border border-border-light text-[11px] font-medium px-2 py-0.5 hover:bg-surface-control transition-colors"
+                  className="inline-flex items-center rounded-full border border-border-light bg-surface-control px-2 py-0.5 text-meta font-medium text-text-secondary hover:bg-surface-control"
                 >
                   {org.name}
                 </button>
@@ -261,7 +266,7 @@ function GroupUsersTable({ groupId }: { groupId: string }) {
       ]}
       rows={users}
       rowKey={(u) => u.user_id}
-      emptyState={<p className="text-sm text-text-muted text-center py-4">No users yet.</p>}
+      emptyState={<p className="py-4 text-center text-body text-text-muted">No users yet.</p>}
     />
   )
 }

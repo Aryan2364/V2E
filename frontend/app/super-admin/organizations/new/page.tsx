@@ -5,11 +5,20 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Eye, EyeOff, ChevronLeft, Check } from 'lucide-react'
+import { CheckIcon, OctagonXIcon } from 'lucide-react'
 import { createOrganization, checkOrgAdminAccount, type OrgAdminAccountCheck } from '@/lib/api/organizations'
 import { getGroups } from '@/lib/api/groups'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import Card from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/ui/password-input'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { Banner, BannerDescription } from '@/components/ui/banner'
+import { ChoiceRow } from '@/components/ui/choice-row'
+import { Checkbox } from '@/components/ui/checkbox'
+import { SearchableSelect } from '@/components/ui/searchable-select'
+import { PageHeader } from '@/components/shell/page-header'
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect'
 import { DEFAULT_COUNTRY, cleanNationalNumber, nationalDigitsFor } from '@/lib/phone'
 import type { OrganizationGroup } from '@/lib/types'
@@ -40,34 +49,38 @@ function Field({
   label: string; error?: string; required?: boolean; hint?: string; children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium text-text-secondary">
-        {label}{required && <span className="text-danger ml-0.5">*</span>}
-      </label>
-      {children}
-      {error && <p className="text-xs text-danger">{error}</p>}
-      {!error && hint && <p className="text-xs text-text-muted">{hint}</p>}
+    <div>
+      <Label required={required}>{label}</Label>
+      <div className="mt-2">{children}</div>
+      <InlineFieldError>{error}</InlineFieldError>
+      {!error && hint && <p className="mt-2 text-label text-text-muted">{hint}</p>}
     </div>
   )
 }
 
-const inputCls = (hasError?: boolean) =>
-  [
-    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden transition-colors',
-    hasError ? 'border-2 border-danger' : 'border border-border focus:border-2 focus:border-primary',
-  ].join(' ')
+const INDUSTRIES = [
+  'Technology', 'Finance', 'Healthcare', 'Education', 'Retail', 'Manufacturing', 'Consulting', 'Media', 'Other',
+].reduce<Record<string, string>>((acc, v) => { acc[v] = v; return acc }, {})
 
-const selectCls = (hasError?: boolean) =>
-  [
-    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-text-primary focus:outline-hidden transition-colors',
-    hasError ? 'border-2 border-danger' : 'border border-border focus:border-2 focus:border-primary',
-  ].join(' ')
+const COUNTRIES_OPT = [
+  'India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Singapore', 'UAE', 'Other',
+].reduce<Record<string, string>>((acc, v) => { acc[v] = v; return acc }, {})
+
+const TIMEZONES = {
+  'Asia/Kolkata': 'Asia/Kolkata (IST, UTC+5:30)',
+  'America/New_York': 'America/New_York (EST/EDT)',
+  'America/Los_Angeles': 'America/Los_Angeles (PST/PDT)',
+  'Europe/London': 'Europe/London (GMT/BST)',
+  'Europe/Berlin': 'Europe/Berlin (CET/CEST)',
+  'Asia/Singapore': 'Asia/Singapore (SGT, UTC+8)',
+  'Asia/Dubai': 'Asia/Dubai (GST, UTC+4)',
+  'Australia/Sydney': 'Australia/Sydney (AEST/AEDT)',
+}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function NewOrganizationPage() {
   const router = useRouter()
-  const [showPassword, setShowPassword] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
 
   // Groups (for assigning the org to a group — not for picking the admin)
@@ -167,191 +180,158 @@ export default function NewOrganizationPage() {
     }
   }
 
+  const groupOptions: Record<string, string> = { '': 'No group (standalone)' }
+  groups.forEach((g) => { groupOptions[g.id] = g.name })
+
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
-      {/* Header */}
-      <div>
-        <button
-          onClick={() => router.back()}
-          className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary mb-3 transition-colors"
-        >
-          <ChevronLeft size={16} /> Back
-        </button>
-        <h1 className="text-[28px] font-medium text-text-primary">Create Organization</h1>
-        <p className="text-sm text-text-secondary mt-1">Set up a new tenant organization and provision its first admin account.</p>
-      </div>
+    <div className="max-w-2xl">
+      <PageHeader
+        title="Create Organization"
+        meta="Set up a new tenant organization and provision its first admin account."
+        trail={[
+          { label: 'Organizations', href: '/super-admin/organizations' },
+          { label: 'Create', href: '/super-admin/organizations/new' },
+        ]}
+      />
 
-      {serverError && (
-        <div className="rounded-[8px] bg-danger-bg border border-danger-border px-4 py-3 text-sm text-danger">
-          {serverError}
-        </div>
-      )}
+      <div className="mt-6 flex flex-col gap-6">
+        {serverError ? (
+          <Banner variant="danger">
+            <OctagonXIcon />
+            <BannerDescription>{serverError}</BannerDescription>
+          </Banner>
+        ) : null}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-        {/* Section 1 — Org details */}
-        <Card>
-          <h2 className="text-[16px] font-medium text-text-primary mb-4 pb-4 border-b border-border-light">Organization Details</h2>
-          <div className="grid grid-cols-1 gap-4">
-            <Field label="Organization Name" error={errors.name?.message} required>
-              <input
-                {...register('name')}
-                placeholder=""
-                className={inputCls(!!errors.name)}
-              />
-            </Field>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Industry" error={errors.industry?.message}>
-                <select {...register('industry')} className={selectCls(!!errors.industry)}>
-                  <option value="">Select industry</option>
-                  <option value="Technology">Technology</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Healthcare">Healthcare</option>
-                  <option value="Education">Education</option>
-                  <option value="Retail">Retail</option>
-                  <option value="Manufacturing">Manufacturing</option>
-                  <option value="Consulting">Consulting</option>
-                  <option value="Media">Media</option>
-                  <option value="Other">Other</option>
-                </select>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+          {/* Section 1 — Org details */}
+          <Card>
+            <h2 className="mb-4 border-b border-border-light pb-4 text-card-heading font-medium text-text-primary">
+              Organization Details
+            </h2>
+            <div className="grid grid-cols-1 gap-4">
+              <Field label="Organization Name" error={errors.name?.message} required>
+                <Input {...register('name')} className="max-w-none" />
               </Field>
-              <Field label="Country" error={errors.country?.message}>
-                <select {...register('country')} className={selectCls(!!errors.country)}>
-                  <option value="">Select country</option>
-                  <option value="India">India</option>
-                  <option value="United States">United States</option>
-                  <option value="United Kingdom">United Kingdom</option>
-                  <option value="Canada">Canada</option>
-                  <option value="Australia">Australia</option>
-                  <option value="Singapore">Singapore</option>
-                  <option value="UAE">UAE</option>
-                  <option value="Other">Other</option>
-                </select>
-              </Field>
-            </div>
 
-            <Field label="Timezone" error={errors.timezone?.message}>
-              <select {...register('timezone')} className={selectCls(!!errors.timezone)}>
-                <option value="Asia/Kolkata">Asia/Kolkata (IST, UTC+5:30)</option>
-                <option value="America/New_York">America/New_York (EST/EDT)</option>
-                <option value="America/Los_Angeles">America/Los_Angeles (PST/PDT)</option>
-                <option value="Europe/London">Europe/London (GMT/BST)</option>
-                <option value="Europe/Berlin">Europe/Berlin (CET/CEST)</option>
-                <option value="Asia/Singapore">Asia/Singapore (SGT, UTC+8)</option>
-                <option value="Asia/Dubai">Asia/Dubai (GST, UTC+4)</option>
-                <option value="Australia/Sydney">Australia/Sydney (AEST/AEDT)</option>
-              </select>
-            </Field>
-
-            {/* Group selector */}
-            <Field label="Group" hint="Optional — assign this org to an existing group">
-              <select {...register('group_id')} className={selectCls()}>
-                <option value="">No group (standalone)</option>
-                {groups.map((g) => (
-                  <option key={g.id} value={g.id}>{g.name}</option>
-                ))}
-              </select>
-            </Field>
-
-            {/* Test client toggle */}
-            <label className="flex items-start gap-3 rounded-[8px] border border-warning-border bg-warning-bg px-4 py-3 cursor-pointer">
-              <input
-                type="checkbox"
-                {...register('is_test')}
-                className="mt-0.5 w-4 h-4 rounded-xs border-border text-warning focus:ring-warning"
-              />
-              <span>
-                <span className="block text-sm font-medium text-warning">Test client</span>
-                <span className="block text-xs text-warning mt-0.5">
-                  Enables a controllable simulated clock so this org can “time travel” for testing. Leave off for real clients.
-                </span>
-              </span>
-            </label>
-          </div>
-        </Card>
-
-        {/* Section 2 — First Admin Account */}
-        <Card>
-          <h2 className="text-[16px] font-medium text-text-primary mb-1 pb-4 border-b border-border-light">First Admin Account</h2>
-
-          {/* One flow — just enter the admin's email. If it already has a V2E login we
-              add them with their existing password (name locked, no password field);
-              otherwise it's a brand-new person and you set a name + password. No more
-              "new vs existing" choice — the email decides. */}
-          <div className="flex flex-col gap-4 mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Admin Email" error={errors.admin_email?.message} required
-                hint={checkingAdmin ? 'Checking…' : adminExists ? 'Existing account — no password needed' : 'Required — used to recover access'}>
-                <input {...register('admin_email')} type="email" placeholder="name@company.com" className={inputCls(!!errors.admin_email)} />
-              </Field>
-              <Field label="Admin Phone" error={errors.admin_phone?.message} hint="Optional — an extra way to sign in">
-                <div className="flex gap-2">
-                  <CountryCodeSelect
-                    value={adminCountry}
-                    onChange={(code) => {
-                      setValue('admin_country_code', code)
-                      setValue('admin_phone', cleanNationalNumber(adminPhone ?? '', code))
-                    }}
-                    wrapperClassName="w-[116px] shrink-0"
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Industry" error={errors.industry?.message}>
+                  <SearchableSelect
+                    options={INDUSTRIES}
+                    value={watch('industry') ?? ''}
+                    onValueChange={(v) => setValue('industry', v)}
+                    placeholder="Select industry"
                   />
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    value={adminPhone ?? ''}
-                    onChange={(e) => setValue('admin_phone', cleanNationalNumber(e.target.value, adminCountry))}
-                    maxLength={adminExpectedDigits}
-                    placeholder={`${adminExpectedDigits}-digit number`}
-                    className={`${inputCls(!!errors.admin_phone)} flex-1`}
+                </Field>
+                <Field label="Country" error={errors.country?.message}>
+                  <SearchableSelect
+                    options={COUNTRIES_OPT}
+                    value={watch('country') ?? ''}
+                    onValueChange={(v) => setValue('country', v)}
+                    placeholder="Select country"
                   />
-                </div>
-              </Field>
-            </div>
-            <Field label="Admin Name" error={errors.admin_name?.message} required
-              hint={adminExists ? 'From their existing account' : undefined}>
-              <input {...register('admin_name')} placeholder="" disabled={adminExists}
-                className={[inputCls(!!errors.admin_name), adminExists ? 'bg-surface-sunken text-text-muted' : ''].join(' ')} />
-            </Field>
-            {/* Password shown ONLY for a brand-new login. An existing account keeps the
-                one password it uses across its other firms. */}
-            {adminExists ? (
-              <div className="flex items-start gap-2 p-3 rounded-[8px] bg-success-bg border border-success-border">
-                <Check size={16} className="text-success shrink-0 mt-0.5" />
-                <p className="text-sm text-success">
-                  This email already has a V2E login. They’ll be added as this firm’s admin
-                  using their <strong>existing password</strong> — nothing to set here.
-                </p>
+                </Field>
               </div>
-            ) : (
-              <Field label="Password" error={errors.admin_password?.message} required>
-                <div className="relative">
-                  <input
-                    {...register('admin_password')}
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Min. 8 characters"
-                    className={[inputCls(!!errors.admin_password), 'pr-8'].join(' ')}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((s) => !s)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </Field>
-            )}
-          </div>
-        </Card>
 
-        {/* Actions */}
-        <div className="flex items-center gap-3">
-          <Button type="submit" variant="primary" isLoading={isSubmitting}>Create Organization</Button>
-          <Button type="button" variant="secondary" onClick={() => router.push('/super-admin/organizations')} disabled={isSubmitting}>
-            Cancel
-          </Button>
-        </div>
-      </form>
+              <Field label="Timezone" error={errors.timezone?.message}>
+                <SearchableSelect
+                  options={TIMEZONES}
+                  value={watch('timezone') ?? 'Asia/Kolkata'}
+                  onValueChange={(v) => setValue('timezone', v)}
+                />
+              </Field>
+
+              {/* Group selector */}
+              <Field label="Group" hint="Optional — assign this org to an existing group">
+                <SearchableSelect
+                  options={groupOptions}
+                  value={watch('group_id') ?? ''}
+                  onValueChange={(v) => setValue('group_id', v)}
+                />
+              </Field>
+
+              {/* Test client toggle */}
+              <ChoiceRow
+                control={
+                  <Checkbox
+                    checked={!!watch('is_test')}
+                    onCheckedChange={(checked) => setValue('is_test', checked === true)}
+                  />
+                }
+                label="Test client"
+                description="Enables a controllable simulated clock so this org can “time travel” for testing. Leave off for real clients."
+              />
+            </div>
+          </Card>
+
+          {/* Section 2 — First Admin Account */}
+          <Card>
+            <h2 className="mb-1 border-b border-border-light pb-4 text-card-heading font-medium text-text-primary">
+              First Admin Account
+            </h2>
+
+            {/* One flow — just enter the admin's email. If it already has a V2E login we
+                add them with their existing password (name locked, no password field);
+                otherwise it's a brand-new person and you set a name + password. No more
+                "new vs existing" choice — the email decides. */}
+            <div className="mt-4 flex flex-col gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Admin Email" error={errors.admin_email?.message} required
+                  hint={checkingAdmin ? 'Checking…' : adminExists ? 'Existing account — no password needed' : 'Required — used to recover access'}>
+                  <Input {...register('admin_email')} type="email" placeholder="name@company.com" className="max-w-none" />
+                </Field>
+                <Field label="Admin Phone" error={errors.admin_phone?.message} hint="Optional — an extra way to sign in">
+                  <div className="flex gap-2">
+                    <CountryCodeSelect
+                      value={adminCountry}
+                      onChange={(code) => {
+                        setValue('admin_country_code', code)
+                        setValue('admin_phone', cleanNationalNumber(adminPhone ?? '', code))
+                      }}
+                      wrapperClassName="w-29 shrink-0"
+                    />
+                    <Input
+                      type="tel"
+                      inputMode="numeric"
+                      value={adminPhone ?? ''}
+                      onChange={(e) => setValue('admin_phone', cleanNationalNumber(e.target.value, adminCountry))}
+                      maxLength={adminExpectedDigits}
+                      placeholder={`${adminExpectedDigits}-digit number`}
+                      className="max-w-none flex-1"
+                    />
+                  </div>
+                </Field>
+              </div>
+              <Field label="Admin Name" error={errors.admin_name?.message} required
+                hint={adminExists ? 'From their existing account' : undefined}>
+                <Input {...register('admin_name')} disabled={adminExists} className="max-w-none" />
+              </Field>
+              {/* Password shown ONLY for a brand-new login. An existing account keeps the
+                  one password it uses across its other firms. */}
+              {adminExists ? (
+                <Banner variant="success">
+                  <CheckIcon />
+                  <BannerDescription>
+                    This email already has a V2E login. They’ll be added as this firm’s admin
+                    using their existing password — nothing to set here.
+                  </BannerDescription>
+                </Banner>
+              ) : (
+                <Field label="Password" error={errors.admin_password?.message} required>
+                  <PasswordInput {...register('admin_password')} placeholder="Min. 8 characters" className="max-w-none" />
+                </Field>
+              )}
+            </div>
+          </Card>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            <Button type="submit" loading={isSubmitting} loadingLabel="Creating">Create Organization</Button>
+            <Button type="button" variant="secondary" onClick={() => router.push('/super-admin/organizations')} disabled={isSubmitting}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }
