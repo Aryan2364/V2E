@@ -15,6 +15,7 @@ import {
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth/context'
 import { tasksApi } from '@/lib/api/tasks'
 import { extensionOf, fileKindLabel, formatBytes } from '@/lib/attachments'
@@ -178,15 +179,15 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
           </Tooltip>
         )}
         <Tooltip label="Download">
-          <button onClick={() => download(a)} aria-label="Download" className="ml-auto shrink-0 text-text-muted hover:text-primary-text">
+          <Button variant="ghost" size="icon-sm" onClick={() => download(a)} aria-label="Download" className="ml-auto shrink-0">
             <Download size={13} />
-          </button>
+          </Button>
         </Tooltip>
         {mine && canManageMine && !a.comment_id && (
           <Tooltip label="Remove this proof">
-            <button onClick={() => setProofToDelete(a)} aria-label="Remove this proof" className="shrink-0 text-text-muted hover:text-danger">
+            <Button variant="ghost" size="icon-sm" onClick={() => setProofToDelete(a)} aria-label="Remove this proof" className="shrink-0 hover:text-danger">
               <Trash2 size={13} />
-            </button>
+            </Button>
           </Tooltip>
         )}
       </div>
@@ -304,13 +305,9 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
             {/* No footer Cancel — the header X / backdrop dismiss this (both discard the
                 queue), so a duplicate Cancel would break the cancel-vs-X rule. */}
             <div className="mt-4 flex items-center justify-end">
-              <button
-                onClick={confirmCurrent}
-                disabled={uploading}
-                className="text-body font-medium text-primary-foreground bg-primary rounded-lg px-4 py-2 hover:bg-primary-hover disabled:opacity-60 transition-colors"
-              >
-                {uploading ? 'Uploading…' : 'Upload'}
-              </button>
+              <Button onClick={confirmCurrent} loading={uploading} loadingLabel="Uploading…">
+                Upload
+              </Button>
             </div>
           </div>
         )}

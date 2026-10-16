@@ -160,13 +160,9 @@ export default function ManageAccessModal({
                       { value: 'revoke', label: 'No access' },
                     ]}
                   />
-                  <button
-                    onClick={handleAdd}
-                    disabled={!addUser || busyUser === addUser}
-                    className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-                  >
+                  <Button onClick={handleAdd} disabled={!addUser} loading={busyUser === addUser}>
                     Apply
-                  </button>
+                  </Button>
                 </div>
                 <p className="mt-2 flex items-start gap-1 text-meta text-text-muted">
                   <Info size={12} className="mt-0.5 shrink-0" />
@@ -190,13 +186,9 @@ export default function ManageAccessModal({
                       ) : p.source === 'assignee' ? (
                         <span className="text-meta text-text-muted px-2">Does the work</span>
                       ) : (
-                        <button
-                          onClick={() => revoke(p.user_id)}
-                          disabled={busyUser === p.user_id}
-                          className="text-body font-medium text-danger hover:underline disabled:opacity-50"
-                        >
+                        <Button variant="danger" size="sm" onClick={() => revoke(p.user_id)} loading={busyUser === p.user_id}>
                           Remove
-                        </button>
+                        </Button>
                       )}
                     </div>
                   ))}
@@ -214,13 +206,9 @@ export default function ManageAccessModal({
                         wrapperClassName="w-[120px]"
                         options={[{ value: 'view', label: 'Can view' }, { value: 'edit', label: 'Can edit' }]}
                       />
-                      <button
-                        onClick={() => clear(p.user_id)}
-                        disabled={busyUser === p.user_id}
-                        className="text-body font-medium text-danger hover:underline disabled:opacity-50"
-                      >
+                      <Button variant="danger" size="sm" onClick={() => clear(p.user_id)} loading={busyUser === p.user_id}>
                         Remove
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -238,13 +226,9 @@ export default function ManageAccessModal({
                           <p className="text-body font-medium text-text-primary truncate">{p.name}</p>
                           <p className="text-meta text-text-muted">No access</p>
                         </div>
-                        <button
-                          onClick={() => clear(p.user_id)}
-                          disabled={busyUser === p.user_id}
-                          className="text-body font-medium text-primary-text hover:underline disabled:opacity-50"
-                        >
+                        <Button variant="secondary" size="sm" onClick={() => clear(p.user_id)} loading={busyUser === p.user_id}>
                           Restore
-                        </button>
+                        </Button>
                       </div>
                     ))}
                   </div>

@@ -6,6 +6,7 @@ import { getNow } from '@/lib/clock'
 import type { Task, TaskPriority } from '@/lib/types/tasks'
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   tasks: Task[]
@@ -76,24 +77,19 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
           {MONTHS[month]} {year}
         </h2>
         <div className="flex items-center gap-1">
-          <button
-            onClick={prevMonth}
-            className="w-8 h-8 flex items-center justify-center rounded-[6px] hover:bg-surface-control transition-colors text-text-secondary"
-          >
+          <Button variant="ghost" size="icon-sm" onClick={prevMonth} aria-label="Previous month">
             <ChevronLeft size={16} />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); setSelectedKey(null) }}
-            className="px-3 h-8 text-body font-medium text-primary-text hover:bg-primary-subtle rounded-[6px] transition-colors"
           >
             Today
-          </button>
-          <button
-            onClick={nextMonth}
-            className="w-8 h-8 flex items-center justify-center rounded-[6px] hover:bg-surface-control transition-colors text-text-secondary"
-          >
+          </Button>
+          <Button variant="ghost" size="icon-sm" onClick={nextMonth} aria-label="Next month">
             <ChevronRight size={16} />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -192,12 +188,9 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                 {selectedTasks.length} task{selectedTasks.length !== 1 ? 's' : ''}
               </span>
             </h3>
-            <button
-              onClick={() => setSelectedKey(null)}
-              className="w-7 h-7 flex items-center justify-center rounded-[6px] hover:bg-surface-control text-text-muted hover:text-text-primary transition-colors"
-            >
+            <Button variant="ghost" size="icon-sm" onClick={() => setSelectedKey(null)} aria-label="Close">
               <X size={14} />
-            </button>
+            </Button>
           </div>
           <div className="flex flex-col gap-2">
             {selectedTasks.map((task) => {
