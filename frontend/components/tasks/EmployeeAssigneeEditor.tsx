@@ -7,6 +7,7 @@ import { getEmployees } from '@/lib/api/employees'
 import { toast } from 'sonner'
 import Modal from '@/components/ui/Modal'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import { computeNodeColors } from '@/lib/org-chart-colors'
 import { flattenTree } from '@/lib/dept-tree'
 import type { Department } from '@/lib/types'
@@ -405,38 +406,29 @@ export default function EmployeeAssigneeEditor({
                   </div>
                 </div>
                 {/* Why + Save */}
-                <button
-                  type="button"
-                  onClick={() => setShowWhy(true)}
-                  className="inline-flex items-center gap-1 text-meta font-medium text-text-secondary hover:text-text-secondary transition-colors shrink-0"
-                >
+                <Button variant="secondary" size="sm" className="shrink-0" onClick={() => setShowWhy(true)}>
                   <HelpCircle size={15} /> Why?
-                </button>
+                </Button>
                 <Tooltip label={dirty ? 'Save changes' : 'All changes saved'}>
-                <button
-                  type="button"
-                  onClick={save}
-                  disabled={!dirty || saving}
-                  aria-label="Save"
-                  className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors shrink-0 ${
-                    !dirty || saving ? 'bg-surface-control-pressed text-text-muted cursor-not-allowed' : 'bg-primary text-primary-foreground hover:bg-primary-hover'
-                  }`}
-                >
-                  {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={18} strokeWidth={3} />}
-                </button>
+                  <Button
+                    size="icon"
+                    className="shrink-0"
+                    onClick={save}
+                    disabled={!dirty}
+                    loading={saving}
+                    aria-label="Save"
+                  >
+                    <Check size={18} strokeWidth={3} />
+                  </Button>
                 </Tooltip>
               </div>
 
               {/* Controls */}
               <div className="px-4 py-2.5 border-b border-border-light flex items-center gap-3 flex-wrap">
                 <div className="relative" ref={addRef}>
-                  <button
-                    type="button"
-                    onClick={() => setShowAdd((v) => !v)}
-                    className="inline-flex items-center gap-1.5 text-body font-medium text-primary-text hover:text-primary-text transition-colors"
-                  >
+                  <Button variant="secondary" size="sm" onClick={() => setShowAdd((v) => !v)}>
                     <UserPlus size={15} /> Add / remove people
-                  </button>
+                  </Button>
                   {showAdd && (
                     <div className="absolute z-30 mt-2 w-[300px] max-w-[80vw] bg-surface border border-border rounded-lg shadow-menu overflow-hidden">
                       <div className="relative border-b border-border-light">
@@ -456,9 +448,9 @@ export default function EmployeeAssigneeEditor({
                           <input type="checkbox" className="sr-only" checked={allSelected} onChange={() => (allSelected ? removeAll() : selectAll())} />
                           Select all
                         </label>
-                        <button type="button" onClick={resetToRules} className="text-meta font-medium text-text-secondary hover:text-text-primary transition-colors">
+                        <Button variant="secondary" size="sm" onClick={resetToRules}>
                           Reset to rules
-                        </button>
+                        </Button>
                       </div>
                       <div className="max-h-56 overflow-y-auto divide-y divide-surface-control">
                         {addCandidates.length === 0 && <p className="px-3 py-3 text-meta text-text-secondary">No people found.</p>}
@@ -483,12 +475,12 @@ export default function EmployeeAssigneeEditor({
                     </div>
                   )}
                 </div>
-                <button type="button" onClick={resetToRules} className="inline-flex items-center gap-1.5 text-label font-medium text-text-secondary hover:text-text-primary transition-colors">
+                <Button variant="secondary" size="sm" onClick={resetToRules}>
                   <RotateCcw size={14} /> Reset to rules
-                </button>
-                <button type="button" onClick={removeAll} className="inline-flex items-center gap-1.5 text-body font-medium text-danger hover:text-danger transition-colors ml-auto">
+                </Button>
+                <Button variant="danger" size="sm" className="ml-auto" onClick={removeAll}>
                   <Trash2 size={14} /> Remove all
-                </button>
+                </Button>
               </div>
 
               {/* Removed band — prominent, at the top */}
@@ -496,9 +488,9 @@ export default function EmployeeAssigneeEditor({
                 <div className="border-b border-danger-border bg-danger-bg">
                   <div className="flex items-center justify-between px-3 py-2">
                     <span className="text-meta font-medium text-danger uppercase tracking-wide">Removed ({removedRows.length})</span>
-                    <button type="button" onClick={resetToRules} className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text transition-colors">
+                    <Button variant="secondary" size="sm" onClick={resetToRules}>
                       <RotateCcw size={13} /> Restore all
-                    </button>
+                    </Button>
                   </div>
                   {removedRows.length > 12 ? (
                     <p className="px-3 pb-2 text-meta text-danger">{removedRows.length} people removed — “Restore all” or “Reset to rules” to bring them back.</p>
@@ -510,13 +502,9 @@ export default function EmployeeAssigneeEditor({
                           <span className="text-meta text-text-muted truncate">
                             {r.would_be_reason ? `was: ${REASON[r.would_be_reason]?.label ?? r.would_be_reason}` : 'not in rules either'}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => addMember(r.user_id)}
-                            className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text transition-colors shrink-0"
-                          >
+                          <Button variant="secondary" size="sm" className="shrink-0" onClick={() => addMember(r.user_id)}>
                             <RotateCcw size={12} /> Restore
-                          </button>
+                          </Button>
                         </div>
                       ))}
                     </div>
@@ -557,24 +545,19 @@ export default function EmployeeAssigneeEditor({
       <Modal isOpen={pendingSelect !== null} onClose={() => setPendingSelect(null)} title="Discard unsaved changes?" size="sm">
         <p className="text-label text-text-secondary">You have unsaved changes for this employee. Switch anyway and lose them?</p>
         <div className="flex gap-2 justify-end mt-4">
-          <button
-            type="button"
-            onClick={() => setPendingSelect(null)}
-            className="px-4 py-2 text-body font-medium text-text-primary bg-surface-control hover:bg-surface-control-pressed rounded-lg transition-colors"
-          >
+          <Button variant="secondary" onClick={() => setPendingSelect(null)}>
             Keep editing
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="danger"
             onClick={() => {
               const id = pendingSelect!
               setPendingSelect(null)
               proceedSelect(id)
             }}
-            className="px-4 py-2 text-body font-medium text-primary-foreground bg-danger hover:bg-danger-hover rounded-lg transition-colors"
           >
             Discard
-          </button>
+          </Button>
         </div>
       </Modal>
 
@@ -667,14 +650,11 @@ function Row({
         )}
         <ReasonChip reason={reason} />
         {onRemove && (
-          <button
-            type="button"
-            onClick={onRemove}
-            aria-label={`Remove ${name}`}
-            className="w-6 h-6 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-surface-control transition-colors"
-          >
-            <X size={14} />
-          </button>
+          <Tooltip label={`Remove ${name}`}>
+            <Button variant="ghost" size="icon-sm" aria-label={`Remove ${name}`} onClick={onRemove}>
+              <X size={14} />
+            </Button>
+          </Tooltip>
         )}
       </div>
     </div>
