@@ -17,6 +17,8 @@ import { RESULT_META, RESULT_ORDER, fmtDate, fmtAsOn, shiftMonth } from '@/lib/r
 import { Search, Download, Lock, CalendarClock, ChevronLeft, ChevronRight, Inbox } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type ResultFilter = 'all' | 'missed' | 'late' | 'clean'
 const STATE_KEY = 'calendar-report-state-v1'
@@ -168,9 +170,39 @@ export default function CalendarReportPage() {
       {/* Month switcher + legend */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <button onClick={() => month && setMonth(shiftMonth(month, -1))} disabled={!month} className="w-9 h-9 rounded-control border border-border flex items-center justify-center text-text-secondary hover:bg-surface-control disabled:opacity-50" title="Previous month"><ChevronLeft size={17} /></button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Previous month"
+                  onClick={() => month && setMonth(shiftMonth(month, -1))}
+                  disabled={!month}
+                />
+              }
+            >
+              <ChevronLeft size={17} />
+            </TooltipTrigger>
+            <TooltipContent>Previous month</TooltipContent>
+          </Tooltip>
           <div className="px-3 min-w-[150px] text-center text-body font-medium text-text-primary">{report?.month_label ?? '—'}</div>
-          <button onClick={() => month && setMonth(shiftMonth(month, 1))} disabled={!month} className="w-9 h-9 rounded-control border border-border flex items-center justify-center text-text-secondary hover:bg-surface-control disabled:opacity-50" title="Next month"><ChevronRight size={17} /></button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Next month"
+                  onClick={() => month && setMonth(shiftMonth(month, 1))}
+                  disabled={!month}
+                />
+              }
+            >
+              <ChevronRight size={17} />
+            </TooltipTrigger>
+            <TooltipContent>Next month</TooltipContent>
+          </Tooltip>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           {RESULT_ORDER.map((k) => (
@@ -213,7 +245,7 @@ export default function CalendarReportPage() {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+        <Skeleton className="h-48 w-full rounded-card" />
       ) : !report || report.rows.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-card py-12 flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-primary-subtle flex items-center justify-center mb-4">{report ? <CalendarClock size={24} className="text-primary-text" /> : <Lock size={24} className="text-danger" />}</div>
