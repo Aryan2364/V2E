@@ -2,19 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Building2, ArrowRight, Plus } from 'lucide-react'
+import { Building2Icon, ArrowRightIcon, PlusIcon, OctagonXIcon } from 'lucide-react'
 import { getOrganizations } from '@/lib/api/organizations'
-import Badge from '@/components/ui/badge'
-import Button from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
+import { Banner, BannerDescription } from '@/components/ui/banner'
+import { EmptyState } from '@/components/ui/empty-state'
+import { PageHeader } from '@/components/shell/page-header'
 import type { Organization, OrgStatus } from '@/lib/types'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function orgStatusToBadge(status: OrgStatus): 'active' | 'inactive' | 'pending' {
-  if (status === 'active') return 'active'
-  if (status === 'inactive') return 'inactive'
-  return 'pending'
+function orgStatusVariant(status: OrgStatus): 'success' | 'danger' | 'warning' {
+  if (status === 'active') return 'success'
+  if (status === 'inactive') return 'danger'
+  return 'warning'
 }
 
 function orgStatusLabel(status: OrgStatus): string {
@@ -48,13 +51,13 @@ export default function OrganizationsPage() {
       primary: true,
       render: (org) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-[8px] bg-primary-subtle flex items-center justify-center shrink-0">
-            <Building2 size={16} className="text-primary-text" />
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-subtle">
+            <Building2Icon size={16} className="text-primary-text" />
           </div>
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-1">
             <span className="font-medium text-text-primary">{org.name}</span>
             {org.group && (
-              <span className="inline-flex self-start items-center rounded-[999px] bg-surface-control text-text-secondary border border-border-light text-[11px] font-medium px-2 py-0.5">
+              <span className="inline-flex self-start items-center rounded-full border border-border-light bg-surface-control px-2 py-0.5 text-meta font-medium text-text-secondary">
                 {org.group.name}
               </span>
             )}
@@ -76,7 +79,7 @@ export default function OrganizationsPage() {
       key: 'status',
       header: 'Status',
       render: (org) => (
-        <Badge status={orgStatusToBadge(org.status)} label={orgStatusLabel(org.status)} />
+        <Badge variant={orgStatusVariant(org.status)}>{orgStatusLabel(org.status)}</Badge>
       ),
     },
     {
@@ -85,55 +88,48 @@ export default function OrganizationsPage() {
       render: (org) => (
         <button
           onClick={() => router.push(`/super-admin/organizations/${org.id}`)}
-          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-primary-text text-sm font-medium hover:text-primary-text transition-colors rounded-[6px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex min-h-10 items-center gap-1 rounded-md text-body font-medium text-primary-text outline-none hover:text-primary-text focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring sm:min-h-0"
         >
-          View <ArrowRight size={14} />
+          View <ArrowRightIcon size={14} />
         </button>
       ),
     },
   ]
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Organizations</h1>
-          <p className="text-sm text-text-secondary mt-1">Manage all tenant organizations on the platform.</p>
-        </div>
-        <Button
-          variant="primary"
-          onClick={() => router.push('/super-admin/organizations/new')}
-        >
-          <Plus size={16} />
-          New Organization
-        </Button>
-      </div>
+    <div>
+      <PageHeader
+        title="Organizations"
+        meta="Manage all tenant organizations on the platform."
+        actions={
+          <Button onClick={() => router.push('/super-admin/organizations/new')}>
+            <PlusIcon size={16} />
+            New Organization
+          </Button>
+        }
+      />
 
-      {/* Table card */}
-      {!isLoading && error ? (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] px-6 py-12 text-center text-danger text-sm">
-          {error}
-        </div>
-      ) : (
-        <ResponsiveTable
-          columns={columns}
-          rows={orgs}
-          rowKey={(org) => org.id}
-          loading={isLoading}
-          emptyState={
-            <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-              <div className="flex flex-col items-center gap-3 py-12">
-                <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center">
-                  <Building2 size={22} className="text-text-muted" />
-                </div>
-                <p className="text-text-secondary font-medium">No organizations yet</p>
-                <p className="text-text-muted text-xs">Click "New Organization" to add one.</p>
-              </div>
-            </div>
-          }
-        />
-      )}
+      <div className="mt-6">
+        {/* Table card */}
+        {!isLoading && error ? (
+          <Banner variant="danger">
+            <OctagonXIcon />
+            <BannerDescription>{error}</BannerDescription>
+          </Banner>
+        ) : (
+          <ResponsiveTable
+            columns={columns}
+            rows={orgs}
+            rowKey={(org) => org.id}
+            loading={isLoading}
+            emptyState={
+              <EmptyState variant="nothing-yet" heading="No organizations yet">
+                Click &quot;New Organization&quot; to add one.
+              </EmptyState>
+            }
+          />
+        )}
+      </div>
     </div>
   )
 }

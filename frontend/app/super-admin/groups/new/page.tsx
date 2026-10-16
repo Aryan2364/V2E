@@ -5,10 +5,16 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ChevronLeft } from 'lucide-react'
+import { OctagonXIcon } from 'lucide-react'
 import { createGroup } from '@/lib/api/groups'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import Card from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { Banner, BannerDescription } from '@/components/ui/banner'
+import { PageHeader } from '@/components/shell/page-header'
 
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -19,21 +25,13 @@ type FormValues = z.infer<typeof schema>
 
 function Field({ label, error, required, children }: { label: string; error?: string; required?: boolean; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium text-text-secondary">
-        {label}{required && <span className="text-danger ml-0.5">*</span>}
-      </label>
-      {children}
-      {error && <p className="text-xs text-danger">{error}</p>}
+    <div>
+      <Label required={required}>{label}</Label>
+      <div className="mt-2">{children}</div>
+      <InlineFieldError>{error}</InlineFieldError>
     </div>
   )
 }
-
-const inputCls = (hasError?: boolean) =>
-  [
-    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden transition-colors',
-    hasError ? 'border-2 border-danger' : 'border border-border focus:border-2 focus:border-primary',
-  ].join(' ')
 
 export default function NewGroupPage() {
   const router = useRouter()
@@ -54,53 +52,51 @@ export default function NewGroupPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
-      <div>
-        <button
-          onClick={() => router.back()}
-          className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary mb-3 transition-colors"
-        >
-          <ChevronLeft size={16} /> Back
-        </button>
-        <h1 className="text-[28px] font-medium text-text-primary">Create Group</h1>
-        <p className="text-sm text-text-secondary mt-1">Groups let you cluster related organizations and share users across them.</p>
-      </div>
+    <div className="max-w-2xl">
+      <PageHeader
+        title="Create Group"
+        meta="Groups let you cluster related organizations and share users across them."
+        trail={[
+          { label: 'Groups', href: '/super-admin/groups' },
+          { label: 'Create', href: '/super-admin/groups/new' },
+        ]}
+      />
 
-      {serverError && (
-        <div className="rounded-[8px] bg-danger-bg border border-danger-border px-4 py-3 text-sm text-danger">
-          {serverError}
-        </div>
-      )}
+      <div className="mt-6 flex flex-col gap-6">
+        {serverError ? (
+          <Banner variant="danger">
+            <OctagonXIcon />
+            <BannerDescription>{serverError}</BannerDescription>
+          </Banner>
+        ) : null}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-        <Card>
-          <h2 className="text-[16px] font-medium text-text-primary mb-4 pb-4 border-b border-border-light">Group Details</h2>
-          <div className="flex flex-col gap-4">
-            <Field label="Group Name" error={errors.name?.message} required>
-              <input
-                {...register('name')}
-                placeholder="RGB Group"
-                className={inputCls(!!errors.name)}
-              />
-            </Field>
-            <Field label="Description" error={errors.description?.message}>
-              <textarea
-                {...register('description')}
-                placeholder="Optional — describe what this group represents"
-                rows={3}
-                className={[inputCls(!!errors.description), 'resize-none'].join(' ')}
-              />
-            </Field>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+          <Card>
+            <h2 className="mb-4 border-b border-border-light pb-4 text-card-heading font-medium text-text-primary">
+              Group Details
+            </h2>
+            <div className="flex flex-col gap-4">
+              <Field label="Group Name" error={errors.name?.message} required>
+                <Input {...register('name')} placeholder="RGB Group" className="max-w-none" />
+              </Field>
+              <Field label="Description" error={errors.description?.message}>
+                <Textarea
+                  {...register('description')}
+                  placeholder="Optional — describe what this group represents"
+                  rows={3}
+                />
+              </Field>
+            </div>
+          </Card>
+
+          <div className="flex items-center gap-3">
+            <Button type="submit" loading={isSubmitting} loadingLabel="Creating">Create Group</Button>
+            <Button type="button" variant="secondary" onClick={() => router.push('/super-admin/groups')} disabled={isSubmitting}>
+              Cancel
+            </Button>
           </div>
-        </Card>
-
-        <div className="flex items-center gap-3">
-          <Button type="submit" variant="primary" isLoading={isSubmitting}>Create Group</Button>
-          <Button type="button" variant="secondary" onClick={() => router.push('/super-admin/groups')} disabled={isSubmitting}>
-            Cancel
-          </Button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   )
 }
