@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { SlidersHorizontal, ChevronDown } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 import {
   FILE_TYPE_GROUPS,
   groupsFromExtensions,
@@ -44,23 +45,7 @@ export default function ProofRequirementField({
   return (
     <div>
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => onProofRequiredChange(!proofRequired)}
-          className={[
-            'relative w-10 h-5 rounded-full transition-colors duration-200',
-            proofRequired ? 'bg-primary' : 'bg-surface-control-pressed',
-          ].join(' ')}
-          role="switch"
-          aria-checked={proofRequired}
-        >
-          <span
-            className={[
-              'absolute top-0.5 left-0.5 w-4 h-4 bg-surface rounded-full shadow-sm transition-transform duration-200',
-              proofRequired ? 'translate-x-5' : 'translate-x-0',
-            ].join(' ')}
-          />
-        </button>
+        <Switch checked={proofRequired} onCheckedChange={onProofRequiredChange} />
         <span className="text-body text-text-primary font-medium">Proof of completion required</span>
 
         {proofRequired && (

@@ -3,6 +3,7 @@
 import React from 'react'
 import { ArrowDown, ArrowUp, CheckSquare } from 'lucide-react'
 import StyledSelect from '@/components/ui/StyledSelect'
+import { Button } from '@/components/ui/button'
 import EmployeePicker, { type EmployeePickerOption } from '@/components/ui/EmployeePicker'
 import TagList from '@/components/tasks/TagList'
 import WorkflowTaskBadge, { taskWorkflow } from '@/components/tasks/WorkflowTaskBadge'
@@ -243,9 +244,9 @@ export default function TaskTable({
       <div className="flex items-center justify-between px-4 py-3 border-t border-border-light bg-surface-sunken">
         <span className="text-meta text-text-secondary"><span className="font-medium text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}</span>
         {hasMore && (
-          <button onClick={onLoadMore} disabled={loadingMore} className="px-4 py-2 rounded-lg border border-border-light bg-surface text-label font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
-            {loadingMore ? 'Loading…' : `Load more (${total - rows.length} left)`}
-          </button>
+          <Button variant="secondary" size="sm" onClick={onLoadMore} loading={loadingMore}>
+            {`Load more (${total - rows.length} left)`}
+          </Button>
         )}
       </div>
     </div>

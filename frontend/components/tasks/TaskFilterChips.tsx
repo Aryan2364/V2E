@@ -4,6 +4,7 @@ import React, { useMemo } from 'react'
 import { X } from 'lucide-react'
 import type { Task, TaskCategory, TaskPriority, TaskStatus } from '@/lib/types/tasks'
 import { type TaskFilters, EMPTY_TASK_FILTERS, isTaskFiltered } from './TaskFilterBar'
+import { Button } from '@/components/ui/button'
 
 interface Chip {
   key: string
@@ -122,13 +123,9 @@ export default function TaskFilterChips({
           </button>
         </span>
       ))}
-      <button
-        type="button"
-        onClick={() => onChange({ ...EMPTY_TASK_FILTERS })}
-        className="text-meta font-medium text-text-secondary hover:text-text-primary px-1.5 py-1 transition-colors"
-      >
+      <Button type="button" variant="secondary" size="sm" onClick={() => onChange({ ...EMPTY_TASK_FILTERS })}>
         Reset
-      </button>
+      </Button>
     </div>
   )
 }
