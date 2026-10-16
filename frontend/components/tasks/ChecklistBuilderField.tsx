@@ -3,6 +3,7 @@
 import React from 'react'
 import { Link2, Plus, Trash2 } from 'lucide-react'
 import StyledSelect from '@/components/ui/StyledSelect'
+import { Button } from '@/components/ui/button'
 
 /**
  * The least a template needs to be offered here. A task's ChecklistTemplate fits, and so
@@ -258,14 +259,10 @@ export default function ChecklistBuilderField({
                     options={templateOptions}
                   />
                 )}
-                <button
-                  type="button"
-                  onClick={addBlankGroup}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-body font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors whitespace-nowrap"
-                >
+                <Button type="button" variant="secondary" className="whitespace-nowrap" onClick={addBlankGroup}>
                   <Plus size={14} />
                   Blank checklist
-                </button>
+                </Button>
               </div>
             </div>
           </>
@@ -302,14 +299,16 @@ export default function ChecklistBuilderField({
                         </span>
                       )}
                       {!readOnly && (
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={() => removeGroup(g.key)}
-                          className="shrink-0 text-text-muted hover:text-danger transition-colors"
+                          className="shrink-0 hover:text-danger"
                           aria-label={`Remove checklist “${g.title.trim() || 'Checklist'}”`}
                         >
                           <Trash2 size={14} />
-                        </button>
+                        </Button>
                       )}
                     </div>
                     {note && <div className="mb-2">{note}</div>}
@@ -320,14 +319,16 @@ export default function ChecklistBuilderField({
                         <div className="w-4 h-4 rounded-xs border border-border shrink-0" />
                         <span className="flex-1 min-w-0 wrap-break-word text-body text-text-primary">{item.title}</span>
                         {!locked && (
-                          <button
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={() => removeItemFromGroup(g.key, idx)}
-                            className="text-text-muted hover:text-danger transition-colors"
+                            className="hover:text-danger"
                             aria-label={`Remove “${item.title}”`}
                           >
                             <Trash2 size={14} />
-                          </button>
+                          </Button>
                         )}
                       </div>
                     ))}
@@ -344,14 +345,10 @@ export default function ChecklistBuilderField({
                         placeholder="Add an item…"
                         className="flex-1 border border-border rounded-lg px-3 py-[8px] text-body sm:text-body text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
                       />
-                      <button
-                        type="button"
-                        onClick={() => addItemToGroup(g.key)}
-                        className="flex items-center gap-1.5 px-3 py-[8px] text-body font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors"
-                      >
+                      <Button type="button" variant="secondary" onClick={() => addItemToGroup(g.key)}>
                         <Plus size={14} />
                         Add
-                      </button>
+                      </Button>
                     </div>
                     )}
                   </div>
@@ -371,14 +368,10 @@ export default function ChecklistBuilderField({
                   options={templateOptions}
                 />
               )}
-              <button
-                type="button"
-                onClick={addBlankGroup}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-body font-medium text-primary-text border border-primary rounded-lg bg-surface hover:bg-primary-subtle transition-colors whitespace-nowrap"
-              >
+              <Button type="button" variant="secondary" className="whitespace-nowrap" onClick={addBlankGroup}>
                 <Plus size={14} />
                 Add checklist
-              </button>
+              </Button>
             </div>
             )}
           </>
