@@ -25,9 +25,9 @@ import ProofOfCompletionCard from '@/components/tasks/ProofOfCompletionCard'
 import StyledSelect from '@/components/ui/StyledSelect'
 import Tooltip from '@/components/ui/tooltip'
 import { AttachmentChips } from '@/components/ui/AttachmentList'
+import { PageHeader } from '@/components/shell/page-header'
 import { formatBytes } from '@/lib/attachments'
 import {
-  ArrowLeft,
   CheckCircle2,
   RotateCcw,
   Trash2,
@@ -907,32 +907,27 @@ export default function TaskDetailPage() {
           This task was created in a simulated future ({fmtDateOnly(task.created_at)}). To interact with it, please time-travel to this date or later.
         </div>
       )}
-      {/* Header — a small, unobtrusive back arrow, then the title; actions on the right */}
-      <div className="flex items-start justify-between gap-4 flex-wrap shrink-0">
-        <div className="flex items-start gap-2 min-w-0 flex-1">
-          <Tooltip label="Back">
-            <button
-              onClick={() => router.back()}
-              aria-label="Back"
-              className="mt-1.5 w-6 h-6 rounded-control flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"
-            >
-              <ArrowLeft size={16} />
-            </button>
-          </Tooltip>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight min-w-0">{task.title}</h1>
-          {/* Edit — a pencil right beside the title */}
-          {canEdit && (
+      {/* Header — breadcrumb + title through PageHeader (no back arrow, section 1.11);
+          the task's many status-dependent action buttons stay in their own row below,
+          since they are not a single "one primary action" PageHeader models. */}
+      <PageHeader
+        title={task.title}
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        actions={
+          canEdit ? (
             <Tooltip label="Edit task">
               <button
                 onClick={() => setShowEditModal(true)}
                 aria-label="Edit task"
-                className="mt-1.5 w-7 h-7 rounded-control flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors shrink-0"
+                className="w-7 h-7 rounded-control flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors shrink-0"
               >
                 <Pencil size={16} />
               </button>
             </Tooltip>
-          )}
-        </div>
+          ) : undefined
+        }
+      />
+      <div className="flex items-start justify-end gap-4 flex-wrap shrink-0 -mt-4">
         <div className="flex items-start gap-2 shrink-0">
           <div className="flex flex-col items-end gap-1.5">
           <div className="flex items-center gap-2">
