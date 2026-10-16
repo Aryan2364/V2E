@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth/context'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { useLayout } from '@/lib/layout'
 import PhoneShell from '@/components/phone/PhoneShell'
+import { ProgressBar, ProgressProvider } from '@/components/shell/progress-bar'
 import TopNav from './TopNav'
 
 // Route prefix → entitlement module (longest match wins). Mirrors the top nav.
@@ -41,7 +42,7 @@ function ModuleDisabled({ label }: { label: string }) {
       <div className="w-14 h-14 rounded-[16px] bg-danger-bg flex items-center justify-center text-danger">
         <Lock size={24} />
       </div>
-      <h2 className="text-[18px] font-semibold text-text-primary">{label} isn’t enabled</h2>
+      <h2 className="text-card-heading font-medium text-text-primary">{label} isn’t enabled</h2>
       <p className="text-sm text-text-secondary max-w-sm">
         The {label} module is not part of your organization’s plan. Contact your administrator if you
         think this is a mistake.
@@ -94,18 +95,21 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const preview = current && !entLoading && state(current.module) === 'preview'
 
   return (
-    <div className="min-h-screen bg-surface-sunken">
-      <TopNav />
-      <div className="pt-14">
-        {blocked ? (
-          <ModuleDisabled label={current!.label} />
-        ) : (
-          <>
-            {preview && <PreviewNotice label={current!.label} />}
-            {children}
-          </>
-        )}
+    <ProgressProvider>
+      <div className="min-h-screen bg-surface-sunken">
+        <TopNav />
+        <ProgressBar className="fixed top-14 left-0 right-0" />
+        <div className="pt-14">
+          {blocked ? (
+            <ModuleDisabled label={current!.label} />
+          ) : (
+            <>
+              {preview && <PreviewNotice label={current!.label} />}
+              {children}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </ProgressProvider>
   )
 }

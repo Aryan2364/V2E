@@ -22,13 +22,11 @@ import {
   GitBranch,
   Ticket,
   Briefcase,
-  ChevronLeft,
-  ChevronRight,
   Eye,
   ArrowRightLeft,
   CalendarCheck,
 } from 'lucide-react'
-import Tooltip from '@/components/ui/tooltip'
+import ModuleSidebar, { type ModuleSidebarGroup } from './ModuleSidebar'
 
 interface NavItem {
   label: string
@@ -149,10 +147,6 @@ export default function TaskModuleSidebar() {
   const { user } = useAuth()
   const { can, isAdmin } = usePermissions()
   const { entitlements } = useEntitlements()
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.localStorage.getItem(COLLAPSE_KEY) === '1'
-  })
 
   // "Collective" (cross-firm) tasks only make sense for a person who belongs to
   // a group of companies — i.e. has 2+ active org memberships. For a single
@@ -205,14 +199,6 @@ export default function TaskModuleSidebar() {
   // by loosening this alongside re-enabling the incoming view in the page.)
   const canDelegate = isAdmin || can('delegation.delegation.manage', 'write')
 
-  function toggleCollapsed() {
-    setCollapsed((c) => {
-      const next = !c
-      try { window.localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0') } catch { /* ignore */ }
-      return next
-    })
-  }
-
   function isActive(href: string): boolean {
     if (href === '/dashboard/tasks') return pathname === '/dashboard/tasks'
     if (href === '/dashboard/projects') {
@@ -230,120 +216,33 @@ export default function TaskModuleSidebar() {
     return !ALL_HREFS.some((h) => h.length > href.length && h.startsWith(href + '/') && matches(h))
   }
 
-  return (
-    <aside
-      className={[
-        'sticky top-14 h-[calc(100vh-56px)] bg-[#0F172A] flex flex-col shrink-0 z-30',
-        'transition-[width] duration-200 ease-in-out overflow-hidden',
-        // Always an icon rail below md; respects the collapse toggle from md up.
-        collapsed ? 'w-16' : 'w-16 md:w-[240px]',
-      ].join(' ')}
-    >
-      {/* Header row with toggle — desktop only (mobile uses the icon rail) */}
-      <div className="hidden md:flex h-12 items-center border-b border-white/10 shrink-0 px-2">
-        <span
-          className={[
-            'flex-1 px-2 text-xs font-semibold text-text-muted uppercase tracking-widest whitespace-nowrap',
-            collapsed ? 'hidden' : 'block',
-          ].join(' ')}
-        >
-          Work
-        </span>
-        <Tooltip label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
-          <button
-            onClick={toggleCollapsed}
-            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-text-muted hover:text-white hover:bg-[#1E293B] transition-colors shrink-0"
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
-        </Tooltip>
-      </div>
+  const groups: ModuleSidebarGroup[] = []
+  for (const group of NAV_GROUPS) {
+    const entitlementState = entitlements?.[group.module]
+    if (group.module && !entitlements) continue
+    if (entitlementState === 'off') continue
+    if (group.module === 'delegation' && !canDelegate) continue
+    const visibleItems = group.items.filter((item) => {
+      if (item.taskConfigGated) return canSeeMasters
+      if (item.multiOrgOnly && !multiOrg) return false
+      if (item.leaveApproverOnly) return leaveApprover === true
+      return !(item.adminOnly && !isAdminOrHR)
+    })
+    if (visibleItems.length === 0) continue
+    groups.push({
+      label: group.label,
+      note: entitlementState === 'preview' ? 'Read only' : undefined,
+      items: visibleItems.map((item) => ({
+        key: item.href,
+        label: item.label,
+        href: item.href,
+        Icon: item.Icon,
+        active: isActive(item.href),
+        disabled: item.disabled,
+        disabledLabel: item.disabled ? `${item.label} — coming soon` : undefined,
+      })),
+    })
+  }
 
-      {/* Nav groups */}
-      <nav className="sidebar-scroll flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-0.5">
-        {NAV_GROUPS.map((group, gi) => {
-          const entitlementState = entitlements?.[group.module]
-          // Fail closed: hide an entitlement-gated group until its ceiling loads,
-          // rather than flashing a module the org may not have bought.
-          if (group.module && !entitlements) return null
-          if (entitlementState === 'off') return null
-          // Delegation section is visible only to people who can delegate (its
-          // recipient view is currently hidden — see canDelegate above).
-          if (group.module === 'delegation' && !canDelegate) return null
-          const visibleItems = group.items.filter((item) => {
-            if (item.taskConfigGated) return canSeeMasters
-            if (item.multiOrgOnly && !multiOrg) return false
-            if (item.leaveApproverOnly) return leaveApprover === true
-            return !(item.adminOnly && !isAdminOrHR)
-          })
-          if (visibleItems.length === 0) return null
-
-          return (
-            <React.Fragment key={gi}>
-              {gi > 0 && (
-                <div className={['my-1 h-px bg-white/10', collapsed ? 'mx-1' : 'mx-1 md:mx-2'].join(' ')} />
-              )}
-              {group.label && (
-                <p
-                  className={[
-                    'px-3 pt-1 pb-0.5 text-[10px] font-semibold text-text-secondary uppercase tracking-widest',
-                    collapsed ? 'hidden' : 'hidden md:block',
-                  ].join(' ')}
-                >
-                  {group.label}
-                  {entitlementState === 'preview' && (
-                    <span className="ml-2 normal-case tracking-normal text-[9px] text-text-secondary">Read only</span>
-                  )}
-                </p>
-              )}
-              {visibleItems.map((item) => {
-                if (item.disabled) {
-                  return (
-                    <Tooltip key={item.href} label={collapsed ? item.label : undefined}>
-                    <span
-                      className={[
-                        'flex items-center rounded-[8px] py-2.5 text-sm font-medium text-text-secondary cursor-not-allowed',
-                        collapsed ? 'justify-center px-2' : 'justify-center px-2 md:justify-start md:gap-3 md:px-3',
-                      ].join(' ')}
-                    >
-                      <item.Icon size={18} className="shrink-0" />
-                      {!collapsed && (
-                        <>
-                          <span className="hidden md:inline">{item.label}</span>
-                          <span className="ml-auto hidden md:block text-[9px] font-semibold text-text-secondary bg-[#1E293B] px-1.5 py-0.5 rounded-xs">
-                            Soon
-                          </span>
-                        </>
-                      )}
-                    </span>
-                    </Tooltip>
-                  )
-                }
-
-                const active = isActive(item.href)
-                return (
-                  <Tooltip key={item.href} label={collapsed ? item.label : undefined}>
-                  <Link
-                    href={item.href}
-                    className={[
-                      'flex items-center rounded-[8px] py-2.5 text-sm font-medium transition-colors duration-150 whitespace-nowrap',
-                      collapsed ? 'justify-center px-2' : 'justify-center px-2 md:justify-start md:gap-3 md:px-3',
-                      active
-                        ? 'bg-primary text-white'
-                        : 'text-[#CBD5E1] hover:bg-[#1E293B] hover:text-[#F1F5F9]',
-                    ].join(' ')}
-                  >
-                    <item.Icon size={18} className="shrink-0" />
-                    {!collapsed && <span className="hidden md:inline">{item.label}</span>}
-                  </Link>
-                  </Tooltip>
-                )
-              })}
-            </React.Fragment>
-          )
-        })}
-      </nav>
-    </aside>
-  )
+  return <ModuleSidebar title="Work" collapseKey={COLLAPSE_KEY} groups={groups} />
 }

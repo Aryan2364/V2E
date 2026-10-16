@@ -43,7 +43,7 @@ export default function DashboardLayout({
       {/* Mobile drawer backdrop */}
       {drawerOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/30 z-40"
+          className="md:hidden fixed inset-0 bg-black/30 z-shell"
           onClick={() => setDrawerOpen(false)}
           aria-hidden="true"
         />
@@ -51,7 +51,7 @@ export default function DashboardLayout({
 
       <main className="ml-0 md:ml-[240px] min-h-screen flex flex-col">
         {/* Mobile top bar with hamburger — sidebar is off-canvas below md */}
-        <div className="md:hidden sticky top-0 z-30 flex items-center gap-2 h-14 px-4 bg-white border-b border-border-light">
+        <div className="md:hidden sticky top-0 z-sticky flex items-center gap-2 h-14 px-4 bg-surface border-b border-border-light">
           <button
             onClick={() => setDrawerOpen((v) => !v)}
             aria-label="Toggle navigation menu"
@@ -60,12 +60,12 @@ export default function DashboardLayout({
           >
             {drawerOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
-          <span className="text-text-primary font-bold text-lg tracking-tight select-none">V2E</span>
+          <span className="text-text-primary font-medium text-[18px] tracking-tight select-none">V2E</span>
         </div>
 
         {title && (
           <header className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-4">
-            <h1 className="text-[22px] md:text-[28px] font-bold text-text-primary leading-tight">
+            <h1 className="text-page-title font-medium text-text-primary leading-tight">
               {title}
             </h1>
             {subtitle && (

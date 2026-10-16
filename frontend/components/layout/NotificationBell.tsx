@@ -121,11 +121,11 @@ export default function NotificationBell() {
         <button
           onClick={openPanel}
           aria-label="Notifications"
-          className="relative w-10 h-10 rounded-[8px] flex items-center justify-center text-white hover:bg-white/15 transition-colors"
+          className="relative w-10 h-10 rounded-[8px] flex items-center justify-center text-on-brand hover:bg-on-brand-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-on-brand transition-[background-color] duration-fast"
         >
           {unreadCount > 0 ? <BellRing size={18} /> : <Bell size={18} />}
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-danger text-white text-[11px] font-bold flex items-center justify-center border-2 border-white tabular-nums">
+            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-danger text-primary-foreground text-meta font-medium flex items-center justify-center border-2 border-primary tabular-nums">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
@@ -133,16 +133,16 @@ export default function NotificationBell() {
       </Tooltip>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] w-[calc(100vw-1.5rem)] max-w-[380px] bg-white rounded-[10px] border border-border-light shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden z-50">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border-light">
-            <p className="text-sm font-semibold text-text-primary">Notifications</p>
+        <div className="absolute right-0 top-[calc(100%+8px)] w-[360px] max-w-[calc(100vw-1.5rem)] bg-surface rounded-[12px] border border-border-light shadow-menu overflow-hidden z-popover">
+          {/* Header — section 36 band */}
+          <div className="flex items-center justify-between px-4 py-3 bg-primary">
+            <p className="text-body font-medium text-on-brand">Notifications</p>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllRead()}
-                className="flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text"
+                className="flex items-center gap-1 text-label font-medium text-on-brand hover:text-on-brand-muted"
               >
-                <CheckCheck size={13} /> Mark all read
+                <CheckCheck size={13} /> Mark all as read
               </button>
             )}
           </div>
@@ -151,8 +151,8 @@ export default function NotificationBell() {
           <div className="max-h-[min(380px,70vh)] overflow-y-auto">
             {latest.length === 0 ? (
               <div className="py-10 text-center">
-                <Bell size={22} className="mx-auto text-[#CBD5E1] mb-2" />
-                <p className="text-sm text-text-muted">No notifications yet</p>
+                <Bell size={22} className="mx-auto text-text-muted mb-2" />
+                <p className="text-body text-text-muted">You are all caught up.</p>
               </div>
             ) : (
               latest.map((n) => (
@@ -174,10 +174,10 @@ export default function NotificationBell() {
                         </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-[13px] font-semibold text-text-primary truncate">{n.title}</p>
+                            <p className="text-label font-medium text-text-primary truncate">{n.title}</p>
                             {!n.is_read && <span className="w-2 h-2 rounded-full bg-primary shrink-0" />}
                             <span
-                              className={`ml-auto shrink-0 inline-flex rounded-[999px] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${MODULE_COLORS[n.module] ?? MODULE_COLORS.system}`}
+                              className={`ml-auto shrink-0 inline-flex rounded-[999px] px-1.5 py-0.5 text-meta font-medium uppercase tracking-wide ${MODULE_COLORS[n.module] ?? MODULE_COLORS.system}`}
                             >
                               {n.module}
                             </span>

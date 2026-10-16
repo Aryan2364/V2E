@@ -181,3 +181,16 @@ npx next build
   the coordinating agent. Commits adbb1b0 (case-collision primitives),
   bbfdfc9 (remaining components/ui + lib ports), 3114466 (page-header,
   kitchen sink, permission-tooltip adapter, ADAPTERS.md).
+- 16 Oct 2026: P4 done (application shell). New `components/layout/ModuleSidebar.tsx`
+  is the single sidebar implementation (§4 rule 2) feeding Task/Governance/Goals/Settings
+  sidebars and restyled with kit tokens (bg-primary, on-brand text, surface+primary-text
+  active item, z-shell, duration-fast/slow, Count badge). `Sidebar.tsx` (firm/super-admin
+  shell), `TopNav.tsx`, `NotificationBell.tsx`, `DashboardLayout.tsx`, `MainLayout.tsx`
+  had every remaining hex/rgba, font-semibold/bold and ad-hoc z-index removed. Nav shape
+  (top nav + module sidebar) kept per D4, restyled not restructured. Notification panel
+  restyled to §7.4's shape (360px, band header, "Mark all as read", "You are all caught
+  up", "View all") on v2e's existing data hooks; still custom markup rather than
+  `popover.tsx` — logged in REVIEW-kit-alignment.md. ProgressProvider/ProgressBar (P3's
+  documented no-op shim) mounted once in MainLayout. Phone shell untouched and still
+  short-circuits before any desktop markup. `npx tsc --noEmit` and the hex/font-weight
+  greps clean for components/layout and components/shell.

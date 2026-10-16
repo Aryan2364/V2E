@@ -175,20 +175,20 @@ export default function TopNav() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-14 bg-primary border-b border-primary-hover flex items-center z-50">
+    <header className="fixed top-0 left-0 right-0 h-14 bg-primary border-b border-primary-hover flex items-center z-shell">
       {/* Hamburger — only below lg, where the horizontal nav is collapsed */}
       <button
         onClick={() => setDrawerOpen((v) => !v)}
         aria-label="Toggle navigation menu"
         aria-expanded={drawerOpen}
-        className="lg:hidden shrink-0 ml-2 w-11 h-11 flex items-center justify-center rounded-[8px] text-white hover:bg-white/15 transition-colors"
+        className="lg:hidden shrink-0 ml-2 w-11 h-11 flex items-center justify-center rounded-[8px] text-on-brand hover:bg-on-brand-hover transition-[background-color] duration-fast"
       >
         {drawerOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       {/* Brand */}
       <Link href="/dashboard" className="shrink-0 px-3 sm:px-4 lg:pl-5 lg:pr-3">
-        <span className="text-white font-bold text-lg tracking-tight select-none">V2E</span>
+        <span className="text-on-brand font-medium text-[18px] tracking-tight select-none">V2E</span>
       </Link>
 
       {/* Nav tabs — the horizontal bar; collapses into the drawer below lg. */}
@@ -204,18 +204,18 @@ export default function TopNav() {
                 // reads at a glance on the blue bar: a tinted full-height segment, a bolder
                 // label, and the underline below. Inactive tabs get a lighter hover tint so
                 // they still give feedback now that the text colour no longer changes.
-                'relative px-2.5 xl:px-3 2xl:px-4 flex items-center gap-1.5 text-[13px] 2xl:text-sm whitespace-nowrap text-white transition-colors duration-150',
-                active ? 'font-semibold bg-white/15' : 'font-medium hover:bg-white/10',
+                'relative px-2.5 xl:px-3 2xl:px-4 flex items-center gap-1.5 text-[13px] 2xl:text-sm whitespace-nowrap text-on-brand transition-[background-color] duration-fast',
+                active ? 'font-medium bg-on-brand-hover' : 'font-normal hover:bg-on-brand-hover',
               ].join(' ')}
             >
               {item.label}
               {isPreview(item.module) && (
-                <span className="rounded-[999px] bg-warning-bg text-warning border border-warning-border text-[10px] font-semibold px-1.5 py-px leading-none">
+                <span className="rounded-[999px] bg-warning-bg text-warning border border-warning-border text-meta font-medium px-1.5 py-px leading-none">
                   Preview
                 </span>
               )}
               {active && (
-                <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-white rounded-t-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-on-brand rounded-t-full" />
               )}
             </Link>
           )
@@ -240,10 +240,10 @@ export default function TopNav() {
                 href="/settings"
                 aria-label="Settings"
                 className={[
-                  'w-10 h-10 flex items-center justify-center rounded-[8px] transition-colors relative z-50',
+                  'w-10 h-10 flex items-center justify-center rounded-[8px] transition-colors relative z-popover',
                   isActive('/settings')
-                    ? 'text-white bg-white/20'
-                    : 'text-white hover:bg-white/15',
+                    ? 'text-on-brand bg-on-brand-hover'
+                    : 'text-on-brand hover:bg-on-brand-hover',
                 ].join(' ')}
               >
                 <Settings size={19} />
@@ -255,12 +255,12 @@ export default function TopNav() {
 
             {/* Onboarding Spotlight Popover */}
             {showSpotlight && (
-              <div className="absolute right-0 mt-3 w-80 bg-white border border-border-light rounded-[12px] shadow-[0_10px_25px_rgba(0,0,0,0.1)] p-5 z-9999 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute right-0 mt-3 w-80 bg-surface border border-border-light rounded-[12px] shadow-menu p-5 z-popover animate-in fade-in slide-in-from-top-2 duration-200">
                 {/* Arrow pointer */}
-                <div className="absolute right-3.5 -top-1.5 w-3 h-3 bg-white border-t border-l border-border-light rotate-45" />
+                <div className="absolute right-3.5 -top-1.5 w-3 h-3 bg-surface border-t border-l border-border-light rotate-45" />
 
                 <div className="flex flex-col gap-2">
-                  <p className="text-sm font-semibold text-text-primary">Configure Workspace</p>
+                  <p className="text-body font-medium text-text-primary">Configure Workspace</p>
                   <p className="text-xs text-text-secondary leading-relaxed">
                     Welcome, <span className="font-medium text-text-primary">{user?.name ? user.name.split(' ')[0] : 'Admin'}</span>! Let&apos;s get your workspace configured. Click the Settings icon to define your vision, departments, and add employees.
                   </p>
@@ -275,7 +275,7 @@ export default function TopNav() {
                     <Link
                       href="/settings/organization/company"
                       onClick={handleDismiss}
-                      className="text-xs font-semibold text-white bg-primary hover:bg-primary-hover px-3.5 py-1.5 rounded-[6px] transition-colors"
+                      className="text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover px-3.5 py-1.5 rounded-[6px] transition-colors"
                     >
                       Start Setup
                     </Link>
@@ -298,14 +298,14 @@ export default function TopNav() {
                 onClick={() => setOpen((v) => !v)}
                 aria-label={`Account menu — ${identityLine}`}
                 aria-expanded={open}
-                className="flex items-center gap-1 rounded-[8px] pl-1 pr-0.5 py-1 hover:bg-white/15 transition-colors"
+                className="flex items-center gap-1 rounded-[8px] pl-1 pr-0.5 py-1 hover:bg-on-brand-hover transition-[background-color] duration-fast"
               >
-                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary-text text-xs font-bold shrink-0">
+                <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center text-primary-text text-label font-medium shrink-0">
                   {initials}
                 </div>
                 <ChevronDown
                   size={14}
-                  className={`text-white shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
+                  className={`text-on-brand shrink-0 transition-transform duration-fast ${open ? 'rotate-180' : ''}`}
                 />
               </button>
             </Tooltip>
@@ -314,7 +314,7 @@ export default function TopNav() {
                 even over elements (e.g. the ReactFlow canvas) that swallow mousedown. */}
             {open && (
               <div
-                className="fixed inset-0 z-40"
+                className="fixed inset-0 z-shell"
                 aria-hidden="true"
                 onClick={() => setOpen(false)}
               />
@@ -322,20 +322,20 @@ export default function TopNav() {
 
             {/* Dropdown */}
             {open && (
-              <div className="absolute right-0 top-[calc(100%+6px)] w-80 bg-white rounded-[10px] border border-border-light shadow-lg overflow-hidden z-50">
+              <div className="absolute right-0 top-[calc(100%+6px)] w-80 bg-surface rounded-[10px] border border-border-light shadow-menu overflow-hidden z-popover">
                 {/* User identity. Organization + role for a firm user live in the
                     "Current Organization" block below (kept parallel with the Switch To
                     rows), so they aren't repeated here — except for a super admin, whose
                     org block is hidden and would otherwise never show a role. */}
                 <div className="flex items-center gap-3 px-4 py-3 border-b border-border-light">
-                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-label font-medium shrink-0">
                     {initials}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-text-primary truncate">{user.name}</p>
+                    <p className="text-body font-medium text-text-primary truncate">{user.name}</p>
                     <p className="text-xs text-text-secondary truncate">{user.email}</p>
                     {user.isSuperAdmin && (
-                      <span className="inline-block mt-1 rounded-[999px] bg-primary-subtle text-primary-text text-[10px] font-semibold px-2 py-px leading-[16px]">
+                      <span className="inline-block mt-1 rounded-[999px] bg-primary-subtle text-primary-text text-meta font-medium px-2 py-px leading-[16px]">
                         {roleLabel}
                       </span>
                     )}
@@ -361,7 +361,7 @@ export default function TopNav() {
                   <>
                     {/* Current org */}
                     <div className="px-4 pt-3 pb-1">
-                      <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5">
+                      <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1.5">
                         Current Organization
                       </p>
                       {orgs === null ? (
@@ -405,7 +405,7 @@ export default function TopNav() {
                     {/* Other orgs */}
                     {otherOrgs.length > 0 && (
                       <div className="px-4 pt-2 pb-1 border-t border-border-light mt-1">
-                        <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5">
+                        <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1.5">
                           Switch To
                         </p>
                         {otherOrgs.map((m) => {
@@ -460,11 +460,11 @@ export default function TopNav() {
         <>
           {/* Backdrop */}
           <div
-            className="lg:hidden fixed inset-0 top-14 bg-black/30 z-40"
+            className="lg:hidden fixed inset-0 top-14 bg-black/30 z-shell"
             onClick={() => setDrawerOpen(false)}
           />
           {/* Panel */}
-          <nav className="lg:hidden absolute top-14 left-0 right-0 bg-white border-b border-border-light shadow-lg z-50 py-2 max-h-[calc(100vh-3.5rem)] overflow-y-auto">
+          <nav className="lg:hidden absolute top-14 left-0 right-0 bg-surface border-b border-border-light shadow-menu z-popover py-2 max-h-[calc(100vh-3.5rem)] overflow-y-auto">
             {visibleNav.map((item) => {
               const active = isActive(item.href)
               return (
@@ -481,7 +481,7 @@ export default function TopNav() {
                 >
                   {item.label}
                   {isPreview(item.module) && (
-                    <span className="rounded-[999px] bg-warning-bg text-warning border border-warning-border text-[10px] font-semibold px-1.5 py-px leading-none">
+                    <span className="rounded-[999px] bg-warning-bg text-warning border border-warning-border text-meta font-medium px-1.5 py-px leading-none">
                       Preview
                     </span>
                   )}
