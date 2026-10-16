@@ -74,7 +74,7 @@ function ToastItem({
       <span className="flex-1 leading-snug">{toast.message}</span>
       <button
         onClick={() => onRemove(toast.id)}
-        className="shrink-0 text-white/80 hover:text-white transition-colors focus:outline-none"
+        className="shrink-0 text-white/80 hover:text-white transition-colors focus:outline-hidden"
         aria-label="Dismiss notification"
       >
         <X size={16} aria-hidden="true" />
@@ -106,7 +106,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div
         aria-label="Notifications"
         data-slot="toast-region"
-        className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"
+        className="fixed top-4 right-4 z-9999 flex flex-col gap-2 pointer-events-none"
       >
         {toasts.map((toast) => (
           <div key={toast.id} className="pointer-events-auto">

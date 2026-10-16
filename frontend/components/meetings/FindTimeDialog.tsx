@@ -170,7 +170,7 @@ export default function FindTimeDialog({
   if (!mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] bg-white flex flex-col">
+    <div className="fixed inset-0 z-70 bg-white flex flex-col">
       <div className="w-full flex-1 min-h-0 bg-white flex flex-col overflow-hidden">
         {/* header */}
         <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E2E8F0]">

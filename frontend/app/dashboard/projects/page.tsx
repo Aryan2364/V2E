@@ -105,13 +105,13 @@ export default function ProjectsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search projects..."
-            className="w-full h-9 pl-8 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none"
+            className="w-full h-9 pl-8 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as 'all' | ProjectStatus)}
-          className="h-9 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] bg-white focus:border-[#2563EB] focus:outline-none"
+          className="h-9 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] bg-white focus:border-[#2563EB] focus:outline-hidden"
         >
           {STATUS_OPTS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>

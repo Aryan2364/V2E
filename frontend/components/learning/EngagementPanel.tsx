@@ -112,7 +112,7 @@ export default function EngagementPanel({ orgId, pathId }: { orgId: string; path
             >
               <span
                 className={[
-                  'w-3 h-3 rounded-sm',
+                  'w-3 h-3 rounded-xs',
                   it.completed ? 'bg-[#16A34A]' : it.viewed ? 'bg-[#2563EB]' : 'bg-[#E2E8F0]',
                 ].join(' ')}
               />
@@ -135,9 +135,9 @@ export default function EngagementPanel({ orgId, pathId }: { orgId: string; path
 
       {/* Legend */}
       <div className="flex items-center gap-4 text-xs text-[#64748B]">
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-[#16A34A]" /> Completed</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-[#2563EB]" /> Opened</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-[#E2E8F0]" /> Not opened</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-xs bg-[#16A34A]" /> Completed</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-xs bg-[#2563EB]" /> Opened</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-xs bg-[#E2E8F0]" /> Not opened</span>
       </div>
 
       <div>

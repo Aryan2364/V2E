@@ -804,7 +804,7 @@ export default function TasksOverviewPage() {
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
           <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search tasks…"
-            className="w-full rounded-[8px] border border-[#CBD5E1] bg-white pl-9 pr-3 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]" />
+            className="w-full rounded-[8px] border border-[#CBD5E1] bg-white pl-9 pr-3 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]" />
         </div>
         <button onClick={() => setShowFilters((v) => !v)}
           className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-[8px] border text-sm font-medium transition-colors ${showFilters || filtersActive ? 'border-[#2563EB] text-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9]'}`}>
@@ -951,7 +951,7 @@ export default function TasksOverviewPage() {
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
           <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search tasks…"
-            className="w-full rounded-[8px] border border-[#CBD5E1] bg-white pl-9 pr-3 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]" />
+            className="w-full rounded-[8px] border border-[#CBD5E1] bg-white pl-9 pr-3 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]" />
         </div>
         <button onClick={exportCsv} disabled={exporting}
           className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-[8px] border border-[#E2E8F0] text-sm font-medium text-[#475569] hover:bg-[#F1F5F9] disabled:opacity-60 transition-colors">

@@ -327,7 +327,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
           {narrow ? '' : `${plural(steps.length, 'step')} · `}Editors: {namesSummary(editors, 3)} · Updated {fmtDate(w.updated_at)}
         </span>
       </div>
-      <p className="mt-1.5 text-[13px] text-[#334155] break-words">
+      <p className="mt-1.5 text-[13px] text-[#334155] wrap-break-word">
         <span className="font-medium text-[#0F172A]">Starts:</span> {startsSummary(w, noStarters ? 'no one can start it yet' : undefined)}
         {w.next_run_at ? (
           <>
@@ -350,7 +350,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
         <WorkflowBreadcrumb trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }, { label: w.name }]} />
         <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:break-words">{w.name}</h1>
+            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{w.name}</h1>
             {!narrow && <div className="mt-1.5">{meta}</div>}
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -412,7 +412,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
                   role="tab"
                   aria-selected={view === v}
                   onClick={() => setView(v)}
-                  className={`inline-flex items-center gap-1.5 px-3 min-h-[44px] sm:min-h-[32px] rounded-[6px] text-[13px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
+                  className={`inline-flex items-center gap-1.5 px-3 min-h-[44px] sm:min-h-[32px] rounded-[6px] text-[13px] font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
                     view === v ? 'bg-[#EFF6FF] text-[#1D4ED8]' : 'text-[#334155] hover:bg-[#F1F5F9]'
                   }`}
                 >
@@ -466,7 +466,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
                           </span>
                           <div className="min-w-0 flex-1">
                             <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                              <span className="text-[15px] font-semibold text-[#0F172A] break-words min-w-0">{s.title || 'Untitled step'}</span>
+                              <span className="text-[15px] font-semibold text-[#0F172A] wrap-break-word min-w-0">{s.title || 'Untitled step'}</span>
                               <CompletionChip mode={s.completion_mode} count={names.length} />
                             </p>
                             <p className="text-[13px] text-[#334155]">
@@ -533,7 +533,7 @@ export default function WorkflowOverview({ id }: { id: string }) {
                 aria-selected={active}
                 type="button"
                 onClick={() => setFilter(f.value)}
-                className={`inline-flex items-center gap-2 px-3 min-h-[44px] sm:min-h-[36px] rounded-[8px] text-[13px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
+                className={`inline-flex items-center gap-2 px-3 min-h-[44px] sm:min-h-[36px] rounded-[8px] text-[13px] font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
                   active ? 'bg-[#2563EB] text-white' : 'bg-white text-[#334155] border border-[#CBD5E1] hover:border-[#2563EB] hover:text-[#2563EB]'
                 }`}
               >
@@ -618,7 +618,7 @@ function Description({ text }: { text: string }) {
   return (
     <div className="mt-1.5 max-w-4xl">
       <p
-        className={`text-[14px] text-[#1E293B] whitespace-pre-wrap break-words ${
+        className={`text-[14px] text-[#1E293B] whitespace-pre-wrap wrap-break-word ${
           long && !open ? 'line-clamp-2' : open ? 'max-h-[30vh] overflow-y-auto' : ''
         }`}
       >
@@ -629,7 +629,7 @@ function Description({ text }: { text: string }) {
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
-          className="mt-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 text-[13px] font-semibold text-[#2563EB] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded"
+          className="mt-0.5 inline-flex items-center min-h-[44px] sm:min-h-0 text-[13px] font-semibold text-[#2563EB] hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-xs"
         >
           {open ? 'Show less' : 'Show more'}
         </button>
@@ -673,7 +673,7 @@ function MyInstancesView({
         <WorkflowBreadcrumb trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }, { label: name }]} />
         <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:break-words">{name}</h1>
+            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{name}</h1>
             {workflow && (
               <div className="mt-1.5">
                 <TemplateStatusBadge status={workflow.status} />

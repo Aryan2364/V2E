@@ -47,7 +47,7 @@ export default function GoalProjectsSection({
   const hidden = goal.hidden_project_count ?? 0
 
   return (
-    <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] flex flex-col max-h-[420px]">
+    <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card flex flex-col max-h-[420px]">
       <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-[#F1F5F9] shrink-0">
         <div>
           <div className="flex items-center gap-2">

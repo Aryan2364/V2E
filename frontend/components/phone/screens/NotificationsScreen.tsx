@@ -300,7 +300,7 @@ export default function NotificationsScreen({ title }: { title: string }) {
       </div>
 
       <PhoneSheet open={menuOpen} onOpenChange={setMenuOpen} title="Notifications">
-        <ul className="-mx-[16px]">
+        <ul className="mx-[-16px]">
           <li>
             <button
               type="button"
@@ -396,7 +396,7 @@ function NotificationRow({
           type="button"
           aria-label={n.is_read ? 'Mark as unread' : 'Mark as read'}
           onClick={() => onToggleRead(n)}
-          className="flex w-[44px] shrink-0 justify-center pt-[19px] outline-none active:bg-phone-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
+          className="flex w-[44px] shrink-0 justify-center pt-[19px] outline-hidden active:bg-phone-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
         >
           {n.is_read ? (
             <span className="size-[10px] rounded-full border-2 border-phone-border" />
@@ -407,7 +407,7 @@ function NotificationRow({
         <button
           type="button"
           onClick={() => onOpen(n)}
-          className="min-w-0 flex-1 py-[12px] pr-[16px] text-left outline-none transition-[background-color] duration-[var(--duration-fast)] active:bg-phone-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
+          className="min-w-0 flex-1 py-[12px] pr-[16px] text-left outline-hidden transition-[background-color] duration-(--duration-fast) active:bg-phone-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
         >
           <span
             className={cx(
@@ -434,8 +434,8 @@ function SkeletonRows({ count = 8 }: { count?: number }) {
         <li key={i} className="flex min-h-[64px] items-start gap-[12px] px-[16px] py-[14px]">
           <span className="mt-[4px] size-[10px] shrink-0 rounded-full bg-phone-surface-control-pressed" />
           <span className="flex flex-1 flex-col gap-[8px]">
-            <span className="h-[14px] w-3/4 animate-pulse rounded bg-phone-surface-control-pressed" />
-            <span className="h-[12px] w-1/2 animate-pulse rounded bg-phone-surface-control" />
+            <span className="h-[14px] w-3/4 animate-pulse rounded-xs bg-phone-surface-control-pressed" />
+            <span className="h-[12px] w-1/2 animate-pulse rounded-xs bg-phone-surface-control" />
           </span>
         </li>
       ))}

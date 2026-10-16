@@ -9,7 +9,7 @@ import type { WorkLogDemand, WorkLogSubmission } from '@/lib/types/workLogs'
 
 const cardCls = 'bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
 const inputCls =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none'
+  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden'
 
 function freqLabel(d: WorkLogDemand): string {
   if (d.kind === 'one_time') return d.deadline ? `One-time · due ${new Date(d.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}` : 'One-time'

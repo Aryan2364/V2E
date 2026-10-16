@@ -123,7 +123,7 @@ export default function TimeTravelBar() {
     hour12: true,
   })
 
-  const inputCls = 'w-full px-2.5 py-2 rounded-[8px] border border-[#CBD5E1] text-base sm:text-sm text-[#0F172A] bg-white focus:border-2 focus:border-[#2563EB] focus:outline-none'
+  const inputCls = 'w-full px-2.5 py-2 rounded-[8px] border border-[#CBD5E1] text-base sm:text-sm text-[#0F172A] bg-white focus:border-2 focus:border-[#2563EB] focus:outline-hidden'
   const arrowCls = 'shrink-0 w-9 h-9 flex items-center justify-center rounded-[8px] bg-white border border-[#FBBF24] text-[#92400E] hover:bg-[#FFFBEB] transition-colors'
 
   return (

@@ -612,7 +612,7 @@ function Inner({
           nodeColor={(n) => (n.type === 'swimlane' ? 'transparent' : '#2563EB')}
           nodeStrokeColor={(n) => (n.type === 'swimlane' ? 'transparent' : '#2563EB')}
           maskColor="rgba(15,23,42,0.05)" pannable zoomable
-          className="!hidden sm:!block" style={{ width: 180, height: 120 }} />
+          className="hidden! sm:block!" style={{ width: 180, height: 120 }} />
       )}
 
       {/* Selection action bar — appears once 2+ nodes are box-selected (edit only). Sits
@@ -650,7 +650,7 @@ function Inner({
           {!swimlane && topAreas.length > 0 && (
             <Tooltip label={anyExpanded ? 'Collapse all areas' : 'Unfold all areas in place'}>
               <button onClick={toggleAll} aria-pressed={anyExpanded}
-                className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium rounded-[8px] border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 ${anyExpanded ? 'bg-[#EFF6FF] border-[#2563EB] text-[#2563EB]' : 'bg-white border-[#E2E8F0] text-[#475569] hover:text-[#0F172A] hover:border-[#CBD5E1]'}`}>
+                className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium rounded-[8px] border shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 ${anyExpanded ? 'bg-[#EFF6FF] border-[#2563EB] text-[#2563EB]' : 'bg-white border-[#E2E8F0] text-[#475569] hover:text-[#0F172A] hover:border-[#CBD5E1]'}`}>
                 {anyExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />} <span className="hidden md:inline">{anyExpanded ? 'Grouped' : 'Whole'}</span>
               </button>
             </Tooltip>
@@ -662,7 +662,7 @@ function Inner({
       {/* Connection editor popover */}
       {edgeEdit && (
         <div
-          className="fixed z-[80] w-60 bg-white border border-[#E2E8F0] rounded-[10px] shadow-[0_8px_28px_rgba(0,0,0,0.16)] p-3"
+          className="fixed z-80 w-60 bg-white border border-[#E2E8F0] rounded-[10px] shadow-[0_8px_28px_rgba(0,0,0,0.16)] p-3"
           style={{ left: Math.min(edgeEdit.x, window.innerWidth - 260), top: Math.min(edgeEdit.y, window.innerHeight - 210) }}
         >
           <div className="flex items-center justify-between mb-2">
@@ -674,7 +674,7 @@ function Inner({
             value={edgeEdit.label}
             onChange={(e) => setEdgeEdit({ ...edgeEdit, label: e.target.value })}
             placeholder="e.g. Approved"
-            className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none mb-2"
+            className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden mb-2"
           />
           {edgeFromDecision && (
             <div className="mb-2">

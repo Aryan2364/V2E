@@ -149,7 +149,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
     const mine = a.uploaded_by_user_id === user?.id
     return (
       <div className="flex items-center gap-2 text-[12px]">
-        <span className="shrink-0 inline-flex items-center justify-center w-8 h-5 rounded bg-[#EFF6FF] text-[#2563EB] text-[9px] font-bold">
+        <span className="shrink-0 inline-flex items-center justify-center w-8 h-5 rounded-xs bg-[#EFF6FF] text-[#2563EB] text-[9px] font-bold">
           {fileKindLabel(a.file_name)}
         </span>
         <Tooltip label={a.file_name}>

@@ -21,7 +21,7 @@ export function renderMarkdown(src: string): string {
     s
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/`(.+?)`/g, '<code class="bg-[#F1F5F9] px-1 rounded text-[13px]">$1</code>')
+      .replace(/`(.+?)`/g, '<code class="bg-[#F1F5F9] px-1 rounded-sm text-[13px]">$1</code>')
 
   for (const raw of lines) {
     const line = raw.trimEnd()

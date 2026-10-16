@@ -54,8 +54,8 @@ export default function MoreScreen({ route }: { route: PhoneRoute }) {
       <div className="flex flex-col gap-[24px]">
         {user ? (
           <div className="flex min-w-0 flex-col">
-            <p className="break-words text-phone-card-heading font-semibold text-phone-text-primary">{user.name}</p>
-            {detail ? <p className="break-words text-phone-label text-phone-text-secondary">{detail}</p> : null}
+            <p className="wrap-break-word text-phone-card-heading font-semibold text-phone-text-primary">{user.name}</p>
+            {detail ? <p className="wrap-break-word text-phone-label text-phone-text-secondary">{detail}</p> : null}
           </div>
         ) : null}
 
@@ -71,7 +71,7 @@ export default function MoreScreen({ route }: { route: PhoneRoute }) {
                   <li key={row.href}>
                     <Link href={row.href} className={cx(ROW, '[&_svg]:size-[20px] [&_svg]:shrink-0')}>
                       <span className="text-phone-text-secondary">{row.icon}</span>
-                      <span className="min-w-0 flex-1 break-words">{row.label}</span>
+                      <span className="min-w-0 flex-1 wrap-break-word">{row.label}</span>
                       <ChevronRight aria-hidden className="text-phone-text-secondary" />
                     </Link>
                   </li>

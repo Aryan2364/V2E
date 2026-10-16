@@ -304,7 +304,7 @@ function OrgChartInner({
           {!nav.isTouch && <CanvasScrollbars nodes={nodes} setInstant={nav.setInstant} />}
           {nav.needsMinimap && (
             <MiniMap nodeColor={() => '#2563EB'} maskColor="rgba(15,23,42,0.05)" pannable zoomable
-              className="!hidden sm:!block" style={{ width: 180, height: 120 }} />
+              className="hidden! sm:block!" style={{ width: 180, height: 120 }} />
           )}
         </ReactFlow>
       </div>
@@ -498,7 +498,7 @@ export default function OrgChartPage() {
                 placeholder="Search departments…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-[10px] text-sm rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white text-[#0F172A] placeholder:text-[#94A3B8]"
+                className="w-full pl-9 pr-3 py-[10px] text-sm rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A] placeholder:text-[#94A3B8]"
               />
             </div>
           </div>

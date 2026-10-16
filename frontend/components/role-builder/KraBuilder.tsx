@@ -34,17 +34,17 @@ export default function KraBuilder({ items, onChange, readOnly }: Props) {
       {items.map((item, i) => (
         <div key={i} className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 space-y-2">
           <div className="flex items-start gap-2">
-            <span className="text-xs font-semibold text-[#2563EB] mt-2 w-5 flex-shrink-0">{i + 1}.</span>
+            <span className="text-xs font-semibold text-[#2563EB] mt-2 w-5 shrink-0">{i + 1}.</span>
             <div className="flex-1 space-y-2">
               <input
-                className="w-full border border-[#CBD5E1] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-2 focus:border-[#2563EB]"
+                className="w-full border border-[#CBD5E1] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-hidden focus:border-2 focus:border-[#2563EB]"
                 placeholder="KRA Title"
                 value={item.title}
                 onChange={(e) => update(i, 'title', e.target.value)}
                 readOnly={readOnly}
               />
               <textarea
-                className="w-full border border-[#CBD5E1] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-2 focus:border-[#2563EB] resize-none"
+                className="w-full border border-[#CBD5E1] rounded-lg px-3 py-2 text-sm text-[#0F172A] focus:outline-hidden focus:border-2 focus:border-[#2563EB] resize-none"
                 placeholder="Description"
                 rows={2}
                 value={item.description}

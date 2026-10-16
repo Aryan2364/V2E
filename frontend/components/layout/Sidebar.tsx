@@ -117,7 +117,7 @@ export default function Sidebar({ role, mobileOpen = false, onMobileClose }: Sid
               onClick={onMobileClose}
               className={[
                 'flex items-center gap-3 rounded-[8px] px-3 min-h-[44px] py-2 text-sm font-medium transition-colors duration-150',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-inset',
+                'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-inset',
                 active
                   ? 'bg-[#2563EB] text-white'
                   : 'text-[#CBD5E1] hover:bg-[#1E293B] hover:text-[#F1F5F9]',

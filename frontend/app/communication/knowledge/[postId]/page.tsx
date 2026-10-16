@@ -155,7 +155,7 @@ export default function KnowledgePostPage() {
               value={comment}
               onChange={e => setComment(e.target.value)}
               placeholder={replyTo ? `Reply to ${replyTo.name}…` : 'Write a comment…'}
-              className="flex-1 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB]"
+              className="flex-1 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB]"
             />
             <button
               type="submit"
@@ -193,7 +193,7 @@ function CommentRow({ comment, userId, isHR, onDelete, onReply }: {
             <div className="flex gap-1">
               <button onClick={onReply} className="text-xs text-[#2563EB] hover:underline">Reply</button>
               {(comment.created_by_user_id === userId || isHR) && (
-                <button onClick={() => onDelete(comment.id)} className="p-1 text-[#94A3B8] hover:text-[#DC2626] rounded transition-colors">
+                <button onClick={() => onDelete(comment.id)} className="p-1 text-[#94A3B8] hover:text-[#DC2626] rounded-xs transition-colors">
                   <Trash2 size={12} />
                 </button>
               )}
@@ -217,7 +217,7 @@ function CommentRow({ comment, userId, isHR, onDelete, onReply }: {
                     <span className="text-xs text-[#94A3B8] ml-2">{new Date(reply.created_at).toLocaleString()}</span>
                   </div>
                   {(reply.created_by_user_id === userId || isHR) && (
-                    <button onClick={() => onDelete(reply.id)} className="p-1 text-[#94A3B8] hover:text-[#DC2626] rounded transition-colors">
+                    <button onClick={() => onDelete(reply.id)} className="p-1 text-[#94A3B8] hover:text-[#DC2626] rounded-xs transition-colors">
                       <Trash2 size={12} />
                     </button>
                   )}

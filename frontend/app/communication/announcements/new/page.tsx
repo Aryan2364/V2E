@@ -79,7 +79,7 @@ export default function NewAnnouncementPage() {
                 value={form.title}
                 onChange={e => set('title', e.target.value)}
                 placeholder="Announcement title"
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
               />
             </div>
 
@@ -90,7 +90,7 @@ export default function NewAnnouncementPage() {
                 onChange={e => set('body', e.target.value)}
                 rows={6}
                 placeholder="Write your announcement..."
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-y"
+                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-y"
               />
             </div>
 
@@ -100,7 +100,7 @@ export default function NewAnnouncementPage() {
                 <select
                   value={form.type}
                   onChange={e => set('type', e.target.value)}
-                  className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
+                  className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-hidden focus:border-[#2563EB]"
                 >
                   {['general', 'policy', 'event', 'emergency'].map(t => (
                     <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
@@ -112,7 +112,7 @@ export default function NewAnnouncementPage() {
                 <select
                   value={form.priority}
                   onChange={e => set('priority', e.target.value)}
-                  className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
+                  className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-hidden focus:border-[#2563EB]"
                 >
                   {['normal', 'high', 'urgent'].map(p => (
                     <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
@@ -127,7 +127,7 @@ export default function NewAnnouncementPage() {
                 <select
                   value={form.scope}
                   onChange={e => set('scope', e.target.value)}
-                  className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
+                  className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-hidden focus:border-[#2563EB]"
                 >
                   <option value="company_wide">Company-wide</option>
                   <option value="department">Department</option>

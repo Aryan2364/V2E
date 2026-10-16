@@ -240,7 +240,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
 
       {/* Facts + the number */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <section className="lg:col-span-2 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] p-5">
+        <section className="lg:col-span-2 bg-white border border-[#E2E8F0] rounded-[12px] shadow-card p-5">
           <div className="flex items-baseline justify-between gap-4 flex-wrap">
             <div>
               <p className="text-[13px] font-medium text-[#475569]">The number</p>
@@ -272,7 +272,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
           </div>
         </section>
 
-        <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] p-5 space-y-3.5">
+        <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card p-5 space-y-3.5">
           <Meta icon={<User size={15} />} label="Owner" value={goal.owner?.name ?? '—'} />
           <Meta icon={<CalendarDays size={15} />} label="Deadline" value={formatDate(goal.due_date)} />
           <Meta
@@ -308,7 +308,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
       {/* The work behind the goal: day-to-day tasks, and projects when the firm
           has that module. Peers, so they sit on one row and read the same. */}
       <div className={hasProjects ? 'grid grid-cols-1 xl:grid-cols-2 gap-5 items-start' : ''}>
-      <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] flex flex-col max-h-[420px]">
+      <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card flex flex-col max-h-[420px]">
         <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-[#F1F5F9] shrink-0">
           <div>
             <div className="flex items-center gap-2">
@@ -386,7 +386,7 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
       </div>
 
       {/* The record */}
-      <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] p-5">
+      <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card p-5">
         <div className="flex items-center gap-2 mb-1">
           <h2 className="flex items-center gap-2 text-[16px] font-semibold text-[#0F172A]">
             <History size={16} className="text-[#475569]" /> Check-in history

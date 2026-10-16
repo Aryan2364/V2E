@@ -72,7 +72,7 @@ export default function StrategyMapPage() {
       >
         <button
           onClick={() => router.push('/goals/list')}
-          className="font-medium text-[#475569] hover:text-[#2563EB] transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+          className="font-medium text-[#475569] hover:text-[#2563EB] transition-colors rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
         >
           Goals
         </button>

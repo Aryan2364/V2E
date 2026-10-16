@@ -47,7 +47,7 @@ export default function WorkflowTaskBadge({
           aria-label={`${label}. Open instance`}
           // Inside clickable rows and cards: open the instance, not the task.
           onClick={(e) => e.stopPropagation()}
-          className={`${cls} hover:bg-[#DBEAFE] hover:border-[#93C5FD] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]`}
+          className={`${cls} hover:bg-[#DBEAFE] hover:border-[#93C5FD] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]`}
         >
           {body}
         </Link>
@@ -60,7 +60,7 @@ export default function WorkflowTaskBadge({
         tabIndex={0}
         aria-label={label}
         onClick={(e) => e.stopPropagation()}
-        className={`${cls} focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]`}
+        className={`${cls} focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]`}
       >
         {body}
       </span>

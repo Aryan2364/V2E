@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode, use } from 'react';
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -24,7 +24,7 @@ import BusyTimesPanel from '@/components/meetings/BusyTimesPanel'
 import EditMeetingModal from '@/components/meetings/EditMeetingModal'
 import CreateRhythmModal from '@/components/meetings/CreateRhythmModal'
 
-const inputClass = 'border border-[#CBD5E1] rounded-[8px] px-3 py-2.5 text-[15px] text-[#0F172A] focus:outline-none focus:border-[#2563EB]'
+const inputClass = 'border border-[#CBD5E1] rounded-[8px] px-3 py-2.5 text-[15px] text-[#0F172A] focus:outline-hidden focus:border-[#2563EB]'
 const cardCls = 'bg-white border border-[#E2E8F0] rounded-[12px]'
 const SIDE_TINTS: Record<string, string> = {
   blue: 'bg-[#EFF6FF] text-[#2563EB]',
@@ -41,7 +41,8 @@ function SideHeader({ icon, label, tint }: { icon: ReactNode; label: string; tin
   )
 }
 
-export default function MeetingDetailPage({ params }: { params: { meetingId: string } }) {
+export default function MeetingDetailPage(props: { params: Promise<{ meetingId: string }> }) {
+  const params = use(props.params);
   const { user } = useAuth()
   const router = useRouter()
   const orgId = user?.organizationId ?? ''
@@ -358,7 +359,7 @@ function AccessCard({ meeting }: { meeting: Meeting }) {
         {meeting.online_link && <a href={meeting.online_link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[#2563EB] font-medium hover:underline w-fit"><Video size={15} /> Join link</a>}
         {meeting.online_password && (
           <span className="inline-flex items-center gap-2 text-[#475569]">
-            Password: <code className="bg-[#F1F5F9] px-2 py-0.5 rounded">{showPw ? meeting.online_password : '••••••••'}</code>
+            Password: <code className="bg-[#F1F5F9] px-2 py-0.5 rounded-xs">{showPw ? meeting.online_password : '••••••••'}</code>
             <button onClick={() => setShowPw((v) => !v)} className="text-[#94A3B8] hover:text-[#475569]" aria-label={showPw ? 'Hide password' : 'Show password'}>{showPw ? <EyeOff size={14} /> : <Eye size={14} />}</button>
           </span>
         )}
@@ -394,7 +395,7 @@ function NotesCard({ orgId, meeting }: { orgId: string; meeting: Meeting }) {
       {expanded && (
         <div className="mt-2.5">
           <p className="text-[11px] text-[#64748B] mb-2">Only you can see these — never part of the official record.</p>
-          <textarea className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] resize-y" rows={6} value={body} onChange={(e) => setBody(e.target.value)} />
+          <textarea className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-hidden focus:border-[#2563EB] resize-y" rows={6} value={body} onChange={(e) => setBody(e.target.value)} />
           <div className="flex justify-end items-center gap-3 mt-2">
             {saved && <span className="inline-flex items-center gap-1 text-xs font-medium text-[#16A34A]"><Check size={14} /> Saved</span>}
             <Button variant="primary" isLoading={saving} disabled={saving} onClick={save}>Save notes</Button>
@@ -544,7 +545,7 @@ function EditLogPanel({ orgId, meetingId }: { orgId: string; meetingId: string }
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function AnalyticsPanel({ orgId, meetingId }: { orgId: string; meetingId: string }) {

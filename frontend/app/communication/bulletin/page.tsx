@@ -82,7 +82,7 @@ export default function BulletinBoardsPage() {
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="e.g. General, Engineering, HR"
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB]"
+                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB]"
               />
             </div>
             <div>
@@ -91,7 +91,7 @@ export default function BulletinBoardsPage() {
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 placeholder="What is this board for?"
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB]"
+                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB]"
               />
             </div>
             <div>
@@ -99,7 +99,7 @@ export default function BulletinBoardsPage() {
               <select
                 value={form.interaction_mode}
                 onChange={e => setForm(f => ({ ...f, interaction_mode: e.target.value }))}
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
+                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-hidden focus:border-[#2563EB]"
               >
                 <option value="read_only">Read Only</option>
                 <option value="comments_only">Comments Only</option>

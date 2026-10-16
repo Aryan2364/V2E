@@ -28,29 +28,29 @@ const kpiColumns: ResponsiveColumn<Kpi>[] = [
     key: 'title',
     header: 'Title',
     primary: true,
-    cellClassName: '!px-0 !py-3 !pr-4 font-medium text-[#0F172A]',
-    headerClassName: '!px-0 !py-2.5 !pr-4',
+    cellClassName: 'px-0! py-3! pr-4! font-medium text-[#0F172A]',
+    headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.title,
   },
   {
     key: 'metric',
     header: 'Metric',
-    cellClassName: '!px-0 !py-3 !pr-4 text-[#475569]',
-    headerClassName: '!px-0 !py-2.5 !pr-4',
+    cellClassName: 'px-0! py-3! pr-4! text-[#475569]',
+    headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.metric,
   },
   {
     key: 'target',
     header: 'Target',
-    cellClassName: '!px-0 !py-3 !pr-4 text-[#475569]',
-    headerClassName: '!px-0 !py-2.5 !pr-4',
+    cellClassName: 'px-0! py-3! pr-4! text-[#475569]',
+    headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.target,
   },
   {
     key: 'unit',
     header: 'Unit',
-    cellClassName: '!px-0 !py-3 text-[#475569]',
-    headerClassName: '!px-0 !py-2.5',
+    cellClassName: 'px-0! py-3! text-[#475569]',
+    headerClassName: 'px-0! py-2.5!',
     render: (kpi) => kpi.unit,
   },
 ]
@@ -132,7 +132,7 @@ function ReportingChain({ emp, allEmployees }: { emp: EmployeeProfile; allEmploy
         return (
           <div key={mgr.id} className="flex items-start gap-3">
             <div className="flex flex-col items-center">
-              <div className={`w-8 h-8 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
+              <div className={`w-8 h-8 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
                 {getInitials(name)}
               </div>
               {i < chain.length - 1 && <div className="w-px h-4 bg-[#E2E8F0] mt-1" />}
@@ -348,7 +348,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
     }
   }
 
-  const inputClass = 'w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+  const inputClass = 'w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
   const selectClass = inputClass
   const labelClass = 'block text-sm font-medium text-[#374151] mb-1.5'
 
@@ -357,7 +357,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
   if (!mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 py-4 bg-black/40">
+    <div className="fixed inset-0 z-60 flex items-center justify-center px-4 py-4 bg-black/40">
       <div className="bg-white rounded-[16px] w-full max-w-lg shadow-xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] shrink-0">
@@ -693,7 +693,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
       {/* Password-change warning — a shared login is one password across all firms */}
       {showPwWarning && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center px-4 bg-black/50">
+        <div className="fixed inset-0 z-70 flex items-center justify-center px-4 bg-black/50">
           <div className="bg-white w-full max-w-md rounded-[12px] shadow-xl p-6">
             <h3 className="text-[17px] font-semibold text-[#0F172A]">
               Change {employee.user?.name ?? 'this person'}’s password?
@@ -829,7 +829,7 @@ export default function EmployeeDetailPage() {
       {/* Profile header */}
       <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-          <div className={`w-20 h-20 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-2xl font-bold flex-shrink-0`}>
+          <div className={`w-20 h-20 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-2xl font-bold shrink-0`}>
             {getInitials(name)}
           </div>
           <div className="flex-1 min-w-0">
@@ -875,7 +875,7 @@ export default function EmployeeDetailPage() {
       {employee.reporting_to && (
         <Section title="Reports To">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full ${avatarColor(employee.reporting_to.name)} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}>
+            <div className={`w-10 h-10 rounded-full ${avatarColor(employee.reporting_to.name)} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
               {getInitials(employee.reporting_to.name)}
             </div>
             <div>
@@ -915,7 +915,7 @@ export default function EmployeeDetailPage() {
           <ol className="space-y-3">
             {employee.role.kra.map((kra, i) => (
               <li key={i} className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#EFF6FF] flex items-center justify-center text-xs font-bold text-[#2563EB]">{i + 1}</span>
+                <span className="shrink-0 w-6 h-6 rounded-full bg-[#EFF6FF] flex items-center justify-center text-xs font-bold text-[#2563EB]">{i + 1}</span>
                 <div>
                   <p className="font-semibold text-[#0F172A] text-sm">{kra.title}</p>
                   {kra.description && <p className="text-xs text-[#475569] mt-0.5 leading-relaxed">{kra.description}</p>}
@@ -929,7 +929,7 @@ export default function EmployeeDetailPage() {
       {employee.role?.kpi && employee.role.kpi.length > 0 && (
         <Section title="Key Performance Indicators">
           <ResponsiveTable
-            className="!border-0 !rounded-none !shadow-none !bg-transparent !overflow-visible"
+            className="border-0! rounded-none! shadow-none! bg-transparent! overflow-visible!"
             columns={kpiColumns}
             rows={employee.role.kpi}
             rowKey={(_kpi, i) => String(i)}

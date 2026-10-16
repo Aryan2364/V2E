@@ -98,7 +98,7 @@ export default function StepFlow({
                 <span className="mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold flex items-center justify-center shrink-0">
                   {n}
                 </span>
-                <span className="text-[14px] font-semibold text-[#0F172A] leading-snug line-clamp-2 break-words">{s.title || 'Untitled step'}</span>
+                <span className="text-[14px] font-semibold text-[#0F172A] leading-snug line-clamp-2 wrap-break-word">{s.title || 'Untitled step'}</span>
               </div>
               <span className="flex items-center gap-1.5 text-[12px] text-[#334155] min-w-0">
                 <Users size={12} className="shrink-0 text-[#475569]" />

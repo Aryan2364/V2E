@@ -223,7 +223,7 @@ export default function TimingCalendar({
   if (rows.length) while (rows[rows.length - 1].length < 7) rows[rows.length - 1].push(null)
 
   const navBtn =
-    'inline-flex items-center justify-center w-11 h-11 rounded-[8px] text-[#334155] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:text-[#CBD5E1] disabled:hover:bg-transparent disabled:cursor-not-allowed'
+    'inline-flex items-center justify-center w-11 h-11 rounded-[8px] text-[#334155] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:text-[#CBD5E1] disabled:hover:bg-transparent disabled:cursor-not-allowed'
 
   const cellFor = (dayNo: number) => {
     const isSel = selected === dayNo
@@ -251,7 +251,7 @@ export default function TimingCalendar({
           setFocusDay(dayNo)
           setInspect(dayNo)
         }}
-        className={`relative flex flex-col items-stretch ${unit === 'Week' ? 'min-h-[52px]' : 'min-h-[46px]'} pt-1 pb-1 select-none outline-none rounded-[6px] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2563EB] ${
+        className={`relative flex flex-col items-stretch ${unit === 'Week' ? 'min-h-[52px]' : 'min-h-[46px]'} pt-1 pb-1 select-none outline-hidden rounded-[6px] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2563EB] ${
           grey ? 'cursor-not-allowed bg-[#F8FAFC]' : disabled ? 'cursor-default' : 'cursor-pointer hover:bg-[#EFF6FF]'
         } ${inspect === dayNo && !isSel ? 'bg-[#F1F5F9]' : ''}`}
       >
@@ -340,7 +340,7 @@ export default function TimingCalendar({
               aria-pressed={lastDay.selected && selected !== null && pageOf(selected) === page}
               disabled={disabled || (minDay !== null && firstDayOfMonth(page) + daysInMonthIdx(page) - 1 < minDay)}
               onClick={() => lastDay.onPick(cycleOfPage(page))}
-              className={`min-h-[44px] sm:min-h-[36px] px-3 rounded-[8px] border text-[13px] font-medium transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#64748B] disabled:border-[#E2E8F0] ${
+              className={`min-h-[44px] sm:min-h-[36px] px-3 rounded-[8px] border text-[13px] font-medium transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:text-[#64748B] disabled:border-[#E2E8F0] ${
                 lastDay.selected && selected !== null && pageOf(selected) === page
                   ? 'bg-[#2563EB] border-[#2563EB] text-white'
                   : 'bg-white border-[#CBD5E1] text-[#334155] hover:border-[#2563EB] hover:text-[#1D4ED8]'
@@ -367,7 +367,7 @@ export default function TimingCalendar({
                   {e.span ? (
                     <span aria-hidden className="w-2.5 h-2.5 rounded-[2px] shrink-0" style={{ background: bandFill(e.span.color, e.span.waitsFor) }} />
                   ) : null}
-                  <span className="min-w-0 break-words">{eventText(e, runTime)}</span>
+                  <span className="min-w-0 wrap-break-word">{eventText(e, runTime)}</span>
                 </li>
               ))}
               {shownEvents.length === 0 && !(shown === selected && selfText) && <li className="text-[#475569]">Nothing else planned.</li>}

@@ -111,7 +111,7 @@ function LinkList({
   return (
     // Fixed height with an internally scrolling body — DESIGN_RULES Part 2, so
     // the two columns stay aligned however many links each side has.
-    <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] flex flex-col h-[340px]">
+    <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card flex flex-col h-[340px]">
       <header className="flex items-start justify-between gap-3 px-5 py-4 border-b border-[#F1F5F9] shrink-0">
         <div className="min-w-0">
           <div className="flex items-center gap-2">

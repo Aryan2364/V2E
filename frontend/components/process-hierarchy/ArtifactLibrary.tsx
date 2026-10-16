@@ -58,7 +58,7 @@ export default function ArtifactLibrary({ orgId, mapId, canEdit, onClose }: {
   }
 
   const body = (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center gap-2 px-5 py-4 border-b border-[#E2E8F0]">
@@ -72,7 +72,7 @@ export default function ArtifactLibrary({ orgId, mapId, canEdit, onClose }: {
             <div className="flex items-center gap-2">
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Document name…"
                 onKeyDown={(e) => e.key === 'Enter' && create()}
-                className="flex-1 px-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white" />
+                className="flex-1 px-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white" />
               <StyledSelect
                 value={type}
                 onChange={(v) => setType(v as ProcessArtifactType)}

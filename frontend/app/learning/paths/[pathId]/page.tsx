@@ -416,7 +416,7 @@ export default function ManagePathPage() {
 
       {/* Assign Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-black/40">
+        <div className="fixed inset-0 z-60 flex items-center justify-center px-4 bg-black/40">
           <div className="bg-white rounded-[16px] w-full max-w-md p-6 shadow-xl">
             <h2 className="text-lg font-bold text-[#0F172A] mb-1">Assign Course</h2>
             <p className="text-sm text-[#475569] mb-4">Search, select all, or pick people to assign this course to</p>

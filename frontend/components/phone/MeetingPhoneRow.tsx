@@ -37,7 +37,7 @@ export function MeetingPhoneRow({ meeting, href }: { meeting: Meeting; href: str
   if (!isOrganiser && mine?.response === 'declined') {
     const rm = RESPONSE_META.declined
     line3 = (
-      <span className="inline-flex items-center rounded-full px-[8px] py-[1px] text-phone-meta font-medium" style={{ backgroundColor: rm.bg, color: rm.text }}>
+      <span className="inline-flex items-center rounded-full px-[8px] py-px text-phone-meta font-medium" style={{ backgroundColor: rm.bg, color: rm.text }}>
         {rm.label}
       </span>
     )

@@ -200,7 +200,7 @@ export default function MyWorkScreen({ route }: { route: PhoneRoute }) {
       <PullHint refreshing={refreshing} onRefresh={onRefresh} />
 
       {loading ? (
-        <div className="-mx-[16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <div className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
           {Array.from({ length: 5 }).map((_, i) => (
             <TaskPhoneRowSkeleton key={i} />
           ))}
@@ -227,7 +227,7 @@ export default function MyWorkScreen({ route }: { route: PhoneRoute }) {
                 >
                   {label}
                 </h2>
-                <div className="-mx-[16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+                <div className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
                   {list.map((task) => (
                     <TaskPhoneRow
                       key={task.id}
@@ -313,7 +313,7 @@ function PullHint({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: (
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       style={{ height: refreshing ? 40 : pull }}
-      className="flex items-center justify-center overflow-hidden transition-[height] duration-[var(--duration-fast)]"
+      className="flex items-center justify-center overflow-hidden transition-[height] duration-(--duration-fast)"
     >
       {refreshing || pull > 8 ? (
         <RotateCw

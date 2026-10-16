@@ -27,7 +27,7 @@ interface DeptFormDrawerProps {
 }
 
 const inputCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-2 focus:border-[#2563EB] transition-colors'
+  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors'
 const labelCls = 'text-sm font-medium text-[#374151] mb-1.5 block'
 
 /**
@@ -161,10 +161,10 @@ export default function DeptFormDrawer({
 
   return createPortal(
     <>
-      {open && <div className="fixed inset-0 bg-black/20 z-[60]" onClick={onClose} />}
+      {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
 
       <div
-        className={`fixed inset-y-0 right-0 z-[70] w-full max-w-sm bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-70 w-full max-w-sm bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -200,7 +200,7 @@ export default function DeptFormDrawer({
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Optional description…"
-              className="w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-2 focus:border-[#2563EB] transition-colors resize-none"
+              className="w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors resize-none"
             />
           </div>
           <div>
@@ -248,7 +248,7 @@ export default function DeptFormDrawer({
                   className={`w-7 h-7 rounded-full border-2 transition-transform hover:scale-110 ${
                     color?.toLowerCase() === c.toLowerCase()
                       ? 'border-[#0F172A] ring-2 ring-offset-1 ring-[#0F172A]/20'
-                      : 'border-white shadow-sm'
+                      : 'border-white shadow-xs'
                   }`}
                   style={{ backgroundColor: c }}
                   aria-label={`Use color ${c}`}

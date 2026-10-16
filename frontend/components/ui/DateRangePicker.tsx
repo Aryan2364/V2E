@@ -152,7 +152,7 @@ export default function DateRangePicker({
   const hasValue = !!(fromD || toD)
 
   const triggerCls = `w-full flex items-center gap-0 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] text-left text-[15px] cursor-pointer transition-colors hover:bg-white hover:border-[#94A3B8] ${
-    open ? '!bg-white !border-[#2563EB] ring-1 ring-[#2563EB]' : ''
+    open ? 'bg-white! border-[#2563EB]! ring-1 ring-[#2563EB]' : ''
   }`
 
   return (
@@ -182,7 +182,7 @@ export default function DateRangePicker({
 
       {open && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40"
+          className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40"
           onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
           <div

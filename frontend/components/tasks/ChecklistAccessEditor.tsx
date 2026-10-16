@@ -143,7 +143,7 @@ function AddPicker({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search…"
-              className="flex-1 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none bg-transparent"
+              className="flex-1 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden bg-transparent"
             />
           </div>
           <div className="max-h-56 overflow-y-auto py-1">
@@ -423,7 +423,7 @@ export default function ChecklistAccessEditor({
                     >
                       <span
                         className={[
-                          'absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200',
+                          'absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200',
                           cascade ? 'translate-x-4' : 'translate-x-0',
                         ].join(' ')}
                       />

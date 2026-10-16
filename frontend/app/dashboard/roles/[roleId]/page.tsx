@@ -17,29 +17,29 @@ const kpiColumns: ResponsiveColumn<Kpi>[] = [
     key: 'title',
     header: 'Title',
     primary: true,
-    cellClassName: '!px-0 !py-3 !pr-4 font-medium text-[#0F172A]',
-    headerClassName: '!px-0 !py-2.5 !pr-4',
+    cellClassName: 'px-0! py-3! pr-4! font-medium text-[#0F172A]',
+    headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.title,
   },
   {
     key: 'metric',
     header: 'Metric',
-    cellClassName: '!px-0 !py-3 !pr-4 text-[#475569]',
-    headerClassName: '!px-0 !py-2.5 !pr-4',
+    cellClassName: 'px-0! py-3! pr-4! text-[#475569]',
+    headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.metric,
   },
   {
     key: 'target',
     header: 'Target',
-    cellClassName: '!px-0 !py-3 !pr-4 text-[#475569]',
-    headerClassName: '!px-0 !py-2.5 !pr-4',
+    cellClassName: 'px-0! py-3! pr-4! text-[#475569]',
+    headerClassName: 'px-0! py-2.5! pr-4!',
     render: (kpi) => kpi.target,
   },
   {
     key: 'unit',
     header: 'Unit',
-    cellClassName: '!px-0 !py-3 text-[#475569]',
-    headerClassName: '!px-0 !py-2.5',
+    cellClassName: 'px-0! py-3! text-[#475569]',
+    headerClassName: 'px-0! py-2.5!',
     render: (kpi) => kpi.unit,
   },
 ]
@@ -175,7 +175,7 @@ export default function RoleDetailPage() {
           <ol className="space-y-4">
             {role.kra.map((kra, i) => (
               <li key={i} className="flex gap-4">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#EFF6FF] flex items-center justify-center text-xs font-bold text-[#2563EB]">
+                <span className="shrink-0 w-7 h-7 rounded-full bg-[#EFF6FF] flex items-center justify-center text-xs font-bold text-[#2563EB]">
                   {i + 1}
                 </span>
                 <div>
@@ -196,7 +196,7 @@ export default function RoleDetailPage() {
       {role.kpi && role.kpi.length > 0 && (
         <Section title="Key Performance Indicators (KPI)">
           <ResponsiveTable
-            className="!border-0 !rounded-none !shadow-none !bg-transparent !overflow-visible"
+            className="border-0! rounded-none! shadow-none! bg-transparent! overflow-visible!"
             columns={kpiColumns}
             rows={role.kpi}
             rowKey={(_kpi, i) => String(i)}

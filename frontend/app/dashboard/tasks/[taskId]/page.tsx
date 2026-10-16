@@ -131,7 +131,7 @@ function deadlineColor(deadline?: string): string {
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
-      className={`bg-[#F1F5F9] rounded animate-pulse ${className ?? ''}`}
+      className={`bg-[#F1F5F9] rounded-xs animate-pulse ${className ?? ''}`}
     />
   )
 }
@@ -267,7 +267,7 @@ function CommentItem({
       {/* Our own confirmation dialog (no browser confirm) */}
       {confirmOpen && createPortal(
         <div
-          className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-70 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget && !deleting) setConfirmOpen(false) }}
           role="dialog"
           aria-modal="true"
@@ -1120,7 +1120,7 @@ export default function TaskDetailPage() {
               onChange={(e) => setReopenReason(e.target.value)}
               placeholder="Reason for reopening (required)"
               rows={2}
-              className="mt-2 w-full border border-[#FDE68A] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-none bg-white focus:border-[#D97706] resize-none"
+              className="mt-2 w-full border border-[#FDE68A] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-hidden bg-white focus:border-[#D97706] resize-none"
             />
           </div>
           <div className="flex gap-2 shrink-0">
@@ -1194,7 +1194,7 @@ export default function TaskDetailPage() {
               placeholder="Reason (required)"
               rows={2}
               autoFocus
-              className="mt-2 w-full border border-[#FECACA] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-none bg-white focus:border-[#DC2626] resize-none"
+              className="mt-2 w-full border border-[#FECACA] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-hidden bg-white focus:border-[#DC2626] resize-none"
             />
           </div>
           <div className="flex gap-2 shrink-0">
@@ -1228,7 +1228,7 @@ export default function TaskDetailPage() {
               onChange={(e) => setDeleteReason(e.target.value)}
               placeholder="Reason for deletion (required)"
               autoFocus
-              className="mt-2 w-full border border-[#FECACA] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-none bg-white focus:border-[#DC2626]"
+              className="mt-2 w-full border border-[#FECACA] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-hidden bg-white focus:border-[#DC2626]"
             />
           </div>
           <div className="flex gap-2 shrink-0">
@@ -1285,8 +1285,8 @@ export default function TaskDetailPage() {
                 the instance page) when the viewer can see the instance; otherwise the task's own. */}
             {task.workflow_instance_step_id && stepCtx === undefined ? (
               <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6 flex flex-col gap-3" aria-busy>
-                <div className="h-5 w-32 rounded bg-[#F1F5F9] animate-pulse" />
-                <div className="h-14 rounded bg-[#F1F5F9] animate-pulse" />
+                <div className="h-5 w-32 rounded-xs bg-[#F1F5F9] animate-pulse" />
+                <div className="h-14 rounded-xs bg-[#F1F5F9] animate-pulse" />
               </div>
             ) : task.workflow_instance_step_id && stepCtx?.can_view_discussion ? (
               <InstanceDiscussion
@@ -1412,7 +1412,7 @@ export default function TaskDetailPage() {
                       disabled={sendingComment || isFutureTask}
                       placeholder={isFutureTask ? "Comments are locked on future tasks..." : "Add a comment... (Enter to send, Shift+Enter for new line)"}
                       rows={1}
-                      className="flex-1 min-w-0 border-0 bg-transparent px-1 py-[6px] text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-none resize-none max-h-[120px] overflow-y-auto"
+                      className="flex-1 min-w-0 border-0 bg-transparent px-1 py-[6px] text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-hidden resize-none max-h-[120px] overflow-y-auto"
                     />
                     {/* Attach files — sits right before Send */}
                     <Tooltip label="Attach files">
@@ -1496,13 +1496,13 @@ export default function TaskDetailPage() {
                             <ul className="mt-2 space-y-1.5">
                               {done.map((a) => (
                                 <li key={a.id} className="flex items-start gap-1.5 text-[12px]">
-                                  <CheckCircle2 size={13} className="text-[#16A34A] shrink-0 mt-[1px]" />
+                                  <CheckCircle2 size={13} className="text-[#16A34A] shrink-0 mt-px" />
                                   <span className="font-medium text-[#0F172A] min-w-0">{a.user?.name ?? a.user_name ?? 'Unknown'}</span>
                                 </li>
                               ))}
                               {couldnt.map((a) => (
                                 <li key={a.id} className="flex items-start gap-1.5 text-[12px]">
-                                  <XCircle size={13} className="text-[#EA580C] shrink-0 mt-[1px]" />
+                                  <XCircle size={13} className="text-[#EA580C] shrink-0 mt-px" />
                                   <span className="min-w-0">
                                     <span className="font-medium text-[#0F172A]">{a.user?.name ?? a.user_name ?? 'Unknown'}</span>
                                     {a.cannot_complete_reason && <span className="text-[#B45309]"> — {a.cannot_complete_reason}</span>}
@@ -1532,7 +1532,7 @@ export default function TaskDetailPage() {
                                 const nm = a.user?.name ?? a.user_name ?? 'Unknown'
                                 return (
                                   <li key={a.id} className="flex items-start gap-1.5 text-[12px]">
-                                    <CheckCircle2 size={13} className="text-[#16A34A] shrink-0 mt-[1px]" />
+                                    <CheckCircle2 size={13} className="text-[#16A34A] shrink-0 mt-px" />
                                     <span className="min-w-0">
                                       <span className="font-medium text-[#0F172A]">{nm}</span>
                                       {a.completed_at && <span className="text-[#64748B]"> · {formatDate(a.completed_at)}</span>}
@@ -2047,7 +2047,7 @@ export default function TaskDetailPage() {
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               {overdue && (
-                                <span className="text-[10px] font-bold uppercase tracking-wide bg-[#FEE2E2] text-[#DC2626] border border-[#FECACA] rounded px-1.5 py-0.5">
+                                <span className="text-[10px] font-bold uppercase tracking-wide bg-[#FEE2E2] text-[#DC2626] border border-[#FECACA] rounded-xs px-1.5 py-0.5">
                                   Overdue
                                 </span>
                               )}
@@ -2135,7 +2135,7 @@ export default function TaskDetailPage() {
                                 rows={2}
                                 autoFocus
                                 placeholder="What would you like them to do?"
-                                className="w-full rounded-[8px] border border-[#CBD5E1] bg-white px-2.5 py-1.5 text-[13px] text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none resize-none"
+                                className="w-full rounded-[8px] border border-[#CBD5E1] bg-white px-2.5 py-1.5 text-[13px] text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-hidden resize-none"
                               />
                               <div className="mt-2 flex items-center gap-2">
                                 <button
@@ -2172,7 +2172,7 @@ export default function TaskDetailPage() {
                                 <p className="text-sm font-medium text-[#0F172A] truncate">{name}</p>
                                 {email && <p className="text-xs text-[#475569] truncate">{email}</p>}
                               </div>
-                              <span className="text-[10px] font-semibold bg-[#FEF9C3] text-[#D97706] border border-[#FDE68A] rounded px-1.5 py-0.5">CC</span>
+                              <span className="text-[10px] font-semibold bg-[#FEF9C3] text-[#D97706] border border-[#FDE68A] rounded-xs px-1.5 py-0.5">CC</span>
                             </div>
                           )
                         })}
@@ -2203,7 +2203,7 @@ export default function TaskDetailPage() {
                                 </p>
                               </div>
                               {a.is_completed && (
-                                <span className="text-[10px] font-semibold bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0] rounded px-1.5 py-0.5">
+                                <span className="text-[10px] font-semibold bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0] rounded-xs px-1.5 py-0.5">
                                   Had finished
                                 </span>
                               )}
@@ -2327,7 +2327,7 @@ export default function TaskDetailPage() {
       {/* Attachment delete confirmation */}
       {attachmentToDelete && createPortal(
         <div
-          className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-70 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget && !deletingAttachment) setAttachmentToDelete(null) }}
           role="dialog"
           aria-modal="true"
@@ -2372,7 +2372,7 @@ export default function TaskDetailPage() {
           on the task page can clip it or cut it off from the top. */}
       {showActivity && createPortal(
         <div
-          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) setShowActivity(false) }}
           role="dialog"
           aria-modal="true"

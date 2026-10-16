@@ -141,7 +141,7 @@ export function FinishTaskSheet({
         {unfinished.length > 0 ? (
           <section className="flex flex-col gap-[8px]">
             <h3 className="text-phone-label font-medium text-phone-text-secondary">Checklist</h3>
-            <ul className="-mx-[16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+            <ul className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
               {unfinished.map((item) => (
                 <li key={item.id}>
                   <button

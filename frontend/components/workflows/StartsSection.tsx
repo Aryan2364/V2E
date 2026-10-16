@@ -83,7 +83,7 @@ function StartChoice({
         aria-checked={checked}
         disabled={disabled}
         onClick={() => onChange(!checked)}
-        className="flex-1 min-w-0 text-left flex items-center gap-3 rounded-[10px] pl-3.5 pr-1 py-3 min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed"
+        className="flex-1 min-w-0 text-left flex items-center gap-3 rounded-[10px] pl-3.5 pr-1 py-3 min-h-[44px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed"
       >
         <span
           aria-hidden

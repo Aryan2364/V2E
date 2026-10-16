@@ -127,7 +127,7 @@ export default function KanbanView({
     <div>
       {/* Touch devices can't HTML5-drag — tell them to open the card instead, shown
           only on coarse pointers so it's not noise on desktop. */}
-      <div className="[@media(pointer:fine)]:hidden mb-3 flex items-center gap-2 text-[12px] text-[#B45309] bg-[#FFFBEB] border border-[#FDE68A] rounded-[8px] px-3 py-2">
+      <div className="pointer-fine:hidden mb-3 flex items-center gap-2 text-[12px] text-[#B45309] bg-[#FFFBEB] border border-[#FDE68A] rounded-[8px] px-3 py-2">
         <Hand size={13} className="shrink-0" />
         Drag isn’t available on touch — tap a card to open it and change its status there.
       </div>
@@ -251,7 +251,7 @@ export default function KanbanView({
       {/* Reason dialog for an Incomplete / can't-complete drop */}
       {pending && createPortal(
         <div
-          className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-70 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget && !savingReason) { setPending(null); setReason('') } }}
           role="dialog"
           aria-modal="true"
@@ -270,7 +270,7 @@ export default function KanbanView({
               placeholder="Reason (required)"
               rows={3}
               autoFocus
-              className="mt-3 w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#DC2626] resize-none"
+              className="mt-3 w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#DC2626] resize-none"
             />
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-4">
               <button type="button" onClick={() => { setPending(null); setReason('') }} disabled={savingReason} className="w-full sm:w-auto px-4 py-[9px] text-sm font-semibold text-[#475569] bg-white border border-[#CBD5E1] rounded-[8px] hover:bg-[#F8FAFC] disabled:opacity-60 transition-colors">Cancel</button>

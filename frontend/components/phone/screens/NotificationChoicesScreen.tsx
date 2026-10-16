@@ -135,7 +135,7 @@ export default function NotificationChoicesScreen({ route }: { route: PhoneRoute
       next = (
         <Link
           href={MORE_HREF}
-          className="text-phone-body font-semibold text-phone-primary-text underline underline-offset-2 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-phone-primary-ring"
+          className="text-phone-body font-semibold text-phone-primary-text underline underline-offset-2 outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-phone-primary-ring"
         >
           Go to More to install the app
         </Link>

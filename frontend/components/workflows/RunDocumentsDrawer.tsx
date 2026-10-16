@@ -269,7 +269,7 @@ function FileRow({ name, meta, tag, onDownload, onRemove }: { name: string; meta
         </button>
       )}
       {onRemove && (
-        <button type="button" aria-label={`Remove ${name}`} onClick={onRemove} className={`${BTN.icon} hover:!text-[#B91C1C] hover:!bg-[#FEF2F2]`}>
+        <button type="button" aria-label={`Remove ${name}`} onClick={onRemove} className={`${BTN.icon} hover:text-[#B91C1C]! hover:bg-[#FEF2F2]!`}>
           <Trash2 size={16} />
         </button>
       )}

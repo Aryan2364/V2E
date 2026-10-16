@@ -27,7 +27,7 @@ function TemplateCard({ template, onDelete }: { template: ProjectTemplate; onDel
             setDeleting(true)
             try { await onDelete() } finally { setDeleting(false) }
           }}
-          className="p-1.5 rounded hover:bg-[#FEE2E2] text-[#94A3B8] hover:text-[#DC2626] transition-colors"
+          className="p-1.5 rounded-xs hover:bg-[#FEE2E2] text-[#94A3B8] hover:text-[#DC2626] transition-colors"
         >
           <Trash2 size={14} />
         </button>

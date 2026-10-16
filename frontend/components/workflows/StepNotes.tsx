@@ -15,7 +15,7 @@ export function NoteItem({ note }: { note: InstanceNote }) {
           <span className="font-semibold text-[#0F172A]">{note.author?.name || 'Someone'}</span>
           <span className="text-[#475569]"> · {fmtDateTime(note.created_at)}</span>
         </p>
-        <p className="mt-1 text-sm text-[#1E293B] whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{note.body}</p>
+        <p className="mt-1 text-sm text-[#1E293B] whitespace-pre-wrap wrap-break-word wrap-anywhere">{note.body}</p>
       </div>
     </li>
   )

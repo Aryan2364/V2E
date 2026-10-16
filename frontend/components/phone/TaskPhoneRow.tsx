@@ -55,7 +55,7 @@ export function TaskPhoneRow({
     <div
       data-slot="task-phone-row-collapse"
       className={cx(
-        'grid transition-[grid-template-rows] duration-[var(--duration-slow)] ease-in-out',
+        'grid transition-[grid-template-rows] duration-(--duration-slow) ease-in-out',
         phase === 'collapsed' ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]',
       )}
     >
@@ -67,12 +67,12 @@ export function TaskPhoneRow({
             aria-pressed={filled}
             onClick={onTapCircle}
             disabled={phase !== 'idle'}
-            className="flex size-[44px] shrink-0 items-center justify-center outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-phone-primary-ring"
+            className="flex size-[44px] shrink-0 items-center justify-center outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-phone-primary-ring"
           >
             <span
               aria-hidden
               className={cx(
-                'flex size-[22px] shrink-0 items-center justify-center rounded-full transition-[background-color,border-color] duration-[var(--duration-fast)]',
+                'flex size-[22px] shrink-0 items-center justify-center rounded-full transition-[background-color,border-color] duration-(--duration-fast)',
                 filled
                   ? 'bg-phone-primary border-2 border-phone-primary'
                   : 'border-2 border-phone-border-strong bg-transparent',
@@ -95,7 +95,7 @@ export function TaskPhoneRow({
           <Link href={href} className="flex min-h-[56px] min-w-0 flex-1 items-center gap-[8px]">
             <span
               className={cx(
-                'min-w-0 flex-1 truncate text-phone-body font-medium text-phone-text-primary transition-[color] duration-[var(--duration-fast)]',
+                'min-w-0 flex-1 truncate text-phone-body font-medium text-phone-text-primary transition-[color] duration-(--duration-fast)',
                 filled && 'text-phone-text-muted line-through',
               )}
             >

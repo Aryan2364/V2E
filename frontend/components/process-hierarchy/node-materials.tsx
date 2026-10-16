@@ -218,9 +218,9 @@ function DirectionSection({
       {mode === 'link' && (
         <div className="mb-2 rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 space-y-2">
           <input autoFocus value={linkTitle} maxLength={TITLE_MAX} onChange={(e) => setLinkTitle(e.target.value)}
-            placeholder="Title" className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white" />
+            placeholder="Title" className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white" />
           <input value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submitLink()}
-            placeholder="https://…" className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white" />
+            placeholder="https://…" className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white" />
           <div className="flex items-center gap-2">
             <button onClick={submitLink} disabled={!linkTitle.trim() || !linkUrl.trim()}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]">
@@ -293,7 +293,7 @@ function ArticleEditorModal({ initial, onSave, onCancel }: {
   }, [onCancel])
   const save = () => { if (!name.trim() || !body.trim() || busy) return; setBusy(true); onSave(name.trim(), body) }
   return createPortal(
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-80 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-lg p-5 animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center justify-between mb-3">
@@ -305,11 +305,11 @@ function ArticleEditorModal({ initial, onSave, onCancel }: {
           <span className="text-[10px] text-[#94A3B8] tabular-nums">{name.length}/{TITLE_MAX}</span>
         </div>
         <input autoFocus value={name} maxLength={TITLE_MAX} onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white mb-3" />
+          className="w-full px-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white mb-3" />
         <label className="block text-xs font-medium text-[#374151] mb-1">Content</label>
         <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={10}
           placeholder="Write the article…"
-          className="w-full px-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white resize-none" />
+          className="w-full px-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white resize-none" />
         <div className="flex justify-end mt-4">
           <button onClick={save} disabled={!name.trim() || !body.trim() || busy}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]">
@@ -346,7 +346,7 @@ export function MaterialPreviewModal({ orgId, mapId, artifact, onClose, onDownlo
   const data: MaterialViewData = { kind, url: view?.url ?? null, allow_download: artifact.allow_download, file_name: artifact.file_name }
 
   return createPortal(
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-80 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-3xl max-h-[88vh] flex flex-col overflow-hidden animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-[#E2E8F0] shrink-0">

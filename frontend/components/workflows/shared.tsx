@@ -249,14 +249,14 @@ export function useNarrowScreen(): boolean {
 // ─── Buttons ─────────────────────────────────────────────────────────────────
 
 const BTN_BASE =
-  'inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-semibold transition-colors duration-150 min-h-[44px] sm:min-h-[38px] px-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 disabled:cursor-not-allowed whitespace-nowrap'
+  'inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-semibold transition-colors duration-150 min-h-[44px] sm:min-h-[38px] px-4 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 disabled:cursor-not-allowed whitespace-nowrap'
 
 export const BTN = {
   primary: `${BTN_BASE} bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#64748B]`,
   secondary: `${BTN_BASE} bg-white text-[#2563EB] border-2 border-[#2563EB] hover:bg-[#EFF6FF] disabled:bg-[#F1F5F9] disabled:text-[#64748B] disabled:border-[#E2E8F0]`,
   danger: `${BTN_BASE} bg-[#DC2626] text-white hover:bg-[#B91C1C] disabled:bg-[#E2E8F0] disabled:text-[#64748B]`,
   quiet: `${BTN_BASE} bg-white text-[#334155] border border-[#CBD5E1] hover:bg-[#F1F5F9] disabled:bg-[#F1F5F9] disabled:text-[#64748B]`,
-  icon: 'inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:text-[#94A3B8] disabled:hover:bg-transparent disabled:cursor-not-allowed shrink-0',
+  icon: 'inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:text-[#94A3B8] disabled:hover:bg-transparent disabled:cursor-not-allowed shrink-0',
 } as const
 
 /**
@@ -323,7 +323,7 @@ export function InfoTip({ label, text, className = '' }: { label: string; text: 
             e.preventDefault()
             e.stopPropagation()
           }}
-          className={`relative inline-flex items-center justify-center w-6 h-6 -my-1 align-middle shrink-0 rounded-full text-[#475569] hover:text-[#1D4ED8] hover:bg-[#EFF6FF] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] after:absolute after:-inset-2.5 after:content-[''] ${className}`}
+          className={`relative inline-flex items-center justify-center w-6 h-6 -my-1 align-middle shrink-0 rounded-full text-[#475569] hover:text-[#1D4ED8] hover:bg-[#EFF6FF] transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] after:absolute after:-inset-2.5 after:content-[''] ${className}`}
         >
           <Info size={14} aria-hidden />
           {/* Inside the (relative) button: an sr-only span is position:absolute, and one
@@ -359,7 +359,7 @@ export function AddStepBar({
         type="button"
         onClick={onClick}
         disabled={allowed !== true}
-        className="w-full inline-flex items-center justify-center gap-2 min-h-[48px] rounded-[12px] border-2 border-dashed border-[#93C5FD] bg-white text-sm font-semibold text-[#1D4ED8] hover:bg-[#EFF6FF] hover:border-[#2563EB] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:border-[#E2E8F0] disabled:text-[#64748B]"
+        className="w-full inline-flex items-center justify-center gap-2 min-h-[48px] rounded-[12px] border-2 border-dashed border-[#93C5FD] bg-white text-sm font-semibold text-[#1D4ED8] hover:bg-[#EFF6FF] hover:border-[#2563EB] transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-[#F8FAFC] disabled:border-[#E2E8F0] disabled:text-[#64748B]"
       >
         <Plus size={16} /> {children}
       </button>
@@ -425,7 +425,7 @@ export function WorkflowBreadcrumb({ trail }: { trail: { label: string; href?: s
           {c.href ? (
             <Link
               href={c.href}
-              className="font-medium text-[#475569] hover:text-[#2563EB] hover:underline transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] truncate max-w-[40vw]"
+              className="font-medium text-[#475569] hover:text-[#2563EB] hover:underline transition-colors rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] truncate max-w-[40vw]"
             >
               {c.label}
             </Link>
@@ -581,7 +581,7 @@ export function ErrorBanner({ message, onClose }: { message: string; onClose?: (
   return (
     <div role="alert" className="flex items-start gap-2.5 rounded-[10px] border border-[#FECACA] bg-[#FEF2F2] px-3.5 py-2.5 text-sm text-[#991B1B]">
       <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-      <span className="flex-1 min-w-0 break-words">{message}</span>
+      <span className="flex-1 min-w-0 wrap-break-word">{message}</span>
       {onClose && (
         <button type="button" onClick={onClose} className="text-[#991B1B] hover:underline text-[13px] font-medium shrink-0">
           Close

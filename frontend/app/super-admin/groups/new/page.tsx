@@ -31,7 +31,7 @@ function Field({ label, error, required, children }: { label: string; error?: st
 
 const inputCls = (hasError?: boolean) =>
   [
-    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none transition-colors',
+    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden transition-colors',
     hasError ? 'border-2 border-[#DC2626]' : 'border border-[#CBD5E1] focus:border-2 focus:border-[#2563EB]',
   ].join(' ')
 

@@ -66,7 +66,7 @@ function EditButton({ data }: { data: ProcessNodeData }) {
         type="button"
         onClick={(e) => { e.stopPropagation(); data.onEdit!() }}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); data.onEdit!() } }}
-        className="nodrag absolute top-1 right-1 w-5 h-5 inline-flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+        className="nodrag absolute top-1 right-1 w-5 h-5 inline-flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
         aria-label={`Edit ${data.name}`}
       >
         <Pencil size={12} />
@@ -85,7 +85,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
     <>
       <FourHandles />
       <div
-        className={`relative bg-white rounded-[8px] px-2.5 py-1.5 shadow-sm flex flex-col justify-center ${canOpen ? 'cursor-pointer' : ''}`}
+        className={`relative bg-white rounded-[8px] px-2.5 py-1.5 shadow-xs flex flex-col justify-center ${canOpen ? 'cursor-pointer' : ''}`}
         style={{ border: `2px solid ${borderColor(data, accent)}`, width: isContainer ? 220 : 170, minHeight: isContainer ? 88 : 60 }}
       >
         {/* Drillable nodes: pencil edits; the body itself opens the level. */}
@@ -102,7 +102,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
         )}
         <div className={`flex items-start gap-1.5 ${data.canExpand ? 'pr-11' : canOpen ? 'pr-5' : ''}`}>
           <span style={{ color: '#2563EB' }} className="shrink-0 mt-0.5">{KIND_META[data.kind].icon}</span>
-          <span className="flex-1 min-w-0 text-[13px] font-medium text-[#0F172A] leading-snug break-words">{data.name}</span>
+          <span className="flex-1 min-w-0 text-[13px] font-medium text-[#0F172A] leading-snug wrap-break-word">{data.name}</span>
         </div>
         {data.linkedMapName && data.linkedMapName !== data.name && (
           <div className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-[#2563EB]">
@@ -142,7 +142,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
                 {checks.map((c) => (
                   <li key={c.id} className="flex items-start gap-1 text-[10px] leading-snug text-[#334155]">
                     <Square size={9} className="shrink-0 mt-0.5 text-[#94A3B8]" />
-                    <span className="break-words">{c.text}</span>
+                    <span className="wrap-break-word">{c.text}</span>
                   </li>
                 ))}
               </ul>
@@ -159,7 +159,7 @@ function DecisionNode({ data }: NodeProps<ProcessNodeData>) {
     <div className="relative" style={{ width: 96, height: 96 }}>
       <FourHandles />
       <div
-        className="absolute bg-white shadow-sm"
+        className="absolute bg-white shadow-xs"
         style={{
           width: 66,
           height: 66,
@@ -188,12 +188,12 @@ function EventNode({ data }: NodeProps<ProcessNodeData>) {
           absolutely positioned below so you can read it on the canvas. */}
       <Tooltip label={data.name}>
         <div
-          className="relative flex items-center justify-center rounded-full bg-white shadow-sm"
+          className="relative flex items-center justify-center rounded-full bg-white shadow-xs"
           style={{ width: 44, height: 44, border: `3px solid ${borderColor(data, accent)}`, color: accent }}
           aria-label={data.name}
         >
           {isStart ? <Play size={18} /> : <Flag size={18} />}
-          <span className="absolute top-[calc(100%+4px)] left-1/2 -translate-x-1/2 w-[120px] text-center text-[11px] font-semibold leading-tight break-words pointer-events-none"
+          <span className="absolute top-[calc(100%+4px)] left-1/2 -translate-x-1/2 w-[120px] text-center text-[11px] font-semibold leading-tight wrap-break-word pointer-events-none"
             style={{ color: accent }}>
             {data.name}
           </span>
@@ -207,14 +207,14 @@ function EventNode({ data }: NodeProps<ProcessNodeData>) {
 // which render as child nodes inside it (ReactFlow parent/extent). ────────────
 function BandNode({ data }: NodeProps<ProcessNodeData>) {
   return (
-    <div className="w-full h-full rounded-[12px] border-2 border-[#3B82F6] bg-[#EFF6FF]/40 shadow-sm">
+    <div className="w-full h-full rounded-[12px] border-2 border-[#3B82F6] bg-[#EFF6FF]/40 shadow-xs">
       <Handle type="target" position={Position.Left} style={handleStyle} />
       <div className="absolute top-0 left-0 right-0 h-7 flex items-center gap-1.5 px-2 bg-[#EFF6FF] border-b border-[#BFDBFE] rounded-t-[10px]">
         <Folder size={13} className="text-[#2563EB] shrink-0" />
         <span className="flex-1 min-w-0 truncate text-[12px] font-semibold text-[#0F172A]">{data.name}</span>
         <Tooltip label="Collapse">
           <button type="button" onClick={(e) => { e.stopPropagation(); data.onToggleExpand?.() }}
-            className="nodrag shrink-0 w-5 h-5 inline-flex items-center justify-center rounded text-[#64748B] hover:text-[#0F172A] hover:bg-white"
+            className="nodrag shrink-0 w-5 h-5 inline-flex items-center justify-center rounded-xs text-[#64748B] hover:text-[#0F172A] hover:bg-white"
             aria-label="Collapse"><Minimize2 size={12} /></button>
         </Tooltip>
       </div>
@@ -228,7 +228,7 @@ function BandNode({ data }: NodeProps<ProcessNodeData>) {
 function NoteNode({ data }: NodeProps<ProcessNodeData>) {
   return (
     <div
-      className={`relative rounded-[6px] px-3 py-2.5 shadow-sm ${data.selected ? 'ring-2 ring-[#2563EB]' : ''}`}
+      className={`relative rounded-[6px] px-3 py-2.5 shadow-xs ${data.selected ? 'ring-2 ring-[#2563EB]' : ''}`}
       style={{ width: 190, minHeight: 96, background: '#FEF9C3', border: '1px solid #FDE68A' }}
     >
       <div className="flex items-center gap-1 mb-1 text-[#B45309]">
@@ -236,7 +236,7 @@ function NoteNode({ data }: NodeProps<ProcessNodeData>) {
         <span className="text-[10px] font-semibold uppercase tracking-wide">Note</span>
         {data.onEdit && <Pencil size={11} className="ml-auto text-[#CA8A04]" />}
       </div>
-      <p className="text-[12px] leading-snug text-[#713F12] whitespace-pre-wrap break-words">
+      <p className="text-[12px] leading-snug text-[#713F12] whitespace-pre-wrap wrap-break-word">
         {data.name || 'Empty note — click to write'}
       </p>
     </div>
@@ -270,7 +270,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
               aria-label={isPool ? 'Reorder pool' : 'Reorder lane'}
               onPointerDown={(e) => { e.stopPropagation(); data.onReorderStart!(e) }}
               onClick={(e) => e.stopPropagation()}
-              className="nodrag inline-flex items-center justify-center rounded text-[#64748B] hover:text-[#2563EB] hover:bg-[#EFF6FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+              className="nodrag inline-flex items-center justify-center rounded-xs text-[#64748B] hover:text-[#2563EB] hover:bg-[#EFF6FF] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
               style={{ pointerEvents: 'auto', cursor: 'grab', width: 20, height: 20, touchAction: 'none' }}
             >
               <GripVertical size={14} />
@@ -284,7 +284,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); data.onRename!() }}
-              className="nodrag text-[11px] font-bold text-[#1E293B] whitespace-nowrap hover:text-[#2563EB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded"
+              className="nodrag text-[11px] font-bold text-[#1E293B] whitespace-nowrap hover:text-[#2563EB] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-xs"
               style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', pointerEvents: 'auto' }}
             >
               {data.label}
@@ -309,7 +309,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
             onClick={(e) => { e.stopPropagation(); data.onAdd!() }}
             aria-label="Add a step to this lane"
             style={{ pointerEvents: 'auto' }}
-            className="nodrag absolute top-2 right-2 w-6 h-6 inline-flex items-center justify-center rounded-[6px] text-[#2563EB] hover:bg-[#EFF6FF] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+            className="nodrag absolute top-2 right-2 w-6 h-6 inline-flex items-center justify-center rounded-[6px] text-[#2563EB] hover:bg-[#EFF6FF] transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
           >
             <Plus size={16} />
           </button>
@@ -349,7 +349,7 @@ function DocNode({ data }: NodeProps<DocNodeData>) {
           type="button"
           onClick={(e) => { e.stopPropagation(); data.onOpen() }}
           style={{ width: DOC_CHIP_W, height: DOC_CHIP_H }}
-          className="nodrag group flex items-center gap-1.5 px-2 rounded-[7px] border border-dashed border-[#CBD5E1] bg-white shadow-sm text-left transition-colors hover:border-[#2563EB]"
+          className="nodrag group flex items-center gap-1.5 px-2 rounded-[7px] border border-dashed border-[#CBD5E1] bg-white shadow-xs text-left transition-colors hover:border-[#2563EB]"
         >
           <span className="w-[3px] self-stretch my-1 rounded-full shrink-0" style={{ background: isInput ? '#0EA5E9' : '#8B5CF6' }} />
           <Icon size={13} className="shrink-0" style={{ color: isInput ? '#0EA5E9' : '#8B5CF6' }} />

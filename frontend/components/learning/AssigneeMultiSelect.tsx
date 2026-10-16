@@ -76,7 +76,7 @@ export default function AssigneeMultiSelect({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search by name, role or department…"
-          className="flex-1 bg-transparent text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none"
+          className="flex-1 bg-transparent text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
         />
         {q && (
           <button type="button" onClick={() => setQ('')} className="text-[#94A3B8] hover:text-[#475569] shrink-0">
@@ -122,7 +122,7 @@ export default function AssigneeMultiSelect({
                 ].join(' ')}
               >
                 <span className={[
-                  'w-4 h-4 rounded flex items-center justify-center border shrink-0',
+                  'w-4 h-4 rounded-sm flex items-center justify-center border shrink-0',
                   checked ? 'bg-[#2563EB] border-[#2563EB]' : 'border-[#CBD5E1] bg-white',
                 ].join(' ')}>
                   {checked && <Check size={12} className="text-white" />}

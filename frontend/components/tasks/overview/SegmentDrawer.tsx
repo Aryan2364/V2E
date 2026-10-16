@@ -70,7 +70,7 @@ export default function SegmentDrawer({
   const overdue = rows.filter((r) => taskTiming(r) === 'overdue').length
 
   return createPortal(
-    <div className="fixed inset-0 z-[60]">
+    <div className="fixed inset-0 z-60">
       <div className="absolute inset-0 bg-[#0F172A]/40" onClick={onClose} />
       <aside className="absolute right-0 top-0 h-full w-full max-w-[460px] bg-white shadow-[-12px_0_40px_rgba(0,0,0,0.18)] flex flex-col">
         <div className="px-5 py-4 flex items-start justify-between border-b border-[#E2E8F0]">

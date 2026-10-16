@@ -145,7 +145,7 @@ export function GoalStatusPicker({
         title="Change status"
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="inline-flex items-center gap-1.5 font-medium text-[12px] rounded-full pl-2.5 pr-2 py-0.5 border whitespace-nowrap transition-shadow hover:shadow-[0_0_0_2px_rgba(37,99,235,0.18)] focus:outline-none focus:shadow-[0_0_0_2px_rgba(37,99,235,0.35)] disabled:opacity-70"
+        className="inline-flex items-center gap-1.5 font-medium text-[12px] rounded-full pl-2.5 pr-2 py-0.5 border whitespace-nowrap transition-shadow hover:shadow-[0_0_0_2px_rgba(37,99,235,0.18)] focus:outline-hidden focus:shadow-[0_0_0_2px_rgba(37,99,235,0.35)] disabled:opacity-70"
         style={{ backgroundColor: m.bg, color: m.text, borderColor: m.border }}
       >
         {saving ? (

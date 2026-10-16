@@ -296,7 +296,7 @@ export default function MultiSelect(props: Props) {
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-disabled={disabled || undefined}
-        className={`w-full flex items-center gap-2 min-h-[42px] rounded-[8px] border px-3 py-1.5 text-left focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors ${
+        className={`w-full flex items-center gap-2 min-h-[42px] rounded-[8px] border px-3 py-1.5 text-left focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors ${
           disabled
             ? 'border-[#CBD5E1] bg-[#F1F5F9] text-[#94A3B8] cursor-not-allowed'
             : 'border-[#CBD5E1] bg-[#F8FAFC] hover:bg-white hover:border-[#94A3B8] cursor-pointer'
@@ -359,7 +359,7 @@ export default function MultiSelect(props: Props) {
               onKeyDown={onSearchKeyDown}
               placeholder={searchPlaceholder}
               aria-label={searchPlaceholder}
-              className="flex-1 min-w-0 text-[14px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none bg-transparent"
+              className="flex-1 min-w-0 text-[14px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden bg-transparent"
             />
             {value.length > 0 && (
               <button

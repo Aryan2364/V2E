@@ -143,7 +143,7 @@ export default function MaterialRow({
             onChange={(e) => setTitle(e.target.value)}
             onBlur={() => title.trim() && title !== item.title && save({ title: title.trim() })}
             placeholder="Material title"
-            className="w-full px-2.5 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm font-medium text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+            className="w-full px-2.5 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm font-medium text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
           />
 
           {/* Type-specific editor */}
@@ -161,7 +161,7 @@ export default function MaterialRow({
                 }
               }}
               placeholder="https://… (paste a link, video, or doc)"
-              className="w-full px-2.5 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+              className="w-full px-2.5 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
             />
           )}
           {item.content_type === 'url' && (
@@ -176,14 +176,14 @@ export default function MaterialRow({
               onBlur={() => body !== (item.content_body ?? '') && save({ content_body: body })}
               rows={3}
               placeholder="Write the article content…"
-              className="w-full px-2.5 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-y"
+              className="w-full px-2.5 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-y"
             />
           )}
 
           {item.content_type === 'file' && (
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2 text-xs text-[#475569]">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#F1F5F9] font-semibold text-[#475569] text-[10px]">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-xs bg-[#F1F5F9] font-semibold text-[#475569] text-[10px]">
                   {fileKindLabel(item.file_name ?? '')}
                 </span>
                 <span className="truncate max-w-[220px]">{item.file_name ?? 'No file'}</span>
@@ -265,7 +265,7 @@ export default function MaterialRow({
 
       {/* Preview modal */}
       {preview && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-black/50" onClick={() => setPreview(null)}>
+        <div className="fixed inset-0 z-60 flex items-center justify-center px-4 bg-black/50" onClick={() => setPreview(null)}>
           <div className="bg-white rounded-[14px] w-full max-w-4xl max-h-[88vh] overflow-hidden flex flex-col shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3 border-b border-[#E2E8F0]">
               <div className="min-w-0">

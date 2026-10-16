@@ -86,7 +86,7 @@ export function UndoToastProvider({ children }: { children: React.ReactNode }) {
               aria-live="polite"
               data-slot="undo-toast"
               className={cx(
-                'fixed inset-x-0 z-[80] flex justify-center px-[16px]',
+                'fixed inset-x-0 z-80 flex justify-center px-[16px]',
                 'bottom-[calc(var(--bottom-bar)+var(--safe-bottom)+16px)]',
               )}
             >

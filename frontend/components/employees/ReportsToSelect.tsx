@@ -145,7 +145,7 @@ export default function ReportsToSelect({
   }
 
   const triggerCls =
-    'w-full flex items-center gap-2.5 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-left bg-white hover:border-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors'
+    'w-full flex items-center gap-2.5 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-left bg-white hover:border-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors'
 
   const PersonRow = ({ p }: { p: EmployeeProfile }) => {
     const isSel = p.user_id === value
@@ -174,7 +174,7 @@ export default function ReportsToSelect({
 
   const Group = ({ g }: { g: DeptGroup }) => (
     <div>
-      <div className="sticky top-0 z-[1] flex items-center gap-2 px-3 py-1.5 bg-[#F1F5F9] border-y border-[#E2E8F0]">
+      <div className="sticky top-0 z-1 flex items-center gap-2 px-3 py-1.5 bg-[#F1F5F9] border-y border-[#E2E8F0]">
         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: colorFor(g.dept.id) }} />
         <span className="text-[11px] font-semibold uppercase tracking-wide text-[#475569] truncate">
           {g.dept.name}
@@ -233,7 +233,7 @@ export default function ReportsToSelect({
           <div
             ref={panelRef}
             style={style}
-            className="z-[80] flex flex-col border border-[#E2E8F0] rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden"
+            className="z-80 flex flex-col border border-[#E2E8F0] rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden"
           >
             {/* Search */}
             <div className="relative border-b border-[#E2E8F0] shrink-0">
@@ -242,7 +242,7 @@ export default function ReportsToSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search people…"
-              className="w-full pl-9 pr-8 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none"
+              className="w-full pl-9 pr-8 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
               autoFocus
             />
             {query && (

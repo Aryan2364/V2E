@@ -180,7 +180,7 @@ export function ClearNarrowingButton({
     <button
       type="button"
       onClick={onClear}
-      className="mt-4 h-11 sm:h-9 px-4 rounded-btn border border-primary bg-white text-sm font-medium text-primary hover:bg-primary-light focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
+      className="mt-4 h-11 sm:h-9 px-4 rounded-btn border border-primary bg-white text-sm font-medium text-primary hover:bg-primary-light focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary transition-colors"
     >
       {label}
     </button>

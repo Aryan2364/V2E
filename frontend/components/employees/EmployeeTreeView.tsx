@@ -123,7 +123,7 @@ function useIsDesktop() {
 
 function FrLabelNode({ data }: { data: { label: string; color: string } }) {
   return (
-    <div className="inline-flex items-center gap-1.5 rounded-[999px] bg-white border border-[#E2E8F0] px-2.5 py-1 shadow-sm">
+    <div className="inline-flex items-center gap-1.5 rounded-[999px] bg-white border border-[#E2E8F0] px-2.5 py-1 shadow-xs">
       <Zap size={11} className="text-[#CA8A04]" />
       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: data.color }} />
       <span className="text-[11px] font-semibold text-[#475569]">Unlinked · {data.label}</span>
@@ -256,7 +256,7 @@ function Flow({
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#E2E8F0" />
       <Panel position="bottom-center">
         <div
-          className={`pointer-events-none select-none rounded-[999px] border border-[#E2E8F0] bg-white/85 px-3 py-1 text-[11px] font-medium text-[#94A3B8] shadow-sm backdrop-blur transition-opacity duration-500 ${
+          className={`pointer-events-none select-none rounded-[999px] border border-[#E2E8F0] bg-white/85 px-3 py-1 text-[11px] font-medium text-[#94A3B8] shadow-xs backdrop-blur transition-opacity duration-500 ${
             interacted ? 'opacity-0' : 'opacity-100'
           }`}
         >
@@ -267,7 +267,7 @@ function Flow({
       {!nav.isTouch && <CanvasScrollbars nodes={rfNodes} setInstant={nav.setInstant} />}
       {nav.needsMinimap && (
         <MiniMap nodeColor={() => '#2563EB'} maskColor="rgba(15,23,42,0.05)" pannable zoomable
-          className="!hidden sm:!block" style={{ width: 180, height: 120 }} />
+          className="hidden! sm:block!" style={{ width: 180, height: 120 }} />
       )}
     </ReactFlow>
     </>
@@ -295,14 +295,14 @@ function EmpCard({
       type="button"
       onClick={() => onOpen(emp.id)}
       style={{ borderLeft: `4px solid ${color}` }}
-      className={`relative w-full flex items-center gap-2.5 bg-white rounded-[10px] border px-3 py-2.5 text-left hover:shadow-sm transition-shadow ${
+      className={`relative w-full flex items-center gap-2.5 bg-white rounded-[10px] border px-3 py-2.5 text-left hover:shadow-xs transition-shadow ${
         freeRadical ? 'border-dashed border-[#CBD5E1]' : 'border-[#E2E8F0]'
       }`}
     >
       {hidden?.hiddenManager && (
         <Tooltip label="Reports to someone hidden by the current filter">
         <span
-          className="pointer-events-none absolute -top-[6px] left-6 w-2 h-2 rounded-full border-2 border-white shadow-sm"
+          className="pointer-events-none absolute top-[-6px] left-6 w-2 h-2 rounded-full border-2 border-white shadow-xs"
           style={{ backgroundColor: color }}
         />
         </Tooltip>
@@ -310,7 +310,7 @@ function EmpCard({
       {hidden?.hiddenReports && (
         <Tooltip label="Has reports hidden by the current filter">
         <span
-          className="pointer-events-none absolute -bottom-[6px] left-6 w-2 h-2 rounded-full border-2 border-white shadow-sm"
+          className="pointer-events-none absolute bottom-[-6px] left-6 w-2 h-2 rounded-full border-2 border-white shadow-xs"
           style={{ backgroundColor: color }}
         />
         </Tooltip>
@@ -524,7 +524,7 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
         )}
         {hasHiddenNeighbours && (
           <span className="inline-flex items-center gap-1.5 text-[#94A3B8]">
-            <span className="w-2 h-2 rounded-full bg-[#94A3B8] border border-white shadow-sm" />
+            <span className="w-2 h-2 rounded-full bg-[#94A3B8] border border-white shadow-xs" />
             dot = connection hidden by filter (above = manager, below = reports)
           </span>
         )}

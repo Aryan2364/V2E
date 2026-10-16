@@ -202,7 +202,7 @@ export default function StyledSelect({
       ? 'gap-2 rounded-full px-2.5 py-1 text-[13px]'
       : 'gap-2.5 rounded-[8px] px-3 py-2.5 text-[15px]'
   const triggerCls =
-    `w-full flex items-center border border-[#CBD5E1] text-left bg-[#F8FAFC] hover:bg-white hover:border-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors disabled:bg-[#F1F5F9] disabled:text-[#94A3B8] disabled:cursor-not-allowed ${sizeCls}`
+    `w-full flex items-center border border-[#CBD5E1] text-left bg-[#F8FAFC] hover:bg-white hover:border-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors disabled:bg-[#F1F5F9] disabled:text-[#94A3B8] disabled:cursor-not-allowed ${sizeCls}`
 
   return (
     <div ref={wrapRef} className={`relative ${wrapperClassName}`}>
@@ -248,7 +248,7 @@ export default function StyledSelect({
                   setActive(-1)
                 }}
                 placeholder={searchPlaceholder}
-                className="flex-1 min-w-0 bg-transparent text-[16px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none"
+                className="flex-1 min-w-0 bg-transparent text-[16px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
               />
             </div>
           )}

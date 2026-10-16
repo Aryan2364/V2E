@@ -32,8 +32,8 @@ function SkeletonRow() {
     <div className="flex items-center gap-3 px-3 py-2.5 animate-pulse">
       <div className="w-8 h-8 rounded-full bg-[#F1F5F9] shrink-0" />
       <div className="flex-1 space-y-1.5">
-        <div className="h-3 bg-[#F1F5F9] rounded w-32" />
-        <div className="h-2.5 bg-[#F1F5F9] rounded w-20" />
+        <div className="h-3 bg-[#F1F5F9] rounded-xs w-32" />
+        <div className="h-2.5 bg-[#F1F5F9] rounded-xs w-20" />
       </div>
     </div>
   )
@@ -321,7 +321,7 @@ export default function AssigneeSelector({
           centered it never drifts on scroll nor escapes the parent modal. */}
       {open && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40"
+          className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40"
           onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
           <div className="w-[440px] max-w-full max-h-[80vh] rounded-[12px] bg-white border border-[#E2E8F0] shadow-[0_12px_40px_rgba(0,0,0,0.20)] flex flex-col overflow-hidden">
@@ -349,7 +349,7 @@ export default function AssigneeSelector({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by name, role, or department…"
-                  className="w-full pl-8 pr-3 py-[7px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] border border-[#E2E8F0] rounded-[8px] focus:border-[#2563EB] focus:outline-none bg-white"
+                  className="w-full pl-8 pr-3 py-[7px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] border border-[#E2E8F0] rounded-[8px] focus:border-[#2563EB] focus:outline-hidden bg-white"
                 />
               </div>
 

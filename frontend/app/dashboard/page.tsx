@@ -88,7 +88,7 @@ function StatCard({
 }) {
   return (
     <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-4 sm:p-6 flex items-start gap-3 sm:gap-4">
-      <div className="w-10 h-10 rounded-[8px] bg-[#EFF6FF] flex items-center justify-center text-[#2563EB] flex-shrink-0">
+      <div className="w-10 h-10 rounded-[8px] bg-[#EFF6FF] flex items-center justify-center text-[#2563EB] shrink-0">
         {icon}
       </div>
       <div>
@@ -113,10 +113,10 @@ function QuickNavCard({ label, description, href, icon, iconBg }: QuickNavCardPr
   return (
     <Link
       href={href}
-      className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 flex items-start gap-4 hover:border-[#2563EB] hover:shadow-md active:scale-[0.99] active:border-[#2563EB] transition-all duration-150 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1"
+      className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 flex items-start gap-4 hover:border-[#2563EB] hover:shadow-md active:scale-[0.99] active:border-[#2563EB] transition-all duration-150 group focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1"
     >
       <div
-        className={`w-10 h-10 rounded-[8px] flex items-center justify-center flex-shrink-0 ${iconBg}`}
+        className={`w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0 ${iconBg}`}
       >
         {icon}
       </div>
@@ -126,7 +126,7 @@ function QuickNavCard({ label, description, href, icon, iconBg }: QuickNavCardPr
       </div>
       <ChevronRight
         size={16}
-        className="text-[#CBD5E1] group-hover:text-[#2563EB] group-active:text-[#2563EB] transition-colors mt-0.5 flex-shrink-0"
+        className="text-[#CBD5E1] group-hover:text-[#2563EB] group-active:text-[#2563EB] transition-colors mt-0.5 shrink-0"
       />
     </Link>
   )
@@ -208,7 +208,7 @@ export default function DashboardPage() {
             </div>
             <Link
               href="/settings/organization/company"
-              className="flex items-center gap-1.5 text-sm font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors flex-shrink-0 whitespace-nowrap"
+              className="flex items-center gap-1.5 text-sm font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors shrink-0 whitespace-nowrap"
             >
               Continue setup
               <ArrowRight size={14} />

@@ -37,7 +37,7 @@ export default function ConfirmDialog({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center px-4 bg-black/50"
+      className="fixed inset-0 z-70 flex items-center justify-center px-4 bg-black/50"
       onClick={() => { if (!loading) onCancel() }}
     >
       <div className="bg-white rounded-[16px] w-full max-w-sm p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>

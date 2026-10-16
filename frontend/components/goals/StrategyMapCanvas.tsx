@@ -158,7 +158,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
     // max-h-full, not flex-1: the card hugs its bands (no dead white space
     // below the last one) and only starts scrolling once the map is taller
     // than the room available.
-    <div className="max-h-full rounded-[12px] border border-[#E2E8F0] bg-white overflow-auto shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)]">
+    <div className="max-h-full rounded-[12px] border border-[#E2E8F0] bg-white overflow-auto shadow-card">
       {/* The click-to-clear handler lives on this CONTENT row, not on the scroll
           box above it: a click on the scroll box's own scrollbar targets that
           box, so it can never reach here and can never drop the pin. */}
@@ -359,8 +359,8 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                 className={[
                   'absolute rounded-full flex items-center justify-center text-center px-4',
                   'transition-[opacity,box-shadow,transform,background-color] duration-200 ease-out',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2',
-                  hot || isPinned ? 'z-10' : 'z-[1]',
+                  'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2',
+                  hot || isPinned ? 'z-10' : 'z-1',
                   hot ? '-translate-y-0.5' : '',
                 ].join(' ')}
                 style={{
@@ -381,7 +381,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                 }}
               >
                 <span
-                  className="text-[12.5px] font-semibold leading-[1.25] line-clamp-2 break-words"
+                  className="text-[12.5px] font-semibold leading-tight line-clamp-2 wrap-break-word"
                   style={{ color: m.text }}
                 >
                   {n.goal.title}

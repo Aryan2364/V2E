@@ -33,10 +33,10 @@ export default function RoleInfoPanel({ role, departmentName, canEdit, onEdit, o
 
   return createPortal(
     <>
-      {open && <div className="fixed inset-0 bg-black/20 z-[60]" onClick={onClose} />}
+      {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
 
       <div
-        className={`fixed inset-y-0 right-0 z-[70] w-full max-w-lg bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-70 w-full max-w-lg bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

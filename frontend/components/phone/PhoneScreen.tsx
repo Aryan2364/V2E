@@ -23,7 +23,7 @@ import { cx } from './primitives'
 
 /* 16px plus the side safe area, or wider to centre a 600px column sideways. */
 const SIDE_PADDING =
-  'pl-[max(calc(16px_+_var(--safe-left)),calc((100vw_-_var(--phone-column))_/_2))] pr-[max(calc(16px_+_var(--safe-right)),calc((100vw_-_var(--phone-column))_/_2))]'
+  'pl-[max(calc(16px+var(--safe-left)),calc((100vw-var(--phone-column))/2))] pr-[max(calc(16px+var(--safe-right)),calc((100vw-var(--phone-column))/2))]'
 
 export default function PhoneScreen({
   title,
@@ -50,7 +50,7 @@ export default function PhoneScreen({
         tabIndex={-1}
         data-slot="phone-content"
         className={cx(
-          'w-full min-w-0 flex-1 outline-none',
+          'w-full min-w-0 flex-1 outline-hidden',
           SIDE_PADDING,
           'pt-[16px] pb-[calc(var(--bottom-bar)+var(--safe-bottom)+16px)]',
         )}

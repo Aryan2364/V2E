@@ -40,7 +40,7 @@ export function CreatorChip({ person }: { person: PersonRef }) {
       <span
         tabIndex={0}
         aria-label={`${person.name}, creator. ${CREATOR_TIP}.`}
-        className="inline-flex items-center gap-1.5 bg-[#EFF6FF] border border-[#BFDBFE] rounded-[8px] pl-1.5 pr-2 py-1 max-w-[220px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+        className="inline-flex items-center gap-1.5 bg-[#EFF6FF] border border-[#BFDBFE] rounded-[8px] pl-1.5 pr-2 py-1 max-w-[220px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
       >
         <span aria-hidden className="w-5 h-5 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-[9px] font-bold shrink-0">
           {initials(person.name)}

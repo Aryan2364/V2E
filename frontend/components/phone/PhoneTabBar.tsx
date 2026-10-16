@@ -85,7 +85,7 @@ export default function PhoneTabBar() {
       data-fixed-bottom="tab-bar"
       className={cx(
         'fixed inset-x-0 bottom-0 z-40 flex border-t border-phone-border-light bg-phone-surface',
-        'h-[calc(var(--h-tab-bar)+var(--safe-bottom))] pb-[var(--safe-bottom)] pl-[var(--safe-left)] pr-[var(--safe-right)]',
+        'h-[calc(var(--h-tab-bar)+var(--safe-bottom))] pb-(--safe-bottom) pl-(--safe-left) pr-(--safe-right)',
       )}
     >
       {tabs.map((tab) => {
@@ -105,8 +105,8 @@ export default function PhoneTabBar() {
             className={cx(
               'flex min-w-0 flex-1 basis-0 flex-col items-center justify-center gap-[4px] px-[4px]',
               '[&_svg]:size-[22px] [&_svg]:shrink-0',
-              'transition-[background-color] duration-[var(--duration-fast)] active:bg-phone-surface-control',
-              'outline-none focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring',
+              'transition-[background-color] duration-(--duration-fast) active:bg-phone-surface-control',
+              'outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring',
               isActive ? 'text-phone-primary-text' : 'text-phone-text-secondary',
             )}
           >
@@ -115,7 +115,7 @@ export default function PhoneTabBar() {
               {count !== null ? (
                 <span
                   aria-hidden
-                  className="absolute -top-[8px] left-[12px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-phone-primary px-[5px] text-[11px] font-semibold leading-none text-phone-primary-foreground"
+                  className="absolute top-[-8px] left-[12px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-phone-primary px-[5px] text-[11px] font-semibold leading-none text-phone-primary-foreground"
                 >
                   {count > 99 ? '99+' : count}
                 </span>

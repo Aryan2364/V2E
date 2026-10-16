@@ -64,7 +64,7 @@ export default function PhoneShell() {
   return (
     <TaskBadgeProvider orgId={user?.organizationId ?? ''}>
       <UndoToastProvider>
-        <div data-slot="phone-shell" className="flex min-h-[100dvh] flex-col bg-phone-surface-sunken text-phone-text-body">
+        <div data-slot="phone-shell" className="flex min-h-dvh flex-col bg-phone-surface-sunken text-phone-text-body">
           {redirect ? (
             // A moment while /dashboard moves on to My work: the bar, no content.
             <PhoneScreen title="V2E">{null}</PhoneScreen>

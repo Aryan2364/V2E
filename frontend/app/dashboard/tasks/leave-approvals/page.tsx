@@ -149,7 +149,7 @@ export default function LeaveApprovalsPage() {
       desktopHiddenBelow: 'lg',
       render: (l) =>
         l.reason ? (
-          <span className="text-[#475569] break-words">{l.reason}</span>
+          <span className="text-[#475569] wrap-break-word">{l.reason}</span>
         ) : (
           <span className="text-[#475569] italic">No reason given</span>
         ),
@@ -257,7 +257,7 @@ export default function LeaveApprovalsPage() {
                 maxLength={500}
                 autoFocus
                 placeholder="e.g. Quarter-end close needs full team"
-                className="w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none"
+                className="w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none"
               />
             </div>
             {rejectError && (

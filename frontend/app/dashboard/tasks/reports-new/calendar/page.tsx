@@ -189,7 +189,7 @@ export default function CalendarReportPage() {
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search task or person…" className="w-full rounded-[8px] border border-[#CBD5E1] bg-white pl-9 pr-3 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search task or person…" className="w-full rounded-[8px] border border-[#CBD5E1] bg-white pl-9 pr-3 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]" />
         </div>
         <div className="w-[210px]"><DepartmentMultiSelect selected={deptIds} onChange={setDeptIds} departments={departments} allLabel="All departments" /></div>
         <div className="w-[180px]"><StyledSelect value={freq} onChange={setFreq} options={freqOptions} /></div>

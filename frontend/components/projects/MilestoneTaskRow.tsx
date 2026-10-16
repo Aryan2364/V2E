@@ -53,7 +53,7 @@ export default function MilestoneTaskRow({ pt, warnings, onSetup }: MilestoneTas
       {task.id && (
         <a
           href={`/dashboard/tasks/${task.id}`}
-          className="p-1 rounded hover:bg-[#F1F5F9] text-[#475569] shrink-0 transition-colors"
+          className="p-1 rounded-xs hover:bg-[#F1F5F9] text-[#475569] shrink-0 transition-colors"
         >
           <ExternalLink size={13} />
         </a>

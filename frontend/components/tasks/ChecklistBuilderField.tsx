@@ -290,7 +290,7 @@ export default function ChecklistBuilderField({
                           value={g.title}
                           onChange={(e) => updateGroupTitle(g.key, e.target.value)}
                           placeholder="Checklist name"
-                          className="flex-1 min-w-0 border-b border-transparent hover:border-[#E2E8F0] focus:border-[#2563EB] px-0.5 py-0.5 text-sm font-semibold text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none bg-transparent"
+                          className="flex-1 min-w-0 border-b border-transparent hover:border-[#E2E8F0] focus:border-[#2563EB] px-0.5 py-0.5 text-sm font-semibold text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden bg-transparent"
                         />
                       ) : (
                         <span className="flex-1 text-sm font-semibold text-[#0F172A]">{g.title.trim() || 'Checklist'}</span>
@@ -317,8 +317,8 @@ export default function ChecklistBuilderField({
                     {/* Items */}
                     {g.items.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-2 mb-1.5">
-                        <div className="w-4 h-4 rounded border border-[#CBD5E1] shrink-0" />
-                        <span className="flex-1 min-w-0 break-words text-sm text-[#0F172A]">{item.title}</span>
+                        <div className="w-4 h-4 rounded-xs border border-[#CBD5E1] shrink-0" />
+                        <span className="flex-1 min-w-0 wrap-break-word text-sm text-[#0F172A]">{item.title}</span>
                         {!locked && (
                           <button
                             type="button"
@@ -342,7 +342,7 @@ export default function ChecklistBuilderField({
                         onChange={(e) => updateGroupDraft(g.key, e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addItemToGroup(g.key) } }}
                         placeholder="Add an item…"
-                        className="flex-1 border border-[#CBD5E1] rounded-[8px] px-3 py-[8px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white"
+                        className="flex-1 border border-[#CBD5E1] rounded-[8px] px-3 py-[8px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white"
                       />
                       <button
                         type="button"

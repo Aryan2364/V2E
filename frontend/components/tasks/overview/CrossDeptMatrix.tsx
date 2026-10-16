@@ -77,8 +77,8 @@ export default function CrossDeptMatrix({
         </div>
       )}
       <p className="text-xs text-[#94A3B8] mt-2 shrink-0">
-        <span className="inline-block w-2.5 h-2.5 rounded-sm align-middle mr-1" style={{ background: 'rgba(37,99,235,0.6)' }} /> within a department ·
-        <span className="inline-block w-2.5 h-2.5 rounded-sm align-middle mx-1" style={{ background: 'rgba(220,38,38,0.6)' }} /> handed across departments
+        <span className="inline-block w-2.5 h-2.5 rounded-xs align-middle mr-1" style={{ background: 'rgba(37,99,235,0.6)' }} /> within a department ·
+        <span className="inline-block w-2.5 h-2.5 rounded-xs align-middle mx-1" style={{ background: 'rgba(220,38,38,0.6)' }} /> handed across departments
       </p>
     </div>
   )

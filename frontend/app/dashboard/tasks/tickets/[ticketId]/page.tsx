@@ -110,7 +110,7 @@ export default function TicketDetailPage() {
   if (loading) {
     return (
       <div className="flex flex-col gap-6 animate-pulse">
-        <div className="h-8 w-64 bg-[#F1F5F9] rounded" />
+        <div className="h-8 w-64 bg-[#F1F5F9] rounded-xs" />
         <div className="h-64 bg-[#F1F5F9] rounded-[12px]" />
       </div>
     )
@@ -273,7 +273,7 @@ export default function TicketDetailPage() {
                           type="checkbox"
                           checked={item.is_completed}
                           onChange={() => action(() => ticketsApi.toggleChecklist(orgId, ticketId, item.id).then(() => {}))}
-                          className="w-4 h-4 rounded border-[#CBD5E1] text-[#2563EB]"
+                          className="w-4 h-4 rounded-xs border-[#CBD5E1] text-[#2563EB]"
                         />
                         <span className={`text-sm ${item.is_completed ? 'line-through text-[#94A3B8]' : 'text-[#0F172A]'}`}>{item.title}</span>
                       </label>
@@ -292,7 +292,7 @@ export default function TicketDetailPage() {
                     </a>
                   ) : isAssignee ? (
                     <div className="flex gap-2">
-                      <input type="url" value={proofUrl} onChange={(e) => setProofUrl(e.target.value)} placeholder="Paste proof URL..." className="flex-1 px-3 py-1.5 border border-[#CBD5E1] rounded-[6px] text-sm focus:border-[#2563EB] focus:outline-none" />
+                      <input type="url" value={proofUrl} onChange={(e) => setProofUrl(e.target.value)} placeholder="Paste proof URL..." className="flex-1 px-3 py-1.5 border border-[#CBD5E1] rounded-[6px] text-sm focus:border-[#2563EB] focus:outline-hidden" />
                       <button type="button" disabled={!proofUrl.trim() || actionLoading} onClick={() => action(() => ticketsApi.submitProof(orgId, ticketId, proofUrl).then(() => {}))}
                         className="px-3 py-1.5 rounded-[6px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-60">
                         Submit
@@ -452,7 +452,7 @@ export default function TicketDetailPage() {
                   </button>
                 ) : (
                   <div className="flex flex-col gap-2 p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[10px]">
-                    <textarea value={resolutionNote} onChange={(e) => setResolutionNote(e.target.value)} rows={3} placeholder="Resolution note (required)..." className="w-full px-2 py-1.5 border border-[#CBD5E1] rounded-[6px] text-sm resize-none focus:border-[#16A34A] focus:outline-none" />
+                    <textarea value={resolutionNote} onChange={(e) => setResolutionNote(e.target.value)} rows={3} placeholder="Resolution note (required)..." className="w-full px-2 py-1.5 border border-[#CBD5E1] rounded-[6px] text-sm resize-none focus:border-[#16A34A] focus:outline-hidden" />
                     <div className="flex gap-2">
                       <button type="button" disabled={!resolutionNote.trim() || actionLoading}
                         onClick={() => action(() => ticketsApi.resolve(orgId, ticketId, resolutionNote).then(() => setShowResolveForm(false)))}
@@ -477,7 +477,7 @@ export default function TicketDetailPage() {
               actionPanel === 'hold' ? (
                 <div className="flex flex-col gap-2 p-3 bg-[#FEFCE8] border border-[#FDE68A] rounded-[10px]">
                   <p className="text-xs font-semibold text-[#0F172A]">Put ticket on hold</p>
-                  <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Reason (optional)..." className="w-full px-2 py-1.5 border border-[#FDE68A] rounded-[6px] text-sm resize-none focus:border-[#CA8A04] focus:outline-none bg-white" />
+                  <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Reason (optional)..." className="w-full px-2 py-1.5 border border-[#FDE68A] rounded-[6px] text-sm resize-none focus:border-[#CA8A04] focus:outline-hidden bg-white" />
                   <div className="flex gap-2">
                     <button type="button" disabled={actionLoading}
                       onClick={() => action(() => ticketsApi.hold(orgId, ticketId, reason.trim() || undefined).then(() => closePanel()))}
@@ -519,7 +519,7 @@ export default function TicketDetailPage() {
                       ...resolverGroups.map((g) => ({ value: g.id, label: g.name })),
                     ]}
                   />
-                  <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Reason (optional)..." className="w-full px-2 py-1.5 border border-[#CBD5E1] rounded-[6px] text-sm resize-none focus:border-[#2563EB] focus:outline-none bg-white" />
+                  <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Reason (optional)..." className="w-full px-2 py-1.5 border border-[#CBD5E1] rounded-[6px] text-sm resize-none focus:border-[#2563EB] focus:outline-hidden bg-white" />
                   <div className="flex gap-2">
                     <button type="button" disabled={!transferGroupId || actionLoading}
                       onClick={() => action(() => ticketsApi.transfer(orgId, ticketId, { resolver_group_id: transferGroupId, reason: reason.trim() || undefined }).then(() => closePanel()))}
@@ -544,7 +544,7 @@ export default function TicketDetailPage() {
               actionPanel === 'reject' ? (
                 <div className="flex flex-col gap-2 p-3 bg-[#FEF2F2] border border-[#FECACA] rounded-[10px]">
                   <p className="text-xs font-semibold text-[#0F172A]">Reject ticket</p>
-                  <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Reason for rejection (required)..." className="w-full px-2 py-1.5 border border-[#FECACA] rounded-[6px] text-sm resize-none focus:border-[#DC2626] focus:outline-none bg-white" />
+                  <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Reason for rejection (required)..." className="w-full px-2 py-1.5 border border-[#FECACA] rounded-[6px] text-sm resize-none focus:border-[#DC2626] focus:outline-hidden bg-white" />
                   <div className="flex gap-2">
                     <button type="button" disabled={!reason.trim() || actionLoading}
                       onClick={() => action(() => ticketsApi.reject(orgId, ticketId, reason.trim()).then(() => closePanel()))}
@@ -569,7 +569,7 @@ export default function TicketDetailPage() {
               actionPanel === 'reopen' ? (
                 <div className="flex flex-col gap-2 p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[10px]">
                   <p className="text-xs font-semibold text-[#0F172A]">Reopen ticket</p>
-                  <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Reason (optional)..." className="w-full px-2 py-1.5 border border-[#CBD5E1] rounded-[6px] text-sm resize-none focus:border-[#2563EB] focus:outline-none bg-white" />
+                  <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Reason (optional)..." className="w-full px-2 py-1.5 border border-[#CBD5E1] rounded-[6px] text-sm resize-none focus:border-[#2563EB] focus:outline-hidden bg-white" />
                   <div className="flex gap-2">
                     <button type="button" disabled={actionLoading}
                       onClick={() => action(() => ticketsApi.reopen(orgId, ticketId, reason.trim() || undefined).then(() => closePanel()))}
@@ -597,7 +597,7 @@ export default function TicketDetailPage() {
                   </button>
                 ) : (
                   <div className="flex flex-col gap-2 p-3 bg-[#FEF2F2] border border-[#FECACA] rounded-[10px]">
-                    <textarea value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} rows={2} placeholder="Reason for deletion (required)..." className="w-full px-2 py-1.5 border border-[#FECACA] rounded-[6px] text-sm resize-none focus:border-[#DC2626] focus:outline-none" />
+                    <textarea value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} rows={2} placeholder="Reason for deletion (required)..." className="w-full px-2 py-1.5 border border-[#FECACA] rounded-[6px] text-sm resize-none focus:border-[#DC2626] focus:outline-hidden" />
                     <div className="flex gap-2">
                       <button type="button" disabled={!deleteReason.trim() || actionLoading}
                         onClick={() => action(async () => { await ticketsApi.deleteTicket(orgId, ticketId, deleteReason); router.push('/dashboard/tasks/tickets') })}

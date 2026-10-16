@@ -80,7 +80,7 @@ export default function MyCheckInsPage() {
           <Loader2 size={16} className="animate-spin" /> Loading…
         </div>
       ) : rows.length === 0 ? (
-        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)]">
+        <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card">
           <EmptyState
             icon={<PartyPopper size={26} />}
             title="Nothing owed"
@@ -102,7 +102,7 @@ export default function MyCheckInsPage() {
             return (
               <li
                 key={g.id}
-                className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] p-4 sm:p-5"
+                className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card p-4 sm:p-5"
               >
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="min-w-0 flex-1">

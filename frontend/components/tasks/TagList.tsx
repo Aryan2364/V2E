@@ -116,7 +116,7 @@ export function TagList({ tags, max = 2, className = '' }: TagListProps) {
             e.preventDefault()
             setOpen((o) => !o)
           }}
-          className="shrink-0 inline-flex items-center h-5 px-2 rounded-full border border-border bg-white text-xs font-medium text-secondary hover:border-input hover:text-heading focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
+          className="shrink-0 inline-flex items-center h-5 px-2 rounded-full border border-border bg-white text-xs font-medium text-secondary hover:border-input hover:text-heading focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary transition-colors"
         >
           +{rest.length}
         </button>
@@ -132,7 +132,7 @@ export function TagList({ tags, max = 2, className = '' }: TagListProps) {
             role="dialog"
             aria-label="More tags"
             onClick={swallow}
-            className="fixed z-[78] w-[280px] max-h-[240px] overflow-y-auto overscroll-contain rounded-lg border border-border bg-white p-3 shadow-card animate-[popIn_.15s_ease-out]"
+            className="fixed z-78 w-[280px] max-h-[240px] overflow-y-auto overscroll-contain rounded-lg border border-border bg-white p-3 shadow-card animate-[popIn_.15s_ease-out]"
             style={{ left: pos.left, top: pos.top, bottom: pos.bottom }}
           >
             <div className="flex flex-wrap gap-1">

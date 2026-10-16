@@ -79,7 +79,7 @@ export default function NotificationsOptInPrompt() {
   if (!show || onPhone) return null
 
   return (
-    <div className="fixed bottom-4 right-4 left-4 sm:left-auto z-[60] sm:w-[360px]">
+    <div className="fixed bottom-4 right-4 left-4 sm:left-auto z-60 sm:w-[360px]">
       <div className="relative rounded-[12px] border border-[#E2E8F0] bg-white p-4 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
         <button
           onClick={dismiss}

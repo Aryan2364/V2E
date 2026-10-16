@@ -251,7 +251,7 @@ export default function WeekGrid({
                   {today && (
                     <div className="absolute left-0 right-0 z-20 pointer-events-none" style={{ top: (minutesFromMidnight(now) / 60) * PX_PER_HOUR }}>
                       <div className="h-[2px] bg-[#EF4444]" />
-                      <div className="absolute -left-[3px] -top-[3px] w-2 h-2 rounded-full bg-[#EF4444]" />
+                      <div className="absolute left-[-3px] top-[-3px] w-2 h-2 rounded-full bg-[#EF4444]" />
                     </div>
                   )}
 
@@ -292,7 +292,7 @@ export default function WeekGrid({
                       <button
                         key={m.id}
                         onClick={(e) => { e.stopPropagation(); setOpenId((id) => (id === m.id ? null : m.id)) }}
-                        className="absolute rounded-[6px] text-left overflow-hidden px-1.5 py-1 border-l-[3px] shadow-sm hover:shadow-md transition-shadow"
+                        className="absolute rounded-[6px] text-left overflow-hidden px-1.5 py-1 border-l-[3px] shadow-xs hover:shadow-md transition-shadow"
                         style={{
                           top,
                           height,
@@ -351,9 +351,9 @@ function MeetingPopover({ meeting, onClose, onOpen }: { meeting: Meeting; onClos
   return (
     <>
       {/* click-away catcher */}
-      <div className="fixed inset-0 z-[55]" onClick={onClose} />
+      <div className="fixed inset-0 z-55" onClick={onClose} />
       {/* centered card — avoids scroll-drift; keeps the "no navigation" promise */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[56] w-[320px] bg-white border border-[#E2E8F0] rounded-[12px] shadow-xl p-4">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-56 w-[320px] bg-white border border-[#E2E8F0] rounded-[12px] shadow-xl p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: lk.stripe }} />

@@ -33,7 +33,7 @@ export default function TimeField({
     disabled
       ? "border-[#E2E8F0] cursor-not-allowed opacity-70"
       : "border-[#CBD5E1] cursor-pointer hover:bg-white hover:border-[#94A3B8]"
-  } ${open ? "!bg-white !border-[#2563EB] ring-1 ring-[#2563EB]" : ""}`;
+  } ${open ? "bg-white! border-[#2563EB]! ring-1 ring-[#2563EB]" : ""}`;
 
   return (
     <>

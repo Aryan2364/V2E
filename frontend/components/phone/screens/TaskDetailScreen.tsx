@@ -533,11 +533,11 @@ function FullScreenOverlay({ title, onClose, footer, children }: { title: string
     // 41.13 rule 6), so a footer - the comment composer - sits directly above
     // the on-screen keyboard on iPhone. Android resizes the layout viewport
     // itself and the inset stays ~0.
-    <div className="fixed inset-x-0 top-0 bottom-[var(--keyboard-inset)] z-[75] flex flex-col bg-phone-surface-sunken">
+    <div className="fixed inset-x-0 top-0 bottom-(--keyboard-inset) z-75 flex flex-col bg-phone-surface-sunken">
       <header
         className={cx(
-          'sticky top-0 z-10 flex h-[var(--h-topbar)] shrink-0 items-center gap-[8px] bg-phone-primary text-phone-on-brand',
-          'pt-[var(--safe-top)] pl-[max(4px,var(--safe-left))] pr-[max(16px,var(--safe-right))]',
+          'sticky top-0 z-10 flex h-(--h-topbar) shrink-0 items-center gap-[8px] bg-phone-primary text-phone-on-brand',
+          'pt-(--safe-top) pl-[max(4px,var(--safe-left))] pr-[max(16px,var(--safe-right))]',
         )}
       >
         <button type="button" aria-label="Close" onClick={close} className={APP_BAR_BUTTON}>
@@ -720,7 +720,7 @@ function CommentComposeOverlay({ orgId, taskId, onClose, onPosted }: { orgId: st
             enterKeyHint="enter"
             aria-label="Comment"
             disabled={sending}
-            className="min-h-[44px] min-w-0 flex-1 resize-none rounded-[8px] border border-phone-border-strong bg-phone-surface px-[12px] py-[10px] text-[16px] leading-[22px] text-phone-text-primary outline-none focus-visible:border-phone-primary"
+            className="min-h-[44px] min-w-0 flex-1 resize-none rounded-[8px] border border-phone-border-strong bg-phone-surface px-[12px] py-[10px] text-[16px] leading-[22px] text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
           />
           <button
             type="button"
@@ -935,7 +935,7 @@ function ImageViewer({ attachment, orgId, taskId, onClose }: { attachment: TaskA
   }, [orgId, taskId, attachment.id])
 
   return createPortal(
-    <div className="fixed inset-0 z-[90] flex flex-col bg-black">
+    <div className="fixed inset-0 z-90 flex flex-col bg-black">
       <button type="button" aria-label="Close" onClick={onClose} className="absolute right-[16px] top-[max(16px,var(--safe-top))] z-10 flex size-[44px] items-center justify-center rounded-full bg-black/40 text-white">
         <X aria-hidden />
       </button>

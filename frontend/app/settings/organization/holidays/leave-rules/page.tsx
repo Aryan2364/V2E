@@ -29,7 +29,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
       aria-checked={on}
       className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${on ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'}`}
     >
-      <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-4' : 'translate-x-0'}`} />
+      <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-xs transition-transform ${on ? 'translate-x-4' : 'translate-x-0'}`} />
     </button>
   )
 }
@@ -57,7 +57,7 @@ function UserMultiSelect({ people, selected, onToggle }: { people: Person[]; sel
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search people…"
-          className="w-full pl-9 pr-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none"
+          className="w-full pl-9 pr-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
         />
       </div>
       <div className="max-h-48 overflow-y-auto divide-y divide-[#F1F5F9]">
@@ -212,7 +212,7 @@ export default function LeaveRulesPage() {
             max={60}
             value={master.recurring_notice_days}
             onChange={(e) => patch({ recurring_notice_days: Math.max(0, Math.min(60, Number(e.target.value) || 0)) })}
-            className="w-20 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white"
+            className="w-20 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white"
           />
           <span className="text-sm text-[#1E293B]">day(s) before the occurrence</span>
         </div>

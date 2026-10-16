@@ -20,7 +20,7 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
   return (
     <div className="grid grid-cols-[120px_1fr] gap-3 py-2.5 border-b border-[#F1F5F9] last:border-b-0">
       <dt className="text-[13px] text-[#475569]">{label}</dt>
-      <dd className="text-sm text-[#0F172A] min-w-0 break-words">{children}</dd>
+      <dd className="text-sm text-[#0F172A] min-w-0 wrap-break-word">{children}</dd>
     </div>
   )
 }
@@ -279,7 +279,7 @@ export default function RunStepDrawer({
       {row.description && (
         <section>
           <h3 className="text-sm font-semibold text-[#0F172A] mb-1">Description</h3>
-          <p className="text-sm text-[#1E293B] whitespace-pre-wrap break-words">{row.description}</p>
+          <p className="text-sm text-[#1E293B] whitespace-pre-wrap wrap-break-word">{row.description}</p>
         </section>
       )}
 
@@ -305,7 +305,7 @@ export default function RunStepDrawer({
             <div className="flex flex-col gap-3">
               {groupItems(checklist).map((g, gi) => (
                 <div key={gi}>
-                  {g.heading && <h4 className="text-[13px] font-semibold text-[#334155] mb-1.5 break-words">{g.heading}</h4>}
+                  {g.heading && <h4 className="text-[13px] font-semibold text-[#334155] mb-1.5 wrap-break-word">{g.heading}</h4>}
                   <ul className="flex flex-col gap-1.5">
                     {g.items.map((c, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-[#1E293B] px-3 py-2 rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0]">
@@ -314,7 +314,7 @@ export default function RunStepDrawer({
                         ) : (
                           <Circle size={16} className="shrink-0 mt-0.5 text-[#94A3B8]" aria-label={c.done === null ? undefined : 'Not done'} />
                         )}
-                        <span className={`break-words min-w-0 ${c.done ? 'text-[#334155]' : ''}`}>{c.title}</span>
+                        <span className={`wrap-break-word min-w-0 ${c.done ? 'text-[#334155]' : ''}`}>{c.title}</span>
                       </li>
                     ))}
                   </ul>

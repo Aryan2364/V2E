@@ -79,7 +79,7 @@ export default function Modal({
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${elevated ? 'z-[75]' : 'z-[60]'} flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm`}
+      className={`fixed inset-0 ${elevated ? 'z-75' : 'z-60'} flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm`}
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
@@ -105,7 +105,7 @@ export default function Modal({
           )}
           <button
             onClick={onClose}
-            className="ml-auto flex items-center justify-center w-8 h-8 rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+            className="ml-auto flex items-center justify-center w-8 h-8 rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
             aria-label="Close modal"
           >
             <X size={18} aria-hidden="true" />

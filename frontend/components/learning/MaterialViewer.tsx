@@ -189,7 +189,7 @@ function PdfCanvas({ url, loader, fullscreen }: { url: string | null; loader?: (
           const canvas = document.createElement('canvas')
           canvas.width = viewport.width
           canvas.height = viewport.height
-          canvas.className = 'mx-auto mb-3 shadow-sm max-w-full h-auto'
+          canvas.className = 'mx-auto mb-3 shadow-xs max-w-full h-auto'
           const ctx = canvas.getContext('2d')
           if (!ctx) continue
           container.appendChild(canvas)

@@ -97,7 +97,7 @@ export default function GoalsDashboardPage() {
             <button
               key={s}
               onClick={() => router.push(`/goals/list?status=${s}`)}
-              className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] p-4 text-left hover:border-[#CBD5E1] transition-colors"
+              className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card p-4 text-left hover:border-[#CBD5E1] transition-colors"
             >
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: m.dot }} />
@@ -161,7 +161,7 @@ function GoalPanel({
   return (
     // Fixed height + internal scroll so the three panels stay the same size
     // however lopsided the data is (DESIGN_RULES Part 2 / Part 3).
-    <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] flex flex-col h-[400px]">
+    <section className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-card flex flex-col h-[400px]">
       <header className="px-5 py-4 border-b border-[#F1F5F9] shrink-0">
         <div className="flex items-center gap-2">
           <h2 className="flex items-center gap-2 text-[16px] font-semibold text-[#0F172A]">

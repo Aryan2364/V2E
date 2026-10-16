@@ -40,8 +40,8 @@ function InlineForm({
 
   const isExpected = type === 'expected_behavior'
   const accentBorder = isExpected ? 'focus:border-[#16A34A]' : 'focus:border-[#DC2626]'
-  const inputCls = `w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-2 ${accentBorder} transition-colors`
-  const textareaCls = `w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-2 ${accentBorder} transition-colors resize-none`
+  const inputCls = `w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 ${accentBorder} transition-colors`
+  const textareaCls = `w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 ${accentBorder} transition-colors resize-none`
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -127,7 +127,7 @@ function CultureCard({
   onDelete: () => void
 }) {
   return (
-    <div className="group bg-white border border-[#E2E8F0] rounded-[10px] p-4 flex gap-3 transition-shadow hover:shadow-sm">
+    <div className="group bg-white border border-[#E2E8F0] rounded-[10px] p-4 flex gap-3 transition-shadow hover:shadow-xs">
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-sm text-[#0F172A]">{standard.title}</p>
         {standard.description && (
@@ -198,7 +198,7 @@ function Column({
         <span
           className={`w-5 h-5 shrink-0 rounded-full inline-flex items-center justify-center ${dotColor}`}
         >
-          <span className="text-[11px] font-bold leading-none text-white tabular-nums translate-y-[1px]">
+          <span className="text-[11px] font-bold leading-none text-white tabular-nums translate-y-px">
             {items.length}
           </span>
         </span>
@@ -322,10 +322,10 @@ export default function CultureManagerDrawer({
 
   return createPortal(
     <>
-      {open && <div className="fixed inset-0 bg-black/20 z-[60]" onClick={onClose} />}
+      {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
 
       <div
-        className={`fixed inset-y-0 right-0 z-[70] w-full max-w-2xl bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-70 w-full max-w-2xl bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

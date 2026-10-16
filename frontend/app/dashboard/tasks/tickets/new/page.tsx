@@ -112,12 +112,12 @@ export default function NewTicketPage() {
     }
   }
 
-  const inputCls = 'w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none bg-white'
+  const inputCls = 'w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-hidden bg-white'
 
   if (loading) {
     return (
       <div className="flex flex-col gap-4 animate-pulse max-w-2xl">
-        <div className="h-8 w-48 bg-[#F1F5F9] rounded" />
+        <div className="h-8 w-48 bg-[#F1F5F9] rounded-xs" />
         <div className="h-64 bg-[#F1F5F9] rounded-[12px]" />
       </div>
     )
@@ -147,7 +147,7 @@ export default function NewTicketPage() {
               value={templateSearch}
               onChange={(e) => setTemplateSearch(e.target.value)}
               placeholder="Search templates..."
-              className="w-full pl-9 pr-3 py-2 border border-[#CBD5E1] rounded-[8px] text-sm focus:border-[#2563EB] focus:outline-none"
+              className="w-full pl-9 pr-3 py-2 border border-[#CBD5E1] rounded-[8px] text-sm focus:border-[#2563EB] focus:outline-hidden"
             />
           </div>
 
@@ -261,7 +261,7 @@ export default function NewTicketPage() {
           )}
 
           <label className="flex items-center gap-2.5 cursor-pointer">
-            <input type="checkbox" checked={proofRequired} onChange={(e) => setProofRequired(e.target.checked)} className="w-4 h-4 rounded border-[#CBD5E1] text-[#2563EB]" />
+            <input type="checkbox" checked={proofRequired} onChange={(e) => setProofRequired(e.target.checked)} className="w-4 h-4 rounded-xs border-[#CBD5E1] text-[#2563EB]" />
             <span className="text-sm text-[#374151]">Proof of resolution required</span>
           </label>
 

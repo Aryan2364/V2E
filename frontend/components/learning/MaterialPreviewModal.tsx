@@ -74,7 +74,7 @@ export default function MaterialPreviewModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex bg-black/50"
+      className="fixed inset-0 z-60 flex bg-black/50"
       style={maximized ? undefined : { padding: '3vh 4vw' }}
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}
     >

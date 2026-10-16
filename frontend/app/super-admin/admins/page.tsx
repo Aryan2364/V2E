@@ -212,7 +212,7 @@ export default function AdminsPage() {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Jane Smith"
-                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none transition-colors"
+                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
               />
             </div>
             <div>
@@ -222,7 +222,7 @@ export default function AdminsPage() {
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                 placeholder="jane@company.com"
-                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none transition-colors"
+                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
               />
             </div>
           </div>
@@ -235,7 +235,7 @@ export default function AdminsPage() {
                 value={form.password}
                 onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                 placeholder="Min. 8 characters"
-                className="w-full h-10 px-3 pr-10 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none transition-colors"
+                className="w-full h-10 px-3 pr-10 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
               />
               <button
                 type="button"
@@ -297,7 +297,7 @@ export default function AdminsPage() {
                 value={editForm.name}
                 onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Jane Smith"
-                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none transition-colors"
+                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
               />
             </div>
             <div>
@@ -307,7 +307,7 @@ export default function AdminsPage() {
                 value={editForm.email}
                 onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
                 placeholder="jane@company.com"
-                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none transition-colors"
+                className="w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
               />
             </div>
           </div>
@@ -320,7 +320,7 @@ export default function AdminsPage() {
                 value={editForm.password}
                 onChange={(e) => setEditForm((f) => ({ ...f, password: e.target.value }))}
                 placeholder="Min. 8 characters"
-                className="w-full h-10 px-3 pr-10 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none transition-colors"
+                className="w-full h-10 px-3 pr-10 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
               />
               <button
                 type="button"

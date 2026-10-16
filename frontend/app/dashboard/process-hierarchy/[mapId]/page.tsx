@@ -608,7 +608,7 @@ export default function ProcessMapExplorerPage() {
   const addStepControl = canEditHere ? (
     <div className="flex items-center gap-1.5">
       {/* Undo / redo — greyed when there's nothing to step to, or while a restore is in flight. */}
-      <div className="inline-flex h-[30px] rounded-[8px] border border-[#E2E8F0] bg-white overflow-hidden shadow-sm">
+      <div className="inline-flex h-[30px] rounded-[8px] border border-[#E2E8F0] bg-white overflow-hidden shadow-xs">
         <Tooltip label="Undo (Ctrl+Z)">
           <button onClick={history.undo} disabled={!history.canUndo || history.busy} aria-label="Undo (Ctrl+Z)"
             className="inline-flex items-center px-2 text-[#475569] hover:bg-[#F1F5F9] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
@@ -625,7 +625,7 @@ export default function ProcessMapExplorerPage() {
       </div>
       <div className="relative">
       <button onClick={() => { setShowAdd((v) => !v); setAddLanePick(false) }}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-[8px] bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1">
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-[8px] bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-xs transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1">
         <Plus size={14} /> Add step
       </button>
       {showAdd && (
@@ -718,21 +718,21 @@ export default function ProcessMapExplorerPage() {
       <div className="flex flex-wrap items-center gap-2 min-h-[44px] shrink-0">
         {/* Breadcrumb — the last crumb is the title. Scrolls horizontally, never wraps. */}
         <nav aria-label="Breadcrumb"
-          className="flex items-center gap-1.5 min-w-0 flex-1 text-[13px] text-[#64748B] overflow-x-auto whitespace-nowrap [scrollbar-width:none]">
+          className="flex items-center gap-1.5 min-w-0 flex-1 text-[13px] text-[#64748B] overflow-x-auto whitespace-nowrap scrollbar-none">
           <button onClick={() => router.push('/dashboard/process-hierarchy')}
-            className="inline-flex items-center shrink-0 font-medium text-[#475569] hover:text-[#2563EB] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]">
+            className="inline-flex items-center shrink-0 font-medium text-[#475569] hover:text-[#2563EB] rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]">
             All maps
           </button>
           <span className="text-[#CBD5E1]">›</span>
           <button onClick={() => goTo(null)}
-            className={`shrink-0 font-medium hover:text-[#2563EB] max-w-[180px] truncate rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] ${parentId === null && flow.breadcrumb.length === 0 ? 'text-[#0F172A] font-semibold' : ''}`}>
+            className={`shrink-0 font-medium hover:text-[#2563EB] max-w-[180px] truncate rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] ${parentId === null && flow.breadcrumb.length === 0 ? 'text-[#0F172A] font-semibold' : ''}`}>
             {map.name}
           </button>
           {flow.breadcrumb.map((c, i) => (
             <span key={c.id} className="flex items-center gap-1.5 shrink-0">
               <span className="text-[#CBD5E1]">›</span>
               {i < flow.breadcrumb.length - 1
-                ? <button onClick={() => goTo(c.id)} className="font-medium hover:text-[#2563EB] max-w-[160px] truncate rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]">{c.name}</button>
+                ? <button onClick={() => goTo(c.id)} className="font-medium hover:text-[#2563EB] max-w-[160px] truncate rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]">{c.name}</button>
                 : <span className="font-semibold text-[#0F172A] max-w-[220px] truncate" aria-current="page">{c.name}</span>}
             </span>
           ))}
@@ -744,13 +744,13 @@ export default function ProcessMapExplorerPage() {
             <div className="inline-flex h-8 rounded-[8px] border border-[#E2E8F0] overflow-hidden">
               <Tooltip label="View">
                 <button onClick={() => setMode('view')}
-                  className={`inline-flex items-center gap-1.5 px-2.5 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2563EB] ${mode === 'view' ? 'bg-[#2563EB] text-white' : 'bg-white text-[#475569] hover:bg-[#F1F5F9]'}`}>
+                  className={`inline-flex items-center gap-1.5 px-2.5 text-[13px] font-medium focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2563EB] ${mode === 'view' ? 'bg-[#2563EB] text-white' : 'bg-white text-[#475569] hover:bg-[#F1F5F9]'}`}>
                   <Eye size={14} /> <span className="hidden md:inline">View</span>
                 </button>
               </Tooltip>
               <Tooltip label="Edit">
                 <button onClick={() => setMode('edit')}
-                  className={`inline-flex items-center gap-1.5 px-2.5 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2563EB] ${mode === 'edit' ? 'bg-[#2563EB] text-white' : 'bg-white text-[#475569] hover:bg-[#F1F5F9]'}`}>
+                  className={`inline-flex items-center gap-1.5 px-2.5 text-[13px] font-medium focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2563EB] ${mode === 'edit' ? 'bg-[#2563EB] text-white' : 'bg-white text-[#475569] hover:bg-[#F1F5F9]'}`}>
                   <Pencil size={14} /> <span className="hidden md:inline">Edit</span>
                 </button>
               </Tooltip>
@@ -761,7 +761,7 @@ export default function ProcessMapExplorerPage() {
           <div className="relative">
             <Tooltip label={visible ? `Showing ${visible.size}` : 'View all'}>
               <button onClick={() => setShowFilter((v) => !v)}
-                className={`inline-flex items-center gap-1.5 h-8 px-2.5 text-[13px] font-medium rounded-[8px] border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 ${visible ? 'border-[#2563EB] text-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0] text-[#475569] bg-white hover:bg-[#F1F5F9]'}`}>
+                className={`inline-flex items-center gap-1.5 h-8 px-2.5 text-[13px] font-medium rounded-[8px] border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 ${visible ? 'border-[#2563EB] text-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0] text-[#475569] bg-white hover:bg-[#F1F5F9]'}`}>
                 <Filter size={14} /> <span className="hidden md:inline">{visible ? `Showing ${visible.size}` : 'Filter'}</span>
               </button>
             </Tooltip>
@@ -774,7 +774,7 @@ export default function ProcessMapExplorerPage() {
           <div className="relative">
             <Tooltip label="More">
               <button onClick={() => setShowMore((v) => !v)}
-                className="inline-flex items-center gap-1.5 h-8 px-2.5 text-[13px] font-medium rounded-[8px] border border-[#E2E8F0] text-[#475569] bg-white hover:bg-[#F1F5F9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1">
+                className="inline-flex items-center gap-1.5 h-8 px-2.5 text-[13px] font-medium rounded-[8px] border border-[#E2E8F0] text-[#475569] bg-white hover:bg-[#F1F5F9] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1">
                 <MoreHorizontal size={14} /> <span className="hidden md:inline">More</span>
               </button>
             </Tooltip>
@@ -936,7 +936,7 @@ export default function ProcessMapExplorerPage() {
 
       {/* Decision branch chooser — "what does this connection mean?" Cancel breaks the connection. */}
       {branchPick && createPortal(
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={cancelBranch} />
           <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-xs p-4 animate-[fadeIn_.15s_ease-out]">
             <div className="flex items-center justify-between mb-1">
@@ -957,7 +957,7 @@ export default function ProcessMapExplorerPage() {
 
       {/* Change a lane's department — clicking the lane name. Warns how many steps move with it. */}
       {laneRename && createPortal(
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setLaneRename(null)} />
           <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-sm p-4 animate-[fadeIn_.15s_ease-out]">
             <div className="flex items-center justify-between mb-1">
@@ -995,7 +995,7 @@ export default function ProcessMapExplorerPage() {
 
       {/* Lane "+" picker — choose what kind of step to drop into the chosen lane. */}
       {laneAdd && createPortal(
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setLaneAdd(null)} />
           <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-xs p-4 animate-[fadeIn_.15s_ease-out]">
             <div className="flex items-center justify-between mb-2">
@@ -1048,7 +1048,7 @@ function ReferenceMapModal({ orgId, excludeId, onClose, onPick }: {
   const query = q.trim().toLowerCase()
   const filtered = (maps ?? []).filter((m) => m.id !== excludeId && m.name.toLowerCase().includes(query))
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md max-h-[80vh] flex flex-col animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center gap-2 px-5 py-4 border-b border-[#E2E8F0]">
@@ -1060,7 +1060,7 @@ function ReferenceMapModal({ orgId, excludeId, onClose, onPick }: {
           <div className="relative">
             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
             <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search maps…"
-              className="w-full pl-8 pr-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white text-[#0F172A]" />
+              className="w-full pl-8 pr-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A]" />
           </div>
         </div>
         <div className="flex-1 overflow-y-auto px-3 pb-3">
@@ -1118,7 +1118,7 @@ function SaveTemplateModal({ orgId, mapId, mapName, onClose }: {
     catch { addToast('Could not save the template. Please try again.', 'error'); setBusy(false) }
   }
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md p-6 animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center justify-between mb-4">
@@ -1131,7 +1131,7 @@ function SaveTemplateModal({ orgId, mapId, mapName, onClose }: {
           <>
             <label className="block text-sm font-medium text-[#374151] mb-1">Template name</label>
             <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && save()}
-              className="w-full px-3 py-2.5 text-[15px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none" />
+              className="w-full px-3 py-2.5 text-[15px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden" />
             <p className="text-[12px] text-[#64748B] mt-1.5">Freezes this map’s current structure so you can spin up new maps from it later.</p>
             <div className="flex justify-end mt-5">
               <button onClick={save} disabled={!name.trim() || busy}
@@ -1167,7 +1167,7 @@ function DiffPanel({ diff, onClose, onJump }: {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
   return createPortal(
-    <div className="fixed inset-0 z-[60] pointer-events-none">
+    <div className="fixed inset-0 z-60 pointer-events-none">
       <div className="absolute right-0 top-0 h-full w-full max-w-[400px] bg-white shadow-xl border-l border-[#E2E8F0] flex flex-col pointer-events-auto animate-[slideInRight_.22s_ease-out]">
         <div className="flex items-center gap-2 px-5 py-4 border-b border-[#E2E8F0]">
           <GitCompare size={16} className="text-[#2563EB]" />
@@ -1261,7 +1261,7 @@ function VisibilityPanel({ flow, visible, onChange, onClose }: {
           {flow.nodes.map((n) => (
             <button key={n.id} onClick={() => toggle(n.id)}
               className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] hover:bg-[#F8FAFC] text-left text-[13px]">
-              <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isShown(n.id) ? 'bg-[#2563EB] border-[#2563EB]' : 'border-[#CBD5E1]'}`}>
+              <span className={`w-4 h-4 rounded-xs border flex items-center justify-center shrink-0 ${isShown(n.id) ? 'bg-[#2563EB] border-[#2563EB]' : 'border-[#CBD5E1]'}`}>
                 {isShown(n.id) && <Check size={12} className="text-white" />}
               </span>
               <span className="text-[#2563EB] shrink-0">{KIND_META[n.kind].icon}</span>
@@ -1347,7 +1347,7 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
           <div className="flex items-center gap-2 mb-3">
             <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. As-Is 2026"
               onKeyDown={(e) => e.key === 'Enter' && create()}
-              className="flex-1 px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none" />
+              className="flex-1 px-2.5 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden" />
             <button onClick={create} disabled={!label.trim() || busy} aria-label="Save version"
               className="shrink-0 w-8 h-8 rounded-[8px] bg-[#2563EB] text-white flex items-center justify-center hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8]">
               {busy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={15} />}

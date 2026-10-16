@@ -115,7 +115,7 @@ export default function GoogleCalendarConnect({
         open &&
         createPortal(
           <div
-            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 p-4"
+            className="fixed inset-0 z-1000 flex items-center justify-center bg-black/40 p-4"
             onClick={() => !busy && setOpen(false)}
           >
             <div
@@ -193,7 +193,7 @@ export default function GoogleCalendarConnect({
         toast &&
         createPortal(
           <div
-            className="fixed bottom-5 right-5 z-[1001] flex items-center gap-2 px-4 py-3 rounded-[10px] shadow-lg border text-sm"
+            className="fixed bottom-5 right-5 z-1001 flex items-center gap-2 px-4 py-3 rounded-[10px] shadow-lg border text-sm"
             style={{
               backgroundColor: toast === 'connected' ? '#FFFFFF' : '#FEF2F2',
               borderColor: toast === 'connected' ? '#BBF7D0' : '#FECACA',

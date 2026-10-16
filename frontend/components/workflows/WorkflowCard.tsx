@@ -118,7 +118,7 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
             {/* Stretched link: the whole card opens the workflow; the menu sits above it. */}
             <Link
               href={workflowHref(w.id)}
-              className="line-clamp-2 break-words focus:outline-none after:absolute after:inset-0 after:rounded-[12px] after:content-['']"
+              className="line-clamp-2 wrap-break-word focus:outline-hidden after:absolute after:inset-0 after:rounded-[12px] after:content-['']"
             >
               {w.name}
             </Link>
@@ -132,7 +132,7 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
         </div>
       </div>
 
-      <p className="text-[14px] text-[#475569] line-clamp-2 min-h-[42px] break-words">
+      <p className="text-[14px] text-[#475569] line-clamp-2 min-h-[42px] wrap-break-word">
         {w.description || <span className="text-[#64748B]">No description</span>}
       </p>
 
@@ -152,7 +152,7 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
         </span>
         {(w.schedules ?? []).length > 0 && (
           <Tooltip label={`Starts: ${startsSummary(w)}`}>
-            <span tabIndex={0} className="relative z-10 inline-flex items-center gap-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]">
+            <span tabIndex={0} className="relative z-10 inline-flex items-center gap-1.5 rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]">
               <CalendarClock size={14} className="text-[#475569]" />
               {/* The schedule, said once: how it repeats, then when it next runs. */}
               {recurrenceLabel(w) ?? 'On a schedule'}
@@ -164,7 +164,7 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
 
       <div className="mt-auto pt-3 border-t border-[#F1F5F9] flex items-center justify-between gap-3 text-[13px] text-[#475569]">
         <Tooltip label="Editors">
-          <span tabIndex={0} className="relative z-10 inline-flex items-center gap-1.5 min-w-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]">
+          <span tabIndex={0} className="relative z-10 inline-flex items-center gap-1.5 min-w-0 rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]">
             <Users size={14} className="shrink-0" />
             <span className="truncate">{namesSummary(editors)}</span>
           </span>
@@ -181,13 +181,13 @@ export function WorkflowCardSkeleton() {
       <div className="flex gap-3">
         <div className="w-10 h-10 rounded-[10px] bg-[#F1F5F9]" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 bg-[#F1F5F9] rounded w-2/3" />
-          <div className="h-4 bg-[#F1F5F9] rounded w-1/3" />
+          <div className="h-4 bg-[#F1F5F9] rounded-xs w-2/3" />
+          <div className="h-4 bg-[#F1F5F9] rounded-xs w-1/3" />
         </div>
       </div>
-      <div className="h-3 bg-[#F1F5F9] rounded w-full" />
-      <div className="h-3 bg-[#F1F5F9] rounded w-4/5" />
-      <div className="mt-auto h-4 bg-[#F1F5F9] rounded w-1/2" />
+      <div className="h-3 bg-[#F1F5F9] rounded-xs w-full" />
+      <div className="h-3 bg-[#F1F5F9] rounded-xs w-4/5" />
+      <div className="mt-auto h-4 bg-[#F1F5F9] rounded-xs w-1/2" />
     </div>
   )
 }

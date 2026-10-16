@@ -118,7 +118,7 @@ export default function TicketsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tickets..."
-            className="w-full pl-9 pr-3 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none"
+            className="w-full pl-9 pr-3 py-1.5 border border-[#CBD5E1] rounded-[7px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-hidden"
           />
         </div>
         <StyledSelect

@@ -27,12 +27,12 @@ function DeptNode({ data, selected }: { data: DeptNodeData; selected: boolean })
 
   return (
     <div
-      className={`group relative flex flex-col rounded-xl border-2 p-4 w-[200px] h-[120px] shadow-sm transition-all ${
+      className={`group relative flex flex-col rounded-xl border-2 p-4 w-[200px] h-[120px] shadow-xs transition-all ${
         data.highlighted ? 'ring-2 ring-[#FCD34D]' : selected ? 'ring-2 ring-[#2563EB]/40' : ''
       }`}
       style={{ backgroundColor: fill, color: text, borderColor: border }}
     >
-      <Handle type="target" position={Position.Top} className="!bg-[#64748B] !w-3 !h-3" />
+      <Handle type="target" position={Position.Top} className="bg-[#64748B]! w-3! h-3!" />
 
       {data.canEdit && data.onEdit && (
         <button
@@ -51,7 +51,7 @@ function DeptNode({ data, selected }: { data: DeptNodeData; selected: boolean })
       )}
 
       <Tooltip label={data.name}>
-      <div className="font-semibold text-sm pr-6 line-clamp-2 break-words">
+      <div className="font-semibold text-sm pr-6 line-clamp-2 wrap-break-word">
         {data.name}
       </div>
       </Tooltip>
@@ -76,7 +76,7 @@ function DeptNode({ data, selected }: { data: DeptNodeData; selected: boolean })
           </span>
         )}
       </div>
-      <Handle type="source" position={Position.Bottom} className="!bg-[#64748B] !w-3 !h-3" />
+      <Handle type="source" position={Position.Bottom} className="bg-[#64748B]! w-3! h-3!" />
     </div>
   );
 }

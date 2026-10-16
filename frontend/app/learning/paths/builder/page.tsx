@@ -336,7 +336,7 @@ export default function CourseBuilderPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. New Joiner Onboarding"
-              className="w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-[15px] text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+              className="w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-[15px] text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
             />
           </div>
           <div>
@@ -346,7 +346,7 @@ export default function CourseBuilderPage() {
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
               placeholder="What will people learn?"
-              className="w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-[15px] text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none"
+              className="w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-[15px] text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none"
             />
           </div>
           <div className="max-w-xs">

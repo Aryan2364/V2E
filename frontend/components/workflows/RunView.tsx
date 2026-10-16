@@ -272,7 +272,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                 >
                   {n}
                 </span>
-                <span className="text-[14px] font-semibold text-[#0F172A] leading-snug line-clamp-2 break-words">{r.title || 'Untitled step'}</span>
+                <span className="text-[14px] font-semibold text-[#0F172A] leading-snug line-clamp-2 wrap-break-word">{r.title || 'Untitled step'}</span>
               </div>
               <span
                 className={`text-[12px] font-medium ${
@@ -486,7 +486,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
         />
         <div className="flex items-center lg:items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:break-words">{run.name}</h1>
+            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{run.name}</h1>
             <div className="flex items-center gap-2 flex-wrap mt-1.5">
               {run.instance_number ? <span className="text-[13px] font-semibold text-[#334155] whitespace-nowrap">{instanceTitle(run.instance_number)}</span> : null}
               <RunStatusBadge run={run} />
@@ -496,7 +496,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             {live &&
               senderRows.map((r) => (
                 <div key={r.id} className="mt-2 flex flex-col gap-1 max-w-3xl text-[13px] text-[#4C1D95]">
-                  <p className="font-medium break-words">
+                  <p className="font-medium wrap-break-word">
                     <span className="font-semibold">{nameOf(r.id)}</span> is waiting · {sendBackLead(r.send_back!, getNow())}
                     {sendBackReason(r.send_back) ? ':' : ''}
                   </p>
@@ -523,7 +523,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                     reason={cancelGate.reason}
                     icon={XCircle}
                     variant="quiet"
-                    className="!text-[#B91C1C]"
+                    className="text-[#B91C1C]!"
                     onClick={openCancel}
                   >
                     Cancel instance
@@ -603,7 +603,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                       <button
                         type="button"
                         onClick={() => setOpenRowId(r.id)}
-                        className="w-full text-left rounded-[8px] border border-[#E2E8F0] px-3 py-2 hover:bg-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+                        className="w-full text-left rounded-[8px] border border-[#E2E8F0] px-3 py-2 hover:bg-[#F8FAFC] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
                       >
                         <span className="block text-sm font-medium text-[#0F172A] truncate">
                           <span className="text-[#1D4ED8] font-semibold">{labels.get(r.id)}</span> {r.title}
@@ -634,7 +634,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                         <button
                           type="button"
                           onClick={() => setOpenRowId(r.id)}
-                          className="min-w-0 flex-1 text-left rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+                          className="min-w-0 flex-1 text-left rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
                         >
                           <span className="block text-sm font-medium text-[#0F172A] truncate">
                             <span className="text-[#1D4ED8] font-semibold">{labels.get(r.id)}</span> {r.title}
@@ -649,7 +649,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                             variant="secondary"
                             loading={startingRowId === r.id}
                             disabled={!!startingRowId}
-                            className="!min-h-[44px] sm:!min-h-[34px] !px-3"
+                            className="min-h-[44px]! sm:min-h-[34px]! px-3!"
                             onClick={() => startNow(r)}
                           >
                             Start now

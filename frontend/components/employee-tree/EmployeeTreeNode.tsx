@@ -29,7 +29,7 @@ function TreeNodeComponent({ node, depth = 0 }: { node: TreeNode; depth?: number
   return (
     <div className={depth > 0 ? 'ml-8 border-l border-[#E2E8F0] pl-4' : ''}>
       <div className="flex items-center gap-3 py-2">
-        <div className="w-8 h-8 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-[#2563EB] flex items-center justify-center text-white text-xs font-semibold shrink-0">
           {getInitials(node.profile.user?.name ?? 'U')}
         </div>
         <div>

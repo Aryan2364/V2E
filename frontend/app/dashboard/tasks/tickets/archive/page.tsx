@@ -72,7 +72,7 @@ function SnapshotViewer({ ticket }: { ticket: Ticket }) {
           <div className="space-y-1">
             {ticket.checklist.map((item) => (
               <div key={item.id} className="flex items-center gap-2">
-                <div className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center ${item.is_completed ? 'bg-[#16A34A] border-[#16A34A]' : 'border-[#CBD5E1]'}`}>
+                <div className={`w-3.5 h-3.5 rounded-xs border shrink-0 flex items-center justify-center ${item.is_completed ? 'bg-[#16A34A] border-[#16A34A]' : 'border-[#CBD5E1]'}`}>
                   {item.is_completed && <span className="text-white text-[8px] font-bold">✓</span>}
                 </div>
                 <span className={`text-xs ${item.is_completed ? 'line-through text-[#94A3B8]' : 'text-[#475569]'}`}>{item.title}</span>
@@ -171,7 +171,7 @@ export default function TicketArchivePage() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search by ticket number, title, or deletion reason..."
-        className="w-full px-3 py-2 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none"
+        className="w-full px-3 py-2 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-hidden"
       />
 
       {loading ? (

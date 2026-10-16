@@ -75,7 +75,7 @@ export default function Button({
       onClick={onClick}
       disabled={isDisabled}
       className={[
-        'inline-flex items-center justify-center gap-2 rounded-[8px] font-semibold transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2',
+        'inline-flex items-center justify-center gap-2 rounded-[8px] font-semibold transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2',
         variantClasses[variant],
         sizeClasses[size],
         isDisabled ? 'cursor-not-allowed opacity-100' : 'cursor-pointer',

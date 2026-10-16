@@ -100,7 +100,7 @@ export default function ActionMenu({ items, label = 'More actions' }: { items: A
             e.stopPropagation()
             setOpen((v) => !v)
           }}
-          className="relative z-10 inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+          className="relative z-10 inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
         >
           <MoreHorizontal size={18} />
         </button>
@@ -114,7 +114,7 @@ export default function ActionMenu({ items, label = 'More actions' }: { items: A
             role="menu"
             onKeyDown={onMenuKey}
             style={{ top: pos.top, left: pos.left, width: MENU_W, transform: pos.up ? 'translateY(-100%)' : undefined }}
-            className="fixed z-[66] bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_8px_24px_rgba(15,23,42,0.14)] py-1.5"
+            className="fixed z-66 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_8px_24px_rgba(15,23,42,0.14)] py-1.5"
           >
             {visible.map((item) => {
               const allowed = item.allowed === undefined && !('allowed' in item) ? true : item.allowed
@@ -130,7 +130,7 @@ export default function ActionMenu({ items, label = 'More actions' }: { items: A
                     item.onSelect()
                   }}
                   className={[
-                    'w-full flex items-center gap-2.5 px-3 min-h-[44px] sm:min-h-[38px] text-sm text-left transition-colors focus:outline-none',
+                    'w-full flex items-center gap-2.5 px-3 min-h-[44px] sm:min-h-[38px] text-sm text-left transition-colors focus:outline-hidden',
                     allowed !== true
                       ? 'text-[#64748B] cursor-not-allowed'
                       : item.danger

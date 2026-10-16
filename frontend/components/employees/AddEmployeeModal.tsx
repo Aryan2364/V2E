@@ -61,7 +61,7 @@ const EMPLOYMENT_TYPES: { value: EmploymentType; label: string }[] = [
 ]
 
 const inputClass =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
 const labelClass = 'block text-sm font-medium text-[#374151] mb-1'
 
 export default function AddEmployeeModal({
@@ -327,7 +327,7 @@ export default function AddEmployeeModal({
   if (!mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
+    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-[12px] rounded-t-[16px] shadow-xl max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0]">
@@ -471,7 +471,7 @@ export default function AddEmployeeModal({
                         type="checkbox"
                         checked={form.make_dep_head}
                         onChange={(e) => set('make_dep_head', e.target.checked)}
-                        className="w-4 h-4 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB]"
+                        className="w-4 h-4 rounded-xs border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB]"
                       />
                       <span className="text-xs font-medium text-[#475569]">
                         Make this employee the Head of this department
@@ -568,7 +568,7 @@ export default function AddEmployeeModal({
                   onChange={(e) => set('employee_code', e.target.value)}
                   placeholder="EMP-001"
                   className={`${inputClass} ${
-                    codeTaken ? '!border-[#DC2626] focus:!border-[#DC2626] focus:!ring-[#DC2626]' : ''
+                    codeTaken ? 'border-[#DC2626]! focus:border-[#DC2626]! focus:ring-[#DC2626]!' : ''
                   }`}
                 />
                 {codeTaken && (

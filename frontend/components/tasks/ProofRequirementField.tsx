@@ -56,7 +56,7 @@ export default function ProofRequirementField({
         >
           <span
             className={[
-              'absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200',
+              'absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200',
               proofRequired ? 'translate-x-5' : 'translate-x-0',
             ].join(' ')}
           />

@@ -38,9 +38,9 @@ type FormValues = {
 
 const labelCls = 'block text-sm font-semibold text-[#374151] mb-1.5'
 const textareaCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-2 focus:border-[#2563EB] transition-colors resize-none'
+  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors resize-none'
 const inputCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-2 focus:border-[#2563EB] transition-colors'
+  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors'
 
 /**
  * Edit organization identity (vision, mission, purpose, values) from
@@ -101,10 +101,10 @@ export default function IdentityFormDrawer({
 
   return createPortal(
     <>
-      {open && <div className="fixed inset-0 bg-black/20 z-[60]" onClick={onClose} />}
+      {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
 
       <div
-        className={`fixed inset-y-0 right-0 z-[70] w-full max-w-xl bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-70 w-full max-w-xl bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -199,7 +199,7 @@ export default function IdentityFormDrawer({
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="text-[#94A3B8] hover:text-[#DC2626] self-start p-1 rounded transition-colors"
+                      className="text-[#94A3B8] hover:text-[#DC2626] self-start p-1 rounded-xs transition-colors"
                       aria-label="Remove value"
                     >
                       <Trash2 size={14} />

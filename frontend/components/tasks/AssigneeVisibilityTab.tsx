@@ -48,7 +48,7 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: () => void;
       className={`relative w-9 h-5 rounded-full transition-colors shrink-0 disabled:opacity-50 ${on ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'}`}
     >
       <span
-        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-4' : 'translate-x-0'}`}
+        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-xs transition-transform ${on ? 'translate-x-4' : 'translate-x-0'}`}
       />
     </button>
   )
@@ -81,7 +81,7 @@ function SegTabs<T extends string>({ value, onChange, tabs }: { value: T; onChan
             className={[
               'px-4 py-1.5 text-sm font-semibold rounded-[7px] transition-colors',
               active
-                ? 'bg-white text-[#2563EB] shadow-sm'
+                ? 'bg-white text-[#2563EB] shadow-xs'
                 : 'bg-transparent text-white hover:bg-[#1D4ED8]',
             ].join(' ')}
           >
@@ -554,7 +554,7 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
               placeholder="Search departments..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-1.5 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white"
+              className="w-full pl-9 pr-8 py-1.5 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white"
             />
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]">
               <Search size={14} />

@@ -101,7 +101,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
                   >
                     {a.user_name}
                     {a.is_cc && (
-                      <span className="text-[10px] font-semibold bg-[#FEF9C3] text-[#D97706] border border-[#FDE68A] rounded px-1">CC</span>
+                      <span className="text-[10px] font-semibold bg-[#FEF9C3] text-[#D97706] border border-[#FDE68A] rounded-xs px-1">CC</span>
                     )}
                   </span>
                 ))}
@@ -116,7 +116,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
               <div className="space-y-1.5">
                 {task.checklist.map((item) => (
                   <div key={item.id} className="flex items-center gap-2">
-                    <div className={`w-4 h-4 rounded border-2 shrink-0 flex items-center justify-center ${item.is_completed ? 'bg-[#16A34A] border-[#16A34A]' : 'border-[#CBD5E1]'}`}>
+                    <div className={`w-4 h-4 rounded-xs border-2 shrink-0 flex items-center justify-center ${item.is_completed ? 'bg-[#16A34A] border-[#16A34A]' : 'border-[#CBD5E1]'}`}>
                       {item.is_completed && (
                         <svg viewBox="0 0 10 8" className="w-2.5 h-2.5" fill="none">
                           <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

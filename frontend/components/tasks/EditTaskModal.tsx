@@ -377,7 +377,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) handleCloseAttempt() }}
       role="dialog"
       aria-modal="true"
@@ -403,7 +403,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 value={title}
                 onChange={(e) => setTitle(e.target.value.slice(0, 50))}
                 maxLength={50}
-                className="w-full border border-[#CBD5E1] rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-[#0F172A] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white"
+                className="w-full border border-[#CBD5E1] rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-[#0F172A] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white"
               />
               <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-[#DC2626]' : 'text-[#94A3B8]'}`}>
                 {title.length}/50
@@ -629,7 +629,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                   onChange={(e) => setDeadlineReason(e.target.value.slice(0, 500))}
                   maxLength={500}
                   placeholder="e.g. client pushed the review to next week"
-                  className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white"
+                  className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white"
                 />
                 <p className="text-[11px] text-[#475569] mt-1">
                   Recorded against this change, and everyone on the task is told the date moved.
@@ -647,7 +647,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 onChange={(e) => setDescription(e.target.value.slice(0, 2000))}
                 maxLength={2000}
                 rows={3}
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 pt-[10px] pb-6 text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white resize-none"
+                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 pt-[10px] pb-6 text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white resize-none"
               />
               <span className={`pointer-events-none absolute right-3 bottom-2 text-[11px] ${description.length >= 2000 ? 'text-[#DC2626]' : 'text-[#94A3B8]'}`}>
                 {description.length}/2000

@@ -101,7 +101,7 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
               <input
                 value={editing.name}
                 onChange={(e) => setEditing((s) => s ? { ...s, name: e.target.value } : s)}
-                className="flex-1 h-8 px-2 rounded-[6px] border border-[#CBD5E1] text-sm text-[#0F172A] bg-white focus:border-[#2563EB] outline-none"
+                className="flex-1 h-8 px-2 rounded-[6px] border border-[#CBD5E1] text-sm text-[#0F172A] bg-white focus:border-[#2563EB] outline-hidden"
               />
               <button
                 type="button"

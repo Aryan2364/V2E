@@ -418,7 +418,7 @@ export default function ProjectDetailPage() {
                 value={docName}
                 onChange={(e) => setDocName(e.target.value)}
                 placeholder="Document name"
-                className="w-full h-9 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none"
+                className="w-full h-9 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden"
               />
               <div className="relative">
                 <Link2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
@@ -426,7 +426,7 @@ export default function ProjectDetailPage() {
                   value={docUrl}
                   onChange={(e) => setDocUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full h-9 pl-8 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none"
+                  className="w-full h-9 pl-8 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden"
                 />
               </div>
               <div className="flex gap-2 justify-end">

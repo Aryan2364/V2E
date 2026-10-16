@@ -60,7 +60,7 @@ function apiError(e: unknown): string | null {
   return msg ?? null
 }
 
-const inputCls = 'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white'
+const inputCls = 'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white'
 
 /** Solid blue count pill beside a heading; hidden when the count is 0. */
 function CountPill({ n }: { n: number }) {
@@ -524,7 +524,7 @@ function StatusesTab({ orgId }: { orgId: string }) {
         <div className="flex items-center gap-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] pl-3 pr-2 py-2">
           <span className="w-[78px] shrink-0" />
           <input type="color" value={addForm.color} onChange={(e) => setAddForm({ ...addForm, color: e.target.value })} className="w-7 h-7 shrink-0 rounded-[6px] border border-[#CBD5E1] cursor-pointer p-0" />
-          <input type="text" autoFocus value={addForm.label} onChange={(e) => setAddForm({ ...addForm, label: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAdding(false); setAddForm({ label: '', color: '#0891B2' }) } }} placeholder="New stage name (e.g. In Review)" className="flex-1 min-w-0 border border-[#CBD5E1] rounded-[6px] px-2.5 py-1.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white" />
+          <input type="text" autoFocus value={addForm.label} onChange={(e) => setAddForm({ ...addForm, label: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAdding(false); setAddForm({ label: '', color: '#0891B2' }) } }} placeholder="New stage name (e.g. In Review)" className="flex-1 min-w-0 border border-[#CBD5E1] rounded-[6px] px-2.5 py-1.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white" />
           <button onClick={handleAdd} disabled={submitting || !addForm.label.trim()} className="px-3 py-1.5 text-sm font-semibold text-white bg-[#2563EB] rounded-[6px] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#94A3B8] transition-colors shrink-0">{submitting ? 'Adding…' : 'Add'}</button>
           <button onClick={() => { setAdding(false); setAddForm({ label: '', color: '#0891B2' }) }} aria-label="Cancel" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors shrink-0"><X size={15} /></button>
         </div>
@@ -933,7 +933,7 @@ function TktConfigTab({ orgId }: { orgId: string }) {
         ].map(({ key, label, desc }) => (
           <div key={key} className={`flex items-start gap-3 p-3 rounded-[8px] border-2 cursor-pointer transition-all ${config[key] ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0]'}`} onClick={() => setConfig({ ...config, [key]: !config[key] })}>
             <div className={`relative w-9 h-5 rounded-full mt-0.5 shrink-0 transition-colors duration-200 ${config[key] ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'}`}>
-              <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${config[key] ? 'translate-x-4' : 'translate-x-0'}`} />
+              <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-xs transition-transform duration-200 ${config[key] ? 'translate-x-4' : 'translate-x-0'}`} />
             </div>
             <div>
               <p className={`text-sm font-semibold ${config[key] ? 'text-[#2563EB]' : 'text-[#0F172A]'}`}>{label}</p>
@@ -1460,7 +1460,7 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
             </div>
             <div className="border border-[#E2E8F0] rounded-[10px] overflow-hidden">
               <div className="flex items-center gap-2 px-3 py-2 border-b border-[#F1F5F9] bg-[#F8FAFC]">
-                <input value={memberQuery} onChange={(e) => setMemberQuery(e.target.value)} placeholder="Search people…" className="flex-1 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none bg-transparent" />
+                <input value={memberQuery} onChange={(e) => setMemberQuery(e.target.value)} placeholder="Search people…" className="flex-1 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden bg-transparent" />
               </div>
               <div className="max-h-[280px] overflow-y-auto divide-y divide-[#F1F5F9]">
                 {filteredEmployees.length === 0 && <p className="px-3 py-4 text-sm text-[#94A3B8] text-center">No people found.</p>}
@@ -1761,7 +1761,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
 
           <div className={`flex items-start gap-3 p-3 rounded-[8px] border-2 cursor-pointer transition-all ${form.lock_priority ? 'border-[#2563EB] bg-[#EFF6FF]' : 'border-[#E2E8F0]'}`} onClick={() => setForm({ ...form, lock_priority: !form.lock_priority })}>
             <div className={`relative w-9 h-5 rounded-full mt-0.5 shrink-0 transition-colors duration-200 ${form.lock_priority ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'}`}>
-              <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${form.lock_priority ? 'translate-x-4' : 'translate-x-0'}`} />
+              <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-xs transition-transform duration-200 ${form.lock_priority ? 'translate-x-4' : 'translate-x-0'}`} />
             </div>
             <div>
               <p className={`text-sm font-semibold ${form.lock_priority ? 'text-[#2563EB]' : 'text-[#0F172A]'}`}>Lock priority</p>
@@ -1918,7 +1918,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
     >
       <span
         className={[
-          'block w-4 h-4 rounded-full bg-white shadow transition-transform',
+          'block w-4 h-4 rounded-full bg-white shadow-sm transition-transform',
           on ? 'translate-x-4' : 'translate-x-0',
         ].join(' ')}
       />
@@ -1993,7 +1993,7 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
                   max={365}
                   value={master.overdue_followup_days}
                   onChange={(e) => setMaster({ ...master, overdue_followup_days: parseInt(e.target.value) || 1 })}
-                  className="w-20 border border-[#CBD5E1] rounded-[8px] px-2 py-1.5 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-none bg-white text-center"
+                  className="w-20 border border-[#CBD5E1] rounded-[8px] px-2 py-1.5 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-hidden bg-white text-center"
                 />
               </div>
             )}

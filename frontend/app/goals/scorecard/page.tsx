@@ -123,7 +123,7 @@ function PerspectiveCard({
     // Fixed height + internal scroll so all four quadrants stay the same size
     // however lopsided the data is (DESIGN_RULES Part 2 / Part 3).
     <section
-      className="bg-white border rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] flex flex-col h-[420px]"
+      className="bg-white border rounded-[12px] shadow-card flex flex-col h-[420px]"
       style={{ borderColor: m.border }}
     >
       <header

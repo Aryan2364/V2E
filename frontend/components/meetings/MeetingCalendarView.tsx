@@ -94,7 +94,7 @@ export default function MeetingCalendarView({
                       return (
                         <div
                           key={m.id}
-                          className="w-full text-[11px] leading-tight rounded px-1.5 py-1 truncate"
+                          className="w-full text-[11px] leading-tight rounded-xs px-1.5 py-1 truncate"
                           style={{ backgroundColor: meta.bg, color: meta.text }}
                           {...tip.bind(<div><div className="font-semibold">{m.title}</div><div className="text-white/70">{fmtTime(m.scheduled_start)}{m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}</div></div>)}
                         >
@@ -104,7 +104,7 @@ export default function MeetingCalendarView({
                     })}
                     {items.length > 3 && <span className="text-[11px] text-[#2563EB] font-medium px-1">+{items.length - 3} more</span>}
                     {(blocksByDate.get(`${cursor.year}-${cursor.month}-${day}`) ?? []).slice(0, 2).map((b) => (
-                      <button key={b.id} type="button" onClick={(e) => { e.stopPropagation(); onBlockSelect?.(b) }} className="w-full text-left text-[11px] leading-tight rounded px-1.5 py-1 truncate border border-dashed border-[#CBD5E1] bg-[#F8FAFC] text-[#64748B] flex items-center gap-1 hover:brightness-95" {...tip.bind(<div><div className="font-semibold">{b.title}</div><div className="text-white/70">{b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`} · Time-block</div></div>)}>
+                      <button key={b.id} type="button" onClick={(e) => { e.stopPropagation(); onBlockSelect?.(b) }} className="w-full text-left text-[11px] leading-tight rounded-xs px-1.5 py-1 truncate border border-dashed border-[#CBD5E1] bg-[#F8FAFC] text-[#64748B] flex items-center gap-1 hover:brightness-95" {...tip.bind(<div><div className="font-semibold">{b.title}</div><div className="text-white/70">{b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`} · Time-block</div></div>)}>
                         <span className="w-1.5 h-1.5 rounded-full bg-[#94A3B8] shrink-0" />
                         <span className="truncate">{b.title}</span>
                       </button>

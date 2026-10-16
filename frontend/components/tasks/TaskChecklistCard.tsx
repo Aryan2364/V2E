@@ -128,7 +128,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
           rows={3}
           autoFocus
           placeholder="Reason (required)"
-          className="w-full rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none focus:ring-0 px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8]"
+          className="w-full rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden focus:ring-0 px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8]"
         />
         <div className="flex justify-end mt-4">
           <button
@@ -226,7 +226,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
               )
             }
             className={[
-              'mt-0.5 w-4 h-4 rounded border-2 shrink-0 flex items-center justify-center transition-colors',
+              'mt-0.5 w-4 h-4 rounded-sm border-2 shrink-0 flex items-center justify-center transition-colors',
               done ? 'bg-[#16A34A] border-[#16A34A]' : cantDo ? 'bg-[#D97706] border-[#D97706]' : 'border-[#CBD5E1] hover:border-[#2563EB]',
               !canAct ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
             ].join(' ')}
@@ -316,7 +316,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
                   )
                 }
                 className={[
-                  'mt-0.5 w-4 h-4 rounded border-2 shrink-0 flex items-center justify-center transition-colors',
+                  'mt-0.5 w-4 h-4 rounded-sm border-2 shrink-0 flex items-center justify-center transition-colors',
                   my === 'done'
                     ? 'bg-[#16A34A] border-[#16A34A]'
                     : my === 'skipped'
@@ -333,7 +333,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
             </Tooltip>
           ) : (
             <Tooltip label="You’re not a working assignee on this task">
-              <span className="mt-0.5 w-4 h-4 rounded border-2 border-dashed border-[#CBD5E1] shrink-0" />
+              <span className="mt-0.5 w-4 h-4 rounded-xs border-2 border-dashed border-[#CBD5E1] shrink-0" />
             </Tooltip>
           )}
 

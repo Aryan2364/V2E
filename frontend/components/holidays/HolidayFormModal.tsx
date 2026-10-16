@@ -145,7 +145,7 @@ export default function HolidayFormModal({
             onChange={(e) => set('name', e.target.value)}
             placeholder="e.g. Republic Day"
             autoFocus
-            className="w-full h-[42px] px-3 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:bg-white focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] outline-none transition-colors"
+            className="w-full h-[42px] px-3 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:bg-white focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] outline-hidden transition-colors"
           />
         </div>
 
@@ -184,7 +184,7 @@ export default function HolidayFormModal({
             <select
               value={form.type}
               onChange={(e) => set('type', e.target.value as HolidayType)}
-              className="w-full h-[42px] px-3 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] text-[15px] text-[#0F172A] focus:bg-white focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] outline-none transition-colors"
+              className="w-full h-[42px] px-3 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] text-[15px] text-[#0F172A] focus:bg-white focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] outline-hidden transition-colors"
             >
               {HOLIDAY_TYPES.map((t) => (
                 <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1).replace('_', ' ')}</option>
@@ -197,7 +197,7 @@ export default function HolidayFormModal({
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
               placeholder="Optional"
-              className="w-full h-[42px] px-3 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:bg-white focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] outline-none transition-colors"
+              className="w-full h-[42px] px-3 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:bg-white focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] outline-hidden transition-colors"
             />
           </div>
         </div>

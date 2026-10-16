@@ -242,7 +242,7 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
                                           disabled={busyKey === key}
                                           value={ul.override_scopes?.read ?? defaultReadScope(ul)}
                                           onChange={(e) => changeOverride(f.key, 'read', 'grant', e.target.value as DataScope)}
-                                          className="text-xs border border-[#CBD5E1] rounded-[6px] px-2 py-1 bg-white text-[#0F172A] focus:outline-none focus:border-[#2563EB] disabled:opacity-50"
+                                          className="text-xs border border-[#CBD5E1] rounded-[6px] px-2 py-1 bg-white text-[#0F172A] focus:outline-hidden focus:border-[#2563EB] disabled:opacity-50"
                                         >
                                           {DATA_SCOPES.map((s) => (
                                             <option key={s} value={s}>

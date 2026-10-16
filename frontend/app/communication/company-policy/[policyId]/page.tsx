@@ -82,7 +82,7 @@ function DialogShell({ title, onClose, size, children }: { title: string; onClos
   if (typeof document === 'undefined') return null
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40"
+      className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
       role="dialog"
       aria-modal="true"
@@ -187,7 +187,7 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
     }
   }
 
-  const inputClass = 'w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+  const inputClass = 'w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
   const labelClass = 'block text-sm font-medium text-[#374151] mb-1.5'
 
   return (
@@ -497,11 +497,11 @@ export default function ManagePolicyPage() {
       <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6 mb-5">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-0">
-            <h1 className="text-[22px] sm:text-[28px] font-bold text-[#0F172A] leading-snug break-words">{policy.title}</h1>
+            <h1 className="text-[22px] sm:text-[28px] font-bold text-[#0F172A] leading-snug wrap-break-word">{policy.title}</h1>
             <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
               <StatusBadge status={policy.status} />
             </div>
-            {policy.description && <p className="text-[14px] text-[#475569] mt-2 leading-relaxed break-words">{policy.description}</p>}
+            {policy.description && <p className="text-[14px] text-[#475569] mt-2 leading-relaxed wrap-break-word">{policy.description}</p>}
           </div>
 
           <div className="flex items-center gap-2 flex-wrap shrink-0">

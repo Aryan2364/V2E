@@ -578,7 +578,7 @@ export default function RecurringDetailPage() {
                         <div className="min-w-0">
                           <button
                             onClick={() => router.push(`/dashboard/tasks/${group.task_id}`)}
-                            className="text-sm font-semibold text-[#2563EB] hover:underline text-left break-words"
+                            className="text-sm font-semibold text-[#2563EB] hover:underline text-left wrap-break-word"
                           >
                             {group.task_title}
                           </button>
@@ -614,10 +614,10 @@ export default function RecurringDetailPage() {
                                 </button>
                                 <p className="text-xs text-[#64748B]">
                                   {att.is_proof ? (
-                                    <span className="text-[#DC2626] font-medium bg-[#FEE2E2] px-1 py-0.5 rounded text-[10px] mr-1.5">Proof</span>
+                                    <span className="text-[#DC2626] font-medium bg-[#FEE2E2] px-1 py-0.5 rounded-xs text-[10px] mr-1.5">Proof</span>
                                   ) : null}
                                   {att.comment_id ? (
-                                    <span className="text-[#475569] text-[10px] bg-[#F1F5F9] px-1 py-0.5 rounded mr-1.5">In Comment</span>
+                                    <span className="text-[#475569] text-[10px] bg-[#F1F5F9] px-1 py-0.5 rounded-xs mr-1.5">In Comment</span>
                                   ) : null}
                                   Uploaded by {att.uploaded_by_name} · {(att.size_bytes / 1024).toFixed(1)} KB
                                 </p>
@@ -818,7 +818,7 @@ export default function RecurringDetailPage() {
                         <div className={`w-7 h-7 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-[10px] font-bold shrink-0`}>
                           {getInitials(name)}
                         </div>
-                        <span className="text-sm text-[#0F172A] break-words">{name}</span>
+                        <span className="text-sm text-[#0F172A] wrap-break-word">{name}</span>
                       </div>
                     )
                   })}
@@ -845,7 +845,7 @@ export default function RecurringDetailPage() {
                         <div className={`w-7 h-7 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-[10px] font-bold shrink-0`}>
                           {getInitials(name)}
                         </div>
-                        <span className="text-sm text-[#0F172A] break-words">{name}</span>
+                        <span className="text-sm text-[#0F172A] wrap-break-word">{name}</span>
                       </div>
                     )
                   })}
@@ -911,7 +911,7 @@ export default function RecurringDetailPage() {
                        <Target size={14} className="text-[#94A3B8] mt-0.5 shrink-0" />
                        <div>
                          <p className="text-[#475569] text-xs mb-0.5">Linked Goal</p>
-                         <p className="text-[#0F172A] font-medium break-words">{goalTitle ?? 'Loading…'}</p>
+                         <p className="text-[#0F172A] font-medium wrap-break-word">{goalTitle ?? 'Loading…'}</p>
                        </div>
                      </div>
                    )}
@@ -969,7 +969,7 @@ export default function RecurringDetailPage() {
                           <p className={`text-[11px] font-semibold text-[#64748B] ${i > 0 ? 'pt-2' : ''}`}>{item.group_title}</p>
                         )}
                         <div className="flex items-start gap-2">
-                          <div className="w-3.5 h-3.5 mt-0.5 rounded border border-[#CBD5E1] shrink-0" />
+                          <div className="w-3.5 h-3.5 mt-0.5 rounded-xs border border-[#CBD5E1] shrink-0" />
                           <span className="text-sm text-[#0F172A]">{item.title}</span>
                         </div>
                       </React.Fragment>

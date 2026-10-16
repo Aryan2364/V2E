@@ -46,11 +46,11 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 const GRID = 'lg:grid lg:items-center lg:gap-4 lg:grid-cols-[minmax(0,1fr)_10rem_6rem_10.5rem] xl:grid-cols-[minmax(0,1fr)_10rem_11rem_6rem_10.5rem]'
 
 const primaryBtn =
-  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn bg-primary text-sm font-semibold text-white hover:bg-primary-hover disabled:bg-border disabled:text-secondary disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn bg-primary text-sm font-semibold text-white hover:bg-primary-hover disabled:bg-border disabled:text-secondary disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 const secondaryBtn =
-  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn border border-primary bg-white text-sm font-semibold text-primary hover:bg-slate-50 active:bg-slate-100 disabled:border-border disabled:text-muted disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn border border-primary bg-white text-sm font-semibold text-primary hover:bg-slate-50 active:bg-slate-100 disabled:border-border disabled:text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 const fieldCls =
-  'w-full rounded-btn border bg-white px-3 text-base lg:text-sm text-heading placeholder:text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-[border-color]'
+  'w-full rounded-btn border bg-white px-3 text-base lg:text-sm text-heading placeholder:text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-[border-color]'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -131,7 +131,7 @@ function RowAction({
       disabled={allowed !== true || busy}
       className={[
         'inline-flex h-11 w-11 lg:h-9 lg:w-9 items-center justify-center rounded-btn text-secondary transition-colors',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+        'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary',
         'disabled:text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed',
         danger ? 'hover:bg-red-50 hover:text-danger active:bg-red-100' : 'hover:bg-slate-100 hover:text-heading active:bg-slate-200',
       ].join(' ')}
@@ -164,10 +164,10 @@ function RowsSkeleton() {
         <div key={i} className={`border-b border-border px-4 py-3 last:border-b-0 ${GRID}`}>
           <div className="min-w-0 space-y-2">
             <div className="h-6 w-28 rounded-full bg-border animate-pulse" />
-            <div className="h-3.5 w-3/5 rounded bg-slate-100 animate-pulse" />
+            <div className="h-3.5 w-3/5 rounded-xs bg-slate-100 animate-pulse" />
           </div>
-          <div className="mt-2 h-4 w-24 rounded bg-slate-100 animate-pulse lg:mt-0" />
-          <div className="hidden h-4 w-24 rounded bg-slate-100 animate-pulse xl:block" />
+          <div className="mt-2 h-4 w-24 rounded-xs bg-slate-100 animate-pulse lg:mt-0" />
+          <div className="hidden h-4 w-24 rounded-xs bg-slate-100 animate-pulse xl:block" />
           <div className="hidden h-6 w-16 rounded-full bg-slate-100 animate-pulse lg:block" />
           <div className="mt-2 flex gap-1 lg:mt-0 lg:justify-end">
             {Array.from({ length: 4 }).map((__, j) => (
@@ -219,7 +219,7 @@ function ColorSwatches({ value, onChange, labelledBy }: { value: TagColor; onCha
             onKeyDown={(e) => onKeyDown(e, i)}
             className={[
               'inline-flex h-11 w-11 lg:h-9 lg:w-9 items-center justify-center rounded-full border-2 transition-colors',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+              'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
               selected ? 'border-heading' : 'border-transparent hover:border-input',
             ].join(' ')}
           >
@@ -426,7 +426,7 @@ function TagFormModal({
                     type="button"
                     onClick={() => void reactivate()}
                     disabled={reactivating}
-                    className="rounded font-medium text-primary underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:text-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="rounded-xs font-medium text-primary underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:text-secondary focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {reactivating ? 'Reactivating…' : 'Reactivate it'}
                   </button>
@@ -606,7 +606,7 @@ function TagRow({
             <StatusBadge active={tag.is_active} />
           </span>
         </div>
-        {tag.description && <p className="mt-1 break-words text-sm text-secondary">{tag.description}</p>}
+        {tag.description && <p className="mt-1 wrap-break-word text-sm text-secondary">{tag.description}</p>}
       </div>
 
       {/* Usage (+ creator below xl) */}
@@ -614,7 +614,7 @@ function TagRow({
         {used > 0 ? (
           <Link
             href={`/dashboard/tasks?tag_ids=${encodeURIComponent(tag.id)}`}
-            className="rounded text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="rounded-xs text-primary hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
           >
             Used on {plural(used, 'task')}
           </Link>
@@ -1029,7 +1029,7 @@ export function TagsTab({ orgId }: { orgId: string }) {
             {totalLine}
           </p>
         </div>
-        <div className="shrink-0 [&>*]:w-full sm:[&>*]:w-auto">{createButton('primary')}</div>
+        <div className="shrink-0 *:w-full sm:*:w-auto">{createButton('primary')}</div>
       </div>
 
       {/* Toolbar */}
@@ -1051,7 +1051,7 @@ export function TagsTab({ orgId }: { orgId: string }) {
               type="button"
               onClick={clearSearch}
               aria-label="Clear search"
-              className="absolute right-1 top-1/2 inline-flex h-9 w-9 lg:h-7 lg:w-7 -translate-y-1/2 items-center justify-center rounded-btn text-secondary hover:bg-slate-100 hover:text-heading focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+              className="absolute right-1 top-1/2 inline-flex h-9 w-9 lg:h-7 lg:w-7 -translate-y-1/2 items-center justify-center rounded-btn text-secondary hover:bg-slate-100 hover:text-heading focus:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
             >
               <X size={16} aria-hidden="true" />
             </button>
@@ -1098,7 +1098,7 @@ export function TagsTab({ orgId }: { orgId: string }) {
           <span>Status</span>
           <span className="text-right">Actions</span>
         </div>
-        <div ref={listRef} className="relative max-h-[calc(100dvh-28rem)] min-h-[18rem] overflow-y-auto overscroll-contain">
+        <div ref={listRef} className="relative max-h-[calc(100dvh-28rem)] min-h-72 overflow-y-auto overscroll-contain">
           {body}
         </div>
       </div>

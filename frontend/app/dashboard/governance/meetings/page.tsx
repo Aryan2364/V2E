@@ -28,7 +28,7 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 
 const selectClass =
-  'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+  'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
 
 type View = 'day' | 'week' | 'month' | 'list'
 const VIEWS: { key: View; label: string }[] = [
@@ -345,7 +345,7 @@ export default function MeetingsPage() {
             <input className={`${selectClass} pl-8 py-1.5 w-[180px]`} placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <StyledSelect
-            wrapperClassName="w-40" triggerClassName="!py-1.5"
+            wrapperClassName="w-40" triggerClassName="py-1.5!"
             value={status} onChange={(v) => setStatus(v as any)}
             options={[
               { value: '', label: 'All statuses' },
@@ -356,7 +356,7 @@ export default function MeetingsPage() {
             ]}
           />
           <StyledSelect
-            wrapperClassName="w-36" triggerClassName="!py-1.5"
+            wrapperClassName="w-36" triggerClassName="py-1.5!"
             value={type} onChange={(v) => setType(v as any)}
             options={[
               { value: '', label: 'All types' },
@@ -366,7 +366,7 @@ export default function MeetingsPage() {
             ]}
           />
           <StyledSelect
-            wrapperClassName="w-44" triggerClassName="!py-1.5"
+            wrapperClassName="w-44" triggerClassName="py-1.5!"
             value={who} onChange={(v) => setWho(v as any)}
             options={[
               { value: 'all', label: 'All meetings' },

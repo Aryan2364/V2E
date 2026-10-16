@@ -324,7 +324,7 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
                           <OffsetDaysInput
                             value={r.offsetDays}
                             onChange={(n) => update(r.key, { offsetDays: n })}
-                            className="w-11 text-center border border-[#CBD5E1] rounded-[8px] px-2 py-1.5 text-[13px] text-[#0F172A] bg-[#F8FAFC] hover:bg-white hover:border-[#94A3B8] focus:bg-white focus:border-2 focus:border-[#2563EB] focus:outline-none"
+                            className="w-11 text-center border border-[#CBD5E1] rounded-[8px] px-2 py-1.5 text-[13px] text-[#0F172A] bg-[#F8FAFC] hover:bg-white hover:border-[#94A3B8] focus:bg-white focus:border-2 focus:border-[#2563EB] focus:outline-hidden"
                           />
                           <span className="text-[13px] text-[#475569]">days before</span>
                           <div className="w-[104px]">

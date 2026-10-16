@@ -21,7 +21,7 @@ export function AttendeesListSheet({
 }) {
   return (
     <PhoneSheet open={open} onOpenChange={onOpenChange} title={`Attendees · ${attendees.length}`}>
-      <ul className="-mx-[16px] divide-y divide-phone-border-light">
+      <ul className="mx-[-16px] divide-y divide-phone-border-light">
         {attendees.map((a) => {
           const isOrganiser = a.user_id === organizerId || a.is_organizer
           const rm = a.response === 'declined' ? RESPONSE_META.declined : null

@@ -90,7 +90,7 @@ export default function ProcessHierarchyListPage() {
       <div key={m.id}>
         <div className="group flex items-center gap-1 rounded-[8px] pr-2 hover:bg-[#F1F5F9] transition-colors" style={{ paddingLeft: 4 + depth * 18 }}>
           <button onClick={() => kids.length && toggle(m.id)} aria-label={isOpen ? 'Collapse' : 'Expand'}
-            className={`shrink-0 w-5 h-5 flex items-center justify-center rounded ${kids.length ? 'text-[#64748B] hover:bg-[#E2E8F0]' : 'opacity-0 pointer-events-none'}`}>
+            className={`shrink-0 w-5 h-5 flex items-center justify-center rounded-xs ${kids.length ? 'text-[#64748B] hover:bg-[#E2E8F0]' : 'opacity-0 pointer-events-none'}`}>
             <ChevronRight size={14} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
           </button>
           <Tooltip label={m.name}>
@@ -254,7 +254,7 @@ export default function ProcessHierarchyListPage() {
             <div className="relative mb-3">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search maps…"
-                className="w-full pl-9 pr-9 py-2.5 text-[15px] rounded-[8px] border border-[#CBD5E1] bg-white focus:border-[#2563EB] focus:outline-none text-[#0F172A] placeholder:text-[#94A3B8]" />
+                className="w-full pl-9 pr-9 py-2.5 text-[15px] rounded-[8px] border border-[#CBD5E1] bg-white focus:border-[#2563EB] focus:outline-hidden text-[#0F172A] placeholder:text-[#94A3B8]" />
               {query && (
                 <button onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569]"><X size={15} /></button>
               )}
@@ -363,7 +363,7 @@ function TemplatePickerModal({ orgId, onClose, onInstantiated }: {
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/40" onClick={onClose} />
         <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md max-h-[80vh] flex flex-col animate-[fadeIn_.15s_ease-out]">
           <div className="flex items-center gap-2 px-5 py-4 border-b border-[#E2E8F0]">
@@ -436,7 +436,7 @@ function NameModal({ title, label, initial, confirmLabel, busy, onCancel, onSubm
   useEscape(onCancel)
   const submit = () => { if (name.trim() && !busy) onSubmit(name.trim()) }
   return createPortal(
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md p-6 animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center justify-between mb-4">
@@ -447,7 +447,7 @@ function NameModal({ title, label, initial, confirmLabel, busy, onCancel, onSubm
         <input
           autoFocus value={name} onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
-          className="w-full px-3 py-2.5 text-[15px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white text-[#0F172A]"
+          className="w-full px-3 py-2.5 text-[15px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A]"
         />
         <div className="flex justify-end mt-6">
           <button onClick={submit} disabled={!name.trim() || busy}
@@ -481,7 +481,7 @@ function CreateMapModal({ orgId, parentId, onClose, onCreated }: { orgId: string
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-[12px] shadow-xl w-full max-w-md p-6 animate-[fadeIn_.15s_ease-out]">
         <div className="flex items-center justify-between mb-4">
@@ -497,7 +497,7 @@ function CreateMapModal({ orgId, parentId, onClose, onCreated }: { orgId: string
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && submit()}
               placeholder="e.g. How Sales Works"
-              className="w-full px-3 py-2.5 text-[15px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white text-[#0F172A] placeholder:text-[#94A3B8]"
+              className="w-full px-3 py-2.5 text-[15px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A] placeholder:text-[#94A3B8]"
             />
           </div>
           <div>
@@ -507,7 +507,7 @@ function CreateMapModal({ orgId, parentId, onClose, onCreated }: { orgId: string
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="What does this map cover?"
-              className="w-full px-3 py-2.5 text-[15px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white text-[#0F172A] placeholder:text-[#94A3B8] resize-none"
+              className="w-full px-3 py-2.5 text-[15px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A] placeholder:text-[#94A3B8] resize-none"
             />
           </div>
         </div>

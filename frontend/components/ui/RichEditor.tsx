@@ -130,7 +130,7 @@ export default function RichEditor({
           onBlur={sync}
           role="textbox"
           aria-multiline="true"
-          className={`w-full px-3 py-2 text-[15px] text-[#0F172A] focus:outline-none overflow-y-auto max-h-[420px] ${proseCls}`}
+          className={`w-full px-3 py-2 text-[15px] text-[#0F172A] focus:outline-hidden overflow-y-auto max-h-[420px] ${proseCls}`}
           style={{ minHeight: `${minRows * 1.6 + 1}rem` }}
         />
         {empty && placeholder && (

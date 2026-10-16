@@ -83,7 +83,7 @@ function UserSearchDropdown({
         <button
           type="button"
           onClick={() => onSelect(null)}
-          className="p-0.5 rounded hover:bg-[#F1F5F9] text-[#94A3B8] hover:text-[#0F172A] transition-colors shrink-0"
+          className="p-0.5 rounded-xs hover:bg-[#F1F5F9] text-[#94A3B8] hover:text-[#0F172A] transition-colors shrink-0"
         >
           <X size={13} />
         </button>
@@ -100,7 +100,7 @@ function UserSearchDropdown({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none transition-colors"
+          className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
         />
       </div>
       {open && (
@@ -182,7 +182,7 @@ function MultiUserSearch({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           placeholder="Search team members to add…"
-          className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none transition-colors"
+          className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors"
         />
       </div>
       {open && (
@@ -257,7 +257,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
   // Step 2 fields
   const [members, setMembers] = useState<WizardMember[]>([])
 
-  const inputCls = 'w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none transition-colors'
+  const inputCls = 'w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors'
   const labelCls = 'block text-sm font-medium text-[#374151] mb-1.5'
 
   const todayStr = getNow().toISOString().split('T')[0]
@@ -374,7 +374,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
           </div>
           <div>
             <label className={labelCls}>Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description..." rows={3} className="w-full px-3 py-2 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none resize-none" />
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description..." rows={3} className="w-full px-3 py-2 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden resize-none" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -498,7 +498,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
                       { value: 'all_member_tasks', label: 'All tasks' },
                     ]}
                   />
-                  <button type="button" onClick={() => removeMember(m.user_id)} className="p-1 rounded hover:bg-[#FEE2E2] text-[#DC2626] transition-colors">
+                  <button type="button" onClick={() => removeMember(m.user_id)} className="p-1 rounded-xs hover:bg-[#FEE2E2] text-[#DC2626] transition-colors">
                     <X size={13} />
                   </button>
                 </div>

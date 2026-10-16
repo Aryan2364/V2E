@@ -18,7 +18,7 @@ export default function TicketTemplateCard({ template, selected, onSelect }: Pro
         'w-full text-left p-4 rounded-[12px] border-2 transition-all',
         selected
           ? 'border-[#2563EB] bg-[#EFF6FF]'
-          : 'border-[#E2E8F0] bg-white hover:border-[#93C5FD] hover:shadow-sm',
+          : 'border-[#E2E8F0] bg-white hover:border-[#93C5FD] hover:shadow-xs',
       ].join(' ')}
     >
       <div className="flex items-start justify-between gap-2 mb-2">

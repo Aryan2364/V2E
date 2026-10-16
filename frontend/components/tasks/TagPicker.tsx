@@ -190,7 +190,7 @@ export function TagPicker({
         <button
           type="button"
           onClick={() => void reload()}
-          className="font-medium text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+          className="font-medium text-primary hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
         >
           Retry
         </button>
@@ -234,7 +234,7 @@ export function TagPicker({
                 type="button"
                 disabled={reactivating || value.length >= max}
                 onClick={() => notice.tagId && void reactivate(notice.tagId)}
-                className="font-medium text-primary hover:underline disabled:text-secondary disabled:no-underline disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                className="font-medium text-primary hover:underline disabled:text-secondary disabled:no-underline disabled:cursor-not-allowed focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
               >
                 {reactivating ? 'Reactivating…' : 'Reactivate it'}
               </button>

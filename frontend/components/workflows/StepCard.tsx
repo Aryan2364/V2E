@@ -41,7 +41,7 @@ export interface StepPlanInput {
 }
 
 export const INPUT_CLS =
-  'w-full px-3 py-2.5 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F8FAFC] disabled:text-[#334155] disabled:cursor-not-allowed'
+  'w-full px-3 py-2.5 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F8FAFC] disabled:text-[#334155] disabled:cursor-not-allowed'
 export const LABEL_CLS = 'block text-sm font-medium text-[#374151] mb-2'
 const SUB_LABEL = 'block text-[13px] font-medium text-[#374151] mb-1.5'
 const HELP = 'text-[13px] text-[#475569]'
@@ -185,7 +185,7 @@ function ChoiceCards<V extends string>({
               aria-checked={on}
               disabled={disabled}
               onClick={() => !on && onChange(o.value)}
-              className={`flex-1 min-w-0 flex items-center gap-2 text-left rounded-[10px] pl-3 py-2.5 min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed ${
+              className={`flex-1 min-w-0 flex items-center gap-2 text-left rounded-[10px] pl-3 py-2.5 min-h-[44px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:cursor-not-allowed ${
                 o.tip ? 'pr-1' : 'pr-3'
               }`}
             >
@@ -231,7 +231,7 @@ export function IconAction({
         e.stopPropagation()
         onClick()
       }}
-      className={`inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:text-[#94A3B8] disabled:hover:bg-transparent disabled:cursor-not-allowed ${
+      className={`inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:text-[#94A3B8] disabled:hover:bg-transparent disabled:cursor-not-allowed ${
         danger ? 'text-[#475569] hover:text-[#B91C1C] hover:bg-[#FEF2F2]' : 'text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9]'
       }`}
     >
@@ -652,7 +652,7 @@ export default function StepCard(props: EditProps | CreateProps) {
                 }
               }}
               placeholder="e.g. Collect signed offer letter"
-              className={`${INPUT_CLS} pr-14 ${titleError ? '!border-[#DC2626]' : ''}`}
+              className={`${INPUT_CLS} pr-14 ${titleError ? 'border-[#DC2626]!' : ''}`}
             />
             <span
               className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] tabular-nums ${
@@ -756,7 +756,7 @@ export default function StepCard(props: EditProps | CreateProps) {
 
         {/* Escalate to */}
         <div className="lg:col-span-6 flex flex-col gap-2">
-          <span className={LABEL_CLS + ' !mb-0'}>
+          <span className={LABEL_CLS + ' mb-0!'}>
             Escalate to <InfoTip label="Escalate to" text="Alerted when this step is late." />
           </span>
           <ChoiceCards name="Escalate to" value={draft.escalation_mode} options={ESCALATION} onChange={setEscalationMode} disabled={disabled || creating} />
@@ -811,7 +811,7 @@ export default function StepCard(props: EditProps | CreateProps) {
           aria-expanded={moreOpen}
           aria-controls={`${idPrefix}-more`}
           onClick={() => setMoreOpen((v) => !v)}
-          className="inline-flex items-center gap-2 min-h-[44px] sm:min-h-[36px] px-2 -mx-2 rounded-[8px] text-sm font-semibold text-[#1D4ED8] hover:bg-[#EFF6FF] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+          className="inline-flex items-center gap-2 min-h-[44px] sm:min-h-[36px] px-2 -mx-2 rounded-[8px] text-sm font-semibold text-[#1D4ED8] hover:bg-[#EFF6FF] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
         >
           <SlidersHorizontal size={16} />
           More options
@@ -946,7 +946,7 @@ export default function StepCard(props: EditProps | CreateProps) {
                   e.stopPropagation()
                   edit.onToggle()
                 }}
-                className="block max-w-full text-left text-[15px] font-semibold text-[#0F172A] truncate rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+                className="block max-w-full text-left text-[15px] font-semibold text-[#0F172A] truncate rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
               >
                 {draft.title || 'Untitled step'}
               </button>

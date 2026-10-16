@@ -18,7 +18,7 @@ interface Props {
 }
 
 const inputCls =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none'
+  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden'
 const labelCls = 'text-sm font-medium text-[#374151]'
 
 function defaultSchedule(): ScheduleEntryDraft {

@@ -217,13 +217,13 @@ export default function CourseViewer({
               <div className="flex items-center gap-2">
                 <Link
                   href={backHref}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] shadow-sm hover:text-[#2563EB] hover:border-[#2563EB] transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] shadow-xs hover:text-[#2563EB] hover:border-[#2563EB] transition-colors"
                 >
                   <ArrowLeft size={14} /> {backLabel}
                 </Link>
                 <button
                   onClick={() => setNavOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] shadow-sm hover:text-[#2563EB] hover:border-[#2563EB] transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#475569] bg-white border border-[#E2E8F0] rounded-[8px] shadow-xs hover:text-[#2563EB] hover:border-[#2563EB] transition-colors"
                 >
                   <PanelLeftOpen size={14} /> Show list
                 </button>
@@ -395,7 +395,7 @@ export default function CourseViewer({
 
       {/* Fullscreen material overlay */}
       {expanded && activeItem?.content_type === 'file' && fileView && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[70] bg-white flex flex-col">
+        <div className="fixed inset-0 z-70 bg-white flex flex-col">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#E2E8F0] shrink-0">
             <div className="min-w-0 flex items-center gap-2">
               <FileIcon size={16} className="text-[#2563EB] shrink-0" />

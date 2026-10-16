@@ -9,7 +9,7 @@ import type { Meeting } from '@/lib/types/meetings'
 import { ResponseBadge, fmtDateTime, fmtTime } from './shared'
 import BusyTimesPanel from './BusyTimesPanel'
 
-const inputClass = 'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB]'
+const inputClass = 'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-hidden focus:border-[#2563EB]'
 
 export default function MeetingScheduleTab({
   orgId, meeting, userId, canManage, onChanged,

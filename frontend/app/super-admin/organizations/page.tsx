@@ -85,7 +85,7 @@ export default function OrganizationsPage() {
       render: (org) => (
         <button
           onClick={() => router.push(`/super-admin/organizations/${org.id}`)}
-          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-[#2563EB] text-sm font-medium hover:text-[#1D4ED8] transition-colors rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-[#2563EB] text-sm font-medium hover:text-[#1D4ED8] transition-colors rounded-[6px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
         >
           View <ArrowRight size={14} />
         </button>

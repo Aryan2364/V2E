@@ -162,7 +162,7 @@ export default function StartWorkflowModal({
             }}
             onBlur={() => clean && setTouched(true)}
             placeholder="e.g. ACME Ltd onboarding"
-            className={`w-full px-3 py-2.5 text-base sm:text-sm border rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:ring-1 ${
+            className={`w-full px-3 py-2.5 text-base sm:text-sm border rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:ring-1 ${
               shownNameError ? 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-[#2563EB]'
             }`}
           />

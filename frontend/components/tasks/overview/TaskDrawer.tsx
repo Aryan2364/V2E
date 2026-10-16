@@ -169,7 +169,7 @@ export default function TaskDrawer({
     .map((a) => ({ id: a.id, name: a.user?.name ?? a.user_name ?? '?', department: a.user?.department, role: a.user?.role_title, isCC: a.is_cc }))
 
   const body = (
-    <div className="fixed inset-0 z-[60] flex justify-end">
+    <div className="fixed inset-0 z-60 flex justify-end">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-[#0F172A]/40 backdrop-blur-[1px]" onClick={onClose} />
 
@@ -181,7 +181,7 @@ export default function TaskDrawer({
         <div className="flex items-start justify-between gap-3 px-6 py-4 border-b border-[#E2E8F0]">
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#94A3B8]">Task</p>
-            <h2 className="text-[18px] font-semibold text-[#0F172A] leading-snug mt-0.5 break-words">
+            <h2 className="text-[18px] font-semibold text-[#0F172A] leading-snug mt-0.5 wrap-break-word">
               {loading ? 'Loading…' : task?.title}
             </h2>
           </div>
@@ -227,7 +227,7 @@ export default function TaskDrawer({
                     const setUpBy = wf.set_up_by_name ?? task.created_by?.name
                     return (
                       <>
-                        <p className="text-[#0F172A] font-medium break-words">{workflowSourceText(wf)}</p>
+                        <p className="text-[#0F172A] font-medium wrap-break-word">{workflowSourceText(wf)}</p>
                         {setUpBy && <p className="text-[12px] text-[#475569]">set up by {setUpBy}</p>}
                       </>
                     )
@@ -327,7 +327,7 @@ export default function TaskDrawer({
                             <span className="font-semibold text-[#0F172A]">{c.user_name ?? 'Unknown'}</span>
                             <span className="text-[#94A3B8] ml-2 text-[11px]">{formatWhen(c.created_at)}</span>
                           </p>
-                          <p className="text-[14px] text-[#1E293B] whitespace-pre-wrap break-words mt-0.5">{c.body}</p>
+                          <p className="text-[14px] text-[#1E293B] whitespace-pre-wrap wrap-break-word mt-0.5">{c.body}</p>
                           {c.attachments && c.attachments.length > 0 && (
                             <AttachmentChips
                               attachments={c.attachments}
@@ -381,7 +381,7 @@ export default function TaskDrawer({
                   rows={1}
                   disabled={isFutureTask}
                   placeholder={isFutureTask ? "Comments are locked on future tasks..." : "Write a comment…"}
-                  className="flex-1 resize-none rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-[14px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] max-h-28"
+                  className="flex-1 resize-none rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-[14px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] max-h-28"
                 />
                 <button
                   onClick={send}

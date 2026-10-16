@@ -79,7 +79,7 @@ function CommentItem({
             <div className="flex flex-wrap gap-2 mt-1.5">
               {comment.attachment_urls.map((url, i) => (
                 <a key={i} href={url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-[#2563EB] hover:underline bg-[#EFF6FF] px-2 py-0.5 rounded border border-[#BFDBFE]">
+                  className="flex items-center gap-1 text-xs text-[#2563EB] hover:underline bg-[#EFF6FF] px-2 py-0.5 rounded-xs border border-[#BFDBFE]">
                   <Link2 size={10} /> Attachment {i + 1}
                 </a>
               ))}
@@ -148,7 +148,7 @@ export default function TicketCommentThread({ comments, currentUserId, onAdd, on
           placeholder="Add a comment..."
           rows={2}
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSend() }}
-          className="w-full text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none resize-none"
+          className="w-full text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden resize-none"
         />
         {showUrlField && (
           <input
@@ -156,7 +156,7 @@ export default function TicketCommentThread({ comments, currentUserId, onAdd, on
             value={attachmentUrl}
             onChange={(e) => setAttachmentUrl(e.target.value)}
             placeholder="Paste attachment URL..."
-            className="w-full mt-2 px-3 py-1.5 border border-[#CBD5E1] rounded-[6px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none"
+            className="w-full mt-2 px-3 py-1.5 border border-[#CBD5E1] rounded-[6px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-hidden"
           />
         )}
         <div className="flex items-center justify-between mt-2">

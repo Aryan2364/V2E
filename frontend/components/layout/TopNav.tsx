@@ -255,7 +255,7 @@ export default function TopNav() {
 
             {/* Onboarding Spotlight Popover */}
             {showSpotlight && (
-              <div className="absolute right-0 mt-3 w-80 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_10px_25px_rgba(0,0,0,0.1)] p-5 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute right-0 mt-3 w-80 bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_10px_25px_rgba(0,0,0,0.1)] p-5 z-9999 animate-in fade-in slide-in-from-top-2 duration-200">
                 {/* Arrow pointer */}
                 <div className="absolute right-3.5 -top-1.5 w-3 h-3 bg-white border-t border-l border-[#E2E8F0] rotate-45" />
 

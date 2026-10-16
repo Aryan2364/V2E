@@ -160,7 +160,7 @@ export default function MeetingAttendeeSelector({
       {/* Picker — centered dialog over the page (own backdrop), matching Assignees & CC */}
       {open && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40"
+          className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40"
           onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
           <div className="w-[440px] max-w-full max-h-[80vh] rounded-[12px] bg-white border border-[#E2E8F0] shadow-[0_12px_40px_rgba(0,0,0,0.20)] flex flex-col overflow-hidden">
@@ -182,7 +182,7 @@ export default function MeetingAttendeeSelector({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search by name or email…"
-                  className="w-full pl-8 pr-3 py-[7px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] border border-[#E2E8F0] rounded-[8px] focus:border-[#2563EB] focus:outline-none bg-white"
+                  className="w-full pl-8 pr-3 py-[7px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] border border-[#E2E8F0] rounded-[8px] focus:border-[#2563EB] focus:outline-hidden bg-white"
                 />
               </div>
             </div>

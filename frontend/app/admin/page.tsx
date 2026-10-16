@@ -109,7 +109,7 @@ export default function AdminLoginPage() {
                   onChange={(e) => setIdentifier(e.target.value)}
                   disabled={loading}
                   placeholder="admin@example.com or mobile number"
-                  className="flex-1 h-11 px-3 rounded-[8px] border border-[#334155] bg-[#0F172A] text-white placeholder:text-[#475569] text-sm focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 disabled:opacity-50 transition-colors"
+                  className="flex-1 h-11 px-3 rounded-[8px] border border-[#334155] bg-[#0F172A] text-white placeholder:text-[#475569] text-sm focus:border-[#2563EB] focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/20 disabled:opacity-50 transition-colors"
                 />
               </div>
             </div>
@@ -128,7 +128,7 @@ export default function AdminLoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
                   placeholder="Enter your password"
-                  className="w-full h-11 px-3 pr-10 rounded-[8px] border border-[#334155] bg-[#0F172A] text-white placeholder:text-[#475569] text-sm focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 disabled:opacity-50 transition-colors"
+                  className="w-full h-11 px-3 pr-10 rounded-[8px] border border-[#334155] bg-[#0F172A] text-white placeholder:text-[#475569] text-sm focus:border-[#2563EB] focus:outline-hidden focus:ring-2 focus:ring-[#2563EB]/20 disabled:opacity-50 transition-colors"
                 />
                 <button
                   type="button"

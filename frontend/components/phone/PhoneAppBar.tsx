@@ -25,8 +25,8 @@ const MAX_ACTIONS = 2
 /** An icon button in the bar: 44px, on-brand, its pressed fill a white tint. */
 export const APP_BAR_BUTTON = cx(
   'inline-flex size-[44px] shrink-0 items-center justify-center rounded-full text-phone-on-brand',
-  'transition-[background-color] duration-[var(--duration-fast)] active:bg-phone-on-brand-pressed',
-  'outline-none focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-on-brand',
+  'transition-[background-color] duration-(--duration-fast) active:bg-phone-on-brand-pressed',
+  'outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-on-brand',
   '[&_svg]:size-[22px]',
 )
 
@@ -55,12 +55,12 @@ export function PhoneAppBar({
       data-below-top={belowTop ? '' : undefined}
       className={cx(
         'sticky top-0 z-40 shrink-0 bg-phone-primary text-phone-on-brand',
-        'pt-[var(--safe-top)] pr-[var(--safe-right)] pl-[var(--safe-left)]',
+        'pt-(--safe-top) pr-(--safe-right) pl-(--safe-left)',
       )}
     >
       <div
         className={cx(
-          'flex h-[var(--h-topbar)] items-center gap-[8px]',
+          'flex h-(--h-topbar) items-center gap-[8px]',
           hasLeading ? 'pl-[4px]' : 'pl-[16px]',
           count > 0 ? 'pr-[4px]' : 'pr-[16px]',
         )}

@@ -483,7 +483,7 @@ export default function CreateTaskModal({
   if (createdRecurring) {
     return createPortal(
       <div
-        className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
         onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
         role="dialog"
         aria-modal="true"
@@ -529,7 +529,7 @@ export default function CreateTaskModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
       role="dialog"
       aria-modal="true"
@@ -570,7 +570,7 @@ export default function CreateTaskModal({
                     aria-pressed={active}
                     className={[
                       'flex items-center justify-center gap-2 px-3 py-2 rounded-[8px] text-sm font-semibold transition-colors',
-                      active ? 'bg-white text-[#0F172A] shadow-sm border border-[#E2E8F0]' : 'text-[#475569] hover:text-[#0F172A]',
+                      active ? 'bg-white text-[#0F172A] shadow-xs border border-[#E2E8F0]' : 'text-[#475569] hover:text-[#0F172A]',
                     ].join(' ')}
                   >
                     <Icon size={16} className={active ? 'text-[#2563EB]' : 'text-[#94A3B8]'} />
@@ -605,7 +605,7 @@ export default function CreateTaskModal({
                 onChange={(e) => setTitle(e.target.value.slice(0, 50))}
                 maxLength={50}
                 placeholder="Task title..."
-                className="w-full border border-[#CBD5E1] rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white"
+                className="w-full border border-[#CBD5E1] rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white"
               />
               {/* Count lives inside the field, right-aligned */}
               <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-[#DC2626]' : 'text-[#94A3B8]'}`}>
@@ -669,7 +669,7 @@ export default function CreateTaskModal({
                     onClick={() => { setMode(opt.value); setError(null) }}
                     className={[
                       'flex items-center justify-center gap-2 px-3 py-2 rounded-[8px] text-sm font-medium transition-colors',
-                      active ? 'bg-[#2563EB] text-white shadow-sm' : 'text-[#475569] hover:bg-white',
+                      active ? 'bg-[#2563EB] text-white shadow-xs' : 'text-[#475569] hover:bg-white',
                     ].join(' ')}
                     aria-pressed={active}
                   >
@@ -768,7 +768,7 @@ export default function CreateTaskModal({
                 maxLength={2000}
                 placeholder="Add a description..."
                 rows={3}
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 pt-[10px] pb-6 text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white resize-none"
+                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 pt-[10px] pb-6 text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white resize-none"
               />
               {/* Count lives inside the field, bottom-right */}
               <span className={`pointer-events-none absolute right-3 bottom-2 text-[11px] ${description.length >= 2000 ? 'text-[#DC2626]' : 'text-[#94A3B8]'}`}>

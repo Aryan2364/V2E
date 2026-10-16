@@ -90,7 +90,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" data-layout={layout} className={inter.variable}>
-      <body className="font-[family-name:var(--font-inter)] antialiased bg-[#F8FAFC] text-[#1E293B]">
+      <body className="font-(family-name:--font-inter) antialiased bg-[#F8FAFC] text-[#1E293B]">
         <LayoutProvider initial={layout}>
           <QueryProvider>
             <AuthProvider>

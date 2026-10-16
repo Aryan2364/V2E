@@ -21,7 +21,7 @@ import { RefreshCw, WifiOff } from 'lucide-react'
  */
 export default function OfflineScreen() {
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-[#F8FAFC] text-[#1E293B]">
+    <div className="flex min-h-dvh flex-col bg-[#F8FAFC] text-[#1E293B]">
       <header className="bg-[#2563EB] pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] text-white">
         <div className="flex h-[56px] items-center px-[16px]">
           <h1 className="truncate text-[20px] font-medium leading-[1.3]">V2E</h1>
@@ -50,7 +50,7 @@ export default function OfflineScreen() {
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="mt-[24px] inline-flex min-h-[2.75rem] w-full max-w-[420px] items-center justify-center gap-[8px] rounded-[8px] border-2 border-[#2563EB] bg-[#2563EB] px-[16px] py-[8px] text-[1rem] font-semibold text-white active:bg-[#1E40AF] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3B82F6]"
+          className="mt-[24px] inline-flex min-h-11 w-full max-w-[420px] items-center justify-center gap-[8px] rounded-[8px] border-2 border-[#2563EB] bg-[#2563EB] px-[16px] py-[8px] text-[1rem] font-semibold text-white active:bg-[#1E40AF] outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3B82F6]"
         >
           <RefreshCw aria-hidden className="size-[18px]" />
           Try again

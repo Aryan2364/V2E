@@ -121,7 +121,7 @@ export default function PeopleDeptFilter({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search department, name or role"
-          className="flex-1 min-w-0 bg-transparent text-[12px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none"
+          className="flex-1 min-w-0 bg-transparent text-[12px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
         />
       </div>
 

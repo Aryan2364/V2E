@@ -20,7 +20,7 @@ function StandardCard({
   const isExpected = type === 'expected'
   return (
     <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 flex gap-3">
-      <div className="flex-shrink-0 mt-0.5">
+      <div className="shrink-0 mt-0.5">
         {isExpected ? (
           <CheckCircle2 size={18} className="text-[#16A34A]" />
         ) : (

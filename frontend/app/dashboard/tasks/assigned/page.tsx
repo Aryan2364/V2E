@@ -321,7 +321,7 @@ export default function AssignedByMePage() {
               rows={3}
               autoFocus
               placeholder="Why is this being closed as not-done?"
-              className="w-full rounded-[8px] border border-[#E2E8F0] px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none"
+              className="w-full rounded-[8px] border border-[#E2E8F0] px-3 py-2 text-sm text-[#0F172A] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none"
             />
           </div>
 

@@ -311,7 +311,7 @@ export default function TaskModuleSidebar() {
                       {!collapsed && (
                         <>
                           <span className="hidden md:inline">{item.label}</span>
-                          <span className="ml-auto hidden md:block text-[9px] font-semibold text-[#475569] bg-[#1E293B] px-1.5 py-0.5 rounded">
+                          <span className="ml-auto hidden md:block text-[9px] font-semibold text-[#475569] bg-[#1E293B] px-1.5 py-0.5 rounded-xs">
                             Soon
                           </span>
                         </>

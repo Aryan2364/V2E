@@ -164,7 +164,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
             maxLength={250}
             enterKeyHint="next"
             placeholder="e.g. Weekly sync"
-            className="min-h-[var(--h-control)] w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] text-phone-body text-phone-text-primary outline-none focus-visible:border-phone-primary"
+            className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] text-phone-body text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
           />
         </Field>
 
@@ -177,7 +177,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
                 type="button"
                 onClick={() => setType(t)}
                 className={cx(
-                  'flex-1 min-h-[var(--h-control)] rounded-[8px] border-2 text-phone-body font-semibold',
+                  'flex-1 min-h-(--h-control) rounded-[8px] border-2 text-phone-body font-semibold',
                   type === t ? 'border-phone-primary bg-phone-primary-subtle text-phone-primary-text' : 'border-phone-border bg-phone-surface text-phone-text-secondary',
                 )}
               >
@@ -195,7 +195,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
               onChange={(e) => setOnlineLink(e.target.value)}
               placeholder="https://…"
               inputMode="url"
-              className="min-h-[var(--h-control)] w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] text-phone-body text-phone-text-primary outline-none focus-visible:border-phone-primary"
+              className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] text-phone-body text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
             />
           </Field>
         ) : (
@@ -205,7 +205,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g. Conference room 2"
-              className="min-h-[var(--h-control)] w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] text-phone-body text-phone-text-primary outline-none focus-visible:border-phone-primary"
+              className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] text-phone-body text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
             />
           </Field>
         )}
@@ -239,7 +239,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
               onChange={(e) => setAgenda(e.target.value)}
               rows={4}
               placeholder="What this meeting will cover"
-              className="w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] py-[10px] text-phone-body text-phone-text-primary outline-none focus-visible:border-phone-primary"
+              className="w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] py-[10px] text-phone-body text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
             />
           </Field>
         ) : (

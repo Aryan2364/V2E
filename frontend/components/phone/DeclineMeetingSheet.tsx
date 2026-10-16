@@ -54,7 +54,7 @@ export function DeclineMeetingSheet({
           rows={3}
           maxLength={1000}
           placeholder="Let the organiser know why you can't make it"
-          className="min-h-[88px] w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] py-[10px] text-phone-body text-phone-text-primary outline-none focus-visible:border-phone-primary"
+          className="min-h-[88px] w-full rounded-[8px] border border-phone-border bg-phone-surface px-[12px] py-[10px] text-phone-body text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
         />
       </div>
     </PhoneSheet>

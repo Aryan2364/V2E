@@ -37,9 +37,9 @@ function PolicyCard({ policy }: { policy: CompanyPolicy }) {
         <StatusBadge status={policy.status} />
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="text-[15px] font-semibold text-[#0F172A] leading-snug line-clamp-2 break-words">{policy.title}</h3>
+        <h3 className="text-[15px] font-semibold text-[#0F172A] leading-snug line-clamp-2 wrap-break-word">{policy.title}</h3>
         {policy.description && (
-          <p className="text-[13px] text-[#475569] mt-1 line-clamp-2 leading-relaxed break-words">{policy.description}</p>
+          <p className="text-[13px] text-[#475569] mt-1 line-clamp-2 leading-relaxed wrap-break-word">{policy.description}</p>
         )}
       </div>
       <div className="flex items-center gap-4 pt-1 border-t border-[#F1F5F9]">
@@ -135,7 +135,7 @@ export default function CompanyPolicyPage() {
             placeholder="Search policies…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+            className="w-full pl-9 pr-3 py-2 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
           />
         </div>
         {(['all', 'draft', 'published', 'archived'] as const).map((s) => (

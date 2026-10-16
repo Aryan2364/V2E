@@ -20,7 +20,7 @@ import {
 // Text inputs (search + dates) stay white to contrast the soft-filled dropdowns,
 // but share the dropdowns' height and radius so the filter row stays aligned.
 const inputClass =
-  'rounded-[8px] border border-[#CBD5E1] bg-white px-3.5 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors'
+  'rounded-[8px] border border-[#CBD5E1] bg-white px-3.5 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors'
 
 export default function AuditLogsPage() {
   const { user } = useAuth()

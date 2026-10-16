@@ -78,7 +78,7 @@ export function TagChip({ tag, size = 'sm', onRemove, className = '' }: TagChipP
             onRemove()
           }}
           onKeyDown={(e) => e.stopPropagation()}
-          className={`tag-chip-remove shrink-0 inline-flex items-center justify-center rounded-full transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-current ${s.remove}`}
+          className={`tag-chip-remove shrink-0 inline-flex items-center justify-center rounded-full transition-colors focus:outline-hidden focus-visible:ring-1 focus-visible:ring-current ${s.remove}`}
         >
           <X size={s.icon} strokeWidth={2.5} />
         </button>

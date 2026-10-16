@@ -109,7 +109,7 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
       </div>
 
       {loading ? (
-        <div className="-mx-[16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <div className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
           {Array.from({ length: 4 }).map((_, i) => (
             <GivenTaskRowSkeleton key={i} />
           ))}
@@ -121,7 +121,7 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
           line={tab === 'open' ? 'Tasks you give to others will show up here, open first.' : 'Tasks you gave that are finished will show up here.'}
         />
       ) : (
-        <div className="-mx-[16px] mb-[88px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <div className="mx-[-16px] mb-[88px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
           {list.map((t) => (
             <GivenTaskRow key={t.id} task={t} href={`/dashboard/tasks/${t.id}`} />
           ))}
@@ -171,7 +171,7 @@ function PullHint({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: (
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       style={{ height: refreshing ? 40 : pull }}
-      className="flex items-center justify-center overflow-hidden transition-[height] duration-[var(--duration-fast)]"
+      className="flex items-center justify-center overflow-hidden transition-[height] duration-(--duration-fast)"
     >
       {refreshing || pull > 8 ? (
         <RotateCw aria-hidden className={cx('size-[20px] text-phone-text-secondary', refreshing && 'animate-spin')} />

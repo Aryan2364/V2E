@@ -8,7 +8,7 @@ import type { WorkLogAccessConfig } from '@/lib/types/workLogs'
 
 const cardCls = 'bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
 const selectCls =
-  'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white focus:border-2 focus:border-[#2563EB] focus:outline-none'
+  'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white focus:border-2 focus:border-[#2563EB] focus:outline-hidden'
 
 export default function WorkLogAccessPage() {
   const { user } = useAuth()

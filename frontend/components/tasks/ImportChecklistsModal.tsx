@@ -337,7 +337,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
   if (!mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
+    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-3xl sm:rounded-[12px] rounded-t-[16px] shadow-xl max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0]">
@@ -464,7 +464,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
               {(validation.errors > 0 || validation.warnings > 0) && (
                 <div>
                   <label className="flex items-center gap-2 text-[13px] text-[#475569] mb-2">
-                    <input type="checkbox" checked={onlyProblems} onChange={(e) => setOnlyProblems(e.target.checked)} className="rounded border-[#CBD5E1]" />
+                    <input type="checkbox" checked={onlyProblems} onChange={(e) => setOnlyProblems(e.target.checked)} className="rounded-xs border-[#CBD5E1]" />
                     Show only rows with problems
                   </label>
                   <div className="border border-[#E2E8F0] rounded-[8px] overflow-hidden">

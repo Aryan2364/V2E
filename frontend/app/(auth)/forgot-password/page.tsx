@@ -7,7 +7,7 @@ import { forgotPassword, verifyResetOtp, resetPassword } from '@/lib/api/auth'
 import Button from '@/components/ui/Button'
 
 const inputCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-2 focus:border-[#2563EB] transition-colors'
+  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors'
 const labelCls = 'block text-sm font-medium text-[#374151] mb-1.5'
 
 const RESEND_COOLDOWN_S = 60

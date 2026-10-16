@@ -114,7 +114,7 @@ export function AttachmentErrorBox({ errors, onDismiss }: { errors: string[]; on
         {errors.map((er, i) => (
           <li key={i} className="flex items-start gap-1.5 text-[12px] text-[#B91C1C]">
             <span className="mt-[6px] w-1 h-1 rounded-full bg-[#DC2626] shrink-0" />
-            <span className="min-w-0 break-words">{er}</span>
+            <span className="min-w-0 wrap-break-word">{er}</span>
           </li>
         ))}
       </ul>

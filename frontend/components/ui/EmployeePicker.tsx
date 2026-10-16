@@ -163,7 +163,7 @@ export default function EmployeePicker({
           id={id}
           disabled={disabled}
           onClick={() => setOpen(true)}
-          className="w-full flex items-center gap-2 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1 text-[12px] text-left hover:bg-white hover:border-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center gap-2 rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1 text-[12px] text-left hover:bg-white hover:border-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className={`flex-1 min-w-0 truncate ${selected ? 'font-medium text-[#0F172A]' : 'text-[#94A3B8]'}`}>
             {selected ? selected.name : placeholder}
@@ -189,7 +189,7 @@ export default function EmployeePicker({
         id={id}
         disabled={disabled}
         onClick={() => setOpen(true)}
-        className="w-full flex items-center gap-2 min-h-[42px] px-2 py-1.5 border border-[#CBD5E1] rounded-[8px] bg-white text-left hover:border-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center gap-2 min-h-[42px] px-2 py-1.5 border border-[#CBD5E1] rounded-[8px] bg-white text-left hover:border-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {selected ? (
           <>
@@ -222,7 +222,7 @@ export default function EmployeePicker({
           centered it never drifts on scroll nor escapes a parent modal. */}
       {open && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/40"
+          className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-black/40"
           onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
           <div className="w-[440px] max-w-full max-h-[80vh] rounded-[12px] bg-white border border-[#E2E8F0] shadow-[0_12px_40px_rgba(0,0,0,0.20)] flex flex-col overflow-hidden">
@@ -249,7 +249,7 @@ export default function EmployeePicker({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by name..."
-                  className="w-full pl-8 pr-3 py-[7px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] border border-[#E2E8F0] rounded-[8px] focus:border-[#2563EB] focus:outline-none bg-white"
+                  className="w-full pl-8 pr-3 py-[7px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] border border-[#E2E8F0] rounded-[8px] focus:border-[#2563EB] focus:outline-hidden bg-white"
                 />
               </div>
             </div>

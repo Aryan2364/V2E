@@ -129,9 +129,9 @@ export default function RunHistory({
                     <Icon size={14} />
                   </span>
                   <div className="min-w-0 pt-0.5">
-                    <p className="text-sm text-[#0F172A] break-words">{text}</p>
+                    <p className="text-sm text-[#0F172A] wrap-break-word">{text}</p>
                     {reason && !e.message.includes(reason) && (
-                      <p className="mt-1 text-[13px] text-[#334155] rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] px-2.5 py-1.5 whitespace-pre-wrap break-words">“{reason}”</p>
+                      <p className="mt-1 text-[13px] text-[#334155] rounded-[8px] bg-[#F8FAFC] border border-[#E2E8F0] px-2.5 py-1.5 whitespace-pre-wrap wrap-break-word">“{reason}”</p>
                     )}
                     <p className="text-[12px] text-[#475569]">
                       {stepLabel && (

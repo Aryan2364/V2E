@@ -218,7 +218,7 @@ export default function FlowDiagram({
 
         <svg
           aria-hidden
-          className="absolute left-0 top-0 pointer-events-none overflow-visible z-[1]"
+          className="absolute left-0 top-0 pointer-events-none overflow-visible z-1"
           width={size.w}
           height={size.h}
           viewBox={`0 0 ${Math.max(1, size.w)} ${Math.max(1, size.h)}`}
@@ -247,7 +247,7 @@ export default function FlowDiagram({
 
         {withHeaders &&
           shownLanes.list.map((l, ci) => (
-            <div key={`h-${l.key}`} className={`relative z-[2] px-3 pt-2.5 pb-1 ${boxW} box-content`} style={{ gridColumn: ci + 1, gridRow: 1 }}>
+            <div key={`h-${l.key}`} className={`relative z-2 px-3 pt-2.5 pb-1 ${boxW} box-content`} style={{ gridColumn: ci + 1, gridRow: 1 }}>
               <span className="block text-[13px] font-semibold text-[#0F172A] truncate">{l.label}</span>
               {l.hint && <span className="block text-[12px] text-[#475569] truncate">{l.hint}</span>}
             </div>
@@ -276,7 +276,7 @@ export default function FlowDiagram({
           return (
             <div
               key={n.id}
-              className={`relative z-[2] px-3 ${compact ? 'py-3' : 'py-4'} box-content ${boxW}`}
+              className={`relative z-2 px-3 ${compact ? 'py-3' : 'py-4'} box-content ${boxW}`}
               style={{ gridColumn: p.col + 1, gridRow: p.row + rowOffset }}
             >
               <div
@@ -291,7 +291,7 @@ export default function FlowDiagram({
                     type="button"
                     onClick={n.onClick}
                     aria-label={n.label}
-                    className="block w-full rounded-[12px] transition-[transform,box-shadow] duration-150 hover:shadow-[0_4px_14px_rgba(15,23,42,0.10)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
+                    className="block w-full rounded-[12px] transition-[transform,box-shadow] duration-150 hover:shadow-[0_4px_14px_rgba(15,23,42,0.10)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
                   >
                     {box}
                   </button>

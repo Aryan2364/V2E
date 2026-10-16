@@ -135,7 +135,7 @@ export default function ExampleRun({
         aria-expanded={open}
         aria-controls="example-run"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-2 px-4 py-3 text-left rounded-[12px] hover:bg-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+        className="w-full flex items-center gap-2 px-4 py-3 text-left rounded-[12px] hover:bg-[#F8FAFC] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
       >
         <CalendarRange size={16} className="text-[#2563EB] shrink-0" />
         <span className="text-[15px] font-semibold text-[#0F172A] shrink-0">Example instance</span>
@@ -156,7 +156,7 @@ export default function ExampleRun({
           {state.status === 'failed' && (
             <div role="alert" className="flex flex-wrap items-start gap-2 rounded-[10px] border border-[#FECACA] bg-[#FEF2F2] px-3.5 py-2.5 text-sm text-[#991B1B]">
               <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-              <span className="flex-1 min-w-0 break-words">
+              <span className="flex-1 min-w-0 wrap-break-word">
                 {state.error}
                 {data ? ' The dates below may be out of date.' : ''}
               </span>
@@ -191,7 +191,7 @@ export default function ExampleRun({
                       role="tab"
                       aria-selected={i === idx}
                       onClick={() => setRunIndex(i)}
-                      className={`min-h-[44px] sm:min-h-[34px] px-3 rounded-[8px] border text-[13px] font-medium transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
+                      className={`min-h-[44px] sm:min-h-[34px] px-3 rounded-[8px] border text-[13px] font-medium transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
                         i === idx ? 'bg-[#2563EB] border-[#2563EB] text-white' : 'bg-white border-[#CBD5E1] text-[#334155] hover:border-[#2563EB] hover:text-[#1D4ED8]'
                       }`}
                     >
@@ -213,7 +213,7 @@ export default function ExampleRun({
                       <button
                         type="button"
                         onClick={() => onOpenStep(s.key)}
-                        className="w-full flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 px-3 py-2.5 text-left hover:bg-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2563EB]"
+                        className="w-full flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 px-3 py-2.5 text-left hover:bg-[#F8FAFC] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2563EB]"
                       >
                         <span className="flex items-center gap-2 min-w-0 sm:w-[40%]">
                           <span className="min-w-[22px] h-[22px] px-1 rounded-full bg-[#2563EB] text-white text-[11px] font-semibold flex items-center justify-center shrink-0">
@@ -242,7 +242,7 @@ export default function ExampleRun({
                 return (
                   <li key={i} className="flex items-start gap-2 text-[13px] text-[#78350F]">
                     <AlertTriangle size={14} className="shrink-0 mt-0.5 text-[#B45309]" />
-                    <span className="flex-1 min-w-0 break-words">{warningText(w, nameOf)}</span>
+                    <span className="flex-1 min-w-0 wrap-break-word">{warningText(w, nameOf)}</span>
                     {key && order.has(key) && (
                       <button type="button" onClick={() => onOpenStep(key)} className="font-semibold underline shrink-0">
                         Show step

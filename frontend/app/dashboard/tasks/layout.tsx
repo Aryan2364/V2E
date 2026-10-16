@@ -29,7 +29,7 @@ export default function TasksLayout({ children }: { children: React.ReactNode })
       {/* scrollbar-gutter:stable reserves the vertical scrollbar's space even when no
           scrollbar is showing — so opening a tall popover/menu (which briefly makes the
           short page overflow) no longer nudges the whole layout left as the bar appears. */}
-      <main ref={mainRef} className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 lg:py-8 overflow-auto [scrollbar-gutter:stable]">
+      <main ref={mainRef} className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 lg:py-8 overflow-auto scrollbar-gutter-stable">
         {children}
       </main>
     </div>

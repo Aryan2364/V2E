@@ -1162,7 +1162,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
 
       {/* Confirm popup */}
       {confirmOpen && validation && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-[12px] shadow-xl max-w-md w-full p-6">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-[#EFF6FF] flex items-center justify-center shrink-0">
@@ -1190,7 +1190,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
 
       {/* Undo confirmation */}
       {undoConfirm && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-[12px] shadow-xl max-w-md w-full p-6">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-[#FEF2F2] flex items-center justify-center shrink-0">
@@ -1223,7 +1223,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
 
   if (embedded) return shell
   return createPortal(
-    <div className={`fixed inset-0 z-[60] flex justify-center bg-black/40 ${isFullPage ? 'items-stretch p-0' : 'items-end sm:items-center p-0 sm:p-4'}`}>
+    <div className={`fixed inset-0 z-60 flex justify-center bg-black/40 ${isFullPage ? 'items-stretch p-0' : 'items-end sm:items-center p-0 sm:p-4'}`}>
       {shell}
     </div>,
     document.body,

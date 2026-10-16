@@ -59,7 +59,7 @@ const LABEL = 'block text-sm font-medium text-[#374151] mb-2'
 const SUB = 'block text-[13px] font-medium text-[#374151] mb-1.5'
 const NOTE = 'mt-1.5 flex flex-wrap items-center gap-1 text-[13px] text-[#334155]'
 const INPUT =
-  'px-3 py-2.5 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F8FAFC] disabled:text-[#334155] disabled:cursor-not-allowed'
+  'px-3 py-2.5 text-base sm:text-sm border border-[#CBD5E1] rounded-[8px] bg-white text-[#0F172A] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F8FAFC] disabled:text-[#334155] disabled:cursor-not-allowed'
 
 // ─── Small fields ────────────────────────────────────────────────────────────
 
@@ -104,7 +104,7 @@ function DaysInput({
         setError(true)
         setText(String(value ?? min))
       }}
-      className={`${INPUT} w-20 text-right tabular-nums ${error || invalid ? '!border-[#DC2626]' : ''}`}
+      className={`${INPUT} w-20 text-right tabular-nums ${error || invalid ? 'border-[#DC2626]!' : ''}`}
     />
   )
 }

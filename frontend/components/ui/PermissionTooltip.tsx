@@ -52,7 +52,7 @@ export function PermissionTooltip({ allowed, reason, children, className = 'inli
         tabIndex={0}
         role="note"
         aria-label={reason}
-        className={`${className} cursor-not-allowed rounded-[8px] outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 [&_*]:pointer-events-none`}
+        className={`${className} cursor-not-allowed rounded-[8px] outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 **:pointer-events-none`}
       >
         {children}
       </span>

@@ -13,7 +13,7 @@ import { cx } from './primitives'
  */
 
 const FIELD = cx(
-  'relative flex min-h-[var(--h-control)] w-full items-center rounded-[8px] border border-phone-border bg-phone-surface px-[12px]',
+  'relative flex min-h-(--h-control) w-full items-center rounded-[8px] border border-phone-border bg-phone-surface px-[12px]',
 )
 
 function fmtDate(value: string): string {

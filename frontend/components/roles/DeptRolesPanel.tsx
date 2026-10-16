@@ -53,7 +53,7 @@ function RoleCard({ role, onClick }: { role: Role; onClick?: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="text-left bg-white border border-[#E2E8F0] rounded-[10px] p-4 hover:border-[#CBD5E1] hover:shadow-sm transition-all"
+      className="text-left bg-white border border-[#E2E8F0] rounded-[10px] p-4 hover:border-[#CBD5E1] hover:shadow-xs transition-all"
     >
       {body}
     </button>

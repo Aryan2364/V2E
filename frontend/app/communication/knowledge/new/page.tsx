@@ -73,7 +73,7 @@ export default function NewKnowledgePostPage() {
                 value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 placeholder="What are you sharing?"
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB]"
+                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB]"
               />
             </div>
 
@@ -84,7 +84,7 @@ export default function NewKnowledgePostPage() {
                 onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
                 rows={8}
                 placeholder="Share tips, processes, learnings, or anything useful…"
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] resize-y"
+                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] resize-y"
               />
             </div>
 
@@ -96,7 +96,7 @@ export default function NewKnowledgePostPage() {
                   onChange={e => setForm(f => ({ ...f, tagInput: e.target.value }))}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag() } }}
                   placeholder="Add a tag and press Enter"
-                  className="flex-1 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB]"
+                  className="flex-1 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB]"
                 />
                 <button type="button" onClick={addTag} className="bg-[#F1F5F9] text-[#475569] px-3 py-2 rounded-[8px] text-sm font-medium hover:bg-[#E2E8F0] transition-colors">
                   Add
@@ -121,7 +121,7 @@ export default function NewKnowledgePostPage() {
               <select
                 value={form.scope}
                 onChange={e => setForm(f => ({ ...f, scope: e.target.value }))}
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
+                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] focus:outline-hidden focus:border-[#2563EB]"
               >
                 <option value="company_wide">Company-wide</option>
                 <option value="department">Department</option>

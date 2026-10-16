@@ -90,7 +90,7 @@ export default function TagSelect({
         <button
           type="button"
           onClick={() => void reload()}
-          className="shrink-0 font-medium text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+          className="shrink-0 font-medium text-primary hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
         >
           Retry
         </button>

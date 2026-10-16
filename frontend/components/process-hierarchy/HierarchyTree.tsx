@@ -89,7 +89,7 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
         >
           <button
             onClick={(e) => { e.stopPropagation(); if (hasKids) toggle(n.id) }}
-            className={`shrink-0 w-4 h-4 flex items-center justify-center rounded ${hasKids ? 'text-[#64748B] hover:bg-[#E2E8F0]' : 'opacity-0 pointer-events-none'}`}
+            className={`shrink-0 w-4 h-4 flex items-center justify-center rounded-xs ${hasKids ? 'text-[#64748B] hover:bg-[#E2E8F0]' : 'opacity-0 pointer-events-none'}`}
             aria-label={isOpen ? 'Collapse' : 'Expand'}
           >
             <ChevronRight size={13} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
@@ -120,7 +120,7 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search steps…"
-            className="w-full pl-8 pr-8 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] focus:bg-white focus:border-[#2563EB] focus:outline-none text-[#0F172A] placeholder:text-[#94A3B8]"
+            className="w-full pl-8 pr-8 py-1.5 text-[13px] rounded-[8px] border border-[#CBD5E1] bg-[#F8FAFC] focus:bg-white focus:border-[#2563EB] focus:outline-hidden text-[#0F172A] placeholder:text-[#94A3B8]"
           />
           {query && (
             <button onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569]">

@@ -81,7 +81,7 @@ export default function InstanceList({
           <Link
             href={runHref(tid(i), i.id)}
             onClick={(e) => e.stopPropagation()}
-            className="font-medium text-[#0F172A] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded break-words"
+            className="font-medium text-[#0F172A] hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-xs wrap-break-word"
           >
             {i.name}
           </Link>

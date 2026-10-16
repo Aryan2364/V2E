@@ -20,7 +20,7 @@ import FindTimeDialog from './FindTimeDialog'
 import { DurationField } from './shared'
 
 const inputClass =
-  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+  'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
 const labelClass = 'block text-sm font-medium text-[#374151] mb-1'
 const sectionLabel = 'text-[13px] font-semibold text-[#475569]'
 

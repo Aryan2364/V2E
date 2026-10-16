@@ -139,7 +139,7 @@ export default function GroupDetailPage() {
             <select
               value={addOrgId}
               onChange={(e) => setAddOrgId(e.target.value)}
-              className="flex-1 rounded-[8px] bg-white border border-[#CBD5E1] px-3 py-[10px] text-sm text-[#0F172A] focus:outline-none focus:border-2 focus:border-[#2563EB]"
+              className="flex-1 rounded-[8px] bg-white border border-[#CBD5E1] px-3 py-[10px] text-sm text-[#0F172A] focus:outline-hidden focus:border-2 focus:border-[#2563EB]"
             >
               <option value="">Select organization to add…</option>
               {availableOrgs.map((o) => (

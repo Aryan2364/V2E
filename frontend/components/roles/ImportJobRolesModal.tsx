@@ -446,7 +446,7 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
   if (!mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
+    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-2xl sm:rounded-[12px] rounded-t-[16px] shadow-xl max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0]">
@@ -456,7 +456,7 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
               <button
                 onClick={() => setPhase('upload')}
                 aria-label="Back to upload"
-                className="p-1 hover:bg-[#F1F5F9] rounded transition-colors text-[#64748B] hover:text-[#0F172A]"
+                className="p-1 hover:bg-[#F1F5F9] rounded-xs transition-colors text-[#64748B] hover:text-[#0F172A]"
               >
                 <ArrowLeft size={16} />
               </button>

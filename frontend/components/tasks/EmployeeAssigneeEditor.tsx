@@ -334,7 +334,7 @@ export default function EmployeeAssigneeEditor({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, role or department…"
-          className="w-full pl-10 pr-3 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] bg-white border border-[#CBD5E1] rounded-[8px] focus:outline-none focus:border-[#2563EB] focus:border-2"
+          className="w-full pl-10 pr-3 py-2.5 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] bg-white border border-[#CBD5E1] rounded-[8px] focus:outline-hidden focus:border-[#2563EB] focus:border-2"
         />
       </div>
 
@@ -446,7 +446,7 @@ export default function EmployeeAssigneeEditor({
                           value={addQuery}
                           onChange={(e) => setAddQuery(e.target.value)}
                           placeholder="Search people…"
-                          className="w-full pl-9 pr-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none"
+                          className="w-full pl-9 pr-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
                         />
                       </div>
                       <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#F1F5F9] bg-[#F8FAFC]">

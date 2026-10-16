@@ -75,7 +75,7 @@ function DeleteConfirmDialog({
   const copy = DELETE_COPY[mode]
   return createPortal(
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+      className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/40"
       onClick={(e) => { if (e.target === e.currentTarget && !busy) onCancel() }}
       role="dialog"
       aria-modal="true"
@@ -247,7 +247,7 @@ function RecurringCard({
             )}
           </div>
         </div>
-        <h3 className="text-[15px] font-semibold text-[#0F172A] break-words group-hover:text-[#2563EB] transition-colors line-clamp-1">{template.title}</h3>
+        <h3 className="text-[15px] font-semibold text-[#0F172A] wrap-break-word group-hover:text-[#2563EB] transition-colors line-clamp-1">{template.title}</h3>
         {template.description && <p className="text-sm text-[#475569] mt-0.5 line-clamp-2">{template.description}</p>}
         {toggleErr && <p className="text-[12px] text-[#DC2626] mt-1">{toggleErr}</p>}
       </div>

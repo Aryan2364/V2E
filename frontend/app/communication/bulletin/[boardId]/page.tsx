@@ -103,7 +103,7 @@ export default function BulletinBoardPage() {
                     value={form.title}
                     onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                     placeholder="Post title"
-                    className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB]"
+                    className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB]"
                   />
                 </div>
                 <div>
@@ -113,7 +113,7 @@ export default function BulletinBoardPage() {
                     onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
                     rows={4}
                     placeholder="Write something..."
-                    className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] resize-y"
+                    className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] resize-y"
                   />
                 </div>
                 <div className="flex gap-2">

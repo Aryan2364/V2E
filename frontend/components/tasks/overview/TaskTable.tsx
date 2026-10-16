@@ -109,7 +109,7 @@ export default function TaskTable({
       onChange={(v) => onFilter(key, v)}
       placeholder={allLabel}
       wrapperClassName="w-full"
-      triggerClassName="!py-1 !text-[12px]"
+      triggerClassName="py-1! text-[12px]!"
       options={[{ value: '', label: allLabel }, ...options]}
     />
   )

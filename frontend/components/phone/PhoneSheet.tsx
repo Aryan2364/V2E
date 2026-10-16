@@ -132,7 +132,7 @@ export function PhoneSheet({
   if (!open || !mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[70]">
+    <div className="fixed inset-0 z-70">
       <div
         data-slot="phone-sheet-backdrop"
         aria-hidden
@@ -147,9 +147,9 @@ export function PhoneSheet({
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cx(
-          'absolute inset-x-0 flex flex-col rounded-t-[12px] bg-phone-surface shadow-phone-dialog outline-none',
-          'bottom-[var(--keyboard-inset)] max-h-[calc(90dvh-var(--safe-top)-var(--keyboard-inset))]',
-          'pr-[var(--safe-right)] pl-[var(--safe-left)]',
+          'absolute inset-x-0 flex flex-col rounded-t-[12px] bg-phone-surface shadow-phone-dialog outline-hidden',
+          'bottom-(--keyboard-inset) max-h-[calc(90dvh-var(--safe-top)-var(--keyboard-inset))]',
+          'pr-(--safe-right) pl-(--safe-left)',
         )}
       >
         <div
@@ -170,7 +170,7 @@ export function PhoneSheet({
               type="button"
               aria-label="Close"
               onClick={() => onOpenChange(false)}
-              className="inline-flex size-[44px] shrink-0 items-center justify-center rounded-full text-phone-text-secondary active:bg-phone-surface-control outline-none focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
+              className="inline-flex size-[44px] shrink-0 items-center justify-center rounded-full text-phone-text-secondary active:bg-phone-surface-control outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-phone-primary-ring"
             >
               <X aria-hidden className="size-[22px]" />
             </button>
@@ -178,11 +178,11 @@ export function PhoneSheet({
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-[16px] pb-[16px]">{children}</div>
         {footer ? (
-          <div className="flex shrink-0 gap-[8px] border-t border-phone-border-light px-[16px] pt-[12px] pb-[calc(12px+var(--safe-bottom))] [&>*]:flex-1">
+          <div className="flex shrink-0 gap-[8px] border-t border-phone-border-light px-[16px] pt-[12px] pb-[calc(12px+var(--safe-bottom))] *:flex-1">
             {footer}
           </div>
         ) : (
-          <div aria-hidden className="h-[var(--safe-bottom)] shrink-0" />
+          <div aria-hidden className="h-(--safe-bottom) shrink-0" />
         )}
       </div>
     </div>,

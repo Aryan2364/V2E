@@ -133,7 +133,7 @@ export default function WorkLogRemarkThread({ remarks, currentUserId, onAdd, onD
           placeholder="Add a remark…"
           rows={2}
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSend() }}
-          className="w-full text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none resize-none"
+          className="w-full text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden resize-none"
         />
         <div className="flex items-center justify-end mt-2">
           <button

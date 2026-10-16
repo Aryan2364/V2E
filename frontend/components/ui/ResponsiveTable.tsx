@@ -208,7 +208,7 @@ export default function ResponsiveTable<T>({
                 <div className="text-[15px] font-semibold text-[#0F172A] mb-2">
                   {primary.render(row, i)}
                 </div>
-                <dl className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1.5">
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
                   {cardColumns.map((col) =>
                     col === primary ? null : (
                       <React.Fragment key={col.key}>

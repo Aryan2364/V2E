@@ -233,7 +233,7 @@ export function DurationField({
               onChange={(e) => setDraft(e.target.value)}
               onBlur={(e) => commit(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commit((e.target as HTMLInputElement).value) } }}
-              className="w-[76px] border border-[#CBD5E1] rounded-[8px] px-2.5 py-1.5 min-h-[36px] text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F1F5F9]"
+              className="w-[76px] border border-[#CBD5E1] rounded-[8px] px-2.5 py-1.5 min-h-[36px] text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:bg-[#F1F5F9]"
               aria-label={unit === 'hr' ? `${label} in hours` : `${label} in minutes`}
             />
             {/* Type it in minutes or in hours — 90 min and 1.5 hrs are the same thing. */}

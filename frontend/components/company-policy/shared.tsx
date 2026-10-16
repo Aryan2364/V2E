@@ -47,7 +47,7 @@ export function PolicyBreadcrumb({ trail }: { trail: { label: string; href?: str
           {c.href ? (
             <Link
               href={c.href}
-              className="font-medium text-[#475569] hover:text-[#2563EB] transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+              className="font-medium text-[#475569] hover:text-[#2563EB] transition-colors rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
             >
               {c.label}
             </Link>

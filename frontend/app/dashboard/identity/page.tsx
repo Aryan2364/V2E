@@ -36,7 +36,7 @@ function PillarCard({
         >
           <Icon size={16} style={{ color: iconColor }} />
         </span>
-        <span className="text-xs font-bold uppercase tracking-[0.1em] text-[#475569]">
+        <span className="text-xs font-bold uppercase tracking-widest text-[#475569]">
           {label}
         </span>
       </div>

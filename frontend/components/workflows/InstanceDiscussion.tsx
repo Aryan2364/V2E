@@ -628,7 +628,7 @@ export default function InstanceDiscussion({
             aria-autocomplete="list"
             aria-expanded={!!mention && suggestions.length > 0}
             placeholder={replyTo ? 'Write a reply' : 'Write a message — @ to mention someone'}
-            className="block w-full border-0 bg-transparent px-3 pt-2.5 pb-1 text-base sm:text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-none resize-none max-h-40 overflow-y-auto disabled:cursor-not-allowed"
+            className="block w-full border-0 bg-transparent px-3 pt-2.5 pb-1 text-base sm:text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-hidden resize-none max-h-40 overflow-y-auto disabled:cursor-not-allowed"
           />
           <div className="flex items-center gap-1 px-2 pb-2">
             <input
@@ -666,7 +666,7 @@ export default function InstanceDiscussion({
                   disabled={canWrite !== true || posting}
                   aria-expanded={showFor}
                   aria-label="For a later step"
-                  className={`${BTN.icon} ${showFor || forRow ? '!text-[#92400E] !bg-[#FFFBEB]' : ''}`}
+                  className={`${BTN.icon} ${showFor || forRow ? 'text-[#92400E]! bg-[#FFFBEB]!' : ''}`}
                 >
                   <Flag size={16} />
                 </button>
@@ -684,7 +684,7 @@ export default function InstanceDiscussion({
                   onClick={send}
                   disabled={!canSend}
                   aria-label="Send"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-[36px] px-3.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#64748B] disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-[36px] px-3.5 rounded-[8px] text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#64748B] disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1"
                 >
                   {posting ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                   <span className="hidden sm:inline">{posting ? 'Sending…' : 'Send'}</span>
@@ -823,12 +823,12 @@ function MessageItem({
   const mentionsMe = !!myId && m.mentions.some((p) => p.id === myId)
 
   const bodyNode = m.body ? (
-    <p className="text-sm text-[#1E293B] leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+    <p className="text-sm text-[#1E293B] leading-relaxed whitespace-pre-wrap wrap-break-word wrap-anywhere">
       {segments.map((s, i) =>
         s.mention ? (
           <span
             key={i}
-            className={`rounded px-0.5 font-medium ${s.mention.id === myId ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#EFF6FF] text-[#1D4ED8]'}`}
+            className={`rounded-xs px-0.5 font-medium ${s.mention.id === myId ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#EFF6FF] text-[#1D4ED8]'}`}
           >
             {s.text}
           </span>
@@ -849,7 +849,7 @@ function MessageItem({
       <Avatar name={name} size="md" />
       <div className="min-w-0 flex-1 flex flex-col gap-1.5">
         <div className="flex items-baseline gap-x-2 gap-y-0.5 flex-wrap">
-          <span className="text-sm font-semibold text-[#0F172A] break-words">{name}</span>
+          <span className="text-sm font-semibold text-[#0F172A] wrap-break-word">{name}</span>
           <span className="text-[12px] text-[#475569]">· {messageTime(m.created_at, now)}</span>
           {m.for_step && (
             <span className="inline-flex items-center gap-1 rounded-full bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E] px-2 py-0.5 text-[12px] font-medium max-w-full">
@@ -861,7 +861,7 @@ function MessageItem({
 
         {sentBack ? (
           <div className="rounded-[10px] border border-[#DDD6FE] bg-[#F5F3FF] px-3 py-2 flex flex-col gap-1">
-            <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#4C1D95] break-words">
+            <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#4C1D95] wrap-break-word">
               <Undo2 size={14} className="shrink-0" aria-hidden /> Sent back to “{sentBack.to_title}”
             </p>
             {bodyNode}
@@ -896,7 +896,7 @@ function MessageItem({
                       </span>
                     )}
                     <Tooltip label={`Download “${f.file_name}”`}>
-                      <button type="button" onClick={() => onDownload(f)} aria-label={`Download ${f.file_name}`} className={`${BTN.icon} !w-9 !h-9 sm:!w-7 sm:!h-7`}>
+                      <button type="button" onClick={() => onDownload(f)} aria-label={`Download ${f.file_name}`} className={`${BTN.icon} w-9! h-9! sm:w-7! sm:h-7!`}>
                         <Download size={14} />
                       </button>
                     </Tooltip>

@@ -123,7 +123,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
   }
 
   const inputCls =
-    'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] focus:outline-none bg-white disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]'
+    'w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] focus:outline-hidden bg-white disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]'
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
@@ -210,9 +210,9 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
                     <span className="text-sm font-medium text-[#0F172A]">{fmt(l.start_date)} → {fmt(l.end_date)}</span>
                     <LeaveStateBadge leave={l} />
                   </div>
-                  {l.reason && <p className="text-xs text-[#475569] mt-1 break-words">{l.reason}</p>}
+                  {l.reason && <p className="text-xs text-[#475569] mt-1 wrap-break-word">{l.reason}</p>}
                   {l.state === 'rejected' && l.decision_note && (
-                    <p className="text-xs text-[#DC2626] mt-1 break-words">Reason: {l.decision_note}</p>
+                    <p className="text-xs text-[#DC2626] mt-1 wrap-break-word">Reason: {l.decision_note}</p>
                   )}
                 </div>
                 {!readOnly && (

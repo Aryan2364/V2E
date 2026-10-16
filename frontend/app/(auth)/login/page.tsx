@@ -96,14 +96,14 @@ export default function LoginPage() {
           }}
         />
 
-        <div className="relative z-[1] flex items-center gap-2.5">
+        <div className="relative z-1 flex items-center gap-2.5">
           <BrandGlyph size={30} radius={8} tone="dark" />
           <span className="text-[20px] font-bold tracking-tight text-white">
             V2E: Vision to Execution
           </span>
         </div>
 
-        <div className="relative z-[1] max-w-[30rem]">
+        <div className="relative z-1 max-w-120">
           <h2 className="text-[34px] font-semibold leading-[1.18] tracking-tight text-white whitespace-nowrap">
             The&nbsp;<span className="text-[#93C5FD]">operating system</span>
             <br />
@@ -116,7 +116,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="relative z-[1] text-[13px] text-[#94A3B8]">
+        <div className="relative z-1 text-[13px] text-[#94A3B8]">
           © 2026 V2E · Secure workspace access
         </div>
       </aside>

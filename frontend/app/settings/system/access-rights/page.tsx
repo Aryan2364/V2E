@@ -156,7 +156,7 @@ function ScopeSelect({
       disabled={disabled}
       onChange={(e) => onChange(e.target.value as DataScope | 'inherit')}
       className={[
-        'text-xs border rounded-[6px] px-2 py-1 bg-white focus:outline-none focus:border-[#2563EB]',
+        'text-xs border rounded-[6px] px-2 py-1 bg-white focus:outline-hidden focus:border-[#2563EB]',
         'border-[#CBD5E1] text-[#0F172A] disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]',
         value === 'inherit' ? 'text-[#64748B]' : 'font-medium',
       ].join(' ')}
@@ -661,7 +661,7 @@ export default function AccessControlPage() {
         disabled={disabled}
         onChange={(e) => onChange(e.target.value as DataScope | 'inherit')}
         className={[
-          'text-xs border rounded-[6px] px-2 py-1 bg-white focus:outline-none focus:border-[#2563EB]',
+          'text-xs border rounded-[6px] px-2 py-1 bg-white focus:outline-hidden focus:border-[#2563EB]',
           'border-[#CBD5E1] text-[#0F172A] disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]',
           value === 'inherit' ? 'text-[#64748B]' : 'font-medium',
         ].join(' ')}
@@ -773,12 +773,12 @@ export default function AccessControlPage() {
                       if (e.key === 'Escape') setCreating(false)
                     }}
                     placeholder="Role name"
-                    className="flex-1 min-w-0 px-2 py-1 border border-[#CBD5E1] rounded-[6px] text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB]"
+                    className="flex-1 min-w-0 px-2 py-1 border border-[#CBD5E1] rounded-[6px] text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB]"
                   />
-                  <button onClick={handleCreate} className="p-1 text-[#16A34A] hover:bg-[#DCFCE7] rounded" aria-label="Create role">
+                  <button onClick={handleCreate} className="p-1 text-[#16A34A] hover:bg-[#DCFCE7] rounded-xs" aria-label="Create role">
                     <Check size={15} />
                   </button>
-                  <button onClick={() => setCreating(false)} className="p-1 text-[#94A3B8] hover:bg-[#F1F5F9] rounded" aria-label="Cancel">
+                  <button onClick={() => setCreating(false)} className="p-1 text-[#94A3B8] hover:bg-[#F1F5F9] rounded-xs" aria-label="Cancel">
                     <X size={15} />
                   </button>
                 </div>
@@ -838,12 +838,12 @@ export default function AccessControlPage() {
                             if (e.key === 'Enter') handleRename()
                             if (e.key === 'Escape') setRenaming(false)
                           }}
-                          className="px-2 py-1 border border-[#CBD5E1] rounded-[6px] text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB]"
+                          className="px-2 py-1 border border-[#CBD5E1] rounded-[6px] text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB]"
                         />
-                        <button onClick={handleRename} className="p-1 text-[#16A34A] hover:bg-[#DCFCE7] rounded" aria-label="Save name">
+                        <button onClick={handleRename} className="p-1 text-[#16A34A] hover:bg-[#DCFCE7] rounded-xs" aria-label="Save name">
                           <Check size={15} />
                         </button>
-                        <button onClick={() => setRenaming(false)} className="p-1 text-[#94A3B8] hover:bg-[#F1F5F9] rounded" aria-label="Cancel">
+                        <button onClick={() => setRenaming(false)} className="p-1 text-[#94A3B8] hover:bg-[#F1F5F9] rounded-xs" aria-label="Cancel">
                           <X size={15} />
                         </button>
                       </div>

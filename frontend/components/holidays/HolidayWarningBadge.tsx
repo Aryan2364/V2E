@@ -98,7 +98,7 @@ function OverrideToggle({
         type="checkbox"
         checked={overridden}
         onChange={(e) => onToggleOverride(e.target.checked)}
-        className="h-3.5 w-3.5 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB] cursor-pointer"
+        className="h-3.5 w-3.5 rounded-xs border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB] cursor-pointer"
       />
       <span className="text-xs text-[#475569]">Keep my chosen date (override the suggestion)</span>
     </label>

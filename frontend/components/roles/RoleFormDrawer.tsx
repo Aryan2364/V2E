@@ -49,11 +49,11 @@ type RoleFormValues = z.infer<typeof roleSchema>
 // ─── Shared styles ──────────────────────────────────────────────────────────────
 
 const inputCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-2 focus:border-[#2563EB] transition-colors'
+  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors'
 const smInputCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-2.5 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-2 focus:border-[#2563EB] transition-colors'
+  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-2.5 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors'
 const textareaCls =
-  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-2 focus:border-[#2563EB] transition-colors resize-none'
+  'w-full rounded-[8px] border border-[#CBD5E1] bg-white px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-2 focus:border-[#2563EB] transition-colors resize-none'
 const labelCls = 'text-sm font-medium text-[#374151] mb-1.5 block'
 const fieldLabelCls = 'text-[11px] font-semibold text-[#64748B] uppercase tracking-wide mb-1 block'
 
@@ -204,10 +204,10 @@ export default function RoleFormDrawer({
 
   return createPortal(
     <>
-      {open && <div className="fixed inset-0 bg-black/20 z-[60]" onClick={onClose} />}
+      {open && <div className="fixed inset-0 bg-black/20 z-60" onClick={onClose} />}
 
       <div
-        className={`fixed inset-y-0 right-0 z-[70] w-full max-w-lg bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-70 w-full max-w-lg bg-white border-l border-[#E2E8F0] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] flex flex-col transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -328,7 +328,7 @@ export default function RoleFormDrawer({
                     <button
                       type="button"
                       onClick={() => kraArray.remove(i)}
-                      className="text-[#94A3B8] hover:text-[#DC2626] self-start p-1 rounded transition-colors"
+                      className="text-[#94A3B8] hover:text-[#DC2626] self-start p-1 rounded-xs transition-colors"
                       aria-label="Remove KRA"
                     >
                       <Trash2 size={14} />
@@ -401,7 +401,7 @@ export default function RoleFormDrawer({
                     <button
                       type="button"
                       onClick={() => kpiArray.remove(i)}
-                      className="text-[#94A3B8] hover:text-[#DC2626] self-start p-1 rounded transition-colors"
+                      className="text-[#94A3B8] hover:text-[#DC2626] self-start p-1 rounded-xs transition-colors"
                       aria-label="Remove KPI"
                     >
                       <Trash2 size={14} />

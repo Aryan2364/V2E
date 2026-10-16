@@ -132,7 +132,7 @@ export default function CollectivePage() {
             return (
               <div key={task.id} className="relative">
                 {activeOrg === 'all' && org && (
-                  <div className="absolute -top-0 right-3 z-10">
+                  <div className="absolute top-0 right-3 z-10">
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-b-[6px] bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD] border-t-0">
                       {org.name}
                     </span>

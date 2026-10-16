@@ -166,7 +166,7 @@ export function useUnsavedChangesGuard(
   const dialog =
     pending && typeof document !== 'undefined'
       ? createPortal(
-          <div className="fixed inset-0 z-[70] flex items-center justify-center px-4 bg-black/50" onClick={stay}>
+          <div className="fixed inset-0 z-70 flex items-center justify-center px-4 bg-black/50" onClick={stay}>
             <div
               role="alertdialog"
               aria-modal="true"
@@ -193,7 +193,7 @@ export function useUnsavedChangesGuard(
                   type="button"
                   onClick={stay}
                   disabled={savingToLeave}
-                  className="min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-sm font-semibold text-[#475569] hover:text-[#0F172A] rounded-[8px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:opacity-60"
+                  className="min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-sm font-semibold text-[#475569] hover:text-[#0F172A] rounded-[8px] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:opacity-60"
                 >
                   Stay
                 </button>
@@ -202,7 +202,7 @@ export function useUnsavedChangesGuard(
                   onClick={leave}
                   disabled={savingToLeave}
                   className={[
-                    'min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-sm font-semibold rounded-[8px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#DC2626] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60',
+                    'min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-sm font-semibold rounded-[8px] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#DC2626] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60',
                     // With a save on offer, leaving is the second choice: outlined danger.
                     canSave
                       ? 'bg-white text-[#B91C1C] border border-[#FCA5A5] hover:bg-[#FEF2F2]'
@@ -218,7 +218,7 @@ export function useUnsavedChangesGuard(
                     autoFocus
                     onClick={saveAndLeave}
                     disabled={savingToLeave}
-                    className="inline-flex items-center justify-center gap-2 min-h-[44px] sm:min-h-[40px] px-5 whitespace-nowrap text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-[#93C5FD]"
+                    className="inline-flex items-center justify-center gap-2 min-h-[44px] sm:min-h-[40px] px-5 whitespace-nowrap text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-[8px] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-[#93C5FD]"
                   >
                     {savingToLeave && <Loader2 size={15} className="animate-spin" />}
                     {save.label}

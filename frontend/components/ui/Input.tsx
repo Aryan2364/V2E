@@ -33,7 +33,7 @@ export default function Input({
 
   const baseInput = [
     'w-full rounded-[8px] bg-white px-3 py-[10px] text-[#0F172A] placeholder:text-[#94A3B8] text-sm transition-colors duration-150',
-    'focus:outline-none',
+    'focus:outline-hidden',
     error
       ? 'border-2 border-[#DC2626] focus:border-[#DC2626]'
       : 'border border-[#CBD5E1] focus:border-2 focus:border-[#2563EB]',
@@ -86,7 +86,7 @@ export default function Input({
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors duration-150 focus:outline-none"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors duration-150 focus:outline-hidden"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
             tabIndex={-1}
           >

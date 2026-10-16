@@ -71,7 +71,7 @@ export default function BulkActionBar({
             disabled={busy}
             onChange={(v) => v && onStatus(v)}
             wrapperClassName="w-[150px]"
-            triggerClassName="!bg-[#1E293B] hover:!bg-[#1E293B] focus:!bg-[#1E293B] !border-[#334155] !text-white"
+            triggerClassName="bg-[#1E293B]! hover:bg-[#1E293B]! focus:bg-[#1E293B]! border-[#334155]! text-white!"
             placeholder="Set status…"
             options={[
               { value: '', label: 'Set status…' },
@@ -241,7 +241,7 @@ function BulkTagButton({
             ref={panelRef}
             role="dialog"
             aria-label={`Tag ${tasksWord}`}
-            className="fixed z-[70] w-[360px] max-w-[calc(100vw-16px)] rounded-card border border-border bg-white p-4 shadow-[0_8px_28px_rgba(0,0,0,0.18)] animate-[popIn_.15s_ease-out]"
+            className="fixed z-70 w-[360px] max-w-[calc(100vw-16px)] rounded-card border border-border bg-white p-4 shadow-[0_8px_28px_rgba(0,0,0,0.18)] animate-[popIn_.15s_ease-out]"
             style={{ left: pos.left, bottom: pos.bottom }}
           >
             <div className="flex items-center justify-between gap-2 mb-3">
@@ -250,7 +250,7 @@ function BulkTagButton({
                 type="button"
                 onClick={() => close(true)}
                 aria-label="Close"
-                className="w-7 h-7 rounded-btn flex items-center justify-center text-secondary hover:bg-[#F1F5F9] hover:text-heading focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="w-7 h-7 rounded-btn flex items-center justify-center text-secondary hover:bg-[#F1F5F9] hover:text-heading focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <X size={15} />
               </button>
@@ -263,7 +263,7 @@ function BulkTagButton({
                   type="button"
                   aria-pressed={mode === m}
                   onClick={() => switchMode(m)}
-                  className={`py-1.5 rounded-[6px] text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  className={`py-1.5 rounded-[6px] text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
                     mode === m ? 'bg-white text-primary shadow-card' : 'text-secondary hover:text-heading'
                   }`}
                 >

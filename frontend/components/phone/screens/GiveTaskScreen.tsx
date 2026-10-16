@@ -143,14 +143,14 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
             maxLength={TITLE_MAX + 20}
             autoFocus
             className={cx(
-              'min-h-[var(--h-control)] w-full rounded-[8px] border bg-phone-surface px-[12px] text-[16px] text-phone-text-primary outline-none focus-visible:border-phone-primary',
+              'min-h-(--h-control) w-full rounded-[8px] border bg-phone-surface px-[12px] text-[16px] text-phone-text-primary outline-hidden focus-visible:border-phone-primary',
               titleError ? 'border-phone-danger' : 'border-phone-border-strong',
             )}
           />
         </Field>
 
         <Field label="Assignee(s)">
-          <button type="button" onClick={() => setAssigneePicker(true)} className={cx(ROW, '-mx-0 rounded-[8px] border border-phone-border-strong bg-phone-surface')}>
+          <button type="button" onClick={() => setAssigneePicker(true)} className={cx(ROW, 'mx-0 rounded-[8px] border border-phone-border-strong bg-phone-surface')}>
             <span className="min-w-0 flex-1 truncate text-left">
               {draft.assignees.length === 0 ? (
                 <span className="text-phone-text-secondary">Choose who this is for</span>
@@ -166,7 +166,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
             type="datetime-local"
             value={draft.deadline}
             onChange={(e) => setDraft((d) => ({ ...d, deadline: e.target.value }))}
-            className="min-h-[var(--h-control)] w-full rounded-[8px] border border-phone-border-strong bg-phone-surface px-[12px] text-[16px] text-phone-text-primary outline-none focus-visible:border-phone-primary"
+            className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border-strong bg-phone-surface px-[12px] text-[16px] text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
           />
         </Field>
 
@@ -174,7 +174,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           <select
             value={draft.priorityId}
             onChange={(e) => setDraft((d) => ({ ...d, priorityId: e.target.value }))}
-            className="min-h-[var(--h-control)] w-full rounded-[8px] border border-phone-border-strong bg-phone-surface px-[12px] text-[16px] text-phone-text-primary outline-none focus-visible:border-phone-primary"
+            className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border-strong bg-phone-surface px-[12px] text-[16px] text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
           >
             <option value="">No priority</option>
             {priorities.map((p) => (
@@ -192,7 +192,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
               onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
               rows={4}
               className={cx(
-                'w-full resize-none rounded-[8px] border bg-phone-surface px-[12px] py-[10px] text-[16px] text-phone-text-primary outline-none focus-visible:border-phone-primary',
+                'w-full resize-none rounded-[8px] border bg-phone-surface px-[12px] py-[10px] text-[16px] text-phone-text-primary outline-hidden focus-visible:border-phone-primary',
                 descriptionError ? 'border-phone-danger' : 'border-phone-border-strong',
               )}
             />
@@ -308,7 +308,7 @@ function AssigneePickerSheet({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search people"
-            className="min-h-[var(--h-control)] w-full rounded-[8px] border border-phone-border-strong bg-phone-surface py-[8px] pl-[36px] pr-[12px] text-[16px] text-phone-text-primary outline-none focus-visible:border-phone-primary"
+            className="min-h-(--h-control) w-full rounded-[8px] border border-phone-border-strong bg-phone-surface py-[8px] pl-[36px] pr-[12px] text-[16px] text-phone-text-primary outline-hidden focus-visible:border-phone-primary"
           />
           {query ? (
             <button type="button" aria-label="Clear search" onClick={() => setQuery('')} className="absolute right-[8px] top-1/2 -translate-y-1/2">

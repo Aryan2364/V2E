@@ -19,7 +19,7 @@ export function ReasonQuote({ reason, collapsible = false, className = '' }: { r
     <div className={`flex flex-col items-start gap-1 min-w-0 ${className}`}>
       <blockquote
         id={id}
-        className="w-full min-w-0 border-l-[3px] border-[#7C3AED] bg-white/70 rounded-r-[6px] pl-3 pr-2 py-1.5 text-[14px] leading-relaxed text-[#2E1065] whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+        className="w-full min-w-0 border-l-[3px] border-[#7C3AED] bg-white/70 rounded-r-[6px] pl-3 pr-2 py-1.5 text-[14px] leading-relaxed text-[#2E1065] whitespace-pre-wrap wrap-break-word wrap-anywhere"
       >
         “{long && !open ? shortReason(reason) : reason}”
       </blockquote>
@@ -32,7 +32,7 @@ export function ReasonQuote({ reason, collapsible = false, className = '' }: { r
             e.stopPropagation()
             setOpen((o) => !o)
           }}
-          className="text-[13px] font-medium text-[#5B21B6] hover:underline rounded min-h-[32px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7C3AED]"
+          className="text-[13px] font-medium text-[#5B21B6] hover:underline rounded-xs min-h-[32px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#7C3AED]"
         >
           {open ? 'Show less' : 'View reason'}
         </button>
@@ -57,8 +57,8 @@ export default function SendBackNote({ sendBack, variant }: { sendBack: StepSend
   if (variant === 'compact') {
     return (
       <span className="flex flex-col gap-0.5 min-w-0 text-[12px] text-[#4C1D95]">
-        <span className="font-medium line-clamp-2 break-words">{lead}</span>
-        {reason && <span className="italic line-clamp-2 break-words [overflow-wrap:anywhere]">“{shortReason(reason, 90)}”</span>}
+        <span className="font-medium line-clamp-2 wrap-break-word">{lead}</span>
+        {reason && <span className="italic line-clamp-2 wrap-break-word wrap-anywhere">“{shortReason(reason, 90)}”</span>}
       </span>
     )
   }
@@ -67,7 +67,7 @@ export default function SendBackNote({ sendBack, variant }: { sendBack: StepSend
     <div className="flex items-start gap-2.5 rounded-[10px] border border-[#DDD6FE] bg-[#F5F3FF] px-3.5 py-2.5 text-sm text-[#4C1D95]">
       <Undo2 size={16} className="shrink-0 mt-0.5" aria-hidden />
       <div className="flex flex-col gap-1.5 min-w-0 flex-1">
-        <p className="font-semibold break-words">
+        <p className="font-semibold wrap-break-word">
           {lead}
           {reason ? ':' : '.'}
         </p>

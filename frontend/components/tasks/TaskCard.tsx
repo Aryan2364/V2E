@@ -120,7 +120,7 @@ export function StatusControl({
         disabled={busy}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="inline-flex items-center gap-1 rounded-[999px] pl-2.5 pr-1.5 py-0.5 text-[11px] font-medium transition-shadow hover:shadow-sm disabled:opacity-60"
+        className="inline-flex items-center gap-1 rounded-[999px] pl-2.5 pr-1.5 py-0.5 text-[11px] font-medium transition-shadow hover:shadow-xs disabled:opacity-60"
         style={{
           backgroundColor: status.color + '22',
           color: status.color,

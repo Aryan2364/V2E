@@ -213,7 +213,7 @@ function EditMemberModal({
   const phoneDigits = phone.replace(/\D/g, '')
 
   const inputCls =
-    'w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+    'w-full px-3 py-2.5 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
   const labelCls = 'block text-sm font-medium text-[#374151] mb-1.5'
 
   const save = async () => {
@@ -339,7 +339,7 @@ function EditMemberModal({
             type="checkbox"
             checked={isAdmin}
             onChange={(e) => setIsAdmin(e.target.checked)}
-            className="w-4 h-4 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB]"
+            className="w-4 h-4 rounded-xs border-[#CBD5E1] text-[#2563EB] focus:ring-[#2563EB]"
           />
           <span className="text-sm font-medium text-[#374151]">Organization administrator</span>
         </label>

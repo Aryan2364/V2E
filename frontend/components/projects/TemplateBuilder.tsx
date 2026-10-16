@@ -86,7 +86,7 @@ export default function TemplateBuilder({
     onDirectTasksChange(directTasks.filter((t) => t.id !== id))
   }
 
-  const inputCls = 'w-full h-9 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none'
+  const inputCls = 'w-full h-9 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden'
   const labelCls = 'block text-xs font-medium text-[#374151] mb-1'
 
   function TaskRow({ task, onChange, onRemove }: { task: TemplateTask; onChange: (p: Partial<TemplateTask>) => void; onRemove: () => void }) {
@@ -96,7 +96,7 @@ export default function TemplateBuilder({
           <input value={task.title} onChange={(e) => onChange({ title: e.target.value })} placeholder="Task title" className={inputCls} />
           <input value={task.estimated_days} onChange={(e) => onChange({ estimated_days: e.target.value })} placeholder="Estimated days (optional)" type="number" min="1" className={inputCls} />
         </div>
-        <button type="button" onClick={onRemove} className="p-1.5 rounded hover:bg-[#FEE2E2] text-[#DC2626] mt-0.5 transition-colors">
+        <button type="button" onClick={onRemove} className="p-1.5 rounded-xs hover:bg-[#FEE2E2] text-[#DC2626] mt-0.5 transition-colors">
           <Trash2 size={13} />
         </button>
       </div>
@@ -113,7 +113,7 @@ export default function TemplateBuilder({
         </div>
         <div>
           <label className={labelCls}>Description</label>
-          <textarea value={description} onChange={(e) => onDescChange(e.target.value)} placeholder="Brief description..." rows={2} className="w-full px-3 py-2 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none resize-none" />
+          <textarea value={description} onChange={(e) => onDescChange(e.target.value)} placeholder="Brief description..." rows={2} className="w-full px-3 py-2 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden resize-none" />
         </div>
       </div>
 
@@ -143,12 +143,12 @@ export default function TemplateBuilder({
                   onChange={(e) => { e.stopPropagation(); updateMilestone(ms.id, { name: e.target.value }) }}
                   onClick={(e) => e.stopPropagation()}
                   placeholder="Milestone name"
-                  className="flex-1 bg-transparent text-sm font-medium text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none"
+                  className="flex-1 bg-transparent text-sm font-medium text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
                 />
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); removeMilestone(ms.id) }}
-                  className="p-1 rounded hover:bg-[#FEE2E2] text-[#DC2626] transition-colors"
+                  className="p-1 rounded-xs hover:bg-[#FEE2E2] text-[#DC2626] transition-colors"
                 >
                   <Trash2 size={13} />
                 </button>

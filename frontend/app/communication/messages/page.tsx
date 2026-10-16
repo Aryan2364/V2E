@@ -352,7 +352,7 @@ export default function MessagesPage() {
               onKeyDown={handleKeyDown}
               placeholder="Type a message…"
               rows={1}
-              className="flex-1 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] resize-none"
+              className="flex-1 border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] resize-none"
               style={{ maxHeight: 120, overflowY: 'auto' }}
             />
             <button
@@ -402,7 +402,7 @@ export default function MessagesPage() {
                 value={groupName}
                 onChange={e => setGroupName(e.target.value)}
                 placeholder="Group name (optional)"
-                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] mb-3"
+                className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] mb-3"
               />
             )}
 
@@ -412,7 +412,7 @@ export default function MessagesPage() {
                 value={empSearch}
                 onChange={e => setEmpSearch(e.target.value)}
                 placeholder="Search employees…"
-                className="w-full pl-8 pr-3 py-2 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB]"
+                className="w-full pl-8 pr-3 py-2 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB]"
               />
             </div>
 

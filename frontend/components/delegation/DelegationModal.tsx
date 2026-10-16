@@ -12,7 +12,7 @@ import { delegationsApi, type Delegation, type DelegationInput } from '@/lib/api
 // Base has NO width utility — callers add `w-full` (most fields) or a flex sizing
 // (the criteria row) so `w-full` never fights `w-28`/`flex-1` and overflows the row.
 const fieldBase =
-  'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+  'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-[15px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
 const inputClass = `w-full ${fieldBase}`
 const labelClass = 'block text-sm font-medium text-[#374151] mb-1'
 

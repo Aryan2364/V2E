@@ -38,7 +38,7 @@ const NAME_MAX = 50 // node names are capped so they always fit on the canvas wi
 const NOTE_MAX = 500 // a sticky note holds more than a name, but still bounded
 
 const inputCls =
-  'w-full px-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white text-[#0F172A] placeholder:text-[#94A3B8]'
+  'w-full px-3 py-2 text-[14px] rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A] placeholder:text-[#94A3B8]'
 
 // Turn plain text into React nodes with any URLs (http(s):// or www.…) rendered as clickable
 // links that open in a new tab. Used to show a description so pasted links are clickable.
@@ -343,7 +343,7 @@ export default function NodeDrawer({
   const body = (
     // Non-modal: no dimming backdrop, so the canvas stays visible and the selected
     // node keeps its context while you edit it (Part B7). The panel slides in.
-    <div className="fixed inset-0 z-[60] pointer-events-none">
+    <div className="fixed inset-0 z-60 pointer-events-none">
       <div className="absolute right-0 top-0 h-full w-full max-w-[440px] bg-white shadow-2xl border-l border-[#E2E8F0] flex flex-col pointer-events-auto animate-[slideInRight_.22s_ease-out]">
         {/* Header — breadcrumb path to this node; the last crumb is its live name. */}
         <div className="flex items-center gap-2 px-5 py-3.5 border-b border-[#E2E8F0]">
@@ -471,7 +471,7 @@ export default function NodeDrawer({
                 ) : description.trim() ? (
                   <div
                     onClick={() => { if (canEdit) setDescEditing(true) }}
-                    className={`${inputCls} whitespace-pre-wrap break-words min-h-[76px] ${canEdit ? 'cursor-text' : ''}`}
+                    className={`${inputCls} whitespace-pre-wrap wrap-break-word min-h-[76px] ${canEdit ? 'cursor-text' : ''}`}
                   >{linkify(description)}</div>
                 ) : (
                   <div
@@ -689,7 +689,7 @@ function ChecklistEditor({ items, canEdit, onChange }: {
       <div className="space-y-1.5">
         {items.map((it, i) => (
           <div key={it.id ?? i} className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded border border-[#CBD5E1] shrink-0" />
+            <span className="w-4 h-4 rounded-xs border border-[#CBD5E1] shrink-0" />
             <input className={`${inputCls} py-1.5 text-[13px]`} value={it.text} disabled={!canEdit}
               onChange={(e) => onChange(items.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)))} />
             {canEdit && (
@@ -720,7 +720,7 @@ function CollapsibleSection({ title, count = 0, defaultOpen = false, children }:
   return (
     <div className="border-t border-[#E2E8F0] pt-4">
       <button type="button" onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded">
+        className="w-full flex items-center gap-2 text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-xs">
         <ChevronRight size={14} className={`text-[#94A3B8] shrink-0 transition-transform ${open ? 'rotate-90' : ''}`} />
         <span className="flex-1 text-xs font-semibold text-[#0F172A]">{title}</span>
         {count > 0 && (
@@ -795,7 +795,7 @@ function SharingSection({ orgId, mapId, nodeId, node, departments, roles, employ
         <div className="space-y-1">
           {node.access_rules.map((r) => (
             <div key={r.id} className="flex items-center gap-2 text-[13px] bg-[#F8FAFC] border border-[#E2E8F0] rounded-[6px] px-2 py-1.5">
-              <span className={`text-[10px] font-semibold rounded px-1.5 py-0.5 shrink-0 ${
+              <span className={`text-[10px] font-semibold rounded-xs px-1.5 py-0.5 shrink-0 ${
                 r.kind === 'exclude_user' ? 'bg-[#FEE2E2] text-[#DC2626]' : r.level === 'edit' ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#E0F2FE] text-[#0369A1]'}`}>
                 {r.kind === 'exclude_user' ? 'hidden' : r.level}
               </span>

@@ -39,7 +39,7 @@ function ParticipantAvatars({ people, max = 6 }: { people: Person[]; max?: numbe
             {initials(p.name)}
           </div>
           {/* hover tooltip: full name + role in this meeting */}
-          <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/av:block z-[80]">
+          <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/av:block z-80">
             <div className="rounded-[8px] bg-[#0F172A] px-2.5 py-1.5 shadow-lg w-max max-w-[220px]">
               <div className="flex items-center gap-1.5">
                 <p className="text-xs font-semibold text-white whitespace-nowrap">{p.name}</p>
@@ -121,7 +121,7 @@ export default function MonthDayPanel({
     // Non-modal: the wrapper ignores pointer events so the calendar stays live —
     // clicking another day switches the card instead of closing it. Only the drawer
     // itself captures clicks. Close via X, Escape, or picking another day.
-    <div className="fixed inset-0 z-[70] pointer-events-none">
+    <div className="fixed inset-0 z-70 pointer-events-none">
       {/* right drawer */}
       <div
         className={['pointer-events-auto absolute top-0 right-0 h-full w-[380px] max-w-[92vw] bg-white shadow-2xl border-l border-[#E2E8F0] flex flex-col transition-transform duration-200 ease-in-out', visible ? 'translate-x-0' : 'translate-x-full'].join(' ')}
@@ -160,7 +160,7 @@ export default function MonthDayPanel({
                 <button
                   key={m.id}
                   onClick={() => onSelect(m.id)}
-                  className="w-full text-left rounded-[10px] border border-[#E2E8F0] hover:border-[#2563EB] hover:shadow-sm transition-all p-3 bg-white"
+                  className="w-full text-left rounded-[10px] border border-[#E2E8F0] hover:border-[#2563EB] hover:shadow-xs transition-all p-3 bg-white"
                 >
                   <div className="flex items-start gap-2">
                     <span className="mt-1 w-2.5 h-2.5 rounded-full shrink-0" style={{ background: meta.text }} />

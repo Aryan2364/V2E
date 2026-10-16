@@ -200,7 +200,7 @@ export default function FilterButton({
                               setSearch((s) => ({ ...s, [section.key]: e.target.value }))
                             }
                             placeholder={`Search ${section.label.toLowerCase()}…`}
-                            className="w-full rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] pl-6 pr-2 py-1 text-[12px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:bg-white"
+                            className="w-full rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] pl-6 pr-2 py-1 text-[12px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:bg-white"
                           />
                         </div>
                       )}

@@ -71,7 +71,7 @@ function UserSearchDropdown({ orgId, selected, onSelect, excludeIds = [] }: {
         </div>
         <span className="text-sm text-[#0F172A] flex-1 truncate">{selected.name}</span>
         <span className="text-xs text-[#94A3B8] truncate">{selected.role_title}</span>
-        <button type="button" onClick={() => onSelect(null)} className="p-0.5 rounded hover:bg-[#F1F5F9] text-[#94A3B8] hover:text-[#0F172A] transition-colors shrink-0">
+        <button type="button" onClick={() => onSelect(null)} className="p-0.5 rounded-xs hover:bg-[#F1F5F9] text-[#94A3B8] hover:text-[#0F172A] transition-colors shrink-0">
           <X size={13} />
         </button>
       </div>
@@ -83,7 +83,7 @@ function UserSearchDropdown({ orgId, selected, onSelect, excludeIds = [] }: {
       <div className="relative">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none" />
         <input value={query} onChange={(e) => setQuery(e.target.value)} onFocus={() => setOpen(true)} placeholder="Search by name…"
-          className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none transition-colors" />
+          className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors" />
       </div>
       {open && (
         <div className="absolute z-20 mt-1 w-full bg-white border border-[#E2E8F0] rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.12)] max-h-48 overflow-y-auto">
@@ -148,7 +148,7 @@ function MultiUserSearch({ orgId, excludeIds, onAdd }: {
       <div className="relative">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none" />
         <input value={query} onChange={(e) => setQuery(e.target.value)} onFocus={() => setOpen(true)} placeholder="Search team members to add…"
-          className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none transition-colors" />
+          className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden transition-colors" />
       </div>
       {open && (
         <div className="absolute z-20 mt-1 w-full bg-white border border-[#E2E8F0] rounded-[10px] shadow-[0_4px_16px_rgba(0,0,0,0.12)] max-h-56 overflow-y-auto">
@@ -185,7 +185,7 @@ const STATUS_OPTS = [
   { value: 'cancelled', label: 'Cancelled' },
 ]
 
-const inputCls = 'w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none'
+const inputCls = 'w-full h-10 px-3 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden'
 const labelCls = 'block text-sm font-medium text-[#374151] mb-1.5'
 
 export default function ProjectSettingsPage() {
@@ -406,7 +406,7 @@ export default function ProjectSettingsPage() {
         <div>
           <label className={labelCls}>Description</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
-            className="w-full px-3 py-2 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none resize-none" />
+            className="w-full px-3 py-2 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden resize-none" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -508,7 +508,7 @@ export default function ProjectSettingsPage() {
         ) : (
           <div className="space-y-3">
             <input value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} placeholder="Reason for deletion (required)"
-              className="w-full h-10 px-3 rounded-[8px] border border-[#FECACA] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#DC2626] focus:outline-none" />
+              className="w-full h-10 px-3 rounded-[8px] border border-[#FECACA] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#DC2626] focus:outline-hidden" />
             <div className="flex gap-2">
               <button type="button" onClick={() => setShowDelete(false)}
                 className="h-9 px-4 rounded-[8px] border border-[#E2E8F0] text-sm font-medium text-[#475569] hover:bg-[#F8FAFC] transition-colors">

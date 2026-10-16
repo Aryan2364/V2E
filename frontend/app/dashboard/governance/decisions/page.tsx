@@ -11,7 +11,7 @@ import { fmtDate } from '@/components/meetings/shared'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import DateRangePicker from '@/components/ui/DateRangePicker'
 
-const inputClass = 'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white focus:outline-none focus:border-[#2563EB]'
+const inputClass = 'border border-[#CBD5E1] rounded-[8px] px-3 py-2 text-sm text-[#0F172A] bg-white focus:outline-hidden focus:border-[#2563EB]'
 
 export default function DecisionLogPage() {
   const { user } = useAuth()

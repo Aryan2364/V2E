@@ -52,7 +52,7 @@ export default function RatingWidget({ onSubmit, submitting, existingRating, exi
         onChange={(e) => setComment(e.target.value)}
         placeholder="Add a comment (optional)"
         rows={2}
-        className="w-full px-3 py-2 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none resize-none"
+        className="w-full px-3 py-2 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-hidden resize-none"
       />
       <button
         type="button"

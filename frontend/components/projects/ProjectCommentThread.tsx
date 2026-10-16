@@ -81,7 +81,7 @@ export default function ProjectCommentThread({ orgId, projectId, comments, onRef
                 type="button"
                 onClick={() => handleDelete(comment.id)}
                 disabled={deletingId === comment.id}
-                className="p-1 rounded hover:bg-[#FEE2E2] text-[#DC2626] shrink-0"
+                className="p-1 rounded-xs hover:bg-[#FEE2E2] text-[#DC2626] shrink-0"
               >
                 {deletingId === comment.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
               </button>
@@ -116,7 +116,7 @@ export default function ProjectCommentThread({ orgId, projectId, comments, onRef
           onChange={(e) => setBody(e.target.value)}
           placeholder="Write a comment..."
           rows={2}
-          className="flex-1 px-3 py-2 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-none resize-none"
+          className="flex-1 px-3 py-2 rounded-[8px] border border-[#CBD5E1] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white focus:border-[#2563EB] focus:outline-hidden resize-none"
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit() }}
         />
         <button

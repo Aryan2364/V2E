@@ -41,14 +41,14 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
       }`}
       style={{ width: NODE_W, borderLeft: `4px solid ${color}` }}
     >
-      <Handle type="target" position={Position.Top} className="!bg-[#94A3B8] !w-2 !h-2 !border-0" />
+      <Handle type="target" position={Position.Top} className="bg-[#94A3B8]! w-2! h-2! border-0!" />
 
       {/* Hidden-neighbour markers: a dot above means this person reports to
           someone filtered out; a dot below means they have reports filtered out. */}
       {hiddenManager && (
         <Tooltip label="Reports to someone hidden by the current filter">
         <span
-          className="pointer-events-none absolute -top-[7px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm"
+          className="pointer-events-none absolute top-[-7px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full border-2 border-white shadow-xs"
           style={{ backgroundColor: color }}
         />
         </Tooltip>
@@ -56,7 +56,7 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
       {hiddenReports && (
         <Tooltip label="Has reports hidden by the current filter">
         <span
-          className="pointer-events-none absolute -bottom-[7px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm"
+          className="pointer-events-none absolute bottom-[-7px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full border-2 border-white shadow-xs"
           style={{ backgroundColor: color }}
         />
         </Tooltip>
@@ -128,7 +128,7 @@ function EmployeeNode({ data }: { data: EmployeeNodeData }) {
         </span>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="!bg-[#94A3B8] !w-2 !h-2 !border-0" />
+      <Handle type="source" position={Position.Bottom} className="bg-[#94A3B8]! w-2! h-2! border-0!" />
     </div>
   )
 }

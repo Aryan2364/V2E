@@ -295,7 +295,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <div className="relative w-full max-w-2xl bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-[#E2E8F0] max-h-[92vh] flex flex-col">
@@ -344,7 +344,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                   value={title}
                   onChange={(e) => setTitle(e.target.value.slice(0, 50))}
                   maxLength={50}
-                  className="w-full border border-[#CBD5E1] rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-[#0F172A] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white"
+                  className="w-full border border-[#CBD5E1] rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-[#0F172A] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white"
                 />
                 <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-[#DC2626]' : 'text-[#94A3B8]'}`}>
                   {title.length}/50
@@ -415,7 +415,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             )}
             <div>
               <label className="block text-sm font-medium text-[#374151] mb-1.5">Description</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value.slice(0, 2000))} maxLength={2000} placeholder="Add a description..." rows={2} className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-none bg-white resize-none" />
+              <textarea value={description} onChange={(e) => setDescription(e.target.value.slice(0, 2000))} maxLength={2000} placeholder="Add a description..." rows={2} className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-2 focus:border-[#2563EB] focus:outline-hidden bg-white resize-none" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -593,7 +593,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
       {/* Remove-attachment confirmation — destructive and immediate, so confirm first. */}
       {removingAttachment && (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40"
+          className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/40"
           onClick={(e) => { if (e.target === e.currentTarget) setRemovingAttachment(null) }}
           role="dialog"
           aria-modal="true"

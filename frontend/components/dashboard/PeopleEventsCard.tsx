@@ -246,7 +246,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
             </div>
             {/* Fade gradient at bottom when scrollable */}
             {items.length > VISIBLE_ROWS && (
-              <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-white to-transparent pointer-events-none" />
             )}
           </div>
         )}

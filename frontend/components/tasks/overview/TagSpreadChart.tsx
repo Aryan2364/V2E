@@ -45,7 +45,7 @@ export default function TagSpreadChart({
             <button
               type="button"
               onClick={() => onSegment(t.id!, t.label)}
-              className="w-full grid grid-cols-[92px_1fr_auto] items-center gap-2 rounded-btn px-1 py-1 text-left hover:bg-primary-light focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
+              className="w-full grid grid-cols-[92px_1fr_auto] items-center gap-2 rounded-btn px-1 py-1 text-left hover:bg-primary-light focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary transition-colors"
               aria-label={`${t.label}: ${t.total} task${t.total === 1 ? '' : 's'}`}
             >
               <Tooltip label={t.label}>

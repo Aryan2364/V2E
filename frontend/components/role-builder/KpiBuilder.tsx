@@ -51,7 +51,7 @@ export default function KpiBuilder({ items, onChange, readOnly }: Props) {
                   {(['title', 'metric', 'target', 'unit'] as const).map((field) => (
                     <td key={field} className="py-1 pr-2">
                       <input
-                        className="w-full border border-[#CBD5E1] rounded px-2 py-1 text-xs text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
+                        className="w-full border border-[#CBD5E1] rounded-xs px-2 py-1 text-xs text-[#0F172A] focus:outline-hidden focus:border-[#2563EB]"
                         placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
                         value={item[field]}
                         onChange={(e) => update(i, field, e.target.value)}

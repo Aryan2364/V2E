@@ -75,19 +75,19 @@ export default function Sheet({
   if (!mounted || !render) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-labelledby={labelId}>
+    <div className="fixed inset-0 z-60" role="dialog" aria-modal="true" aria-labelledby={labelId}>
       <div className={`absolute inset-0 bg-black/40 transition-opacity duration-200 ${shown ? 'opacity-100' : 'opacity-0'}`} onClick={onClose} aria-hidden />
       <div
         ref={panelRef}
         tabIndex={-1}
-        className={`absolute right-0 top-0 h-full w-full ${wide ? 'sm:max-w-[640px]' : 'sm:max-w-[520px]'} bg-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] flex flex-col outline-none transition-transform ease-out motion-reduce:transition-none ${
-          shown ? 'translate-x-0 duration-[250ms]' : 'translate-x-full duration-200'
+        className={`absolute right-0 top-0 h-full w-full ${wide ? 'sm:max-w-[640px]' : 'sm:max-w-[520px]'} bg-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] flex flex-col outline-hidden transition-transform ease-out motion-reduce:transition-none ${
+          shown ? 'translate-x-0 duration-250' : 'translate-x-full duration-200'
         }`}
       >
         <div className="flex items-start gap-3 px-5 py-4 border-b border-[#E2E8F0] shrink-0">
           <div className="flex-1 min-w-0">
             {eyebrow && <p className="text-[13px] font-medium text-[#475569]">{eyebrow}</p>}
-            <h2 id={labelId} className="text-[18px] font-semibold text-[#0F172A] break-words">
+            <h2 id={labelId} className="text-[18px] font-semibold text-[#0F172A] wrap-break-word">
               {title}
             </h2>
             {headerExtra && <div className="mt-1.5 flex items-center gap-2 flex-wrap">{headerExtra}</div>}

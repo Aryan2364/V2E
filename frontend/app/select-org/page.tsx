@@ -89,7 +89,7 @@ export default function SelectOrgPage() {
               placeholder="Search organizations…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-[44px] px-4 text-[15px] text-[#0F172A] placeholder-[#94A3B8] bg-white border border-[#CBD5E1] rounded-[8px] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20"
+              className="w-full h-[44px] px-4 text-[15px] text-[#0F172A] placeholder-[#94A3B8] bg-white border border-[#CBD5E1] rounded-[8px] focus:outline-hidden focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20"
             />
           </div>
         )}
@@ -115,7 +115,7 @@ export default function SelectOrgPage() {
                 {/* Org icon */}
                 <div className="w-12 h-12 rounded-[10px] bg-[#EFF6FF] flex items-center justify-center shrink-0 group-hover:bg-[#DBEAFE] transition-colors">
                   {org.logo_url ? (
-                    <img src={org.logo_url} alt={org.name} className="w-8 h-8 object-contain rounded" />
+                    <img src={org.logo_url} alt={org.name} className="w-8 h-8 object-contain rounded-xs" />
                   ) : (
                     <Building2 size={22} className="text-[#2563EB]" />
                   )}

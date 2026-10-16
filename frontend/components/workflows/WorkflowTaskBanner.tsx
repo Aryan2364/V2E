@@ -78,8 +78,8 @@ export default function WorkflowTaskBanner({
         <div className="flex items-start gap-2.5 min-w-0 flex-1">
           <WorkflowIcon size={18} className="shrink-0 mt-0.5 text-[#1D4ED8]" />
           <div className="min-w-0 text-sm text-[#1E3A8A]">
-            <p className="font-semibold break-words">{stepLabel}</p>
-            <p className="break-words">
+            <p className="font-semibold wrap-break-word">{stepLabel}</p>
+            <p className="wrap-break-word">
               {instanceName && <span className="font-medium">{instanceName}</span>}
               {ctx?.instance_number ? (
                 <span>

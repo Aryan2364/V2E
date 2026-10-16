@@ -276,7 +276,7 @@ export default function IndividualsPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search employees..."
-                className="flex-1 bg-transparent text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none"
+                className="flex-1 bg-transparent text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-hidden"
               />
             </div>
           </div>
@@ -479,7 +479,7 @@ export default function IndividualsPage() {
 
       {/* Undo toast */}
       {undoToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3 rounded-[10px] bg-[#0F172A] text-white px-4 py-3 shadow-[0_8px_28px_rgba(0,0,0,0.25)]">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-90 flex items-center gap-3 rounded-[10px] bg-[#0F172A] text-white px-4 py-3 shadow-[0_8px_28px_rgba(0,0,0,0.25)]">
           <span className="text-sm">Removed <span className="font-semibold">{undoToast.count}</span> holiday{undoToast.count === 1 ? '' : 's'}</span>
           <button type="button" onClick={undoRemoval} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#93C5FD] hover:text-white transition-colors">
             <Undo2 size={14} /> Undo

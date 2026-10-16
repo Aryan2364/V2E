@@ -85,7 +85,7 @@ export default function MonthDayPicker({
     disabled
       ? 'border-[#E2E8F0] cursor-not-allowed opacity-70'
       : 'border-[#CBD5E1] cursor-pointer hover:bg-white hover:border-[#94A3B8]'
-  } ${open ? '!bg-white !border-[#2563EB] ring-1 ring-[#2563EB]' : ''}`
+  } ${open ? 'bg-white! border-[#2563EB]! ring-1 ring-[#2563EB]' : ''}`
 
   return (
     <div>
@@ -106,7 +106,7 @@ export default function MonthDayPicker({
 
       {open && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40"
+          className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40"
           onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
           <div
@@ -173,7 +173,7 @@ export default function MonthDayPicker({
                           if (!blocked) pickDay(d)
                         }}
                         className={[
-                          'h-9 rounded-[8px] text-sm flex items-center justify-center transition-colors border focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]',
+                          'h-9 rounded-[8px] text-sm flex items-center justify-center transition-colors border focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]',
                           isSel
                             ? `bg-[#2563EB] text-white font-semibold ${blocked ? 'border-[#DC2626] ring-1 ring-[#DC2626]' : 'border-[#2563EB]'}`
                             : blocked

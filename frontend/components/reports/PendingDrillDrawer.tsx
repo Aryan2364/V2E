@@ -106,7 +106,7 @@ export default function PendingDrillDrawer({
   )
 
   return createPortal(
-    <div className="fixed inset-0 z-[70]">
+    <div className="fixed inset-0 z-70">
       <div className="absolute inset-0 bg-[#0F172A]/40" onClick={onClose} />
       <aside className="absolute right-0 top-0 h-full w-full max-w-[760px] bg-white shadow-[-12px_0_40px_rgba(0,0,0,0.18)] flex flex-col">
         {/* Header */}

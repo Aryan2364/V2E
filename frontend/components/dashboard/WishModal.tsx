@@ -123,7 +123,7 @@ export default function WishModal({ open, onClose, recipient, eventType }: WishM
               rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2.5 text-base sm:text-sm text-[#0F172A] placeholder-[#94A3B8] resize-none focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+              className="w-full border border-[#CBD5E1] rounded-[8px] px-3 py-2.5 text-base sm:text-sm text-[#0F172A] placeholder-[#94A3B8] resize-none focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
             />
           </div>
 

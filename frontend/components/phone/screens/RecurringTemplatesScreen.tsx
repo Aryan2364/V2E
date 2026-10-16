@@ -46,7 +46,7 @@ export default function RecurringTemplatesScreen({ route }: { route: PhoneRoute 
   return (
     <PhoneScreen title={route.title} parent={route.parent ?? GIVEN_HREF}>
       {loading ? (
-        <div className="-mx-[16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <div className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex min-h-[64px] flex-col gap-[8px] px-[16px] py-[12px]" aria-hidden>
               <span className="h-[16px] w-3/4 rounded-full bg-phone-surface-control" />
@@ -61,7 +61,7 @@ export default function RecurringTemplatesScreen({ route }: { route: PhoneRoute 
           line="Tasks set to repeat (daily, weekly or monthly) will show up here. Set one up from Give task, or on a computer for more options."
         />
       ) : (
-        <ul className="-mx-[16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <ul className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
           {templates.map((t) => (
             <li key={t.id}>
               <a href={recurringInstancesHref(t.id)} className={cx(ROW, 'min-h-[64px] items-start py-[12px]')}>

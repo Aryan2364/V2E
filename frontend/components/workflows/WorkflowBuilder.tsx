@@ -362,7 +362,7 @@ function PathName({
             inputRef.current?.blur()
           }
         }}
-        className={`${INPUT_CLS} !py-1.5 min-w-0 flex-1`}
+        className={`${INPUT_CLS} py-1.5! min-w-0 flex-1`}
       />
     )
   }
@@ -1394,7 +1394,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             />
           )}
           {t.key !== MAIN_TRACK && group.length === 0 && !pending && (
-            <GatedButton allowed={edit.allowed} reason={edit.reason} icon={X} variant="quiet" className="!min-h-[40px] sm:!min-h-[34px] !px-2.5 shrink-0" onClick={() => removeTrack(t.key)}>
+            <GatedButton allowed={edit.allowed} reason={edit.reason} icon={X} variant="quiet" className="min-h-[40px]! sm:min-h-[34px]! px-2.5! shrink-0" onClick={() => removeTrack(t.key)}>
               Remove path
             </GatedButton>
           )}
@@ -1500,7 +1500,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         />
         <div className="flex items-center justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:break-words">
+            <h1 className="text-[18px] sm:text-[28px] font-bold text-[#0F172A] leading-tight truncate sm:whitespace-normal sm:wrap-break-word">
               {work.name.trim() || w?.name || 'New workflow'}
             </h1>
             <div className="hidden sm:flex items-center gap-2 flex-wrap mt-1.5 min-h-[24px]">
@@ -1564,7 +1564,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
               }}
               onBlur={() => !work.name.trim() && w && setNameError('Enter a workflow name.')}
               placeholder="e.g. New joiner onboarding"
-              className={`${INPUT_CLS} ${nameError ? '!border-[#DC2626] focus:!ring-[#DC2626]' : ''}`}
+              className={`${INPUT_CLS} ${nameError ? 'border-[#DC2626]! focus:ring-[#DC2626]!' : ''}`}
             />
             {nameError && <p className="mt-1.5 text-[13px] text-[#B91C1C]">{nameError}</p>}
           </div>
@@ -1639,7 +1639,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
               aria-expanded={flowOpen}
               aria-controls="flow-preview"
               onClick={() => setFlowOpen((v) => !v)}
-              className="w-full flex items-center gap-2 px-4 py-3 text-left rounded-[12px] hover:bg-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+              className="w-full flex items-center gap-2 px-4 py-3 text-left rounded-[12px] hover:bg-[#F8FAFC] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
             >
               <GitBranch size={16} className="text-[#2563EB]" />
               <span className="text-[15px] font-semibold text-[#0F172A]">Flow</span>

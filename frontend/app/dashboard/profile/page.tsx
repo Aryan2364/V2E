@@ -17,10 +17,10 @@ const roleLevelLabel: Record<string, string> = { junior: 'Junior', mid: 'Mid', s
 
 type Kpi = NonNullable<Role['kpi']>[number]
 const kpiColumns: ResponsiveColumn<Kpi>[] = [
-  { key: 'title', header: 'Title', primary: true, cellClassName: '!px-0 !py-3 !pr-4 font-medium text-[#0F172A]', headerClassName: '!px-0 !py-2.5 !pr-4', render: (k) => k.title },
-  { key: 'metric', header: 'Metric', cellClassName: '!px-0 !py-3 !pr-4 text-[#475569]', headerClassName: '!px-0 !py-2.5 !pr-4', render: (k) => k.metric },
-  { key: 'target', header: 'Target', cellClassName: '!px-0 !py-3 !pr-4 text-[#475569]', headerClassName: '!px-0 !py-2.5 !pr-4', render: (k) => k.target },
-  { key: 'unit', header: 'Unit', cellClassName: '!px-0 !py-3 text-[#475569]', headerClassName: '!px-0 !py-2.5', render: (k) => k.unit },
+  { key: 'title', header: 'Title', primary: true, cellClassName: 'px-0! py-3! pr-4! font-medium text-[#0F172A]', headerClassName: 'px-0! py-2.5! pr-4!', render: (k) => k.title },
+  { key: 'metric', header: 'Metric', cellClassName: 'px-0! py-3! pr-4! text-[#475569]', headerClassName: 'px-0! py-2.5! pr-4!', render: (k) => k.metric },
+  { key: 'target', header: 'Target', cellClassName: 'px-0! py-3! pr-4! text-[#475569]', headerClassName: 'px-0! py-2.5! pr-4!', render: (k) => k.target },
+  { key: 'unit', header: 'Unit', cellClassName: 'px-0! py-3! text-[#475569]', headerClassName: 'px-0! py-2.5!', render: (k) => k.unit },
 ]
 
 const employmentLabel: Record<string, string> = {
@@ -64,7 +64,7 @@ function InfoCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
       <p className="text-xs font-semibold text-[#475569] uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-sm text-[#1E293B] font-medium break-words">{value ?? '—'}</p>
+      <p className="text-sm text-[#1E293B] font-medium wrap-break-word">{value ?? '—'}</p>
     </div>
   )
 }
@@ -102,7 +102,7 @@ function ReportingChain({ me, allEmployees }: { me: EmployeeProfile; allEmployee
         return (
           <div key={mgr.id} className="flex items-start gap-3">
             <div className="flex flex-col items-center">
-              <div className={`w-8 h-8 rounded-full ${avatarColor(mgrName)} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
+              <div className={`w-8 h-8 rounded-full ${avatarColor(mgrName)} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
                 {getInitials(mgrName)}
               </div>
               {i < chain.length - 1 && <div className="w-px h-4 bg-[#E2E8F0] mt-1" />}
@@ -141,7 +141,7 @@ function ProfileTabs({ active, onChange }: { active: ProfileTab; onChange: (t: P
               aria-selected={on}
               onClick={() => onChange(t.key)}
               className={[
-                '-mb-px h-11 sm:h-10 border-b-2 text-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-t-[4px]',
+                '-mb-px h-11 sm:h-10 border-b-2 text-sm transition-colors duration-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-t-[4px]',
                 on
                   ? 'border-[#2563EB] text-[#2563EB] font-semibold'
                   : 'border-transparent text-[#475569] font-medium hover:text-[#0F172A]',
@@ -283,7 +283,7 @@ function MyProfileContent() {
       {/* Profile header — mirrors the employee-detail page */}
       <div className="bg-white border border-[#E2E8F0] rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-          <div className={`w-20 h-20 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-2xl font-bold flex-shrink-0`}>
+          <div className={`w-20 h-20 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-2xl font-bold shrink-0`}>
             {getInitials(name)}
           </div>
           <div className="flex-1 min-w-0">
@@ -331,7 +331,7 @@ function MyProfileContent() {
       {profile?.reporting_to && (
         <Section title="Reports to">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full ${avatarColor(profile.reporting_to.name)} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}>
+            <div className={`w-10 h-10 rounded-full ${avatarColor(profile.reporting_to.name)} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
               {getInitials(profile.reporting_to.name)}
             </div>
             <div className="min-w-0">
@@ -372,7 +372,7 @@ function MyProfileContent() {
           <ol className="space-y-3">
             {kraItems.map((k, i) => (
               <li key={i} className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#EFF6FF] flex items-center justify-center text-xs font-bold text-[#2563EB]">{i + 1}</span>
+                <span className="shrink-0 w-6 h-6 rounded-full bg-[#EFF6FF] flex items-center justify-center text-xs font-bold text-[#2563EB]">{i + 1}</span>
                 <div>
                   <p className="text-sm font-semibold text-[#0F172A]">{k.title}</p>
                   {k.description && <p className="text-[13px] text-[#475569] mt-0.5 whitespace-pre-wrap">{k.description}</p>}
@@ -387,7 +387,7 @@ function MyProfileContent() {
       {role?.kpi && role.kpi.length > 0 && (
         <Section title="Key performance indicators">
           <ResponsiveTable
-            className="!border-0 !rounded-none !shadow-none !bg-transparent !overflow-visible"
+            className="border-0! rounded-none! shadow-none! bg-transparent! overflow-visible!"
             columns={kpiColumns}
             rows={role.kpi}
             rowKey={(_k, i) => String(i)}
@@ -432,7 +432,7 @@ function MyProfileContent() {
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="At least 8 characters"
                 autoComplete="new-password"
-                className={`w-full px-3 py-2 pr-10 text-sm rounded-[8px] border ${passwordTooShort ? 'border-[#DC2626]' : 'border-[#CBD5E1]'} focus:border-[#2563EB] focus:outline-none bg-white text-[#0F172A] placeholder:text-[#94A3B8]`}
+                className={`w-full px-3 py-2 pr-10 text-sm rounded-[8px] border ${passwordTooShort ? 'border-[#DC2626]' : 'border-[#CBD5E1]'} focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A] placeholder:text-[#94A3B8]`}
               />
               <button type="button" onClick={() => setShowNew((v) => !v)} aria-label={showNew ? 'Hide password' : 'Show password'}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569]">
@@ -450,7 +450,7 @@ function MyProfileContent() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter the new password"
                 autoComplete="new-password"
-                className={`w-full px-3 py-2 pr-10 text-sm rounded-[8px] border ${passwordMismatch ? 'border-[#DC2626]' : 'border-[#CBD5E1]'} focus:border-[#2563EB] focus:outline-none bg-white text-[#0F172A] placeholder:text-[#94A3B8]`}
+                className={`w-full px-3 py-2 pr-10 text-sm rounded-[8px] border ${passwordMismatch ? 'border-[#DC2626]' : 'border-[#CBD5E1]'} focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A] placeholder:text-[#94A3B8]`}
               />
               <button type="button" onClick={() => setShowConfirm((v) => !v)} aria-label={showConfirm ? 'Hide password' : 'Show password'}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569]">

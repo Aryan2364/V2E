@@ -48,7 +48,7 @@ export default function RecurringInstancesScreen({ route }: { route: PhoneRoute 
   return (
     <PhoneScreen title={route.title} parent={route.parent ?? RECURRING_TEMPLATES_HREF}>
       {loading ? (
-        <div className="-mx-[16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <div className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex min-h-[56px] flex-col gap-[8px] px-[16px] py-[12px]" aria-hidden>
               <span className="h-[14px] w-3/4 rounded-full bg-phone-surface-control" />
@@ -63,7 +63,7 @@ export default function RecurringInstancesScreen({ route }: { route: PhoneRoute 
           line="This recurring task hasn't created any instances yet. They'll show up here as they're spawned."
         />
       ) : (
-        <ul className="-mx-[16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
+        <ul className="mx-[-16px] divide-y divide-phone-border-light border-y border-phone-border-light bg-phone-surface">
           {instances.map((t) => {
             const badge = statusBadge(t)
             return (

@@ -70,7 +70,7 @@ export default function RoleSelect({
   const triggerCls = `w-full flex items-center gap-2.5 border rounded-[8px] px-3 py-2.5 text-[15px] text-left transition-colors ${
     disabled
       ? 'bg-[#F1F5F9] border-[#E2E8F0] cursor-not-allowed'
-      : 'bg-[#F8FAFC] border-[#CBD5E1] hover:bg-white hover:border-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
+      : 'bg-[#F8FAFC] border-[#CBD5E1] hover:bg-white hover:border-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]'
   }`
 
   return (
@@ -105,7 +105,7 @@ export default function RoleSelect({
           <div
             ref={panelRef}
             style={style}
-            className="z-[80] flex flex-col border border-[#E2E8F0] rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden"
+            className="z-80 flex flex-col border border-[#E2E8F0] rounded-[10px] bg-white shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden"
           >
             <div className="relative border-b border-[#E2E8F0] shrink-0">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
@@ -113,7 +113,7 @@ export default function RoleSelect({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search roles…"
-                className="w-full pl-9 pr-8 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none"
+                className="w-full pl-9 pr-8 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden"
                 autoFocus
               />
               {query && (

@@ -27,7 +27,7 @@ export default function ViewToggle({ value, onChange }: Props) {
             onClick={() => onChange(v)}
             className={`inline-flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-xs font-semibold transition-colors ${
               active
-                ? 'bg-[#2563EB] text-white shadow-sm'
+                ? 'bg-[#2563EB] text-white shadow-xs'
                 : 'text-[#475569] hover:text-[#0F172A]'
             }`}
             aria-pressed={active}

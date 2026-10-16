@@ -86,7 +86,7 @@ export default function KnowledgePage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search knowledge posts…"
-            className="w-full pl-9 pr-4 py-2 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] bg-white"
+            className="w-full pl-9 pr-4 py-2 border border-[#CBD5E1] rounded-[8px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] bg-white"
           />
         </div>
 

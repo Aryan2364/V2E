@@ -125,13 +125,13 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
       {/* Controls */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-[#E2E8F0] bg-[#F8FAFC]">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => navigate(-1)} className="p-1.5 rounded hover:bg-[#E2E8F0] text-[#475569] transition-colors">
+          <button type="button" onClick={() => navigate(-1)} className="p-1.5 rounded-xs hover:bg-[#E2E8F0] text-[#475569] transition-colors">
             <ChevronLeft size={16} />
           </button>
           <span className="text-sm font-medium text-[#0F172A]">
             {fmtDateLabel(windowStart)} — {fmtDateLabel(windowEnd)}
           </span>
-          <button type="button" onClick={() => navigate(1)} className="p-1.5 rounded hover:bg-[#E2E8F0] text-[#475569] transition-colors">
+          <button type="button" onClick={() => navigate(1)} className="p-1.5 rounded-xs hover:bg-[#E2E8F0] text-[#475569] transition-colors">
             <ChevronRight size={16} />
           </button>
         </div>
@@ -143,7 +143,7 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
               onClick={() => setZoom(z)}
               className={[
                 'px-3 py-1 rounded-[6px] text-xs font-semibold transition-colors capitalize',
-                zoom === z ? 'bg-white text-[#0F172A] shadow-sm' : 'text-[#475569] hover:text-[#0F172A]',
+                zoom === z ? 'bg-white text-[#0F172A] shadow-xs' : 'text-[#475569] hover:text-[#0F172A]',
               ].join(' ')}
             >
               {z}

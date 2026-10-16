@@ -66,7 +66,7 @@ function StatusBadge({ status }: { status: EmployeeStatus }) {
 function Avatar({ name }: { name: string }) {
   return (
     <div
-      className={`w-9 h-9 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}
+      className={`w-9 h-9 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-xs font-bold shrink-0`}
     >
       {getInitials(name)}
     </div>
@@ -388,7 +388,7 @@ export default function EmployeesPage() {
             e.stopPropagation()
             markNavigating()
           }}
-          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-[#2563EB] text-xs font-medium hover:text-[#1D4ED8] transition-colors rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+          className="inline-flex items-center gap-1 min-h-[40px] sm:min-h-0 text-[#2563EB] text-xs font-medium hover:text-[#1D4ED8] transition-colors rounded-[6px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB]"
         >
           View
           <ChevronRight size={13} />
@@ -466,7 +466,7 @@ export default function EmployeesPage() {
             placeholder="Search by name or email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-[10px] text-sm rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-none bg-white text-[#0F172A] placeholder:text-[#94A3B8]"
+            className="w-full pl-9 pr-3 py-[10px] text-sm rounded-[8px] border border-[#CBD5E1] focus:border-[#2563EB] focus:outline-hidden bg-white text-[#0F172A] placeholder:text-[#94A3B8]"
           />
         </div>
         <div className="w-full sm:w-60">

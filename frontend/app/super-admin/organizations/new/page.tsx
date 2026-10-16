@@ -53,13 +53,13 @@ function Field({
 
 const inputCls = (hasError?: boolean) =>
   [
-    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none transition-colors',
+    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden transition-colors',
     hasError ? 'border-2 border-[#DC2626]' : 'border border-[#CBD5E1] focus:border-2 focus:border-[#2563EB]',
   ].join(' ')
 
 const selectCls = (hasError?: boolean) =>
   [
-    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-[#0F172A] focus:outline-none transition-colors',
+    'w-full rounded-[8px] bg-white px-3 py-[10px] text-sm text-[#0F172A] focus:outline-hidden transition-colors',
     hasError ? 'border-2 border-[#DC2626]' : 'border border-[#CBD5E1] focus:border-2 focus:border-[#2563EB]',
   ].join(' ')
 
@@ -258,7 +258,7 @@ export default function NewOrganizationPage() {
               <input
                 type="checkbox"
                 {...register('is_test')}
-                className="mt-0.5 w-4 h-4 rounded border-[#CBD5E1] text-[#D97706] focus:ring-[#D97706]"
+                className="mt-0.5 w-4 h-4 rounded-xs border-[#CBD5E1] text-[#D97706] focus:ring-[#D97706]"
               />
               <span>
                 <span className="block text-sm font-medium text-[#92400E]">Test client</span>

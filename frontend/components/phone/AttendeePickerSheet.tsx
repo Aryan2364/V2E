@@ -75,11 +75,11 @@ export function AttendeePickerSheet({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search people"
-            className="w-full bg-transparent text-phone-body text-phone-text-primary outline-none placeholder:text-phone-text-muted"
+            className="w-full bg-transparent text-phone-body text-phone-text-primary outline-hidden placeholder:text-phone-text-muted"
           />
         </div>
 
-        <ul className="-mx-[16px] divide-y divide-phone-border-light">
+        <ul className="mx-[-16px] divide-y divide-phone-border-light">
           {filtered.map((p) => {
             const isSelected = draftSelected.includes(p.user_id)
             const isOptional = draftOptional.includes(p.user_id)

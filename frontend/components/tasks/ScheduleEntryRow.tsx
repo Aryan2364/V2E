@@ -38,7 +38,7 @@ interface Props {
   canDelete: boolean
 }
 
-const inputCls = 'border border-[#CBD5E1] rounded-[8px] px-3 py-[8px] text-sm text-[#0F172A] bg-white focus:border-2 focus:border-[#2563EB] focus:outline-none'
+const inputCls = 'border border-[#CBD5E1] rounded-[8px] px-3 py-[8px] text-sm text-[#0F172A] bg-white focus:border-2 focus:border-[#2563EB] focus:outline-hidden'
 const labelCls = 'text-sm font-medium text-[#374151]'
 
 export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, canDelete }: Props) {
