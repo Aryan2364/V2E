@@ -369,14 +369,9 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                     checklist — so a single file can hold <strong>many checklists</strong>. Imported checklists arrive{' '}
                     <strong>inactive</strong> so you can set who can use each one, then activate it.
                   </p>
-                  <button
-                    onClick={downloadTemplate}
-                    disabled={building}
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-                  >
-                    {building ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
-                    {building ? 'Building…' : 'Download Excel template'}
-                  </button>
+                  <Button className="mt-3" onClick={downloadTemplate} loading={building} loadingLabel="Building…">
+                    <Download size={15} /> Download Excel template
+                  </Button>
                 </div>
               </div>
 
@@ -492,15 +487,15 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
               )}
 
               <div className="flex items-center gap-2 pt-1">
-                <button
+                <Button
                   onClick={handleImport}
-                  disabled={importing || validation.templates === 0}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                  disabled={validation.templates === 0}
+                  loading={importing}
+                  loadingLabel="Importing…"
                 >
-                  {importing ? <Loader2 size={15} className="animate-spin" /> : <ListChecks size={15} />}
-                  {importing ? 'Importing…' : `Import ${validation.templates} checklist${validation.templates !== 1 ? 's' : ''}`}
-                </button>
-                <button onClick={() => setPhase('upload')} className="px-4 py-2 rounded-lg text-label font-medium text-text-secondary bg-surface border border-border-light hover:bg-surface-control transition-colors">Choose another file</button>
+                  <ListChecks size={15} /> {`Import ${validation.templates} checklist${validation.templates !== 1 ? 's' : ''}`}
+                </Button>
+                <Button variant="secondary" onClick={() => setPhase('upload')}>Choose another file</Button>
               </div>
             </>
           )}
@@ -520,21 +515,21 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                 </p>
               </div>
               {commitResult.batch_id && (
-                <button
+                <Button
+                  variant="danger"
                   onClick={() => handleUndo(commitResult.batch_id as string)}
-                  disabled={undoingId === commitResult.batch_id}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg transition-colors"
+                  loading={undoingId === commitResult.batch_id}
+                  loadingLabel="Undoing…"
                 >
-                  {undoingId === commitResult.batch_id ? <Loader2 size={15} className="animate-spin" /> : <Undo2 size={15} />}
-                  Undo this import
-                </button>
+                  <Undo2 size={15} /> Undo this import
+                </Button>
               )}
               {undoResult && (
                 <p className="text-label text-text-secondary">Removed {undoResult.undone}. {undoResult.kept.length > 0 && `Kept ${undoResult.kept.length} (already activated).`}</p>
               )}
               <div className="flex items-center gap-2 pt-1">
-                <button onClick={resetToUpload} className="px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors">Import another file</button>
-                <button onClick={onClose} className="px-4 py-2 rounded-lg text-label font-medium text-text-secondary bg-surface border border-border-light hover:bg-surface-control transition-colors">Done</button>
+                <Button onClick={resetToUpload}>Import another file</Button>
+                <Button variant="secondary" onClick={onClose}>Done</Button>
               </div>
             </div>
           )}
@@ -559,14 +554,17 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                       </div>
                     </div>
                     <Tooltip label={b.can_undo ? 'Remove the still-inactive checklists from this import' : 'Nothing left to undo'}>
-                    <button
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="shrink-0"
                       onClick={() => handleUndo(b.id)}
-                      disabled={!b.can_undo || undoingId === b.id}
-                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:text-text-muted disabled:border-border-light disabled:hover:bg-surface transition-colors"
+                      disabled={!b.can_undo}
+                      loading={undoingId === b.id}
+                      loadingLabel="Undoing…"
                     >
-                      {undoingId === b.id ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />}
-                      Undo
-                    </button>
+                      <Undo2 size={14} /> Undo
+                    </Button>
                     </Tooltip>
                   </div>
                 </div>
