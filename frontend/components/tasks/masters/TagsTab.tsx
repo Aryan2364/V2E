@@ -46,11 +46,11 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 const GRID = 'lg:grid lg:items-center lg:gap-4 lg:grid-cols-[minmax(0,1fr)_10rem_6rem_10.5rem] xl:grid-cols-[minmax(0,1fr)_10rem_11rem_6rem_10.5rem]'
 
 const primaryBtn =
-  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn bg-primary text-sm font-semibold text-white hover:bg-primary-hover disabled:bg-border disabled:text-secondary disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn bg-primary text-sm font-medium text-white hover:bg-primary-hover disabled:bg-border disabled:text-secondary disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 const secondaryBtn =
-  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn border border-primary bg-white text-sm font-semibold text-primary hover:bg-slate-50 active:bg-slate-100 disabled:border-border disabled:text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+  'inline-flex items-center justify-center gap-1.5 h-11 lg:h-9 px-4 rounded-btn border border-primary bg-surface text-sm font-medium text-primary hover:bg-slate-50 active:bg-slate-100 disabled:border-border disabled:text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 const fieldCls =
-  'w-full rounded-btn border bg-white px-3 text-base lg:text-sm text-heading placeholder:text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-[border-color]'
+  'w-full rounded-btn border bg-surface px-3 text-base lg:text-sm text-heading placeholder:text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-[border-color]'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -150,7 +150,7 @@ function RowAction({
 function EmptyState({ title, line, action }: { title: string; line: string; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center gap-1 px-4 py-12 text-center">
-      <p className="text-base font-semibold text-heading">{title}</p>
+      <p className="text-base font-medium text-heading">{title}</p>
       <p className="max-w-md text-sm text-secondary">{line}</p>
       {action && <div className="mt-3">{action}</div>}
     </div>
@@ -594,7 +594,7 @@ function TagRow({
       data-tag-row={tag.id}
       className={[
         'border-b border-border px-4 py-3 last:border-b-0 transition-colors duration-500',
-        flash ? 'bg-primary-light' : 'bg-white hover:bg-slate-50',
+        flash ? 'bg-primary-light' : 'bg-surface hover:bg-slate-50',
         GRID,
       ].join(' ')}
     >
@@ -1043,7 +1043,7 @@ export function TagsTab({ orgId }: { orgId: string }) {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search tags"
               aria-label="Search tags"
-              className={`${fieldCls} h-11 lg:h-9 border-input pl-9 pr-10 hover:border-secondary [&::-webkit-search-cancel-button]:hidden`}
+              className={`${fieldCls} h-11 lg:h-9 border-input pl-8 pr-8 hover:border-secondary [&::-webkit-search-cancel-button]:hidden`}
             />
           </Tooltip>
           {query && (
@@ -1070,7 +1070,7 @@ export function TagsTab({ orgId }: { orgId: string }) {
           />
         </div>
 
-        <label className="inline-flex h-11 lg:h-9 cursor-pointer select-none items-center gap-2 rounded-btn border border-border bg-white px-3 text-sm text-body hover:bg-slate-50">
+        <label className="inline-flex h-11 lg:h-9 cursor-pointer select-none items-center gap-2 rounded-btn border border-border bg-surface px-3 text-sm text-body hover:bg-slate-50">
           <input
             type="checkbox"
             checked={showInactive}
@@ -1087,7 +1087,7 @@ export function TagsTab({ orgId }: { orgId: string }) {
       </div>
 
       {/* List: header pinned, rows scroll inside their own box */}
-      <div className="overflow-hidden rounded-card border border-border bg-white">
+      <div className="overflow-hidden rounded-card border border-border bg-surface">
         <div
           className={`hidden border-b border-border bg-slate-50 px-4 py-2 text-xs font-medium text-secondary ${GRID}`}
           aria-hidden="true"

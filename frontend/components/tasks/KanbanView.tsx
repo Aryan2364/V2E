@@ -127,7 +127,7 @@ export default function KanbanView({
     <div>
       {/* Touch devices can't HTML5-drag — tell them to open the card instead, shown
           only on coarse pointers so it's not noise on desktop. */}
-      <div className="pointer-fine:hidden mb-3 flex items-center gap-2 text-[12px] text-warning bg-warning-bg border border-warning-border rounded-[8px] px-3 py-2">
+      <div className="pointer-fine:hidden mb-3 flex items-center gap-2 text-[12px] text-warning bg-warning-bg border border-warning-border rounded-lg px-3 py-2">
         <Hand size={13} className="shrink-0" />
         Drag isn’t available on touch — tap a card to open it and change its status there.
       </div>
@@ -146,12 +146,12 @@ export default function KanbanView({
           >
             {/* Column header */}
             <div
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-[10px] mb-3 border transition-colors ${
-                isOver ? 'border-primary bg-primary-subtle' : isPartialCol ? 'border-border-light bg-surface-sunken' : 'border-border-light bg-white'
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg mb-3 border transition-colors ${
+                isOver ? 'border-primary bg-primary-subtle' : isPartialCol ? 'border-border-light bg-surface-sunken' : 'border-border-light bg-surface'
               }`}
             >
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: status.color }} />
-              <span className="text-sm font-semibold text-text-primary flex-1">{status.label}</span>
+              <span className="text-sm font-medium text-text-primary flex-1">{status.label}</span>
               {isPartialCol && <Lock size={12} className="text-text-muted shrink-0" aria-label="Set automatically" />}
               <span className="text-xs font-medium text-text-muted bg-surface-control px-2 py-0.5 rounded-full">{colTasks.length}</span>
             </div>
@@ -179,11 +179,11 @@ export default function KanbanView({
                     onDragStart={() => { if (!locked) setDraggingId(task.id) }}
                     onDragEnd={() => { setDraggingId(null); setDragOverCol(null) }}
                     onClick={() => onTaskClick(task.id)}
-                    className={`bg-white border rounded-[10px] p-3 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all select-none ${
+                    className={`bg-surface border rounded-lg p-3 shadow-card transition-all select-none ${
                       locked ? 'cursor-pointer opacity-90' : 'cursor-grab active:cursor-grabbing'
-                    } ${draggingId === task.id ? 'opacity-40 border-primary' : 'border-border-light hover:border-border hover:shadow-[0_2px_6px_rgba(0,0,0,0.1)]'} ${isUpdating ? 'opacity-60' : ''}`}
+                    } ${draggingId === task.id ? 'opacity-40 border-primary' : 'border-border-light hover:border-border hover:shadow-menu'} ${isUpdating ? 'opacity-60' : ''}`}
                   >
-                    <p className="text-sm font-semibold text-text-primary leading-snug mb-2 line-clamp-2">{task.title}</p>
+                    <p className="text-sm font-medium text-text-primary leading-snug mb-2 line-clamp-2">{task.title}</p>
 
                     {/* Badges row — urgency (quadrant + priority), then tags. The column is the
                         status (kit §35.5), so the card stays at title · urgency · tags · one
@@ -191,7 +191,7 @@ export default function KanbanView({
                     <div className="flex items-center gap-1.5 flex-wrap mb-2">
                       <QuadrantBadge quadrant={task.quadrant} />
                       {priority && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: priority.color + '18', color: priority.color }}>
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: priority.color + '18', color: priority.color }}>
                           {priority.label}
                         </span>
                       )}
@@ -202,9 +202,9 @@ export default function KanbanView({
                     {me && allMust && !terminal && (
                       <div className="flex items-center gap-1.5 flex-wrap mb-2">
                         {me.is_completed ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-success bg-success-bg border border-success-border rounded-full px-2 py-0.5"><CheckCircle2 size={11} /> Your part done</span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success bg-success-bg border border-success-border rounded-full px-2 py-0.5"><CheckCircle2 size={11} /> Your part done</span>
                         ) : me.cannot_complete ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-warning bg-warning-bg border border-warning-border rounded-full px-2 py-0.5"><XCircle size={11} /> You can’t complete</span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-warning bg-warning-bg border border-warning-border rounded-full px-2 py-0.5"><XCircle size={11} /> You can’t complete</span>
                         ) : null}
                         {workers.length > 1 && (
                           <span className="text-[10px] font-medium text-text-muted">Task {workers.filter((a) => a.is_completed).length}/{workers.length} · still open</span>
@@ -215,7 +215,7 @@ export default function KanbanView({
                     {/* Undo hint on a freshly-closed card */}
                     {inWindow && (
                       <div className="mb-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-warning bg-warning-bg border border-warning-border rounded-full px-2 py-0.5"><RotateCcw size={10} /> Undo available — drag out to revert</span>
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-warning bg-warning-bg border border-warning-border rounded-full px-2 py-0.5"><RotateCcw size={10} /> Undo available — drag out to revert</span>
                       </div>
                     )}
                     {locked && (
@@ -239,7 +239,7 @@ export default function KanbanView({
               })}
 
               {isOver && (
-                <div className="h-16 border-2 border-dashed border-primary rounded-[10px] bg-primary-subtle flex items-center justify-center">
+                <div className="h-16 border-2 border-dashed border-primary rounded-lg bg-primary-subtle flex items-center justify-center">
                   <span className="text-xs text-primary-text font-medium">Drop here</span>
                 </div>
               )}
@@ -256,11 +256,11 @@ export default function KanbanView({
           role="dialog"
           aria-modal="true"
         >
-          <div className="relative w-full max-w-sm bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light p-6">
+          <div className="relative w-full max-w-sm bg-surface rounded-t-xl sm:rounded-xl shadow-dialog border border-border-light p-6">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0"><XCircle size={18} className="text-danger" /></div>
               <div className="min-w-0">
-                <h3 className="text-[16px] font-semibold text-text-primary">{pending.mode === 'flag' ? "Can’t complete your part?" : 'Mark this task incomplete?'}</h3>
+                <h3 className="text-[16px] font-medium text-text-primary">{pending.mode === 'flag' ? "Can’t complete your part?" : 'Mark this task incomplete?'}</h3>
                 <p className="text-sm text-text-secondary mt-1">{pending.mode === 'flag' ? 'Your part will be flagged as not-done — a reason is required.' : 'The task will be closed as not-done — a reason is required.'}</p>
               </div>
             </div>
@@ -270,11 +270,11 @@ export default function KanbanView({
               placeholder="Reason (required)"
               rows={3}
               autoFocus
-              className="mt-3 w-full border border-border rounded-[8px] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-danger resize-none"
+              className="mt-3 w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-danger resize-none"
             />
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-4">
-              <button type="button" onClick={() => { setPending(null); setReason('') }} disabled={savingReason} className="w-full sm:w-auto px-4 py-[9px] text-sm font-semibold text-text-secondary bg-white border border-border rounded-[8px] hover:bg-surface-sunken disabled:opacity-60 transition-colors">Cancel</button>
-              <button type="button" onClick={confirmReason} disabled={savingReason || !reason.trim()} className="w-full sm:w-auto px-4 py-[9px] text-sm font-semibold text-white bg-danger rounded-[8px] hover:bg-danger-hover disabled:opacity-60 disabled:cursor-not-allowed transition-colors">{savingReason ? 'Saving…' : pending.mode === 'flag' ? 'Flag my part' : 'Confirm Incomplete'}</button>
+              <button type="button" onClick={() => { setPending(null); setReason('') }} disabled={savingReason} className="w-full sm:w-auto px-4 py-[9px] text-sm font-medium text-text-secondary bg-surface border border-border rounded-lg hover:bg-surface-sunken disabled:opacity-60 transition-colors">Cancel</button>
+              <button type="button" onClick={confirmReason} disabled={savingReason || !reason.trim()} className="w-full sm:w-auto px-4 py-[9px] text-sm font-medium text-white bg-danger rounded-lg hover:bg-danger-hover disabled:opacity-60 disabled:cursor-not-allowed transition-colors">{savingReason ? 'Saving…' : pending.mode === 'flag' ? 'Flag my part' : 'Confirm Incomplete'}</button>
             </div>
           </div>
         </div>,

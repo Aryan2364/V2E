@@ -238,7 +238,7 @@ export function InlineTaskTags({ orgId, taskId, tags, canEdit, onUpdated, classN
           disabled={!editable}
           onClick={() => setOpen((o) => !o)}
           // Touch screens get a 44px tap area without the button looking any bigger (kit §9.4).
-          className="relative after:absolute after:inset-[-10px] after:content-[''] pointer-fine:after:hidden inline-flex items-center gap-1 h-6 pl-1.5 pr-2.5 rounded-full border border-dashed border-input bg-white text-[13px] font-medium text-primary hover:border-primary hover:bg-primary-light focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary transition-colors disabled:pointer-events-none disabled:text-muted disabled:border-border disabled:bg-white"
+          className="relative after:absolute after:inset-[-10px] after:content-[''] pointer-fine:after:hidden inline-flex items-center gap-1 h-6 pl-1.5 pr-2.5 rounded-full border border-dashed border-input bg-surface text-[13px] font-medium text-primary hover:border-primary hover:bg-primary-light focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary transition-colors disabled:pointer-events-none disabled:text-muted disabled:border-border disabled:bg-surface"
         >
           <Plus size={13} strokeWidth={2.5} aria-hidden="true" />
           Add tag
@@ -254,7 +254,7 @@ export function InlineTaskTags({ orgId, taskId, tags, canEdit, onUpdated, classN
             ref={popRef}
             role="dialog"
             aria-label="Edit tags"
-            className="fixed z-78 rounded-lg border border-border bg-white p-3 shadow-[0_8px_28px_rgba(0,0,0,0.14)] animate-[popIn_.15s_ease-out]"
+            className="fixed z-78 rounded-lg border border-border bg-surface p-3 shadow-menu animate-[popIn_.15s_ease-out]"
             style={{ left: pos.left, top: pos.top, width: Math.min(POPOVER_WIDTH, window.innerWidth - 16) }}
           >
             <p className="mb-1.5 text-sm font-medium text-label">Tags</p>

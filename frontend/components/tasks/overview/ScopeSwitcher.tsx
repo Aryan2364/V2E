@@ -36,7 +36,7 @@ export default function ScopeSwitcher({
   if (visible.length <= 1) return null
 
   return (
-    <div className="inline-flex items-center border border-border-light rounded-[8px] bg-white p-0.5 gap-0.5">
+    <div className="inline-flex items-center border border-border-light rounded-lg bg-surface p-0.5 gap-0.5">
       {visible.map(({ scope, label, icon }) => {
         const active = value === scope
         return (

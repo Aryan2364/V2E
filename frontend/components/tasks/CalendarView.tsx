@@ -72,7 +72,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-text-primary">
+        <h2 className="text-lg font-medium text-text-primary">
           {MONTHS[month]} {year}
         </h2>
         <div className="flex items-center gap-1">
@@ -98,11 +98,11 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
       </div>
 
       {/* Calendar grid */}
-      <div className="bg-white border border-border-light rounded-[12px] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <div className="bg-surface border border-border-light rounded-xl overflow-hidden shadow-card">
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-border-light">
           {DAYS.map((d) => (
-            <div key={d} className="py-2 text-center text-xs font-semibold text-text-muted uppercase tracking-wider">
+            <div key={d} className="py-2 text-center text-xs font-medium text-text-muted uppercase tracking-wider">
               {d}
             </div>
           ))}
@@ -133,7 +133,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                 {/* Day number */}
                 <div className="flex items-center justify-between mb-1">
                   <span
-                    className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ${
+                    className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full ${
                       isToday
                         ? 'bg-primary text-white'
                         : isPastDay
@@ -160,7 +160,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                     return (
                       <Tooltip key={task.id} label={task.title}>
                         <div
-                          className="flex items-center gap-1 px-1 py-0.5 rounded-[4px] cursor-pointer"
+                          className="flex items-center gap-1 px-1 py-0.5 rounded-tick cursor-pointer"
                           style={{ backgroundColor: dotColor + '15' }}
                           onClick={(e) => { e.stopPropagation(); onTaskClick(task.id) }}
                         >
@@ -181,9 +181,9 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
 
       {/* Day detail panel */}
       {selectedKey && selectedTasks.length > 0 && (
-        <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-4">
+        <div className="bg-surface border border-border-light rounded-xl shadow-card p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-semibold text-text-primary">
+            <h3 className="text-base font-medium text-text-primary">
               {(() => {
                 const [y, mo, d] = selectedKey.split('-').map(Number)
                 return new Date(y, mo, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
@@ -211,7 +211,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                 <div
                   key={task.id}
                   onClick={() => onTaskClick(task.id)}
-                  className="flex items-center gap-3 p-3 rounded-[8px] border border-border-light hover:border-border hover:bg-surface-sunken cursor-pointer transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-border-light hover:border-border hover:bg-surface-sunken cursor-pointer transition-colors"
                 >
                   {priority && (
                     <span
@@ -229,7 +229,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                   </div>
                   {priority && (
                     <span
-                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+                      className="text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0"
                       style={{ backgroundColor: priority.color + '18', color: priority.color }}
                     >
                       {priority.label}

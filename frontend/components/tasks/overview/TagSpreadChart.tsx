@@ -37,8 +37,8 @@ export default function TagSpreadChart({
   const max = Math.max(...shown.map((t) => t.total))
 
   return (
-    <div className="bg-white border border-border rounded-card shadow-card p-4 flex flex-col h-[320px]">
-      <h3 className="text-[15px] font-semibold text-heading mb-3 shrink-0">By tag</h3>
+    <div className="bg-surface border border-border rounded-card shadow-card p-4 flex flex-col h-[320px]">
+      <h3 className="text-[15px] font-medium text-heading mb-3 shrink-0">By tag</h3>
       <ul className="flex-1 min-h-0 flex flex-col gap-1">
         {shown.map((t) => (
           <li key={t.id!}>

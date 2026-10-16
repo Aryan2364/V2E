@@ -59,7 +59,7 @@ export default function TaskSortControl({ sort, onChange }: { sort: TaskSort; on
 
   return (
     <div ref={ref} className="relative shrink-0">
-      <div className="flex items-center h-[38px] rounded-[8px] border border-border bg-surface-sunken hover:border-border-strong transition-colors">
+      <div className="flex items-center h-[38px] rounded-lg border border-border bg-surface-sunken hover:border-border-strong transition-colors">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -76,7 +76,7 @@ export default function TaskSortControl({ sort, onChange }: { sort: TaskSort; on
             type="button"
             onClick={toggleDir}
             aria-label={sort.dir === 'asc' ? 'Sort ascending — tap to reverse' : 'Sort descending — tap to reverse'}
-            className="flex items-center h-full px-2 border-l border-border text-text-secondary hover:text-text-primary hover:bg-white rounded-r-[8px] transition-colors"
+            className="flex items-center h-full px-2 border-l border-border text-text-secondary hover:text-text-primary hover:bg-surface rounded-r-[8px] transition-colors"
           >
             {sort.dir === 'asc' ? <ArrowUp size={15} /> : <ArrowDown size={15} />}
           </button>
@@ -86,7 +86,7 @@ export default function TaskSortControl({ sort, onChange }: { sort: TaskSort; on
       {open && (
         <div
           role="listbox"
-          className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 rounded-[10px] border border-border-light bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)] py-1"
+          className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 rounded-lg border border-border-light bg-surface shadow-menu py-1"
         >
           {FIELDS.map((f) => {
             const active = f.value === sort.field

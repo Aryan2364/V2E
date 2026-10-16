@@ -149,7 +149,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
     const mine = a.uploaded_by_user_id === user?.id
     return (
       <div className="flex items-center gap-2 text-[12px]">
-        <span className="shrink-0 inline-flex items-center justify-center w-8 h-5 rounded-xs bg-primary-subtle text-primary-text text-[9px] font-bold">
+        <span className="shrink-0 inline-flex items-center justify-center w-8 h-5 rounded-xs bg-primary-subtle text-primary-text text-[9px] font-medium">
           {fileKindLabel(a.file_name)}
         </span>
         <Tooltip label={a.file_name}>
@@ -192,21 +192,21 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
   )
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
+    <div className="bg-surface border border-border-light rounded-xl shadow-card p-6">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-[15px] font-semibold text-text-primary flex items-center gap-2">
+        <h3 className="text-[15px] font-medium text-text-primary flex items-center gap-2">
           <ShieldCheck size={15} className="text-primary-text" />
           Proof of Completion
         </h3>
         {isAllMust ? (
-          <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 ${submittedCount >= requiredCount && requiredCount > 0 ? 'bg-success-bg text-success border border-success-border' : 'bg-warning-bg text-warning border border-warning-border'}`}>
+          <span className={`text-[11px] font-medium rounded-full px-2 py-0.5 ${submittedCount >= requiredCount && requiredCount > 0 ? 'bg-success-bg text-success border border-success-border' : 'bg-warning-bg text-warning border border-warning-border'}`}>
             {submittedCount}/{requiredCount} submitted
           </span>
         ) : (
           summary?.task_has_any_proof ? (
-            <span className="text-[11px] font-semibold rounded-full px-2 py-0.5 bg-success-bg text-success border border-success-border">Submitted</span>
+            <span className="text-[11px] font-medium rounded-full px-2 py-0.5 bg-success-bg text-success border border-success-border">Submitted</span>
           ) : (
-            <span className="text-[11px] font-semibold rounded-full px-2 py-0.5 bg-warning-bg text-warning border border-warning-border">Pending</span>
+            <span className="text-[11px] font-medium rounded-full px-2 py-0.5 bg-warning-bg text-warning border border-warning-border">Pending</span>
           )
         )}
       </div>
@@ -231,9 +231,9 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-text-primary">{name}{isMe && <span className="text-text-muted font-normal"> (you)</span>}</span>
                   {submitted ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-success"><CheckCircle2 size={12} /> Submitted</span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-success"><CheckCircle2 size={12} /> Submitted</span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-warning"><Clock size={12} /> Pending</span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-warning"><Clock size={12} /> Pending</span>
                   )}
                 </div>
                 {files.length > 0 && (
@@ -270,14 +270,14 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
         {queue[0] && (
           <div>
             <p className="text-[13px] text-text-secondary mb-3 break-all">
-              <span className="font-semibold text-text-primary">{queue[0].name}</span>
+              <span className="font-medium text-text-primary">{queue[0].name}</span>
             </p>
             <div className="space-y-2">
               {([
                 { v: 'private' as ProofVisibility, label: 'Only the assigner', hint: 'Your teammates won’t see this file.' },
                 { v: 'everyone' as ProofVisibility, label: 'Everyone on the task', hint: 'All assignees can view and download it.' },
               ]).map((o) => (
-                <label key={o.v} className={`flex items-start gap-2.5 rounded-[10px] border p-2.5 cursor-pointer transition-colors ${choice === o.v ? 'border-primary bg-primary-subtle' : 'border-border-light hover:bg-surface-sunken'}`}>
+                <label key={o.v} className={`flex items-start gap-2.5 rounded-lg border p-2.5 cursor-pointer transition-colors ${choice === o.v ? 'border-primary bg-primary-subtle' : 'border-border-light hover:bg-surface-sunken'}`}>
                   <input type="radio" name="proof-visibility" className="accent-primary mt-0.5" checked={choice === o.v} onChange={() => setChoice(o.v)} />
                   <span>
                     <span className="block text-sm font-medium text-text-primary">{o.label}</span>
@@ -293,7 +293,7 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
               <button
                 onClick={confirmCurrent}
                 disabled={uploading}
-                className="text-sm font-semibold text-white bg-primary rounded-[8px] px-4 py-2 hover:bg-primary-hover disabled:opacity-60 transition-colors"
+                className="text-sm font-medium text-white bg-primary rounded-lg px-4 py-2 hover:bg-primary-hover disabled:opacity-60 transition-colors"
               >
                 {uploading ? 'Uploading…' : 'Upload'}
               </button>
@@ -314,14 +314,14 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
         {proofToDelete && (
           <div>
             <p className="text-[14px] text-text-secondary">
-              <span className="font-semibold text-text-primary break-all">{proofToDelete.file_name}</span> will be permanently
+              <span className="font-medium text-text-primary break-all">{proofToDelete.file_name}</span> will be permanently
               removed and will no longer count toward the proof requirement. This can’t be undone.
             </p>
             <div className="mt-4 flex items-center justify-end">
               <button
                 onClick={() => handleDeleteProof(proofToDelete)}
                 disabled={deleting}
-                className="text-sm font-semibold text-white bg-danger rounded-[8px] px-4 py-2 hover:bg-danger-hover disabled:opacity-60 transition-colors"
+                className="text-sm font-medium text-white bg-danger rounded-lg px-4 py-2 hover:bg-danger-hover disabled:opacity-60 transition-colors"
               >
                 {deleting ? 'Removing…' : 'Remove proof'}
               </button>

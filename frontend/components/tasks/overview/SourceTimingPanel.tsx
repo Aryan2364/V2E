@@ -24,9 +24,9 @@ export default function SourceTimingPanel({
   emptyText?: string
 }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col">
+    <div className="bg-surface border border-border-light rounded-xl shadow-card p-4 flex flex-col">
       <div className="flex items-center justify-between mb-3 gap-2">
-        <h3 className="text-[15px] font-semibold text-text-primary">{title}</h3>
+        <h3 className="text-[15px] font-medium text-text-primary">{title}</h3>
         {hint && <span className="text-xs text-text-muted">{hint}</span>}
       </div>
       {items.length === 0 ? (
@@ -40,12 +40,12 @@ export default function SourceTimingPanel({
               <Row
                 key={it.id}
                 {...(onSelect ? { onClick: () => onSelect(it), type: 'button' as const } : {})}
-                className={`w-full text-left rounded-[10px] border border-border-light px-3.5 py-2.5 transition-colors ${onSelect ? 'hover:border-primary hover:bg-surface-sunken' : ''}`}
+                className={`w-full text-left rounded-lg border border-border-light px-3.5 py-2.5 transition-colors ${onSelect ? 'hover:border-primary hover:bg-surface-sunken' : ''}`}
               >
                 <div className="flex items-center justify-between gap-3 mb-1.5">
-                  <span className="font-semibold text-sm text-text-primary truncate">{it.label}</span>
+                  <span className="font-medium text-sm text-text-primary truncate">{it.label}</span>
                   <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: overdueRate >= 25 ? 'var(--danger)' : 'var(--text-secondary)' }}>
-                    <span className="font-bold">{overdueRate}%</span> overdue · {it.total}
+                    <span className="font-medium">{overdueRate}%</span> overdue · {it.total}
                   </span>
                 </div>
                 <TimingMiniBar timing={it.timing} />

@@ -50,7 +50,7 @@ export default function TaskListToolbar({
           value={search}
           onChange={(e) => onSearch(e.target.value)}
           placeholder="Search tasks by title, tag, category or person"
-          className="w-full h-[38px] pl-9 pr-9 rounded-[8px] border border-border bg-surface-sunken text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white transition-colors"
+          className="w-full h-[38px] pl-8 pr-8 rounded-lg border border-border bg-surface-sunken text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary focus:bg-surface transition-colors"
         />
         {search && (
           <button

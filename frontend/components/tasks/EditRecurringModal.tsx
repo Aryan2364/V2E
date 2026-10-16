@@ -298,10 +298,10 @@ export default function EditRecurringModal({ template, orgId, categories, priori
       className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="relative w-full max-w-2xl bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light max-h-[92vh] flex flex-col">
+      <div className="relative w-full max-w-2xl bg-surface rounded-t-xl sm:rounded-xl shadow-dialog border border-border-light max-h-[92vh] flex flex-col">
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-light shrink-0">
           <div>
-            <h2 className="text-[22px] font-semibold text-text-primary">Edit Recurring Template</h2>
+            <h2 className="text-[22px] font-medium text-text-primary">Edit Recurring Template</h2>
             <p className="text-sm text-text-secondary mt-0.5">Changes apply to future task instances only.</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors" aria-label="Close">
@@ -309,11 +309,11 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-5 space-y-6">
-          <div className="flex gap-3 bg-warning-bg border border-warning-border rounded-[10px] px-4 py-3">
+        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-6">
+          <div className="flex gap-3 bg-warning-bg border border-warning-border rounded-lg px-4 py-3">
             <Info size={16} className="text-text-secondary shrink-0 mt-0.5" />
             <div className="text-sm text-warning space-y-1">
-              <p className="font-semibold">What happens when you save?</p>
+              <p className="font-medium">What happens when you save?</p>
               <ul className="list-disc list-inside space-y-0.5 text-[13px]">
                 <li>
                   Already-created task instances are{' '}
@@ -331,11 +331,11 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           </div>
 
           {error && (
-            <div className="bg-danger-bg border border-danger-border rounded-[8px] px-4 py-3 text-sm text-danger">{error}</div>
+            <div className="bg-danger-bg border border-danger-border rounded-lg px-4 py-3 text-sm text-danger">{error}</div>
           )}
 
           <div className="space-y-4">
-            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Task Details</p>
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Task Details</p>
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
               <div className="relative">
@@ -344,7 +344,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                   value={title}
                   onChange={(e) => setTitle(e.target.value.slice(0, 50))}
                   maxLength={50}
-                  className="w-full border border-border rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-white"
+                  className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-base sm:text-sm text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
                 />
                 <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
                   {title.length}/50
@@ -364,8 +364,8 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                   needs is worse than no toggle. Mirrors the three delete modes, so it
                   should feel familiar. */}
               {rosterChanged && (
-                <div className="mt-3 rounded-[10px] border border-border-light bg-surface-control px-4 py-3">
-                  <p className="text-sm font-semibold text-text-secondary mb-2">
+                <div className="mt-3 rounded-lg border border-border-light bg-surface-control px-4 py-3">
+                  <p className="text-sm font-medium text-text-secondary mb-2">
                     You changed who this task goes to. Apply that to existing occurrences?
                   </p>
                   <div className="space-y-2">
@@ -415,7 +415,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             )}
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1.5">Description</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value.slice(0, 2000))} maxLength={2000} placeholder="Add a description..." rows={2} className="w-full border border-border rounded-[8px] px-3 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white resize-none" />
+              <textarea value={description} onChange={(e) => setDescription(e.target.value.slice(0, 2000))} maxLength={2000} placeholder="Add a description..." rows={2} className="w-full border border-border rounded-lg px-3 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface resize-none" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -453,12 +453,12 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           </div>
 
           <div className="space-y-3">
-            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Schedule</p>
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Schedule</p>
             <ScheduleEntryList entries={scheduleEntries} onChange={setScheduleEntries} />
           </div>
 
           <div className="space-y-3">
-            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Completion & Alerts</p>
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Completion & Alerts</p>
             <ProofRequirementField
               proofRequired={proofRequired}
               onProofRequiredChange={setProofRequired}
@@ -482,7 +482,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           </div>
 
           <div className="space-y-3">
-            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Repeats On Every Instance</p>
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Repeats On Every Instance</p>
             <ChecklistBuilderField
               groups={checklistGroups}
               onChange={setChecklistGroups}
@@ -492,7 +492,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             />
 
             {/* Attachments — existing files + add new; each future instance gets a copy. */}
-            <div className="rounded-[12px] border border-border-light bg-white overflow-hidden">
+            <div className="rounded-xl border border-border-light bg-surface overflow-hidden">
               <button
                 type="button"
                 onClick={() => setAttachmentsOpen((v) => !v)}
@@ -502,7 +502,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                 <label className="text-sm font-medium text-text-secondary cursor-pointer">Attachments</label>
                 <span className="text-xs font-normal text-text-secondary">Optional</span>
                 {(attachments.length + pendingFiles.length) > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
                     {attachments.length + pendingFiles.length}
                   </span>
                 )}
@@ -558,8 +558,8 @@ export default function EditRecurringModal({ template, orgId, categories, priori
         <div className="shrink-0 px-6 py-4 border-t border-border-light space-y-3">
           {/* Saved, but some open occurrences were deliberately left alone. */}
           {skippedNote.length > 0 && (
-            <div className="rounded-[8px] border border-warning-border bg-warning-bg px-4 py-3">
-              <p className="text-sm font-semibold text-warning">
+            <div className="rounded-lg border border-warning-border bg-warning-bg px-4 py-3">
+              <p className="text-sm font-medium text-warning">
                 Saved. {skippedNote.length} open{' '}
                 {skippedNote.length === 1 ? 'occurrence was' : 'occurrences were'} left unchanged:
               </p>
@@ -577,12 +577,12 @@ export default function EditRecurringModal({ template, orgId, categories, priori
               <button
                 type="button"
                 onClick={() => onUpdated(savedResult)}
-                className="w-full sm:w-auto px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"
+                className="w-full sm:w-auto px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
               >
                 Done
               </button>
             ) : (
-              <button type="button" onClick={handleSubmit} disabled={submitting} className="w-full sm:w-auto px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors">
+              <button type="button" onClick={handleSubmit} disabled={submitting} className="w-full sm:w-auto px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors">
                 {submitting ? 'Saving...' : 'Save Changes'}
               </button>
             )}
@@ -598,8 +598,8 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-sm bg-white rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light p-5">
-            <h3 className="text-[16px] font-semibold text-text-primary">Remove attachment?</h3>
+          <div className="w-full max-w-sm bg-surface rounded-xl shadow-dialog border border-border-light p-4">
+            <h3 className="text-[16px] font-medium text-text-primary">Remove attachment?</h3>
             <p className="text-sm text-text-secondary mt-1.5">
               “{removingAttachment.file_name}” will no longer be copied onto future instances. This happens right away.
             </p>
@@ -607,14 +607,14 @@ export default function EditRecurringModal({ template, orgId, categories, priori
               <button
                 type="button"
                 onClick={() => setRemovingAttachment(null)}
-                className="px-4 py-2 text-sm font-semibold text-primary-text bg-white border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
+                className="px-4 py-2 text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-lg hover:bg-primary-subtle transition-colors"
               >
                 Keep it
               </button>
               <button
                 type="button"
                 onClick={() => handleRemoveAttachment(removingAttachment)}
-                className="px-4 py-2 text-sm font-semibold text-white bg-danger rounded-[8px] hover:bg-danger-hover transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-lg hover:bg-danger-hover transition-colors"
               >
                 Remove
               </button>

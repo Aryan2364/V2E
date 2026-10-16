@@ -30,8 +30,8 @@ export default function DrillHero({
   onBack: () => void
 }) {
   return (
-    <div className="rounded-[12px] p-5 sm:p-6 bg-primary text-white shadow-[0_2px_8px_rgba(37,99,235,0.25)]">
-      <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold mb-3 text-white/85 hover:text-white transition-colors">
+    <div className="rounded-xl p-4 sm:p-6 bg-primary text-white shadow-menu">
+      <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-medium mb-3 text-white/85 hover:text-white transition-colors">
         <ChevronLeft size={14} /> Back
       </button>
       <div className="flex items-center flex-wrap gap-1.5 mb-1.5 text-xs text-white/75">
@@ -42,14 +42,14 @@ export default function DrillHero({
             {i < crumbs.length - 1 ? (
               <button onClick={() => onCrumb(c.id)} className="font-medium underline hover:text-white">{c.name}</button>
             ) : (
-              <span className="font-semibold text-white">{c.name}</span>
+              <span className="font-medium text-white">{c.name}</span>
             )}
           </span>
         ))}
       </div>
       <div className="flex items-center gap-2 flex-wrap">
-        <h2 className="text-2xl sm:text-[26px] font-bold tracking-tight text-white">{title}</h2>
-        {badge && <span className="text-xs font-semibold rounded-full px-2 py-0.5 bg-white/20 text-white">{badge}</span>}
+        <h2 className="text-2xl sm:text-[26px] font-medium tracking-tight text-white">{title}</h2>
+        {badge && <span className="text-xs font-medium rounded-full px-2 py-0.5 bg-surface/20 text-white">{badge}</span>}
       </div>
       {stats && <p className="text-sm mt-1.5 text-white/90">{stats}</p>}
     </div>

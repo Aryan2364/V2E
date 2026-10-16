@@ -60,7 +60,7 @@ function UserRow({
     >
       {/* Avatar */}
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${avatarColor(user.name)}`}
+        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(user.name)}`}
       >
         {getInitials(user.name)}
       </div>
@@ -75,13 +75,13 @@ function UserRow({
       <div className="flex items-center gap-1.5 shrink-0">
         {user.on_leave_today && (
           <Tooltip label={user.leave_until ? `On leave until ${user.leave_until}` : 'On leave'}>
-            <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-warning-bg text-warning">
+            <span className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-warning-bg text-warning">
               On leave
             </span>
           </Tooltip>
         )}
         {user.is_frequent && (
-          <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary-subtle text-primary-text">
+          <span className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary-subtle text-primary-text">
             <Zap size={9} />
             Frequent
           </span>
@@ -119,10 +119,10 @@ function AssigneeChip({
   return (
     <div
       title={assignee.name}
-      className="inline-flex items-center gap-1.5 bg-surface-sunken border border-border-light rounded-[8px] pl-1.5 pr-1 py-1 max-w-[180px]"
+      className="inline-flex items-center gap-1.5 bg-surface-sunken border border-border-light rounded-lg pl-1.5 pr-1 py-1 max-w-[180px]"
     >
       <div
-        className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 ${avatarColor(assignee.name)}`}
+        className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-medium shrink-0 ${avatarColor(assignee.name)}`}
       >
         {getInitials(assignee.name)}
       </div>
@@ -132,7 +132,7 @@ function AssigneeChip({
         <button
           type="button"
           onClick={onToggleCC}
-          className={`text-[10px] font-semibold rounded-[4px] px-1.5 py-0.5 transition-colors shrink-0 ${
+          className={`text-[10px] font-medium rounded-tick px-1.5 py-0.5 transition-colors shrink-0 ${
             assignee.is_cc
               ? 'bg-warning-bg text-warning border border-warning-border'
               : 'bg-primary-subtle text-primary-text border border-primary-border'
@@ -289,7 +289,7 @@ export default function AssigneeSelector({
     <div ref={containerRef} className="relative">
       {/* Selected chips + trigger */}
       <div
-        className={`flex flex-wrap gap-1.5 items-center min-h-[42px] p-1.5 border rounded-[8px] bg-white transition-colors ${
+        className={`flex flex-wrap gap-1.5 items-center min-h-[42px] p-1.5 border rounded-lg bg-surface transition-colors ${
           invalid ? 'border-danger-border focus-within:border-danger' : 'border-border focus-within:border-primary'
         }`}
       >
@@ -324,10 +324,10 @@ export default function AssigneeSelector({
           className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40"
           onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
-          <div className="w-[440px] max-w-full max-h-[80vh] rounded-[12px] bg-white border border-border-light shadow-[0_12px_40px_rgba(0,0,0,0.20)] flex flex-col overflow-hidden">
+          <div className="w-[440px] max-w-full max-h-[80vh] rounded-xl bg-surface border border-border-light shadow-dialog flex flex-col overflow-hidden">
             {/* Title row */}
             <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5 border-b border-border-light shrink-0">
-              <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
+              <h3 className="text-sm font-medium text-text-primary">{title}</h3>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -349,7 +349,7 @@ export default function AssigneeSelector({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by name, role, or department…"
-                  className="w-full pl-8 pr-3 py-[7px] text-sm text-text-primary placeholder:text-text-muted border border-border-light rounded-[8px] focus:border-primary focus:outline-hidden bg-white"
+                  className="w-full pl-8 pr-3 py-[7px] text-sm text-text-primary placeholder:text-text-muted border border-border-light rounded-lg focus:border-primary focus:outline-hidden bg-surface"
                 />
               </div>
 
@@ -360,7 +360,7 @@ export default function AssigneeSelector({
                     key={s}
                     type="button"
                     onClick={() => setSort(s)}
-                    className={`px-2 py-1 rounded-[4px] text-[10px] font-semibold transition-colors ${
+                    className={`px-2 py-1 rounded-tick text-[10px] font-medium transition-colors ${
                       sort === s ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-control'
                     }`}
                   >
@@ -407,7 +407,7 @@ export default function AssigneeSelector({
                   {[1, 2, 3, 4, 5].map((i) => <SkeletonRow key={i} />)}
                 </div>
               ) : !data || visibleTotal === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center px-4">
+                <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                   <div className="w-10 h-10 rounded-full bg-surface-control flex items-center justify-center mb-3">
                     <Search size={16} className="text-text-muted" />
                   </div>
@@ -425,7 +425,7 @@ export default function AssigneeSelector({
                       {/* Department header (hidden for search flat list) */}
                       {dept.department_id !== 'search' && (
                         <div className="px-3 py-1.5 bg-surface-sunken border-b border-border-light">
-                          <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wide">
+                          <span className="text-[11px] font-medium text-text-muted uppercase tracking-wide">
                             {dept.department_name}
                             <span className="ml-1.5 font-normal normal-case text-text-muted">({dept.users.length})</span>
                           </span>
@@ -450,14 +450,14 @@ export default function AssigneeSelector({
               <p className="text-xs text-text-secondary min-w-0 truncate">
                 {!allowCC ? (
                   value.length > 0 ? (
-                    <><span className="font-semibold text-text-primary">{value.length}</span> selected</>
+                    <><span className="font-medium text-text-primary">{value.length}</span> selected</>
                   ) : (
                     <span className="text-text-muted">Select people, then confirm</span>
                   )
                 ) : value.length > 0 ? (
                   <>
-                    <span className="font-semibold text-text-primary">{value.filter((a) => !a.is_cc).length}</span> assignee{value.filter((a) => !a.is_cc).length !== 1 ? 's' : ''},&nbsp;
-                    <span className="font-semibold text-text-primary">{value.filter((a) => a.is_cc).length}</span> CC
+                    <span className="font-medium text-text-primary">{value.filter((a) => !a.is_cc).length}</span> assignee{value.filter((a) => !a.is_cc).length !== 1 ? 's' : ''},&nbsp;
+                    <span className="font-medium text-text-primary">{value.filter((a) => a.is_cc).length}</span> CC
                     <span className="text-text-muted"> · Click badge to toggle CC</span>
                   </>
                 ) : (
@@ -467,7 +467,7 @@ export default function AssigneeSelector({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors shrink-0"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors shrink-0"
               >
                 <Check size={15} strokeWidth={3} />
                 Done

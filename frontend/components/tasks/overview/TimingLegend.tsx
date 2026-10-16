@@ -31,11 +31,11 @@ export default function TimingLegend({
             onClick={() => onPick?.(t)}
             className={`flex items-center gap-1.5 text-[12px] transition-colors ${
               interactive ? 'cursor-pointer hover:text-text-primary' : 'cursor-default'
-            } ${isActive ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
+            } ${isActive ? 'font-medium text-text-primary' : 'text-text-secondary'}`}
           >
             <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: TIMING_META[t].color }} />
             {TIMING_META[t].label}
-            {counts && <span className="tabular-nums font-semibold text-text-primary">{counts[t]}</span>}
+            {counts && <span className="tabular-nums font-medium text-text-primary">{counts[t]}</span>}
           </button>
         )
       })}

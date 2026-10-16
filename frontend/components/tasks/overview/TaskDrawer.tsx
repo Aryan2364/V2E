@@ -22,7 +22,7 @@ const TERMINAL = new Set(['completed', 'partially_completed', 'incomplete'])
 function Chip({ label, color }: { label: string; color: string }) {
   return (
     <span
-      className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-[12px] font-medium"
+      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium"
       style={{ backgroundColor: color + '22', color, border: `1px solid ${color}44` }}
     >
       {label}
@@ -171,27 +171,27 @@ export default function TaskDrawer({
   const body = (
     <div className="fixed inset-0 z-60 flex justify-end">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-[#0F172A]/40 backdrop-blur-[1px]" onClick={onClose} />
+      <div className="absolute inset-0 bg-(--backdrop) backdrop-blur-xs" onClick={onClose} />
 
       {/* Panel */}
-      <div className="relative w-full max-w-[560px] h-full bg-white shadow-[0_0_40px_rgba(0,0,0,0.20)] flex flex-col animate-[slideIn_0.18s_ease-out]">
+      <div className="relative w-full max-w-[560px] h-full bg-surface shadow-dialog flex flex-col animate-[slideIn_0.18s_ease-out]">
         <style>{`@keyframes slideIn{from{transform:translateX(24px);opacity:.6}to{transform:translateX(0);opacity:1}}`}</style>
 
         {/* Header */}
         <div className="flex items-start justify-between gap-3 px-6 py-4 border-b border-border-light">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">Task</p>
-            <h2 className="text-[18px] font-semibold text-text-primary leading-snug mt-0.5 wrap-break-word">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-text-muted">Task</p>
+            <h2 className="text-[18px] font-medium text-text-primary leading-snug mt-0.5 wrap-break-word">
               {loading ? 'Loading…' : task?.title}
             </h2>
           </div>
-          <button onClick={onClose} className="shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors">
+          <button onClick={onClose} className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors">
             <X size={18} />
           </button>
         </div>
 
         {isFutureTask && task && (
-          <div className="bg-danger-bg border-b border-danger-border px-6 py-3 text-xs font-semibold text-danger">
+          <div className="bg-danger-bg border-b border-danger-border px-6 py-3 text-xs font-medium text-danger">
             ⌛ This task was created in a simulated future ({new Date(task.created_at).toLocaleDateString()}). To interact with it, please time-travel to this date or later.
           </div>
         )}
@@ -202,7 +202,7 @@ export default function TaskDrawer({
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
               {/* Chips */}
               <div className="flex items-center gap-2 flex-wrap">
                 {status && <Chip label={status.label} color={status.color} />}
@@ -266,11 +266,11 @@ export default function TaskDrawer({
 
               {/* Attachments */}
               <div>
-                <p className="text-[13px] font-semibold text-text-primary mb-2 flex items-center gap-1.5">
+                <p className="text-[13px] font-medium text-text-primary mb-2 flex items-center gap-1.5">
                   <Paperclip size={14} className="text-text-secondary" />
                   Attachments
                   {attachments.length > 0 && (
-                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[10px] font-semibold">
+                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[10px] font-medium">
                       {attachments.length}
                     </span>
                   )}
@@ -297,7 +297,7 @@ export default function TaskDrawer({
                   <div className="space-y-1.5">
                     {task.checklist.map((item) => (
                       <div key={item.id} className="flex items-center gap-2 text-[14px]">
-                        <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 ${item.is_completed ? 'bg-success border-success' : 'border-border'}`}>
+                        <span className={`w-4 h-4 rounded-tick border flex items-center justify-center shrink-0 ${item.is_completed ? 'bg-success border-success' : 'border-border'}`}>
                           {item.is_completed && <CheckCircle2 size={12} className="text-white" />}
                         </span>
                         <span className={item.is_completed ? 'text-text-muted line-through' : 'text-text-primary'}>{item.title}</span>
@@ -309,7 +309,7 @@ export default function TaskDrawer({
 
               {/* Comments */}
               <div>
-                <p className="text-[13px] font-semibold text-text-primary mb-3 flex items-center gap-1.5">
+                <p className="text-[13px] font-medium text-text-primary mb-3 flex items-center gap-1.5">
                   <MessageSquare size={14} className="text-text-secondary" />
                   Comments
                 </p>
@@ -319,12 +319,12 @@ export default function TaskDrawer({
                   <div className="space-y-3">
                     {comments.map((c) => (
                       <div key={c.id} className="flex gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-primary text-white text-[10px] font-medium flex items-center justify-center shrink-0">
                           {(c.user_name ?? '?').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-[13px]">
-                            <span className="font-semibold text-text-primary">{c.user_name ?? 'Unknown'}</span>
+                            <span className="font-medium text-text-primary">{c.user_name ?? 'Unknown'}</span>
                             <span className="text-text-muted ml-2 text-[11px]">{formatWhen(c.created_at)}</span>
                           </p>
                           <p className="text-[14px] text-text-primary whitespace-pre-wrap wrap-break-word mt-0.5">{c.body}</p>
@@ -357,7 +357,7 @@ export default function TaskDrawer({
                   <button
                     onClick={complete}
                     disabled={busy || isFutureTask}
-                    className="shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-[8px] bg-success text-white text-sm font-semibold hover:bg-success disabled:opacity-60 transition-colors"
+                    className="shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg bg-success text-white text-sm font-medium hover:bg-success disabled:opacity-60 transition-colors"
                   >
                     <CheckCircle2 size={15} /> Complete
                   </button>
@@ -366,7 +366,7 @@ export default function TaskDrawer({
                   <button
                     onClick={() => router.push(`/dashboard/tasks/${taskId}`)}
                     aria-label="Open full task page"
-                    className="shrink-0 w-[42px] h-[42px] rounded-[8px] border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
+                    className="shrink-0 w-[42px] h-[42px] rounded-lg border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
                   >
                     <ExternalLink size={16} />
                   </button>
@@ -381,12 +381,12 @@ export default function TaskDrawer({
                   rows={1}
                   disabled={isFutureTask}
                   placeholder={isFutureTask ? "Comments are locked on future tasks..." : "Write a comment…"}
-                  className="flex-1 resize-none rounded-[8px] border border-border bg-white px-3 py-2.5 text-[14px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary max-h-28"
+                  className="flex-1 resize-none rounded-lg border border-border bg-surface px-3 py-2.5 text-[14px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary max-h-28"
                 />
                 <button
                   onClick={send}
                   disabled={!draft.trim() || sending || isFutureTask}
-                  className="shrink-0 w-[42px] h-[42px] rounded-[8px] bg-primary text-white flex items-center justify-center hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                  className="shrink-0 w-[42px] h-[42px] rounded-lg bg-primary text-white flex items-center justify-center hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                 >
                   <Send size={16} />
                 </button>

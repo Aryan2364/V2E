@@ -16,8 +16,8 @@ export default function TrendChart({ trend }: { trend: TrendPoint[] }) {
   const empty = data.every((d) => d.created === 0 && d.completed === 0)
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
-      <p className="text-[13px] font-semibold text-text-primary mb-3">Trend · created vs completed (8 weeks)</p>
+    <div className="bg-surface border border-border-light rounded-xl shadow-card p-4">
+      <p className="text-[13px] font-medium text-text-primary mb-3">Trend · created vs completed (8 weeks)</p>
       {empty ? (
         <p className="text-[13px] text-text-muted py-8 text-center">No activity in this window.</p>
       ) : (
@@ -28,7 +28,7 @@ export default function TrendChart({ trend }: { trend: TrendPoint[] }) {
               <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={{ stroke: 'var(--border-light)' }} tickLine={false} />
               <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} width={36} />
               <Tooltip
-                contentStyle={{ borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 13 }}
+                contentStyle={{ borderRadius: 8, border: '1px solid var(--border-light)', fontSize: 13 }}
                 labelStyle={{ color: 'var(--text-primary)', fontWeight: 600 }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />

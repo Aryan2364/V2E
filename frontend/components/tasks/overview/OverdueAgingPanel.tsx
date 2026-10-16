@@ -26,10 +26,10 @@ export default function OverdueAgingPanel({
   const total = bands.reduce((s, b) => s + b.value, 0)
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
+    <div className="bg-surface border border-border-light rounded-xl shadow-card p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="w-7 h-7 rounded-[8px] bg-danger-bg text-danger grid place-items-center"><AlertTriangle size={15} /></span>
-        <h3 className="text-[15px] font-semibold text-text-primary">Overdue aging</h3>
+        <span className="w-7 h-7 rounded-lg bg-danger-bg text-danger grid place-items-center"><AlertTriangle size={15} /></span>
+        <h3 className="text-[15px] font-medium text-text-primary">Overdue aging</h3>
         <span className="text-xs text-text-muted ml-auto">{total} open & past due</span>
       </div>
       <div className="grid grid-cols-3 gap-2.5">
@@ -39,9 +39,9 @@ export default function OverdueAgingPanel({
             <Tag
               key={b.key}
               {...(onSelect ? { type: 'button' as const, onClick: () => onSelect(b.key) } : {})}
-              className={`text-left rounded-[10px] border border-border-light px-3.5 py-3 transition-colors ${onSelect ? 'hover:border-primary hover:bg-surface-sunken' : ''}`}
+              className={`text-left rounded-lg border border-border-light px-3.5 py-3 transition-colors ${onSelect ? 'hover:border-primary hover:bg-surface-sunken' : ''}`}
             >
-              <div className="text-2xl font-bold tabular-nums leading-none" style={{ color: b.value > 0 ? b.color : 'var(--text-muted)' }}>{b.value}</div>
+              <div className="text-2xl font-medium tabular-nums leading-none" style={{ color: b.value > 0 ? b.color : 'var(--text-muted)' }}>{b.value}</div>
               <div className="text-[13px] text-text-secondary mt-1">{b.label}</div>
             </Tag>
           )

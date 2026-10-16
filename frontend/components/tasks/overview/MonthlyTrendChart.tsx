@@ -22,8 +22,8 @@ export default function MonthlyTrendChart({
   const empty = data.every((d) => d.due === 0 && d.completed === 0)
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col h-[320px]">
-      <h3 className="text-[15px] font-semibold text-text-primary mb-3 shrink-0">Monthly trend · due vs completed</h3>
+    <div className="bg-surface border border-border-light rounded-xl shadow-card p-4 flex flex-col h-[320px]">
+      <h3 className="text-[15px] font-medium text-text-primary mb-3 shrink-0">Monthly trend · due vs completed</h3>
       {empty ? (
         <p className="text-sm text-text-secondary flex-1 grid place-items-center">No activity in this window.</p>
       ) : (
@@ -41,7 +41,7 @@ export default function MonthlyTrendChart({
               <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
               <YAxis yAxisId="l" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} allowDecimals={false} />
               <YAxis yAxisId="r" orientation="right" domain={[0, 100]} unit="%" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 13 }} />
+              <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid var(--border-light)', fontSize: 13 }} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Area yAxisId="l" dataKey="due" name="Due" fill="var(--primary-subtle)" stroke="var(--primary-border)" strokeWidth={1.5} />
               <Bar yAxisId="l" dataKey="completed" name="Completed" barSize={16} radius={[3, 3, 0, 0]} fill="var(--primary)" cursor="pointer" />

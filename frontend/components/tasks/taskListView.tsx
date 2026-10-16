@@ -180,7 +180,7 @@ export function ClearNarrowingButton({
     <button
       type="button"
       onClick={onClear}
-      className="mt-4 h-11 sm:h-9 px-4 rounded-btn border border-primary bg-white text-sm font-medium text-primary hover:bg-primary-light focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary transition-colors"
+      className="mt-4 h-11 sm:h-9 px-4 rounded-btn border border-primary bg-surface text-sm font-medium text-primary hover:bg-primary-light focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary transition-colors"
     >
       {label}
     </button>
@@ -204,14 +204,14 @@ export function GroupedTaskList({
 }) {
   if (groups) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-4">
         {groups.map((g) => (
           <div key={g.key}>
             <p className="mb-1.5 px-1 text-[12px] font-medium text-text-muted">
               {g.label}
               <span className="text-text-muted"> · {g.tasks.length}</span>
             </p>
-            <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] divide-y divide-surface-control-pressed">
+            <div className="bg-surface border border-border-light rounded-xl shadow-card divide-y divide-surface-control-pressed">
               {g.tasks.map((task) => renderRow(task, 'time'))}
             </div>
           </div>
@@ -220,7 +220,7 @@ export function GroupedTaskList({
     )
   }
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] divide-y divide-surface-control-pressed">
+    <div className="bg-surface border border-border-light rounded-xl shadow-card divide-y divide-surface-control-pressed">
       {sortedTasks.map((task) => renderRow(task, 'date'))}
     </div>
   )

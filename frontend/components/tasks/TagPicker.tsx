@@ -184,7 +184,7 @@ export function TagPicker({
 
   if (error) {
     return (
-      <div role="alert" className="flex items-center gap-2 h-[42px] w-full rounded-lg border border-border bg-white px-3 text-sm text-secondary">
+      <div role="alert" className="flex items-center gap-2 h-[42px] w-full rounded-lg border border-border bg-surface px-3 text-sm text-secondary">
         <span>Couldn’t load tags</span>
         <span aria-hidden="true">·</span>
         <button

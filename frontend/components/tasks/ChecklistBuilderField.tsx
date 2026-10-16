@@ -202,14 +202,14 @@ export default function ChecklistBuilderField({
   }
 
   const countBadge = groups.length > 0 && (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
       {groups.length}
     </span>
   )
 
   return (
     <div>
-      <div className="rounded-[12px] border border-border-light bg-white overflow-visible">
+      <div className="rounded-xl border border-border-light bg-surface overflow-visible">
         {inline ? (
           // Inline header — always open, so nothing to toggle.
           <div className="flex items-center gap-2 px-3 py-3">
@@ -261,7 +261,7 @@ export default function ChecklistBuilderField({
                 <button
                   type="button"
                   onClick={addBlankGroup}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium text-primary-text border border-primary rounded-[8px] hover:bg-primary-subtle transition-colors whitespace-nowrap"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors whitespace-nowrap"
                 >
                   <Plus size={14} />
                   Blank checklist
@@ -281,7 +281,7 @@ export default function ChecklistBuilderField({
                 const locked = readOnly || (linkedTemplates && g.source === 'template')
                 const note = groupNote?.(g)
                 return (
-                  <div key={g.key} className="rounded-[10px] border border-border-light bg-surface-sunken p-3">
+                  <div key={g.key} className="rounded-lg border border-border-light bg-surface-sunken p-3">
                     {/* Group header: editable name (only meaningful with 2+ groups) + template tag + remove */}
                     <div className="flex items-center gap-2 mb-2">
                       {multi && !locked ? (
@@ -290,10 +290,10 @@ export default function ChecklistBuilderField({
                           value={g.title}
                           onChange={(e) => updateGroupTitle(g.key, e.target.value)}
                           placeholder="Checklist name"
-                          className="flex-1 min-w-0 border-b border-transparent hover:border-border-light focus:border-primary px-0.5 py-0.5 text-sm font-semibold text-text-primary placeholder:text-text-muted focus:outline-hidden bg-transparent"
+                          className="flex-1 min-w-0 border-b border-transparent hover:border-border-light focus:border-primary px-0.5 py-0.5 text-sm font-medium text-text-primary placeholder:text-text-muted focus:outline-hidden bg-transparent"
                         />
                       ) : (
-                        <span className="flex-1 text-sm font-semibold text-text-primary">{g.title.trim() || 'Checklist'}</span>
+                        <span className="flex-1 text-sm font-medium text-text-primary">{g.title.trim() || 'Checklist'}</span>
                       )}
                       {g.source === 'template' && (
                         <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
@@ -342,12 +342,12 @@ export default function ChecklistBuilderField({
                         onChange={(e) => updateGroupDraft(g.key, e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addItemToGroup(g.key) } }}
                         placeholder="Add an item…"
-                        className="flex-1 border border-border rounded-[8px] px-3 py-[8px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white"
+                        className="flex-1 border border-border rounded-lg px-3 py-[8px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
                       />
                       <button
                         type="button"
                         onClick={() => addItemToGroup(g.key)}
-                        className="flex items-center gap-1.5 px-3 py-[8px] text-sm font-medium text-primary-text border border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-[8px] text-sm font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors"
                       >
                         <Plus size={14} />
                         Add
@@ -374,7 +374,7 @@ export default function ChecklistBuilderField({
               <button
                 type="button"
                 onClick={addBlankGroup}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium text-primary-text border border-primary rounded-[8px] bg-white hover:bg-primary-subtle transition-colors whitespace-nowrap"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium text-primary-text border border-primary rounded-lg bg-surface hover:bg-primary-subtle transition-colors whitespace-nowrap"
               >
                 <Plus size={14} />
                 Add checklist

@@ -51,16 +51,16 @@ function Row({ node, depth }: { node: TreeNode; depth: number }) {
   return (
     <div>
       <div
-        className="flex items-center gap-2 py-2 pr-2 rounded-[8px] hover:bg-surface-sunken transition-colors"
+        className="flex items-center gap-2 py-2 pr-2 rounded-lg hover:bg-surface-sunken transition-colors"
         style={{ paddingLeft: depth * 18 + 4 }}
       >
         <button
           onClick={() => hasChildren && setOpen((v) => !v)}
-          className={`w-5 h-5 flex items-center justify-center rounded-[4px] shrink-0 ${hasChildren ? 'text-text-secondary hover:bg-surface-control-pressed' : 'opacity-0 pointer-events-none'}`}
+          className={`w-5 h-5 flex items-center justify-center rounded-tick shrink-0 ${hasChildren ? 'text-text-secondary hover:bg-surface-control-pressed' : 'opacity-0 pointer-events-none'}`}
         >
           {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </button>
-        <div className="w-7 h-7 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+        <div className="w-7 h-7 rounded-full bg-primary text-white text-[10px] font-medium flex items-center justify-center shrink-0">
           {initials(node.name)}
         </div>
         <button onClick={() => router.push(`/dashboard/tasks/people/${node.user_id}`)} className="min-w-0 flex-1 text-left group">
@@ -96,9 +96,9 @@ export default function PeopleTree({ data }: { data: PeopleTreeData }) {
     return <p className="text-[13px] text-text-muted py-6 text-center">No people in this view.</p>
   }
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-3 flex flex-col h-[420px]">
+    <div className="bg-surface border border-border-light rounded-xl shadow-card p-3 flex flex-col h-[420px]">
       <div className="flex items-center justify-between px-1 pb-2 mb-1 border-b border-border-light shrink-0">
-        <p className="text-[13px] font-semibold text-text-primary">Reporting tree · workload</p>
+        <p className="text-[13px] font-medium text-text-primary">Reporting tree · workload</p>
         <p className="text-[11px] text-text-muted hidden sm:flex items-center gap-3">
           <span className="inline-flex items-center gap-1"><Users size={11} /> assigned</span>
           <span className="inline-flex items-center gap-1 text-danger"><AlertTriangle size={11} /> overdue</span>

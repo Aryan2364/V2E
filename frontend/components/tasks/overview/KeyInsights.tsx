@@ -48,14 +48,14 @@ function generateInsights(d: TaskDashboard): string[] {
 export default function KeyInsights({ dashboard, contextLabel }: { dashboard: TaskDashboard; contextLabel?: string }) {
   const insights = useMemo(() => generateInsights(dashboard), [dashboard])
   return (
-    <div className="rounded-[12px] p-5 bg-[#0F172A] text-white shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col h-[320px]">
-      <h3 className="text-[15px] font-semibold text-white mb-3 shrink-0">
-        Key insights{contextLabel && <span className="text-[#93C5FD] font-normal"> · {contextLabel}</span>}
+    <div className="rounded-xl p-4 bg-text-primary text-white shadow-card flex flex-col h-[320px]">
+      <h3 className="text-[15px] font-medium text-white mb-3 shrink-0">
+        Key insights{contextLabel && <span className="text-on-brand-accent font-normal"> · {contextLabel}</span>}
       </h3>
       <ul className="space-y-3 overflow-y-auto flex-1 pr-1">
         {insights.map((t, i) => (
           <li key={i} className="text-sm leading-snug flex gap-2 text-white/90">
-            <span className="text-[#93C5FD] shrink-0">—</span>
+            <span className="text-on-brand-accent shrink-0">—</span>
             <span>{t}</span>
           </li>
         ))}

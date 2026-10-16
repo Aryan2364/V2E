@@ -21,7 +21,7 @@ type TickState = 'all' | 'some' | 'none'
 function Tick({ state }: { state: TickState }) {
   if (state === 'all') return <SquareCheck size={16} className="text-primary-text shrink-0" />
   if (state === 'some') return <SquareMinus size={16} className="text-primary-text shrink-0" />
-  return <Square size={16} className="text-[#CBD5E1] shrink-0" />
+  return <Square size={16} className="text-text-muted shrink-0" />
 }
 
 /**
@@ -108,13 +108,13 @@ export default function PeopleDeptFilter({
           <span className="text-[11px] text-text-muted">{allIds.length} {allIds.length === 1 ? 'person' : 'people'}</span>
           <button type="button" onClick={toggleAll} className="flex items-center gap-1.5 group">
             <Tick state={masterState} />
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">All</span>
+            <span className="text-[11px] font-medium uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">All</span>
           </button>
         </div>
       </div>
 
       {/* Search — matches department, name, or role. */}
-      <div className="flex items-center gap-2 h-[30px] px-2.5 mb-2 rounded-[8px] border border-border-light bg-surface-sunken">
+      <div className="flex items-center gap-2 h-[30px] px-2.5 mb-2 rounded-lg border border-border-light bg-surface-sunken">
         <Search size={14} className="text-text-muted shrink-0" />
         <input
           type="text"
@@ -135,7 +135,7 @@ export default function PeopleDeptFilter({
               className="w-full flex items-center gap-2 px-1 pt-1.5 pb-0.5 group"
             >
               <Tick state={deptState(g.people)} />
-              <span className="flex-1 min-w-0 truncate text-left text-[11px] font-semibold uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">
+              <span className="flex-1 min-w-0 truncate text-left text-[11px] font-medium uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">
                 {g.department}
               </span>
               <span className="shrink-0 text-[11px] text-text-muted tabular-nums">
@@ -149,9 +149,9 @@ export default function PeopleDeptFilter({
                   key={p.id}
                   type="button"
                   onClick={() => togglePerson(p.id)}
-                  className="w-full flex items-center gap-2 pl-7 pr-1.5 py-1.5 rounded-[6px] text-left hover:bg-surface-sunken transition-colors"
+                  className="w-full flex items-center gap-2 pl-6 pr-1.5 py-1.5 rounded-[6px] text-left hover:bg-surface-sunken transition-colors"
                 >
-                  {checked ? <SquareCheck size={16} className="text-primary-text shrink-0" /> : <Square size={16} className="text-[#CBD5E1] shrink-0" />}
+                  {checked ? <SquareCheck size={16} className="text-primary-text shrink-0" /> : <Square size={16} className="text-text-muted shrink-0" />}
                   <span className="flex-1 min-w-0 flex items-center gap-1.5">
                     <span className={`min-w-0 truncate text-[13px] ${checked ? 'text-text-primary font-medium' : 'text-text-secondary'}`}>{p.name}</span>
                     {counts && <span className="shrink-0 tabular-nums text-[11px] text-text-muted">{counts.get(p.id) ?? 0}</span>}

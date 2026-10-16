@@ -4,6 +4,16 @@ import { useMemo, useRef, useState, useEffect } from 'react'
 import { Plus, X, Search, CornerDownRight, ChevronRight } from 'lucide-react'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import Tooltip from '@/components/ui/tooltip'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog'
 import { descendantsOf } from '@/lib/dept-tree'
 import type { Department, Role, EmployeeProfile } from '@/lib/types'
 import type { ChecklistAccessMode, ChecklistAccessRuleInput } from '@/lib/types/tasks'
@@ -30,10 +40,10 @@ interface Props {
 
 const pill = (active: boolean) =>
   [
-    'px-3.5 py-1.5 text-sm font-semibold rounded-[8px] border transition-colors',
+    'px-3.5 py-1.5 text-sm font-medium rounded-lg border transition-colors',
     active
       ? 'bg-primary text-white border-primary'
-      : 'bg-white text-text-secondary border-border-light hover:bg-surface-control',
+      : 'bg-surface text-text-secondary border-border-light hover:bg-surface-control',
   ].join(' ')
 
 /** Line-item count shown beside a section heading: solid blue pill, white text.
@@ -41,7 +51,7 @@ const pill = (active: boolean) =>
 function CountBadge({ n }: { n: number }) {
   if (!n) return null
   return (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold leading-none">
+    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium leading-none">
       {n}
     </span>
   )
@@ -57,7 +67,7 @@ function SubDepartmentList({ subs }: { subs: ReturnType<typeof descendantsOf> })
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="w-full flex items-center gap-1.5 text-[11px] font-semibold text-text-muted"
+        className="w-full flex items-center gap-1.5 text-[11px] font-medium text-text-muted"
       >
         <ChevronRight size={12} className={`text-text-muted transition-transform ${open ? 'rotate-90' : ''}`} />
         <span>Sub-departments</span>
@@ -67,7 +77,7 @@ function SubDepartmentList({ subs }: { subs: ReturnType<typeof descendantsOf> })
         <div className="mt-1.5 space-y-1">
           {subs.map(({ dept, depth }) => (
             <div key={dept.id} className="flex items-center gap-1.5 text-xs text-text-secondary" style={{ paddingLeft: depth * 14 }}>
-              <CornerDownRight size={12} className="text-[#CBD5E1] shrink-0" />
+              <CornerDownRight size={12} className="text-text-muted shrink-0" />
               <span className="truncate">{dept.name}</span>
             </div>
           ))}
@@ -126,7 +136,7 @@ function AddPicker({
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-label={label}
-          className="w-7 h-7 rounded-[8px] bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-colors shrink-0"
+          className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-colors shrink-0"
         >
           <Plus size={16} />
         </button>
@@ -135,7 +145,7 @@ function AddPicker({
         // Absolute panel anchored under the top-right trigger; right-aligned so it
         // stays within the card and overlays the body (card isn't overflow-hidden,
         // so it isn't clipped). See memory: no-overflow-parent.
-        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 bg-white border border-border-light rounded-[8px] shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden">
+        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 bg-surface border border-border-light rounded-lg shadow-menu overflow-hidden">
           <div className="flex items-center gap-2 px-3 py-2 border-b border-border-light">
             <Search size={14} className="text-text-muted shrink-0" />
             <input
@@ -182,6 +192,9 @@ export default function ChecklistAccessEditor({
   roles,
   employees,
 }: Props) {
+  const [pendingConfirm, setPendingConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null)
+  const confirmRemoval = (message: string, onConfirm: () => void) => setPendingConfirm({ message, onConfirm })
+
   const deptRules = rules.filter((r) => r.kind === 'department')
   const roleRules = rules.filter((r) => r.kind === 'role')
   const userRules = rules.filter((r) => r.kind === 'user')
@@ -317,9 +330,10 @@ export default function ChecklistAccessEditor({
   const removePerson = (uid: string) => {
     const name = empByUserId.get(uid)?.user?.name ?? 'this person'
     const byGroup = Array.from(grantSources.get(uid) ?? []).some((s) => s !== 'Added directly')
-    if (!confirm(`Remove ${name} from this checklist? They'll lose access${byGroup ? ' and be listed under “Removed” so you can restore them later' : ''}.`)) return
-    const next = rules.filter((r) => !(r.kind === 'user' && r.user_id === uid))
-    emit(byGroup ? [...next, { _key: newRuleKey(), kind: 'exclude_user' as const, user_id: uid }] : next)
+    confirmRemoval(`Remove ${name} from this checklist? They'll lose access${byGroup ? ' and be listed under “Removed” so you can restore them later' : ''}.`, () => {
+      const next = rules.filter((r) => !(r.kind === 'user' && r.user_id === uid))
+      emit(byGroup ? [...next, { _key: newRuleKey(), kind: 'exclude_user' as const, user_id: uid }] : next)
+    })
   }
   const addRole = (roleId: string) => {
     const ex = excludeRoleRules.find((r) => r.role_id === roleId)
@@ -328,16 +342,16 @@ export default function ChecklistAccessEditor({
   }
   const removeRoleChip = (roleId: string) => {
     const role = roleById.get(roleId)
-    if (!confirm(`Remove the ${role?.title ?? 'role'} role? Everyone in it loses access to this checklist (current and future).`)) return
-    // Drop any explicit grant; if the role rides in via a department, record a role exclusion.
-    let next = rules.filter((r) => !(r.kind === 'role' && r.role_id === roleId))
-    if (deptScopeIds.has(role?.department_id ?? '')) next = [...next, { _key: newRuleKey(), kind: 'exclude_role' as const, role_id: roleId }]
-    emit(next)
+    confirmRemoval(`Remove the ${role?.title ?? 'role'} role? Everyone in it loses access to this checklist (current and future).`, () => {
+      // Drop any explicit grant; if the role rides in via a department, record a role exclusion.
+      let next = rules.filter((r) => !(r.kind === 'role' && r.role_id === roleId))
+      if (deptScopeIds.has(role?.department_id ?? '')) next = [...next, { _key: newRuleKey(), kind: 'exclude_role' as const, role_id: roleId }]
+      emit(next)
+    })
   }
   const removeDept = (r: LocalRule) => {
     const name = r.department_id ? deptById.get(r.department_id)?.name : ''
-    if (!confirm(`Remove ${name || 'this department'} from access? People covered only by it will lose access.`)) return
-    remove(r._key)
+    confirmRemoval(`Remove ${name || 'this department'} from access? People covered only by it will lose access.`, () => remove(r._key))
   }
 
   return (
@@ -357,7 +371,7 @@ export default function ChecklistAccessEditor({
       ) : (
         <div className="mt-3">
           <p className="text-xs text-text-muted">
-            A person can use this checklist if they match <span className="font-semibold">any</span> rule below — by
+            A person can use this checklist if they match <span className="font-medium">any</span> rule below — by
             department, role, or being named directly.
           </p>
 
@@ -366,10 +380,10 @@ export default function ChecklistAccessEditor({
               Roles and People scroll inside their fixed height. */}
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
           {/* Departments — no overflow clip so the inline picker dropdown isn't cut off */}
-          <div className="bg-white border border-border-light rounded-[12px] p-3.5 flex flex-col min-h-[360px]">
+          <div className="bg-surface border border-border-light rounded-xl p-3.5 flex flex-col min-h-[360px]">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">Departments</span>
+                <span className="text-xs font-medium uppercase tracking-wide text-text-muted">Departments</span>
                 <CountBadge n={deptRules.length} />
               </div>
               <Tooltip label={hasEmptyDept ? 'Select a department in the blank row first' : 'Add department'}>
@@ -378,7 +392,7 @@ export default function ChecklistAccessEditor({
                 disabled={hasEmptyDept}
                 onClick={() => add({ kind: 'department', department_id: '', include_sub_departments: true })}
                 aria-label="Add department"
-                className="w-7 h-7 rounded-[8px] bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-colors shrink-0 disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-colors shrink-0 disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 <Plus size={16} />
               </button>
@@ -390,7 +404,7 @@ export default function ChecklistAccessEditor({
               const cascade = r.include_sub_departments ?? true
               const subs = r.department_id ? descendantsOf(departments, r.department_id) : []
               return (
-                <div key={r._key} className="bg-surface-sunken border border-border-light rounded-[8px] p-2.5 space-y-2">
+                <div key={r._key} className="bg-surface-sunken border border-border-light rounded-lg p-2.5 space-y-2">
                   {/* Remove sits at the top-right of the row, above the picker */}
                   <div className="flex justify-end -mt-1 -mb-1">
                     <button
@@ -423,7 +437,7 @@ export default function ChecklistAccessEditor({
                     >
                       <span
                         className={[
-                          'absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200',
+                          'absolute top-0.5 left-0.5 w-4 h-4 bg-surface rounded-full shadow-sm transition-transform duration-200',
                           cascade ? 'translate-x-4' : 'translate-x-0',
                         ].join(' ')}
                       />
@@ -445,10 +459,10 @@ export default function ChecklistAccessEditor({
           </div>
 
           {/* Roles — auto-filled from the selected departments, plus any added directly */}
-          <div className="bg-white border border-border-light rounded-[12px] p-3.5 flex flex-col h-[360px]">
+          <div className="bg-surface border border-border-light rounded-xl p-3.5 flex flex-col h-[360px]">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">Roles</span>
+                <span className="text-xs font-medium uppercase tracking-wide text-text-muted">Roles</span>
                 <CountBadge n={inScopeRoles.length} />
               </div>
               <AddPicker label="Add role" options={roleOptions} onPick={addRole} />
@@ -459,7 +473,7 @@ export default function ChecklistAccessEditor({
               {inScopeRoles.map(({ role, via }) => (
                 <Tooltip key={role.id} label={`via ${via}`}>
                 <span
-                  className="inline-flex items-center gap-1.5 bg-white border border-border-light rounded-[999px] pl-2.5 pr-1.5 py-1 text-xs text-text-primary"
+                  className="inline-flex items-center gap-1.5 bg-surface border border-border-light rounded-full pl-2.5 pr-1.5 py-1 text-xs text-text-primary"
                 >
                   {role.title}
                   <button type="button" onClick={() => removeRoleChip(role.id)} className="text-text-muted hover:text-danger">
@@ -475,10 +489,10 @@ export default function ChecklistAccessEditor({
                 {excludedRolesList.map(({ ruleKey, role }) => (
                   <span
                     key={ruleKey}
-                    className="inline-flex items-center gap-1.5 bg-warning-bg border border-warning-border rounded-[999px] pl-2.5 pr-1.5 py-1 text-xs text-text-secondary"
+                    className="inline-flex items-center gap-1.5 bg-warning-bg border border-warning-border rounded-full pl-2.5 pr-1.5 py-1 text-xs text-text-secondary"
                   >
                     <span className="line-through">{role.title}</span>
-                    <button type="button" onClick={() => remove(ruleKey)} className="text-primary-text hover:text-primary-text font-semibold">
+                    <button type="button" onClick={() => remove(ruleKey)} className="text-primary-text hover:text-primary-text font-medium">
                       Restore
                     </button>
                   </span>
@@ -489,10 +503,10 @@ export default function ChecklistAccessEditor({
           </div>
 
           {/* People — resolved live from the departments/roles above, plus manual adds */}
-          <div className="bg-white border border-border-light rounded-[12px] p-3.5 flex flex-col h-[360px]">
+          <div className="bg-surface border border-border-light rounded-xl p-3.5 flex flex-col h-[360px]">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">People with access</span>
+                <span className="text-xs font-medium uppercase tracking-wide text-text-muted">People with access</span>
                 <CountBadge n={effectivePeople.length} />
               </div>
               <AddPicker label="Add person" options={personOptions} onPick={addPerson} />
@@ -503,7 +517,7 @@ export default function ChecklistAccessEditor({
             ) : (
               <div className="space-y-1">
                 {effectivePeople.map((p) => (
-                  <div key={p.uid} className="flex items-center gap-2 bg-surface-sunken border border-border-light rounded-[8px] px-2.5 py-1.5">
+                  <div key={p.uid} className="flex items-center gap-2 bg-surface-sunken border border-border-light rounded-lg px-2.5 py-1.5">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-text-primary truncate">{p.name}</p>
                       {p.sources.length > 0 && <p className="text-[11px] text-text-muted truncate">via {p.sources.join(', ')}</p>}
@@ -522,9 +536,9 @@ export default function ChecklistAccessEditor({
           {/* Removed (exceptions) — durable, findable log of who was taken out.
               Full-width strip below the columns so restores are easy to find. */}
           {removedPeople.length > 0 && (
-            <div className="mt-5 space-y-2 rounded-[8px] border border-warning-border bg-warning-bg p-3">
+            <div className="mt-4 space-y-2 rounded-lg border border-warning-border bg-warning-bg p-3">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-semibold uppercase tracking-wide text-warning">Removed</span>
+                <span className="text-xs font-medium uppercase tracking-wide text-warning">Removed</span>
                 <span className="text-[11px] text-warning">{removedPeople.length}</span>
               </div>
               <p className="text-[11px] text-warning">These people match a department or role above but are excluded. Restore to give access back.</p>
@@ -535,7 +549,7 @@ export default function ChecklistAccessEditor({
                       <p className="text-sm text-text-secondary line-through truncate">{p.name}</p>
                       {p.sources.length > 0 && <p className="text-[11px] text-warning truncate">would be via {p.sources.join(', ')}</p>}
                     </div>
-                    <button type="button" onClick={() => remove(p.ruleKey)} className="text-xs font-semibold text-primary-text hover:text-primary-text shrink-0">
+                    <button type="button" onClick={() => remove(p.ruleKey)} className="text-xs font-medium text-primary-text hover:text-primary-text shrink-0">
                       Restore
                     </button>
                   </div>
@@ -545,6 +559,20 @@ export default function ChecklistAccessEditor({
           )}
         </div>
       )}
+      <AlertDialog open={!!pendingConfirm} onOpenChange={(open) => { if (!open) setPendingConfirm(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove access?</AlertDialogTitle>
+            <AlertDialogDescription>{pendingConfirm?.message}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { pendingConfirm?.onConfirm(); setPendingConfirm(null) }}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

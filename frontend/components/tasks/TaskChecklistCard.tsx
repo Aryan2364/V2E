@@ -84,11 +84,11 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
   const grouped = order.some((k) => k !== '')
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6 overflow-visible">
+    <div className="bg-surface border border-border-light rounded-xl shadow-card p-6 overflow-visible">
       <div className="flex items-center gap-2 mb-1">
         <CheckSquare size={16} className="text-primary-text" />
-        <h3 className="text-[15px] font-semibold text-text-primary">Checklist</h3>
-        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
+        <h3 className="text-[15px] font-medium text-text-primary">Checklist</h3>
+        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
           {resolvedCount}/{items.length}
         </span>
       </div>
@@ -105,7 +105,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
           return (
             <div key={key || '__ungrouped'} className="space-y-2">
               {grouped && (
-                <div className="text-[13px] font-semibold text-text-secondary">{key || 'Checklist'}</div>
+                <div className="text-[13px] font-medium text-text-secondary">{key || 'Checklist'}</div>
               )}
               {groupItems.map((item) =>
                 isAllMust
@@ -128,7 +128,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
           rows={3}
           autoFocus
           placeholder="Reason (required)"
-          className="w-full rounded-[8px] border border-border focus:border-primary focus:outline-hidden focus:ring-0 px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted"
+          className="w-full rounded-lg border border-border focus:border-primary focus:outline-hidden focus:ring-0 px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted"
         />
         <div className="flex justify-end mt-4">
           <button
@@ -139,7 +139,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
               ).then(() => { setSkipItem(null); setSkipReason('') })
             }
             disabled={!skipReason.trim() || busy === `skip:${skipItem?.id}`}
-            className="px-5 py-2.5 rounded-[8px] font-semibold text-white bg-warning hover:bg-warning disabled:bg-surface-control-pressed disabled:text-text-muted"
+            className="px-4 py-2.5 rounded-lg font-medium text-white bg-warning hover:bg-warning disabled:bg-surface-control-pressed disabled:text-text-muted"
           >
             {busy === `skip:${skipItem?.id}` ? 'Saving…' : 'Mark can’t do'}
           </button>
@@ -149,8 +149,8 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
       {/* Challenge confirm — reopens the person's part */}
       <Modal isOpen={!!challenge} onClose={() => setChallenge(null)} title="Reopen this item?" size="sm">
         <p className="text-[14px] text-text-primary">
-          This reopens the task for <span className="font-semibold">{challenge?.userName}</span> so they can address
-          {' '}<span className="font-semibold">“{challenge?.item.title}”</span>. Their other finished items stay as they are.
+          This reopens the task for <span className="font-medium">{challenge?.userName}</span> so they can address
+          {' '}<span className="font-medium">“{challenge?.item.title}”</span>. Their other finished items stay as they are.
         </p>
         <div className="flex justify-end mt-4">
           <button
@@ -161,7 +161,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
               ).then(() => setChallenge(null))
             }
             disabled={!!challenge && busy === `challenge:${challenge.item.id}:${challenge.userId}`}
-            className="px-5 py-2.5 rounded-[8px] font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
+            className="px-4 py-2.5 rounded-lg font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
           >
             Reopen &amp; challenge
           </button>
@@ -177,7 +177,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
     const workers = (task.assignees ?? []).filter((a) => !a.is_cc)
     const states = item.states ?? []
     return (
-      <div className="mt-1.5 ml-7 mr-2 rounded-[8px] border border-border-light bg-surface-sunken overflow-hidden">
+      <div className="mt-1.5 ml-6 mr-2 rounded-lg border border-border-light bg-surface-sunken overflow-hidden">
         <div className="max-h-[240px] overflow-y-auto divide-y divide-surface-control">
           {workers.length === 0 && <div className="px-3 py-2 text-[12px] text-text-muted">No assignees yet</div>}
           {workers.map((a) => {
@@ -294,7 +294,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
     const rowBusy = busy?.startsWith(`amust:${item.id}`)
 
     return (
-      <div key={item.id} className="rounded-[8px] border border-transparent hover:border-border-light hover:bg-surface-sunken transition-colors">
+      <div key={item.id} className="rounded-lg border border-transparent hover:border-border-light hover:bg-surface-sunken transition-colors">
         <div className="flex items-start gap-3 px-2 py-1.5">
           {/* Personal checkbox / state — only working assignees act here */}
           {iAmWorker ? (
@@ -348,7 +348,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
                 type="button"
                 onClick={() => setExpandedId((cur) => (cur === item.id ? null : item.id))}
                 className={[
-                  'inline-flex items-center gap-1 h-[20px] px-2 rounded-full text-[11px] font-semibold cursor-pointer transition-colors',
+                  'inline-flex items-center gap-1 h-[20px] px-2 rounded-full text-[11px] font-medium cursor-pointer transition-colors',
                   allResolved ? 'bg-success-bg text-success border border-success-border' : 'bg-primary-subtle text-primary-text border border-primary-border',
                 ].join(' ')}
                 aria-label="Who has marked this item"
@@ -440,7 +440,7 @@ function PersonRow({
 }) {
   return (
     <div className="flex items-center gap-2 px-3 py-2">
-      <span className="w-6 h-6 rounded-full bg-primary-subtle text-text-secondary text-[10px] font-semibold flex items-center justify-center shrink-0">
+      <span className="w-6 h-6 rounded-full bg-primary-subtle text-text-secondary text-[10px] font-medium flex items-center justify-center shrink-0">
         {initials(name)}
       </span>
       <span className="text-[13px] text-text-primary flex-1 min-w-0 truncate">{name}</span>

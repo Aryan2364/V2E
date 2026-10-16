@@ -4,6 +4,17 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { X, Plus, Calendar, RotateCcw, CheckCircle2, FilePlus2, Table } from 'lucide-react'
+import { toast } from 'sonner'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import StyledSelect from '@/components/ui/StyledSelect'
@@ -109,6 +120,11 @@ export default function CreateTaskModal({
   const { user } = useAuth()
   const router = useRouter()
   const orgId = user?.organizationId ?? ''
+
+  // Replaces window.confirm: resolves true/false once the person picks a button.
+  const [confirmPrompt, setConfirmPrompt] = useState<{ message: string; resolve: (v: boolean) => void } | null>(null)
+  const confirmAsync = (message: string) =>
+    new Promise<boolean>((resolve) => setConfirmPrompt({ message, resolve }))
 
   // Single task (this form) vs Bulk upload (the Excel import flow). The recurring
   // page locks the mode, so bulk is never offered there.
@@ -381,7 +397,7 @@ export default function CreateTaskModal({
       const msg = apiErrorMessage(e2, 'Failed to create task. Please try again.')
       // The holiday rule never forces itself — offer to keep the chosen date.
       if (/non-working day/i.test(msg)) {
-        if (window.confirm(`${msg}\n\nKeep this date anyway?`)) {
+        if (await confirmAsync(`${msg}\n\nKeep this date anyway?`)) {
           setSubmitting(false)
           await handleSubmit(e, true)
           return
@@ -454,7 +470,7 @@ export default function CreateTaskModal({
           }
         } catch {
           if (lockMode) {
-            alert('Recurring task created, but an attachment failed to upload. Please edit the task in the Recurring tab to add it.')
+            toast.warning('Recurring task created, but an attachment failed to upload. Please edit the task in the Recurring tab to add it.')
             onCreated()
             handleClose()
           } else {
@@ -488,19 +504,19 @@ export default function CreateTaskModal({
         role="dialog"
         aria-modal="true"
       >
-        <div className="relative w-full max-w-md bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light p-6">
+        <div className="relative w-full max-w-md bg-surface rounded-t-xl sm:rounded-xl shadow-dialog border border-border-light p-6">
           <div className="flex flex-col items-center text-center">
             <div className="w-14 h-14 rounded-full bg-success-bg flex items-center justify-center mb-4">
               <CheckCircle2 size={28} className="text-success" />
             </div>
-            <h2 className="text-[20px] font-semibold text-text-primary">Recurring task created</h2>
+            <h2 className="text-[20px] font-medium text-text-primary">Recurring task created</h2>
             <p className="text-sm text-text-secondary mt-2">
               <span className="font-medium text-text-primary">“{createdRecurring.title}”</span> now lives in the{' '}
               <span className="font-medium text-primary-text">Recurring</span> tab under Work. New task instances will be
               created automatically on schedule — with these attachments included each time.
             </p>
             {error && (
-              <div className="w-full mt-4 bg-danger-bg border border-danger-border rounded-[8px] px-4 py-3 text-sm text-danger">
+              <div className="w-full mt-4 bg-danger-bg border border-danger-border rounded-lg px-4 py-3 text-sm text-danger">
                 {error}
               </div>
             )}
@@ -508,14 +524,14 @@ export default function CreateTaskModal({
               <button
                 type="button"
                 onClick={() => { onCreated(); handleClose() }}
-                className="w-full sm:flex-1 px-5 py-[10px] text-sm font-semibold text-primary-text bg-white border-2 border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
+                className="w-full sm:flex-1 px-4 py-[10px] text-sm font-medium text-primary-text bg-surface border-2 border-primary rounded-lg hover:bg-primary-subtle transition-colors"
               >
                 Done
               </button>
               <button
                 type="button"
                 onClick={() => { onCreated(); handleClose(); router.push('/dashboard/tasks/recurring') }}
-                className="w-full sm:flex-1 px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors"
+                className="w-full sm:flex-1 px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
               >
                 Go to Recurring
               </button>
@@ -528,6 +544,7 @@ export default function CreateTaskModal({
   }
 
   return createPortal(
+    <>
     <div
       className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
@@ -537,10 +554,10 @@ export default function CreateTaskModal({
       {/* When the Bulk-upload tab exists, the card is a FIXED size so switching tabs only
           swaps the inner content — the frame never resizes (no width/height glitch). The
           recurring/lock-mode modal (no bulk tab) keeps its natural content-driven height. */}
-      <div className={`relative w-full bg-white rounded-t-[16px] sm:rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-border-light flex flex-col ${showBulkTab ? 'max-w-3xl h-[88vh]' : 'max-w-2xl max-h-[92vh]'}`}>
+      <div className={`relative w-full bg-surface rounded-t-xl sm:rounded-xl shadow-dialog border border-border-light flex flex-col ${showBulkTab ? 'max-w-3xl h-[88vh]' : 'max-w-2xl max-h-[92vh]'}`}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-light shrink-0">
-          <h2 className="text-[22px] font-semibold text-text-primary">
+          <h2 className="text-[22px] font-medium text-text-primary">
             {lockMode && mode === 'recurring' ? 'Create Recurring Task' : 'Create Task'}
           </h2>
           <button
@@ -555,7 +572,7 @@ export default function CreateTaskModal({
         {/* Single task | Bulk upload — bulk swaps the whole body to the Excel import flow. */}
         {showBulkTab && (
           <div className="shrink-0 px-6 pt-4">
-            <div className="grid grid-cols-2 gap-1 p-1 rounded-[10px] bg-surface-sunken border border-border-light">
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-surface-sunken border border-border-light">
               {([
                 { value: 'single' as const, label: 'Single task', icon: FilePlus2 },
                 { value: 'bulk' as const, label: 'Bulk upload', icon: Table },
@@ -569,8 +586,8 @@ export default function CreateTaskModal({
                     onClick={() => setTab(opt.value)}
                     aria-pressed={active}
                     className={[
-                      'flex items-center justify-center gap-2 px-3 py-2 rounded-[8px] text-sm font-semibold transition-colors',
-                      active ? 'bg-white text-text-primary shadow-xs border border-border-light' : 'text-text-secondary hover:text-text-primary',
+                      'flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                      active ? 'bg-surface text-text-primary shadow-xs border border-border-light' : 'text-text-secondary hover:text-text-primary',
                     ].join(' ')}
                   >
                     <Icon size={16} className={active ? 'text-primary-text' : 'text-text-muted'} />
@@ -592,7 +609,7 @@ export default function CreateTaskModal({
         ) : (
         <>
         {/* Body */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1.5">
@@ -605,7 +622,7 @@ export default function CreateTaskModal({
                 onChange={(e) => setTitle(e.target.value.slice(0, 50))}
                 maxLength={50}
                 placeholder="Task title..."
-                className="w-full border border-border rounded-[8px] pl-3 pr-14 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white"
+                className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
               />
               {/* Count lives inside the field, right-aligned */}
               <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
@@ -655,7 +672,7 @@ export default function CreateTaskModal({
               Hidden when the host page locks the mode (e.g. the Recurring page). */}
           {!lockMode && <div>
             <label className="block text-sm font-medium text-text-secondary mb-2">Schedule</label>
-            <div className="grid grid-cols-2 gap-1 p-1 rounded-[10px] bg-surface-control border border-border-light">
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-surface-control border border-border-light">
               {([
                 { value: 'one_time' as TaskMode, label: 'One-time', icon: Calendar },
                 { value: 'recurring' as TaskMode, label: 'Recurring', icon: RotateCcw },
@@ -668,8 +685,8 @@ export default function CreateTaskModal({
                     type="button"
                     onClick={() => { setMode(opt.value); setError(null) }}
                     className={[
-                      'flex items-center justify-center gap-2 px-3 py-2 rounded-[8px] text-sm font-medium transition-colors',
-                      active ? 'bg-primary text-white shadow-xs' : 'text-text-secondary hover:bg-white',
+                      'flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                      active ? 'bg-primary text-white shadow-xs' : 'text-text-secondary hover:bg-surface',
                     ].join(' ')}
                     aria-pressed={active}
                   >
@@ -768,7 +785,7 @@ export default function CreateTaskModal({
                 maxLength={2000}
                 placeholder="Add a description..."
                 rows={3}
-                className="w-full border border-border rounded-[8px] px-3 pt-[10px] pb-6 text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white resize-none"
+                className="w-full border border-border rounded-lg px-3 pt-[10px] pb-6 text-base sm:text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface resize-none"
               />
               {/* Count lives inside the field, bottom-right */}
               <span className={`pointer-events-none absolute right-3 bottom-2 text-[11px] ${description.length >= 2000 ? 'text-danger' : 'text-text-muted'}`}>
@@ -790,13 +807,13 @@ export default function CreateTaskModal({
                     type="button"
                     onClick={() => setQuadrant(q.value)}
                     className={[
-                      'flex flex-col items-center rounded-[8px] px-2 py-2.5 border-2 transition-all duration-150',
+                      'flex flex-col items-center rounded-lg px-2 py-2.5 border-2 transition-all duration-150',
                       isSelected
                         ? `${cfg.activeBg} border-transparent text-white`
                         : `${cfg.bg} ${cfg.border} ${cfg.text} hover:opacity-80`,
                     ].join(' ')}
                   >
-                    <span className="text-sm font-bold">{q.label}</span>
+                    <span className="text-sm font-medium">{q.label}</span>
                     <span className={`text-[10px] leading-tight text-center mt-0.5 ${isSelected ? 'text-white/80' : 'opacity-70'}`}>
                       {q.sublabel}
                     </span>
@@ -869,7 +886,7 @@ export default function CreateTaskModal({
               header expands the full dropzone. Applies to both one-time and recurring
               (a recurring template's attachments repeat on every spawned instance). */}
           <div>
-            <div className="rounded-[12px] border border-border-light bg-white overflow-hidden">
+            <div className="rounded-xl border border-border-light bg-surface overflow-hidden">
               {/* Card header — click anywhere to toggle; + button on the right */}
               <button
                 type="button"
@@ -880,7 +897,7 @@ export default function CreateTaskModal({
                 <label className="text-sm font-medium text-text-secondary cursor-pointer">Attachments</label>
                 <span className="text-xs font-normal text-text-secondary">Optional</span>
                 {attachmentFiles.length > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
                     {attachmentFiles.length}
                   </span>
                 )}
@@ -939,7 +956,7 @@ export default function CreateTaskModal({
             always visible right next to Save — never hidden above the fold. */}
         <div className="shrink-0 px-6 py-4 border-t border-border-light space-y-3">
           {error && (
-            <div className="bg-danger-bg border border-danger-border rounded-[8px] px-4 py-3 text-sm text-danger">
+            <div className="bg-danger-bg border border-danger-border rounded-lg px-4 py-3 text-sm text-danger">
               {error}
             </div>
           )}
@@ -948,7 +965,7 @@ export default function CreateTaskModal({
               type="button"
               onClick={handleSubmit}
               disabled={submitting || (mode === 'one_time' && holidayCheck?.action === 'skip_create' && !holidayCheck.is_working_day && !holidayOverride)}
-              className="w-full sm:w-auto px-5 py-[10px] text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
             >
               {submitting ? 'Creating...' : mode === 'recurring' ? 'Create Recurring Task' : 'Create Task'}
             </button>
@@ -957,7 +974,22 @@ export default function CreateTaskModal({
         </>
         )}
       </div>
-    </div>,
+    </div>
+    <AlertDialog open={!!confirmPrompt} onOpenChange={(open) => { if (!open) { confirmPrompt?.resolve(false); setConfirmPrompt(null) } }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Non-working day</AlertDialogTitle>
+          <AlertDialogDescription className="whitespace-pre-line">{confirmPrompt?.message}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => { confirmPrompt?.resolve(false); setConfirmPrompt(null) }}>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={() => { confirmPrompt?.resolve(true); setConfirmPrompt(null) }}>
+            Keep this date
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>,
     document.body,
   )
 }

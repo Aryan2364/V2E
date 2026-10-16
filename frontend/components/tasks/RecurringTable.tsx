@@ -33,11 +33,11 @@ export default function RecurringTable({
   const catMap = new Map(categories.map((c) => [c.id, c]))
   const prioMap = new Map(priorities.map((p) => [p.id, p]))
 
-  const TH = 'text-left text-[12px] font-semibold uppercase tracking-wide text-text-muted px-3 py-2.5 whitespace-nowrap'
+  const TH = 'text-left text-[12px] font-medium uppercase tracking-wide text-text-muted px-3 py-2.5 whitespace-nowrap'
   const TD = 'px-3 py-3 text-sm text-text-primary align-middle'
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+    <div className="bg-surface border border-border-light rounded-xl shadow-card overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full border-collapse min-w-[1200px]">
           <thead>
@@ -82,7 +82,7 @@ export default function RecurringTable({
                   </td>
                   <td className={TD}>
                     <span className={[
-                      'inline-flex items-center gap-1 rounded-[999px] px-2 py-0.5 text-[11px] font-medium border',
+                      'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border',
                       t.is_active ? 'bg-success-bg text-success border-success-border' : 'bg-danger-bg text-danger border-danger-border',
                     ].join(' ')}>
                       {t.is_active ? 'Active' : <><Pause size={9} /> Paused</>}

@@ -109,7 +109,7 @@ export default function TaskFilterChips({
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className="inline-flex items-center gap-1.5 text-[12px] pl-2.5 pr-1.5 py-1 rounded-[999px] bg-primary-subtle text-primary-text border border-primary-border"
+          className="inline-flex items-center gap-1.5 text-[12px] pl-2.5 pr-1.5 py-1 rounded-full bg-primary-subtle text-primary-text border border-primary-border"
         >
           {chip.label}
           <button

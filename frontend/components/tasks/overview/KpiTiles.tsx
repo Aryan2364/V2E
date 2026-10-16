@@ -47,19 +47,19 @@ export default function KpiTiles({
             key={t.label}
             type="button"
             onClick={() => onSelect(isActive ? null : t.bucket)}
-            className="bg-white border rounded-[12px] p-3.5 flex flex-col gap-2 text-left transition-all duration-150 border-border-light shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:border-border hover:shadow-[0_2px_8px_rgba(0,0,0,0.10)]"
-            style={isActive ? { borderColor: t.color, boxShadow: `0 0 0 2px ${t.color}30, 0 2px 8px rgba(0,0,0,0.08)` } : undefined}
+            className="bg-surface border rounded-xl p-3.5 flex flex-col gap-2 text-left transition-all duration-150 border-border-light shadow-card hover:border-border hover:shadow-menu"
+            style={isActive ? { borderColor: t.color, boxShadow: `0 0 0 2px ${t.color}30, var(--shadow-menu)` } : undefined}
           >
             <div className="flex items-center justify-between">
               <span
-                className="w-8 h-8 rounded-[8px] flex items-center justify-center"
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
                 style={{ backgroundColor: t.color + '18', color: t.color }}
               >
                 {t.icon}
               </span>
             </div>
             <div>
-              <p className="text-2xl font-bold text-text-primary leading-tight tabular-nums">{value}</p>
+              <p className="text-2xl font-medium text-text-primary leading-tight tabular-nums">{value}</p>
               <p className="text-[13px] mt-0.5" style={{ color: isActive ? t.color : 'var(--text-secondary)' }}>{t.label}</p>
             </div>
           </button>

@@ -18,8 +18,8 @@ export default function StatusTimingChart({
     .map((s) => ({ id: s.id, label: s.label, ...s.timing }))
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col h-[320px]">
-      <h3 className="text-[15px] font-semibold text-text-primary mb-3 shrink-0">Status · on track vs slipping</h3>
+    <div className="bg-surface border border-border-light rounded-xl shadow-card p-4 flex flex-col h-[320px]">
+      <h3 className="text-[15px] font-medium text-text-primary mb-3 shrink-0">Status · on track vs slipping</h3>
       {data.length === 0 ? (
         <p className="text-sm text-text-secondary flex-1 grid place-items-center">No tasks in this view.</p>
       ) : (
@@ -28,7 +28,7 @@ export default function StatusTimingChart({
             <BarChart data={data} layout="vertical" margin={{ top: 0, right: 12, left: 4, bottom: 0 }}>
               <XAxis type="number" hide allowDecimals={false} />
               <YAxis type="category" dataKey="label" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} width={104} />
-              <Tooltip cursor={{ fill: 'var(--primary-subtle)' }} contentStyle={{ borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 13 }} />
+              <Tooltip cursor={{ fill: 'var(--primary-subtle)' }} contentStyle={{ borderRadius: 8, border: '1px solid var(--border-light)', fontSize: 13 }} />
               {TIMINGS.map((t) => (
                 <Bar
                   key={t}

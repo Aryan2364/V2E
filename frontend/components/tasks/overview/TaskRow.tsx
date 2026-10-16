@@ -31,7 +31,7 @@ function formatDeadline(deadline: string): string {
 function Chip({ label, color }: { label: string; color: string }) {
   return (
     <span
-      className="inline-flex items-center rounded-[999px] px-2 py-0.5 text-[11px] font-medium whitespace-nowrap"
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium whitespace-nowrap"
       style={{ backgroundColor: color + '22', color, border: `1px solid ${color}44` }}
     >
       {label}
@@ -79,13 +79,13 @@ export default function TaskRow({
   return (
     <div
       onClick={onClick}
-      className={`bg-white border rounded-[10px] px-4 py-3 flex items-center gap-3 sm:gap-4 cursor-pointer hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-150 group ${selected ? 'border-primary ring-1 ring-primary' : 'border-border-light hover:border-primary'}`}
+      className={`bg-surface border rounded-lg px-4 py-3 flex items-center gap-3 sm:gap-4 cursor-pointer hover:shadow-menu transition-all duration-150 group ${selected ? 'border-primary ring-1 ring-primary' : 'border-border-light hover:border-primary'}`}
     >
       {/* Selection checkbox */}
       {selectable && (
         <button
           onClick={(e) => { e.stopPropagation(); onToggleSelect?.() }}
-          className={`w-[18px] h-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors ${selected ? 'bg-primary border-primary' : 'border-border hover:border-primary bg-white'}`}
+          className={`w-[18px] h-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors ${selected ? 'bg-primary border-primary' : 'border-border hover:border-primary bg-surface'}`}
           aria-label={selected ? 'Deselect' : 'Select'}
         >
           {selected && <Check size={12} className="text-white" />}
@@ -101,7 +101,7 @@ export default function TaskRow({
       {/* Title + meta */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 min-w-0">
-          <p className="text-sm font-semibold text-text-primary truncate group-hover:text-primary-text transition-colors">
+          <p className="text-sm font-medium text-text-primary truncate group-hover:text-primary-text transition-colors">
             {task.title}
           </p>
           {task.type === 'recurring' && (

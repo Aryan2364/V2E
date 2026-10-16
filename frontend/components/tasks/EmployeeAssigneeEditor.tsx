@@ -30,7 +30,7 @@ function getInitials(name: string): string {
 }
 
 // Reason chip copy + style. Manual reasons are blue (an explicit human choice); rule
-// reasons are neutral slate. Text never lighter than #475569 (design rule).
+// reasons are neutral slate. Text never lighter than --text-secondary (design rule).
 const REASON: Record<AssigneeReason, { label: string; manual?: boolean }> = {
   self: { label: 'Themselves' },
   subordinate: { label: 'Reports to them' },
@@ -47,7 +47,7 @@ function ReasonChip({ reason }: { reason: AssigneeReason }) {
   const r = REASON[reason] ?? { label: reason }
   return (
     <span
-      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
+      className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full whitespace-nowrap ${
         r.manual ? 'bg-primary-subtle text-primary-text border border-primary-border' : 'bg-surface-control text-text-secondary'
       }`}
     >
@@ -334,20 +334,20 @@ export default function EmployeeAssigneeEditor({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, role or department…"
-          className="w-full pl-10 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted bg-white border border-border rounded-[8px] focus:outline-hidden focus:border-primary focus:border-2"
+          className="w-full pl-8 pr-3 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted bg-surface border border-border rounded-lg focus:outline-hidden focus:border-primary focus:border-2"
         />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-4">
         {/* ── Left: employees by department ── */}
-        <div className="lg:w-[320px] shrink-0 bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+        <div className="lg:w-[320px] shrink-0 bg-surface border border-border-light rounded-xl shadow-card overflow-hidden">
           <div className="max-h-[560px] overflow-y-auto divide-y divide-surface-control">
             {leftGroups.length === 0 && <p className="px-4 py-6 text-sm text-text-secondary text-center">No employees found.</p>}
             {leftGroups.map((g) => (
               <div key={g.id}>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-sunken border-b border-border-light sticky top-0">
                   <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorOf(g.id) }} />
-                  <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wide truncate">{g.name}</span>
+                  <span className="text-[11px] font-medium text-text-muted uppercase tracking-wide truncate">{g.name}</span>
                 </div>
                 {g.users.map((e) => (
                   <button
@@ -358,7 +358,7 @@ export default function EmployeeAssigneeEditor({
                       selectedId === e.user_id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                     }`}
                   >
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${avatarColor(e.name)}`}>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(e.name)}`}>
                       {getInitials(e.name)}
                     </div>
                     <div className="min-w-0">
@@ -373,33 +373,33 @@ export default function EmployeeAssigneeEditor({
         </div>
 
         {/* ── Right: resolved Assignees & CC list + editor ── */}
-        <div className="flex-1 min-w-0 bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+        <div className="flex-1 min-w-0 bg-surface border border-border-light rounded-xl shadow-card overflow-hidden">
           {!selectedId ? (
-            <div className="flex flex-col items-center justify-center text-center py-20 px-6">
+            <div className="flex flex-col items-center justify-center text-center py-12 px-6">
               <Users size={28} className="text-text-muted" />
-              <p className="mt-3 text-[15px] font-semibold text-text-primary">Pick an employee</p>
+              <p className="mt-3 text-[15px] font-medium text-text-primary">Pick an employee</p>
               <p className="mt-1 text-sm text-text-secondary">Select someone on the left to see exactly who they can assign to, and why.</p>
             </div>
           ) : loadingPreview && !preview ? (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex items-center justify-center py-12">
               <Loader2 className="animate-spin text-primary-text" />
             </div>
           ) : preview ? (
             <div className="flex flex-col max-h-[640px]">
               {/* Header */}
               <div className="px-4 py-3 border-b border-border-light flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${avatarColor(preview.employee.name)}`}>
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-medium shrink-0 ${avatarColor(preview.employee.name)}`}>
                   {getInitials(preview.employee.name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[15px] font-semibold text-text-primary truncate">{preview.employee.name}</p>
+                  <p className="text-[15px] font-medium text-text-primary truncate">{preview.employee.name}</p>
                   <div className="flex items-center gap-1.5 text-xs text-text-secondary">
                     <span className="truncate">
                       {preview.employee.role_title}
                       {preview.employee.department_name ? ` · ${preview.employee.department_name}` : ''}
                     </span>
                     <Tooltip label={`Can assign to ${memberCount} of ${totalActive}`}>
-                      <span className="shrink-0 font-semibold text-text-primary tabular-nums">
+                      <span className="shrink-0 font-medium text-text-primary tabular-nums">
                         · {memberCount}/{totalActive}
                       </span>
                     </Tooltip>
@@ -409,7 +409,7 @@ export default function EmployeeAssigneeEditor({
                 <button
                   type="button"
                   onClick={() => setShowWhy(true)}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-text-secondary hover:text-text-secondary transition-colors shrink-0"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-text-secondary hover:text-text-secondary transition-colors shrink-0"
                 >
                   <HelpCircle size={15} /> Why?
                 </button>
@@ -419,7 +419,7 @@ export default function EmployeeAssigneeEditor({
                   onClick={save}
                   disabled={!dirty || saving}
                   aria-label="Save"
-                  className={`w-9 h-9 flex items-center justify-center rounded-[8px] transition-colors shrink-0 ${
+                  className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors shrink-0 ${
                     !dirty || saving ? 'bg-surface-control-pressed text-text-muted cursor-not-allowed' : 'bg-primary text-white hover:bg-primary-hover'
                   }`}
                 >
@@ -434,30 +434,30 @@ export default function EmployeeAssigneeEditor({
                   <button
                     type="button"
                     onClick={() => setShowAdd((v) => !v)}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-text hover:text-primary-text transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-text hover:text-primary-text transition-colors"
                   >
                     <UserPlus size={15} /> Add / remove people
                   </button>
                   {showAdd && (
-                    <div className="absolute z-30 mt-2 w-[300px] max-w-[80vw] bg-white border border-border rounded-[10px] shadow-[0_8px_28px_rgba(0,0,0,0.14)] overflow-hidden">
+                    <div className="absolute z-30 mt-2 w-[300px] max-w-[80vw] bg-surface border border-border rounded-lg shadow-menu overflow-hidden">
                       <div className="relative border-b border-border-light">
                         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
                         <input
                           value={addQuery}
                           onChange={(e) => setAddQuery(e.target.value)}
                           placeholder="Search people…"
-                          className="w-full pl-9 pr-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
+                          className="w-full pl-8 pr-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden"
                         />
                       </div>
                       <div className="flex items-center justify-between px-3 py-1.5 border-b border-border-light bg-surface-sunken">
-                        <label className="flex items-center gap-2 text-xs font-semibold text-text-primary cursor-pointer">
-                          <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center ${allSelected ? 'bg-primary border-primary' : 'border-border'}`}>
+                        <label className="flex items-center gap-2 text-xs font-medium text-text-primary cursor-pointer">
+                          <span className={`w-4 h-4 rounded-tick border flex items-center justify-center ${allSelected ? 'bg-primary border-primary' : 'border-border'}`}>
                             {allSelected && <Check size={11} className="text-white" strokeWidth={3} />}
                           </span>
                           <input type="checkbox" className="sr-only" checked={allSelected} onChange={() => (allSelected ? removeAll() : selectAll())} />
                           Select all
                         </label>
-                        <button type="button" onClick={resetToRules} className="text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors">
+                        <button type="button" onClick={resetToRules} className="text-xs font-medium text-text-secondary hover:text-text-primary transition-colors">
                           Reset to rules
                         </button>
                       </div>
@@ -472,7 +472,7 @@ export default function EmployeeAssigneeEditor({
                               onClick={() => toggleMember(e.user_id)}
                               className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors ${on ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'}`}
                             >
-                              <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 ${on ? 'bg-primary border-primary' : 'border-border'}`}>
+                              <span className={`w-4 h-4 rounded-tick border flex items-center justify-center shrink-0 ${on ? 'bg-primary border-primary' : 'border-border'}`}>
                                 {on && <Check size={11} className="text-white" strokeWidth={3} />}
                               </span>
                               <span className="text-text-primary truncate">{e.name}</span>
@@ -496,8 +496,8 @@ export default function EmployeeAssigneeEditor({
               {removedRows.length > 0 && (
                 <div className="border-b border-danger-border bg-danger-bg">
                   <div className="flex items-center justify-between px-3 py-2">
-                    <span className="text-[11px] font-semibold text-danger uppercase tracking-wide">Removed ({removedRows.length})</span>
-                    <button type="button" onClick={resetToRules} className="inline-flex items-center gap-1 text-xs font-semibold text-primary-text hover:text-primary-text transition-colors">
+                    <span className="text-[11px] font-medium text-danger uppercase tracking-wide">Removed ({removedRows.length})</span>
+                    <button type="button" onClick={resetToRules} className="inline-flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text transition-colors">
                       <RotateCcw size={13} /> Restore all
                     </button>
                   </div>
@@ -514,7 +514,7 @@ export default function EmployeeAssigneeEditor({
                           <button
                             type="button"
                             onClick={() => addMember(r.user_id)}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-primary-text hover:text-primary-text transition-colors shrink-0"
+                            className="inline-flex items-center gap-1 text-xs font-medium text-primary-text hover:text-primary-text transition-colors shrink-0"
                           >
                             <RotateCcw size={12} /> Restore
                           </button>
@@ -533,7 +533,7 @@ export default function EmployeeAssigneeEditor({
                 {memberGroups.map((g) => (
                   <div key={g.department_id}>
                     <div className="px-3 py-1.5 bg-surface-sunken border-b border-border-light">
-                      <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wide">{g.department_name}</span>
+                      <span className="text-[11px] font-medium text-text-muted uppercase tracking-wide">{g.department_name}</span>
                     </div>
                     {g.users.map((u) => (
                       <Row
@@ -557,11 +557,11 @@ export default function EmployeeAssigneeEditor({
       {/* Discard-changes confirm (in-app, not browser) */}
       <Modal isOpen={pendingSelect !== null} onClose={() => setPendingSelect(null)} title="Discard unsaved changes?" size="sm">
         <p className="text-sm text-text-secondary">You have unsaved changes for this employee. Switch anyway and lose them?</p>
-        <div className="flex gap-2 justify-end mt-5">
+        <div className="flex gap-2 justify-end mt-4">
           <button
             type="button"
             onClick={() => setPendingSelect(null)}
-            className="px-4 py-2 text-sm font-semibold text-text-primary bg-surface-control hover:bg-surface-control-pressed rounded-[8px] transition-colors"
+            className="px-4 py-2 text-sm font-medium text-text-primary bg-surface-control hover:bg-surface-control-pressed rounded-lg transition-colors"
           >
             Keep editing
           </button>
@@ -572,7 +572,7 @@ export default function EmployeeAssigneeEditor({
               setPendingSelect(null)
               proceedSelect(id)
             }}
-            className="px-4 py-2 text-sm font-semibold text-white bg-danger hover:bg-danger-hover rounded-[8px] transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-danger hover:bg-danger-hover rounded-lg transition-colors"
           >
             Discard
           </button>
@@ -587,20 +587,20 @@ export default function EmployeeAssigneeEditor({
           </p>
           <div className="space-y-3">
             {whyGroups.map((grp) => (
-              <div key={grp.reason} className="border border-border-light rounded-[10px] overflow-hidden">
+              <div key={grp.reason} className="border border-border-light rounded-lg overflow-hidden">
                 <div className="flex items-center justify-between px-3 py-2 bg-surface-sunken border-b border-border-light">
-                  <span className="text-sm font-semibold text-text-primary">{REASON[grp.reason]?.label ?? grp.reason}</span>
+                  <span className="text-sm font-medium text-text-primary">{REASON[grp.reason]?.label ?? grp.reason}</span>
                   <span className="text-xs font-medium text-text-secondary">{grp.names.length}</span>
                 </div>
                 <p className="px-3 py-2 text-sm text-text-primary">{grp.names.join(', ')}</p>
               </div>
             ))}
           </div>
-          <div className="rounded-[10px] bg-surface-control border border-border-light p-3 space-y-1.5 text-[13px] text-text-secondary">
-            <p className="font-semibold text-text-secondary">Rules in effect</p>
+          <div className="rounded-lg bg-surface-control border border-border-light p-3 space-y-1.5 text-[13px] text-text-secondary">
+            <p className="font-medium text-text-secondary">Rules in effect</p>
             {ownDept ? (
               <p>
-                Department <span className="font-semibold">{ownDept.name}</span> — assigning up the chain is{' '}
+                Department <span className="font-medium">{ownDept.name}</span> — assigning up the chain is{' '}
                 {ownDept.assignee_allow_upward ? 'ON' : 'OFF'}
                 {ownDept.assignee_unify_subtree ? '; sub-departments merged into one pool' : ''}.
               </p>
@@ -610,7 +610,7 @@ export default function EmployeeAssigneeEditor({
             {ownBridges.length > 0 ? (
               ownBridges.map((b) => (
                 <p key={b.id}>
-                  Cross-dept link → <span className="font-semibold">{b.to_department_name ?? 'another dept'}</span> ({b.match_count} people).
+                  Cross-dept link → <span className="font-medium">{b.to_department_name ?? 'another dept'}</span> ({b.match_count} people).
                 </p>
               ))
             ) : (
@@ -642,7 +642,7 @@ function Row({
 }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5">
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${avatarColor(name)}`}>
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(name)}`}>
         {getInitials(name)}
       </div>
       <div className="flex-1 min-w-0">
@@ -654,10 +654,10 @@ function Row({
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
         {badges?.on_leave_today && (
-          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-warning-bg text-warning">On leave</span>
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-warning-bg text-warning">On leave</span>
         )}
         {badges?.is_frequent && (
-          <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary-subtle text-primary-text">
+          <span className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary-subtle text-primary-text">
             <Zap size={9} /> Frequent
           </span>
         )}

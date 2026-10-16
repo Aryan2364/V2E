@@ -71,19 +71,19 @@ export default function SegmentDrawer({
 
   return createPortal(
     <div className="fixed inset-0 z-60">
-      <div className="absolute inset-0 bg-[#0F172A]/40" onClick={onClose} />
-      <aside className="absolute right-0 top-0 h-full w-full max-w-[460px] bg-white shadow-[-12px_0_40px_rgba(0,0,0,0.18)] flex flex-col">
-        <div className="px-5 py-4 flex items-start justify-between border-b border-border-light">
+      <div className="absolute inset-0 bg-(--backdrop)" onClick={onClose} />
+      <aside className="absolute right-0 top-0 h-full w-full max-w-[460px] bg-surface shadow-dialog flex flex-col">
+        <div className="px-4 py-4 flex items-start justify-between border-b border-border-light">
           <div className="min-w-0">
             {subtitle && <div className="text-xs font-medium text-primary-text">{subtitle}</div>}
-            <h3 className="text-lg font-bold tracking-tight text-text-primary truncate">{title}</h3>
+            <h3 className="text-lg font-medium tracking-tight text-text-primary truncate">{title}</h3>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-[8px] border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control shrink-0">
+          <button onClick={onClose} className="w-8 h-8 rounded-lg border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control shrink-0">
             <X size={16} />
           </button>
         </div>
 
-        <div className="px-5 py-3 flex gap-6 border-b border-border-light bg-surface-sunken">
+        <div className="px-4 py-3 flex gap-6 border-b border-border-light bg-surface-sunken">
           <Stat label="Tasks" value={total} />
           <Stat label="Completed" value={completed} color="var(--success)" />
           <Stat label="Overdue" value={overdue} color={overdue ? 'var(--danger)' : 'var(--text-muted)'} />
@@ -95,7 +95,7 @@ export default function SegmentDrawer({
               <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
           ) : rows.length === 0 ? (
-            <p className="px-5 py-10 text-center text-sm text-text-secondary">No tasks in this view.</p>
+            <p className="px-4 py-12 text-center text-sm text-text-secondary">No tasks in this view.</p>
           ) : (
             rows.map((r) => {
               const t = taskTiming(r)
@@ -104,10 +104,10 @@ export default function SegmentDrawer({
                 <button
                   key={r.id}
                   onClick={() => onOpenTask(r.id)}
-                  className="w-full text-left px-5 py-3.5 border-b border-border-light hover:bg-primary-subtle transition-colors"
+                  className="w-full text-left px-4 py-3.5 border-b border-border-light hover:bg-primary-subtle transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3 mb-1.5">
-                    <div className="font-semibold text-sm leading-snug text-text-primary">{r.title}</div>
+                    <div className="font-medium text-sm leading-snug text-text-primary">{r.title}</div>
                     {r.priority && (
                       <span className="text-[11px] font-medium rounded-full px-2 py-0.5 shrink-0" style={{ backgroundColor: (r.priority.color || 'var(--text-secondary)') + '22', color: r.priority.color || 'var(--text-secondary)' }}>
                         {r.priority.label}
@@ -130,7 +130,7 @@ export default function SegmentDrawer({
                       {TIMING_META[t].label}
                     </span>
                     <span className="tabular-nums text-text-muted">
-                      Due {fmt(r.deadline)}{due && <span className="text-text-secondary font-semibold"> · {due}</span>}
+                      Due {fmt(r.deadline)}{due && <span className="text-text-secondary font-medium"> · {due}</span>}
                     </span>
                   </div>
                 </button>
@@ -147,7 +147,7 @@ export default function SegmentDrawer({
 function Stat({ label, value, color = 'var(--text-primary)' }: { label: string; value: number; color?: string }) {
   return (
     <div>
-      <div className="text-lg font-bold tabular-nums leading-none" style={{ color }}>{value}</div>
+      <div className="text-lg font-medium tabular-nums leading-none" style={{ color }}>{value}</div>
       <div className="text-xs mt-0.5 text-text-muted">{label}</div>
     </div>
   )

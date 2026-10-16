@@ -115,7 +115,7 @@ export default function TaskTable({
   )
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+    <div className="bg-surface border border-border-light rounded-xl shadow-card overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
@@ -138,7 +138,7 @@ export default function TaskTable({
               </Th>
             </tr>
             {/* Filter row — multiple filters can be active simultaneously. */}
-            <tr className="bg-white border-b border-border-light">
+            <tr className="bg-surface border-b border-border-light">
               <td className="px-3 py-2 align-top min-w-[150px]">
                 {filterCell('type', 'All types', [{ value: 'one_time', label: 'One-time' }, { value: 'recurring', label: 'Recurring' }, { value: 'workflow', label: 'From workflows' }])}
               </td>
@@ -190,12 +190,12 @@ export default function TaskTable({
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={11} className="py-16 text-center"><div className="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></td></tr>
+              <tr><td colSpan={11} className="py-12 text-center"><div className="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></td></tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={11} className="py-16 text-center">
+                <td colSpan={11} className="py-12 text-center">
                   <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center mx-auto mb-3"><CheckSquare size={20} className="text-text-muted" /></div>
-                  <p className="font-semibold text-text-primary">No tasks match these filters</p>
+                  <p className="font-medium text-text-primary">No tasks match these filters</p>
                   <p className="text-sm text-text-secondary mt-1">Clear a filter to widen the view.</p>
                 </td>
               </tr>
@@ -241,9 +241,9 @@ export default function TaskTable({
         </table>
       </div>
       <div className="flex items-center justify-between px-4 py-3 border-t border-border-light bg-surface-sunken">
-        <span className="text-xs text-text-secondary"><span className="font-semibold text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}</span>
+        <span className="text-xs text-text-secondary"><span className="font-medium text-text-primary tabular-nums">{total}</span> task{total !== 1 ? 's' : ''}</span>
         {hasMore && (
-          <button onClick={onLoadMore} disabled={loadingMore} className="px-4 py-2 rounded-[8px] border border-border-light bg-white text-sm font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
+          <button onClick={onLoadMore} disabled={loadingMore} className="px-4 py-2 rounded-lg border border-border-light bg-surface text-sm font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary disabled:opacity-60 transition-colors">
             {loadingMore ? 'Loading…' : `Load more (${total - rows.length} left)`}
           </button>
         )}
@@ -253,5 +253,5 @@ export default function TaskTable({
 }
 
 function Th({ children }: { children: React.ReactNode }) {
-  return <th className="text-left font-semibold text-[12px] text-text-secondary px-3 py-2.5 whitespace-nowrap select-none">{children}</th>
+  return <th className="text-left font-medium text-[12px] text-text-secondary px-3 py-2.5 whitespace-nowrap select-none">{children}</th>
 }

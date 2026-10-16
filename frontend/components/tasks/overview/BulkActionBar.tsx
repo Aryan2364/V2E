@@ -61,9 +61,9 @@ export default function BulkActionBar({
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-3xl">
-      <div className="bg-[#0F172A] text-white rounded-[12px] shadow-[0_8px_30px_rgba(0,0,0,0.25)] px-4 py-3 flex items-center gap-3 flex-wrap">
-        <span className="text-sm font-semibold whitespace-nowrap">{count} selected</span>
-        <div className="h-5 w-px bg-[#334155] hidden sm:block" />
+      <div className="bg-text-primary text-white rounded-xl shadow-dialog px-4 py-3 flex items-center gap-3 flex-wrap">
+        <span className="text-sm font-medium whitespace-nowrap">{count} selected</span>
+        <div className="h-5 w-px bg-on-brand-hover hidden sm:block" />
 
         <div className="flex items-center gap-2 flex-wrap flex-1">
           <StyledSelect
@@ -71,7 +71,7 @@ export default function BulkActionBar({
             disabled={busy}
             onChange={(v) => v && onStatus(v)}
             wrapperClassName="w-[150px]"
-            triggerClassName="bg-[#1E293B]! hover:bg-[#1E293B]! focus:bg-[#1E293B]! border-border-strong! text-white!"
+            triggerClassName="bg-text-primary! hover:bg-text-primary! focus:bg-text-primary! border-border-strong! text-white!"
             placeholder="Set status…"
             options={[
               { value: '', label: 'Set status…' },
@@ -103,13 +103,13 @@ export default function BulkActionBar({
           <button
             onClick={onComplete}
             disabled={busy}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] bg-success text-white text-sm font-semibold hover:bg-success disabled:opacity-60 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-success text-white text-sm font-medium hover:bg-success disabled:opacity-60 transition-colors"
           >
             <CheckCircle2 size={15} /> Complete
           </button>
         </div>
 
-        <button onClick={onClear} className="flex items-center gap-1 text-sm text-[#CBD5E1] hover:text-white transition-colors">
+        <button onClick={onClear} className="flex items-center gap-1 text-sm text-text-muted hover:text-white transition-colors">
           <X size={15} /> Clear
         </button>
       </div>
@@ -228,8 +228,8 @@ function BulkTagButton({
         disabled={busy}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-[8px] border text-sm font-semibold disabled:opacity-60 transition-colors ${
-          open ? 'bg-white text-text-primary border-white' : 'bg-[#1E293B] text-white border-border-strong hover:bg-[#334155]'
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium disabled:opacity-60 transition-colors ${
+          open ? 'bg-surface text-text-primary border-white' : 'bg-text-primary text-white border-border-strong hover:bg-text-primary/80'
         }`}
       >
         <TagIcon size={15} /> Tag
@@ -241,11 +241,11 @@ function BulkTagButton({
             ref={panelRef}
             role="dialog"
             aria-label={`Tag ${tasksWord}`}
-            className="fixed z-70 w-[360px] max-w-[calc(100vw-16px)] rounded-card border border-border bg-white p-4 shadow-[0_8px_28px_rgba(0,0,0,0.18)] animate-[popIn_.15s_ease-out]"
+            className="fixed z-70 w-[360px] max-w-[calc(100vw-16px)] rounded-card border border-border bg-surface p-4 shadow-menu animate-[popIn_.15s_ease-out]"
             style={{ left: pos.left, bottom: pos.bottom }}
           >
             <div className="flex items-center justify-between gap-2 mb-3">
-              <p className="text-sm font-semibold text-heading">Tag {tasksWord}</p>
+              <p className="text-sm font-medium text-heading">Tag {tasksWord}</p>
               <button
                 type="button"
                 onClick={() => close(true)}
@@ -264,7 +264,7 @@ function BulkTagButton({
                   aria-pressed={mode === m}
                   onClick={() => switchMode(m)}
                   className={`py-1.5 rounded-[6px] text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${
-                    mode === m ? 'bg-white text-primary shadow-card' : 'text-secondary hover:text-heading'
+                    mode === m ? 'bg-surface text-primary shadow-card' : 'text-secondary hover:text-heading'
                   }`}
                 >
                   {label}
@@ -300,7 +300,7 @@ function BulkTagButton({
                 type="button"
                 onClick={() => void apply()}
                 disabled={!ids.length || applying || busy}
-                className="px-3.5 py-2 rounded-btn bg-primary text-white text-sm font-semibold hover:bg-primary-hover disabled:bg-border disabled:text-muted disabled:cursor-not-allowed transition-colors"
+                className="px-3.5 py-2 rounded-btn bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:bg-border disabled:text-muted disabled:cursor-not-allowed transition-colors"
               >
                 {applyLabel}
               </button>

@@ -91,7 +91,7 @@ function SummaryChip({ color, label }: { color: 'green' | 'red' | 'amber' | 'blu
     amber: 'bg-warning-bg text-warning',
     blue: 'bg-primary-subtle text-primary-text',
   }[color]
-  return <span className={`text-xs font-semibold rounded-[999px] px-2.5 py-1 ${styles}`}>{label}</span>
+  return <span className={`text-xs font-medium rounded-full px-2.5 py-1 ${styles}`}>{label}</span>
 }
 
 export default function ImportChecklistsModal({ orgId, onClose, onImported }: Props) {
@@ -338,7 +338,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
 
   return createPortal(
     <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
-      <div className="bg-white w-full sm:max-w-3xl sm:rounded-[12px] rounded-t-[16px] shadow-xl max-h-[92vh] flex flex-col">
+      <div className="bg-surface w-full sm:max-w-3xl sm:rounded-xl rounded-t-xl shadow-xl max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
           <div className="flex items-center gap-3">
@@ -351,7 +351,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                 <ArrowLeft size={18} />
               </button>
             )}
-            <h2 className="text-[18px] font-semibold text-text-primary">
+            <h2 className="text-[18px] font-medium text-text-primary">
               {phase === 'preview' ? 'Review before importing' : phase === 'history' ? 'Import history' : phase === 'result' ? 'Import complete' : 'Import Checklists'}
             </h2>
           </div>
@@ -371,14 +371,14 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 overflow-y-auto space-y-5">
+        <div className="px-6 py-4 overflow-y-auto space-y-4">
           {/* ── Upload ── */}
           {phase === 'upload' && (
             <>
-              <div className="flex items-start gap-3 p-4 rounded-[10px] bg-primary-subtle border border-primary-border">
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-primary-subtle border border-primary-border">
                 <FileText size={18} className="text-primary-text mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-text-primary">Step 1 — Download the Excel template</p>
+                  <p className="text-sm font-medium text-text-primary">Step 1 — Download the Excel template</p>
                   <p className="text-[13px] text-text-secondary mt-0.5">
                     Put <strong>one item per row</strong>. Rows that share the same <strong>Checklist Name</strong> become one
                     checklist — so a single file can hold <strong>many checklists</strong>. Imported checklists arrive{' '}
@@ -387,7 +387,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                   <button
                     onClick={downloadTemplate}
                     disabled={building}
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                   >
                     {building ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
                     {building ? 'Building…' : 'Download Excel template'}
@@ -396,11 +396,11 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
               </div>
 
               <div>
-                <p className="text-sm font-semibold text-text-primary mb-2">Step 2 — Upload the filled file to review</p>
+                <p className="text-sm font-medium text-text-primary mb-2">Step 2 — Upload the filled file to review</p>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-[10px] border-2 border-dashed border-border hover:border-primary hover:bg-surface-sunken transition-colors"
+                  className="w-full flex flex-col items-center justify-center gap-2 py-8 rounded-lg border-2 border-dashed border-border hover:border-primary hover:bg-surface-sunken transition-colors"
                 >
                   {validating ? <Loader2 size={26} className="text-primary-text animate-spin" /> : <UploadCloud size={26} className="text-text-muted" />}
                   <span className="text-sm font-medium text-text-secondary">
@@ -417,7 +417,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
               </div>
 
               {parseError && (
-                <div className="p-3 bg-danger-bg border border-danger-border rounded-[8px] text-sm text-danger">{parseError}</div>
+                <div className="p-3 bg-danger-bg border border-danger-border rounded-lg text-sm text-danger">{parseError}</div>
               )}
             </>
           )}
@@ -435,16 +435,16 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
 
               {/* Grouped checklists preview */}
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">Checklists to create</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-text-muted">Checklists to create</p>
                 {validation.groups.filter((g) => g.items.length > 0).length === 0 && (
                   <p className="text-sm text-text-muted">No valid checklists found. Fix the errors below and re-upload.</p>
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {validation.groups.filter((g) => g.items.length > 0).map((g, i) => (
-                    <div key={i} className="border border-border-light rounded-[8px] p-3">
+                    <div key={i} className="border border-border-light rounded-lg p-3">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-text-primary truncate">{g.name}</span>
-                        <span className="shrink-0 text-[11px] font-medium rounded-[999px] px-2 py-0.5 bg-primary-subtle text-primary-text">{g.items.length} item{g.items.length !== 1 ? 's' : ''}</span>
+                        <span className="text-sm font-medium text-text-primary truncate">{g.name}</span>
+                        <span className="shrink-0 text-[11px] font-medium rounded-full px-2 py-0.5 bg-primary-subtle text-primary-text">{g.items.length} item{g.items.length !== 1 ? 's' : ''}</span>
                       </div>
                       {g.already_exists && (
                         <span className="inline-block mt-1 text-[11px] font-medium text-warning">A checklist with this name already exists</span>
@@ -467,7 +467,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                     <input type="checkbox" checked={onlyProblems} onChange={(e) => setOnlyProblems(e.target.checked)} className="rounded-xs border-border" />
                     Show only rows with problems
                   </label>
-                  <div className="border border-border-light rounded-[8px] overflow-hidden">
+                  <div className="border border-border-light rounded-lg overflow-hidden">
                     <div className="max-h-[34vh] overflow-y-auto">
                       <table className="w-full text-sm">
                         <thead className="bg-surface-sunken sticky top-0">
@@ -510,12 +510,12 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                 <button
                   onClick={handleImport}
                   disabled={importing || validation.templates === 0}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                 >
                   {importing ? <Loader2 size={15} className="animate-spin" /> : <ListChecks size={15} />}
                   {importing ? 'Importing…' : `Import ${validation.templates} checklist${validation.templates !== 1 ? 's' : ''}`}
                 </button>
-                <button onClick={() => setPhase('upload')} className="px-4 py-2 rounded-[8px] text-sm font-semibold text-text-secondary bg-white border border-border-light hover:bg-surface-control transition-colors">Choose another file</button>
+                <button onClick={() => setPhase('upload')} className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary bg-surface border border-border-light hover:bg-surface-control transition-colors">Choose another file</button>
               </div>
             </>
           )}
@@ -527,7 +527,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                 <SummaryChip color="green" label={`${commitResult.created} created`} />
                 {commitResult.failed > 0 && <SummaryChip color="red" label={`${commitResult.failed} failed`} />}
               </div>
-              <div className="flex items-start gap-3 p-4 rounded-[10px] bg-warning-bg border border-warning-border">
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-warning-bg border border-warning-border">
                 <AlertTriangle size={18} className="text-warning mt-0.5 shrink-0" />
                 <p className="text-[13px] text-warning">
                   Imported checklists are <strong>inactive</strong>. Open each one, set <strong>“Who can use this checklist”</strong>,
@@ -538,7 +538,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                 <button
                   onClick={() => handleUndo(commitResult.batch_id as string)}
                   disabled={undoingId === commitResult.batch_id}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold text-danger bg-white border border-danger-border hover:bg-danger-bg transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg transition-colors"
                 >
                   {undoingId === commitResult.batch_id ? <Loader2 size={15} className="animate-spin" /> : <Undo2 size={15} />}
                   Undo this import
@@ -548,8 +548,8 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                 <p className="text-sm text-text-secondary">Removed {undoResult.undone}. {undoResult.kept.length > 0 && `Kept ${undoResult.kept.length} (already activated).`}</p>
               )}
               <div className="flex items-center gap-2 pt-1">
-                <button onClick={resetToUpload} className="px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover transition-colors">Import another file</button>
-                <button onClick={onClose} className="px-4 py-2 rounded-[8px] text-sm font-semibold text-text-secondary bg-white border border-border-light hover:bg-surface-control transition-colors">Done</button>
+                <button onClick={resetToUpload} className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors">Import another file</button>
+                <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary bg-surface border border-border-light hover:bg-surface-control transition-colors">Done</button>
               </div>
             </div>
           )}
@@ -559,10 +559,10 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
             <div className="space-y-3">
               {batches.length === 0 && <p className="text-sm text-text-muted text-center py-8">No imports yet.</p>}
               {batches.map((b) => (
-                <div key={b.id} className="border border-border-light rounded-[8px] p-3.5">
+                <div key={b.id} className="border border-border-light rounded-lg p-3.5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-text-primary truncate">{b.file_name || 'Checklist import'}</p>
+                      <p className="text-sm font-medium text-text-primary truncate">{b.file_name || 'Checklist import'}</p>
                       <p className="text-xs text-text-muted mt-0.5">
                         {new Date(b.created_at).toLocaleString()} · by {b.imported_by}
                       </p>
@@ -577,7 +577,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                     <button
                       onClick={() => handleUndo(b.id)}
                       disabled={!b.can_undo || undoingId === b.id}
-                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-semibold text-danger bg-white border border-danger-border hover:bg-danger-bg disabled:text-[#CBD5E1] disabled:border-border-light disabled:hover:bg-white transition-colors"
+                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:text-text-muted disabled:border-border-light disabled:hover:bg-surface transition-colors"
                     >
                       {undoingId === b.id ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />}
                       Undo

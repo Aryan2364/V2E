@@ -19,7 +19,7 @@ function initials(name: string): string {
 
 function Avatar({ name }: { name: string }) {
   return (
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${avatarColor(name)}`}>
+    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${avatarColor(name)}`}>
       {initials(name)}
     </div>
   )
@@ -112,36 +112,36 @@ export default function ManageAccessModal({
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-lg bg-white rounded-[14px] shadow-[0_12px_40px_rgba(0,0,0,0.18)] border border-border-light flex flex-col max-h-[85vh]">
+      <div className="w-full max-w-lg bg-surface rounded-xl shadow-dialog border border-border-light flex flex-col max-h-[85vh]">
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border-light">
+        <div className="flex items-center justify-between gap-3 px-4 py-4 border-b border-border-light">
           <div className="flex items-center gap-2 min-w-0">
             <Shield size={17} className="text-primary-text shrink-0" />
             <div className="min-w-0">
-              <h3 className="text-[16px] font-semibold text-text-primary leading-tight">Manage access</h3>
+              <h3 className="text-[16px] font-medium text-text-primary leading-tight">Manage access</h3>
               {panel && <p className="text-[13px] text-text-secondary truncate">“{panel.title}”</p>}
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-[8px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0">
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0">
             <X size={18} />
           </button>
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {error && (
-            <div className="bg-danger-bg border border-danger-border rounded-[8px] px-3 py-2 text-sm text-danger">{error}</div>
+            <div className="bg-danger-bg border border-danger-border rounded-lg px-3 py-2 text-sm text-danger">{error}</div>
           )}
 
           {loading ? (
-            <div className="flex items-center justify-center py-10">
+            <div className="flex items-center justify-center py-12">
               <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
           ) : panel ? (
             <>
               {/* Add people */}
-              <div className="bg-surface-sunken border border-border-light rounded-[10px] p-3">
-                <div className="flex items-center gap-1.5 mb-2 text-[13px] font-semibold text-text-primary">
+              <div className="bg-surface-sunken border border-border-light rounded-lg p-3">
+                <div className="flex items-center gap-1.5 mb-2 text-[13px] font-medium text-text-primary">
                   <UserPlus size={14} className="text-primary-text" /> Add or remove a person
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -168,7 +168,7 @@ export default function ManageAccessModal({
                   <button
                     onClick={handleAdd}
                     disabled={!addUser || busyUser === addUser}
-                    className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
                   >
                     Apply
                   </button>
@@ -181,10 +181,10 @@ export default function ManageAccessModal({
 
               {/* Has access */}
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wide text-text-muted mb-2">Has access</p>
+                <p className="text-[12px] font-medium uppercase tracking-wide text-text-muted mb-2">Has access</p>
                 <div className="space-y-1.5">
                   {panel.rule_viewers.map((p) => (
-                    <div key={`rv-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-[8px] hover:bg-surface-sunken">
+                    <div key={`rv-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-surface-sunken">
                       <Avatar name={p.name} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
@@ -207,7 +207,7 @@ export default function ManageAccessModal({
                   ))}
 
                   {panel.shares.map((p) => (
-                    <div key={`sh-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-[8px] hover:bg-surface-sunken">
+                    <div key={`sh-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-surface-sunken">
                       <Avatar name={p.name} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
@@ -234,10 +234,10 @@ export default function ManageAccessModal({
               {/* Removed */}
               {panel.revokes.length > 0 && (
                 <div>
-                  <p className="text-[12px] font-semibold uppercase tracking-wide text-text-muted mb-2">Hidden from</p>
+                  <p className="text-[12px] font-medium uppercase tracking-wide text-text-muted mb-2">Hidden from</p>
                   <div className="space-y-1.5">
                     {panel.revokes.map((p) => (
-                      <div key={`rk-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-[8px] hover:bg-surface-sunken">
+                      <div key={`rk-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-surface-sunken">
                         <Avatar name={p.name} />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-text-primary truncate">{p.name}</p>
@@ -260,8 +260,8 @@ export default function ManageAccessModal({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end px-5 py-3.5 border-t border-border-light">
-          <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-[8px] hover:bg-primary-hover transition-colors">
+        <div className="flex justify-end px-4 py-3.5 border-t border-border-light">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors">
             Done
           </button>
         </div>

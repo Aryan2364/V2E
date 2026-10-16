@@ -43,7 +43,7 @@ export default function ScheduleEntryList({ entries, onChange }: Props) {
       {entries.map((entry, index) => (
         <div
           key={index}
-          className="border border-border-light rounded-[10px] p-4 bg-surface-sunken space-y-4"
+          className="border border-border-light rounded-lg p-4 bg-surface-sunken space-y-4"
         >
           <ScheduleEntryRow
             entry={entry}

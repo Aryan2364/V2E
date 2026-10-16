@@ -56,7 +56,7 @@ export default function ProofRequirementField({
         >
           <span
             className={[
-              'absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200',
+              'absolute top-0.5 left-0.5 w-4 h-4 bg-surface rounded-full shadow-sm transition-transform duration-200',
               proofRequired ? 'translate-x-5' : 'translate-x-0',
             ].join(' ')}
           />
@@ -78,8 +78,8 @@ export default function ProofRequirementField({
       </div>
 
       {proofRequired && showTypes && (
-        <div className="mt-2 rounded-[10px] border border-border-light bg-surface-sunken p-3">
-          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-2">Allowed proof types</p>
+        <div className="mt-2 rounded-lg border border-border-light bg-surface-sunken p-3">
+          <p className="text-[11px] font-medium text-text-muted uppercase tracking-wide mb-2">Allowed proof types</p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
             {FILE_TYPE_GROUPS.map((g) => (
               <label key={g.key} className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">

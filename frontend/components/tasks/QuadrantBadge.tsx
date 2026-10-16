@@ -43,13 +43,13 @@ export default function QuadrantBadge({ quadrant, size = 'sm' }: QuadrantBadgePr
     return (
       <span
         className={[
-          'inline-flex flex-col items-center rounded-[8px] px-3 py-1.5',
+          'inline-flex flex-col items-center rounded-lg px-3 py-1.5',
           cfg.bg,
           cfg.text,
           cfg.border,
         ].join(' ')}
       >
-        <span className="text-sm font-bold leading-tight">{cfg.label}</span>
+        <span className="text-sm font-medium leading-tight">{cfg.label}</span>
         <span className="text-[10px] font-medium leading-tight opacity-80">{cfg.sublabel}</span>
       </span>
     )
@@ -57,7 +57,7 @@ export default function QuadrantBadge({ quadrant, size = 'sm' }: QuadrantBadgePr
   return (
     <span
       className={[
-        'inline-flex items-center rounded-[6px] px-2 py-0.5 text-[11px] font-semibold',
+        'inline-flex items-center rounded-[6px] px-2 py-0.5 text-[11px] font-medium',
         cfg.bg,
         cfg.text,
         cfg.border,

@@ -26,16 +26,16 @@ function Card({
       type="button"
       onClick={onClick}
       disabled={!onClick}
-      className={`text-left rounded-[12px] p-4 border transition-all duration-150 ${onClick ? 'cursor-pointer hover:shadow-[0_2px_8px_rgba(0,0,0,0.10)]' : 'cursor-default'}`}
-      style={{ background: bg, borderColor: border, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      className={`text-left rounded-xl p-4 border transition-all duration-150 ${onClick ? 'cursor-pointer hover:shadow-menu' : 'cursor-default'}`}
+      style={{ background: bg, borderColor: border, boxShadow: 'var(--shadow-card)' }}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="w-8 h-8 rounded-[8px] flex items-center justify-center" style={{ backgroundColor: iconColor + '18', color: iconColor }}>
+        <span className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: iconColor + '18', color: iconColor }}>
           {icon}
         </span>
         {onClick && <span className="text-text-muted text-sm">›</span>}
       </div>
-      <p className="text-2xl font-bold leading-none tabular-nums" style={{ color: valueColor }}>{value}</p>
+      <p className="text-2xl font-medium leading-none tabular-nums" style={{ color: valueColor }}>{value}</p>
       <p className="text-[13px] mt-1.5 text-text-secondary">{label}</p>
       {delta != null && (
         <p className="text-[12px] mt-1 font-medium flex items-center gap-1" style={{ color: delta >= 0 ? 'var(--success)' : 'var(--danger)' }}>

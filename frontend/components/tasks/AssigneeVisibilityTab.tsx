@@ -48,7 +48,7 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: () => void;
       className={`relative w-9 h-5 rounded-full transition-colors shrink-0 disabled:opacity-50 ${on ? 'bg-primary' : 'bg-surface-control-pressed'}`}
     >
       <span
-        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-xs transition-transform ${on ? 'translate-x-4' : 'translate-x-0'}`}
+        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-surface shadow-xs transition-transform ${on ? 'translate-x-4' : 'translate-x-0'}`}
       />
     </button>
   )
@@ -60,7 +60,7 @@ function Chip({ label, active, color = 'blue', onClick }: { label: string; activ
     <button
       type="button"
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-[6px] text-xs font-medium border capitalize transition-colors ${active ? activeCls : 'bg-white text-text-secondary border-border hover:border-primary'}`}
+      className={`px-3 py-1.5 rounded-[6px] text-xs font-medium border capitalize transition-colors ${active ? activeCls : 'bg-surface text-text-secondary border-border hover:border-primary'}`}
     >
       {label}
     </button>
@@ -69,7 +69,7 @@ function Chip({ label, active, color = 'blue', onClick }: { label: string; activ
 
 function SegTabs<T extends string>({ value, onChange, tabs }: { value: T; onChange: (v: T) => void; tabs: { value: T; label: string }[] }) {
   return (
-    <div className="inline-flex gap-1 p-1 rounded-[10px] bg-primary">
+    <div className="inline-flex gap-1 p-1 rounded-lg bg-primary">
       {tabs.map((t) => {
         const active = value === t.value
         return (
@@ -79,9 +79,9 @@ function SegTabs<T extends string>({ value, onChange, tabs }: { value: T; onChan
             onClick={() => onChange(t.value)}
             aria-pressed={active}
             className={[
-              'px-4 py-1.5 text-sm font-semibold rounded-[7px] transition-colors',
+              'px-4 py-1.5 text-sm font-medium rounded-lg transition-colors',
               active
-                ? 'bg-white text-primary-text shadow-xs'
+                ? 'bg-surface text-primary-text shadow-xs'
                 : 'bg-transparent text-white hover:bg-primary-hover',
             ].join(' ')}
           >
@@ -95,9 +95,9 @@ function SegTabs<T extends string>({ value, onChange, tabs }: { value: T; onChan
 
 function Card({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-5 space-y-4">
+    <div className="bg-surface border border-border-light rounded-xl shadow-card p-4 space-y-4">
       <div>
-        <h3 className="text-[15px] font-semibold text-text-primary">{title}</h3>
+        <h3 className="text-[15px] font-medium text-text-primary">{title}</h3>
         {description && <p className="text-[13px] text-text-secondary mt-0.5 leading-relaxed">{description}</p>}
       </div>
       {children}
@@ -192,11 +192,11 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
   const overrideOn = settings.master_override
 
   return (
-    <div className="space-y-5 max-w-3xl">
+    <div className="space-y-4 max-w-3xl">
       {/* Default-rules info */}
       <div>
         <div className="flex items-center gap-1.5">
-          <h2 className="text-[18px] font-semibold text-text-primary">Assignee visibility</h2>
+          <h2 className="text-[18px] font-medium text-text-primary">Assignee visibility</h2>
           <button
             type="button"
             onClick={() => setShowRules((v) => !v)}
@@ -220,14 +220,14 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
         </div>
 
         {showRules && (
-          <div className="mt-2 rounded-[12px] border border-primary-border bg-primary-subtle p-4 text-sm">
+          <div className="mt-2 rounded-xl border border-primary-border bg-primary-subtle p-4 text-sm">
             <div className="flex items-start justify-between gap-3">
-              <p className="font-semibold text-text-primary">How the default list is built</p>
+              <p className="font-medium text-text-primary">How the default list is built</p>
               <button
                 type="button"
                 onClick={() => setShowRules(false)}
                 aria-label="Close"
-                className="w-6 h-6 flex items-center justify-center rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-white/60 transition-colors shrink-0"
+                className="w-6 h-6 flex items-center justify-center rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-surface/60 transition-colors shrink-0"
               >
                 <X size={15} />
               </button>
@@ -238,19 +238,19 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
             </p>
             <ol className="mt-2.5 space-y-2 text-text-primary">
               <li>
-                <span className="font-semibold text-text-primary">1. Themselves.</span> A person can always assign to themselves.
+                <span className="font-medium text-text-primary">1. Themselves.</span> A person can always assign to themselves.
               </li>
               <li>
-                <span className="font-semibold text-text-primary">2. Everyone below them.</span> Anyone who reports to them —
+                <span className="font-medium text-text-primary">2. Everyone below them.</span> Anyone who reports to them —
                 directly or further down the chain — in any department.
               </li>
               <li>
-                <span className="font-semibold text-text-primary">3. Their own department.</span> Everyone in the department
+                <span className="font-medium text-text-primary">3. Their own department.</span> Everyone in the department
                 their profile belongs to. The <span className="font-medium">Upward</span> switch decides whether they also
                 see people <em>above</em> them inside that same department.
               </li>
               <li>
-                <span className="font-semibold text-text-primary">4. Their direct manager.</span> The person they report to is
+                <span className="font-medium text-text-primary">4. Their direct manager.</span> The person they report to is
                 always included — even when that manager sits in a different (e.g. parent) department.
               </li>
             </ol>
@@ -275,7 +275,7 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
           <Toggle on={overrideOn} onChange={() => commitNow({ ...settings, master_override: !overrideOn })} />
         </div>
         {overrideOn && (
-          <div className="flex items-start gap-2 p-3 rounded-[8px] bg-warning-bg border border-warning-border text-[13px] text-warning">
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-warning-bg border border-warning-border text-[13px] text-warning">
             <AlertTriangle size={15} className="mt-0.5 shrink-0" />
             <span>While the override is on, exceptions, bridges and the upward switch have no effect — but per-employee manual additions/removals (Employee tab) still apply.</span>
           </div>
@@ -302,7 +302,7 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
       </Card>
 
       {/* Three configuration tabs + body — disabled + dimmed (values preserved) while the master override is on */}
-      <div className={overrideOn ? 'opacity-60 pointer-events-none space-y-5' : 'space-y-5'}>
+      <div className={overrideOn ? 'opacity-60 pointer-events-none space-y-4' : 'space-y-4'}>
         <SegTabs
           value={activeTab}
           onChange={setActiveTab}
@@ -390,7 +390,7 @@ function UpwardSection({ orgId, view, onChange, apiError }: { orgId: string; vie
           return (
             <div key={dept.id} className="flex items-center justify-between gap-3 py-2.5">
               <div className="flex items-center gap-2 min-w-0" style={{ paddingLeft: depth * 18 }}>
-                {depth > 0 && <CornerDownRight size={13} className="shrink-0 text-[#CBD5E1] -mr-0.5" />}
+                {depth > 0 && <CornerDownRight size={13} className="shrink-0 text-text-muted -mr-0.5" />}
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorOf(dept.id) }} />
                 <div className="min-w-0">
                   <p className={`text-sm truncate ${covered ? 'text-text-secondary' : 'font-medium text-text-primary'}`}>{dept.name}</p>
@@ -554,7 +554,7 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
               placeholder="Search departments..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-1.5 border border-border rounded-[8px] text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white"
+              className="w-full pl-8 pr-8 py-1.5 border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
             />
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
               <Search size={14} />
@@ -582,10 +582,10 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
                 return (
                   <div key={dept.id} className="flex items-center justify-between gap-3 py-2">
                     <div className="flex items-center gap-2 min-w-0" style={{ paddingLeft: depth * 18 }}>
-                      {depth > 0 && <CornerDownRight size={13} className="shrink-0 text-[#CBD5E1] -mr-0.5" />}
+                      {depth > 0 && <CornerDownRight size={13} className="shrink-0 text-text-muted -mr-0.5" />}
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorOf(dept.id) }} />
                       <div className="min-w-0">
-                        <p className={`text-sm truncate ${unified ? 'font-semibold text-text-primary' : covered ? 'text-text-secondary' : parent ? 'font-medium text-text-primary' : 'text-text-muted'}`}>
+                        <p className={`text-sm truncate ${unified ? 'font-medium text-text-primary' : covered ? 'text-text-secondary' : parent ? 'font-medium text-text-primary' : 'text-text-muted'}`}>
                           {dept.name}
                         </p>
                         <p className="text-xs text-text-muted">
@@ -611,7 +611,7 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
                       ) : parent ? (
                         <Toggle on={d.assignee_unify_subtree} disabled={busy === dept.id} onChange={() => toggle(dept.id, !d.assignee_unify_subtree)} />
                       ) : (
-                        <span className="text-[11px] text-[#CBD5E1] pr-1">—</span>
+                        <span className="text-[11px] text-text-muted pr-1">—</span>
                       )}
                     </div>
                   </div>
@@ -728,7 +728,7 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
           <label className="block text-xs font-medium text-text-secondary mb-1">Into</label>
           <DepartmentSelect value={to} onChange={setTo} departments={toOptions} placeholder="Select…" inline />
         </div>
-        <button type="button" onClick={add} disabled={!from || !to || adding} className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors h-[38px]">
+        <button type="button" onClick={add} disabled={!from || !to || adding} className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors h-[38px]">
           {adding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Add
         </button>
       </div>
@@ -739,7 +739,7 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
           <Chip label="Head & senior roles" active={depth === 'head_senior'} onClick={() => setDepth('head_senior')} />
         </div>
       </div>
-      <div className="flex items-center justify-between gap-3 p-3 rounded-[8px] border border-border-light bg-surface-sunken">
+      <div className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border-light bg-surface-sunken">
         <div className="min-w-0">
           <p className="text-sm font-medium text-text-primary">Include sub-departments</p>
           <p className="text-xs text-text-secondary">Also reach every department beneath the target — adapts automatically as sub-departments change.</p>
@@ -753,17 +753,17 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
             // Collapse a bidirectional pair into a single ⇄ row — render only the canonical side.
             if (bothWays && b.from_department_id > b.to_department_id) return null
             return (
-            <div key={b.id} className="flex items-center justify-between gap-3 p-3 rounded-[8px] border border-border-light bg-surface-sunken">
+            <div key={b.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border-light bg-surface-sunken">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-sm font-medium text-text-primary flex-wrap">
                   <span>{b.from_department_name ?? deptName(b.from_department_id)}</span>
                   {bothWays ? <ArrowLeftRight size={14} className="text-primary-text" /> : <ArrowRight size={14} className="text-text-muted" />}
                   <span>{b.to_department_name ?? deptName(b.to_department_id)}</span>
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
+                  <span className="text-[11px] font-medium uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
                     {b.depth === 'whole_dept' ? 'Whole dept' : 'Head & seniors'}
                   </span>
                   {b.include_sub_departments && (
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary bg-surface-control border border-border-light rounded-full px-2 py-0.5">
+                    <span className="text-[11px] font-medium uppercase tracking-wide text-text-secondary bg-surface-control border border-border-light rounded-full px-2 py-0.5">
                       + sub-depts
                     </span>
                   )}
