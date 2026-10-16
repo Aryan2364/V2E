@@ -16,6 +16,7 @@ import {
 } from '@/lib/reports/scorecard-format'
 import { Download, Lock, RotateCcw, ListChecks, AlertTriangle, ChevronRight, ChevronDown } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { formatDate, formatNumber } from '@/lib/format'
 
@@ -233,7 +234,10 @@ export default function ScorecardDetailPage() {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+        <div className="space-y-3">
+          <Skeleton className="h-24 w-full rounded-card" />
+          <Skeleton className="h-64 w-full rounded-card" />
+        </div>
       ) : !card || !m ? (
         <div className="bg-surface border border-border-light rounded-card py-12 text-center text-text-muted">Could not load this scorecard.</div>
       ) : (
@@ -362,7 +366,7 @@ export default function ScorecardDetailPage() {
                     <button
                       key={f}
                       onClick={() => setListFilter(f)}
-                      className={`px-3 py-1.5 font-medium capitalize transition-colors ${listFilter === f ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-control'}`}
+                      className={`px-3 py-1.5 font-medium capitalize outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-[background-color,color] ${listFilter === f ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-control'}`}
                     >
                       {f}
                     </button>
@@ -374,7 +378,7 @@ export default function ScorecardDetailPage() {
                     <button
                       key={v}
                       onClick={() => setListView(v)}
-                      className={`px-3 py-1.5 font-medium capitalize transition-colors ${listView === v ? 'bg-text-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-control'}`}
+                      className={`px-3 py-1.5 font-medium capitalize outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-[background-color,color] ${listView === v ? 'bg-text-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-control'}`}
                     >
                       {v === 'grouped' ? 'Grouped by task' : 'Flat list'}
                     </button>
