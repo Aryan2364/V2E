@@ -12,7 +12,7 @@ import { useNotifications } from '@/lib/notifications/NotificationsProvider'
 import { useToast } from '@/components/ui/Toast'
 import { enablePush, disablePush, getPushStatus, PUSH_ERROR_MESSAGES, type PushStatus } from '@/lib/push'
 import type { AppNotification } from '@/lib/api/notifications'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const MODULE_COLORS: Record<string, string> = {
   tasks: 'bg-primary-subtle text-primary-text',

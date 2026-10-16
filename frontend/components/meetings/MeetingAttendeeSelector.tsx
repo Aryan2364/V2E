@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Search, Plus, Check } from 'lucide-react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 export interface PersonOption {
   user_id: string

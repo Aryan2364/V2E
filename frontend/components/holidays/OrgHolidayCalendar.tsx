@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getNow } from '@/lib/clock'
 import { parseLocalDate } from '@/lib/date'
 import type { CalendarHoliday } from '@/lib/types/holidays'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const DOW = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']

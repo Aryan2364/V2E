@@ -28,7 +28,7 @@ import {
   ArrowRightLeft,
   CalendarCheck,
 } from 'lucide-react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 interface NavItem {
   label: string

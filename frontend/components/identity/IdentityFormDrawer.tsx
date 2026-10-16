@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { X, Plus, Trash2 } from 'lucide-react'
 import { upsertOrgIdentity } from '@/lib/api/org-identity'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import type { OrgIdentity } from '@/lib/types'
 
 interface IdentityFormDrawerProps {

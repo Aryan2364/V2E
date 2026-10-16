@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react'
 import type { FlowMatrix } from '@/lib/types/tasks'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 /**
  * Cross-department work-flow heatmap: rows = giving department, columns = receiving department,

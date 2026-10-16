@@ -24,7 +24,7 @@ import AssigneeMultiSelect from '@/components/learning/AssigneeMultiSelect'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import MaterialPreviewModal from '@/components/learning/MaterialPreviewModal'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 type Tab = 'materials' | 'assignments' | 'engagement'
 

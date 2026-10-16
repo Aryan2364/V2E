@@ -12,7 +12,7 @@ import OrgHolidayList from '@/components/holidays/OrgHolidayList'
 import HolidayFormModal, { type HolidayFormData } from '@/components/holidays/HolidayFormModal'
 import HolidayCalendar from '@/components/holidays/HolidayCalendar'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import { parseLocalDate } from '@/lib/date'
 
 // An individual override applies to every date (it has no natural start), so the

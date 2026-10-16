@@ -4,7 +4,7 @@ import React from 'react'
 import { RotateCcw, Pause, Shield } from 'lucide-react'
 import type { RecurringTemplate, TaskCategory, TaskPriority } from '@/lib/types/tasks'
 import { scheduleLabel, formatDate } from '@/lib/tasks/recurrence-label'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import TagList from './TagList'
 
 function peopleSummary(names: string[] | undefined): string {

@@ -23,7 +23,7 @@ import { timeBlocksApi, type TimeBlock } from '@/lib/api/time-blocks'
 import { getNow, isSimActive } from '@/lib/clock'
 import type { PersonOption } from '@/components/meetings/MeetingAttendeeSelector'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import StyledSelect from '@/components/ui/StyledSelect'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 

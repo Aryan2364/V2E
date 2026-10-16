@@ -16,9 +16,9 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { clearPermissionsCache } from '@/lib/auth/use-permissions'
 import {
   getPermissionRegistry,

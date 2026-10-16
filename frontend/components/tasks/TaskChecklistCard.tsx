@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { CheckSquare, Check, Ban, ShieldCheck, RotateCcw, Users, X, ChevronDown } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'

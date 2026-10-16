@@ -22,7 +22,7 @@ import type { WorkflowStepContext } from '@/lib/types/workflows'
 import WorkflowTaskBadge, { taskWorkflow } from '@/components/tasks/WorkflowTaskBadge'
 import ProofOfCompletionCard from '@/components/tasks/ProofOfCompletionCard'
 import StyledSelect from '@/components/ui/StyledSelect'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { AttachmentChips } from '@/components/ui/AttachmentList'
 import { formatBytes } from '@/lib/attachments'
 import {

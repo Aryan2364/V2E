@@ -13,10 +13,10 @@ import { getEmployees } from '@/lib/api/employees'
 import type { Meeting, MeetingRhythm } from '@/lib/types/meetings'
 import type { PersonOption } from '@/components/meetings/MeetingAttendeeSelector'
 import CreateRhythmModal from '@/components/meetings/CreateRhythmModal'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 

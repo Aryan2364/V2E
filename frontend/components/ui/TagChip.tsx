@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
-import Tooltip from './Tooltip'
+import Tooltip from './tooltip'
 import { tagChipClass } from '@/lib/tasks/tagColors'
 import type { TaskTagRef } from '@/lib/types/tasks'
 

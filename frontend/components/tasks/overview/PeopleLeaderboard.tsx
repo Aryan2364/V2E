@@ -5,7 +5,7 @@ import { ChevronRight, ExternalLink } from 'lucide-react'
 import { addTiming, emptyTiming, type PersonNode, type TimingCounts } from '@/lib/types/tasks'
 import TimingMiniBar from './TimingMiniBar'
 import TimingLegend from './TimingLegend'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 interface PersonStat {
   user_id: string

@@ -6,7 +6,7 @@ import type { RecurringScheduleType, RecurringEndCondition, YearlyDate } from '@
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import MonthDayPicker from '@/components/ui/MonthDayPicker'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { getNow } from '@/lib/clock'
 
 const DOW_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']

@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { GOVERNANCE_NAV } from '@/lib/governance-nav'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const COLLAPSE_KEY = 'governance-sidebar-collapsed'
 

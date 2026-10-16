@@ -6,10 +6,10 @@ import { X, Trash2 } from 'lucide-react'
 import { createDepartment, updateDepartment, deleteDepartment } from '@/lib/api/departments'
 import { placeUnderParent } from '@/lib/org-chart-layout'
 import { BRANCH_PALETTE } from '@/lib/org-chart-colors'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import EmployeePicker from '@/components/ui/EmployeePicker'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import type { Department, User } from '@/lib/types'
 
 export type DeptFormTarget =

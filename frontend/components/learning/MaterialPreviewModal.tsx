@@ -14,7 +14,7 @@ import type { LearningItem, ContentType, MaterialViewData } from '@/lib/types/le
 import MaterialViewer from './MaterialViewer'
 import ItemTypeBadge from './ItemTypeBadge'
 import { toEmbeddableVideoUrl } from '@/lib/learning/video-embed'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const TYPE_ICONS: Record<ContentType, any> = {
   video: Play,

@@ -5,7 +5,7 @@ import { Handle, Position, type NodeProps } from 'reactflow'
 import { Play, Flag, ExternalLink, ChevronRight, Pencil, FileText, Maximize2, Minimize2, Folder, Link2, StickyNote, ListChecks, Square, Plus, GripVertical } from 'lucide-react'
 import type { ProcessNodeKind, DiffChangeKind, ProcessArtifactContentType } from '@/lib/api/process-hierarchy'
 import { KIND_META } from './kind-meta'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 export { KIND_META }
 

@@ -11,7 +11,7 @@ import { getMyOrgs } from '@/lib/api/auth'
 import type { OrgMembership } from '@/lib/types'
 import NotificationBell from './NotificationBell'
 import { useSetupProgress } from '@/lib/hooks/useSetupProgress'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 // `module` maps a nav item to its entitlement key. Items with no module are always
 // shown (Dashboard). An `off` module is hidden; `preview` is shown with a badge.

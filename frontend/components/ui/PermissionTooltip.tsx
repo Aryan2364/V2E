@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import Tooltip from './Tooltip'
+import Tooltip from './tooltip'
 
 interface PermissionTooltipProps {
   /** true: allowed. false: not allowed — show the reason. undefined: not known yet. */

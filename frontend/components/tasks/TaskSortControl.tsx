@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Check } from 'lucide-react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 export type SortField = 'deadline' | 'priority' | 'title' | 'status' | 'created'
 export type SortDir = 'asc' | 'desc'

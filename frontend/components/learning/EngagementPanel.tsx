@@ -5,7 +5,7 @@ import { BarChart3, Eye, CheckCircle2, Users } from 'lucide-react'
 import { getEngagement } from '@/lib/api/learning'
 import type { PathEngagement } from '@/lib/types/learning'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 /**
  * "Who accessed what" for a path: per-material open/complete counts and a

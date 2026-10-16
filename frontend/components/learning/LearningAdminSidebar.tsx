@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, BookOpen, BarChart2, GraduationCap, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 interface LearningAdminSidebarProps {
   collapsed: boolean

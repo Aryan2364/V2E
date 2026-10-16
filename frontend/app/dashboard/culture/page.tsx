@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth/context'
 import { getCultureStandards } from '@/lib/api/culture'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import CultureManagerDrawer from '@/components/culture/CultureManagerDrawer'
 import type { CultureStandard } from '@/lib/types'
 import { CheckCircle2, XCircle, Pencil, Heart } from 'lucide-react'

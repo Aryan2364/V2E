@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/lib/auth/context'
 import { ticketsApi } from '@/lib/api/tickets'
-import HoverTip from '@/components/ui/Tooltip'
+import HoverTip from '@/components/ui/tooltip'
 import type {
   TicketReportResolutionTime,
   TicketReportBreakdown,

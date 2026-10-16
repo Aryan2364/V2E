@@ -2,7 +2,7 @@
 import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { Users, Pencil } from 'lucide-react';
-import Tooltip from '@/components/ui/Tooltip';
+import Tooltip from '@/components/ui/tooltip';
 
 export interface DeptNodeData {
   name: string;

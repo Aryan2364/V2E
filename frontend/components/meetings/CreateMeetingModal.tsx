@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Sparkles, AlertTriangle, Video, MapPin, Bell, Link2 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import { useToast } from '@/components/ui/Toast'

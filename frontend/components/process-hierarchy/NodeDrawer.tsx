@@ -27,7 +27,7 @@ import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import EmployeePicker, { type EmployeePickerOption } from '@/components/ui/EmployeePicker'
 import RolePicker from '@/components/ui/RolePicker'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import NodeDocuments from './node-materials'
 import { useToast } from '@/components/ui/Toast'
 

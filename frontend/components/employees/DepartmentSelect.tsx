@@ -6,7 +6,7 @@ import { ChevronDown, Search, X, Check, Building2, Lock } from 'lucide-react'
 import { flattenTree, ancestorsOf } from '@/lib/dept-tree'
 import { computeNodeColors } from '@/lib/org-chart-colors'
 import { useAnchoredPanel } from '@/lib/hooks/useAnchoredPanel'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import type { Department } from '@/lib/types'
 
 interface Props {

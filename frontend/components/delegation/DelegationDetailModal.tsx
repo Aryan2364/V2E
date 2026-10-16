@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { useToast } from '@/components/ui/Toast'
 import { delegationsApi, type Delegation } from '@/lib/api/delegations'
 import { StatusPill, fmtDate } from './delegationUtils'

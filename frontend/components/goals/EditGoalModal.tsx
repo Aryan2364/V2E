@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Loader2, Trash2 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
 import { goalsApi } from '@/lib/api/goals'
 import type { Goal } from '@/lib/types/goals'

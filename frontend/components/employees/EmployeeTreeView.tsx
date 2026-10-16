@@ -32,7 +32,7 @@ import {
   NODE_H,
 } from '@/lib/employee-tree'
 import EmployeeNode, { type EmployeeNodeData } from './EmployeeNode'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import type { Department, EmployeeProfile, EmployeeStatus } from '@/lib/types'
 
 interface Props {

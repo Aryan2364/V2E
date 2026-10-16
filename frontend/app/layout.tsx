@@ -4,6 +4,8 @@ import './globals.css'
 import { AuthProvider } from '@/lib/auth/context'
 import QueryProvider from '@/lib/providers/QueryProvider'
 import { ToastProvider } from '@/components/ui/Toast'
+import { Toaster } from '@/components/ui/sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { NotificationsProvider } from '@/lib/notifications/NotificationsProvider'
 import NoScrollNumberInputs from '@/components/ui/NoScrollNumberInputs'
 import SplashGate from '@/components/ui/SplashGate'
@@ -96,17 +98,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" data-layout={layout} className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased bg-surface-sunken text-text-primary">
         <LayoutProvider initial={layout}>
-          <QueryProvider>
-            <AuthProvider>
-              <NoScrollNumberInputs />
-              <ToastProvider>
-                <NotificationsProvider>
-                  <SplashGate>{children}</SplashGate>
-                  <NotificationsOptInPrompt />
-                </NotificationsProvider>
-              </ToastProvider>
-            </AuthProvider>
-          </QueryProvider>
+          <TooltipProvider>
+            <QueryProvider>
+              <AuthProvider>
+                <NoScrollNumberInputs />
+                <ToastProvider>
+                  <NotificationsProvider>
+                    <SplashGate>{children}</SplashGate>
+                    <NotificationsOptInPrompt />
+                  </NotificationsProvider>
+                </ToastProvider>
+              </AuthProvider>
+            </QueryProvider>
+          </TooltipProvider>
+          <Toaster />
           {/* 41.12 rule 8: Chrome offers its install prompt once per page load,
               often before More is opened. This keeps it for More's "Install
               app" button and stops Chrome's own pop-up. It listens in the phone

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import type { Project, ProjectStatus } from '@/lib/types/projects'
 import ProjectProgressBar from './ProjectProgressBar'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const STATUS_BADGE: Record<ProjectStatus, { bg: string; text: string; border: string; label: string }> = {
   active:    { bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success-border)', label: 'Active' },

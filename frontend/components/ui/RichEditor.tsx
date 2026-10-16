@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Bold, Italic, Heading, List } from 'lucide-react'
 import { renderMarkdown } from '@/lib/markdown'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 // A true WYSIWYG editor. Clicking Bold makes the selected text bold ON SCREEN —
 // no symbols shown to the user. Stores plain markdown under the hood (so the

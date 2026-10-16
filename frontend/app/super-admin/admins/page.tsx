@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth/context'
 import apiClient from '@/lib/api/client'
 import { ShieldCheck, Plus, PowerOff, Power, X, Eye, EyeOff, Loader2, Pencil, Trash2 } from 'lucide-react'
 import ResponsiveTable from '@/components/ui/ResponsiveTable'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 interface AdminUser {
   id: string

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Check, Loader2 } from 'lucide-react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 // S M T W T F S — index 0 = Sunday … 6 = Saturday
 const DAY_PILLS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']

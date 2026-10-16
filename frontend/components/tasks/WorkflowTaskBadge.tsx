@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { RotateCw } from 'lucide-react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { getNow } from '@/lib/clock'
 import type { Task, TaskWorkflowRef } from '@/lib/types/tasks'
 import { workflowBadgeTip, workflowBadgeText } from '@/components/workflows/instanceLabel'

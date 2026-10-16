@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth/context'
 import { usePermissions } from '@/lib/auth/use-permissions'
 import { useToast } from '@/components/ui/Toast'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { processHierarchyApi, type ProcessMapSummary, type ProcessTemplateSummary } from '@/lib/api/process-hierarchy'
 import { Workflow, Plus, ChevronRight, X, Loader2, Layers, Trash2, Search, Star, FolderPlus } from 'lucide-react'
 

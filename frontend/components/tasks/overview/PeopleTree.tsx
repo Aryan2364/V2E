@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronRight, ChevronDown, AlertTriangle, CheckCircle2, Send, Users } from 'lucide-react'
 import type { PeopleTree as PeopleTreeData, PersonNode } from '@/lib/types/tasks'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 interface TreeNode extends PersonNode { children: TreeNode[] }
 

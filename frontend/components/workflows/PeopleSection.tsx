@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Info } from 'lucide-react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import type { PersonRef } from '@/lib/types/workflows'
 import type { WorkflowLookups } from './useWorkflowLookups'
 import PeoplePicker, { personNames } from './PeoplePicker'

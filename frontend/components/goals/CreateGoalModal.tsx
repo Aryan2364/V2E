@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Loader2, Plus } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import MultiSelect from '@/components/ui/MultiSelect'
 import { useToast } from '@/components/ui/Toast'
 import { usePermissions } from '@/lib/auth/use-permissions'

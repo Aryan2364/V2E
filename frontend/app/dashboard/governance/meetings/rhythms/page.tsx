@@ -11,11 +11,11 @@ import type { MeetingRhythm } from '@/lib/types/meetings'
 import { useMeetingPermissions } from '@/components/meetings/shared'
 import type { PersonOption } from '@/components/meetings/MeetingAttendeeSelector'
 import CreateRhythmModal from '@/components/meetings/CreateRhythmModal'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 function cadence(r: MeetingRhythm): string {
   const e = r.schedule_entries?.[0]

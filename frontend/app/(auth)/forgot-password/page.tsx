@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { forgotPassword, verifyResetOtp, resetPassword } from '@/lib/api/auth'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 
 const inputCls =
   'w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'

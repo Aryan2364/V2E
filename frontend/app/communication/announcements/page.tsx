@@ -6,7 +6,7 @@ import { getAnnouncements, markAnnouncementRead, togglePinAnnouncement, deleteAn
 import type { Announcement } from '@/lib/types/communication'
 import Link from 'next/link'
 import { Bell, Pin, Plus, Trash2, Eye } from 'lucide-react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const PRIORITY_BADGE: Record<string, string> = {
   urgent: 'bg-danger-bg text-danger',

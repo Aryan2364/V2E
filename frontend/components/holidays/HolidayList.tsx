@@ -5,7 +5,7 @@ import { Pencil, Trash2, RefreshCw, Check, X } from 'lucide-react'
 import type { OrgHoliday, DepartmentHoliday, IndividualHoliday, HolidayType } from '@/lib/types/holidays'
 import { parseLocalDate, dateOnly } from '@/lib/date'
 import DatePicker from '@/components/ui/DatePicker'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 type AnyHoliday = OrgHoliday | DepartmentHoliday | IndividualHoliday
 

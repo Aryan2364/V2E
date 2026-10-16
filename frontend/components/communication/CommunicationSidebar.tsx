@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Bell, Layout, BookOpen, MessageSquare, FileText, ChevronLeft, ChevronRight } from 'lucide-react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 
 interface CommunicationSidebarProps {

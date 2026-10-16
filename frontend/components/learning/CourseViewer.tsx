@@ -14,7 +14,7 @@ import ItemTypeBadge from './ItemTypeBadge'
 import MaterialViewer from './MaterialViewer'
 import { toEmbeddableVideoUrl } from '@/lib/learning/video-embed'
 import LinkEmbed from './LinkEmbed'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const TYPE_ICONS: Record<ContentType, any> = {
   video: Play, file: FileIcon, document: FileText, url: Link2, article: BookOpen,

@@ -5,9 +5,9 @@ import { Pencil, Trash2, RefreshCw, Check, X, Unlink, GitBranch } from 'lucide-r
 import type { CalendarHoliday, HolidayType } from '@/lib/types/holidays'
 import { parseLocalDate, dateOnly } from '@/lib/date'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const TYPE_COLORS: Record<HolidayType, string> = {
   national: 'bg-surface-control text-text-secondary border-border-light',

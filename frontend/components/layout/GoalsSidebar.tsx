@@ -12,7 +12,7 @@ import {
   Network,
   Target,
 } from 'lucide-react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { useAuth } from '@/lib/auth/context'
 import { goalsApi } from '@/lib/api/goals'
 

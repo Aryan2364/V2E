@@ -7,7 +7,7 @@ import type { Task, TaskPriority, TaskStatus, TaskCategory } from '@/lib/types/t
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 import AssigneeAvatars, { type AvatarPerson } from './AssigneeAvatars'
 import { StatusControl } from './TaskCard'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import TagList from './TagList'
 import WorkflowTaskBadge, { taskWorkflow } from './WorkflowTaskBadge'
 

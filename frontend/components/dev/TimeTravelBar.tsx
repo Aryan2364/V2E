@@ -5,7 +5,7 @@ import { Clock, ChevronLeft, ChevronRight, Play, RotateCcw, FlaskConical, X } fr
 import { useAuth } from '@/lib/auth/context'
 import { clockApi } from '@/lib/api/clock'
 import { syncClock, useNow } from '@/lib/clock'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 function toLocalInput(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0')

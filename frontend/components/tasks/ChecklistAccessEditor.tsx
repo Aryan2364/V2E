@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { Plus, X, Search, CornerDownRight, ChevronRight } from 'lucide-react'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { descendantsOf } from '@/lib/dept-tree'
 import type { Department, Role, EmployeeProfile } from '@/lib/types'
 import type { ChecklistAccessMode, ChecklistAccessRuleInput } from '@/lib/types/tasks'

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Layers, ArrowRight, Plus, Building2 } from 'lucide-react'
 import { getGroups } from '@/lib/api/groups'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import ResponsiveTable from '@/components/ui/ResponsiveTable'
 import type { OrganizationGroup } from '@/lib/types'
 

@@ -11,7 +11,7 @@ import type { EmployeeProfile } from '@/lib/types'
 import { MessageSquare, Plus, Send, X, Users, Search } from 'lucide-react'
 import { io, Socket } from 'socket.io-client'
 import { refreshAccessToken } from '@/lib/api/refresh'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001'
 

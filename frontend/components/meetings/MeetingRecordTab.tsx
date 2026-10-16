@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Lock, Check } from 'lucide-react'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
 import { meetingsApi } from '@/lib/api/meetings'
 import RichEditor from '@/components/ui/RichEditor'

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Trash2, Loader2, Target } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import DatePicker from '@/components/ui/DatePicker'
 import EmployeePicker from '@/components/ui/EmployeePicker'
 import { useToast } from '@/components/ui/Toast'

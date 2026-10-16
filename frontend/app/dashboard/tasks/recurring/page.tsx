@@ -30,7 +30,7 @@ import RecurringFilterToolbar, {
 } from '@/components/tasks/RecurringFilterToolbar'
 import { useSessionState } from '@/lib/tasks/useSessionState'
 import ScopeSwitcher from '@/components/tasks/overview/ScopeSwitcher'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { entryLabel, formatDate } from '@/lib/tasks/recurrence-label'
 import {
   RotateCcw, Play, Pause, Calendar, Users, Plus, Trash2, Edit2, Zap, Shield,

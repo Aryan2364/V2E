@@ -13,7 +13,7 @@ import {
 import { ACCEPT_ATTR, validateFile, formatBytes, fileKindLabel, extensionOf } from '@/lib/attachments'
 import type { ContentType, LearningItem, MaterialViewData } from '@/lib/types/learning'
 import MaterialViewer from './MaterialViewer'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const TYPE_META: Record<ContentType, { icon: any; label: string }> = {
   file: { icon: FileText, label: 'File' },

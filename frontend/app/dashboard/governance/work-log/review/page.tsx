@@ -5,7 +5,7 @@ import { Users, FileText, ChevronRight, MessageSquare } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { workLogApi } from '@/lib/api/workLogs'
 import WorkLogRemarkThread from '@/components/work-logs/WorkLogRemarkThread'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import type { DailyUpdate, ReadableWriter, WorkLogRemark, WorkLogSubmission } from '@/lib/types/workLogs'
 
 const cardCls = 'bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'

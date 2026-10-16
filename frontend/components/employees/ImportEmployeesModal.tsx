@@ -34,7 +34,7 @@ import {
 } from '@/lib/api/employees'
 import { listSystemRoles, type SystemRoleLite } from '@/lib/api/permissions'
 import { useToast } from '@/components/ui/Toast'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import type { Department, Role, EmployeeProfile } from '@/lib/types'
 
 interface Props {

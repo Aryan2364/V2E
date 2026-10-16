@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { Eye, EyeOff } from 'lucide-react'
 import { register as apiRegister } from '@/lib/api/auth'
 import { useAuth } from '@/lib/auth/context'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 
 const schema = z
   .object({

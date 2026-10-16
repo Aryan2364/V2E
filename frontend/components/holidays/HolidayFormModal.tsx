@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
 import CascadeTargetTree from './CascadeTargetTree'
 import type { HolidayType } from '@/lib/types/holidays'

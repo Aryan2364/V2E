@@ -3,7 +3,7 @@
 import React from 'react'
 import type { DashboardBreakdownItem } from '@/lib/types/tasks'
 import { tagDotClass } from '@/lib/tasks/tagColors'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 const MAX_ROWS = 8
 

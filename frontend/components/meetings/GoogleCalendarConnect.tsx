@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Calendar, Check, Loader2, RefreshCw, X } from 'lucide-react'
 import { meetingsApi, type GoogleSyncStatus } from '@/lib/api/meetings'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 // Per-user Google Calendar connection control for the meetings header.
 // Controlled by the page (status + onChanged) so the calendar's reverse view and

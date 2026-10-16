@@ -6,7 +6,7 @@ import { AlertTriangle, CheckCircle2, Clock, Info, Loader2, Lock, PlayCircle, Pl
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { getNow } from '@/lib/clock'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { WEEKDAYS_LONG, WEEKDAYS_SHORT, fmtTime, ordinal, plural } from './format'
 import type {
   PersonRef,

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { createRole, listImportBatches, createImportBatch, undoImport } from '@/lib/api/roles'
 import { useToast } from '@/components/ui/Toast'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import type { Department, RoleLevel } from '@/lib/types'
 
 interface Props {

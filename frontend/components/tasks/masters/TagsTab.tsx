@@ -6,7 +6,7 @@ import { Check, GitMerge, Pencil, Plus, Power, RotateCcw, Search, Trash2, X } fr
 import Modal from '@/components/ui/Modal'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import StyledSelect from '@/components/ui/StyledSelect'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import TagChip from '@/components/ui/TagChip'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import { CREATE_TAG_REASON } from '@/components/tasks/TagPicker'

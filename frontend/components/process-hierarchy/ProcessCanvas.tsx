@@ -32,7 +32,7 @@ import { buildNested, type NodeMeta, type SubDesc } from './nested-render'
 import { buildSwimlane, CONTENT_X, type LaneBand } from './swimlane-layout'
 import StyledSelect from '@/components/ui/StyledSelect'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { useFlowNav, useIsTouchDevice, CanvasScrollbars, FlowNavStyles } from '@/components/ui/flow-nav'
 
 const edgeTypes = { floating: FloatingEdge, floatingStep: FloatingStepEdge }

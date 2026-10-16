@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import StyledSelect from '@/components/ui/StyledSelect'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import {
   processHierarchyApi,
   type FlowLevel,

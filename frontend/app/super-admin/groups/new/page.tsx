@@ -7,8 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { ChevronLeft } from 'lucide-react'
 import { createGroup } from '@/lib/api/groups'
-import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
+import Button from '@/components/ui/button'
+import Card from '@/components/ui/card'
 
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),

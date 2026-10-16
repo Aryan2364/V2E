@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import { ChevronRight, Search, X, Workflow } from 'lucide-react'
 import { KIND_META } from './kind-meta'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import type { TreeNode } from '@/lib/api/process-hierarchy'
 
 const CONTAINER_KINDS = new Set(['container', 'subprocess'])

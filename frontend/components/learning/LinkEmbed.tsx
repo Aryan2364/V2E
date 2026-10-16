@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ExternalLink, Loader2, RotateCcw } from 'lucide-react'
 import { toEmbeddableVideoUrl, toEmbeddablePageUrl } from '@/lib/learning/video-embed'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 /**
  * Shows a link inline automatically — no creator toggle. It tries to embed the page

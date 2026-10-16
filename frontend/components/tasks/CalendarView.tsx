@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { getNow } from '@/lib/clock'
 import type { Task, TaskPriority } from '@/lib/types/tasks'
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 interface Props {
   tasks: Task[]

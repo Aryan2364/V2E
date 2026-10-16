@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth/context'
 import { getOrgIdentity } from '@/lib/api/org-identity'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import IdentityFormDrawer from '@/components/identity/IdentityFormDrawer'
 import type { OrgIdentity } from '@/lib/types'
 import { Building2, Pencil, Target, Rocket, Heart } from 'lucide-react'

@@ -9,7 +9,7 @@ import {
   updateCultureStandard,
   deleteCultureStandard,
 } from '@/lib/api/culture'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import type { CultureStandard, BehaviorType } from '@/lib/types'
 
 interface CultureManagerDrawerProps {

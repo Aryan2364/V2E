@@ -15,7 +15,7 @@ import EditRecurringModal from '@/components/tasks/EditRecurringModal'
 import ManageAccessModal from '@/components/tasks/ManageAccessModal'
 import type { EmployeePickerOption } from '@/components/ui/EmployeePicker'
 import StyledSelect from '@/components/ui/StyledSelect'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { FILE_TYPE_GROUPS, groupsFromExtensions } from '@/lib/attachments'
 import {
   ArrowLeft, RotateCcw, Play, Pause, Edit2, Zap,

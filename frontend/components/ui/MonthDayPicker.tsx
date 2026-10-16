@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react'
-import Tooltip from './Tooltip'
+import Tooltip from './tooltip'
 
 /**
  * What a day means to the caller: `blocked` = it can't be picked (faded; the reason is

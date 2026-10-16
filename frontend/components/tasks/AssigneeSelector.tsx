@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { Search, X, Plus, Check, Zap, Briefcase, UserPlus } from 'lucide-react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { tasksApi } from '@/lib/api/tasks'
 import type { EligibleAssigneesResponse, EligibleAssigneeUser, SelectedAssignee } from '@/lib/types/tasks'
 

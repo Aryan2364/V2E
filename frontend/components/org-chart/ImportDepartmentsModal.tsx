@@ -18,7 +18,7 @@ import { createDepartment, listImportBatches, createImportBatch, undoImport } fr
 import { placeUnderParent } from '@/lib/org-chart-layout'
 import { useToast } from '@/components/ui/Toast'
 import type { Department, User } from '@/lib/types'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 interface Props {
   orgId: string

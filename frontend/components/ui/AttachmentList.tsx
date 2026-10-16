@@ -4,7 +4,7 @@ import React from 'react'
 import { Download, FileText, Loader2, X } from 'lucide-react'
 import type { TaskAttachment } from '@/lib/types/tasks'
 import { fileKindLabel, formatBytes } from '@/lib/attachments'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 function KindBadge({ name }: { name: string }) {
   return (

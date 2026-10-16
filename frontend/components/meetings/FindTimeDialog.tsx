@@ -7,7 +7,7 @@ import { meetingsApi } from '@/lib/api/meetings'
 import type { BusyView } from '@/lib/types/meetings'
 import DatePicker from '@/components/ui/DatePicker'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { DurationField } from './shared'
 
 // geometry

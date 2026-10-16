@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Ban, Loader2 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
 import { goalsApi } from '@/lib/api/goals'
 import { formatValue, type Goal, type GoalCheckIn } from '@/lib/types/goals'

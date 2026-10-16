@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Archive, ArchiveRestore, CalendarClock, Eye, ListChecks, Pause, Pencil, Play, History, Users, Workflow as WorkflowIcon } from 'lucide-react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import type { WorkflowTemplate } from '@/lib/types/workflows'
 import ActionMenu, { type ActionMenuItem } from './ActionMenu'
 import {

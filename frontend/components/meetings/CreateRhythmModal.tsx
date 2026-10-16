@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
 import { meetingsApi, type CreateRhythmInput } from '@/lib/api/meetings'
 import { listEligibleSubjects } from '@/lib/api/permissions'

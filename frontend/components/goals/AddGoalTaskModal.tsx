@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
 import EmployeePicker from '@/components/ui/EmployeePicker'
 import { useToast } from '@/components/ui/Toast'

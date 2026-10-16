@@ -6,7 +6,7 @@ import { X, Plus, Upload, Trash2, Download, FileText, Loader2, Paperclip } from 
 import { processHierarchyApi, type ProcessArtifact, type ProcessArtifactType } from '@/lib/api/process-hierarchy'
 import StyledSelect from '@/components/ui/StyledSelect'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { useToast } from '@/components/ui/Toast'
 
 const TYPES: ProcessArtifactType[] = ['document', 'form', 'report', 'data', 'other']

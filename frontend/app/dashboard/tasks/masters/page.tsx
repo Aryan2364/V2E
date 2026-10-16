@@ -19,7 +19,7 @@ import { getDepartments } from '@/lib/api/departments'
 import { getRoles } from '@/lib/api/roles'
 import { getEmployees } from '@/lib/api/employees'
 import ChecklistAccessEditor, { type LocalRule, newRuleKey } from '@/components/tasks/ChecklistAccessEditor'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import type {
   TicketMasterConfig,
   TicketType,

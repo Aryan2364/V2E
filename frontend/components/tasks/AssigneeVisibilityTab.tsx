@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { tasksApi } from '@/lib/api/tasks'
 import { useToast } from '@/components/ui/Toast'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { computeNodeColors } from '@/lib/org-chart-colors'
 import { flattenTree } from '@/lib/dept-tree'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { TIMINGS, TIMING_META, type TimingCounts } from '@/lib/types/tasks'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 /**
  * The stacked completion-timing bar used across the dashboard (leaderboards, breakdowns).

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 
 export interface AvatarPerson {
   id: string

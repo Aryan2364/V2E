@@ -13,7 +13,7 @@ import {
   type ProcessArtifactDirection,
 } from '@/lib/api/process-hierarchy'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/lib/auth/context'
 import MaterialViewer from '@/components/learning/MaterialViewer'

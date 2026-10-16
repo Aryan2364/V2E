@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { X, RotateCcw, CalendarSearch } from 'lucide-react'
-import Button from '@/components/ui/Button'
+import Button from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
 import { meetingsApi } from '@/lib/api/meetings'
 import type { Meeting } from '@/lib/types/meetings'

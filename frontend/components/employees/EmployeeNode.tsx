@@ -5,7 +5,7 @@ import { Handle, Position } from 'reactflow'
 import { Zap } from 'lucide-react'
 import { levelColors } from '@/lib/role-levels'
 import { NODE_W } from '@/lib/employee-tree'
-import Tooltip from '@/components/ui/Tooltip'
+import Tooltip from '@/components/ui/tooltip'
 import type { EmployeeStatus, RoleLevel } from '@/lib/types'
 
 export interface EmployeeNodeData {
