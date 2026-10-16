@@ -7,6 +7,7 @@ import type { TaskFilters } from './TaskFilterBar'
 import TaskFilterPopover from './TaskFilterPopover'
 import TaskFilterChips from './TaskFilterChips'
 import TaskSortControl, { type TaskSort } from './TaskSortControl'
+import { Button } from '@/components/ui/button'
 
 /**
  * The one-row task toolbar shared by My Tasks and Assigned: a grow-to-fit search box,
@@ -53,14 +54,16 @@ export default function TaskListToolbar({
           className="w-full h-[38px] pl-8 pr-8 rounded-lg border border-border bg-surface-sunken text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary focus:bg-surface transition-colors"
         />
         {search && (
-          <button
+          <Button
             type="button"
+            variant="in-field"
+            size="icon-sm"
             onClick={() => onSearch('')}
             aria-label="Clear search"
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2"
           >
             <X size={15} />
-          </button>
+          </Button>
         )}
       </div>
       <TaskFilterPopover

@@ -4,6 +4,7 @@ import React, { useMemo } from 'react'
 import { getNow } from '@/lib/clock'
 import type { Task, TaskPriority, TaskStatus } from '@/lib/types/tasks'
 import type { TaskSort } from './TaskSortControl'
+import { Button } from '@/components/ui/button'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -177,13 +178,9 @@ export function ClearNarrowingButton({
   if (!hasSearch && !hasFilters) return null
   const label = hasSearch && hasFilters ? 'Clear search and filters' : hasSearch ? 'Clear search' : 'Clear filters'
   return (
-    <button
-      type="button"
-      onClick={onClear}
-      className="mt-4 h-11 sm:h-9 px-4 rounded-btn border border-primary bg-surface text-body font-medium text-primary hover:bg-primary-light focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary transition-colors"
-    >
+    <Button type="button" variant="secondary" className="mt-4" onClick={onClear}>
       {label}
-    </button>
+    </Button>
   )
 }
 

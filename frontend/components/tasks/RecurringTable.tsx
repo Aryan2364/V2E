@@ -5,6 +5,7 @@ import { RotateCcw, Pause, Shield } from 'lucide-react'
 import type { RecurringTemplate, TaskCategory, TaskPriority } from '@/lib/types/tasks'
 import { scheduleLabel, formatDate } from '@/lib/tasks/recurrence-label'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import TagList from './TagList'
 
 function peopleSummary(names: string[] | undefined): string {
@@ -114,13 +115,14 @@ export default function RecurringTable({
                   <td className={TD}>
                     {t.can_manage && (
                       <Tooltip label="Manage access">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={(e) => { e.stopPropagation(); onManageAccess(t) }}
                           aria-label="Manage access"
-                          className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors"
                         >
                           <Shield size={14} />
-                        </button>
+                        </Button>
                       </Tooltip>
                     )}
                   </td>

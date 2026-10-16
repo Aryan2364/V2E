@@ -3,6 +3,7 @@
 import React from 'react'
 import { Plus } from 'lucide-react'
 import ScheduleEntryRow, { type ScheduleEntryDraft } from './ScheduleEntryRow'
+import { Button } from '@/components/ui/button'
 import { getNow } from '@/lib/clock'
 
 interface Props {
@@ -55,14 +56,10 @@ export default function ScheduleEntryList({ entries, onChange }: Props) {
         </div>
       ))}
 
-      <button
-        type="button"
-        onClick={addEntry}
-        className="flex items-center gap-2 text-body font-medium text-primary-text hover:text-primary-text transition-colors"
-      >
+      <Button type="button" variant="secondary" onClick={addEntry}>
         <Plus size={15} />
         Add schedule entry
-      </button>
+      </Button>
     </div>
   )
 }
