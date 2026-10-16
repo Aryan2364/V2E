@@ -150,3 +150,34 @@ npx next build
   layer/Geist/utils/format), 0dfa536 (b: codemod script + map), bbe922d
   (c: codemod applied), 89b16a0 (d: hand remainders), f162a7e (e: rules files),
   829170d (f: fontSize/shadow phone-* fix).
+- 16 Oct 2026: P3 done. Every kit components/ui file ported into
+  frontend/components/ui/ at the kit's names, plus its lib/* dependents.
+  Windows case collisions (Button/Badge/Card/Input/Tooltip vs
+  button/badge/card/input/tooltip) resolved via git mv -f; all v2e call sites
+  migrated to the lowercase kit paths (grep for the uppercase paths across
+  app/components/lib returns nothing). lib/auth/permission-tooltip-adapter.ts
+  (useCanWithReason) is the thin bridge from v2e's own usePermissions() to
+  the kit's permission-tooltip.tsx {allowed,reason} contract - v2e's
+  permission logic itself is untouched (D1). components/shell/page-header.tsx
+  + progress-bar.tsx ported for v2e's existing shell (desktop/tablet branch
+  only; D4 - shell not restructured this phase, so the kit's phone app-bar
+  branch is left out pending the kit's own app-bar/PhoneOnly plumbing).
+  /kitchen-sink ported, minus two demos (NotificationPermissionSheet,
+  CommentBox) that depend on kit shell pieces out of scope this phase.
+  Toast.tsx and PermissionTooltip.tsx are now thin adapters onto the kit's
+  sonner.tsx and tooltip.tsx respectively (~75 and 9 call sites, unchanged
+  APIs). components/ui/ADAPTERS.md lists every other v2e duplicate (Modal,
+  ConfirmDialog, StyledSelect, DatePicker, DateRangePicker, TimeField,
+  MultiSelect, ResponsiveTable, ViewToggle, useHoverTip, SelectField,
+  MonthDayPicker, FilterButton, and dead ClockTimePicker) still on its
+  original v2e implementation with call-site counts and why each needs a
+  deliberate pass (richer option APIs, a built-in mobile-card mode, etc.)
+  rather than a rushed wrapper - real work for a follow-up pass before P5
+  module agents can rely on the kit look for those controls. Also lists
+  components/phone/* overlaps with newly-ported kit parts (PhoneSheet vs
+  sheet.tsx, UndoToast vs sonner's toast.undo, etc.) left untouched and not
+  regressed. tsc --noEmit and next build green throughout; this phase's work
+  was interrupted once by an API rate limit mid-run and resumed/finished by
+  the coordinating agent. Commits adbb1b0 (case-collision primitives),
+  bbfdfc9 (remaining components/ui + lib ports), 3114466 (page-header,
+  kitchen sink, permission-tooltip adapter, ADAPTERS.md).
