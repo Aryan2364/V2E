@@ -611,7 +611,7 @@ function Inner({
         <MiniMap
           nodeColor={(n) => (n.type === 'swimlane' ? 'transparent' : 'var(--primary-text)')}
           nodeStrokeColor={(n) => (n.type === 'swimlane' ? 'transparent' : 'var(--primary-text)')}
-          maskColor="rgba(15,23,42,0.05)" pannable zoomable
+          maskColor="color-mix(in srgb, var(--text-primary) 5%, transparent)" pannable zoomable
           className="hidden! sm:block!" style={{ width: 180, height: 120 }} />
       )}
 
@@ -620,19 +620,19 @@ function Inner({
           behind the top-right toolbar; raised z-index keeps it above any panel overlap. */}
       {canEdit && selectedIds.length >= 2 && (
         <Panel position="bottom-center" style={{ zIndex: 20 }}>
-          <div className="flex items-center gap-2 rounded-[10px] bg-[#0F172A] text-white shadow-lg px-3 py-1.5 text-[12px]">
-            <span className="font-semibold">{selectedIds.length} selected</span>
+          <div className="flex items-center gap-2 rounded-lg bg-text-primary text-white shadow-lg px-3 py-1.5 text-[12px]">
+            <span className="font-medium">{selectedIds.length} selected</span>
             <span className="text-white/40">·</span>
             <span className="text-white/70">drag to move</span>
             {onCopyNodes && (
               <button onClick={() => onCopyNodes(selectedIds)}
-                className="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-[6px] bg-white/10 hover:bg-white/20 font-semibold transition-colors">
+                className="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-[6px] bg-white/10 hover:bg-white/20 font-medium transition-colors">
                 <Copy size={12} /> Copy
               </button>
             )}
             {canEdit && onDeleteNodes && (
               <button onClick={() => setConfirmDelMany(true)}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-[6px] bg-danger hover:bg-danger-hover font-semibold transition-colors">
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-[6px] bg-danger hover:bg-danger-hover font-medium transition-colors">
                 <Trash2 size={12} /> Delete
               </button>
             )}
@@ -650,7 +650,7 @@ function Inner({
           {!swimlane && topAreas.length > 0 && (
             <Tooltip label={anyExpanded ? 'Collapse all areas' : 'Unfold all areas in place'}>
               <button onClick={toggleAll} aria-pressed={anyExpanded}
-                className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium rounded-[8px] border shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${anyExpanded ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-white border-border-light text-text-secondary hover:text-text-primary hover:border-border'}`}>
+                className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium rounded-lg border shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${anyExpanded ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-white border-border-light text-text-secondary hover:text-text-primary hover:border-border'}`}>
                 {anyExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />} <span className="hidden md:inline">{anyExpanded ? 'Grouped' : 'Whole'}</span>
               </button>
             </Tooltip>
@@ -662,11 +662,11 @@ function Inner({
       {/* Connection editor popover */}
       {edgeEdit && (
         <div
-          className="fixed z-80 w-60 bg-white border border-border-light rounded-[10px] shadow-[0_8px_28px_rgba(0,0,0,0.16)] p-3"
+          className="fixed z-80 w-60 bg-surface border border-border-light rounded-lg shadow-dialog p-3"
           style={{ left: Math.min(edgeEdit.x, window.innerWidth - 260), top: Math.min(edgeEdit.y, window.innerHeight - 210) }}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[12px] font-semibold text-text-primary">Connection</span>
+            <span className="text-[12px] font-medium text-text-primary">Connection</span>
             <button onClick={() => setEdgeEdit(null)} aria-label="Close" className="text-text-muted hover:text-text-primary"><X size={14} /></button>
           </div>
           <label className="block text-[11px] font-medium text-text-secondary mb-1">Label</label>
@@ -674,7 +674,7 @@ function Inner({
             value={edgeEdit.label}
             onChange={(e) => setEdgeEdit({ ...edgeEdit, label: e.target.value })}
             placeholder="e.g. Approved"
-            className="w-full px-2.5 py-1.5 text-[13px] rounded-[8px] border border-border focus:border-primary focus:outline-hidden mb-2"
+            className="w-full px-2.5 py-1.5 text-[13px] rounded-lg border border-border focus:border-primary focus:outline-hidden mb-2"
           />
           {edgeFromDecision && (
             <div className="mb-2">
@@ -703,14 +703,14 @@ function Inner({
                 onUpdateConnection?.(edgeEdit.conn.id, { label: edgeEdit.label.trim(), condition_kind: edgeEdit.conn.condition_kind })
                 setEdgeEdit(null)
               }}
-              className="flex-1 inline-flex items-center justify-center px-3 py-1.5 text-[13px] font-semibold rounded-[8px] bg-primary text-white hover:bg-primary-hover"
+              className="flex-1 inline-flex items-center justify-center px-3 py-1.5 text-[13px] font-medium rounded-lg bg-primary text-white hover:bg-primary-hover"
             >
               Save
             </button>
             <button
               onClick={() => { onDeleteConnection?.(edgeEdit.conn.id); setEdgeEdit(null) }}
               aria-label="Delete connection"
-              className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-[8px] border border-danger-border text-danger hover:bg-danger-bg"
+              className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg border border-danger-border text-danger hover:bg-danger-bg"
             >
               <Trash2 size={14} />
             </button>
@@ -725,7 +725,7 @@ function Inner({
         const pane = document.querySelector('.react-flow')?.getBoundingClientRect()
         if (!pane) return null
         return (
-          <div style={{ position: 'fixed', left: pane.left, width: pane.width, top: reorderDrag.indicatorY - 1.5, height: 0, borderTop: '3px solid #2563EB', boxShadow: '0 0 0 1px rgba(37,99,235,0.25)', zIndex: 60, pointerEvents: 'none' }} />
+          <div style={{ position: 'fixed', left: pane.left, width: pane.width, top: reorderDrag.indicatorY - 1.5, height: 0, borderTop: '3px solid var(--primary)', boxShadow: '0 0 0 1px var(--primary-ring)', zIndex: 60, pointerEvents: 'none' }} />
         )
       })(),
       document.body,

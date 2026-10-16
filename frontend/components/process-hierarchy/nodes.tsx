@@ -37,7 +37,7 @@ export function borderColor(data: ProcessNodeData, accent: string): string {
   return accent
 }
 
-const handleStyle: React.CSSProperties = { width: 7, height: 7, background: 'var(--primary)', border: '2px solid #fff' }
+const handleStyle: React.CSSProperties = { width: 7, height: 7, background: 'var(--primary)', border: '2px solid var(--surface)' }
 
 // Four connection dots (top / right / bottom / left), each usable as input OR output — the canvas
 // runs in connectionMode="loose", and enforces the rule "left = input only, right = output only"
@@ -85,7 +85,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
     <>
       <FourHandles />
       <div
-        className={`relative bg-white rounded-[8px] px-2.5 py-1.5 shadow-xs flex flex-col justify-center ${canOpen ? 'cursor-pointer' : ''}`}
+        className={`relative bg-white rounded-lg px-2.5 py-1.5 shadow-xs flex flex-col justify-center ${canOpen ? 'cursor-pointer' : ''}`}
         style={{ border: `2px solid ${borderColor(data, accent)}`, width: isContainer ? 220 : 170, minHeight: isContainer ? 88 : 60 }}
       >
         {/* Drillable nodes: pencil edits; the body itself opens the level. */}
@@ -100,12 +100,12 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
             </button>
           </Tooltip>
         )}
-        <div className={`flex items-start gap-1.5 ${data.canExpand ? 'pr-11' : canOpen ? 'pr-5' : ''}`}>
+        <div className={`flex items-start gap-1.5 ${data.canExpand ? 'pr-12' : canOpen ? 'pr-4' : ''}`}>
           <span style={{ color: 'var(--primary-text)' }} className="shrink-0 mt-0.5">{KIND_META[data.kind].icon}</span>
           <span className="flex-1 min-w-0 text-[13px] font-medium text-text-primary leading-snug wrap-break-word">{data.name}</span>
         </div>
         {data.linkedMapName && data.linkedMapName !== data.name && (
-          <div className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-primary-text">
+          <div className="mt-1 flex items-center gap-1 text-[10px] font-medium text-primary-text">
             <ExternalLink size={10} /> <span className="truncate">{data.linkedMapName}</span>
           </div>
         )}
@@ -114,13 +114,13 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
             {!!data.docCount && (
               <Tooltip label={`${data.docCount} document${data.docCount > 1 ? 's' : ''}`}>
                 <button onClick={(e) => { e.stopPropagation(); data.onEdit?.() }}
-                  className="nodrag inline-flex items-center gap-0.5 text-[10px] font-semibold text-text-secondary hover:text-primary-text">
+                  className="nodrag inline-flex items-center gap-0.5 text-[10px] font-medium text-text-secondary hover:text-primary-text">
                   <FileText size={11} /> {data.docCount}
                 </button>
               </Tooltip>
             )}
             {canOpen && (
-              <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] font-semibold text-primary-text">
+              <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] font-medium text-primary-text">
                 {data.childCount ? `${data.childCount} inside` : 'Open'} <ChevronRight size={11} />
               </span>
             )}
@@ -131,7 +131,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
           <div className="mt-1 border-t border-border-light pt-1">
             <Tooltip label={showChecks ? 'Hide checklist' : 'Show checklist'}>
               <button type="button" onClick={(e) => { e.stopPropagation(); setShowChecks((v) => !v) }}
-                className="nodrag inline-flex items-center gap-1 text-[10px] font-semibold text-text-secondary hover:text-primary-text"
+                className="nodrag inline-flex items-center gap-1 text-[10px] font-medium text-text-secondary hover:text-primary-text"
                 aria-expanded={showChecks}>
                 <ChevronRight size={11} className={`transition-transform ${showChecks ? 'rotate-90' : ''}`} />
                 <ListChecks size={11} /> {checks.length} checklist item{checks.length !== 1 ? 's' : ''}
@@ -193,7 +193,7 @@ function EventNode({ data }: NodeProps<ProcessNodeData>) {
           aria-label={data.name}
         >
           {isStart ? <Play size={18} /> : <Flag size={18} />}
-          <span className="absolute top-[calc(100%+4px)] left-1/2 -translate-x-1/2 w-[120px] text-center text-[11px] font-semibold leading-tight wrap-break-word pointer-events-none"
+          <span className="absolute top-[calc(100%+4px)] left-1/2 -translate-x-1/2 w-[120px] text-center text-[11px] font-medium leading-tight wrap-break-word pointer-events-none"
             style={{ color: accent }}>
             {data.name}
           </span>
@@ -207,11 +207,11 @@ function EventNode({ data }: NodeProps<ProcessNodeData>) {
 // which render as child nodes inside it (ReactFlow parent/extent). ────────────
 function BandNode({ data }: NodeProps<ProcessNodeData>) {
   return (
-    <div className="w-full h-full rounded-[12px] border-2 border-primary-ring bg-primary-subtle/40 shadow-xs">
+    <div className="w-full h-full rounded-card border-2 border-primary-ring bg-primary-subtle/40 shadow-xs">
       <Handle type="target" position={Position.Left} style={handleStyle} />
       <div className="absolute top-0 left-0 right-0 h-7 flex items-center gap-1.5 px-2 bg-primary-subtle border-b border-primary-border rounded-t-[10px]">
         <Folder size={13} className="text-primary-text shrink-0" />
-        <span className="flex-1 min-w-0 truncate text-[12px] font-semibold text-text-primary">{data.name}</span>
+        <span className="flex-1 min-w-0 truncate text-[12px] font-medium text-text-primary">{data.name}</span>
         <Tooltip label="Collapse">
           <button type="button" onClick={(e) => { e.stopPropagation(); data.onToggleExpand?.() }}
             className="nodrag shrink-0 w-5 h-5 inline-flex items-center justify-center rounded-xs text-text-muted hover:text-text-primary hover:bg-white"
@@ -229,11 +229,11 @@ function NoteNode({ data }: NodeProps<ProcessNodeData>) {
   return (
     <div
       className={`relative rounded-[6px] px-3 py-2.5 shadow-xs ${data.selected ? 'ring-2 ring-primary' : ''}`}
-      style={{ width: 190, minHeight: 96, background: 'var(--warning-bg)', border: '1px solid #FDE68A' }}
+      style={{ width: 190, minHeight: 96, background: 'var(--warning-bg)', border: '1px solid var(--warning-border)' }}
     >
       <div className="flex items-center gap-1 mb-1 text-warning">
         <StickyNote size={12} className="shrink-0" />
-        <span className="text-[10px] font-semibold uppercase tracking-wide">Note</span>
+        <span className="text-[10px] font-medium uppercase tracking-wide">Note</span>
         {data.onEdit && <Pencil size={11} className="ml-auto text-warning" />}
       </div>
       <p className="text-[12px] leading-snug text-warning whitespace-pre-wrap wrap-break-word">
@@ -254,7 +254,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
       className="relative w-full h-full"
       style={{
         border: `1.5px solid ${isPool ? 'var(--text-muted)' : 'var(--border)'}`,
-        background: isPool ? 'rgba(248,250,252,0.35)' : 'rgba(241,245,249,0.30)',
+        background: isPool ? 'color-mix(in srgb, var(--surface-sunken) 35%, transparent)' : 'color-mix(in srgb, var(--surface-control) 30%, transparent)',
         borderRadius: 4,
       }}
     >
@@ -284,7 +284,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); data.onRename!() }}
-              className="nodrag text-[11px] font-bold text-text-primary whitespace-nowrap hover:text-primary-text focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
+              className="nodrag text-[11px] font-medium text-text-primary whitespace-nowrap hover:text-primary-text focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
               style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', pointerEvents: 'auto' }}
             >
               {data.label}
@@ -292,7 +292,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
           </Tooltip>
         ) : (
           <span
-            className="text-[11px] font-bold text-text-primary whitespace-nowrap"
+            className="text-[11px] font-medium text-text-primary whitespace-nowrap"
             style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
             {data.label}

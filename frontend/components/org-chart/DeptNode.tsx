@@ -32,7 +32,7 @@ function DeptNode({ data, selected }: { data: DeptNodeData; selected: boolean })
       }`}
       style={{ backgroundColor: fill, color: text, borderColor: border }}
     >
-      <Handle type="target" position={Position.Top} className="bg-[#64748B]! w-3! h-3!" />
+      <Handle type="target" position={Position.Top} className="bg-text-muted! w-3! h-3!" />
 
       {data.canEdit && data.onEdit && (
         <button
@@ -76,7 +76,7 @@ function DeptNode({ data, selected }: { data: DeptNodeData; selected: boolean })
           </span>
         )}
       </div>
-      <Handle type="source" position={Position.Bottom} className="bg-[#64748B]! w-3! h-3!" />
+      <Handle type="source" position={Position.Bottom} className="bg-text-muted! w-3! h-3!" />
     </div>
   );
 }

@@ -240,7 +240,7 @@ function OrgChartInner({
 
   return (
     <div
-      className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden"
+      className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden"
       style={{ height: 640 }}
     >
       {/* Tree-only toolbar: arranging the canvas + exporting an image only make
@@ -268,7 +268,7 @@ function OrgChartInner({
           {canEdit && (
             <button
               onClick={handleAutoArrange}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-sm font-medium bg-white border border-border-light text-text-secondary hover:text-text-primary hover:border-border transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-white border border-border-light text-text-secondary hover:text-text-primary hover:border-border transition-colors"
             >
               <LayoutGrid size={15} /> Auto-arrange
             </button>
@@ -276,7 +276,7 @@ function OrgChartInner({
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-sm font-medium bg-white border border-border-light text-text-secondary hover:text-text-primary hover:border-border disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-white border border-border-light text-text-secondary hover:text-text-primary hover:border-border disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
             <Download size={15} /> {exporting ? 'Exporting…' : 'Export PNG'}
           </button>
@@ -303,7 +303,7 @@ function OrgChartInner({
           <Controls showInteractive={false} />
           {!nav.isTouch && <CanvasScrollbars nodes={nodes} setInstant={nav.setInstant} />}
           {nav.needsMinimap && (
-            <MiniMap nodeColor={() => 'var(--primary-text)'} maskColor="rgba(15,23,42,0.05)" pannable zoomable
+            <MiniMap nodeColor={() => 'var(--primary-text)'} maskColor="color-mix(in srgb, var(--text-primary) 5%, transparent)" pannable zoomable
               className="hidden! sm:block!" style={{ width: 180, height: 120 }} />
           )}
         </ReactFlow>
@@ -316,7 +316,7 @@ function OrgChartInner({
 
 function EmptyState({ canEdit, onAdd }: { canEdit: boolean; onAdd: () => void }) {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center py-12 text-center">
+    <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12 text-center">
       <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
         <Network size={28} className="text-text-muted" />
       </div>
@@ -329,7 +329,7 @@ function EmptyState({ canEdit, onAdd }: { canEdit: boolean; onAdd: () => void })
       {canEdit && (
         <button
           onClick={onAdd}
-          className="mt-4 flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
+          className="mt-4 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
         >
           <Plus size={15} /> Add Department
         </button>
@@ -466,14 +466,14 @@ export default function OrgChartPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowImport(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
             >
               <Upload size={16} />
               Import
             </button>
             <button
               onClick={openCreate}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
             >
               <Plus size={16} />
               Add Department
@@ -498,7 +498,7 @@ export default function OrgChartPage() {
                 placeholder="Search departments…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-[10px] text-sm rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted"
+                className="w-full pl-8 pr-3 py-[10px] text-sm rounded-lg border border-border focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted"
               />
             </div>
           </div>
