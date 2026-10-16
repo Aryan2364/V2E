@@ -823,10 +823,10 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
               {templateItems.map((item, idx) => (
                 <div key={idx} className="relative mb-2 max-w-xl">
                   <input ref={(el) => { itemRefs.current[idx] = el }} type="text" value={item} onChange={(e) => handleItemChange(idx, e.target.value)} onKeyDown={(e) => handleItemKeyDown(e, idx)} onBlur={() => handleItemBlur(idx)} placeholder={`Item ${idx + 1}`} className={`${inputCls} pr-8`} />
-                  <button onMouseDown={(e) => e.preventDefault()} onClick={() => { pushHistory(); setTemplateItems((prev) => prev.length <= 1 ? [''] : prev.filter((_, i) => i !== idx)) }} className="absolute top-0 right-0 h-[38px] w-9 flex items-center justify-center text-text-muted hover:text-danger transition-colors" aria-label="Remove item"><X size={14} /></button>
+                  <Button type="button" variant="ghost" size="icon-sm" className="absolute top-0 right-0 h-[38px] hover:text-danger" onMouseDown={(e) => e.preventDefault()} onClick={() => { pushHistory(); setTemplateItems((prev) => prev.length <= 1 ? [''] : prev.filter((_, i) => i !== idx)) }} aria-label="Remove item"><X size={14} /></Button>
                 </div>
               ))}
-              <button onClick={() => { pushHistory(); setTemplateItems((prev) => [...prev, '']) }} className="flex items-center gap-1.5 text-body font-medium text-primary-text hover:text-primary-text transition-colors mt-1"><Plus size={13} /> Add item</button>
+              <Button variant="ghost" size="sm" className="mt-1" onClick={() => { pushHistory(); setTemplateItems((prev) => [...prev, '']) }}><Plus size={13} /> Add item</Button>
             </div>
           </div>
 
@@ -847,8 +847,8 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
         {error && <p className="text-body font-medium text-danger">{error}</p>}
 
         <div className="flex gap-2 pt-2">
-          <button onClick={handleSubmit} disabled={submitting} className="px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover disabled:opacity-60 transition-colors">{submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Template'}</button>
-          <button onClick={closeForm} className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:bg-surface-control transition-colors">Cancel</button>
+          <Button onClick={handleSubmit} loading={submitting} loadingLabel="Saving">{editingId ? 'Save Changes' : 'Create Template'}</Button>
+          <Button variant="secondary" onClick={closeForm}>Cancel</Button>
         </div>
       </div>
     )
@@ -866,8 +866,8 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} template{items.length !== 1 ? 's' : ''}</p>
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-text bg-surface border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors"><Upload size={14} /> Import Checklists</button>
-          <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-control hover:bg-primary-hover transition-colors"><Plus size={14} /> Add Template</button>
+          <Button variant="secondary" onClick={() => setShowImport(true)}><Upload size={14} /> Import Checklists</Button>
+          <Button onClick={openCreate}><Plus size={14} /> Add Template</Button>
         </div>
       </div>
       {items.length === 0 && <div className="text-center py-12 text-text-secondary text-body">No checklist templates yet.</div>}
@@ -881,8 +881,8 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
               <div className="flex items-start justify-between gap-2 mb-3">
                 <p className={['text-body font-medium leading-snug', active ? 'text-text-primary' : 'text-text-muted'].join(' ')}>{t.name}</p>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => openEdit(t)} aria-label="Edit" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"><Pencil size={13} /></button>
-                  <button onClick={() => handleDelete(t.id)} aria-label="Delete" className="w-7 h-7 flex items-center justify-center rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"><Trash2 size={13} /></button>
+                  <Button variant="ghost" size="icon-sm" onClick={() => openEdit(t)} aria-label="Edit"><Pencil size={13} /></Button>
+                  <Button variant="ghost" size="icon-sm" className="hover:text-danger hover:bg-danger-bg" onClick={() => handleDelete(t.id)} aria-label="Delete"><Trash2 size={13} /></Button>
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -897,13 +897,16 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
                 <span className="text-meta font-medium rounded-[999px] px-2 py-0.5 bg-primary-subtle text-primary-text">{count} item{count !== 1 ? 's' : ''}</span>
                 <span className={['text-meta font-medium rounded-[999px] px-2 py-0.5', restricted ? 'bg-warning-bg text-warning' : 'bg-surface-control text-text-secondary'].join(' ')}>{accessSummary(t)}</span>
                 <span className={['text-meta font-medium rounded-[999px] px-2 py-0.5', active ? 'bg-success-bg text-success' : 'bg-surface-control text-text-muted'].join(' ')}>{active ? 'Active' : 'Inactive'}</span>
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={['ml-auto', active ? 'text-text-secondary' : 'text-success hover:text-success'].join(' ')}
                   onClick={() => toggleActive(t)}
-                  disabled={togglingId === t.id}
-                  className={['ml-auto text-meta font-medium rounded-control px-2.5 py-1 transition-colors disabled:opacity-60', active ? 'text-text-secondary bg-surface border border-border-light hover:bg-surface-control' : 'text-primary-foreground bg-success hover:bg-success'].join(' ')}
+                  loading={togglingId === t.id}
+                  loadingLabel="…"
                 >
-                  {togglingId === t.id ? '…' : active ? 'Deactivate' : 'Activate'}
-                </button>
+                  {active ? 'Deactivate' : 'Activate'}
+                </Button>
               </div>
             </div>
           )
