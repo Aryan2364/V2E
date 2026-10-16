@@ -1,12 +1,22 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
 import { X, Plus, History } from 'lucide-react'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import StyledSelect from '@/components/ui/StyledSelect'
-import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import FileDropzone, { AttachmentErrorBox } from '@/components/ui/FileDropzone'
 import { PendingFileList, AttachmentList } from '@/components/ui/AttachmentList'
 import { useAuth } from '@/lib/auth/context'
@@ -155,9 +165,6 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
   const [holidayOverride, setHolidayOverride] = useState(false)
   const holidayDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [leaveAvail, setLeaveAvail] = useState<LeaveAvailability | null>(null)
-  // Portal target only exists on the client — guard against SSR mismatch.
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
 
   // The task's people, now editable here rather than only on the detail page.
   // AssigneeSelector carries both roles in one list (CC is a toggle on a selected
@@ -210,17 +217,8 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
     return () => { if (holidayDebounceRef.current) clearTimeout(holidayDebounceRef.current) }
   }, [deadlineDate, orgId])
 
-  useEffect(() => {
-    // Escape inside an open picker (e.g. the Tags search) closes only that picker.
-    function handle(e: KeyboardEvent) { if (e.key === 'Escape' && !isListboxOpen()) handleCloseAttempt() }
-    document.addEventListener('keydown', handle)
-    return () => document.removeEventListener('keydown', handle)
-  })
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
-  }, [])
+  // Escape (except inside an open picker), the backdrop and body-scroll-lock are now
+  // the kit Dialog's own behaviour — see the Dialog's onOpenChange below.
 
   // Surface the backend's real reason (e.g. an inactive category, an ineligible
   // assignee) instead of a generic message — the same convention as CreateTaskModal.
@@ -373,27 +371,29 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
     await handleSubmit({ preventDefault: () => {} } as React.FormEvent, true)
   }
 
-  if (!mounted) return null
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) handleCloseAttempt() }}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="edit-task-modal-title"
+  return (
+    <>
+    <Dialog
+      open
+      onOpenChange={(open, eventDetails) => {
+        if (open) return
+        // Escape inside an open picker (e.g. the Tags search) closes only that
+        // picker, exactly as before.
+        if (eventDetails.reason === 'escape-key' && isListboxOpen()) {
+          eventDetails.cancel()
+          return
+        }
+        handleCloseAttempt()
+      }}
     >
-      <div className="relative w-full max-w-2xl bg-surface rounded-t-xl sm:rounded-xl shadow-dialog border border-border-light max-h-[92vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-light shrink-0">
-          <h2 id="edit-task-modal-title" className="text-[22px] font-medium text-text-primary">Edit Task</h2>
-          <button onClick={handleCloseAttempt} className="w-8 h-8 rounded-[6px] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors">
-            <X size={18} />
-          </button>
-        </div>
+      <DialogContent size="lg" className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Edit Task</DialogTitle>
+        </DialogHeader>
 
         {/* Body */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
+        <DialogBody className="p-0 flex flex-col overflow-hidden">
+        <form id="edit-task-form" onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
@@ -790,66 +790,74 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
             </div>
           </div>
         </form>
+        </DialogBody>
 
-        {/* Footer — no Cancel button; the header X / Escape / backdrop close the modal.
+        {/* Footer — no Cancel button; the header close / Escape / backdrop close the modal.
             Error sits here so it's always visible next to Save, not hidden above
             the fold when the form is scrolled down. */}
-        <div className="shrink-0 px-6 py-4 border-t border-border-light space-y-3">
+        <DialogFooter className="flex-col items-stretch space-y-3 sm:items-stretch">
           {error && (
             <div className="bg-danger-bg border border-danger-border rounded-lg px-4 py-3 text-sm text-danger">{error}</div>
           )}
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="w-full sm:w-auto px-4 py-[10px] text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
-            >
-              {submitting ? 'Saving...' : 'Save Changes'}
-            </button>
+            <Button type="submit" form="edit-task-form" disabled={submitting} loading={submitting} loadingLabel="Saving" className="w-full sm:w-auto">
+              Save Changes
+            </Button>
           </div>
-        </div>
-      </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
       {/* Styled confirmations — never a native browser dialog (DESIGN_RULES Part 7). */}
-      <ConfirmDialog
-        open={discardOpen}
-        title="Discard unsaved changes?"
-        message="Your edits to this task haven't been saved yet."
-        confirmLabel="Discard"
-        cancelLabel="Keep editing"
-        danger
-        onConfirm={() => { setDiscardOpen(false); onClose() }}
-        onCancel={() => setDiscardOpen(false)}
-      />
+      <AlertDialog open={discardOpen} onOpenChange={(next) => { if (!next) setDiscardOpen(false) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+            <AlertDialogDescription>Your edits to this task haven't been saved yet.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogAction variant="danger" onClick={() => { setDiscardOpen(false); onClose() }}>Discard</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      <ConfirmDialog
-        open={!!pendingAttachmentRemoval}
-        title="Remove this file?"
-        message={
-          pendingAttachmentRemoval
-            ? `“${pendingAttachmentRemoval.file_name}” will be deleted for everyone on the task.`
-            : undefined
-        }
-        confirmLabel="Remove"
-        danger
-        loading={!!pendingAttachmentRemoval && deletingAttachmentIds.has(pendingAttachmentRemoval.id)}
-        onConfirm={confirmRemoveAttachment}
-        onCancel={() => setPendingAttachmentRemoval(null)}
-      />
+      <AlertDialog open={!!pendingAttachmentRemoval} onOpenChange={(next) => { if (!next) setPendingAttachmentRemoval(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this file?</AlertDialogTitle>
+            {pendingAttachmentRemoval && (
+              <AlertDialogDescription>“{pendingAttachmentRemoval.file_name}” will be deleted for everyone on the task.</AlertDialogDescription>
+            )}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!!pendingAttachmentRemoval && deletingAttachmentIds.has(pendingAttachmentRemoval.id)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="danger"
+              disabled={!!pendingAttachmentRemoval && deletingAttachmentIds.has(pendingAttachmentRemoval.id)}
+              loading={!!pendingAttachmentRemoval && deletingAttachmentIds.has(pendingAttachmentRemoval.id)}
+              onClick={confirmRemoveAttachment}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* The holiday rule suggests, it never forces — so a rejected date offers to
           stand rather than just failing (no dead end). */}
-      <ConfirmDialog
-        open={!!holidayPrompt}
-        title="Keep this date anyway?"
-        message={holidayPrompt ?? undefined}
-        confirmLabel="Keep the date"
-        cancelLabel="Pick another"
-        onConfirm={keepHolidayDateAnyway}
-        onCancel={() => { setHolidayPrompt(null); setError(null) }}
-      />
-    </div>,
-    document.body,
+      <AlertDialog open={!!holidayPrompt} onOpenChange={(next) => { if (!next) { setHolidayPrompt(null); setError(null) } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Keep this date anyway?</AlertDialogTitle>
+            {holidayPrompt && <AlertDialogDescription>{holidayPrompt}</AlertDialogDescription>}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Pick another</AlertDialogCancel>
+            <AlertDialogAction variant="primary" onClick={keepHolidayDateAnyway}>Keep the date</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
