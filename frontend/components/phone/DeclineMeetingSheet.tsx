@@ -44,7 +44,7 @@ export function DeclineMeetingSheet({
       }
     >
       <div className="flex flex-col gap-[8px]">
-        <label htmlFor="decline-reason" className="text-phone-label font-medium text-text-secondary">
+        <label htmlFor="decline-reason" className="text-label font-medium text-text-secondary">
           Reason <span aria-hidden>*</span>
         </label>
         <textarea
@@ -54,7 +54,7 @@ export function DeclineMeetingSheet({
           rows={3}
           maxLength={1000}
           placeholder="Let the organiser know why you can't make it"
-          className="min-h-[88px] w-full rounded-[8px] border border-border bg-surface px-[12px] py-[10px] text-phone-body text-text-primary outline-hidden focus-visible:border-primary"
+          className="min-h-[88px] w-full rounded-[8px] border border-border bg-surface px-[12px] py-[10px] text-body text-text-primary outline-hidden focus-visible:border-primary"
         />
       </div>
     </PhoneSheet>

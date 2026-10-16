@@ -121,7 +121,7 @@ export default function PhoneTabBar() {
                 </span>
               ) : null}
             </span>
-            <span className="max-w-full truncate text-phone-bar-label font-medium">{tab.label}</span>
+            <span className="max-w-full truncate text-bar-label font-medium">{tab.label}</span>
             {count !== null ? <span className="sr-only">, {count} unread</span> : null}
           </Link>
         )

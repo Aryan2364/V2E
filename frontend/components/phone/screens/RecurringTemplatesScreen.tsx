@@ -66,12 +66,12 @@ export default function RecurringTemplatesScreen({ route }: { route: PhoneRoute 
             <li key={t.id}>
               <a href={recurringInstancesHref(t.id)} className={cx(ROW, 'min-h-[64px] items-start py-[12px]')}>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-phone-body font-semibold text-text-primary">
+                  <span className="block truncate text-body font-semibold text-text-primary">
                     {t.title}
-                    {!t.is_active ? <span className="ml-[8px] text-phone-meta font-normal text-text-secondary">(paused)</span> : null}
+                    {!t.is_active ? <span className="ml-[8px] text-meta font-normal text-text-secondary">(paused)</span> : null}
                   </span>
-                  <span className="block truncate text-phone-label text-text-secondary">{templateScheduleSummary(t.schedule_entries)}</span>
-                  <span className="block truncate text-phone-meta text-text-secondary">{assigneeLine(t)}</span>
+                  <span className="block truncate text-label text-text-secondary">{templateScheduleSummary(t.schedule_entries)}</span>
+                  <span className="block truncate text-meta text-text-secondary">{assigneeLine(t)}</span>
                 </span>
                 <ChevronRight aria-hidden className="mt-[4px] size-[18px] shrink-0 text-text-secondary" />
               </a>

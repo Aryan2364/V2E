@@ -164,12 +164,12 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
             maxLength={250}
             enterKeyHint="next"
             placeholder="e.g. Weekly sync"
-            className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-phone-body text-text-primary outline-hidden focus-visible:border-primary"
+            className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-body text-text-primary outline-hidden focus-visible:border-primary"
           />
         </Field>
 
         <div className="flex flex-col gap-[6px]">
-          <span className="text-phone-label font-medium text-text-secondary">Type</span>
+          <span className="text-label font-medium text-text-secondary">Type</span>
           <div className="flex gap-[8px]">
             {(['online', 'offline'] as const).map((t) => (
               <button
@@ -177,7 +177,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
                 type="button"
                 onClick={() => setType(t)}
                 className={cx(
-                  'flex-1 min-h-(--h-control) rounded-[8px] border-2 text-phone-body font-semibold',
+                  'flex-1 min-h-(--h-control) rounded-[8px] border-2 text-body font-semibold',
                   type === t ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border bg-surface text-text-secondary',
                 )}
               >
@@ -195,7 +195,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
               onChange={(e) => setOnlineLink(e.target.value)}
               placeholder="https://…"
               inputMode="url"
-              className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-phone-body text-text-primary outline-hidden focus-visible:border-primary"
+              className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-body text-text-primary outline-hidden focus-visible:border-primary"
             />
           </Field>
         ) : (
@@ -205,7 +205,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g. Conference room 2"
-              className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-phone-body text-text-primary outline-hidden focus-visible:border-primary"
+              className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-body text-text-primary outline-hidden focus-visible:border-primary"
             />
           </Field>
         )}
@@ -216,20 +216,20 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
           <PhoneTimeField id="meeting-start" label="Start time" value={startTime} onChange={setStartTime} />
           <PhoneTimeField id="meeting-end" label="End time" value={endTime} onChange={setEndTime} />
         </div>
-        {errors.endTime ? <p className="text-phone-meta text-danger">{errors.endTime}</p> : null}
+        {errors.endTime ? <p className="text-meta text-danger">{errors.endTime}</p> : null}
 
         <button
           type="button"
           onClick={() => setPickerOpen(true)}
           className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-light bg-surface px-[12px] text-left active:bg-surface-control"
         >
-          <span className="text-phone-body text-text-primary">
+          <span className="text-body text-text-primary">
             Attendees{selectedPeople.length > 0 ? ` · ${selectedPeople.length}` : ''}
           </span>
           <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
         </button>
         {selectedPeople.length > 0 ? (
-          <p className="text-phone-meta text-text-secondary">{selectedPeople.map((p) => p.name).join(', ')}</p>
+          <p className="text-meta text-text-secondary">{selectedPeople.map((p) => p.name).join(', ')}</p>
         ) : null}
 
         {agendaOpen ? (
@@ -239,7 +239,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
               onChange={(e) => setAgenda(e.target.value)}
               rows={4}
               placeholder="What this meeting will cover"
-              className="w-full rounded-[8px] border border-border bg-surface px-[12px] py-[10px] text-phone-body text-text-primary outline-hidden focus-visible:border-primary"
+              className="w-full rounded-[8px] border border-border bg-surface px-[12px] py-[10px] text-body text-text-primary outline-hidden focus-visible:border-primary"
             />
           </Field>
         ) : (
@@ -248,7 +248,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
             onClick={() => setAgendaOpen(true)}
             className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-light bg-surface px-[12px] text-left active:bg-surface-control"
           >
-            <span className="text-phone-body text-text-primary">Add agenda</span>
+            <span className="text-body text-text-primary">Add agenda</span>
             <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
           </button>
         )}
@@ -293,11 +293,11 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-[6px]">
-      <label className="text-phone-label font-medium text-text-secondary">
+      <label className="text-label font-medium text-text-secondary">
         {label} {required ? <span aria-hidden>*</span> : null}
       </label>
       {children}
-      {error ? <p className="text-phone-meta text-danger">{error}</p> : null}
+      {error ? <p className="text-meta text-danger">{error}</p> : null}
     </div>
   )
 }

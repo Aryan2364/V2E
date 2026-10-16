@@ -222,35 +222,35 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
       <div className="flex flex-col gap-[20px] pb-[80px]">
         {task.status ? (
           <span
-            className="inline-flex w-fit items-center rounded-full px-[10px] py-[2px] text-phone-label font-semibold"
+            className="inline-flex w-fit items-center rounded-full px-[10px] py-[2px] text-label font-semibold"
             style={{ backgroundColor: `${task.status.color}22`, color: task.status.color }}
           >
             {task.status.label}
           </span>
         ) : null}
 
-        <h1 className="whitespace-pre-wrap text-phone-page-title font-semibold text-text-primary">{task.title}</h1>
+        <h1 className="whitespace-pre-wrap text-page-title font-semibold text-text-primary">{task.title}</h1>
 
         <dl className="grid grid-cols-2 gap-y-[12px] gap-x-[12px]">
           {facts.map((f) => (
             <div key={f.label} className="flex flex-col gap-[2px]">
-              <dt className="text-phone-meta text-text-secondary">{f.label}</dt>
-              <dd className="truncate text-phone-body text-text-primary">{f.value}</dd>
+              <dt className="text-meta text-text-secondary">{f.label}</dt>
+              <dd className="truncate text-body text-text-primary">{f.value}</dd>
             </div>
           ))}
         </dl>
 
         {task.description ? (
           <div className="flex flex-col gap-[4px]">
-            <h2 className="text-phone-label font-medium text-text-secondary">Description</h2>
-            <p className="whitespace-pre-wrap text-phone-body text-text-primary">{task.description}</p>
+            <h2 className="text-label font-medium text-text-secondary">Description</h2>
+            <p className="whitespace-pre-wrap text-body text-text-primary">{task.description}</p>
           </div>
         ) : null}
 
         {(task.checklist ?? []).length > 0 ? (
           <section className="flex flex-col gap-[8px]">
-            <h2 className="text-phone-label font-medium text-text-secondary">Checklist</h2>
-            {checklistReadOnlyNote ? <p className="text-phone-label text-text-secondary">{checklistReadOnlyNote}</p> : null}
+            <h2 className="text-label font-medium text-text-secondary">Checklist</h2>
+            {checklistReadOnlyNote ? <p className="text-label text-text-secondary">{checklistReadOnlyNote}</p> : null}
             <ul className={ROW_BLOCK}>
               {(task.checklist ?? []).map((item) => {
                 const done =
@@ -275,7 +275,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
                           </svg>
                         ) : null}
                       </span>
-                      <span className={cx('min-w-0 flex-1 truncate text-phone-body text-text-primary', done && 'text-text-muted line-through')}>
+                      <span className={cx('min-w-0 flex-1 truncate text-body text-text-primary', done && 'text-text-muted line-through')}>
                         {item.title}
                       </span>
                     </ChecklistItemShell>
@@ -287,13 +287,13 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
         ) : null}
 
         <section className="flex flex-col gap-[8px]">
-          <h2 className="text-phone-label font-medium text-text-secondary">Files &amp; proof</h2>
+          <h2 className="text-label font-medium text-text-secondary">Files &amp; proof</h2>
           {filesCount === 0 ? (
             // Nothing to list yet: one plain action instead of an empty bordered row.
             <button
               type="button"
               onClick={() => setPanel('files')}
-              className="flex min-h-[44px] items-center gap-[8px] self-start text-phone-body font-semibold text-primary-text"
+              className="flex min-h-[44px] items-center gap-[8px] self-start text-body font-semibold text-primary-text"
             >
               <Paperclip aria-hidden className="size-[18px] shrink-0" />
               Add file or proof
@@ -311,18 +311,18 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
 
         <section className="flex flex-col gap-[8px]">
           <div className="flex items-center justify-between">
-            <h2 className="text-phone-label font-medium text-text-secondary">
+            <h2 className="text-label font-medium text-text-secondary">
               Comments{totalCommentCount > 0 ? ` (${totalCommentCount})` : ''}
             </h2>
-            <button type="button" onClick={() => setPanel('comments')} className="text-phone-label font-semibold text-primary-text">
+            <button type="button" onClick={() => setPanel('comments')} className="text-label font-semibold text-primary-text">
               Add comment
             </button>
           </div>
 
           {comments === null ? (
-            <p className="text-phone-body text-text-secondary">Loading comments…</p>
+            <p className="text-body text-text-secondary">Loading comments…</p>
           ) : comments.length === 0 ? (
-            <p className="text-phone-body text-text-secondary">No comments yet.</p>
+            <p className="text-body text-text-secondary">No comments yet.</p>
           ) : (
             <>
               <ul className={ROW_BLOCK}>
@@ -332,10 +332,10 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
                   .map((c) => (
                     <li key={c.id} className="flex flex-col gap-[4px] px-[16px] py-[10px]">
                       <div className="flex items-baseline justify-between gap-[8px]">
-                        <span className="truncate text-phone-label font-semibold text-text-primary">{c.user_name}</span>
-                        <span className="shrink-0 text-phone-meta text-text-secondary">{fmtDateTime(c.created_at)}</span>
+                        <span className="truncate text-label font-semibold text-text-primary">{c.user_name}</span>
+                        <span className="shrink-0 text-meta text-text-secondary">{fmtDateTime(c.created_at)}</span>
                       </div>
-                      <p className="whitespace-pre-wrap text-phone-body text-text-primary">{c.body}</p>
+                      <p className="whitespace-pre-wrap text-body text-text-primary">{c.body}</p>
                       {(c.attachments ?? []).length > 0 ? (
                         <div className="flex flex-wrap gap-[8px]">
                           {(c.attachments ?? []).map((a) => (
@@ -343,7 +343,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
                               key={a.id}
                               type="button"
                               onClick={() => tasksApi.downloadAttachment(orgId, task.id, a.id)}
-                              className="inline-flex items-center gap-[4px] rounded-[6px] border border-border-light px-[8px] py-[4px] text-phone-meta text-text-secondary"
+                              className="inline-flex items-center gap-[4px] rounded-[6px] border border-border-light px-[8px] py-[4px] text-meta text-text-secondary"
                             >
                               <Paperclip aria-hidden className="size-[12px]" />
                               <span className="max-w-[160px] truncate">{a.file_name}</span>
@@ -358,7 +358,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
                 <button
                   type="button"
                   onClick={() => setCommentCount((n) => n + COMMENTS_PAGE)}
-                  className="self-center text-phone-label font-semibold text-primary-text"
+                  className="self-center text-label font-semibold text-primary-text"
                 >
                   Show more
                 </button>
@@ -478,8 +478,8 @@ function checklistNote(task: Task): string {
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-[2px]">
-      <dt className="text-phone-meta text-text-secondary">{label}</dt>
-      <dd className="text-phone-body text-text-primary">{value}</dd>
+      <dt className="text-meta text-text-secondary">{label}</dt>
+      <dd className="text-body text-text-primary">{value}</dd>
     </div>
   )
 }
@@ -543,7 +543,7 @@ function FullScreenOverlay({ title, onClose, footer, children }: { title: string
         <button type="button" aria-label="Close" onClick={close} className={APP_BAR_BUTTON}>
           <X aria-hidden />
         </button>
-        <h2 className="min-w-0 flex-1 truncate text-phone-bar-title font-medium">{title}</h2>
+        <h2 className="min-w-0 flex-1 truncate text-bar-title font-medium">{title}</h2>
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-[16px] pb-[16px] pt-[16px]">{children}</div>
       {footer ? <div className="shrink-0">{footer}</div> : null}
@@ -571,16 +571,16 @@ function UploadRows({ items, onRetry, onRemove }: { items: UploadItem[]; onRetry
       {items.map((u) => (
         <li key={u.id} className="flex min-h-[44px] items-center gap-[8px] rounded-[8px] border border-border-light bg-surface px-[12px] py-[6px]">
           <Paperclip aria-hidden className="size-[16px] shrink-0 text-text-secondary" />
-          <span className="min-w-0 flex-1 truncate text-phone-label text-text-primary">{u.file.name}</span>
+          <span className="min-w-0 flex-1 truncate text-label text-text-primary">{u.file.name}</span>
           {u.status === 'uploading' ? (
-            <span className="shrink-0 text-phone-meta text-text-secondary">{u.progress}%</span>
+            <span className="shrink-0 text-meta text-text-secondary">{u.progress}%</span>
           ) : u.status === 'done' ? (
-            <span className="shrink-0 text-phone-label font-medium text-success">Done</span>
+            <span className="shrink-0 text-label font-medium text-success">Done</span>
           ) : u.status === 'failed' ? (
             <button
               type="button"
               onClick={() => onRetry(u.id)}
-              className="inline-flex min-h-[36px] shrink-0 items-center gap-[4px] rounded-[6px] px-[8px] text-phone-label font-semibold text-danger active:bg-danger-bg"
+              className="inline-flex min-h-[36px] shrink-0 items-center gap-[4px] rounded-[6px] px-[8px] text-label font-semibold text-danger active:bg-danger-bg"
             >
               <RotateCcw aria-hidden className="size-[14px]" />
               Retry
@@ -689,10 +689,10 @@ function CommentComposeOverlay({ orgId, taskId, onClose, onPosted }: { orgId: st
 
   const footer = (
     <div className={cx('flex flex-col gap-[8px] border-t border-border-light bg-surface px-[12px] pt-[8px]', 'pb-[calc(8px+var(--safe-bottom))] pl-[max(12px,var(--safe-left))] pr-[max(12px,var(--safe-right))]')}>
-      {tooLong ? <p className="text-phone-meta text-danger">Comments can be at most {COMMENT_MAX} characters.</p> : null}
+      {tooLong ? <p className="text-meta text-danger">Comments can be at most {COMMENT_MAX} characters.</p> : null}
       {commentId ? (
         <div className="flex items-center gap-[8px]">
-          <p className="min-w-0 flex-1 text-phone-label text-text-primary">
+          <p className="min-w-0 flex-1 text-label text-text-primary">
             {failedCount > 0 ? `Comment posted. ${failedCount} file${failedCount === 1 ? '' : 's'} still to upload.` : 'Comment posted.'}
           </p>
           <PhoneButton type="button" variant="primary" disabled={anyUploading} onClick={onPosted}>
@@ -751,7 +751,7 @@ function CommentComposeOverlay({ orgId, taskId, onClose, onPosted }: { orgId: st
     <FullScreenOverlay title="Add comment" onClose={leave} footer={footer}>
       <div className="flex flex-col gap-[12px]">
         {commentId ? (
-          <p className="whitespace-pre-wrap rounded-[8px] border border-border-light bg-surface px-[12px] py-[10px] text-phone-body text-text-primary">{body.trim()}</p>
+          <p className="whitespace-pre-wrap rounded-[8px] border border-border-light bg-surface px-[12px] py-[10px] text-body text-text-primary">{body.trim()}</p>
         ) : null}
         <UploadRows
           items={uploads}
@@ -759,7 +759,7 @@ function CommentComposeOverlay({ orgId, taskId, onClose, onPosted }: { orgId: st
           onRemove={commentId ? undefined : (id) => setUploads((prev) => prev.filter((u) => u.id !== id))}
         />
         {uploads.length === 0 && !commentId ? (
-          <p className="text-phone-meta text-text-secondary">Attach photos or files with the paperclip. @mentions aren&apos;t supported on the phone yet.</p>
+          <p className="text-meta text-text-secondary">Attach photos or files with the paperclip. @mentions aren&apos;t supported on the phone yet.</p>
         ) : null}
       </div>
     </FullScreenOverlay>
@@ -893,9 +893,9 @@ function FilesProofOverlay({ orgId, task, onClose, onTaskUpdate }: { orgId: stri
         <UploadRows items={uploads} onRetry={retry} />
 
         {items === null ? (
-          <p className="text-phone-body text-text-secondary">Loading…</p>
+          <p className="text-body text-text-secondary">Loading…</p>
         ) : items.length === 0 ? (
-          <p className="text-phone-body text-text-secondary">No files or proof yet.</p>
+          <p className="text-body text-text-secondary">No files or proof yet.</p>
         ) : (
           <ul className={ROW_BLOCK}>
             {items.map((a) => (
@@ -904,7 +904,7 @@ function FilesProofOverlay({ orgId, task, onClose, onTaskUpdate }: { orgId: stri
                   <Paperclip aria-hidden className="size-[18px] shrink-0 text-text-secondary" />
                   <span className="min-w-0 flex-1 truncate">{a.file_name}</span>
                   {a.is_proof ? (
-                    <span className="shrink-0 rounded-full bg-success-bg px-[8px] py-[2px] text-phone-meta font-semibold text-success">Proof</span>
+                    <span className="shrink-0 rounded-full bg-success-bg px-[8px] py-[2px] text-meta font-semibold text-success">Proof</span>
                   ) : null}
                 </button>
               </li>
@@ -944,7 +944,7 @@ function ImageViewer({ attachment, orgId, taskId, onClose }: { attachment: TaskA
           // eslint-disable-next-line @next/next/no-img-element
           <img src={url} alt={attachment.file_name} className="max-h-full max-w-full object-contain" />
         ) : (
-          <span className="text-phone-body text-white">Loading…</span>
+          <span className="text-body text-white">Loading…</span>
         )}
       </div>
     </div>,

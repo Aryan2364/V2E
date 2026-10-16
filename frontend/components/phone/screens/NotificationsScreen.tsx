@@ -258,7 +258,7 @@ export default function NotificationsScreen({ title }: { title: string }) {
     >
       <div ref={pullRef}>
       {refreshing ? (
-        <p className="mb-[8px] text-center text-phone-label text-text-secondary">Refreshing…</p>
+        <p className="mb-[8px] text-center text-label text-text-secondary">Refreshing…</p>
       ) : null}
       {state === 'loading' ? (
         <SkeletonRows />
@@ -280,7 +280,7 @@ export default function NotificationsScreen({ title }: { title: string }) {
         />
       ) : (
         <>
-          <p className="mb-[12px] text-phone-label text-text-secondary">
+          <p className="mb-[12px] text-label text-text-secondary">
             {unreadCount > 0 ? `${unreadCount} unread` : 'You are all caught up.'}
           </p>
           <ul className={ROW_BLOCK}>
@@ -291,7 +291,7 @@ export default function NotificationsScreen({ title }: { title: string }) {
           <div ref={endRef} aria-hidden />
           {loadingMore ? <SkeletonRows count={3} /> : null}
           {capped && cursor ? (
-            <p className="mt-[16px] text-center text-phone-label text-text-secondary">
+            <p className="mt-[16px] text-center text-label text-text-secondary">
               Showing the latest {MAX_ROWS}. Older notifications are on the computer.
             </p>
           ) : null}
@@ -313,7 +313,7 @@ export default function NotificationsScreen({ title }: { title: string }) {
           </li>
         </ul>
         {!anyUnread ? (
-          <p className="mt-[4px] text-phone-label text-text-secondary">Everything is already read.</p>
+          <p className="mt-[4px] text-label text-text-secondary">Everything is already read.</p>
         ) : null}
       </PhoneSheet>
     </PhoneScreen>
@@ -411,16 +411,16 @@ function NotificationRow({
         >
           <span
             className={cx(
-              'line-clamp-2 text-phone-body text-text-primary',
+              'line-clamp-2 text-body text-text-primary',
               n.is_read ? 'font-normal' : 'font-semibold',
             )}
           >
             {n.title}
           </span>
           {n.body ? (
-            <span className="mt-[2px] line-clamp-2 text-phone-label text-text-secondary">{n.body}</span>
+            <span className="mt-[2px] line-clamp-2 text-label text-text-secondary">{n.body}</span>
           ) : null}
-          <span className="mt-[4px] block text-phone-meta text-text-muted">{formatWhen(n.created_at)}</span>
+          <span className="mt-[4px] block text-meta text-text-muted">{formatWhen(n.created_at)}</span>
         </button>
       </div>
     </li>

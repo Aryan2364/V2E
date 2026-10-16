@@ -33,20 +33,20 @@ export function GivenTaskRow({ task, href }: { task: Task; href: string }) {
       className="flex min-h-[64px] w-full flex-col justify-center gap-[2px] px-[16px] py-[10px] text-left active:bg-surface-control"
     >
       <span className="flex items-center gap-[8px]">
-        <span className="min-w-0 flex-1 truncate text-phone-body font-semibold text-text-primary">{task.title}</span>
+        <span className="min-w-0 flex-1 truncate text-body font-semibold text-text-primary">{task.title}</span>
         {due ? (
           <span
             className={
               task.is_overdue
-                ? 'shrink-0 whitespace-nowrap text-phone-meta font-medium text-danger'
-                : 'shrink-0 whitespace-nowrap text-phone-meta text-text-secondary'
+                ? 'shrink-0 whitespace-nowrap text-meta font-medium text-danger'
+                : 'shrink-0 whitespace-nowrap text-meta text-text-secondary'
             }
           >
             {task.is_overdue ? `Overdue · ${due}` : due}
           </span>
         ) : null}
       </span>
-      <span className="truncate text-phone-label text-text-secondary">{assigneeProgress(task)}</span>
+      <span className="truncate text-label text-text-secondary">{assigneeProgress(task)}</span>
     </Link>
   )
 }

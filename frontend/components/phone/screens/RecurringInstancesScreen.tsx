@@ -73,12 +73,12 @@ export default function RecurringInstancesScreen({ route }: { route: PhoneRoute 
                   className="flex min-h-[56px] items-center justify-between gap-[8px] px-[16px] py-[10px] text-left active:bg-surface-control"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-phone-body text-text-primary">
+                    <span className="block truncate text-body text-text-primary">
                       {t.deadline ? fmtDate(t.deadline) : t.title}
                     </span>
                   </span>
                   <span
-                    className="inline-flex shrink-0 items-center rounded-full px-[8px] py-[2px] text-phone-meta font-semibold"
+                    className="inline-flex shrink-0 items-center rounded-full px-[8px] py-[2px] text-meta font-semibold"
                     style={{ backgroundColor: badge.bg, color: badge.text }}
                   >
                     {badge.label}

@@ -140,7 +140,7 @@ export function FinishTaskSheet({
       <div className="flex flex-col gap-[24px]">
         {unfinished.length > 0 ? (
           <section className="flex flex-col gap-[8px]">
-            <h3 className="text-phone-label font-medium text-text-secondary">Checklist</h3>
+            <h3 className="text-label font-medium text-text-secondary">Checklist</h3>
             <ul className="mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface">
               {unfinished.map((item) => (
                 <li key={item.id}>
@@ -154,7 +154,7 @@ export function FinishTaskSheet({
                       aria-hidden
                       className="flex size-[22px] shrink-0 items-center justify-center rounded-full border-2 border-border-strong"
                     />
-                    <span className="min-w-0 flex-1 truncate text-phone-body text-text-primary">
+                    <span className="min-w-0 flex-1 truncate text-body text-text-primary">
                       {item.title}
                     </span>
                   </button>
@@ -166,7 +166,7 @@ export function FinishTaskSheet({
 
         {task.proof_required ? (
           <section className="flex flex-col gap-[8px]">
-            <h3 className="text-phone-label font-medium text-text-secondary">Attach proof</h3>
+            <h3 className="text-label font-medium text-text-secondary">Attach proof</h3>
 
             <div className="flex gap-[8px]">
               <PhoneButton
@@ -219,32 +219,32 @@ export function FinishTaskSheet({
                     className="flex items-center gap-[8px] rounded-[8px] border border-border-light bg-surface px-[12px] py-[8px]"
                   >
                     <Paperclip aria-hidden className="size-[16px] shrink-0 text-text-secondary" />
-                    <span className="min-w-0 flex-1 truncate text-phone-label text-text-primary">
+                    <span className="min-w-0 flex-1 truncate text-label text-text-primary">
                       {u.file.name}
                     </span>
                     {u.status === 'uploading' ? (
-                      <span className="text-phone-meta text-text-secondary">{u.progress}%</span>
+                      <span className="text-meta text-text-secondary">{u.progress}%</span>
                     ) : u.status === 'error' ? (
                       <button
                         type="button"
                         onClick={() => retry(u.id)}
                         className={cx(
                           'inline-flex items-center gap-[4px] rounded-[6px] px-[8px] py-[4px]',
-                          'text-phone-label font-semibold text-danger active:bg-danger-bg',
+                          'text-label font-semibold text-danger active:bg-danger-bg',
                         )}
                       >
                         <RotateCcw aria-hidden className="size-[14px]" />
                         Retry
                       </button>
                     ) : (
-                      <span className="text-phone-label font-medium text-success">Done</span>
+                      <span className="text-label font-medium text-success">Done</span>
                     )}
                   </li>
                 ))}
               </ul>
             ) : null}
             {proofNeeded && uploads.length === 0 ? (
-              <p className="text-phone-meta text-text-secondary">
+              <p className="text-meta text-text-secondary">
                 {accept ? `Allowed types: ${accept}` : 'Any file type is allowed.'}
               </p>
             ) : null}

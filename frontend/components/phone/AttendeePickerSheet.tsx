@@ -75,7 +75,7 @@ export function AttendeePickerSheet({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search people"
-            className="w-full bg-transparent text-phone-body text-text-primary outline-hidden placeholder:text-text-muted"
+            className="w-full bg-transparent text-body text-text-primary outline-hidden placeholder:text-text-muted"
           />
         </div>
 
@@ -99,14 +99,14 @@ export function AttendeePickerSheet({
                   >
                     {isSelected ? <Check aria-hidden className="size-[14px] text-primary-foreground" /> : null}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-phone-body text-text-primary">{p.name}</span>
+                  <span className="min-w-0 flex-1 truncate text-body text-text-primary">{p.name}</span>
                 </button>
                 {isSelected ? (
                   <button
                     type="button"
                     onClick={() => toggleOptional(p.user_id)}
                     className={cx(
-                      'shrink-0 rounded-full border px-[8px] py-[4px] text-phone-meta font-medium',
+                      'shrink-0 rounded-full border px-[8px] py-[4px] text-meta font-medium',
                       isOptional ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border text-text-secondary',
                     )}
                   >
@@ -117,7 +117,7 @@ export function AttendeePickerSheet({
             )
           })}
           {filtered.length === 0 ? (
-            <li className="px-[16px] py-[24px] text-center text-phone-body text-text-secondary">No one matches &quot;{query}&quot;</li>
+            <li className="px-[16px] py-[24px] text-center text-body text-text-secondary">No one matches &quot;{query}&quot;</li>
           ) : null}
         </ul>
       </div>

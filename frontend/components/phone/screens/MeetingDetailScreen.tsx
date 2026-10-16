@@ -141,9 +141,9 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
     <PhoneScreen title={meeting.title} parent={route.parent ?? MEETINGS_HREF}>
       <div className="flex flex-col gap-[20px] pb-[16px]">
         <div className="flex flex-col gap-[8px]">
-          <h2 className="text-phone-card-heading font-semibold text-text-primary">{meeting.title}</h2>
+          <h2 className="text-card-heading font-semibold text-text-primary">{meeting.title}</h2>
           <span
-            className="inline-flex w-fit items-center rounded-full px-[10px] py-[2px] text-phone-label font-semibold"
+            className="inline-flex w-fit items-center rounded-full px-[10px] py-[2px] text-label font-semibold"
             style={{ backgroundColor: statusMeta.bg, color: statusMeta.text }}
           >
             {statusMeta.label}
@@ -153,8 +153,8 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
         <dl className="grid grid-cols-2 gap-y-[14px] gap-x-[12px]">
           {facts.map((f) => (
             <div key={f.label} className="flex flex-col gap-[2px]">
-              <dt className="text-phone-meta text-text-secondary">{f.label}</dt>
-              <dd className="truncate text-phone-body text-text-primary">{f.value}</dd>
+              <dt className="text-meta text-text-secondary">{f.label}</dt>
+              <dd className="truncate text-body text-text-primary">{f.value}</dd>
             </div>
           ))}
         </dl>
@@ -164,14 +164,14 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
           onClick={() => setAttendeesOpen(true)}
           className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-light bg-surface px-[12px] text-left active:bg-surface-control"
         >
-          <span className="text-phone-body text-text-primary">Attendees · {meeting.attendees?.length ?? meeting._count?.attendees ?? 0}</span>
+          <span className="text-body text-text-primary">Attendees · {meeting.attendees?.length ?? meeting._count?.attendees ?? 0}</span>
           <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
         </button>
 
         {meeting.agenda ? (
           <div className="flex flex-col gap-[4px]">
-            <h3 className="text-phone-label font-medium text-text-secondary">Agenda</h3>
-            <p className="whitespace-pre-wrap text-phone-body text-text-primary">{meeting.agenda}</p>
+            <h3 className="text-label font-medium text-text-secondary">Agenda</h3>
+            <p className="whitespace-pre-wrap text-body text-text-primary">{meeting.agenda}</p>
           </div>
         ) : null}
       </div>

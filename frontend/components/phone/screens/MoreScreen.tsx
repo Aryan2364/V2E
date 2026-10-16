@@ -54,8 +54,8 @@ export default function MoreScreen({ route }: { route: PhoneRoute }) {
       <div className="flex flex-col gap-[24px]">
         {user ? (
           <div className="flex min-w-0 flex-col">
-            <p className="wrap-break-word text-phone-card-heading font-semibold text-text-primary">{user.name}</p>
-            {detail ? <p className="wrap-break-word text-phone-label text-text-secondary">{detail}</p> : null}
+            <p className="wrap-break-word text-card-heading font-semibold text-text-primary">{user.name}</p>
+            {detail ? <p className="wrap-break-word text-label text-text-secondary">{detail}</p> : null}
           </div>
         ) : null}
 
@@ -63,7 +63,7 @@ export default function MoreScreen({ route }: { route: PhoneRoute }) {
           const id = `more-group-${group}`
           return (
             <section key={group} aria-labelledby={id} className="flex flex-col gap-[8px]">
-              <h2 id={id} className="text-phone-label font-medium text-text-secondary">
+              <h2 id={id} className="text-label font-medium text-text-secondary">
                 {group}
               </h2>
               <ul className={ROW_BLOCK}>

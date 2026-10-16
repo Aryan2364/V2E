@@ -66,7 +66,7 @@ export function PhoneAppBar({
         )}
       >
         {hasLeading ? <div className="flex shrink-0 items-center">{leading}</div> : null}
-        <h1 className="min-w-0 flex-1 truncate text-phone-bar-title font-medium">{title}</h1>
+        <h1 className="min-w-0 flex-1 truncate text-bar-title font-medium">{title}</h1>
         {count > 0 ? <div className="flex shrink-0 items-center gap-[8px]">{actions}</div> : null}
       </div>
     </header>

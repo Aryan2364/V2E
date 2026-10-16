@@ -27,14 +27,14 @@ export function AttendeesListSheet({
           const rm = a.response === 'declined' ? RESPONSE_META.declined : null
           return (
             <li key={a.id} className="flex min-h-[48px] items-center justify-between gap-[12px] px-[16px] py-[10px]">
-              <span className="min-w-0 flex-1 truncate text-phone-body text-text-primary">
+              <span className="min-w-0 flex-1 truncate text-body text-text-primary">
                 {a.user?.name ?? 'Unknown'}
-                {isOrganiser ? <span className="ml-[6px] text-phone-meta text-text-secondary">· Organiser</span> : null}
-                {!a.is_required && !isOrganiser ? <span className="ml-[6px] text-phone-meta text-text-secondary">· Optional</span> : null}
+                {isOrganiser ? <span className="ml-[6px] text-meta text-text-secondary">· Organiser</span> : null}
+                {!a.is_required && !isOrganiser ? <span className="ml-[6px] text-meta text-text-secondary">· Optional</span> : null}
               </span>
               {rm ? (
                 <span
-                  className="inline-flex shrink-0 items-center rounded-full px-[8px] py-[2px] text-phone-meta font-medium"
+                  className="inline-flex shrink-0 items-center rounded-full px-[8px] py-[2px] text-meta font-medium"
                   style={{ backgroundColor: rm.bg, color: rm.text }}
                 >
                   {rm.label}

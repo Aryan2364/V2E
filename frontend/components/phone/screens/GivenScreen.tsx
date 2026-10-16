@@ -79,7 +79,7 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
         href={RECURRING_TEMPLATES_HREF}
         className="mb-[16px] flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-light bg-surface px-[12px] active:bg-surface-control"
       >
-        <span className="inline-flex items-center gap-[8px] text-phone-body font-medium text-text-primary">
+        <span className="inline-flex items-center gap-[8px] text-body font-medium text-text-primary">
           <Repeat aria-hidden className="size-[18px] text-text-secondary" />
           Recurring tasks
         </span>
@@ -97,7 +97,7 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
             aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={cx(
-              'min-h-[36px] rounded-full px-[14px] py-[6px] text-phone-label font-medium',
+              'min-h-[36px] rounded-full px-[14px] py-[6px] text-label font-medium',
               tab === key
                 ? 'border border-primary bg-primary-subtle text-primary-text'
                 : 'border border-border bg-surface text-text-secondary',
@@ -133,7 +133,7 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
           href="/dashboard/tasks/new"
           aria-label="Give task"
           className={cx(
-            'fixed z-30 flex size-[56px] items-center justify-center rounded-full bg-primary text-primary-foreground shadow-phone-dialog active:bg-primary-pressed',
+            'fixed z-30 flex size-[56px] items-center justify-center rounded-full bg-primary text-primary-foreground shadow-dialog active:bg-primary-pressed',
             'right-[max(16px,var(--safe-right))] bottom-[calc(var(--bottom-bar)+var(--safe-bottom)+16px)]',
           )}
         >

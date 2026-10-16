@@ -198,15 +198,15 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
             />
           </Field>
         ) : (
-          <button type="button" onClick={() => setShowDescription(true)} className="self-start text-phone-label font-semibold text-primary-text">
+          <button type="button" onClick={() => setShowDescription(true)} className="self-start text-label font-semibold text-primary-text">
             + Add description
           </button>
         )}
 
-        <p className="text-phone-meta text-text-secondary">Repeat (daily/weekly/monthly) isn&apos;t available from the phone yet - set it up on a computer.</p>
+        <p className="text-meta text-text-secondary">Repeat (daily/weekly/monthly) isn&apos;t available from the phone yet - set it up on a computer.</p>
 
         {(draft.title || draft.description) ? (
-          <button type="button" onClick={onDiscard} className="self-start text-phone-label font-semibold text-danger">
+          <button type="button" onClick={onDiscard} className="self-start text-label font-semibold text-danger">
             Discard draft
           </button>
         ) : null}
@@ -247,9 +247,9 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
 function Field({ label, error, children }: { label: string; error?: string | null; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-[6px]">
-      <span className="text-phone-label font-medium text-text-secondary">{label}</span>
+      <span className="text-label font-medium text-text-secondary">{label}</span>
       {children}
-      {error ? <span className="text-phone-meta text-danger">{error}</span> : null}
+      {error ? <span className="text-meta text-danger">{error}</span> : null}
     </label>
   )
 }
@@ -318,9 +318,9 @@ function AssigneePickerSheet({
         </div>
 
         {loading ? (
-          <p className="text-phone-body text-text-secondary">Searching…</p>
+          <p className="text-body text-text-secondary">Searching…</p>
         ) : users.length === 0 ? (
-          <p className="text-phone-body text-text-secondary">No one matches.</p>
+          <p className="text-body text-text-secondary">No one matches.</p>
         ) : (
           <ul className="flex flex-col">
             {users.map((u) => {
@@ -342,8 +342,8 @@ function AssigneePickerSheet({
                       ) : null}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-left">
-                      <span className="block truncate text-phone-body text-text-primary">{u.name}</span>
-                      <span className="block truncate text-phone-meta text-text-secondary">{u.department_name}</span>
+                      <span className="block truncate text-body text-text-primary">{u.name}</span>
+                      <span className="block truncate text-meta text-text-secondary">{u.department_name}</span>
                     </span>
                   </button>
                 </li>

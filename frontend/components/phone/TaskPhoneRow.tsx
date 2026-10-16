@@ -95,14 +95,14 @@ export function TaskPhoneRow({
           <Link href={href} className="flex min-h-[56px] min-w-0 flex-1 items-center gap-[8px]">
             <span
               className={cx(
-                'min-w-0 flex-1 truncate text-phone-body font-medium text-text-primary transition-[color] duration-(--duration-fast)',
+                'min-w-0 flex-1 truncate text-body font-medium text-text-primary transition-[color] duration-(--duration-fast)',
                 filled && 'text-text-muted line-through',
               )}
             >
               {task.title}
             </span>
             {due || marker.proof || marker.checklist ? (
-              <span className="flex shrink-0 items-center gap-[8px] text-phone-meta text-text-secondary">
+              <span className="flex shrink-0 items-center gap-[8px] text-meta text-text-secondary">
                 {marker.proof ? (
                   <span className="inline-flex items-center" aria-label="Proof needed">
                     <Paperclip aria-hidden className="size-[14px]" />

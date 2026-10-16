@@ -147,7 +147,7 @@ export function PhoneSheet({
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cx(
-          'absolute inset-x-0 flex flex-col rounded-t-[12px] bg-surface shadow-phone-dialog outline-hidden',
+          'absolute inset-x-0 flex flex-col rounded-t-[12px] bg-surface shadow-dialog outline-hidden',
           'bottom-(--keyboard-inset) max-h-[calc(90dvh-var(--safe-top)-var(--keyboard-inset))]',
           'pr-(--safe-right) pl-(--safe-left)',
         )}
@@ -163,7 +163,7 @@ export function PhoneSheet({
             <span className="h-[4px] w-[32px] rounded-full bg-border" />
           </div>
           <div className="flex items-center gap-[8px] pb-[8px] pl-[16px] pr-[4px] pt-[4px]">
-            <h2 id={titleId} className="min-w-0 flex-1 text-phone-card-heading font-semibold text-text-primary">
+            <h2 id={titleId} className="min-w-0 flex-1 text-card-heading font-semibold text-text-primary">
               {title}
             </h2>
             <button

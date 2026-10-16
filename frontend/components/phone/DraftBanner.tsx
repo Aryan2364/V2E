@@ -51,7 +51,7 @@ export function DraftBanner<T extends DraftValues>({
         )}
       >
         <CircleAlert aria-hidden className="mt-[2px] size-[16px] shrink-0 text-text-secondary" />
-        <p className="min-w-0 flex-1 text-phone-label text-text-secondary">
+        <p className="min-w-0 flex-1 text-label text-text-secondary">
           Your draft from {when(savedAt, now)} was not used, because{' '}
           {changedBy ? `${changedBy} changed` : 'this record was changed'} this record at {when(changedAt, now)}.
         </p>
@@ -77,7 +77,7 @@ export function DraftBanner<T extends DraftValues>({
     >
       <div className="flex items-start gap-[8px]">
         <CircleAlert aria-hidden className="mt-[2px] size-[16px] shrink-0 text-primary-text" />
-        <p className="min-w-0 flex-1 text-phone-label text-primary-text">
+        <p className="min-w-0 flex-1 text-label text-primary-text">
           You have an unsaved draft from {when(offer.savedAt, now)}.
         </p>
       </div>

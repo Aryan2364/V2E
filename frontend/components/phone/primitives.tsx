@@ -43,7 +43,7 @@ const VARIANTS: Record<Variant, string> = {
 
 const BUTTON = cx(
   'inline-flex min-h-(--h-control) items-center justify-center gap-[8px] rounded-[8px] px-[16px] py-[8px]',
-  'text-phone-body font-semibold text-center',
+  'text-body font-semibold text-center',
   'transition-[background-color,border-color] duration-(--duration-fast)',
   'disabled:bg-surface-control-pressed disabled:border-surface-control-pressed disabled:text-text-secondary disabled:cursor-not-allowed',
   '[&_svg]:size-[18px] [&_svg]:shrink-0',
@@ -99,7 +99,7 @@ export const ROW_BLOCK =
 /** One tappable row, at least 48px, 16px in from the sides (41.5 rule 8, 41.8 rule 7). */
 export const ROW = cx(
   'flex min-h-[48px] w-full items-center gap-[12px] px-[16px] py-[12px] text-left',
-  'text-phone-body text-text-primary',
+  'text-body text-text-primary',
   'transition-[background-color] duration-(--duration-fast) active:bg-surface-control',
   'outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-ring',
 )
