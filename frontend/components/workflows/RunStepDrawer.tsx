@@ -195,7 +195,7 @@ export default function RunStepDrawer({
         <div className="flex items-start gap-2.5 rounded-[10px] border border-border-light bg-surface-control px-3.5 py-2.5 text-sm text-text-secondary">
           <Undo2 size={16} className="shrink-0 mt-0.5" />
           <span>
-            Waiting for info from <span className="font-semibold">{title(row.waiting_on_row_id)}</span>. Resumes when that step is done.
+            Waiting for info from <span className="font-medium">{title(row.waiting_on_row_id)}</span>. Resumes when that step is done.
           </span>
         </div>
       )}
@@ -203,7 +203,7 @@ export default function RunStepDrawer({
         <div className="flex items-start gap-2.5 rounded-[10px] border border-border-light bg-surface-control px-3.5 py-2.5 text-sm text-text-secondary">
           <Undo2 size={16} className="shrink-0 mt-0.5" />
           <span>
-            Sent back from <span className="font-semibold">{title(row.returned_to_row_id)}</span>. The reason is in the discussion. When done, the instance returns there.
+            Sent back from <span className="font-medium">{title(row.returned_to_row_id)}</span>. The reason is in the discussion. When done, the instance returns there.
           </span>
         </div>
       )}
@@ -217,7 +217,7 @@ export default function RunStepDrawer({
         <div className="flex items-start gap-2.5 rounded-[10px] border border-primary-border bg-primary-subtle px-3.5 py-2.5 text-sm text-primary-text">
           <CalendarClock size={16} className="shrink-0 mt-0.5" />
           <span>
-            Starts on <span className="font-semibold">{fmtDayDateTime(row.start_at)}</span>.{canStartNow !== undefined ? ' You can also start it now.' : ''}
+            Starts on <span className="font-medium">{fmtDayDateTime(row.start_at)}</span>.{canStartNow !== undefined ? ' You can also start it now.' : ''}
           </span>
         </div>
       )}
@@ -278,7 +278,7 @@ export default function RunStepDrawer({
 
       {row.description && (
         <section>
-          <h3 className="text-sm font-semibold text-text-primary mb-1">Description</h3>
+          <h3 className="text-sm font-medium text-text-primary mb-1">Description</h3>
           <p className="text-sm text-text-primary whitespace-pre-wrap wrap-break-word">{row.description}</p>
         </section>
       )}
@@ -286,7 +286,7 @@ export default function RunStepDrawer({
       {/* Checklist */}
       {totalCount > 0 && (
         <section>
-          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-text-primary mb-2">
+          <h3 className="flex items-center gap-1.5 text-sm font-medium text-text-primary mb-2">
             <ListChecks size={15} /> Checklist
             {checklist.some((c) => c.done !== null) && (
               <span className="ml-auto text-[13px] font-normal text-text-secondary tabular-nums">
@@ -305,7 +305,7 @@ export default function RunStepDrawer({
             <div className="flex flex-col gap-3">
               {groupItems(checklist).map((g, gi) => (
                 <div key={gi}>
-                  {g.heading && <h4 className="text-[13px] font-semibold text-text-secondary mb-1.5 wrap-break-word">{g.heading}</h4>}
+                  {g.heading && <h4 className="text-[13px] font-medium text-text-secondary mb-1.5 wrap-break-word">{g.heading}</h4>}
                   <ul className="flex flex-col gap-1.5">
                     {g.items.map((c, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-text-primary px-3 py-2 rounded-[8px] bg-surface-sunken border border-border-light">
@@ -328,7 +328,7 @@ export default function RunStepDrawer({
       {/* Proof */}
       {taskId && (row.proof_required || proofs.data.length > 0) && (
         <section>
-          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-text-primary mb-2">
+          <h3 className="flex items-center gap-1.5 text-sm font-medium text-text-primary mb-2">
             <FileText size={15} /> Proof
           </h3>
           {proofs.status === 'loading' ? (
@@ -367,7 +367,7 @@ export default function RunStepDrawer({
       {/* Comments: one discussion for the whole instance, on the page under the steps. */}
       {taskId && (
         <section className="flex flex-col gap-2">
-          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-text-primary">
+          <h3 className="flex items-center gap-1.5 text-sm font-medium text-text-primary">
             <MessageSquare size={15} /> Comments
           </h3>
           <p className="text-sm text-text-secondary">All steps share one discussion on this instance’s page.</p>

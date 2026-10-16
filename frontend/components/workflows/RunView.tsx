@@ -266,13 +266,13 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-start gap-2 min-w-0">
                 <span
-                  className={`mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full text-[11px] font-semibold flex items-center justify-center shrink-0 ${
+                  className={`mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full text-[11px] font-medium flex items-center justify-center shrink-0 ${
                     r.status === 'completed' ? 'bg-success text-white' : r.status === 'pending' ? 'bg-surface-control-pressed text-text-secondary' : 'bg-primary text-white'
                   }`}
                 >
                   {n}
                 </span>
-                <span className="text-[14px] font-semibold text-text-primary leading-snug line-clamp-2 wrap-break-word">{r.title || 'Untitled step'}</span>
+                <span className="text-[14px] font-medium text-text-primary leading-snug line-clamp-2 wrap-break-word">{r.title || 'Untitled step'}</span>
               </div>
               <span
                 className={`text-[12px] font-medium ${
@@ -380,10 +380,10 @@ export default function RunView({ templateId, instanceId }: { templateId: string
 
   if (status === 'loading') {
     return (
-      <div className="flex flex-col gap-5" aria-busy>
+      <div className="flex flex-col gap-6" aria-busy>
         <Skeleton className="h-4 w-72" />
         <Skeleton className="h-9 w-2/3 max-w-xl" />
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <Skeleton className="h-96 xl:col-span-2" />
           <Skeleton className="h-64" />
         </div>
@@ -435,7 +435,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
     <button type="button" onClick={() => setDocsOpen(true)} className={BTN.secondary}>
       <FolderOpen size={16} /> Documents
       {docCount !== null && docCount > 0 && (
-        <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold flex items-center justify-center">
+        <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium flex items-center justify-center">
           {docCount > 99 ? '99+' : docCount}
         </span>
       )}
@@ -475,7 +475,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
   )
 
   return (
-    <div className="flex flex-col gap-5 pb-10">
+    <div className="flex flex-col gap-6 pb-8">
       <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-surface-sunken border-b border-border-light">
         <WorkflowBreadcrumb
           trail={[
@@ -486,9 +486,9 @@ export default function RunView({ templateId, instanceId }: { templateId: string
         />
         <div className="flex items-center lg:items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-bold text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{run.name}</h1>
+            <h1 className="text-[18px] sm:text-[28px] font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{run.name}</h1>
             <div className="flex items-center gap-2 flex-wrap mt-1.5">
-              {run.instance_number ? <span className="text-[13px] font-semibold text-text-secondary whitespace-nowrap">{instanceTitle(run.instance_number)}</span> : null}
+              {run.instance_number ? <span className="text-[13px] font-medium text-text-secondary whitespace-nowrap">{instanceTitle(run.instance_number)}</span> : null}
               <RunStatusBadge run={run} />
               {!narrow && startedLine}
             </div>
@@ -497,7 +497,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
               senderRows.map((r) => (
                 <div key={r.id} className="mt-2 flex flex-col gap-1 max-w-3xl text-[13px] text-text-secondary">
                   <p className="font-medium wrap-break-word">
-                    <span className="font-semibold">{nameOf(r.id)}</span> is waiting · {sendBackLead(r.send_back!, getNow())}
+                    <span className="font-medium">{nameOf(r.id)}</span> is waiting · {sendBackLead(r.send_back!, getNow())}
                     {sendBackReason(r.send_back) ? ':' : ''}
                   </p>
                   {sendBackReason(r.send_back) && <ReasonQuote reason={sendBackReason(r.send_back)!} collapsible />}
@@ -539,12 +539,12 @@ export default function RunView({ templateId, instanceId }: { templateId: string
 
       {run.last_error && <ErrorBanner message={run.last_error} />}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
-        <div className="xl:col-span-2 flex flex-col gap-5 min-w-0">
-          <section aria-labelledby="run-steps" className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 min-w-0">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+        <div className="xl:col-span-2 flex flex-col gap-6 min-w-0">
+          <section aria-labelledby="run-steps" className="bg-surface border border-border-light rounded-card shadow-card p-4 sm:p-6 min-w-0">
             <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
               <div className="min-w-0">
-                <h2 id="run-steps" className="flex items-center gap-1 text-[18px] font-semibold text-text-primary">
+                <h2 id="run-steps" className="flex items-center gap-1 text-[18px] font-medium text-text-primary">
                   Steps <InfoTip label="Steps" text="Select a step to see its checklist, proof and notes." />
                 </h2>
               </div>
@@ -562,8 +562,8 @@ export default function RunView({ templateId, instanceId }: { templateId: string
             </div>
             {rows.length === 0 ? <p className="text-sm text-text-secondary">This instance has no steps.</p> : <FlowDiagram nodes={nodes} lanes={flowLanes} edgeTone={edgeTone} />}
             {followUps.length > 0 && (
-              <div className="mt-5 pt-4 border-t border-border-light">
-                <h3 className="flex items-center gap-1 text-sm font-semibold text-text-primary mb-2">
+              <div className="mt-6 pt-4 border-t border-border-light">
+                <h3 className="flex items-center gap-1 text-sm font-medium text-text-primary mb-2">
                   Follow-ups <InfoTip label="Follow-ups" text="Started because a step was late." />
                 </h3>
                 <ul className="flex flex-col gap-1.5">
@@ -588,9 +588,9 @@ export default function RunView({ templateId, instanceId }: { templateId: string
           />
         </div>
 
-        <div className="flex flex-col gap-5 min-w-0">
-          <section aria-labelledby="run-progress" className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-3">
-            <h2 id="run-progress" className="text-[18px] font-semibold text-text-primary">
+        <div className="flex flex-col gap-6 min-w-0">
+          <section aria-labelledby="run-progress" className="bg-surface border border-border-light rounded-card shadow-card p-4 sm:p-6 flex flex-col gap-3">
+            <h2 id="run-progress" className="text-[18px] font-medium text-text-primary">
               Progress
             </h2>
             <ProgressBar completed={p.completed} total={p.total} run={run} />
@@ -606,7 +606,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                         className="w-full text-left rounded-[8px] border border-border-light px-3 py-2 hover:bg-surface-sunken focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <span className="block text-sm font-medium text-text-primary truncate">
-                          <span className="text-primary-text font-semibold">{labels.get(r.id)}</span> {r.title}
+                          <span className="text-primary-text font-medium">{labels.get(r.id)}</span> {r.title}
                         </span>
                         <span className="block text-[12px] text-text-secondary truncate">
                           {STEP_STATUS[r.status]?.label}
@@ -637,7 +637,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                           className="min-w-0 flex-1 text-left rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           <span className="block text-sm font-medium text-text-primary truncate">
-                            <span className="text-primary-text font-semibold">{labels.get(r.id)}</span> {r.title}
+                            <span className="text-primary-text font-medium">{labels.get(r.id)}</span> {r.title}
                           </span>
                           <span className="block text-[12px] text-text-secondary">Starts {fmtDayDateTime(r.start_at)}</span>
                         </button>

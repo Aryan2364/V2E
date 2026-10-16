@@ -153,12 +153,12 @@ function WorkflowsList() {
     .sort((a, b) => (b.updated_at ?? '').localeCompare(a.updated_at ?? ''))
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {/* Header + filters stay pinned while the grid scrolls. */}
       <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-4 bg-surface-sunken border-b border-border-light">
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <h1 className="flex items-center gap-1.5 text-[22px] sm:text-[28px] font-bold text-text-primary leading-tight">
+            <h1 className="flex items-center gap-1.5 text-[22px] sm:text-[28px] font-medium text-text-primary leading-tight">
               Workflows <InfoTip label="Workflows" text="Steps that become tasks, in order. Run one by hand or on a schedule; each run is an instance." />
             </h1>
           </div>
@@ -174,7 +174,7 @@ function WorkflowsList() {
               placeholder="Search workflows"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-9 py-2 min-h-[44px] sm:min-h-[38px] text-base sm:text-sm border border-border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full pl-8 pr-8 py-2 min-h-[44px] sm:min-h-[38px] text-base sm:text-sm border border-border rounded-[8px] bg-white text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {search && (
               <button
@@ -198,7 +198,7 @@ function WorkflowsList() {
                   type="button"
                   onClick={() => setShow(s.value)}
                   className={`px-3 min-h-[40px] sm:min-h-[32px] rounded-[6px] text-[13px] font-medium transition-colors ${
-                    active ? 'bg-[#0F172A] text-white' : 'text-text-secondary hover:text-text-primary'
+                    active ? 'bg-text-primary text-white' : 'text-text-secondary hover:text-text-primary'
                   }`}
                 >
                   {s.label}
@@ -226,7 +226,7 @@ function WorkflowsList() {
                   {f.label}
                   {status === 'ready' && (
                     <span
-                      className={`min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-semibold flex items-center justify-center ${
+                      className={`min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-medium flex items-center justify-center ${
                         active ? 'bg-white text-primary-text' : 'bg-primary text-white'
                       }`}
                     >

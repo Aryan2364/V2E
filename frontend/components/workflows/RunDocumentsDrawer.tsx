@@ -132,7 +132,7 @@ export default function RunDocumentsDrawer({
             {/* Run files */}
             <section className="flex flex-col gap-3">
               <div>
-                <h3 className="flex items-center gap-1 text-[15px] font-semibold text-text-primary">
+                <h3 className="flex items-center gap-1 text-[15px] font-medium text-text-primary">
                   Instance files <InfoTip label="Instance files" text="Shared with everyone in this instance." />
                 </h3>
               </div>
@@ -192,7 +192,7 @@ export default function RunDocumentsDrawer({
             {/* Step files */}
             <section className="flex flex-col gap-3 pt-2 border-t border-border-light">
               <div>
-                <h3 className="flex items-center gap-1 text-[15px] font-semibold text-text-primary">
+                <h3 className="flex items-center gap-1 text-[15px] font-medium text-text-primary">
                   Step files <InfoTip label="Step files" text="Attachments, discussion files and proof, by the step they were added on." />
                 </h3>
               </div>
@@ -202,7 +202,7 @@ export default function RunDocumentsDrawer({
                 stepGroups.map((g) => (
                   <div key={g.row_id} className="flex flex-col gap-1.5">
                     <div className="flex items-center justify-between gap-2">
-                      <h4 className="text-sm font-semibold text-text-secondary truncate">{g.step_title}</h4>
+                      <h4 className="text-sm font-medium text-text-secondary truncate">{g.step_title}</h4>
                       {g.task_id && (
                         <Link href={taskHref(g.task_id)} className="inline-flex items-center gap-1 text-[13px] font-medium text-primary-text hover:underline shrink-0">
                           Open task <ExternalLink size={13} />

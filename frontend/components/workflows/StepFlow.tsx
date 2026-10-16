@@ -95,10 +95,10 @@ export default function StepFlow({
           content: (
             <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-start gap-2 min-w-0">
-                <span className="mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-white text-[11px] font-semibold flex items-center justify-center shrink-0">
+                <span className="mt-0.5 min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-white text-[11px] font-medium flex items-center justify-center shrink-0">
                   {n}
                 </span>
-                <span className="text-[14px] font-semibold text-text-primary leading-snug line-clamp-2 wrap-break-word">{s.title || 'Untitled step'}</span>
+                <span className="text-[14px] font-medium text-text-primary leading-snug line-clamp-2 wrap-break-word">{s.title || 'Untitled step'}</span>
               </div>
               <span className="flex items-center gap-1.5 text-[12px] text-text-secondary min-w-0">
                 <Users size={12} className="shrink-0 text-text-secondary" />

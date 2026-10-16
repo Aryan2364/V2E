@@ -89,10 +89,10 @@ export default function RunHistory({
   }, [load, refreshKey, orgId])
 
   return (
-    <section aria-labelledby="run-history" className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-3">
+    <section aria-labelledby="run-history" className="bg-surface border border-border-light rounded-card shadow-card p-4 sm:p-6 flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <History size={16} className="text-text-secondary" />
-        <h2 id="run-history" className="text-[18px] font-semibold text-text-primary">
+        <h2 id="run-history" className="text-[18px] font-medium text-text-primary">
           History
         </h2>
       </div>
@@ -135,7 +135,7 @@ export default function RunHistory({
                     )}
                     <p className="text-[12px] text-text-secondary">
                       {stepLabel && (
-                        <span className="inline-flex items-center mr-1.5 rounded-full border border-border bg-white px-1.5 text-[11px] font-semibold text-text-secondary">
+                        <span className="inline-flex items-center mr-1.5 rounded-full border border-border bg-white px-1.5 text-[11px] font-medium text-text-secondary">
                           Step {stepLabel}
                         </span>
                       )}

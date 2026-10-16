@@ -248,7 +248,7 @@ export default function FlowDiagram({
         {withHeaders &&
           shownLanes.list.map((l, ci) => (
             <div key={`h-${l.key}`} className={`relative z-2 px-3 pt-2.5 pb-1 ${boxW} box-content`} style={{ gridColumn: ci + 1, gridRow: 1 }}>
-              <span className="block text-[13px] font-semibold text-text-primary truncate">{l.label}</span>
+              <span className="block text-[13px] font-medium text-text-primary truncate">{l.label}</span>
               {l.hint && <span className="block text-[12px] text-text-secondary truncate">{l.hint}</span>}
             </div>
           ))}
@@ -291,7 +291,7 @@ export default function FlowDiagram({
                     type="button"
                     onClick={n.onClick}
                     aria-label={n.label}
-                    className="block w-full rounded-[12px] transition-[transform,box-shadow] duration-150 hover:shadow-[0_4px_14px_rgba(15,23,42,0.10)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    className="block w-full rounded-[12px] transition-[transform,box-shadow] duration-150 hover:shadow-menu focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   >
                     {box}
                   </button>

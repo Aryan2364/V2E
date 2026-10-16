@@ -12,7 +12,7 @@ export function NoteItem({ note }: { note: InstanceNote }) {
       <Avatar name={note.author?.name || '?'} size="md" />
       <div className="min-w-0 flex-1 rounded-[10px] bg-warning-bg border border-warning-border px-3 py-2">
         <p className="min-w-0 text-[13px]">
-          <span className="font-semibold text-text-primary">{note.author?.name || 'Someone'}</span>
+          <span className="font-medium text-text-primary">{note.author?.name || 'Someone'}</span>
           <span className="text-text-secondary"> · {fmtDateTime(note.created_at)}</span>
         </p>
         <p className="mt-1 text-sm text-text-primary whitespace-pre-wrap wrap-break-word wrap-anywhere">{note.body}</p>
@@ -30,7 +30,7 @@ export default function StepNotes({ notes, headingId, className = '' }: { notes:
   const list = notes.slice().sort((a, b) => b.created_at.localeCompare(a.created_at))
   return (
     <section aria-labelledby={headingId} className={`flex flex-col gap-2 ${className}`}>
-      <h3 id={headingId} className="flex items-center gap-1.5 text-sm font-semibold text-text-primary">
+      <h3 id={headingId} className="flex items-center gap-1.5 text-sm font-medium text-text-primary">
         <StickyNote size={15} className="text-warning" /> Notes for this step
       </h3>
       <ul className="flex flex-col gap-2">

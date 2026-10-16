@@ -239,7 +239,7 @@ function RuleParams<R extends StartRule | DueRule>({
           {landsNext && (
             <p className={NOTE}>
               <span>
-                Lands on <span className="font-semibold text-text-primary">{`${fmtTime(rule.time)} (${nextWord})`}</span>
+                Lands on <span className="font-medium text-text-primary">{`${fmtTime(rule.time)} (${nextWord})`}</span>
               </span>
               <InfoTip label="Next cycle" text={`It’s before ${previous}, so it moves to the ${nextWord}.`} />
             </p>
@@ -453,7 +453,7 @@ export default function StepTiming({
 
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="flex items-center gap-1 text-sm font-semibold text-text-primary">
+      <h3 className="flex items-center gap-1 text-sm font-medium text-text-primary">
         Timing <InfoTip label="Timing" text={frequencyNote(f)} />
       </h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-6">

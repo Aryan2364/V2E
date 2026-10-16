@@ -225,7 +225,7 @@ export default function TimingCalendar({
   if (rows.length) while (rows[rows.length - 1].length < 7) rows[rows.length - 1].push(null)
 
   const navBtn =
-    'inline-flex items-center justify-center w-11 h-11 rounded-[8px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:text-[#CBD5E1] disabled:hover:bg-transparent disabled:cursor-not-allowed'
+    'inline-flex items-center justify-center w-11 h-11 rounded-[8px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed'
 
   const cellFor = (dayNo: number) => {
     const isSel = selected === dayNo
@@ -261,14 +261,14 @@ export default function TimingCalendar({
           <Play
             size={9}
             aria-hidden
-            className="absolute top-1 left-1 text-text-primary fill-[#0F172A]"
+            className="absolute top-1 left-1 text-text-primary fill-text-primary"
           />
         )}
         <span className="flex justify-center">
           <span
             className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[13px] tabular-nums ${
               isSel
-                ? 'bg-primary text-white font-semibold'
+                ? 'bg-primary text-white font-medium'
                 : grey
                   ? 'text-text-muted line-through decoration-text-muted'
                   : 'text-text-primary font-medium'
@@ -289,7 +289,7 @@ export default function TimingCalendar({
               />
             )
           })}
-          {bars.length > MAX_BARS && <span className="block h-[4px] mx-auto w-1 rounded-full bg-[#475569]" />}
+          {bars.length > MAX_BARS && <span className="block h-[4px] mx-auto w-1 rounded-full bg-text-muted" />}
         </span>
       </div>
     )
@@ -303,7 +303,7 @@ export default function TimingCalendar({
           <button type="button" aria-label={`Previous ${noun}`} onClick={() => go(-1)} disabled={page <= minPage} className={navBtn}>
             <ChevronLeft size={18} />
           </button>
-          <span id={`${uid}-title`} aria-live="polite" className="text-sm font-semibold text-text-primary tabular-nums text-center">
+          <span id={`${uid}-title`} aria-live="polite" className="text-sm font-medium text-text-primary tabular-nums text-center">
             {title}
           </span>
           <button type="button" aria-label={`Next ${noun}`} onClick={() => go(1)} disabled={page >= maxPage} className={navBtn}>
@@ -360,7 +360,7 @@ export default function TimingCalendar({
           <span className="text-text-secondary">Point at a day to see what happens then.</span>
         ) : (
           <>
-            <span className="font-semibold text-text-primary">{dayWords(shown, runYear)}</span>
+            <span className="font-medium text-text-primary">{dayWords(shown, runYear)}</span>
             {greyed(shown) && minReason && <span className="text-text-secondary"> · {minReason}</span>}
             <ul className="mt-0.5 flex flex-col gap-0.5">
               {shown === selected && selfText && <li className="font-medium text-primary-text">{selfText}</li>}
@@ -381,12 +381,12 @@ export default function TimingCalendar({
       {/* Legend */}
       <ul aria-label="Legend" className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-text-secondary">
         <li className="inline-flex items-center gap-1">
-          <Play size={9} aria-hidden className="text-text-primary fill-[#0F172A]" /> Instance starts
+          <Play size={9} aria-hidden className="text-text-primary fill-text-primary" /> Instance starts
         </li>
         {spans.map((s) => (
           <li key={s.id} className="inline-flex items-center gap-1 min-w-0 max-w-full">
             <span aria-hidden className="w-3 h-2.5 rounded-[2px] shrink-0" style={{ background: bandFill(s.color, s.waitsFor) }} />
-            <span className={`truncate ${s.waitsFor ? 'font-semibold text-text-primary' : ''}`}>
+            <span className={`truncate ${s.waitsFor ? 'font-medium text-text-primary' : ''}`}>
               {s.label} {s.title.trim() || 'Untitled step'}
               {s.waitsFor ? ' (waits for)' : ''}
             </span>

@@ -67,7 +67,7 @@ export default function SendBackNote({ sendBack, variant }: { sendBack: StepSend
     <div className="flex items-start gap-2.5 rounded-[10px] border border-border-light bg-surface-control px-3.5 py-2.5 text-sm text-text-secondary">
       <Undo2 size={16} className="shrink-0 mt-0.5" aria-hidden />
       <div className="flex flex-col gap-1.5 min-w-0 flex-1">
-        <p className="font-semibold wrap-break-word">
+        <p className="font-medium wrap-break-word">
           {lead}
           {reason ? ':' : '.'}
         </p>

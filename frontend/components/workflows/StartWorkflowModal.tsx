@@ -119,12 +119,12 @@ export default function StartWorkflowModal({
 
   return (
     <Modal isOpen={!!workflow} onClose={() => !busy && onClose()} title="Run workflow" size="md" closeOnEscape={!busy}>
-      <form onSubmit={run} noValidate className="flex flex-col gap-5">
+      <form onSubmit={run} noValidate className="flex flex-col gap-6">
         <p className="text-[15px] text-text-primary leading-relaxed">
-          Creates a new instance of <span className="font-semibold text-text-primary">{workflow?.name}</span>.{' '}
+          Creates a new instance of <span className="font-medium text-text-primary">{workflow?.name}</span>.{' '}
           {nowSteps.length === 1 ? (
             <>
-              <span className="font-semibold text-text-primary">
+              <span className="font-medium text-text-primary">
                 {nowSteps[0].number_label ? `Step ${nowSteps[0].number_label} ` : ''}“{nowSteps[0].title}”
               </span>{' '}
               starts now.

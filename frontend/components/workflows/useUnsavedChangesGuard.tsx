@@ -166,21 +166,21 @@ export function useUnsavedChangesGuard(
   const dialog =
     pending && typeof document !== 'undefined'
       ? createPortal(
-          <div className="fixed inset-0 z-70 flex items-center justify-center px-4 bg-black/50" onClick={stay}>
+          <div className="fixed inset-0 z-(--z-dialog) flex items-center justify-center px-4 bg-backdrop" onClick={stay}>
             <div
               role="alertdialog"
               aria-modal="true"
               aria-labelledby="unsaved-title"
               aria-describedby="unsaved-message"
-              className="bg-white rounded-[16px] w-full max-w-md sm:max-w-[540px] p-6 shadow-xl"
+              className="bg-surface rounded-card w-full max-w-md sm:max-w-[540px] p-6 shadow-dialog"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-start gap-3 mb-5">
+              <div className="flex items-start gap-3 mb-6">
                 <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
                   <AlertTriangle size={20} className="text-danger" />
                 </div>
                 <div className="min-w-0">
-                  <h3 id="unsaved-title" className="text-[18px] font-semibold text-text-primary">
+                  <h3 id="unsaved-title" className="text-[18px] font-medium text-text-primary">
                     {title}
                   </h3>
                   <p id="unsaved-message" className="text-sm text-text-secondary mt-1">
@@ -193,7 +193,7 @@ export function useUnsavedChangesGuard(
                   type="button"
                   onClick={stay}
                   disabled={savingToLeave}
-                  className="min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-sm font-semibold text-text-secondary hover:text-text-primary rounded-[8px] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60"
+                  className="min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-sm font-medium text-text-secondary hover:text-text-primary rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60"
                 >
                   Stay
                 </button>
@@ -202,7 +202,7 @@ export function useUnsavedChangesGuard(
                   onClick={leave}
                   disabled={savingToLeave}
                   className={[
-                    'min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-sm font-semibold rounded-[8px] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60',
+                    'min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-sm font-medium rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60',
                     // With a save on offer, leaving is the second choice: outlined danger.
                     canSave
                       ? 'bg-white text-danger border border-danger-border hover:bg-danger-bg'
@@ -218,7 +218,7 @@ export function useUnsavedChangesGuard(
                     autoFocus
                     onClick={saveAndLeave}
                     disabled={savingToLeave}
-                    className="inline-flex items-center justify-center gap-2 min-h-[44px] sm:min-h-[40px] px-5 whitespace-nowrap text-sm font-semibold text-white bg-primary hover:bg-primary-hover rounded-[8px] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-primary-border"
+                    className="inline-flex items-center justify-center gap-2 min-h-[44px] sm:min-h-[40px] px-6 whitespace-nowrap text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-primary-border"
                   >
                     {savingToLeave && <Loader2 size={15} className="animate-spin" />}
                     {save.label}

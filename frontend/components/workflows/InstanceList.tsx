@@ -34,7 +34,7 @@ export function ProgressBar({ completed, total, run }: { completed: number; tota
       : ds === 'completed'
         ? 'bg-success'
         : ds === 'cancelled'
-          ? 'bg-[#64748B]'
+          ? 'bg-text-muted'
           : ds === 'falling_behind'
             ? 'bg-warning'
             : ds === 'waiting_for_info'

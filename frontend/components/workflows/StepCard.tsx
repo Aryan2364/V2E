@@ -195,7 +195,7 @@ function ChoiceCards<V extends string>({
               >
                 {on && <span className="w-2 h-2 rounded-full bg-primary" />}
               </span>
-              <span className={`text-sm font-semibold ${on ? 'text-primary-text' : 'text-text-primary'}`}>{o.label}</span>
+              <span className={`text-sm font-medium ${on ? 'text-primary-text' : 'text-text-primary'}`}>{o.label}</span>
             </button>
             {o.tip && <InfoTip label={o.label} text={o.tip} className="mr-2.5" />}
           </div>
@@ -627,7 +627,7 @@ export default function StepCard(props: EditProps | CreateProps) {
 
   // ── Render ──
   const fields = (
-    <div className="flex flex-col gap-6 p-4 sm:p-5">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       {issue && <ErrorBanner message={issue} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 gap-y-6">
@@ -652,7 +652,7 @@ export default function StepCard(props: EditProps | CreateProps) {
                 }
               }}
               placeholder="e.g. Collect signed offer letter"
-              className={`${INPUT_CLS} pr-14 ${titleError ? 'border-danger!' : ''}`}
+              className={`${INPUT_CLS} pr-12 ${titleError ? 'border-danger!' : ''}`}
             />
             <span
               className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] tabular-nums ${
@@ -811,12 +811,12 @@ export default function StepCard(props: EditProps | CreateProps) {
           aria-expanded={moreOpen}
           aria-controls={`${idPrefix}-more`}
           onClick={() => setMoreOpen((v) => !v)}
-          className="inline-flex items-center gap-2 min-h-[44px] sm:min-h-[36px] px-2 -mx-2 rounded-[8px] text-sm font-semibold text-primary-text hover:bg-primary-subtle focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex items-center gap-2 min-h-[44px] sm:min-h-[36px] px-2 -mx-2 rounded-[8px] text-sm font-medium text-primary-text hover:bg-primary-subtle focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
         >
           <SlidersHorizontal size={16} />
           More options
           {extrasSet > 0 && (
-            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold flex items-center justify-center">
+            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium flex items-center justify-center">
               {extrasSet}
             </span>
           )}
@@ -924,7 +924,7 @@ export default function StepCard(props: EditProps | CreateProps) {
     <Reveal open appear={props.mode === 'create'}>
       <div
         ref={rootRef}
-        className={`bg-white border rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] scroll-mt-40 scroll-mb-24 ${
+        className={`bg-white border rounded-[12px] shadow-card scroll-mt-40 scroll-mb-24 ${
           props.mode === 'create' ? 'border-primary-border ring-1 ring-primary-border' : issue ? 'border-danger-border ring-1 ring-danger-border' : 'border-border-light'
         }`}
       >
@@ -933,7 +933,7 @@ export default function StepCard(props: EditProps | CreateProps) {
           className={`flex items-center gap-3 px-3 sm:px-4 py-2.5 ${expanded ? 'border-b border-border-light' : ''} ${edit ? 'cursor-pointer' : ''}`}
           onClick={edit ? edit.onToggle : undefined}
         >
-          <span className="min-w-[28px] h-7 px-1.5 rounded-full text-[12px] font-semibold flex items-center justify-center shrink-0 bg-primary text-white">
+          <span className="min-w-[28px] h-7 px-1.5 rounded-full text-[12px] font-medium flex items-center justify-center shrink-0 bg-primary text-white">
             {props.mode === 'create' ? createBadge ?? label : label}
           </span>
           <div className="flex-1 min-w-0">
@@ -946,12 +946,12 @@ export default function StepCard(props: EditProps | CreateProps) {
                   e.stopPropagation()
                   edit.onToggle()
                 }}
-                className="block max-w-full text-left text-[15px] font-semibold text-text-primary truncate rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+                className="block max-w-full text-left text-[15px] font-medium text-text-primary truncate rounded-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {draft.title || 'Untitled step'}
               </button>
             ) : (
-              <span className="block text-[15px] font-semibold text-text-primary truncate">New step</span>
+              <span className="block text-[15px] font-medium text-text-primary truncate">New step</span>
             )}
             {edit && (
               <p className={`text-[13px] truncate ${hasProblem ? 'text-danger' : 'text-text-secondary'}`}>

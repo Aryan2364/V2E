@@ -109,10 +109,10 @@ export default function SendBackDialog({
 
   return (
     <Modal isOpen={!!subject} onClose={() => !busy && onClose()} title="Send back" size="md" closeOnEscape={!busy}>
-      <form onSubmit={submit} className="flex flex-col gap-5">
+      <form onSubmit={submit} className="flex flex-col gap-6">
         <p className="text-[15px] text-text-primary leading-relaxed">
           The chosen step reopens with your reason.{' '}
-          <span className="font-semibold text-text-primary">
+          <span className="font-medium text-text-primary">
             {subject?.stepLabel ? `${subject.stepLabel} ` : ''}“{subject?.stepTitle}”
           </span>{' '}
           waits until it is done again.

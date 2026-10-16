@@ -129,7 +129,7 @@ export default function ExampleRun({
   const busy = state.status === 'loading'
 
   return (
-    <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+    <div className="bg-surface border border-border-light rounded-card shadow-card">
       <button
         type="button"
         aria-expanded={open}
@@ -138,7 +138,7 @@ export default function ExampleRun({
         className="w-full flex items-center gap-2 px-4 py-3 text-left rounded-[12px] hover:bg-surface-sunken focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
       >
         <CalendarRange size={16} className="text-primary-text shrink-0" />
-        <span className="text-[15px] font-semibold text-text-primary shrink-0">Example instance</span>
+        <span className="text-[15px] font-medium text-text-primary shrink-0">Example instance</span>
         {busy && data && (
           <span className="inline-flex items-center gap-1 text-[12px] text-text-secondary shrink-0" aria-live="polite">
             <Loader2 size={12} className="animate-spin" /> Updating
@@ -160,7 +160,7 @@ export default function ExampleRun({
                 {state.error}
                 {data ? ' The dates below may be out of date.' : ''}
               </span>
-              <button type="button" onClick={() => setRetryKey((k) => k + 1)} className="inline-flex items-center gap-1 text-[13px] font-semibold underline shrink-0">
+              <button type="button" onClick={() => setRetryKey((k) => k + 1)} className="inline-flex items-center gap-1 text-[13px] font-medium underline shrink-0">
                 <RefreshCw size={13} /> Try again
               </button>
             </div>
@@ -202,7 +202,7 @@ export default function ExampleRun({
               )}
               <p className="text-sm text-text-primary">
                 {manualOnly ? 'If triggered now, on ' : 'If triggered on '}
-                <span className="font-semibold text-text-primary">{fmtDayDateTime(run.starts_at)}</span>{' '}
+                <span className="font-medium text-text-primary">{fmtDayDateTime(run.starts_at)}</span>{' '}
                 <InfoTip label="Example instance" text="Planned dates. Holidays and weekly offs are skipped." />
               </p>
               <ol className={`flex flex-col divide-y divide-surface-control rounded-[10px] border border-border-light transition-opacity duration-150 ${busy ? 'opacity-70' : ''}`}>
@@ -216,7 +216,7 @@ export default function ExampleRun({
                         className="w-full flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 px-3 py-2.5 text-left hover:bg-surface-sunken focus:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                       >
                         <span className="flex items-center gap-2 min-w-0 sm:w-[40%]">
-                          <span className="min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-white text-[11px] font-semibold flex items-center justify-center shrink-0">
+                          <span className="min-w-[22px] h-[22px] px-1 rounded-full bg-primary text-white text-[11px] font-medium flex items-center justify-center shrink-0">
                             {n ?? '•'}
                           </span>
                           <span className="text-sm font-medium text-text-primary truncate">{s.title || 'Untitled step'}</span>
@@ -244,7 +244,7 @@ export default function ExampleRun({
                     <AlertTriangle size={14} className="shrink-0 mt-0.5 text-warning" />
                     <span className="flex-1 min-w-0 wrap-break-word">{warningText(w, nameOf)}</span>
                     {key && order.has(key) && (
-                      <button type="button" onClick={() => onOpenStep(key)} className="font-semibold underline shrink-0">
+                      <button type="button" onClick={() => onOpenStep(key)} className="font-medium underline shrink-0">
                         Show step
                       </button>
                     )}

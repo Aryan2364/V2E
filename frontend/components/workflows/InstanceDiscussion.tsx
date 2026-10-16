@@ -434,14 +434,14 @@ export default function InstanceDiscussion({
       ref={sectionRef}
       id={sectionId}
       aria-labelledby={headingId}
-      className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-6 flex flex-col gap-4 min-w-0 scroll-mt-24"
+      className="bg-surface border border-border-light rounded-card shadow-card p-4 sm:p-6 flex flex-col gap-4 min-w-0 scroll-mt-24"
     >
       <div className="flex items-center gap-2 flex-wrap">
         <MessageSquare size={16} className="text-text-secondary" aria-hidden />
-        <h2 id={headingId} className={`flex items-center gap-1.5 ${compact ? 'text-[15px]' : 'text-[18px]'} font-semibold text-text-primary`}>
+        <h2 id={headingId} className={`flex items-center gap-1.5 ${compact ? 'text-[15px]' : 'text-[18px]'} font-medium text-text-primary`}>
           {title}
           {total > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-semibold">
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium">
               {total > 99 ? '99+' : total}
             </span>
           )}
@@ -508,7 +508,7 @@ export default function InstanceDiscussion({
                   onMarkProof={markProof}
                 />
                 {m.replies.length > 0 && (
-                  <ul className="flex flex-col gap-3 pl-6 sm:pl-10 border-l-2 border-border-light ml-4">
+                  <ul className="flex flex-col gap-3 pl-6 sm:pl-8 border-l-2 border-border-light ml-4">
                     {m.replies.map((r) => (
                       <li key={r.id}>
                         <MessageItem
@@ -561,7 +561,7 @@ export default function InstanceDiscussion({
             <ul
               role="listbox"
               aria-label="People who can see this instance"
-              className="absolute bottom-full left-0 mb-1.5 z-30 w-full sm:w-80 max-h-64 overflow-y-auto rounded-[10px] border border-border-light bg-white shadow-[0_8px_24px_rgba(15,23,42,0.12)] py-1"
+              className="absolute bottom-full left-0 mb-1.5 z-30 w-full sm:w-80 max-h-64 overflow-y-auto rounded-lg border border-border-light bg-surface shadow-menu py-1"
             >
               {suggestions.map((p, i) => (
                 <li key={p.id} role="option" aria-selected={i === mentionIndex}>
@@ -582,7 +582,7 @@ export default function InstanceDiscussion({
             </ul>
           )}
           {mention && suggestions.length === 0 && mention.query.length > 0 && (
-            <p className="absolute bottom-full left-0 mb-1.5 z-30 rounded-[10px] border border-border-light bg-white shadow-[0_8px_24px_rgba(15,23,42,0.12)] px-3 py-2 text-[13px] text-text-secondary">
+            <p className="absolute bottom-full left-0 mb-1.5 z-30 rounded-lg border border-border-light bg-surface shadow-menu px-3 py-2 text-[13px] text-text-secondary">
               No one who can see this instance matches “{mention.query}”.
             </p>
           )}
@@ -602,7 +602,7 @@ export default function InstanceDiscussion({
                     onClick={() => setFiles((list) => list.filter((_, idx) => idx !== i))}
                     disabled={posting}
                     aria-label={`Remove ${f.name}`}
-                    className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center hover:bg-[#BFDBFE] disabled:opacity-50 transition-colors"
+                    className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center hover:bg-primary/10 disabled:opacity-50 transition-colors"
                   >
                     <X size={12} />
                   </button>
@@ -684,7 +684,7 @@ export default function InstanceDiscussion({
                   onClick={send}
                   disabled={!canSend}
                   aria-label="Send"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-[36px] px-3.5 rounded-[8px] text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-[36px] px-3.5 rounded-[8px] text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                 >
                   {posting ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                   <span className="hidden sm:inline">{posting ? 'Sending…' : 'Send'}</span>
@@ -751,7 +751,7 @@ function NewDivider() {
   return (
     <div className="flex items-center gap-2" role="separator" aria-label="New messages">
       <span className="h-px flex-1 bg-danger-bg" />
-      <span className="text-[12px] font-semibold text-danger uppercase tracking-wide">New</span>
+      <span className="text-[12px] font-medium text-danger uppercase tracking-wide">New</span>
       <span className="h-px flex-1 bg-danger-bg" />
     </div>
   )
@@ -814,7 +814,7 @@ function MessageItem({
 }) {
   const [expanded, setExpanded] = useState(false)
   if (m.deleted) {
-    return <p className="text-sm italic text-text-secondary pl-10">This message was deleted.</p>
+    return <p className="text-sm italic text-text-secondary pl-8">This message was deleted.</p>
   }
   const name = m.author?.name ?? 'Someone'
   const long = m.body.length > LONG
@@ -849,7 +849,7 @@ function MessageItem({
       <Avatar name={name} size="md" />
       <div className="min-w-0 flex-1 flex flex-col gap-1.5">
         <div className="flex items-baseline gap-x-2 gap-y-0.5 flex-wrap">
-          <span className="text-sm font-semibold text-text-primary wrap-break-word">{name}</span>
+          <span className="text-sm font-medium text-text-primary wrap-break-word">{name}</span>
           <span className="text-[12px] text-text-secondary">· {messageTime(m.created_at, now)}</span>
           {m.for_step && (
             <span className="inline-flex items-center gap-1 rounded-full bg-warning-bg border border-warning-border text-warning px-2 py-0.5 text-[12px] font-medium max-w-full">
@@ -861,7 +861,7 @@ function MessageItem({
 
         {sentBack ? (
           <div className="rounded-[10px] border border-border-light bg-surface-control px-3 py-2 flex flex-col gap-1">
-            <p className="flex items-center gap-1.5 text-[13px] font-semibold text-text-secondary wrap-break-word">
+            <p className="flex items-center gap-1.5 text-[13px] font-medium text-text-secondary wrap-break-word">
               <Undo2 size={14} className="shrink-0" aria-hidden /> Sent back to “{sentBack.to_title}”
             </p>
             {bodyNode}
@@ -873,7 +873,7 @@ function MessageItem({
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="self-start text-[13px] font-semibold text-primary-text hover:text-primary-text min-h-[32px]"
+            className="self-start text-[13px] font-medium text-primary-text hover:text-primary-text min-h-[32px]"
           >
             {expanded ? 'Show less' : 'Read more'}
           </button>
@@ -906,7 +906,7 @@ function MessageItem({
                       type="button"
                       onClick={() => onMarkProof(f)}
                       disabled={markingId === f.id}
-                      className="inline-flex items-center gap-1 text-[12px] font-semibold text-primary-text hover:text-primary-text disabled:text-text-muted min-h-[32px]"
+                      className="inline-flex items-center gap-1 text-[12px] font-medium text-primary-text hover:text-primary-text disabled:text-text-muted min-h-[32px]"
                     >
                       {markingId === f.id ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />} Mark as proof
                     </button>
@@ -923,7 +923,7 @@ function MessageItem({
               <button
                 type="button"
                 onClick={() => onReply(m)}
-                className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-[12px] font-semibold text-text-secondary hover:text-primary-text hover:bg-primary-subtle transition-colors"
+                className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-[12px] font-medium text-text-secondary hover:text-primary-text hover:bg-primary-subtle transition-colors"
               >
                 <CornerUpLeft size={13} /> Reply
               </button>
@@ -933,7 +933,7 @@ function MessageItem({
                 type="button"
                 onClick={() => onDelete(m)}
                 aria-label="Delete message"
-                className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-[12px] font-semibold text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
+                className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-[12px] font-medium text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
               >
                 <Trash2 size={13} /> Delete
               </button>

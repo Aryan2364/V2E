@@ -1166,7 +1166,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   // ── Render states ──
   if (status === 'loading') {
     return (
-      <div className="flex flex-col gap-5" aria-busy>
+      <div className="flex flex-col gap-6" aria-busy>
         <Skeleton className="h-4 w-48" />
         <Skeleton className="h-9 w-2/3 max-w-xl" />
         <Skeleton className="h-40" />
@@ -1380,7 +1380,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         }`}
       >
         <div className="flex items-center gap-2 min-w-0">
-          <span className="inline-flex items-center gap-1.5 shrink-0 text-[14px] font-semibold text-text-primary">
+          <span className="inline-flex items-center gap-1.5 shrink-0 text-[14px] font-medium text-text-primary">
             <GitBranch size={15} className="text-primary-text" aria-hidden />
             {trackBaseLabel(t.key)}
           </span>
@@ -1488,7 +1488,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   ) : null
 
   return (
-    <div className="flex flex-col gap-6 pb-10">
+    <div className="flex flex-col gap-6 pb-8">
       {/* Pinned header: title, state and the save actions. One row on a phone. */}
       <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-3 bg-surface-sunken border-b border-border-light">
         <WorkflowBreadcrumb
@@ -1500,7 +1500,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         />
         <div className="flex items-center justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[18px] sm:text-[28px] font-bold text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">
+            <h1 className="text-[18px] sm:text-[28px] font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">
               {work.name.trim() || w?.name || 'New workflow'}
             </h1>
             <div className="hidden sm:flex items-center gap-2 flex-wrap mt-1.5 min-h-[24px]">
@@ -1541,11 +1541,11 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       {note}
 
       {/* Details */}
-      <section aria-labelledby="details-heading" className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-5">
-        <h2 id="details-heading" className="text-[18px] font-semibold text-text-primary">
+      <section aria-labelledby="details-heading" className="bg-surface border border-border-light rounded-card shadow-card p-4 sm:p-6 flex flex-col gap-6">
+        <h2 id="details-heading" className="text-[18px] font-medium text-text-primary">
           Details
         </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 gap-y-5">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 gap-y-6">
           <div className="lg:col-span-6">
             <label htmlFor="wf-name" className={LABEL_CLS}>
               Workflow name <span className="text-danger">*</span>
@@ -1592,7 +1592,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       {lookups.failed.length > 0 && (
         <div className="flex items-center gap-2 text-[13px] text-warning">
           <span>Some lists didn’t load ({lookups.failed.join(', ')}). Choices may be missing.</span>
-          <button type="button" onClick={lookups.reload} className="font-semibold underline">
+          <button type="button" onClick={lookups.reload} className="font-medium underline">
             Try again
           </button>
         </div>
@@ -1621,7 +1621,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       <section aria-labelledby="steps-heading" className="flex flex-col gap-3 scroll-mt-40">
         <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <h2 id="steps-heading" className="flex items-center gap-1 text-[18px] font-semibold text-text-primary scroll-mt-40">
+            <h2 id="steps-heading" className="flex items-center gap-1 text-[18px] font-medium text-text-primary scroll-mt-40">
               Steps <InfoTip label="Steps" text="Each step becomes a task. Parallel paths run at the same time." />
             </h2>
           </div>
@@ -1633,7 +1633,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         </div>
 
         {steps.length >= 1 && (
-          <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <div className="bg-surface border border-border-light rounded-card shadow-card">
             <button
               type="button"
               aria-expanded={flowOpen}
@@ -1642,7 +1642,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
               className="w-full flex items-center gap-2 px-4 py-3 text-left rounded-[12px] hover:bg-surface-sunken focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
             >
               <GitBranch size={16} className="text-primary-text" />
-              <span className="text-[15px] font-semibold text-text-primary">Flow</span>
+              <span className="text-[15px] font-medium text-text-primary">Flow</span>
               <ChevronDown size={16} className={`ml-auto shrink-0 text-text-secondary transition-transform duration-200 ${flowOpen ? 'rotate-180' : ''}`} />
             </button>
             <Reveal open={flowOpen} id="flow-preview">
@@ -1663,7 +1663,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             </span>
             <span className="flex flex-wrap gap-x-3 gap-y-1 pl-6">
               {timingIssues.map(({ step: s }) => (
-                <button key={s.id} type="button" onClick={() => focusStep(s.id)} className="font-semibold underline text-left">
+                <button key={s.id} type="button" onClick={() => focusStep(s.id)} className="font-medium underline text-left">
                   {stepName(labels.get(s.id), s.title)}
                 </button>
               ))}
@@ -1715,7 +1715,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             id="tracks"
             className={
               multiTrack
-                ? 'flex flex-col lg:flex-row lg:items-start gap-5 lg:gap-4 lg:overflow-x-auto lg:-mx-1 lg:px-1 lg:pb-2'
+                ? 'flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-4 lg:overflow-x-auto lg:-mx-1 lg:px-1 lg:pb-2'
                 : 'flex flex-col gap-3'
             }
           >

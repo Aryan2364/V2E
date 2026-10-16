@@ -108,13 +108,13 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
   const steps = w._count?.steps ?? w.steps?.length ?? 0
 
   return (
-    <div className="group relative h-full bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:border-primary-border hover:shadow-[0_4px_14px_rgba(15,23,42,0.08)] transition-[box-shadow,border-color] duration-150 p-5 flex flex-col gap-3 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-primary">
+    <div className="group relative h-full bg-surface border border-border-light rounded-card shadow-card hover:border-primary-border hover:shadow-menu transition-[box-shadow,border-color] duration-150 p-6 flex flex-col gap-3 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-primary">
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-[10px] bg-primary-subtle flex items-center justify-center shrink-0">
           <WorkflowIcon size={18} className="text-primary-text" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-[16px] font-semibold text-text-primary leading-snug">
+          <h3 className="text-[16px] font-medium text-text-primary leading-snug">
             {/* Stretched link: the whole card opens the workflow; the menu sits above it. */}
             <Link
               href={workflowHref(w.id)}
@@ -177,7 +177,7 @@ export default function WorkflowCard({ workflow: w, writable, onStart, onArchive
 
 export function WorkflowCardSkeleton() {
   return (
-    <div className="bg-white border border-border-light rounded-[12px] p-5 flex flex-col gap-3 animate-pulse motion-reduce:animate-none h-[228px]">
+    <div className="bg-surface border border-border-light rounded-card p-6 flex flex-col gap-3 animate-pulse motion-reduce:animate-none h-[228px]">
       <div className="flex gap-3">
         <div className="w-10 h-10 rounded-[10px] bg-surface-control" />
         <div className="flex-1 space-y-2">

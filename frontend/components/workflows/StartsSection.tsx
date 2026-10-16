@@ -93,7 +93,7 @@ function StartChoice({
         >
           {checked && <Check size={12} strokeWidth={3} className="text-white" />}
         </span>
-        <span className={`flex items-center gap-1.5 text-sm font-semibold ${checked ? 'text-primary-text' : 'text-text-primary'}`}>
+        <span className={`flex items-center gap-1.5 text-sm font-medium ${checked ? 'text-primary-text' : 'text-text-primary'}`}>
           <Icon size={15} aria-hidden /> {label}
         </span>
       </button>
@@ -226,12 +226,12 @@ export default function StartsSection({
     <section
       id="starts-section"
       aria-labelledby="starts-heading"
-      className={`bg-white border rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 sm:p-5 flex flex-col gap-4 scroll-mt-40 ${
+      className={`bg-white border rounded-[12px] shadow-card p-4 sm:p-6 flex flex-col gap-4 scroll-mt-40 ${
         error ? 'border-danger-border ring-1 ring-danger-border' : 'border-border-light'
       }`}
     >
       <div>
-        <h2 id="starts-heading" className="flex items-center gap-1 text-[18px] font-semibold text-text-primary">
+        <h2 id="starts-heading" className="flex items-center gap-1 text-[18px] font-medium text-text-primary">
           How it starts <InfoTip label="How it starts" text="Choose one or both. Times use your organisation’s time zone." />
         </h2>
       </div>

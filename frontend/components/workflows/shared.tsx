@@ -143,8 +143,8 @@ const BADGE = 'inline-flex items-center gap-1 whitespace-nowrap rounded-full bor
 export const TEMPLATE_STATUS: Record<WorkflowTemplateStatus, { cls: string; dot: string; label: string }> = {
   active: { cls: 'bg-success-bg text-success border-success-border', dot: 'bg-success', label: 'Live' },
   paused: { cls: 'bg-warning-bg text-warning border-warning-border', dot: 'bg-warning', label: 'Paused' },
-  draft: { cls: 'bg-surface-control text-text-secondary border-border-light', dot: 'bg-[#94A3B8]', label: 'Draft' },
-  archived: { cls: 'bg-surface-control text-text-secondary border-border-light', dot: 'bg-[#94A3B8]', label: 'Archived' },
+  draft: { cls: 'bg-surface-control text-text-secondary border-border-light', dot: 'bg-border-strong', label: 'Draft' },
+  archived: { cls: 'bg-surface-control text-text-secondary border-border-light', dot: 'bg-border-strong', label: 'Archived' },
 }
 
 /** Draft / Live / Paused / Archived. */
@@ -249,7 +249,7 @@ export function useNarrowScreen(): boolean {
 // ─── Buttons ─────────────────────────────────────────────────────────────────
 
 const BTN_BASE =
-  'inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-semibold transition-colors duration-150 min-h-[44px] sm:min-h-[38px] px-4 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed whitespace-nowrap'
+  'inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-medium transition-colors duration-150 min-h-[44px] sm:min-h-[38px] px-4 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed whitespace-nowrap'
 
 export const BTN = {
   primary: `${BTN_BASE} bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted`,
@@ -359,7 +359,7 @@ export function AddStepBar({
         type="button"
         onClick={onClick}
         disabled={allowed !== true}
-        className="w-full inline-flex items-center justify-center gap-2 min-h-[48px] rounded-[12px] border-2 border-dashed border-primary-border bg-white text-sm font-semibold text-primary-text hover:bg-primary-subtle hover:border-primary transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:border-border-light disabled:text-text-muted"
+        className="w-full inline-flex items-center justify-center gap-2 min-h-[48px] rounded-[12px] border-2 border-dashed border-primary-border bg-white text-sm font-medium text-primary-text hover:bg-primary-subtle hover:border-primary transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:border-border-light disabled:text-text-muted"
       >
         <Plus size={16} /> {children}
       </button>
@@ -430,7 +430,7 @@ export function WorkflowBreadcrumb({ trail }: { trail: { label: string; href?: s
               {c.label}
             </Link>
           ) : (
-            <span className="font-semibold text-text-primary truncate max-w-[60vw]" aria-current="page">
+            <span className="font-medium text-text-primary truncate max-w-[60vw]" aria-current="page">
               {c.label}
             </span>
           )}
@@ -455,7 +455,7 @@ export function Avatar({ name, size = 'sm' }: { name: string; size?: 'sm' | 'md'
   return (
     <span
       aria-hidden
-      className={`${dim} ${AVATAR_COLORS[h % AVATAR_COLORS.length]} rounded-full border-2 border-white text-white font-semibold flex items-center justify-center shrink-0`}
+      className={`${dim} ${AVATAR_COLORS[h % AVATAR_COLORS.length]} rounded-full border-2 border-white text-white font-medium flex items-center justify-center shrink-0`}
     >
       {initials(name)}
     </span>
@@ -513,27 +513,27 @@ export function EmptyState({
   action?: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-14 px-4">
+    <div className="flex flex-col items-center justify-center text-center py-12 px-4">
       <div className="w-14 h-14 rounded-[14px] bg-primary-subtle flex items-center justify-center mb-4">
         <Icon size={22} className="text-primary-text" />
       </div>
-      <h3 className="text-[17px] font-semibold text-text-primary mb-1">{title}</h3>
+      <h3 className="text-[17px] font-medium text-text-primary mb-1">{title}</h3>
       <p className="text-sm text-text-secondary max-w-md">{text}</p>
-      {action && <div className="mt-5">{action}</div>}
+      {action && <div className="mt-6">{action}</div>}
     </div>
   )
 }
 
 export function ErrorState({ title, message, onRetry }: { title: string; message: string; onRetry?: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-14 px-4">
+    <div className="flex flex-col items-center justify-center text-center py-12 px-4">
       <div className="w-14 h-14 rounded-[14px] bg-danger-bg flex items-center justify-center mb-4">
         <AlertTriangle size={22} className="text-danger" />
       </div>
-      <h3 className="text-[17px] font-semibold text-text-primary mb-1">{title}</h3>
+      <h3 className="text-[17px] font-medium text-text-primary mb-1">{title}</h3>
       <p className="text-sm text-text-secondary max-w-md">{message}</p>
       {onRetry && (
-        <button type="button" onClick={onRetry} className={`${BTN.secondary} mt-5`}>
+        <button type="button" onClick={onRetry} className={`${BTN.secondary} mt-6`}>
           <RefreshCw size={15} /> Try again
         </button>
       )}
@@ -543,13 +543,13 @@ export function ErrorState({ title, message, onRetry }: { title: string; message
 
 export function NotFoundState({ what, backHref, backLabel }: { what: string; backHref: string; backLabel: string }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-20 px-4">
+    <div className="flex flex-col items-center justify-center text-center py-12 px-4">
       <div className="w-14 h-14 rounded-[14px] bg-surface-control flex items-center justify-center mb-4">
         <SearchX size={22} className="text-text-secondary" />
       </div>
-      <h2 className="text-[18px] font-semibold text-text-primary mb-1">{what} not found</h2>
+      <h2 className="text-[18px] font-medium text-text-primary mb-1">{what} not found</h2>
       <p className="text-sm text-text-secondary max-w-md">It may have been removed, or you may not have access.</p>
-      <Link href={backHref} className={`${BTN.primary} mt-5`}>
+      <Link href={backHref} className={`${BTN.primary} mt-6`}>
         {backLabel}
       </Link>
     </div>
@@ -559,13 +559,13 @@ export function NotFoundState({ what, backHref, backLabel }: { what: string; bac
 /** A workflow (or instance) the viewer may not see: says so, with a way back. */
 export function NoAccessState({ title, text, backHref, backLabel }: { title: string; text: string; backHref: string; backLabel: string }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-20 px-4">
+    <div className="flex flex-col items-center justify-center text-center py-12 px-4">
       <div className="w-14 h-14 rounded-[14px] bg-surface-control flex items-center justify-center mb-4">
         <Lock size={22} className="text-text-secondary" />
       </div>
-      <h2 className="text-[18px] font-semibold text-text-primary mb-1">{title}</h2>
+      <h2 className="text-[18px] font-medium text-text-primary mb-1">{title}</h2>
       <p className="text-sm text-text-secondary max-w-md">{text}</p>
-      <Link href={backHref} className={`${BTN.primary} mt-5`}>
+      <Link href={backHref} className={`${BTN.primary} mt-6`}>
         {backLabel}
       </Link>
     </div>
@@ -614,7 +614,7 @@ export function SaveIndicator({ state, error, onRetry }: { state: SaveState; err
       <AlertTriangle size={12} className="shrink-0" />
       <span className="truncate max-w-[260px]">{error || 'Not saved'}</span>
       {onRetry && (
-        <button type="button" onClick={onRetry} className="font-semibold underline shrink-0">
+        <button type="button" onClick={onRetry} className="font-medium underline shrink-0">
           Retry
         </button>
       )}
