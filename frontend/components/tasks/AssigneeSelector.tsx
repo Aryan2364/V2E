@@ -1,9 +1,10 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { createPortal } from 'react-dom'
 import { Search, X, Plus, Check, Zap, Briefcase, UserPlus } from 'lucide-react'
 import Tooltip from '@/components/ui/tooltip'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { tasksApi } from '@/lib/api/tasks'
 import type { EligibleAssigneesResponse, EligibleAssigneeUser, SelectedAssignee } from '@/lib/types/tasks'
 
@@ -239,14 +240,7 @@ export default function AssigneeSelector({
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
   }, [search]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // The picker opens as a centered dialog (own backdrop). Close on Escape;
-  // outside-click is handled by the backdrop in the portal below.
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open])
+  // Escape and backdrop-click are now the kit Dialog's own behaviour.
 
   // Focus search on open
   useEffect(() => {
@@ -317,27 +311,14 @@ export default function AssigneeSelector({
         </button>
       </div>
 
-      {/* Picker — centered dialog over the page (own backdrop). Being fixed &
-          centered it never drifts on scroll nor escapes the parent modal. */}
-      {open && typeof document !== 'undefined' && createPortal(
-        <div
-          className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40"
-          onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
-        >
-          <div className="w-[440px] max-w-full max-h-[80vh] rounded-xl bg-surface border border-border-light shadow-dialog flex flex-col overflow-hidden">
-            {/* Title row */}
-            <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5 border-b border-border-light shrink-0">
-              <h3 className="text-sm font-medium text-text-primary">{title}</h3>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="Close"
-                className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
-              >
-                <X size={15} />
-              </button>
-            </div>
+      {/* Picker — kit Dialog (small), matching its previous centered-overlay shape. */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent size="sm" className="max-w-[440px] max-h-[80vh] flex flex-col overflow-hidden p-0">
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+          </DialogHeader>
 
+          <DialogBody className="p-0 flex flex-col flex-1 overflow-hidden">
             {/* Search + sort */}
             <div className="flex items-center gap-2 px-4 pt-3 pb-2 shrink-0">
               {/* Search */}
@@ -444,39 +425,34 @@ export default function AssigneeSelector({
                 </div>
               )}
             </div>
+          </DialogBody>
 
-            {/* Footer: selected count + confirm (tick) */}
-            <div className="px-4 py-2.5 border-t border-border-light bg-surface-sunken shrink-0 flex items-center justify-between gap-3">
-              <p className="text-xs text-text-secondary min-w-0 truncate">
-                {!allowCC ? (
-                  value.length > 0 ? (
-                    <><span className="font-medium text-text-primary">{value.length}</span> selected</>
-                  ) : (
-                    <span className="text-text-muted">Select people, then confirm</span>
-                  )
-                ) : value.length > 0 ? (
-                  <>
-                    <span className="font-medium text-text-primary">{value.filter((a) => !a.is_cc).length}</span> assignee{value.filter((a) => !a.is_cc).length !== 1 ? 's' : ''},&nbsp;
-                    <span className="font-medium text-text-primary">{value.filter((a) => a.is_cc).length}</span> CC
-                    <span className="text-text-muted"> · Click badge to toggle CC</span>
-                  </>
+          {/* Footer: selected count + confirm (tick) */}
+          <DialogFooter className="justify-between">
+            <p className="text-xs text-text-secondary min-w-0 truncate">
+              {!allowCC ? (
+                value.length > 0 ? (
+                  <><span className="font-medium text-text-primary">{value.length}</span> selected</>
                 ) : (
-                  <span className="text-text-muted">Select assignees, then confirm</span>
-                )}
-              </p>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors shrink-0"
-              >
-                <Check size={15} strokeWidth={3} />
-                Done
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+                  <span className="text-text-muted">Select people, then confirm</span>
+                )
+              ) : value.length > 0 ? (
+                <>
+                  <span className="font-medium text-text-primary">{value.filter((a) => !a.is_cc).length}</span> assignee{value.filter((a) => !a.is_cc).length !== 1 ? 's' : ''},&nbsp;
+                  <span className="font-medium text-text-primary">{value.filter((a) => a.is_cc).length}</span> CC
+                  <span className="text-text-muted"> · Click badge to toggle CC</span>
+                </>
+              ) : (
+                <span className="text-text-muted">Select assignees, then confirm</span>
+              )}
+            </p>
+            <Button type="button" onClick={() => setOpen(false)} className="shrink-0">
+              <Check size={15} strokeWidth={3} />
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

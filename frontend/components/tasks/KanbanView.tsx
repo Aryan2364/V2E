@@ -1,9 +1,18 @@
 'use client'
 
 import React, { useState } from 'react'
-import { createPortal } from 'react-dom'
 import { Lock, CheckCircle2, XCircle, RotateCcw, Hand } from 'lucide-react'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from 'sonner'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog'
 import type { Task, TaskStatus, TaskPriority, TaskCategory } from '@/lib/types/tasks'
 import {
   kanbanColumnId,
@@ -48,7 +57,6 @@ type PendingReason = { task: Task; target: TaskStatus; mode: 'flag' | 'incomplet
 export default function KanbanView({
   orgId, tasks, statuses, priorities, categories, perspective, currentUserId, onChanged, onTaskClick,
 }: Props) {
-  const { addToast } = useToast()
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOverCol, setDragOverCol] = useState<string | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
@@ -58,7 +66,7 @@ export default function KanbanView({
 
   // Use the app's shared amber toast for blocked/failed drops (not a bespoke one).
   function flash(msg: string) {
-    addToast(msg, 'warning')
+    toast.warning(msg)
   }
 
   // "Partially Completed" is a whole-task rollup — never a personal state — so it's hidden
@@ -249,19 +257,17 @@ export default function KanbanView({
       })}
 
       {/* Reason dialog for an Incomplete / can't-complete drop */}
-      {pending && createPortal(
-        <div
-          className="fixed inset-0 z-70 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
-          onClick={(e) => { if (e.target === e.currentTarget && !savingReason) { setPending(null); setReason('') } }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="relative w-full max-w-sm bg-surface rounded-t-xl sm:rounded-xl shadow-dialog border border-border-light p-6">
+      <AlertDialog
+        open={!!pending}
+        onOpenChange={(next) => { if (!next && !savingReason) { setPending(null); setReason('') } }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0"><XCircle size={18} className="text-danger" /></div>
               <div className="min-w-0">
-                <h3 className="text-[16px] font-medium text-text-primary">{pending.mode === 'flag' ? "Can’t complete your part?" : 'Mark this task incomplete?'}</h3>
-                <p className="text-sm text-text-secondary mt-1">{pending.mode === 'flag' ? 'Your part will be flagged as not-done — a reason is required.' : 'The task will be closed as not-done — a reason is required.'}</p>
+                <AlertDialogTitle>{pending?.mode === 'flag' ? "Can’t complete your part?" : 'Mark this task incomplete?'}</AlertDialogTitle>
+                <AlertDialogDescription>{pending?.mode === 'flag' ? 'Your part will be flagged as not-done — a reason is required.' : 'The task will be closed as not-done — a reason is required.'}</AlertDialogDescription>
               </div>
             </div>
             <textarea
@@ -270,16 +276,21 @@ export default function KanbanView({
               placeholder="Reason (required)"
               rows={3}
               autoFocus
-              className="mt-3 w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-danger resize-none"
+              className="mt-1 w-full border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-danger resize-none"
             />
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-4">
-              <button type="button" onClick={() => { setPending(null); setReason('') }} disabled={savingReason} className="w-full sm:w-auto px-4 py-[9px] text-sm font-medium text-text-secondary bg-surface border border-border rounded-lg hover:bg-surface-sunken disabled:opacity-60 transition-colors">Cancel</button>
-              <button type="button" onClick={confirmReason} disabled={savingReason || !reason.trim()} className="w-full sm:w-auto px-4 py-[9px] text-sm font-medium text-white bg-danger rounded-lg hover:bg-danger-hover disabled:opacity-60 disabled:cursor-not-allowed transition-colors">{savingReason ? 'Saving…' : pending.mode === 'flag' ? 'Flag my part' : 'Confirm Incomplete'}</button>
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={savingReason} onClick={() => { setPending(null); setReason('') }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmReason}
+              disabled={savingReason || !reason.trim()}
+              loading={savingReason}
+            >
+              {pending?.mode === 'flag' ? 'Flag my part' : 'Confirm Incomplete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
     </div>
   )

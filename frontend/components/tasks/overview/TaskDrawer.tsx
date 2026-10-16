@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { createPortal } from 'react-dom'
-import { X, Calendar, Send, CheckCircle2, ExternalLink, MessageSquare, Paperclip, User } from 'lucide-react'
+import { Calendar, Send, CheckCircle2, ExternalLink, MessageSquare, Paperclip, User } from 'lucide-react'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetBody, SheetFooter } from '@/components/ui/sheet'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
@@ -16,6 +18,7 @@ import { AttachmentList, AttachmentChips, PendingFileList } from '@/components/u
 import InlineTaskTags from '@/components/tasks/InlineTaskTags'
 import { taskWorkflow, workflowSourceText } from '@/components/tasks/WorkflowTaskBadge'
 import { useCanEditTask } from '@/lib/tasks/useCanEditTask'
+import { formatDate, formatDateTime } from '@/lib/format'
 
 const TERMINAL = new Set(['completed', 'partially_completed', 'incomplete'])
 
@@ -30,10 +33,7 @@ function Chip({ label, color }: { label: string; color: string }) {
   )
 }
 
-function formatWhen(iso: string): string {
-  const d = new Date(iso)
-  return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`
-}
+const formatWhen = formatDateTime
 
 /**
  * Slide-in task drawer: full detail + inline comments, so a manager can read and respond
@@ -83,14 +83,7 @@ export default function TaskDrawer({
 
   useEffect(() => { load() }, [load])
 
-  // Lock body scroll + close on Escape.
-  useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey) }
-  }, [onClose])
+  // Body-scroll lock, Escape and the backdrop are now the kit Sheet's own behaviour.
 
   async function send() {
     if (!draft.trim() || sending) return
@@ -168,41 +161,34 @@ export default function TaskDrawer({
     .sort((a, b) => Number(a.is_cc) - Number(b.is_cc))
     .map((a) => ({ id: a.id, name: a.user?.name ?? a.user_name ?? '?', department: a.user?.department, role: a.user?.role_title, isCC: a.is_cc }))
 
-  const body = (
-    <div className="fixed inset-0 z-60 flex justify-end">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-(--backdrop) backdrop-blur-xs" onClick={onClose} />
-
-      {/* Panel */}
-      <div className="relative w-full max-w-[560px] h-full bg-surface shadow-dialog flex flex-col animate-[slideIn_0.18s_ease-out]">
-        <style>{`@keyframes slideIn{from{transform:translateX(24px);opacity:.6}to{transform:translateX(0);opacity:1}}`}</style>
-
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 px-6 py-4 border-b border-border-light">
+  return (
+    <Sheet open onOpenChange={(next) => { if (!next) onClose() }}>
+      <SheetContent side="right" className="w-full sm:max-w-[560px] flex flex-col p-0">
+        <SheetHeader>
           <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-text-muted">Task</p>
-            <h2 className="text-[18px] font-medium text-text-primary leading-snug mt-0.5 wrap-break-word">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-on-brand-muted">Task</p>
+            <SheetTitle className="wrap-break-word">
               {loading ? 'Loading…' : task?.title}
-            </h2>
+            </SheetTitle>
           </div>
-          <button onClick={onClose} className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors">
-            <X size={18} />
-          </button>
-        </div>
+        </SheetHeader>
 
-        {isFutureTask && task && (
-          <div className="bg-danger-bg border-b border-danger-border px-6 py-3 text-xs font-medium text-danger">
-            ⌛ This task was created in a simulated future ({new Date(task.created_at).toLocaleDateString()}). To interact with it, please time-travel to this date or later.
-          </div>
+        {(loading || !task) && (
+          <SheetBody className="p-0 flex-1 flex items-center justify-center">
+            <div className="w-full max-w-sm space-y-3 p-6">
+              <Skeleton className="h-5 w-2/3" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-20 w-full" />
+            </div>
+          </SheetBody>
         )}
-
-        {loading || !task ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : (
-          <>
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+        {!loading && task && (
+            <SheetBody className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+              {isFutureTask && (
+                <div className="-mx-6 -mt-4 mb-2 bg-danger-bg border-b border-danger-border px-6 py-3 text-xs font-medium text-danger">
+                  This task was created in a simulated future ({formatDate(task.created_at)}). To interact with it, please time-travel to this date or later.
+                </div>
+              )}
               {/* Chips */}
               <div className="flex items-center gap-2 flex-wrap">
                 {status && <Chip label={status.label} color={status.color} />}
@@ -340,10 +326,10 @@ export default function TaskDrawer({
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Footer actions */}
-            <div className="border-t border-border-light px-6 py-3 space-y-3">
+            </SheetBody>
+        )}
+        {!loading && task && (
+            <SheetFooter className="gap-3 px-6 py-3">
               {/* Status row */}
               <div className="flex items-center gap-2">
                 <StyledSelect
@@ -398,13 +384,9 @@ export default function TaskDrawer({
                 uploading={sending && draftFiles.length > 0}
                 onRemove={(idx) => setDraftFiles((prev) => prev.filter((_, i) => i !== idx))}
               />
-            </div>
-          </>
+            </SheetFooter>
         )}
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   )
-
-  if (typeof document === 'undefined') return null
-  return createPortal(body, document.body)
 }

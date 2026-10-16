@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { X } from 'lucide-react'
 import { tasksApi } from '@/lib/api/tasks'
 import WorkflowTaskBadge, { taskWorkflow } from '@/components/tasks/WorkflowTaskBadge'
 import { TIMING_META, taskTiming, TERMINAL_STATUS_PHASES, type Task, type WorkQuery } from '@/lib/types/tasks'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetBody } from '@/components/ui/sheet'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
 
 function fmt(d?: string) {
   if (!d) return '—'
@@ -42,9 +43,6 @@ export default function SegmentDrawer({
   const [rows, setRows] = useState<Task[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => setMounted(true), [])
 
   useEffect(() => {
     let cancelled = false
@@ -58,44 +56,35 @@ export default function SegmentDrawer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId, JSON.stringify(query)])
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
-  if (!mounted) return null
-
   const completed = rows.filter((r) => r.status?.type === 'completed').length
   const overdue = rows.filter((r) => taskTiming(r) === 'overdue').length
 
-  return createPortal(
-    <div className="fixed inset-0 z-60">
-      <div className="absolute inset-0 bg-(--backdrop)" onClick={onClose} />
-      <aside className="absolute right-0 top-0 h-full w-full max-w-[460px] bg-surface shadow-dialog flex flex-col">
-        <div className="px-4 py-4 flex items-start justify-between border-b border-border-light">
+  return (
+    <Sheet open onOpenChange={(next) => { if (!next) onClose() }}>
+      <SheetContent side="right" className="w-full max-w-[460px] flex flex-col p-0">
+        <SheetHeader>
           <div className="min-w-0">
-            {subtitle && <div className="text-xs font-medium text-primary-text">{subtitle}</div>}
-            <h3 className="text-lg font-medium tracking-tight text-text-primary truncate">{title}</h3>
+            {subtitle && <div className="text-xs font-medium text-on-brand-muted">{subtitle}</div>}
+            <SheetTitle className="truncate">{title}</SheetTitle>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control shrink-0">
-            <X size={16} />
-          </button>
-        </div>
+        </SheetHeader>
 
-        <div className="px-4 py-3 flex gap-6 border-b border-border-light bg-surface-sunken">
+        <SheetBody className="p-0 flex flex-1 flex-col overflow-hidden">
+        <div className="px-4 py-3 flex gap-6 border-b border-border-light bg-surface-sunken shrink-0">
           <Stat label="Tasks" value={total} />
           <Stat label="Completed" value={completed} color="var(--success)" />
           <Stat label="Overdue" value={overdue} color={overdue ? 'var(--danger)' : 'var(--text-muted)'} />
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           {loading ? (
-            <div className="flex items-center justify-center h-40">
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="p-4 space-y-3">
+              {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}
             </div>
           ) : rows.length === 0 ? (
-            <p className="px-4 py-12 text-center text-sm text-text-secondary">No tasks in this view.</p>
+            <EmptyState variant="nothing-waiting" heading="No tasks in this view" headingLevel={3}>
+              Nothing matches this slice right now.
+            </EmptyState>
           ) : (
             rows.map((r) => {
               const t = taskTiming(r)
@@ -138,9 +127,9 @@ export default function SegmentDrawer({
             })
           )}
         </div>
-      </aside>
-    </div>,
-    document.body,
+        </SheetBody>
+      </SheetContent>
+    </Sheet>
   )
 }
 
