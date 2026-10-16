@@ -1,13 +1,60 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X } from 'lucide-react'
+import { X, Calendar as CalendarIcon } from 'lucide-react'
 import type { RecurringScheduleType, RecurringEndCondition, YearlyDate } from '@/lib/types/tasks'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
-import MonthDayPicker from '@/components/ui/MonthDayPicker'
 import Tooltip from '@/components/ui/tooltip'
 import { getNow } from '@/lib/clock'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+/** A leap year, so 29 Feb is pickable. Only month/day are read back; the year is discarded. */
+const MONTH_DAY_YEAR = 2000
+
+/**
+ * Migrated directly onto the kit's calendar.tsx (section 4 rule 4; no
+ * separate MonthDayPicker.tsx any more - its one call site was here).
+ * The month and day of a yearly recurrence, with no year of its own.
+ */
+function MonthDayPicker({
+  value,
+  onChange,
+}: {
+  value: YearlyDate
+  onChange: (value: YearlyDate) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const selected = value.month && value.day ? new Date(MONTH_DAY_YEAR, value.month - 1, value.day) : undefined
+  const label = selected ? `${selected.getDate()} ${MONTHS_SHORT[selected.getMonth()]}` : 'Select date'
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={<Button variant="secondary" className={cn('w-full justify-start', !selected && 'text-text-muted')} />}
+      >
+        <CalendarIcon className="size-4 text-text-muted" />
+        <span className="flex-1 truncate text-left">{label}</span>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-auto p-2">
+        <Calendar
+          mode="single"
+          selected={selected}
+          defaultMonth={selected}
+          onSelect={(date) => {
+            if (!date) return
+            onChange({ month: date.getMonth() + 1, day: date.getDate() })
+            setOpen(false)
+          }}
+        />
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 const DOW_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const TYPES: { value: RecurringScheduleType; label: string }[] = [
