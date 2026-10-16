@@ -173,7 +173,7 @@ export function FloatingStepEdge({ id, source, target, style, data }: EdgeProps<
       {data?.label && (
         <EdgeLabelRenderer>
           <div
-            className="nodrag nopan absolute rounded-[4px] bg-white/90 px-1 py-0.5 text-[11px] font-medium text-text-secondary"
+            className="nodrag nopan absolute rounded-[4px] bg-surface/90 px-1 py-0.5 text-meta font-medium text-text-secondary"
             style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, pointerEvents: 'all' }}
           >
             {data.label}
@@ -202,7 +202,7 @@ export default function FloatingEdge({ id, source, target, markerEnd, style, dat
       {data?.label && (
         <EdgeLabelRenderer>
           <div
-            className="nodrag nopan absolute rounded-[4px] bg-white/90 px-1 py-0.5 text-[11px] font-medium text-text-secondary"
+            className="nodrag nopan absolute rounded-[4px] bg-surface/90 px-1 py-0.5 text-meta font-medium text-text-secondary"
             style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, pointerEvents: 'all' }}
           >
             {data.label}

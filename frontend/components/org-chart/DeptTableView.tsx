@@ -85,7 +85,7 @@ export default function DeptTableView({
         if (!name) return <span className="text-text-muted">—</span>
         return (
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="w-7 h-7 rounded-full bg-surface-control-pressed text-text-secondary flex items-center justify-center text-[11px] font-medium shrink-0">
+            <span className="w-7 h-7 rounded-full bg-surface-control-pressed text-text-secondary flex items-center justify-center text-meta font-medium shrink-0">
               {initials(name)}
             </span>
             <span className="text-text-primary truncate">{name}</span>
@@ -103,7 +103,7 @@ export default function DeptTableView({
         parent ? (
           <span className="text-text-secondary">{parent.name}</span>
         ) : (
-          <span className="inline-flex items-center rounded-[999px] bg-surface-control px-2.5 py-0.5 text-xs font-medium text-text-secondary">
+          <span className="inline-flex items-center rounded-[999px] bg-surface-control px-2.5 py-0.5 text-meta font-medium text-text-secondary">
             Top level
           </span>
         ),
@@ -173,7 +173,7 @@ export default function DeptTableView({
             <Network size={24} className="text-text-muted" />
           </div>
           <p className="font-medium text-text-primary">No departments match your search</p>
-          <p className="text-text-secondary text-sm mt-1">Try a different name.</p>
+          <p className="text-text-secondary text-body mt-1">Try a different name.</p>
         </div>
       }
     />

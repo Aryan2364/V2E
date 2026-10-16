@@ -620,13 +620,13 @@ function Inner({
           behind the top-right toolbar; raised z-index keeps it above any panel overlap. */}
       {canEdit && selectedIds.length >= 2 && (
         <Panel position="bottom-center" style={{ zIndex: 20 }}>
-          <div className="flex items-center gap-2 rounded-lg bg-text-primary text-white shadow-lg px-3 py-1.5 text-[12px]">
+          <div className="flex items-center gap-2 rounded-lg bg-text-primary text-primary-foreground shadow-lg px-3 py-1.5 text-meta">
             <span className="font-medium">{selectedIds.length} selected</span>
-            <span className="text-white/40">·</span>
-            <span className="text-white/70">drag to move</span>
+            <span className="text-primary-foreground/40">·</span>
+            <span className="text-primary-foreground/70">drag to move</span>
             {onCopyNodes && (
               <button onClick={() => onCopyNodes(selectedIds)}
-                className="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-[6px] bg-white/10 hover:bg-white/20 font-medium transition-colors">
+                className="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-[6px] bg-surface/10 hover:bg-surface/20 font-medium transition-colors">
                 <Copy size={12} /> Copy
               </button>
             )}
@@ -637,7 +637,7 @@ function Inner({
               </button>
             )}
             <button onClick={clearSelection} aria-label="Clear selection"
-              className="inline-flex items-center px-1.5 py-1 rounded-[6px] hover:bg-white/10 text-white/80"><X size={13} /></button>
+              className="inline-flex items-center px-1.5 py-1 rounded-[6px] hover:bg-surface/10 text-primary-foreground/80"><X size={13} /></button>
           </div>
         </Panel>
       )}
@@ -650,7 +650,7 @@ function Inner({
           {!swimlane && topAreas.length > 0 && (
             <Tooltip label={anyExpanded ? 'Collapse all areas' : 'Unfold all areas in place'}>
               <button onClick={toggleAll} aria-pressed={anyExpanded}
-                className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium rounded-lg border shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${anyExpanded ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-white border-border-light text-text-secondary hover:text-text-primary hover:border-border'}`}>
+                className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-meta font-medium rounded-lg border shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${anyExpanded ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface border-border-light text-text-secondary hover:text-text-primary hover:border-border'}`}>
                 {anyExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />} <span className="hidden md:inline">{anyExpanded ? 'Grouped' : 'Whole'}</span>
               </button>
             </Tooltip>
@@ -666,19 +666,19 @@ function Inner({
           style={{ left: Math.min(edgeEdit.x, window.innerWidth - 260), top: Math.min(edgeEdit.y, window.innerHeight - 210) }}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[12px] font-medium text-text-primary">Connection</span>
+            <span className="text-meta font-medium text-text-primary">Connection</span>
             <button onClick={() => setEdgeEdit(null)} aria-label="Close" className="text-text-muted hover:text-text-primary"><X size={14} /></button>
           </div>
-          <label className="block text-[11px] font-medium text-text-secondary mb-1">Label</label>
+          <label className="block text-meta font-medium text-text-secondary mb-1">Label</label>
           <input
             value={edgeEdit.label}
             onChange={(e) => setEdgeEdit({ ...edgeEdit, label: e.target.value })}
             placeholder="e.g. Approved"
-            className="w-full px-2.5 py-1.5 text-[13px] rounded-lg border border-border focus:border-primary focus:outline-hidden mb-2"
+            className="w-full px-2.5 py-1.5 text-meta rounded-lg border border-border focus:border-primary focus:outline-hidden mb-2"
           />
           {edgeFromDecision && (
             <div className="mb-2">
-              <label className="block text-[11px] font-medium text-text-secondary mb-1">Branch</label>
+              <label className="block text-meta font-medium text-text-secondary mb-1">Branch</label>
               <StyledSelect
                 value={edgeEdit.conn.condition_kind}
                 onChange={(v) => {
@@ -703,7 +703,7 @@ function Inner({
                 onUpdateConnection?.(edgeEdit.conn.id, { label: edgeEdit.label.trim(), condition_kind: edgeEdit.conn.condition_kind })
                 setEdgeEdit(null)
               }}
-              className="flex-1 inline-flex items-center justify-center px-3 py-1.5 text-[13px] font-medium rounded-lg bg-primary text-white hover:bg-primary-hover"
+              className="flex-1 inline-flex items-center justify-center px-3 py-1.5 text-meta font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover"
             >
               Save
             </button>

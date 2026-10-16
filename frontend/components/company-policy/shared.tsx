@@ -40,7 +40,7 @@ export function usePolicyPermissions() {
 /** Breadcrumb trail — the way back out (the kit uses breadcrumbs, never a back arrow). */
 export function PolicyBreadcrumb({ trail }: { trail: { label: string; href?: string }[] }) {
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center flex-wrap gap-1.5 text-[13px] text-text-secondary mb-4 min-w-0">
+    <nav aria-label="Breadcrumb" className="flex items-center flex-wrap gap-1.5 text-meta text-text-secondary mb-4 min-w-0">
       {trail.map((c, i) => (
         <Fragment key={i}>
           {i > 0 && <span className="text-text-muted" aria-hidden>›</span>}

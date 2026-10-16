@@ -100,7 +100,7 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
               className="flex-1 min-w-0 flex items-center gap-1.5 text-left"
             >
               <span className="shrink-0 text-primary-text">{KIND_META[n.kind].icon}</span>
-              <span className={`flex-1 min-w-0 truncate text-[13px] ${isSelected || isCurrent ? 'text-primary-text font-medium' : 'text-text-primary'}`}>{n.name}</span>
+              <span className={`flex-1 min-w-0 truncate text-meta ${isSelected || isCurrent ? 'text-primary-text font-medium' : 'text-text-primary'}`}>{n.name}</span>
             </button>
           </Tooltip>
         </div>
@@ -120,7 +120,7 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search steps…"
-            className="w-full pl-8 pr-8 py-1.5 text-[13px] rounded-[8px] border border-border bg-surface-sunken focus:bg-white focus:border-primary focus:outline-hidden text-text-primary placeholder:text-text-muted"
+            className="w-full pl-8 pr-8 py-1.5 text-meta rounded-[8px] border border-border bg-surface-sunken focus:bg-surface focus:border-primary focus:outline-hidden text-text-primary placeholder:text-text-muted"
           />
           {query && (
             <button onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary">
@@ -133,7 +133,7 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
       <div className="flex-1 overflow-y-auto p-1.5">
         {results ? (
           results.length === 0 ? (
-            <p className="text-[13px] text-text-muted text-center py-8 px-3">No steps match “{query}”.</p>
+            <p className="text-meta text-text-muted text-center py-8 px-3">No steps match “{query}”.</p>
           ) : (
             <div className="space-y-0.5">
               {results.map(({ node, path }) => (
@@ -141,10 +141,10 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
                   className="w-full text-left rounded-[6px] px-2 py-1.5 hover:bg-surface-control transition-colors">
                   <div className="flex items-center gap-1.5">
                     <span className="shrink-0 text-primary-text">{KIND_META[node.kind].icon}</span>
-                    <span className="flex-1 min-w-0 truncate text-[13px] text-text-primary font-medium">{node.name}</span>
+                    <span className="flex-1 min-w-0 truncate text-meta text-text-primary font-medium">{node.name}</span>
                   </div>
                   {path.length > 0 && (
-                    <p className="text-[11px] text-text-muted truncate pl-4">{path.join(' › ')}</p>
+                    <p className="text-meta text-text-muted truncate pl-4">{path.join(' › ')}</p>
                   )}
                 </button>
               ))}
@@ -159,10 +159,10 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
               }`}
             >
               <Workflow size={14} className="shrink-0 text-primary-text" />
-              <span className={`flex-1 min-w-0 truncate text-[13px] font-medium ${currentParentId === null ? 'text-primary-text' : 'text-text-primary'}`}>{mapName}</span>
+              <span className={`flex-1 min-w-0 truncate text-meta font-medium ${currentParentId === null ? 'text-primary-text' : 'text-text-primary'}`}>{mapName}</span>
             </button>
             {roots.length === 0 ? (
-              <p className="text-[12px] text-text-muted px-3 py-4">No steps yet.</p>
+              <p className="text-meta text-text-muted px-3 py-4">No steps yet.</p>
             ) : (
               roots.map((n) => renderRow(n, 1))
             )}

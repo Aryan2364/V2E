@@ -38,7 +38,7 @@ const NAME_MAX = 50 // node names are capped so they always fit on the canvas wi
 const NOTE_MAX = 500 // a sticky note holds more than a name, but still bounded
 
 const inputCls =
-  'w-full px-3 py-2 text-[14px] rounded-lg border border-border focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted'
+  'w-full px-3 py-2 text-meta rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted'
 
 // Turn plain text into React nodes with any URLs (http(s):// or www.…) rendered as clickable
 // links that open in a new tab. Used to show a description so pasted links are clickable.
@@ -344,11 +344,11 @@ export default function NodeDrawer({
     // Non-modal: no dimming backdrop, so the canvas stays visible and the selected
     // node keeps its context while you edit it (Part B7). The panel slides in.
     <div className="fixed inset-0 z-60 pointer-events-none">
-      <div className="absolute right-0 top-0 h-full w-full max-w-[440px] bg-white shadow-2xl border-l border-border-light flex flex-col pointer-events-auto animate-[slideInRight_.22s_ease-out]">
+      <div className="absolute right-0 top-0 h-full w-full max-w-[440px] bg-surface shadow-2xl border-l border-border-light flex flex-col pointer-events-auto animate-[slideInRight_.22s_ease-out]">
         {/* Header — breadcrumb path to this node; the last crumb is its live name. */}
         <div className="flex items-center gap-2 px-4 py-3.5 border-b border-border-light">
           <span className="text-primary-text shrink-0">{node ? KIND_META[node.kind].icon : <FileText size={14} />}</span>
-          <div className="min-w-0 flex-1 truncate text-[12px] text-text-muted">
+          <div className="min-w-0 flex-1 truncate text-meta text-text-muted">
             {ancestorPath.map((a, i) => (
               <span key={i}>{a} <span className="text-text-muted">/</span> </span>
             ))}
@@ -358,7 +358,7 @@ export default function NodeDrawer({
             {drillable && (
               <button
                 onClick={() => onDrill(nodeId)}
-                className="inline-flex items-center gap-1 text-[13px] font-medium text-primary-text hover:text-primary-text px-2 py-1 rounded-[6px] hover:bg-primary-subtle transition-colors"
+                className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text px-2 py-1 rounded-[6px] hover:bg-primary-subtle transition-colors"
               >
                 Open <ChevronRight size={14} />
               </button>
@@ -376,30 +376,30 @@ export default function NodeDrawer({
                 {showMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                    <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 bg-white border border-border-light rounded-lg shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
+                    <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 bg-surface border border-border-light rounded-lg shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
                       {!isEvent(node.kind) && moveOptions.length > 1 && (
                         <>
-                          <p className="px-2 py-1 text-[11px] font-medium text-text-muted uppercase tracking-wide">Move to another area</p>
+                          <p className="px-2 py-1 text-meta font-medium text-text-muted uppercase tracking-wide">Move to another area</p>
                           <div className="max-h-48 overflow-y-auto">
                             {moveOptions.map((o) => (
                               <button key={o.value} onClick={() => { setShowMenu(false); moveTo(o.value) }}
-                                className="w-full text-left px-2.5 py-1.5 rounded-[6px] hover:bg-surface-control text-[13px] text-text-primary truncate">
+                                className="w-full text-left px-2.5 py-1.5 rounded-[6px] hover:bg-surface-control text-meta text-text-primary truncate">
                                 {o.label}
                               </button>
                             ))}
                           </div>
-                          <p className="px-2 py-1 text-[11px] text-text-muted">Moves this step (and anything inside it) into another container.</p>
+                          <p className="px-2 py-1 text-meta text-text-muted">Moves this step (and anything inside it) into another container.</p>
                           <div className="my-1 border-t border-border-light" />
                         </>
                       )}
                       {onCopy && (
                         <button onClick={() => { setShowMenu(false); onCopy() }}
-                          className="w-full text-left px-2.5 py-1.5 rounded-[6px] hover:bg-surface-control text-[13px] font-medium text-text-primary inline-flex items-center gap-2">
+                          className="w-full text-left px-2.5 py-1.5 rounded-[6px] hover:bg-surface-control text-meta font-medium text-text-primary inline-flex items-center gap-2">
                           <Copy size={14} /> Copy
                         </button>
                       )}
                       <button onClick={() => { setShowMenu(false); setConfirmDel(true) }}
-                        className="w-full text-left px-2.5 py-1.5 rounded-[6px] hover:bg-danger-bg text-[13px] font-medium text-danger inline-flex items-center gap-2">
+                        className="w-full text-left px-2.5 py-1.5 rounded-[6px] hover:bg-danger-bg text-meta font-medium text-danger inline-flex items-center gap-2">
                         <Trash2 size={14} /> Delete node
                       </button>
                     </div>
@@ -423,8 +423,8 @@ export default function NodeDrawer({
             {isNote ? (
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-text-secondary">Note</label>
-                  {canEdit && <span className="text-[10px] text-text-muted tabular-nums">{name.length}/{NOTE_MAX}</span>}
+                  <label className="text-meta font-medium text-text-secondary">Note</label>
+                  {canEdit && <span className="text-meta text-text-muted tabular-nums">{name.length}/{NOTE_MAX}</span>}
                 </div>
                 <textarea className={`${inputCls} resize-none`} rows={6} value={name} disabled={!canEdit} maxLength={NOTE_MAX}
                   placeholder={canEdit ? 'Write your note…' : '—'}
@@ -433,8 +433,8 @@ export default function NodeDrawer({
             ) : (
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-text-secondary">Name</label>
-                  {canEdit && <span className="text-[10px] text-text-muted tabular-nums">{name.length}/{NAME_MAX}</span>}
+                  <label className="text-meta font-medium text-text-secondary">Name</label>
+                  {canEdit && <span className="text-meta text-text-muted tabular-nums">{name.length}/{NAME_MAX}</span>}
                 </div>
                 <input className={inputCls} value={name} disabled={!canEdit} maxLength={NAME_MAX}
                   onChange={(e) => { setName(e.target.value); touch() }} />
@@ -444,13 +444,13 @@ export default function NodeDrawer({
             {/* Change type — safe conversions only (backend blocks the unsafe ones). */}
             {canEdit && !isEvent(node.kind) && !isNote && (
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">Type</label>
+                <label className="block text-meta font-medium text-text-secondary mb-1">Type</label>
                 <StyledSelect value={kind} onChange={(k) => { setKind(k as ProcessNodeKind); touch() }}
                   options={(CONTAINER_KINDS.has(node.kind)
                     ? (['container', 'subprocess'] as ProcessNodeKind[])
                     : (['task', 'decision', 'container', 'subprocess'] as ProcessNodeKind[])
                   ).map((k) => ({ value: k, label: KIND_META[k].label }))} />
-                <p className="text-[11px] text-text-muted mt-1">
+                <p className="text-meta text-text-muted mt-1">
                   {CONTAINER_KINDS.has(node.kind)
                     ? 'Switch between Container and Sub-process (both hold steps).'
                     : 'A step can also become an area (Container / Sub-process).'}
@@ -462,7 +462,7 @@ export default function NodeDrawer({
                 linkified text (pasted links are clickable, open in a new tab); click it to edit. */}
             {!isNote && (
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">Description</label>
+                <label className="block text-meta font-medium text-text-secondary mb-1">Description</label>
                 {canEdit && descEditing ? (
                   <textarea autoFocus className={`${inputCls} resize-none`} rows={3} value={description}
                     placeholder="What happens in this step?"
@@ -479,13 +479,13 @@ export default function NodeDrawer({
                     className={`${inputCls} min-h-[76px] text-text-muted ${canEdit ? 'cursor-text' : ''}`}
                   >{canEdit ? 'What happens in this step?' : '—'}</div>
                 )}
-                {canEdit && <p className="text-[11px] text-text-muted mt-1">Paste a link and it becomes clickable.</p>}
+                {canEdit && <p className="text-meta text-text-muted mt-1">Paste a link and it becomes clickable.</p>}
               </div>
             )}
 
             {/* Decision: its Yes / No routes are set on the arrows, not here. */}
             {node.kind === 'decision' && (
-              <div className="flex items-start gap-2 rounded-lg bg-surface-sunken border border-border-light px-3 py-2.5 text-[12px] text-text-secondary">
+              <div className="flex items-start gap-2 rounded-lg bg-surface-sunken border border-border-light px-3 py-2.5 text-meta text-text-secondary">
                 <GitBranch size={14} className="text-text-muted shrink-0 mt-0.5" />
                 <span>Set the <span className="font-medium text-text-primary">Yes / No</span> routes by clicking the arrows leaving this diamond on the canvas.</span>
               </div>
@@ -495,7 +495,7 @@ export default function NodeDrawer({
                 department (their lane); Customer/Vendor sit in a single band. */}
             {!isNote && (
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1"><Rows3 size={12} className="inline mr-1" />Pool / Lane</label>
+                <label className="block text-meta font-medium text-text-secondary mb-1"><Rows3 size={12} className="inline mr-1" />Pool / Lane</label>
                 {canEdit ? (
                   <>
                     <StyledSelect
@@ -512,17 +512,17 @@ export default function NodeDrawer({
                       <div className="mt-2">
                         <DepartmentSelect inline value={deptId} onChange={pickDept}
                           departments={departments} placeholder="Pick a department (lane)" />
-                        {deptError && !deptId && <p className="text-[11px] text-danger mt-1">A Company step needs a department.</p>}
+                        {deptError && !deptId && <p className="text-meta text-danger mt-1">A Company step needs a department.</p>}
                       </div>
                     )}
                   </>
                 ) : (
-                  <p className="text-sm text-text-primary">
+                  <p className="text-body text-text-primary">
                     {pool ? POOL_LABEL[pool] : 'Free-form (no swimlane)'}
                     {pool === 'company' && deptId ? ` · ${departments.find((d) => d.id === deptId)?.name ?? 'Department'}` : ''}
                   </p>
                 )}
-                <p className="text-[11px] text-text-muted mt-1">Company steps pick a department (their lane); Customer/Vendor sit in one band.</p>
+                <p className="text-meta text-text-muted mt-1">Company steps pick a department (their lane); Customer/Vendor sit in one band.</p>
               </div>
             )}
 
@@ -531,7 +531,7 @@ export default function NodeDrawer({
             {!isEvent(node.kind) && !isNote && !isExternalPool && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-text-secondary mb-1"><UserCircle2 size={12} className="inline mr-1" />Person</label>
+                  <label className="block text-meta font-medium text-text-secondary mb-1"><UserCircle2 size={12} className="inline mr-1" />Person</label>
                   <EmployeePicker
                     value={respUser}
                     onChange={pickPerson}
@@ -543,7 +543,7 @@ export default function NodeDrawer({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-text-secondary mb-1">Role</label>
+                  <label className="block text-meta font-medium text-text-secondary mb-1">Role</label>
                   <RolePicker value={respRole} onChange={pickRole}
                     roles={filteredRoles} title="Responsible role" placeholder="— None —" allowClear disabled={!canEdit} />
                 </div>
@@ -568,7 +568,7 @@ export default function NodeDrawer({
             {/* Opens another map (cross-link) — only areas open a deeper map. */}
             {CONTAINER_KINDS.has(node.kind) && (
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">Opens another map (cross-link)</label>
+                <label className="block text-meta font-medium text-text-secondary mb-1">Opens another map (cross-link)</label>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 min-w-0">
                     <StyledSelect value={node.linked_map_id ?? ''} onChange={(v) => setLinkedMap(v)}
@@ -577,7 +577,7 @@ export default function NodeDrawer({
                   {node.linked_map && (
                     <Tooltip label="Open linked map">
                       <button onClick={() => onDrill(nodeId)}
-                        className="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 text-[12px] font-medium rounded-lg border border-primary text-primary-text hover:bg-primary-subtle">
+                        className="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 text-meta font-medium rounded-lg border border-primary text-primary-text hover:bg-primary-subtle">
                         <ExternalLink size={13} /> Open
                       </button>
                     </Tooltip>
@@ -585,10 +585,10 @@ export default function NodeDrawer({
                 </div>
                 {node.linked_map && (
                   <div className="mt-1 flex items-center justify-between gap-2">
-                    <p className="text-[11px] text-text-muted">Opening this node jumps to “{node.linked_map.name}”.</p>
+                    <p className="text-meta text-text-muted">Opening this node jumps to “{node.linked_map.name}”.</p>
                     {canEdit && !node.linked_map.owned && (
                       <button onClick={detach} disabled={detaching}
-                        className="shrink-0 inline-flex items-center gap-1 text-[11px] font-medium text-primary-text hover:underline disabled:text-text-muted">
+                        className="shrink-0 inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:underline disabled:text-text-muted">
                         {detaching ? <Loader2 size={11} className="animate-spin" /> : <Copy size={11} />} Make my own copy
                       </button>
                     )}
@@ -600,8 +600,8 @@ export default function NodeDrawer({
                 {canEdit && !(node.linked_map && !node.linked_map.owned) && (
                   <div className="mt-2 flex items-start justify-between gap-2 rounded-lg border border-border-light bg-surface-sunken p-2.5">
                     <div className="min-w-0">
-                      <p className="text-[12px] font-medium text-text-primary">Reusable map</p>
-                      <p className="text-[11px] text-text-muted leading-snug">
+                      <p className="text-meta font-medium text-text-primary">Reusable map</p>
+                      <p className="text-meta text-text-muted leading-snug">
                         {node.linked_map?.owned
                           ? 'Publish this as a shared map you can reference in any other map.'
                           : 'Turn this into its own map you can drop as a line item in any other map.'}
@@ -609,7 +609,7 @@ export default function NodeDrawer({
                     </div>
                     <Tooltip label="Make reusable">
                       <button onClick={makeReusable} disabled={makingReusable}
-                        className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-medium rounded-lg border border-primary text-primary-text hover:bg-primary-subtle disabled:opacity-50">
+                        className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 text-meta font-medium rounded-lg border border-primary text-primary-text hover:bg-primary-subtle disabled:opacity-50">
                         {makingReusable ? <Loader2 size={12} className="animate-spin" /> : <Share2 size={12} />} Make reusable
                       </button>
                     </Tooltip>
@@ -634,7 +634,7 @@ export default function NodeDrawer({
           {canEdit && (
             <div className="shrink-0 border-t border-border-light px-4 py-3">
               <button onClick={saveCore} disabled={saving || !dirty}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors">
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors">
                 {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
                 {saving ? 'Saving…' : dirty ? 'Save changes' : 'Saved'}
               </button>
@@ -685,12 +685,12 @@ function ChecklistEditor({ items, canEdit, onChange }: {
   if (!canEdit && items.length === 0) return null
   return (
     <div>
-      <label className="block text-xs font-medium text-text-secondary mb-1.5">Checklist</label>
+      <label className="block text-meta font-medium text-text-secondary mb-1.5">Checklist</label>
       <div className="space-y-1.5">
         {items.map((it, i) => (
           <div key={it.id ?? i} className="flex items-center gap-2">
             <span className="w-4 h-4 rounded-xs border border-border shrink-0" />
-            <input className={`${inputCls} py-1.5 text-[13px]`} value={it.text} disabled={!canEdit}
+            <input className={`${inputCls} py-1.5 text-meta`} value={it.text} disabled={!canEdit}
               onChange={(e) => onChange(items.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)))} />
             {canEdit && (
               <button onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label="Remove item"
@@ -701,11 +701,11 @@ function ChecklistEditor({ items, canEdit, onChange }: {
       </div>
       {canEdit && (
         <div className="flex items-center gap-2 mt-2">
-          <input className={`${inputCls} py-1.5 text-[13px]`} value={draft} placeholder="Add checklist item…"
+          <input className={`${inputCls} py-1.5 text-meta`} value={draft} placeholder="Add checklist item…"
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && draft.trim()) { onChange([...items, { text: draft.trim() }]); setDraft('') } }} />
           <button onClick={() => { if (draft.trim()) { onChange([...items, { text: draft.trim() }]); setDraft('') } }} aria-label="Add checklist item"
-            className="shrink-0 w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center hover:bg-primary-hover"><Plus size={15} /></button>
+            className="shrink-0 w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover"><Plus size={15} /></button>
         </div>
       )}
     </div>
@@ -722,9 +722,9 @@ function CollapsibleSection({ title, count = 0, defaultOpen = false, children }:
       <button type="button" onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center gap-2 text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs">
         <ChevronRight size={14} className={`text-text-muted shrink-0 transition-transform ${open ? 'rotate-90' : ''}`} />
-        <span className="flex-1 text-xs font-medium text-text-primary">{title}</span>
+        <span className="flex-1 text-meta font-medium text-text-primary">{title}</span>
         {count > 0 && (
-          <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[11px] font-medium shrink-0">{count}</span>
+          <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium shrink-0">{count}</span>
         )}
       </button>
       {open && <div className="mt-3">{children}</div>}
@@ -788,19 +788,19 @@ function SharingSection({ orgId, mapId, nodeId, node, departments, roles, employ
   return (
     <CollapsibleSection title="Who can see this" count={node.access_rules.length} defaultOpen={node.access_rules.length > 0}>
       <div className="space-y-3">
-      <p className="text-[11px] text-text-muted flex items-center gap-1.5"><Shield size={12} /> Applies to every node inside this one.</p>
+      <p className="text-meta text-text-muted flex items-center gap-1.5"><Shield size={12} /> Applies to every node inside this one.</p>
       {node.access_rules.length === 0 ? (
-        <p className="text-[13px] text-text-muted">No one attached here yet — this node inherits access from above.</p>
+        <p className="text-meta text-text-muted">No one attached here yet — this node inherits access from above.</p>
       ) : (
         <div className="space-y-1">
           {node.access_rules.map((r) => (
-            <div key={r.id} className="flex items-center gap-2 text-[13px] bg-surface-sunken border border-border-light rounded-[6px] px-2 py-1.5">
-              <span className={`text-[10px] font-medium rounded-xs px-1.5 py-0.5 shrink-0 ${
+            <div key={r.id} className="flex items-center gap-2 text-meta bg-surface-sunken border border-border-light rounded-[6px] px-2 py-1.5">
+              <span className={`text-meta font-medium rounded-xs px-1.5 py-0.5 shrink-0 ${
                 r.kind === 'exclude_user' ? 'bg-danger-bg text-danger' : r.level === 'edit' ? 'bg-success-bg text-success' : 'bg-surface-control text-text-secondary'}`}>
                 {r.kind === 'exclude_user' ? 'hidden' : r.level}
               </span>
               <span className="flex-1 truncate text-text-primary">{r.label}</span>
-              <span className="text-[11px] text-text-muted capitalize shrink-0">{r.kind === 'exclude_user' ? 'person' : r.kind}</span>
+              <span className="text-meta text-text-muted capitalize shrink-0">{r.kind === 'exclude_user' ? 'person' : r.kind}</span>
               <button onClick={() => remove(r.id)} aria-label="Remove rule" className="text-text-muted hover:text-danger shrink-0"><X size={13} /></button>
             </div>
           ))}
@@ -809,14 +809,14 @@ function SharingSection({ orgId, mapId, nodeId, node, departments, roles, employ
       {/* Add-rule form stays behind a single link until you want it. */}
       {!showAddForm ? (
         <button onClick={() => setShowAddForm(true)}
-          className="inline-flex items-center gap-1 text-[13px] font-medium text-primary-text hover:underline">
+          className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:underline">
           <Plus size={14} /> Add person, role or department
         </button>
       ) : (
       /* One control per line so nothing crams; searchable pickers for role/person. */
       <div className="bg-surface-sunken border border-border-light rounded-lg p-3 space-y-2.5">
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-medium text-text-muted uppercase tracking-wide">Give access to</p>
+          <p className="text-meta font-medium text-text-muted uppercase tracking-wide">Give access to</p>
           <button onClick={() => setShowAddForm(false)} aria-label="Close" className="text-text-muted hover:text-text-primary"><X size={14} /></button>
         </div>
 
@@ -840,23 +840,23 @@ function SharingSection({ orgId, mapId, nodeId, node, departments, roles, employ
 
         <div className="flex items-center gap-2 pt-0.5">
           {kind !== 'exclude_user' && (
-            <div className="inline-flex rounded-lg border border-border-light overflow-hidden bg-white">
+            <div className="inline-flex rounded-lg border border-border-light overflow-hidden bg-surface">
               {(['view', 'edit'] as ProcessAccessLevel[]).map((lv) => (
                 <button key={lv} type="button" onClick={() => setLevel(lv)}
-                  className={`px-3 py-1.5 text-[12px] font-medium transition-colors ${level === lv ? 'bg-primary text-white' : 'bg-white text-text-secondary hover:bg-surface-control'}`}>
+                  className={`px-3 py-1.5 text-meta font-medium transition-colors ${level === lv ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-control'}`}>
                   {lv === 'view' ? 'Can view' : 'Can edit'}
                 </button>
               ))}
             </div>
           )}
           <button onClick={add} disabled={!entityId || busy}
-            className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-medium rounded-lg bg-primary text-white hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
+            className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 text-meta font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
             {busy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={15} />} Add
           </button>
         </div>
       </div>
       )}
-      <p className="text-[11px] text-text-muted">Attaching a department automatically covers its roles and people. Use “Hide from a person” to remove someone who’s otherwise included.</p>
+      <p className="text-meta text-text-muted">Attaching a department automatically covers its roles and people. Use “Hide from a person” to remove someone who’s otherwise included.</p>
       </div>
     </CollapsibleSection>
   )

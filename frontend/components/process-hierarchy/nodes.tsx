@@ -85,7 +85,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
     <>
       <FourHandles />
       <div
-        className={`relative bg-white rounded-lg px-2.5 py-1.5 shadow-xs flex flex-col justify-center ${canOpen ? 'cursor-pointer' : ''}`}
+        className={`relative bg-surface rounded-lg px-2.5 py-1.5 shadow-xs flex flex-col justify-center ${canOpen ? 'cursor-pointer' : ''}`}
         style={{ border: `2px solid ${borderColor(data, accent)}`, width: isContainer ? 220 : 170, minHeight: isContainer ? 88 : 60 }}
       >
         {/* Drillable nodes: pencil edits; the body itself opens the level. */}
@@ -102,7 +102,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
         )}
         <div className={`flex items-start gap-1.5 ${data.canExpand ? 'pr-12' : canOpen ? 'pr-4' : ''}`}>
           <span style={{ color: 'var(--primary-text)' }} className="shrink-0 mt-0.5">{KIND_META[data.kind].icon}</span>
-          <span className="flex-1 min-w-0 text-[13px] font-medium text-text-primary leading-snug wrap-break-word">{data.name}</span>
+          <span className="flex-1 min-w-0 text-meta font-medium text-text-primary leading-snug wrap-break-word">{data.name}</span>
         </div>
         {data.linkedMapName && data.linkedMapName !== data.name && (
           <div className="mt-1 flex items-center gap-1 text-[10px] font-medium text-primary-text">
@@ -159,7 +159,7 @@ function DecisionNode({ data }: NodeProps<ProcessNodeData>) {
     <div className="relative" style={{ width: 96, height: 96 }}>
       <FourHandles />
       <div
-        className="absolute bg-white shadow-xs"
+        className="absolute bg-surface shadow-xs"
         style={{
           width: 66,
           height: 66,
@@ -188,12 +188,12 @@ function EventNode({ data }: NodeProps<ProcessNodeData>) {
           absolutely positioned below so you can read it on the canvas. */}
       <Tooltip label={data.name}>
         <div
-          className="relative flex items-center justify-center rounded-full bg-white shadow-xs"
+          className="relative flex items-center justify-center rounded-full bg-surface shadow-xs"
           style={{ width: 44, height: 44, border: `3px solid ${borderColor(data, accent)}`, color: accent }}
           aria-label={data.name}
         >
           {isStart ? <Play size={18} /> : <Flag size={18} />}
-          <span className="absolute top-[calc(100%+4px)] left-1/2 -translate-x-1/2 w-[120px] text-center text-[11px] font-medium leading-tight wrap-break-word pointer-events-none"
+          <span className="absolute top-[calc(100%+4px)] left-1/2 -translate-x-1/2 w-[120px] text-center text-meta font-medium leading-tight wrap-break-word pointer-events-none"
             style={{ color: accent }}>
             {data.name}
           </span>
@@ -211,10 +211,10 @@ function BandNode({ data }: NodeProps<ProcessNodeData>) {
       <Handle type="target" position={Position.Left} style={handleStyle} />
       <div className="absolute top-0 left-0 right-0 h-7 flex items-center gap-1.5 px-2 bg-primary-subtle border-b border-primary-border rounded-t-[10px]">
         <Folder size={13} className="text-primary-text shrink-0" />
-        <span className="flex-1 min-w-0 truncate text-[12px] font-medium text-text-primary">{data.name}</span>
+        <span className="flex-1 min-w-0 truncate text-meta font-medium text-text-primary">{data.name}</span>
         <Tooltip label="Collapse">
           <button type="button" onClick={(e) => { e.stopPropagation(); data.onToggleExpand?.() }}
-            className="nodrag shrink-0 w-5 h-5 inline-flex items-center justify-center rounded-xs text-text-muted hover:text-text-primary hover:bg-white"
+            className="nodrag shrink-0 w-5 h-5 inline-flex items-center justify-center rounded-xs text-text-muted hover:text-text-primary hover:bg-surface"
             aria-label="Collapse"><Minimize2 size={12} /></button>
         </Tooltip>
       </div>
@@ -236,7 +236,7 @@ function NoteNode({ data }: NodeProps<ProcessNodeData>) {
         <span className="text-[10px] font-medium uppercase tracking-wide">Note</span>
         {data.onEdit && <Pencil size={11} className="ml-auto text-warning" />}
       </div>
-      <p className="text-[12px] leading-snug text-warning whitespace-pre-wrap wrap-break-word">
+      <p className="text-meta leading-snug text-warning whitespace-pre-wrap wrap-break-word">
         {data.name || 'Empty note — click to write'}
       </p>
     </div>
@@ -284,7 +284,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); data.onRename!() }}
-              className="nodrag text-[11px] font-medium text-text-primary whitespace-nowrap hover:text-primary-text focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
+              className="nodrag text-meta font-medium text-text-primary whitespace-nowrap hover:text-primary-text focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
               style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', pointerEvents: 'auto' }}
             >
               {data.label}
@@ -292,7 +292,7 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
           </Tooltip>
         ) : (
           <span
-            className="text-[11px] font-medium text-text-primary whitespace-nowrap"
+            className="text-meta font-medium text-text-primary whitespace-nowrap"
             style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
             {data.label}
@@ -349,11 +349,11 @@ function DocNode({ data }: NodeProps<DocNodeData>) {
           type="button"
           onClick={(e) => { e.stopPropagation(); data.onOpen() }}
           style={{ width: DOC_CHIP_W, height: DOC_CHIP_H }}
-          className="nodrag group flex items-center gap-1.5 px-2 rounded-[7px] border border-dashed border-border bg-white shadow-xs text-left transition-colors hover:border-primary"
+          className="nodrag group flex items-center gap-1.5 px-2 rounded-[7px] border border-dashed border-border bg-surface shadow-xs text-left transition-colors hover:border-primary"
         >
           <span className="w-[3px] self-stretch my-1 rounded-full shrink-0" style={{ background: isInput ? 'var(--text-secondary)' : 'var(--text-secondary)' }} />
           <Icon size={13} className="shrink-0" style={{ color: isInput ? 'var(--text-secondary)' : 'var(--text-secondary)' }} />
-          <span className="flex-1 min-w-0 truncate text-[11px] font-medium text-text-secondary group-hover:text-text-primary">{data.name}</span>
+          <span className="flex-1 min-w-0 truncate text-meta font-medium text-text-secondary group-hover:text-text-primary">{data.name}</span>
         </button>
       </Tooltip>
     </>

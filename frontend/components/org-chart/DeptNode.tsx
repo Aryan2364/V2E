@@ -37,7 +37,7 @@ function DeptNode({ data, selected }: { data: DeptNodeData; selected: boolean })
       {data.canEdit && data.onEdit && (
         <button
           type="button"
-          className="nodrag absolute top-1.5 right-1.5 w-6 h-6 rounded-[6px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-white/25"
+          className="nodrag absolute top-1.5 right-1.5 w-6 h-6 rounded-[6px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-surface/25"
           style={{ color: text }}
           aria-label="Edit department"
           onMouseDown={(e) => e.stopPropagation()}
@@ -51,25 +51,25 @@ function DeptNode({ data, selected }: { data: DeptNodeData; selected: boolean })
       )}
 
       <Tooltip label={data.name}>
-      <div className="font-medium text-sm pr-6 line-clamp-2 wrap-break-word">
+      <div className="font-medium text-body pr-6 line-clamp-2 wrap-break-word">
         {data.name}
       </div>
       </Tooltip>
       {/* Always reserve the head line so a box with no head is the same height
           as one with a head. */}
       <Tooltip label={data.headName || undefined}>
-      <div className="text-xs mt-1 h-4 truncate" style={{ opacity: 0.8 }}>
+      <div className="text-meta mt-1 h-4 truncate" style={{ opacity: 0.8 }}>
         {data.headName || ''}
       </div>
       </Tooltip>
       <div className="flex items-center gap-1 mt-auto pt-2">
         <Users size={12} style={{ opacity: 0.75 }} />
-        <span className="text-xs" style={{ opacity: 0.85 }}>
+        <span className="text-meta" style={{ opacity: 0.85 }}>
           {data.teamCount ?? 0} members
         </span>
         {data.roleCount !== undefined && (
           <span
-            className="ml-auto text-xs px-2 py-0.5 rounded-full font-medium bg-white/25"
+            className="ml-auto text-meta px-2 py-0.5 rounded-full font-medium bg-surface/25"
             style={{ color: text }}
           >
             {data.roleCount} roles

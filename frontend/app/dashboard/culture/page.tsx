@@ -30,9 +30,9 @@ function StandardCard({
         )}
       </div>
       <div>
-        <h3 className="font-medium text-text-primary text-sm leading-snug">{standard.title}</h3>
+        <h3 className="font-medium text-text-primary text-body leading-snug">{standard.title}</h3>
         {standard.description && (
-          <p className="text-text-primary text-xs mt-1.5 leading-relaxed">{standard.description}</p>
+          <p className="text-text-primary text-meta mt-1.5 leading-relaxed">{standard.description}</p>
         )}
       </div>
     </div>
@@ -62,9 +62,9 @@ function Column({
         className={`flex items-center gap-2 px-4 py-2.5 rounded-lg ${accentBg}`}
       >
         <span className={accent}>{icon}</span>
-        <h2 className={`font-medium text-sm ${accent}`}>{title}</h2>
+        <h2 className={`font-medium text-body ${accent}`}>{title}</h2>
         <span
-          className={`ml-auto text-xs font-medium rounded-full px-2 py-0.5 ${accentBg} ${accent} border ${
+          className={`ml-auto text-meta font-medium rounded-full px-2 py-0.5 ${accentBg} ${accent} border ${
             type === 'expected' ? 'border-success-border' : 'border-danger-border'
           }`}
         >
@@ -72,7 +72,7 @@ function Column({
         </span>
       </div>
       {items.length === 0 ? (
-        <p className="text-text-muted text-sm text-center py-8">No standards defined yet.</p>
+        <p className="text-text-muted text-body text-center py-8">No standards defined yet.</p>
       ) : (
         items.map((s) => <StandardCard key={s.id} standard={s} type={type} />)
       )}
@@ -88,8 +88,8 @@ function EmptyState({ canEdit, onEdit }: { canEdit: boolean; onEdit: () => void 
       <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
         <HeartIcon size={28} className="text-text-muted" />
       </div>
-      <h2 className="text-lg font-medium text-text-primary">No culture standards defined yet</h2>
-      <p className="text-text-secondary text-sm mt-1 max-w-xs">
+      <h2 className="text-card-heading font-medium text-text-primary">No culture standards defined yet</h2>
+      <p className="text-text-secondary text-body mt-1 max-w-xs">
         Define the behaviors your organization expects and prohibits.
       </p>
       {canEdit && (

@@ -248,14 +248,14 @@ function OrgChartInner({
       {/* Tree-only toolbar: arranging the canvas + exporting an image only make
           sense for the chart, so these controls live here (not in the table view). */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border-light flex-wrap">
-        <span className="text-sm font-medium text-text-primary">Org chart</span>
-        <span className="text-xs text-text-muted hidden sm:inline">
+        <span className="text-body font-medium text-text-primary">Org chart</span>
+        <span className="text-meta text-text-muted hidden sm:inline">
           Drag to pan · Ctrl/⌘ + scroll or pinch to zoom
         </span>
 
         {/* Save status */}
         {canEdit && (
-          <span className="text-xs min-w-[90px] ml-1">
+          <span className="text-meta min-w-[90px] ml-1">
             {saveStatus === 'saving' && <span className="text-text-muted">Saving…</span>}
             {saveStatus === 'saved' && (
               <span className="text-success inline-flex items-center gap-1">
@@ -270,7 +270,7 @@ function OrgChartInner({
           {canEdit && (
             <button
               onClick={handleAutoArrange}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-white border border-border-light text-text-secondary hover:text-text-primary hover:border-border transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-body font-medium bg-surface border border-border-light text-text-secondary hover:text-text-primary hover:border-border transition-colors"
             >
               <LayoutGridIcon size={15} /> Auto-arrange
             </button>
@@ -278,7 +278,7 @@ function OrgChartInner({
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-white border border-border-light text-text-secondary hover:text-text-primary hover:border-border disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-body font-medium bg-surface border border-border-light text-text-secondary hover:text-text-primary hover:border-border disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
             <DownloadIcon size={15} /> {exporting ? 'Exporting…' : 'Export PNG'}
           </button>
@@ -322,8 +322,8 @@ function EmptyState({ canEdit, onAdd }: { canEdit: boolean; onAdd: () => void })
       <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
         <NetworkIcon size={28} className="text-text-muted" />
       </div>
-      <h2 className="text-lg font-medium text-text-primary">No departments yet</h2>
-      <p className="text-text-secondary text-sm mt-1 max-w-xs">
+      <h2 className="text-card-heading font-medium text-text-primary">No departments yet</h2>
+      <p className="text-text-secondary text-body mt-1 max-w-xs">
         {canEdit
           ? 'Add your first department to start building the structure.'
           : 'Departments will appear here once they are created.'}
@@ -331,7 +331,7 @@ function EmptyState({ canEdit, onAdd }: { canEdit: boolean; onAdd: () => void })
       {canEdit && (
         <button
           onClick={onAdd}
-          className="mt-4 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
+          className="mt-4 flex items-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium bg-primary text-primary-foreground hover:bg-primary-hover transition-colors"
         >
           <PlusIcon size={15} /> Add Department
         </button>
@@ -494,14 +494,14 @@ export default function OrgChartPage() {
                 placeholder="SearchIcon departments…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-[10px] text-sm rounded-lg border border-border focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted"
+                className="w-full pl-8 pr-3 py-[10px] text-body rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted"
               />
             </div>
           </div>
 
           {/* Count + view toggle */}
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-text-secondary">
+            <p className="text-body text-text-secondary">
               {query.trim()
                 ? `${matchCount} of ${departments.length} departments`
                 : `${departments.length} department${departments.length !== 1 ? 's' : ''}`}

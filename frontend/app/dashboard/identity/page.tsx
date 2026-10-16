@@ -39,7 +39,7 @@ function PillarCard({
         >
           <Icon size={16} style={{ color: iconColor }} />
         </span>
-        <span className="text-xs font-medium uppercase tracking-widest text-text-secondary">
+        <span className="text-meta font-medium uppercase tracking-widest text-text-secondary">
           {label}
         </span>
       </div>
@@ -56,8 +56,8 @@ function EmptyState({ canEdit, onEdit }: { canEdit: boolean; onEdit: () => void 
       <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
         <Building2Icon size={28} className="text-text-muted" />
       </div>
-      <h2 className="text-lg font-medium text-text-primary">No identity defined yet</h2>
-      <p className="text-text-secondary text-sm mt-1 max-w-xs">
+      <h2 className="text-card-heading font-medium text-text-primary">No identity defined yet</h2>
+      <p className="text-text-secondary text-body mt-1 max-w-xs">
         Define your organization&apos;s vision, mission, purpose and values.
       </p>
       {canEdit && (
@@ -129,7 +129,7 @@ export default function IdentityPage() {
             <section className="rounded-card bg-primary-subtle border border-primary-border p-8 sm:p-8">
               <div className="flex items-center gap-2 mb-4">
                 <TargetIcon size={16} className="text-primary-text" />
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-primary-text">
+                <span className="text-meta font-medium uppercase tracking-[0.14em] text-primary-text">
                   Vision
                 </span>
               </div>
@@ -180,7 +180,7 @@ export default function IdentityPage() {
                       />
                       <div className="p-4 flex-1 min-w-0">
                         <span
-                          className="block text-sm font-medium tabular-nums mb-2"
+                          className="block text-body font-medium tabular-nums mb-2"
                           style={{ color }}
                         >
                           {String(i + 1).padStart(2, '0')}
