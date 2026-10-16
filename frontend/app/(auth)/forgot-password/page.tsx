@@ -2,13 +2,15 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { ArrowLeftIcon, CheckCircle2Icon, OctagonXIcon } from 'lucide-react'
 import { forgotPassword, verifyResetOtp, resetPassword } from '@/lib/api/auth'
-import Button from '@/components/ui/button'
-
-const inputCls =
-  'w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
-const labelCls = 'block text-sm font-medium text-text-secondary mb-1.5'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/ui/password-input'
+import { OtpField } from '@/components/ui/otp-field'
+import { Banner, BannerDescription } from '@/components/ui/banner'
+import { BrandGlyph } from '@/components/ui/BrandMark'
 
 const RESEND_COOLDOWN_S = 60
 
@@ -29,7 +31,6 @@ export default function ForgotPasswordPage() {
   const [resetToken, setResetToken] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -121,158 +122,154 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-    <div className="w-full max-w-[420px]">
-      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-8">
-        {/* Brand */}
-        <div className="mb-7 text-center">
-          <span className="text-[28px] font-bold text-text-primary tracking-tight">V2E</span>
-          <h1 className="mt-3 text-[20px] font-bold text-text-primary">{heading[step].title}</h1>
-          <p className="text-sm text-text-secondary mt-1">{heading[step].sub}</p>
-        </div>
-
-        {error && (
-          <div role="alert" className="mb-5 rounded-[8px] border border-danger-border bg-danger-bg px-4 py-3">
-            <p className="text-sm text-danger">{error}</p>
+    <div className="flex min-h-screen items-center justify-center bg-surface-sunken p-4">
+      <div className="w-full max-w-auth-form">
+        <div className="rounded-card border border-border-light bg-surface p-8 shadow-card">
+          <div className="mb-8 flex flex-col items-center text-center">
+            <BrandGlyph size={34} radius={9} />
+            <h1 className="mt-3 text-page-title font-medium text-text-primary">
+              {heading[step].title}
+            </h1>
+            <p className="mt-1 text-body text-text-secondary">{heading[step].sub}</p>
           </div>
-        )}
 
-        {/* Step 1 — email */}
-        {step === 'email' && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              sendCode()
-            }}
-            className="flex flex-col gap-4"
-          >
-            <div>
-              <label className={labelCls}>Email address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                autoComplete="email"
-                autoFocus
-                className={inputCls}
-              />
-            </div>
-            <Button type="submit" variant="primary" isLoading={isLoading} className="w-full mt-1">
-              Send reset code
-            </Button>
-          </form>
-        )}
+          {error ? (
+            <Banner variant="danger" className="mb-6">
+              <OctagonXIcon />
+              <BannerDescription>{error}</BannerDescription>
+            </Banner>
+          ) : null}
 
-        {/* Step 2 — otp */}
-        {step === 'otp' && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              verifyCode()
-            }}
-            className="flex flex-col gap-4"
-          >
-            <div>
-              <label className={labelCls}>6-digit code</label>
-              <input
-                inputMode="numeric"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="000000"
-                autoFocus
-                className={inputCls + ' text-center tracking-[0.5em] text-lg font-semibold'}
-              />
-            </div>
-            <Button type="submit" variant="primary" isLoading={isLoading} className="w-full mt-1">
-              Verify code
-            </Button>
-            <button
-              type="button"
-              onClick={resend}
-              disabled={cooldown > 0 || isLoading}
-              className="text-sm text-primary-text hover:underline disabled:text-text-muted disabled:no-underline disabled:cursor-not-allowed"
+          {/* Step 1 — email */}
+          {step === 'email' && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                sendCode()
+              }}
+              className="flex flex-col gap-6"
             >
-              {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
-            </button>
-          </form>
-        )}
+              <div>
+                <Label htmlFor="fp-email" required>
+                  Email address
+                </Label>
+                <Input
+                  id="fp-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  autoComplete="email"
+                  autoFocus
+                  className="mt-2 max-w-none"
+                />
+              </div>
+              <Button type="submit" size="lg" loading={isLoading} loadingLabel="Sending" className="mt-1 w-full">
+                Send reset code
+              </Button>
+            </form>
+          )}
 
-        {/* Step 3 — new password */}
-        {step === 'password' && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              submitNewPassword()
-            }}
-            className="flex flex-col gap-4"
-          >
-            <div>
-              <label className={labelCls}>New password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
+          {/* Step 2 — otp */}
+          {step === 'otp' && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                verifyCode()
+              }}
+              className="flex flex-col gap-6"
+            >
+              <div>
+                <Label htmlFor="fp-otp" required>
+                  6-digit code
+                </Label>
+                <OtpField
+                  id="fp-otp"
+                  length={6}
+                  value={otp}
+                  onChange={setOtp}
+                  className="mt-2"
+                />
+              </div>
+              <Button type="submit" size="lg" loading={isLoading} loadingLabel="Verifying" className="mt-1 w-full">
+                Verify code
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={cooldown > 0 || isLoading}
+                onClick={resend}
+              >
+                {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
+              </Button>
+            </form>
+          )}
+
+          {/* Step 3 — new password */}
+          {step === 'password' && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                submitNewPassword()
+              }}
+              className="flex flex-col gap-6"
+            >
+              <div>
+                <Label htmlFor="fp-password" required>
+                  New password
+                </Label>
+                <PasswordInput
+                  id="fp-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 8 characters"
                   autoComplete="new-password"
                   autoFocus
-                  className={inputCls + ' pr-10'}
+                  className="mt-2 max-w-none"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
               </div>
-            </div>
-            <div>
-              <label className={labelCls}>Confirm new password</label>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                placeholder="Repeat your password"
-                autoComplete="new-password"
-                className={inputCls}
-              />
-            </div>
-            <Button type="submit" variant="primary" isLoading={isLoading} className="w-full mt-1">
-              Update password
-            </Button>
-          </form>
-        )}
+              <div>
+                <Label htmlFor="fp-confirm" required>
+                  Confirm new password
+                </Label>
+                <PasswordInput
+                  id="fp-confirm"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  placeholder="Repeat your password"
+                  autoComplete="new-password"
+                  className="mt-2 max-w-none"
+                />
+              </div>
+              <Button type="submit" size="lg" loading={isLoading} loadingLabel="Updating" className="mt-1 w-full">
+                Update password
+              </Button>
+            </form>
+          )}
 
-        {/* Step 4 — done */}
-        {step === 'done' && (
-          <div className="flex flex-col items-center gap-4">
-            <CheckCircle2 size={44} className="text-success" />
-            <Button
-              type="button"
-              variant="primary"
-              className="w-full"
-              onClick={() => router.replace('/login')}
-            >
-              Back to sign in
-            </Button>
-          </div>
-        )}
+          {/* Step 4 — done */}
+          {step === 'done' && (
+            <div className="flex flex-col items-center gap-6">
+              <CheckCircle2Icon className="size-11 text-success" />
+              <Button type="button" size="lg" className="w-full" onClick={() => router.replace('/login')}>
+                Back to sign in
+              </Button>
+            </div>
+          )}
 
-        {step !== 'done' && (
-          <div className="mt-6 text-center">
-            <a
-              href="/login"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary"
-            >
-              <ArrowLeft size={15} /> Back to sign in
-            </a>
-          </div>
-        )}
+          {step !== 'done' && (
+            <div className="mt-6 text-center">
+              <a
+                href="/login"
+                className="inline-flex items-center gap-1 text-body text-text-secondary hover:text-text-primary"
+              >
+                <ArrowLeftIcon className="size-4" /> Back to sign in
+              </a>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </div>
   )
 }

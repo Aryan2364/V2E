@@ -5,10 +5,17 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Eye, EyeOff } from 'lucide-react'
+import { OctagonXIcon, TriangleAlertIcon } from 'lucide-react'
 import { register as apiRegister } from '@/lib/api/auth'
 import { useAuth } from '@/lib/auth/context'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/ui/password-input'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { Banner, BannerDescription } from '@/components/ui/banner'
+import { BrandGlyph } from '@/components/ui/BrandMark'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const schema = z
   .object({
@@ -24,16 +31,10 @@ const schema = z
 
 type FormValues = z.infer<typeof schema>
 
-const inputCls =
-  'w-full rounded-[8px] border border-border bg-white px-3 py-[10px] text-sm text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors'
-const labelCls = 'block text-sm font-medium text-text-secondary mb-1.5'
-
 function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login } = useAuth()
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
 
   // Support pre-filling email from an invite link ?email=... Joining an org is
@@ -69,123 +70,110 @@ function RegisterForm() {
   }
 
   return (
-    <div className="w-full max-w-[420px]">
-      <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-8">
-        {/* Brand */}
-        <div className="mb-7 text-center">
-          <div className="inline-flex items-center justify-center w-10 h-10 bg-primary rounded-[10px] mb-3">
-            <span className="text-white font-bold text-sm">OS</span>
-          </div>
-          <h1 className="text-[22px] font-bold text-text-primary">Create your account</h1>
-          <p className="text-sm text-text-secondary mt-1">
-            Set up your V2E account.
-          </p>
+    <div className="w-full max-w-auth-form">
+      <div className="rounded-card border border-border-light bg-surface p-8 shadow-card">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <BrandGlyph size={34} radius={9} />
+          <h1 className="mt-3 text-page-title font-medium text-text-primary">
+            Create your account
+          </h1>
+          <p className="mt-1 text-body text-text-secondary">Set up your V2E account.</p>
         </div>
 
-        {/* Access notice */}
-        <div className="mb-5 bg-warning-bg border border-warning-border rounded-[8px] px-4 py-3">
-          <p className="text-xs font-medium text-warning">
-            Creating an account doesn&apos;t join an organization on its own. Once your account exists, your organization admin adds you to it.
-          </p>
-        </div>
+        <Banner variant="warning" className="mb-6">
+          <TriangleAlertIcon />
+          <BannerDescription>
+            Creating an account doesn&apos;t join an organization on its own. Once your account
+            exists, your organization admin adds you to it.
+          </BannerDescription>
+        </Banner>
 
-        {serverError && (
-          <div className="mb-5 bg-danger-bg border border-danger-border rounded-[8px] px-4 py-3">
-            <p className="text-sm text-danger">{serverError}</p>
-          </div>
-        )}
+        {serverError ? (
+          <Banner variant="danger" className="mb-6">
+            <OctagonXIcon />
+            <BannerDescription>{serverError}</BannerDescription>
+          </Banner>
+        ) : null}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          {/* Name */}
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
           <div>
-            <label className={labelCls}>Full Name</label>
-            <input
+            <Label htmlFor="name" required>
+              Full name
+            </Label>
+            <Input
+              id="name"
               {...register('name')}
               placeholder="Jane Doe"
               autoComplete="name"
-              className={inputCls}
+              className="mt-2 max-w-none"
+              aria-invalid={errors.name ? true : undefined}
             />
-            {errors.name && (
-              <p className="mt-1 text-xs text-danger">{errors.name.message}</p>
-            )}
+            <InlineFieldError>{errors.name?.message}</InlineFieldError>
           </div>
 
-          {/* Email */}
           <div>
-            <label className={labelCls}>Email address</label>
-            <input
+            <Label htmlFor="email" required>
+              Email address
+            </Label>
+            <Input
+              id="email"
               {...register('email')}
               type="email"
               placeholder="you@company.com"
               autoComplete="email"
               readOnly={!!inviteEmail}
-              className={[inputCls, inviteEmail ? 'bg-surface-sunken text-text-secondary' : ''].join(' ')}
+              className="mt-2 max-w-none"
+              aria-invalid={errors.email ? true : undefined}
             />
-            {errors.email && (
-              <p className="mt-1 text-xs text-danger">{errors.email.message}</p>
-            )}
+            <InlineFieldError>{errors.email?.message}</InlineFieldError>
           </div>
 
-          {/* Password */}
           <div>
-            <label className={labelCls}>Password</label>
-            <div className="relative">
-              <input
-                {...register('password')}
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Min. 8 characters"
-                autoComplete="new-password"
-                className={inputCls + ' pr-10'}
-                style={{ fontSize: '16px' }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            {errors.password && (
-              <p className="mt-1 text-xs text-danger">{errors.password.message}</p>
-            )}
+            <Label htmlFor="password" required>
+              Password
+            </Label>
+            <PasswordInput
+              id="password"
+              {...register('password')}
+              placeholder="Min. 8 characters"
+              autoComplete="new-password"
+              className="mt-2 max-w-none"
+              aria-invalid={errors.password ? true : undefined}
+            />
+            <InlineFieldError>{errors.password?.message}</InlineFieldError>
           </div>
 
-          {/* Confirm password */}
+          {/*
+           * Kept for owner decision: FRONTEND_RULES_ACCESS.md section 32.3
+           * says a password field needs no confirm field because the show/hide
+           * toggle makes a typo visible. Removing it here would drop a
+           * required field from the submitted form (a validation/behaviour
+           * change outside this pass's presentation-only scope per D1), so
+           * it stays. Logged in REVIEW-kit-alignment.md.
+           */}
           <div>
-            <label className={labelCls}>Confirm Password</label>
-            <div className="relative">
-              <input
-                {...register('confirmPassword')}
-                type={showConfirm ? 'text' : 'password'}
-                placeholder="Repeat your password"
-                autoComplete="new-password"
-                className={inputCls + ' pr-10'}
-                style={{ fontSize: '16px' }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
-                tabIndex={-1}
-              >
-                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="mt-1 text-xs text-danger">{errors.confirmPassword.message}</p>
-            )}
+            <Label htmlFor="confirmPassword" required>
+              Confirm password
+            </Label>
+            <PasswordInput
+              id="confirmPassword"
+              {...register('confirmPassword')}
+              placeholder="Repeat your password"
+              autoComplete="new-password"
+              className="mt-2 max-w-none"
+              aria-invalid={errors.confirmPassword ? true : undefined}
+            />
+            <InlineFieldError>{errors.confirmPassword?.message}</InlineFieldError>
           </div>
 
-          <Button type="submit" variant="primary" isLoading={isSubmitting} className="w-full mt-1">
+          <Button type="submit" size="lg" loading={isSubmitting} loadingLabel="Creating account" className="mt-1 w-full">
             Create account
           </Button>
         </form>
 
-        <p className="mt-5 text-center text-sm text-text-secondary">
+        <p className="mt-6 text-center text-body text-text-secondary">
           Already have an account?{' '}
-          <a href="/login" className="font-semibold text-primary-text hover:underline">
+          <a href="/login" className="text-primary-text hover:underline">
             Sign in
           </a>
         </p>
@@ -196,8 +184,8 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Suspense fallback={<div className="w-full max-w-[420px] h-[600px] bg-white border border-border-light rounded-[12px] animate-pulse" />}>
+    <div className="flex min-h-screen items-center justify-center bg-surface-sunken p-4">
+      <Suspense fallback={<Skeleton className="h-150 w-full max-w-auth-form rounded-card" />}>
         <RegisterForm />
       </Suspense>
     </div>

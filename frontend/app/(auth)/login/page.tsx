@@ -2,11 +2,15 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { OctagonXIcon } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
-import Button from '@/components/ui/button'
-import Input from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/ui/password-input'
+import { Banner, BannerDescription } from '@/components/ui/banner'
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect'
-import BrandMark, { BrandGlyph } from '@/components/ui/BrandMark'
+import { BrandGlyph } from '@/components/ui/BrandMark'
 import { DEFAULT_COUNTRY, cleanNationalNumber } from '@/lib/phone'
 import { useLayout } from '@/lib/layout'
 import { signedInHome } from '@/lib/phone-routes'
@@ -63,154 +67,113 @@ export default function LoginPage() {
   // Already authenticated (e.g. navigated here mid-redirect) — show a spinner,
   // never the login form, so it doesn't flash before the redirect lands.
   if (user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
+    // Redirecting — render nothing rather than a spinner (section 14 rule 1).
+    return null
   }
 
   return (
-    <div className="min-h-screen w-full grid lg:grid-cols-[1.05fr_1fr]">
-      {/* Brand panel — hidden on small screens, condensed to a bar on mobile */}
-      <aside className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-primary-pressed px-16 py-14 text-primary-foreground">
+    <div className="flex min-h-screen w-full flex-col lg:grid lg:grid-cols-2">
+      {/* Brand panel — section 11.7: strip on phone/tablet, full half at 1024px+ */}
+      <section
+        aria-label="V2E: Vision to Execution"
+        className="relative isolate flex flex-col overflow-hidden bg-linear-to-br from-primary to-primary-pressed px-6 py-4 lg:justify-between lg:p-12"
+      >
         <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(120% 120% at 0% 0%, var(--primary-hover) 0%, transparent 55%), radial-gradient(130% 130% at 100% 100%, var(--primary) 0%, transparent 50%)',
-          }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              'linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px)',
-            backgroundSize: '46px 46px',
-            maskImage:
-              'radial-gradient(120% 90% at 30% 20%, #000 40%, transparent 90%)',
-            WebkitMaskImage:
-              'radial-gradient(120% 90% at 30% 20%, #000 40%, transparent 90%)',
-          }}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(var(--on-brand)_1px,transparent_1px),linear-gradient(90deg,var(--on-brand)_1px,transparent_1px)] bg-size-[32px_32px] opacity-(--brand-pattern-opacity)"
         />
 
-        <div className="relative z-1 flex items-center gap-2.5">
-          <BrandGlyph size={30} radius={8} tone="dark" />
-          <span className="text-[20px] font-bold tracking-tight text-white">
-            V2E: Vision to Execution
-          </span>
+        <div className="flex items-center gap-2 text-on-brand">
+          <BrandGlyph size={22} radius={8} tone="dark" />
+          <span className="text-section font-medium">V2E: Vision to Execution</span>
         </div>
 
-        <div className="relative z-1 max-w-120">
-          <h2 className="text-[34px] font-semibold leading-[1.18] tracking-tight text-white whitespace-nowrap">
-            The&nbsp;<span className="text-[#93C5FD]">operating system</span>
-            <br />
-            for your organisation.
-          </h2>
-          <p className="mt-4 text-[15px] leading-relaxed text-[#CBD5E1]">
-            One platform to keep your whole team
-            <br />
-            aligned, accountable, and moving forward.
+        <div className="hidden max-w-md flex-col gap-4 lg:flex">
+          <p className="text-display font-medium text-on-brand">
+            The <span className="text-on-brand-accent">operating system</span> for your
+            organisation.
+          </p>
+          <p className="text-card-heading font-normal text-on-brand-muted">
+            One platform to keep your whole team aligned, accountable, and moving forward.
           </p>
         </div>
 
-        <div className="relative z-1 text-[13px] text-text-muted">
+        <p className="hidden text-meta text-on-brand-muted lg:block">
           © 2026 V2E · Secure workspace access
-        </div>
-      </aside>
+        </p>
+      </section>
 
       {/* Form column */}
-      <main className="flex items-center justify-center bg-white px-6 py-12 sm:px-10">
-        <form
-          onSubmit={handleSubmit}
-          noValidate
-          className="w-full max-w-[380px] motion-safe:animate-fade-rise"
-        >
-          {/* Mobile wordmark — the brand panel is hidden below lg */}
-          <div className="mb-8 lg:hidden">
-            <BrandMark size="sm" tone="light" />
-          </div>
-
-          <h1 className="text-[24px] font-semibold tracking-tight text-text-primary">
+      <main className="flex flex-1 items-center justify-center bg-surface px-4 py-12">
+        <form onSubmit={handleSubmit} noValidate className="w-full max-w-auth-form">
+          <h1 className="text-page-title font-medium text-text-primary">
             Sign in to your workspace
           </h1>
-          <p className="mt-1.5 text-sm text-text-secondary">
+          <p className="mt-2 text-body text-text-secondary">
             Use your email or phone number to continue.
           </p>
 
-          {error && (
-            <div
-              role="alert"
-              className="mt-6 rounded-[8px] border border-danger-border bg-danger-bg px-4 py-3 text-sm text-danger"
-            >
-              {error}
-            </div>
-          )}
+          {error ? (
+            <Banner variant="danger" className="mt-6">
+              <OctagonXIcon />
+              <BannerDescription>{error}</BannerDescription>
+            </Banner>
+          ) : null}
 
-          <div className="mt-7 flex flex-col gap-5">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="identifier" className="text-sm font-medium text-text-secondary">
-                Email address / Phone number
-              </label>
-              <div className="flex gap-2">
-                {isPhoneish && (
-                  <CountryCodeSelect
-                    value={countryCode}
-                    onChange={setCountryCode}
-                    disabled={isLoading}
-                    wrapperClassName="w-[120px] shrink-0"
-                  />
-                )}
-                <div className="flex-1">
-                  <Input
-                    id="identifier"
-                    name="identifier"
-                    type="text"
-                    placeholder="you@company.com or mobile number"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    required
-                    disabled={isLoading}
-                    autoComplete="username"
-                  />
-                </div>
-              </div>
+          <div className="mt-8">
+            <Label htmlFor="identifier" required>
+              Email address / Phone number
+            </Label>
+            <div className="mt-2 flex gap-2">
+              {isPhoneish && (
+                <CountryCodeSelect
+                  value={countryCode}
+                  onChange={setCountryCode}
+                  disabled={isLoading}
+                  wrapperClassName="w-30 shrink-0"
+                />
+              )}
+              <Input
+                id="identifier"
+                name="identifier"
+                type="text"
+                placeholder="you@company.com or mobile number"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                required
+                disabled={isLoading}
+                autoComplete="username"
+                className="max-w-none flex-1"
+              />
             </div>
+          </div>
 
-            <Input
+          <div className="mt-6">
+            <Label htmlFor="password" required>
+              Password
+            </Label>
+            <PasswordInput
               id="password"
               name="password"
-              label="Password"
-              type="password"
-              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLoading}
               autoComplete="current-password"
+              className="mt-2 max-w-none"
             />
+            <div className="mt-2 flex justify-end">
+              <a
+                href="/forgot-password"
+                className="tap-area rounded-sm text-body text-primary-text outline-none hover:underline focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring"
+              >
+                Forgot your password?
+              </a>
+            </div>
           </div>
 
-          <div className="mt-2 flex justify-end">
-            <a
-              href="/forgot-password"
-              className="text-[13.5px] font-medium text-primary-text hover:underline"
-            >
-              Forgot your password?
-            </a>
-          </div>
-
-          <Button
-            type="submit"
-            variant="primary"
-            size="md"
-            isLoading={isLoading}
-            disabled={isLoading}
-            className="mt-6 w-full"
-          >
-            {isLoading ? 'Signing in…' : 'Sign in'}
+          <Button type="submit" size="lg" className="mt-6 w-full" loading={isLoading} loadingLabel="Signing in">
+            Sign in
           </Button>
         </form>
       </main>
