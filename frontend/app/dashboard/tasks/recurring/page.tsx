@@ -29,6 +29,8 @@ import RecurringFilterToolbar, {
   tagsOnTemplates,
 } from '@/components/tasks/RecurringFilterToolbar'
 import { useSessionState } from '@/lib/tasks/useSessionState'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 import ScopeSwitcher from '@/components/tasks/overview/ScopeSwitcher'
 import Tooltip from '@/components/ui/tooltip'
 import { entryLabel, formatDate } from '@/lib/tasks/recurrence-label'
@@ -476,20 +478,19 @@ export default function RecurringPage() {
 
   return (
     <div className="space-y-4 pb-12">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Recurring Tasks</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">{SCOPE_BLURB[appliedScope]}</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <ScopeSwitcher maxScope={maxScope} value={appliedScope} onChange={handleScopeChange} />
-          <button onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-4 py-[10px] bg-primary text-white rounded-control text-sm font-medium hover:bg-primary-hover transition-colors shrink-0">
-            <Plus size={16} /> New Recurring Task
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Recurring Tasks"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        meta={SCOPE_BLURB[appliedScope]}
+        actions={
+          <div className="flex items-center gap-2 flex-wrap">
+            <ScopeSwitcher maxScope={maxScope} value={appliedScope} onChange={handleScopeChange} />
+            <Button onClick={() => setShowCreate(true)} className="shrink-0">
+              <Plus size={16} /> New Recurring Task
+            </Button>
+          </div>
+        }
+      />
 
       {/* Relation (incoming/outgoing) — Mine & Team only */}
       {showRelation && (

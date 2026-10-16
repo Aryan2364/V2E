@@ -6,6 +6,7 @@ import { tasksApi } from '@/lib/api/tasks'
 import type { TaskArchiveItem } from '@/lib/types/tasks'
 // import QuadrantBadge from '@/components/tasks/QuadrantBadge'
 import { Archive, X } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import { formatDateTime } from '@/lib/format'
 
@@ -244,12 +245,11 @@ export default function ArchivePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Task Archive</h1>
-        <p className="mt-1 text-[15px] text-text-secondary">
-          Deleted tasks stored for record-keeping.
-        </p>
-      </div>
+      <PageHeader
+        title="Task Archive"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        meta="Deleted tasks stored for record-keeping."
+      />
 
       <ResponsiveTable
         columns={columns}

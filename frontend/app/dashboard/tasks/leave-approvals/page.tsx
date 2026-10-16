@@ -11,6 +11,7 @@ import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/Responsi
 import { leaveApi } from '@/lib/api/leave'
 import type { Leave } from '@/lib/types/leave'
 import { formatDate } from '@/lib/format'
+import { PageHeader } from '@/components/shell/page-header'
 
 function fmt(iso: string): string {
   return formatDate(iso)
@@ -190,10 +191,11 @@ export default function LeaveApprovalsPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-[22px] sm:text-[28px] font-medium text-text-primary leading-tight">Leave Approvals</h1>
-        <p className="text-sm text-text-secondary mt-0.5">Leave requests waiting for your decision.</p>
-      </div>
+      <PageHeader
+        title="Leave Approvals"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        meta="Leave requests waiting for your decision."
+      />
 
       {status === 'loading' ? (
         <div className="bg-surface border border-border-light rounded-card p-4 space-y-3">

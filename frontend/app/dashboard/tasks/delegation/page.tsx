@@ -10,6 +10,8 @@ import { delegationsApi, type Delegation, type DelegationView } from '@/lib/api/
 import DelegationModal from '@/components/delegation/DelegationModal'
 import DelegationDetailModal from '@/components/delegation/DelegationDetailModal'
 import { StatusPill, fmtDate } from '@/components/delegation/delegationUtils'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 interface EmployeeOption {
   user_id: string
@@ -198,24 +200,24 @@ export default function DelegationPage() {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-3 shrink-0">
-        <div>
-          <h1 className="text-[28px] font-medium text-text-primary">Delegation</h1>
-          <p className="text-sm text-text-secondary mt-0.5">Hand off outcomes and track them to a clear finish.</p>
-        </div>
-        {canDelegate && (
-          <button
-            type="button"
-            onClick={() => {
-              setEditing(null)
-              setModalOpen(true)
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-control text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
-          >
-            <Plus size={16} /> New delegation
-          </button>
-        )}
+      <div className="shrink-0">
+        <PageHeader
+          title="Delegation"
+          trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+          meta="Hand off outcomes and track them to a clear finish."
+          actions={
+            canDelegate ? (
+              <Button
+                onClick={() => {
+                  setEditing(null)
+                  setModalOpen(true)
+                }}
+              >
+                <Plus size={16} /> New delegation
+              </Button>
+            ) : undefined
+          }
+        />
       </div>
 
       {/* View tabs — only rendered when there's more than one view to switch

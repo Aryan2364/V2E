@@ -8,14 +8,12 @@ import type { Task, TaskStatus, EmployeeReport, WorkBucket } from '@/lib/types/t
 import KpiTiles from '@/components/tasks/overview/KpiTiles'
 import TaskRow from '@/components/tasks/overview/TaskRow'
 import TaskDrawer from '@/components/tasks/overview/TaskDrawer'
-import { ArrowLeft, Inbox, Send, Lock } from 'lucide-react'
+import { Inbox, Send, Lock } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 const PAGE_SIZE = 25
 type Lens = 'assignee' | 'assigner'
-
-function initials(name: string) {
-  return name.split(' ').filter(Boolean).map((n) => n[0]).join('').slice(0, 2).toUpperCase() || '?'
-}
 
 export default function EmployeeReportPage() {
   const { user } = useAuth()
@@ -73,29 +71,18 @@ export default function EmployeeReportPage() {
         <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
         <p className="font-medium text-text-primary text-base">This employee is outside your scope</p>
         <p className="text-text-secondary text-sm mt-1 max-w-sm">You can only open the work report of people within your visibility scope.</p>
-        <button onClick={() => router.push('/dashboard/tasks')} className="mt-4 px-4 py-2 rounded-control border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-control">Back to Overview</button>
+        <Button variant="secondary" onClick={() => router.push('/dashboard/tasks')} className="mt-4">Back to Overview</Button>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      <button onClick={() => router.push('/dashboard/tasks')} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
-        <ArrowLeft size={15} /> Back to Overview
-      </button>
-
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-primary text-white text-lg font-medium flex items-center justify-center shrink-0">
-          {report ? initials(report.employee.name) : '…'}
-        </div>
-        <div className="min-w-0">
-          <h1 className="text-[24px] font-medium text-text-primary leading-tight truncate">{report?.employee.name ?? 'Loading…'}</h1>
-          <p className="text-[14px] text-text-secondary truncate">
-            {[report?.employee.role_title, report?.employee.department_name].filter(Boolean).join(' · ') || report?.employee.email}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title={report?.employee.name ?? 'Loading…'}
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        meta={[report?.employee.role_title, report?.employee.department_name].filter(Boolean).join(' · ') || report?.employee.email}
+      />
 
       {/* Lens tabs */}
       <div className="inline-flex items-center border border-border-light rounded-control bg-surface p-0.5 gap-0.5">
