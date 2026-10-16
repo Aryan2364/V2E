@@ -21,6 +21,8 @@ import { useSort } from '@/lib/reports/use-sort'
 import { Search, Download, Lock, CalendarClock, ArrowUpDown, AlertTriangle, Inbox } from 'lucide-react'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type Tab = 'person' | 'task' | 'pending'
 const STATE_KEY = 'ageing-report-state-v1'
@@ -273,7 +275,7 @@ export default function AgeingReportPage() {
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`px-4 py-2.5 text-body font-medium border-b-2 -mb-px transition-colors ${
+            className={`px-4 py-2.5 text-body font-medium border-b-2 -mb-px outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors ${
               tab === id ? 'border-primary text-primary-text' : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
@@ -295,7 +297,7 @@ export default function AgeingReportPage() {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center h-48"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+        <Skeleton className="h-48 w-full rounded-card" />
       ) : !report || report.people.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-card py-12 flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
@@ -321,7 +323,7 @@ export default function AgeingReportPage() {
                 {personSort.sorted.map((p) => (
                   <tr key={p.user_id} className="group border-b border-border-light last:border-0 hover:bg-surface-sunken transition-colors whitespace-nowrap">
                     <td className="px-4 py-3 sticky left-0 bg-surface group-hover:bg-surface-sunken z-10">
-                      <button onClick={() => drillPerson(p, null, null)} className="text-left min-w-0 hover:text-primary-text">
+                      <button onClick={() => drillPerson(p, null, null)} className="text-left min-w-0 hover:text-primary-text outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring rounded-xs">
                         <p className="font-medium text-text-primary group-hover:text-primary-text truncate">{p.name}</p>
                         {p.role_title && <p className="text-meta text-text-muted truncate">{p.role_title}</p>}
                       </button>
@@ -357,7 +359,7 @@ export default function AgeingReportPage() {
                 {taskSort.sorted.map((t) => (
                   <tr key={t.title} className="group border-b border-border-light last:border-0 hover:bg-surface-sunken transition-colors whitespace-nowrap">
                     <td className="px-4 py-3 sticky left-0 bg-surface group-hover:bg-surface-sunken z-10 max-w-[320px]">
-                      <button onClick={() => drillTask(t, null, null)} className="text-left hover:text-primary-text font-medium text-text-primary group-hover:text-primary-text">
+                      <button onClick={() => drillTask(t, null, null)} className="text-left hover:text-primary-text font-medium text-text-primary group-hover:text-primary-text outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring rounded-xs">
                         <span className="line-clamp-1">{t.title}</span>
                       </button>
                     </td>
@@ -491,7 +493,7 @@ function SortHead({
   const active = sort.sortKey === id
   return (
     <th className={`py-3 font-medium ${center ? 'text-center px-3' : 'px-3'} ${className}`} title={title}>
-      <button onClick={() => sort.toggle(id)} className={`inline-flex items-center gap-1 hover:text-text-primary transition-colors ${center ? 'justify-center' : ''}`}>
+      <button onClick={() => sort.toggle(id)} className={`inline-flex items-center gap-1 hover:text-text-primary outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors ${center ? 'justify-center' : ''}`}>
         {children}
         <ArrowUpDown size={12} className={active ? 'text-primary-text' : 'text-text-muted'} />
       </button>
@@ -503,9 +505,20 @@ function CountCell({ value, onClick, color, bold }: { value: number; onClick: ()
   if (value === 0) return <td className="px-3 py-3 text-center tabular-nums text-text-muted">0</td>
   return (
     <td className="px-3 py-3 text-center tabular-nums">
-      <button onClick={onClick} className={`hover:underline underline-offset-2 tabular-nums ${bold ? 'font-medium' : 'font-medium'}`} style={{ color }} title="See these tasks">
-        {formatNumber(value)}
-      </button>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <button
+              onClick={onClick}
+              className="hover:underline underline-offset-2 tabular-nums font-medium outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring rounded-xs"
+              style={{ color }}
+            />
+          }
+        >
+          {formatNumber(value)}
+        </TooltipTrigger>
+        <TooltipContent>See these tasks</TooltipContent>
+      </Tooltip>
     </td>
   )
 }
