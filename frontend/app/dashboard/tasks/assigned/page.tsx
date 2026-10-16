@@ -16,7 +16,7 @@ import CalendarView from '@/components/tasks/CalendarView'
 import CreateTaskModal from '@/components/tasks/CreateTaskModal'
 import { type TaskFilters, EMPTY_TASK_FILTERS, isTaskFiltered, applyTaskFilters, normalizeTaskFilters } from '@/components/tasks/TaskFilterBar'
 import Modal from '@/components/ui/Modal'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import { Plus, UserCheck, LayoutList, Columns, CalendarDays, AlertCircle } from 'lucide-react'
 
 type ViewMode = 'list' | 'kanban' | 'calendar'
@@ -32,7 +32,6 @@ export default function AssignedByMePage() {
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { addToast } = useToast()
   const orgId = user?.organizationId ?? ''
 
   const [tasks, setTasks] = useState<Task[]>([])
@@ -111,10 +110,10 @@ export default function AssignedByMePage() {
     try {
       const updated = await tasksApi.completeTask(orgId, task.id)
       setTasks((ts) => ts.map((t) => (t.id === task.id ? updated : t)))
-      addToast('Task marked complete.', 'success')
+      toast.success('Task marked complete.')
     } catch (e) {
       const msg = apiErrorMessage(e, 'Could not complete this task from here.')
-      addToast(`${msg} Opening the task to finish closing it.`, 'warning')
+      toast.warning(`${msg} Opening the task to finish closing it.`)
       router.push(`/dashboard/tasks/${task.id}`)
     }
   }
@@ -124,16 +123,16 @@ export default function AssignedByMePage() {
   async function submitIncomplete() {
     if (!incompleteTask) return
     const reason = incompleteReason.trim()
-    if (!reason) { addToast('A reason is required to mark a task incomplete.', 'warning'); return }
+    if (!reason) { toast.warning('A reason is required to mark a task incomplete.'); return }
     setIncompleteSubmitting(true)
     try {
       const updated = await tasksApi.markIncomplete(orgId, incompleteTask.id, reason)
       setTasks((ts) => ts.map((t) => (t.id === incompleteTask.id ? updated : t)))
-      addToast('Task marked incomplete.', 'success')
+      toast.success('Task marked incomplete.')
       setIncompleteTask(null)
       setIncompleteReason('')
     } catch (e) {
-      addToast(apiErrorMessage(e, 'Could not mark this task incomplete.'), 'error')
+      toast.error(apiErrorMessage(e, 'Could not mark this task incomplete.'))
     } finally {
       setIncompleteSubmitting(false)
     }

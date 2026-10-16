@@ -5,7 +5,7 @@ import { formatDateTime as fmtDateTime, formatDate as fmtDateOnly } from '@/lib/
 import { createPortal } from 'react-dom'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
 import type { Task, TaskComment, TaskAttachment, TaskActivityLog, TaskCategory, TaskPriority, TaskStatus, TaskMasterConfig } from '@/lib/types/tasks'
@@ -335,7 +335,6 @@ function ActivityItem({ log }: { log: TaskActivityLog }) {
 
 export default function TaskDetailPage() {
   const { user } = useAuth()
-  const { addToast } = useToast()
   const params = useParams()
   const router = useRouter()
   const orgId = user?.organizationId ?? ''
@@ -503,7 +502,7 @@ export default function TaskDetailPage() {
   // never a native browser dialog.
   function showActionError(e: any) {
     const msg = e?.response?.data?.message ?? e?.message ?? 'Something went wrong.'
-    addToast(Array.isArray(msg) ? msg.join('\n') : msg, 'warning')
+    toast.warning(Array.isArray(msg) ? msg.join('\n') : msg)
   }
 
   async function handleCompleteAssignee(userId: string) {
@@ -622,7 +621,7 @@ export default function TaskDetailPage() {
     // The backend requires a non-blank reason — catch it here so the field's
     // "(optional)" label never lies and a blank submit doesn't silently no-op.
     if (!deleteReason.trim()) {
-      addToast('A reason is required to delete this task.', 'warning')
+      toast.warning('A reason is required to delete this task.')
       return
     }
     setActionLoading('delete')

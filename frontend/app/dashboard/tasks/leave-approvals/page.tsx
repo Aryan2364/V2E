@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Loader2, Check, X, Inbox, RefreshCw, UserX } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import Modal from '@/components/ui/Modal'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import { leaveApi } from '@/lib/api/leave'
@@ -43,7 +43,6 @@ type Status = 'loading' | 'ready' | 'failed' | 'not-approver'
 export default function LeaveApprovalsPage() {
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
-  const { addToast } = useToast()
   const { state: entState } = useEntitlements()
   const readOnly = entState('ecs') === 'preview'
 
@@ -83,11 +82,11 @@ export default function LeaveApprovalsPage() {
     setBusy(l.id)
     try {
       await leaveApi.decide(orgId, l.id, { decision: 'approved' })
-      addToast('Leave approved', 'success')
+      toast.success('Leave approved')
       // Update in place — drop just this row, no full reload flash.
       setPending((p) => p.filter((x) => x.id !== l.id))
     } catch (e) {
-      addToast(errorMessage(e, 'Could not approve this request'), 'error')
+      toast.error(errorMessage(e, 'Could not approve this request'))
       await load()
     } finally {
       setBusy(null)
@@ -111,7 +110,7 @@ export default function LeaveApprovalsPage() {
     setRejectError(null)
     try {
       await leaveApi.decide(orgId, rejectTarget.id, { decision: 'rejected', note: rejectNote.trim() || undefined })
-      addToast('Leave rejected', 'success')
+      toast.success('Leave rejected')
       const id = rejectTarget.id
       setPending((p) => p.filter((x) => x.id !== id))
       setRejectTarget(null)

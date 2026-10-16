@@ -16,7 +16,7 @@ import CalendarView from '@/components/tasks/CalendarView'
 import CreateTaskModal from '@/components/tasks/CreateTaskModal'
 import { type TaskFilters, EMPTY_TASK_FILTERS, isTaskFiltered, applyTaskFilters, normalizeTaskFilters } from '@/components/tasks/TaskFilterBar'
 import Modal from '@/components/ui/Modal'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import { CheckSquare, LayoutList, Columns, CalendarDays, AlertCircle, Plus } from 'lucide-react'
 
 // Read the backend's real message (the completion gate, an already-closed task, etc.)
@@ -39,7 +39,6 @@ export default function MyTasksPage() {
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { addToast } = useToast()
   const orgId = user?.organizationId ?? ''
 
   const [tasks, setTasks] = useState<Task[]>([])
@@ -153,14 +152,14 @@ export default function MyTasksPage() {
     try {
       const updated = await tasksApi.completeTask(orgId, task.id)
       setTasks((ts) => ts.map((t) => (t.id === task.id ? updated : t)))
-      addToast('Task marked complete.', 'success')
+      toast.success('Task marked complete.')
     } catch (e) {
       const msg = apiErrorMessage(e, 'Could not complete this task.')
       if (isCompletionGate(msg)) {
-        addToast(`${msg} Opening the task so you can add what’s needed.`, 'warning')
+        toast.warning(`${msg} Opening the task so you can add what’s needed.`)
         router.push(`/dashboard/tasks/${task.id}`)
       } else {
-        addToast(msg, 'error')
+        toast.error(msg)
       }
     }
   }
@@ -168,7 +167,7 @@ export default function MyTasksPage() {
   async function submitIncomplete() {
     if (!incompleteTask) return
     const reason = incompleteReason.trim()
-    if (!reason) { addToast('A reason is required to mark a task incomplete.', 'warning'); return }
+    if (!reason) { toast.warning('A reason is required to mark a task incomplete.'); return }
     setIncompleteSubmitting(true)
     try {
       // all_must_complete → flag only MY part as can't-complete; any_can_complete →
@@ -178,11 +177,11 @@ export default function MyTasksPage() {
           ? await tasksApi.flagCannotComplete(orgId, incompleteTask.id, reason)
           : await tasksApi.markIncomplete(orgId, incompleteTask.id, reason)
       setTasks((ts) => ts.map((t) => (t.id === incompleteTask.id ? updated : t)))
-      addToast('Task marked incomplete.', 'success')
+      toast.success('Task marked incomplete.')
       setIncompleteTask(null)
       setIncompleteReason('')
     } catch (e) {
-      addToast(apiErrorMessage(e, 'Could not mark this task incomplete.'), 'error')
+      toast.error(apiErrorMessage(e, 'Could not mark this task incomplete.'))
     } finally {
       setIncompleteSubmitting(false)
     }

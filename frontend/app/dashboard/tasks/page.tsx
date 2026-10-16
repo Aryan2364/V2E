@@ -42,7 +42,7 @@ import EmployeePicker, { type EmployeePickerOption } from '@/components/ui/Emplo
 import DateRangePicker from '@/components/ui/DateRangePicker'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import { usePermissions } from '@/lib/auth/use-permissions'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
 import { useTaskTags } from '@/lib/tasks/useTaskTags'
 import { Plus, Search, SlidersHorizontal, X, BarChart3, Download, ListChecks, CheckSquare } from 'lucide-react'
 
@@ -213,7 +213,6 @@ export default function TasksOverviewPage() {
   const { can, loading: permsLoading } = usePermissions()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { addToast } = useToast()
   // Filters / search / sort / view / scope start from the URL (see OverviewUrlState).
   const [initialUrl] = useState(() => readOverviewUrl(searchParams))
 
@@ -622,12 +621,12 @@ export default function TasksOverviewPage() {
       })
       const res = await tasksApi.bulkUpdate(orgId, taskIds, action, { tag_ids: ids })
       const msg = bulkTagMessage(action, taskIds.length, res, knownUnchanged)
-      addToast(msg.text, msg.type)
+      toast[msg.type === 'info' ? 'message' : msg.type](msg.text)
       setSelected(new Set())
       void reloadInPlace()
       return true
     } catch (e) {
-      addToast(tagErrorMessage(e, action === 'add_tags' ? 'Couldn’t add those tags. Try again.' : 'Couldn’t remove those tags. Try again.'), 'error')
+      toast.error(tagErrorMessage(e, action === 'add_tags' ? 'Couldn’t add those tags. Try again.' : 'Couldn’t remove those tags. Try again.'))
       return false
     } finally {
       setBulkBusy(false)
