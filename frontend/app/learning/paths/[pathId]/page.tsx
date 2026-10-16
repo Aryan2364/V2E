@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  ArrowLeft, Pencil, Users, Loader2, BookOpen, Clock, Archive, ArchiveRestore, Trash2,
+  Pencil, Users, Loader2, BookOpen, Clock, Archive, ArchiveRestore, Trash2,
   Play, FileText, Link2, File as FileIcon, Download, Ban, Eye,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
@@ -27,6 +27,8 @@ import { Button } from '@/components/ui/button'
 import MaterialPreviewModal from '@/components/learning/MaterialPreviewModal'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import Tooltip from '@/components/ui/tooltip'
+import { PageHeader } from '@/components/shell/page-header'
+import { EmptyState } from '@/components/ui/empty-state'
 
 type Tab = 'materials' | 'assignments' | 'engagement'
 
@@ -183,21 +185,9 @@ export default function ManagePathPage() {
 
   if (notAvailable || !path) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
-        <div className="text-center max-w-sm">
-          <BookOpen size={40} className="text-muted mx-auto mb-3" />
-          <h1 className="text-lg font-medium text-text-primary mb-1">Course not found</h1>
-          <p className="text-sm text-text-secondary mb-4">
-            This course doesn’t exist, or you don’t have access to manage it.
-          </p>
-          <Link
-            href="/learning/paths"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
-          >
-            <ArrowLeft size={15} /> Back to Courses
-          </Link>
-        </div>
-      </div>
+      <EmptyState variant="not-found" heading="Course not found" dashboardHref="/learning/paths">
+        This course doesn't exist, or you don't have access to manage it.
+      </EmptyState>
     )
   }
 
@@ -205,81 +195,51 @@ export default function ManagePathPage() {
 
   return (
     <div className="px-4 sm:px-8 pb-8 max-w-5xl mx-auto">
-      {/* Frozen: back link + course header + tabs. Only the tab content below scrolls. */}
+      {/* Frozen: course header + tabs. Only the tab content below scrolls. */}
       <div className="sticky top-0 z-30 bg-surface pt-6">
-      <Link
-        href="/learning/paths"
-        className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-primary-text mb-4 transition-colors"
-      >
-        <ArrowLeft size={16} />
-        Back to Courses
-      </Link>
-
-      {/* Header */}
-      <div className="bg-surface border border-border-light rounded-card p-6 mb-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <h1 className="text-page-title font-medium text-text-primary mb-2">{path.title}</h1>
-            <div className="flex items-center gap-3 mb-1">
-              <PathStatusBadge status={path.status} />
-              <span className="text-xs text-text-muted capitalize">{path.mode.replace('_', ' ')}</span>
-            </div>
-            {path.description && <p className="text-sm text-text-secondary mt-1">{path.description}</p>}
+      <PageHeader
+        title={path.title}
+        trail={[{ label: 'Courses', href: '/learning/paths' }]}
+        meta={
+          <span className="flex items-center gap-3">
+            <PathStatusBadge status={path.status} />
+            <span className="text-meta text-text-muted capitalize">{path.mode.replace('_', ' ')}</span>
             {path.estimated_minutes ? (
-              <div className="flex items-center gap-4 mt-3 text-xs text-text-muted">
-                <span className="flex items-center gap-1"><Clock size={12} />{path.estimated_minutes}m est.</span>
-              </div>
+              <span className="flex items-center gap-1 text-meta text-text-muted"><Clock size={12} />{path.estimated_minutes}m est.</span>
             ) : null}
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href={`/learning/paths/${pathId}/preview`}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-text bg-primary-subtle border border-primary-border rounded-control hover:bg-primary-subtle transition-colors"
-            >
-              <Eye size={14} />
-              Preview
-            </Link>
-            <Link
-              href={`/learning/paths/builder?id=${pathId}`}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
-            >
-              <Pencil size={14} />
-              Edit
-            </Link>
+          </span>
+        }
+        actions={
+          <>
+            <Button variant="secondary" render={<Link href={`/learning/paths/${pathId}/preview`} />}>
+              <Eye size={14} /> Preview
+            </Button>
+            <Button render={<Link href={`/learning/paths/builder?id=${pathId}`} />}>
+              <Pencil size={14} /> Edit
+            </Button>
             {path.status === 'published' && (
               <Tooltip label="Archive">
-                <button
-                  onClick={handleArchive}
-                  aria-label="Archive"
-                  className="p-2 text-text-secondary hover:text-warning hover:bg-warning-bg rounded-control transition-colors"
-                >
+                <Button variant="ghost" size="icon" aria-label="Archive" onClick={handleArchive}>
                   <Archive size={16} />
-                </button>
+                </Button>
               </Tooltip>
             )}
             {path.status === 'archived' && (
-              <button
-                onClick={handleUnarchive}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-success bg-success-bg border border-success-border rounded-control hover:bg-success-bg transition-colors"
-              >
+              <Button variant="secondary" onClick={handleUnarchive}>
                 <ArchiveRestore size={14} /> Restore
-              </button>
+              </Button>
             )}
             {canDelete && (
               <Tooltip label="Delete">
-                <button
-                  onClick={() => { setDeleteError(null); setDeleteOpen(true) }}
-                  aria-label="Delete"
-                  className="p-2 text-text-secondary hover:text-danger hover:bg-danger-bg rounded-control transition-colors"
-                >
+                <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => { setDeleteError(null); setDeleteOpen(true) }}>
                   <Trash2 size={16} />
-                </button>
+                </Button>
               </Tooltip>
             )}
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
+      {path.description && <p className="text-sm text-text-secondary -mt-2 mb-4">{path.description}</p>}
 
       {/* Tabs */}
       <div className="flex items-end justify-between gap-3 mb-4 border-b border-border-light">

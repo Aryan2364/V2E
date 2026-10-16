@@ -10,9 +10,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import {
-  ArrowLeft, Loader2, CheckCircle, Users, BookOpen,
+  CheckCircle, Users, BookOpen,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import {
@@ -28,6 +27,9 @@ import DatePicker from '@/components/ui/DatePicker'
 import MaterialRow from '@/components/learning/MaterialRow'
 import AddMaterialBar from '@/components/learning/AddMaterialBar'
 import AssigneeMultiSelect from '@/components/learning/AssigneeMultiSelect'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { Banner, BannerDescription } from '@/components/ui/banner'
 
 export default function CourseBuilderPage() {
   const router = useRouter()
@@ -287,42 +289,27 @@ export default function CourseBuilderPage() {
     <div className="px-4 sm:px-8 pb-8 max-w-4xl mx-auto">
       {/* Sticky top bar — keeps the title + Save action visible as you scroll the form */}
       <div className="sticky top-0 z-30 bg-surface pt-6 pb-4 mb-6 border-b border-border-light">
-        <Link
-          href="/learning/paths"
-          className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-primary-text mb-3 transition-colors"
-        >
-          <ArrowLeft size={16} />
-          Back to Courses
-        </Link>
-
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-page-title font-medium text-text-primary">
-              {params.get('id') ? 'Edit Course' : 'Create Course'}
-            </h1>
-            <p className="text-sm text-text-secondary mt-1">
-              Add materials and pick who learns — it all saves as you go.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs text-text-muted w-16 text-right">
-              {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved ✓' : ''}
-            </span>
-            <button
-              onClick={handleFinish}
-              disabled={!canPublish}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
-            >
-              {publishing ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle size={15} />}
-              {isPublished ? 'Save & Close' : 'Publish & Assign'}
-            </button>
-          </div>
-        </div>
+        <PageHeader
+          title={params.get('id') ? 'Edit course' : 'Create course'}
+          trail={[{ label: 'Courses', href: '/learning/paths' }]}
+          meta={
+            <>
+              Add materials and pick who learns — it all saves as you go.{' '}
+              {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved' : ''}
+            </>
+          }
+          actions={
+            <Button onClick={handleFinish} disabled={!canPublish} loading={publishing}>
+              <CheckCircle size={15} />
+              {isPublished ? 'Save & close' : 'Publish & assign'}
+            </Button>
+          }
+        />
 
         {error && (
-          <div className="mt-3 rounded-card border border-danger-border bg-danger-bg px-4 py-3 text-sm text-danger">
-            {error}
-          </div>
+          <Banner variant="danger" className="mt-3">
+            <BannerDescription>{error}</BannerDescription>
+          </Banner>
         )}
       </div>
 

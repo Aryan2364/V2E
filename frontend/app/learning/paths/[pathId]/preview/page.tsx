@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import Link from 'next/link'
-import { BookOpen, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   getPath, getAdminItemViewUrl, getAdminItemFile, downloadAdminItem,
 } from '@/lib/api/learning'
@@ -38,29 +38,18 @@ export default function CoursePreviewPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-56px)]">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="p-6">
+        <Skeleton className="h-8 w-64 mb-4" />
+        <Skeleton className="h-64 rounded-card" />
       </div>
     )
   }
 
   if (notAvailable || !path) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
-        <div className="text-center max-w-sm">
-          <BookOpen size={40} className="text-muted mx-auto mb-3" />
-          <h1 className="text-lg font-medium text-text-primary mb-1">Course not found</h1>
-          <p className="text-sm text-text-secondary mb-4">
-            This course doesn’t exist, or you don’t have access to manage it.
-          </p>
-          <Link
-            href="/learning/paths"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
-          >
-            <ArrowLeft size={15} /> Back to Courses
-          </Link>
-        </div>
-      </div>
+      <EmptyState variant="not-found" heading="Course not found" dashboardHref="/learning/paths">
+        This course doesn't exist, or you don't have access to manage it.
+      </EmptyState>
     )
   }
 
