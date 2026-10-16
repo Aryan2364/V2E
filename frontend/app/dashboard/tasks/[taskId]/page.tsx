@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { formatDateTime as fmtDateTime, formatDate as fmtDateOnly } from '@/lib/format'
-import { createPortal } from 'react-dom'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { toast } from '@/components/ui/sonner'
@@ -26,6 +25,23 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import Tooltip from '@/components/ui/tooltip'
 import { AttachmentChips } from '@/components/ui/AttachmentList'
 import { PageHeader } from '@/components/shell/page-header'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+} from '@/components/ui/dialog'
 import { formatBytes } from '@/lib/attachments'
 import {
   CheckCircle2,
@@ -266,45 +282,20 @@ function CommentItem({
       )}
 
       {/* Our own confirmation dialog (no browser confirm) */}
-      {confirmOpen && createPortal(
-        <div
-          className="fixed inset-0 z-70 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
-          onClick={(e) => { if (e.target === e.currentTarget && !deleting) setConfirmOpen(false) }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="relative w-full max-w-sm bg-surface rounded-t-[16px] sm:rounded-card shadow-dialog border border-border-light p-6">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
-                <Trash2 size={18} className="text-danger" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-[16px] font-medium text-text-primary">Delete this comment?</h3>
-                <p className="text-sm text-text-secondary mt-1">This can’t be undone. The comment will be removed for everyone.</p>
-              </div>
-            </div>
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-4">
-              <button
-                type="button"
-                onClick={() => setConfirmOpen(false)}
-                disabled={deleting}
-                className="w-full sm:w-auto px-4 py-[9px] text-sm font-medium text-text-secondary bg-surface border border-border rounded-control hover:bg-surface-sunken disabled:opacity-60 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmDelete}
-                disabled={deleting}
-                className="w-full sm:w-auto px-4 py-[9px] text-sm font-medium text-white bg-danger rounded-control hover:bg-danger-hover disabled:opacity-60 transition-colors"
-              >
-                {deleting ? 'Deleting…' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+      <AlertDialog open={confirmOpen} onOpenChange={(open) => { if (!open && !deleting) setConfirmOpen(false) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this comment?</AlertDialogTitle>
+            <AlertDialogDescription>This can't be undone. The comment will be removed for everyone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} disabled={deleting}>
+              {deleting ? 'Deleting…' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -2320,90 +2311,48 @@ export default function TaskDetailPage() {
       )}
 
       {/* Attachment delete confirmation */}
-      {attachmentToDelete && createPortal(
-        <div
-          className="fixed inset-0 z-70 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
-          onClick={(e) => { if (e.target === e.currentTarget && !deletingAttachment) setAttachmentToDelete(null) }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="relative w-full max-w-sm bg-surface rounded-t-[16px] sm:rounded-card shadow-dialog border border-border-light p-6">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
-                <Trash2 size={18} className="text-danger" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-[16px] font-medium text-text-primary">Delete this attachment?</h3>
-                <p className="text-sm text-text-secondary mt-1">
-                  <span className="font-medium text-text-primary break-all">{attachmentToDelete.file_name}</span> will be permanently removed. This can’t be undone.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-4">
-              <button
-                type="button"
-                onClick={() => setAttachmentToDelete(null)}
-                disabled={deletingAttachment}
-                className="w-full sm:w-auto px-4 py-[9px] text-sm font-medium text-text-secondary bg-surface border border-border rounded-control hover:bg-surface-sunken disabled:opacity-60 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRemoveAttachment(attachmentToDelete)}
-                disabled={deletingAttachment}
-                className="w-full sm:w-auto px-4 py-[9px] text-sm font-medium text-white bg-danger rounded-control hover:bg-danger-hover disabled:opacity-60 transition-colors"
-              >
-                {deletingAttachment ? 'Deleting…' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+      <AlertDialog open={!!attachmentToDelete} onOpenChange={(open) => { if (!open && !deletingAttachment) setAttachmentToDelete(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this attachment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <span className="font-medium text-text-primary break-all">{attachmentToDelete?.file_name}</span> will be permanently removed. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingAttachment}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => attachmentToDelete && handleRemoveAttachment(attachmentToDelete)}
+              disabled={deletingAttachment}
+            >
+              {deletingAttachment ? 'Deleting…' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Activity Log — popup opened from the top-right history icon. Portaled to
-          <body> (like the delete dialogs) so no overflow/containing-block ancestor
-          on the task page can clip it or cut it off from the top. */}
-      {showActivity && createPortal(
-        <div
-          className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowActivity(false) }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="relative w-full max-w-lg bg-surface rounded-t-[16px] sm:rounded-card shadow-dialog border border-border-light max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 pt-4 pb-3 border-b border-border-light shrink-0">
-              <h3 className="text-[16px] font-medium text-text-primary flex items-center gap-2">
-                <History size={16} className="text-primary-text" />
-                Activity Log
-              </h3>
-              <button
-                onClick={() => setShowActivity(false)}
-                aria-label="Close"
-                className="w-8 h-8 rounded-control flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="overflow-y-auto flex-1 px-6 py-4">
-              {activityLogs.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <User size={24} className="text-text-muted mb-3" />
-                  <p className="text-sm text-text-secondary">No activity recorded yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {activityLogs.map((log) => (
-                    <ActivityItem key={log.id} log={log} />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+      {/* Activity Log */}
+      <Dialog open={showActivity} onOpenChange={setShowActivity}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><History size={16} /> Activity Log</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            {activityLogs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <User size={24} className="text-text-muted mb-3" />
+                <p className="text-sm text-text-secondary">No activity recorded yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {activityLogs.map((log) => (
+                  <ActivityItem key={log.id} log={log} />
+                ))}
+              </div>
+            )}
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
