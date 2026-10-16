@@ -100,7 +100,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
       toast.success('Leave taken anyway')
       await load()
     } catch (e) {
-      toast.success(errorMessage(e, 'Could not update this leave'), 'error')
+      toast.error(errorMessage(e, 'Could not update this leave'))
     } finally {
       setBusyId(null)
     }
@@ -112,7 +112,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
     setCancelError(null)
     try {
       await leaveApi.cancel(orgId, cancelTarget.id)
-      toast.message('Leave cancelled')
+      toast.success('Leave cancelled')
       setCancelTarget(null)
       await load()
     } catch (e) {

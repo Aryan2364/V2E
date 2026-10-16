@@ -700,10 +700,9 @@ export default function ImportEmployeesModal({
       const res = await commitImport(orgId, parsedRows, fileName)
       setCommitResult(res)
       if (res.created > 0) {
-        toast.error(
-          `Imported ${res.created} employee${res.created !== 1 ? 's' : ''}`,
-          res.failed > 0 ? 'warning' : 'success',
-        )
+        const importedMsg = `Imported ${res.created} employee${res.created !== 1 ? 's' : ''}`
+        if (res.failed > 0) toast.warning(importedMsg)
+        else toast.success(importedMsg)
         onImported()
         // Land on the full Import details page for the batch just created.
         if (res.batch_id) {
@@ -715,7 +714,7 @@ export default function ImportEmployeesModal({
         // Nothing created (every row failed) — no batch exists; show the result
         // screen so the failed rows and their reasons are still visible.
         setPhase('result')
-        toast.message('No employees were imported')
+        toast.error('No employees were imported')
       }
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? 'Import failed. Please try again.'
@@ -742,10 +741,9 @@ export default function ImportEmployeesModal({
     try {
       const res = await undoImport(orgId, batchId)
       setUndoResult(res)
-      toast.error(
-        res.undone > 0 ? `Removed ${res.undone} imported employee${res.undone !== 1 ? 's' : ''}` : 'Nothing was removed',
-        res.kept.length > 0 ? 'warning' : 'success',
-      )
+      const undoMsg = res.undone > 0 ? `Removed ${res.undone} imported employee${res.undone !== 1 ? 's' : ''}` : 'Nothing was removed'
+      if (res.kept.length > 0) toast.warning(undoMsg)
+      else toast.success(undoMsg)
       onImported()
       setBatches(await listImportBatches(orgId))
       // If a detail view is open for this batch, refresh it to reflect removals.

@@ -17,8 +17,23 @@ import {
 import { useAuth } from '@/lib/auth/context'
 import { toast } from '@/components/ui/sonner'
 import Button from '@/components/ui/button'
-import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import StyledSelect from '@/components/ui/StyledSelect'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import Tooltip from '@/components/ui/tooltip'
 import { clearPermissionsCache } from '@/lib/auth/use-permissions'
 import {
@@ -152,17 +167,25 @@ function ScopeSelect({
   disabled?: boolean
 }) {
   return (
-    <StyledSelect
+    <Select
       value={value}
+      onValueChange={(v) => onChange(v as DataScope | 'inherit')}
       disabled={disabled}
-      onChange={(v) => onChange(v as DataScope | 'inherit')}
-      size="sm"
-      triggerClassName="text-meta"
-      options={[
+      items={[
         ...(inheritLabel !== undefined ? [{ value: 'inherit', label: inheritLabel }] : []),
         ...DATA_SCOPES.map((s) => ({ value: s, label: DATA_SCOPE_LABEL[s] })),
       ]}
-    />
+    >
+      <SelectTrigger className="h-8 text-meta">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {inheritLabel !== undefined && <SelectItem value="inherit">{inheritLabel}</SelectItem>}
+        {DATA_SCOPES.map((s) => (
+          <SelectItem key={s} value={s}>{DATA_SCOPE_LABEL[s]}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
 
@@ -258,7 +281,7 @@ export default function AccessControlPage() {
       })
       .catch((err) => {
         if (err?.response?.status === 403) setDenied(true)
-        else toast.success(err?.response?.data?.message ?? 'Failed to load access control', 'error')
+        else toast.error(err?.response?.data?.message ?? 'Failed to load access control')
       })
       .finally(() => setLoading(false))
   }, [orgId, applyMatrix])
@@ -542,9 +565,9 @@ export default function AccessControlPage() {
       if (!latest) latest = await getRolePermissions(orgId)
       applyMatrix(latest)
       clearPermissionsCache(orgId)
-      toast.error('Access saved')
+      toast.success('Access saved')
     } catch (err: any) {
-      toast.success(err?.response?.data?.message ?? 'Failed to save')
+      toast.error(err?.response?.data?.message ?? 'Failed to save')
     } finally {
       setSaving(false)
     }
@@ -561,9 +584,9 @@ export default function AccessControlPage() {
       if (created) setSelectedRoleId(created.id)
       setCreating(false)
       setNewName('')
-      toast.error('Role created')
+      toast.success('Role created')
     } catch (err: any) {
-      toast.success(err?.response?.data?.message ?? 'Failed to create role')
+      toast.error(err?.response?.data?.message ?? 'Failed to create role')
     }
   }
   async function handleRename() {
@@ -576,9 +599,9 @@ export default function AccessControlPage() {
     try {
       applyMatrix(await updateSystemRole(orgId, selectedRole.id, { name }))
       setRenaming(false)
-      toast.error('Role renamed')
+      toast.success('Role renamed')
     } catch (err: any) {
-      toast.success(err?.response?.data?.message ?? 'Failed to rename')
+      toast.error(err?.response?.data?.message ?? 'Failed to rename')
     }
   }
   async function performDeleteRole() {
@@ -591,7 +614,7 @@ export default function AccessControlPage() {
       setSelectedRoleId(updated.systemRoles[0]?.id ?? '')
       clearPermissionsCache(orgId)
       setConfirmDeleteRole(false)
-      toast.error('Role deleted')
+      toast.success('Role deleted')
     } catch (err: any) {
       // The server blocks deletion while employees still hold the role — show
       // the plain-language reason here rather than as a toast that vanishes.
@@ -631,7 +654,7 @@ export default function AccessControlPage() {
       setPolicyEdits(Object.fromEntries(updated.policies.map((p) => [p.subject_key, p.default_eligible])))
       toast.success('Subject eligibility saved')
     } catch (err: any) {
-      toast.message(err?.response?.data?.message ?? 'Failed to save')
+      toast.error(err?.response?.data?.message ?? 'Failed to save')
     } finally {
       setSavingPolicies(false)
     }
@@ -650,17 +673,25 @@ export default function AccessControlPage() {
     disabled?: boolean
   }) {
     return (
-      <StyledSelect
+      <Select
         value={value}
+        onValueChange={(v) => onChange(v as DataScope | 'inherit')}
         disabled={disabled}
-        onChange={(v) => onChange(v as DataScope | 'inherit')}
-        size="sm"
-        triggerClassName="text-meta"
-        options={[
+        items={[
           ...(inheritLabel !== undefined ? [{ value: 'inherit', label: inheritLabel }] : []),
           ...DATA_SCOPES.map((s) => ({ value: s, label: DATA_SCOPE_LABEL[s] })),
         ]}
-      />
+      >
+        <SelectTrigger className="h-8 text-meta">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {inheritLabel !== undefined && <SelectItem value="inherit">{inheritLabel}</SelectItem>}
+          {DATA_SCOPES.map((s) => (
+            <SelectItem key={s} value={s}>{DATA_SCOPE_LABEL[s]}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     )
   }
 
@@ -1138,17 +1169,34 @@ export default function AccessControlPage() {
         </div>
       )}
 
-      <ConfirmDialog
+      <AlertDialog
         open={confirmDeleteRole}
-        danger
-        title={selectedRole ? `Delete “${selectedRole.name}”?` : 'Delete role?'}
-        message="This access role will be removed. Employees who still hold it must be reassigned first — if any do, the delete is blocked and you'll see why here."
-        confirmLabel="Delete role"
-        loading={deletingRole}
-        error={deleteRoleError}
-        onConfirm={performDeleteRole}
-        onCancel={() => { if (!deletingRole) { setConfirmDeleteRole(false); setDeleteRoleError(null) } }}
-      />
+        onOpenChange={(next) => {
+          if (!next && !deletingRole) { setConfirmDeleteRole(false); setDeleteRoleError(null) }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{selectedRole ? `Delete "${selectedRole.name}"?` : 'Delete role?'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              This access role will be removed. Employees who still hold it must be reassigned
+              first — if any do, the delete is blocked and you&apos;ll see why here.
+            </AlertDialogDescription>
+            {deleteRoleError ? (
+              <div className="rounded-lg border border-danger-border bg-danger-bg px-3 py-2 text-body text-danger">
+                {deleteRoleError}
+              </div>
+            ) : null}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingRole}>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="danger" disabled={deletingRole} onClick={performDeleteRole}>
+              {deletingRole ? <Loader2 size={15} className="animate-spin" /> : null}
+              Delete role
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

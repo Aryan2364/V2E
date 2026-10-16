@@ -105,7 +105,7 @@ export default function LeaveRulesPage() {
 
   useEffect(() => {
     setLoading(true)
-    load().catch(() => toast.success('Could not load leave rules', 'error')).finally(() => setLoading(false))
+    load().catch(() => toast.error('Could not load leave rules')).finally(() => setLoading(false))
   }, [load])
 
   if (loading || !master) {
@@ -132,7 +132,7 @@ export default function LeaveRulesPage() {
         recurring_notice_days: master.recurring_notice_days,
       })
       setMaster(saved)
-      toast.error('Leave rules saved')
+      toast.success('Leave rules saved')
     } catch (e: any) {
       const m = e?.response?.data?.message ?? 'Could not save leave rules'
       toast.error(Array.isArray(m) ? m.join(', ') : m)

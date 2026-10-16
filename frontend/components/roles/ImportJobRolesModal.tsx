@@ -422,13 +422,12 @@ export default function ImportJobRolesModal({ orgId, departments, onClose, onImp
 
     setResult({ created, failed, results })
     if (created > 0) {
-      toast.error(
-        `Imported ${created} job role${created !== 1 ? 's' : ''}`,
-        failed > 0 ? 'warning' : 'success',
-      )
+      const importedMsg = `Imported ${created} job role${created !== 1 ? 's' : ''}`
+      if (failed > 0) toast.warning(importedMsg)
+      else toast.success(importedMsg)
       onImported()
     } else {
-      toast.message('No job roles were imported')
+      toast.error('No job roles were imported')
     }
     setImporting(false)
   }
