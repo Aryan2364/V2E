@@ -90,3 +90,20 @@ npx next build
 ## Session log
 
 - 16 Oct 2026: plan written, worktree + branch created.
+- 16 Oct 2026: P1 done. Next 16.3.3 / React 19.2.8 / Tailwind 4 (kit pins) installed exactly;
+  kit's other deps (@base-ui/react 1.8.0, sonner 2.0.8 exact, class-variance-authority, clsx,
+  tailwind-merge, tw-animate-css, cmdk, date-fns, react-day-picker, @dnd-kit/core) added at kit
+  versions. Builder: Turbopack (Next 16 default) - no webpack fallback needed. next.config.mjs
+  images.domains -> remotePatterns. globals.css: `@import "tailwindcss"` + `@config
+  "../tailwind.config.ts"` (keeps the existing JS theme/phone tokens working; P2's job to
+  replace it). `npx @tailwindcss/upgrade --force` migrated `!important` syntax and negative
+  arbitrary values across ~146 files; its theme-aware class renames (shadow/rounded/blur/
+  drop-shadow scale shift, outline-none->outline-hidden) didn't apply via the CLI in this
+  environment (interactive-TTY codemod hung non-interactively), so applied by a token-exact
+  script instead (never touches arbitrary values or prose) across another ~130 files. An
+  interrupted first `@next/codemod upgrade` run had inserted `export const instant = false`
+  (Cache Components opt-out) into 19 route files; reverted via `git checkout` since
+  `cacheComponents` is not being enabled in this phase. `npx tsc --noEmit`, `npx next build`,
+  and `npm run test:unit` (69/69) all green. No lucide-react/recharts version bump attempted
+  (kept v2e's 1.x/2.x; build was already clean, out of scope to push further here). Commits
+  e8ea753 (framework upgrade) and f5403ea (Tailwind 4 migration).
