@@ -259,8 +259,8 @@ function buildContent(
     if (top && !opts.lodCollapse) {
       const DOC_VGAP = 34, DOC_HGAP = 10
       for (const row of [
-        { io: 'input' as const, docs: n.inputs ?? [], y: p.y - DOC_CHIP_H - DOC_VGAP, color: '#0EA5E9' },
-        { io: 'output' as const, docs: n.outputs ?? [], y: p.y + s.h + DOC_VGAP, color: '#8B5CF6' },
+        { io: 'input' as const, docs: n.inputs ?? [], y: p.y - DOC_CHIP_H - DOC_VGAP, color: 'var(--text-secondary)' },
+        { io: 'output' as const, docs: n.outputs ?? [], y: p.y + s.h + DOC_VGAP, color: 'var(--text-secondary)' },
       ]) {
         if (!row.docs.length) continue
         const totalW = row.docs.length * DOC_CHIP_W + (row.docs.length - 1) * DOC_HGAP
@@ -316,8 +316,8 @@ function buildContent(
       sourceHandle: fromDecision && src === prefix + c.source_node_id ? (c.condition_kind === 'no' ? 'no' : 'yes') : undefined,
       type: 'floating',
       data: { label: label || undefined },
-      markerEnd: { type: MarkerType.ArrowClosed, color: top ? '#64748B' : '#94A3B8' },
-      style: { stroke: top ? '#64748B' : '#94A3B8', strokeWidth: top ? 1.5 : 1.2 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: top ? 'var(--text-muted)' : 'var(--text-muted)' },
+      style: { stroke: top ? 'var(--text-muted)' : 'var(--text-muted)', strokeWidth: top ? 1.5 : 1.2 },
     } as Edge)
   }
 

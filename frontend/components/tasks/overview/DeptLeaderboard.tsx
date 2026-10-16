@@ -50,7 +50,7 @@ export default function DeptLeaderboard({
                   {u.name}
                   <ChevronRight size={14} className="text-text-muted group-hover:text-primary-text" />
                 </span>
-                <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: u.overdueRate >= 25 ? '#DC2626' : '#475569' }}>
+                <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: u.overdueRate >= 25 ? 'var(--danger)' : 'var(--text-secondary)' }}>
                   <span className="font-bold">{u.overdueRate}%</span> overdue · {u.total} tasks
                 </span>
               </div>

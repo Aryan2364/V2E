@@ -265,14 +265,14 @@ export const STATUS_META: Record<
   GoalStatus,
   { label: string; bg: string; text: string; border: string; dot: string }
 > = {
-  not_started: { label: 'Not started', bg: '#F1F5F9', text: '#475569', border: '#E2E8F0', dot: '#94A3B8' },
-  in_progress: { label: 'In progress', bg: '#DBEAFE', text: '#1D4ED8', border: '#BFDBFE', dot: '#2563EB' },
-  on_track: { label: 'On track', bg: '#DCFCE7', text: '#16A34A', border: '#BBF7D0', dot: '#16A34A' },
-  at_risk: { label: 'At risk', bg: '#FEF9C3', text: '#CA8A04', border: '#FDE68A', dot: '#D97706' },
-  off_track: { label: 'Off track', bg: '#FEE2E2', text: '#DC2626', border: '#FECACA', dot: '#DC2626' },
-  on_hold: { label: 'On hold', bg: '#EDE9FE', text: '#6D28D9', border: '#DDD6FE', dot: '#7C3AED' },
-  achieved: { label: 'Achieved', bg: '#E0F2FE', text: '#0369A1', border: '#BAE6FD', dot: '#0891B2' },
-  closed: { label: 'Closed', bg: '#F1F5F9', text: '#475569', border: '#E2E8F0', dot: '#64748B' },
+  not_started: { label: 'Not started', bg: 'var(--surface-control)', text: 'var(--text-secondary)', border: 'var(--border-light)', dot: 'var(--text-muted)' },
+  in_progress: { label: 'In progress', bg: 'var(--primary-subtle)', text: 'var(--primary-text)', border: 'var(--primary-border)', dot: 'var(--primary-text)' },
+  on_track: { label: 'On track', bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success-border)', dot: 'var(--success)' },
+  at_risk: { label: 'At risk', bg: 'var(--warning-bg)', text: 'var(--warning)', border: 'var(--warning-border)', dot: 'var(--warning)' },
+  off_track: { label: 'Off track', bg: 'var(--danger-bg)', text: 'var(--danger)', border: 'var(--danger-border)', dot: 'var(--danger)' },
+  on_hold: { label: 'On hold', bg: 'var(--surface-control)', text: 'var(--text-secondary)', border: 'var(--border-light)', dot: 'var(--text-secondary)' },
+  achieved: { label: 'Achieved', bg: 'var(--surface-control)', text: 'var(--text-secondary)', border: 'var(--border-light)', dot: 'var(--text-secondary)' },
+  closed: { label: 'Closed', bg: 'var(--surface-control)', text: 'var(--text-secondary)', border: 'var(--border-light)', dot: 'var(--text-muted)' },
 }
 
 /**
@@ -287,36 +287,36 @@ export const FOCUS_AREA_META: Record<
   customer: {
     label: 'Customer',
     short: 'Customer',
-    bg: '#E0F2FE',
-    text: '#0369A1',
-    border: '#BAE6FD',
-    dot: '#0891B2',
+    bg: 'var(--surface-control)',
+    text: 'var(--text-secondary)',
+    border: 'var(--border-light)',
+    dot: 'var(--text-secondary)',
   },
   finance: {
     label: 'Finance',
     short: 'Finance',
-    bg: '#DCFCE7',
-    text: '#16A34A',
-    border: '#BBF7D0',
-    dot: '#16A34A',
+    bg: 'var(--success-bg)',
+    text: 'var(--success)',
+    border: 'var(--success-border)',
+    dot: 'var(--success)',
   },
   // `short` keeps the goals table narrow. Real words, not initialisms — "People"
   // and "Process" stay readable where "L&G" and "IP" would need decoding.
   learning_growth: {
     label: 'Learning & Growth',
     short: 'People',
-    bg: '#FEF9C3',
-    text: '#CA8A04',
-    border: '#FDE68A',
-    dot: '#D97706',
+    bg: 'var(--warning-bg)',
+    text: 'var(--warning)',
+    border: 'var(--warning-border)',
+    dot: 'var(--warning)',
   },
   internal_process: {
     label: 'Internal Process',
     short: 'Process',
-    bg: '#EDE9FE',
-    text: '#6D28D9',
-    border: '#DDD6FE',
-    dot: '#7C3AED',
+    bg: 'var(--surface-control)',
+    text: 'var(--text-secondary)',
+    border: 'var(--border-light)',
+    dot: 'var(--text-secondary)',
   },
 }
 

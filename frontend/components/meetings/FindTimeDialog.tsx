@@ -216,10 +216,10 @@ export default function FindTimeDialog({
                         key={i}
                         onClick={() => { const c = Math.max(START_HOUR * 60, Math.min(END_HOUR * 60 - durationMin, sMin)); setCand(c); scrollToMin(c) }}
                         className="flex items-center justify-between gap-2 text-left border rounded-[8px] px-3 py-2 hover:border-primary"
-                        style={{ borderColor: clean ? '#BBF7D0' : '#FDE68A', background: clean ? '#F0FDF4' : '#FEFCE8' }}
+                        style={{ borderColor: clean ? 'var(--success-bg)' : 'var(--warning-bg)', background: clean ? 'var(--success-bg)' : 'var(--warning-bg)' }}
                       >
                         <span className="text-sm text-text-primary">{minLabel(sMin)}</span>
-                        <span className="text-xs" style={{ color: clean ? '#16A34A' : '#CA8A04' }}>
+                        <span className="text-xs" style={{ color: clean ? 'var(--success)' : 'var(--warning)' }}>
                           {clean ? 'No required clashes' : `${s.hard_conflicts.length} required`}
                           {s.soft_conflicts.length > 0 ? ` · ${s.soft_conflicts.length} optional` : ''}
                         </span>
@@ -237,10 +237,10 @@ export default function FindTimeDialog({
                 <div className="flex flex-col gap-1 max-h-[240px] overflow-y-auto pr-1">
                   {[...perPerson].sort((a, b) => Number(b.conflict) - Number(a.conflict)).map((p) => (
                     <div key={p.user_id} className="flex items-center gap-2 text-sm">
-                      <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.conflict ? '#DC2626' : '#16A34A' }} />
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.conflict ? 'var(--danger)' : 'var(--success)' }} />
                       <span className="text-text-primary truncate">{p.name}</span>
                       {!p.required && <span className="text-[10px] text-text-muted">optional</span>}
-                      <span className="ml-auto text-xs shrink-0" style={{ color: p.conflict ? '#DC2626' : '#16A34A' }}>{p.conflict ? 'Busy' : 'Free'}</span>
+                      <span className="ml-auto text-xs shrink-0" style={{ color: p.conflict ? 'var(--danger)' : 'var(--success)' }}>{p.conflict ? 'Busy' : 'Free'}</span>
                     </div>
                   ))}
                 </div>
@@ -298,7 +298,7 @@ export default function FindTimeDialog({
                         <div className="text-[13px] font-semibold text-white truncate">{p.name.split(' ')[0]}</div>
                         <div className="flex items-center justify-center gap-1 mt-0.5">
                           <span className="text-[10px] text-white">{p.required ? 'Required' : 'Optional'}</span>
-                          {p.conflict && <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.required ? '#FCD34D' : 'rgba(255,255,255,0.6)' }} />}
+                          {p.conflict && <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.required ? 'var(--warning-border)' : 'rgba(255,255,255,0.6)' }} />}
                         </div>
                       </div>
                     ))}
@@ -344,7 +344,7 @@ export default function FindTimeDialog({
                           {p.blocks.map((b, i) => {
                             const isOOO = b.kind === 'leave' || b.kind === 'holiday'
                             const bg = isOOO ? 'rgba(100,116,139,0.16)' : p.required ? 'rgba(220,38,38,0.14)' : 'rgba(217,119,6,0.14)'
-                            const bd = isOOO ? '#94A3B8' : p.required ? '#DC2626' : '#D97706'
+                            const bd = isOOO ? 'var(--text-muted)' : p.required ? 'var(--danger)' : 'var(--warning)'
                             return (
                               <Tooltip key={i} label={`${p.name} · busy`}>
                               <div

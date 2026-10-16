@@ -67,7 +67,7 @@ export default function EntityAuditHistory({ orgId, resource, entityId, title = 
                     {e.actor_type === 'system' && e.trigger_source && (
                       <span
                         className="text-[11px] font-medium rounded-full px-2 py-0.5"
-                        style={{ backgroundColor: '#E0F2FE', color: '#0369A1' }}
+                        style={{ backgroundColor: 'var(--surface-control)', color: 'var(--text-secondary)' }}
                       >
                         {triggerLabel(e.trigger_source)}
                       </span>

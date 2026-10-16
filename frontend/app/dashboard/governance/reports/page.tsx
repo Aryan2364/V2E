@@ -10,10 +10,12 @@ import { goalsApi } from '@/lib/api/goals'
 import type { MeetingReport } from '@/lib/types/meetings'
 import DateRangePicker from '@/components/ui/DateRangePicker'
 
-const PIE = ['#2563EB', '#16A34A', '#D97706', '#7C3AED', '#0891B2']
+// A 5-series qualitative chart palette (kit section 21): position, not hex
+// identity, is what distinguishes the slices, so this reads chart-1..5.
+const PIE = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)']
 const LINK_LABEL: Record<string, string> = { goal: 'Goal', project: 'Project', task: 'Task', ticket: 'Ticket', ad_hoc: 'Ad-hoc' }
 
-function Stat({ label, value, color = '#0F172A', flag }: { label: string; value: string | number; color?: string; flag?: boolean }) {
+function Stat({ label, value, color = 'var(--text-primary)', flag }: { label: string; value: string | number; color?: string; flag?: boolean }) {
   return (
     <div className={['bg-white border rounded-[12px] p-4', flag ? 'border-danger-border' : 'border-border-light'].join(' ')}>
       <p className="text-[26px] font-bold leading-none flex items-center gap-1" style={{ color }}>{flag && <AlertTriangle size={18} className="text-danger" />}{value}</p>
@@ -99,21 +101,21 @@ export default function MeetingReportsPage() {
         <>
           <Section title="Activity">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-              <Stat label="Meetings" value={data.activity.meetings_count} color="#2563EB" />
+              <Stat label="Meetings" value={data.activity.meetings_count} color="var(--primary-text)" />
               <Stat label="Total hours" value={data.activity.total_hours} />
               <Stat label="Avg duration (min)" value={data.activity.avg_duration_min} />
-              <Stat label="Avg overrun (min)" value={data.activity.avg_overrun_min} color={data.activity.avg_overrun_min > 0 ? '#D97706' : '#16A34A'} />
+              <Stat label="Avg overrun (min)" value={data.activity.avg_overrun_min} color={data.activity.avg_overrun_min > 0 ? 'var(--warning)' : 'var(--success)'} />
             </div>
             {loadData.length > 0 && (
               <div className="bg-white border border-border-light rounded-[12px] p-4">
                 <p className="text-sm font-medium text-text-secondary mb-2">Meeting load per person</p>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={loadData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#475569' }} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#475569' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
+                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
                     <Tooltip />
-                    <Bar dataKey="meetings" fill="#2563EB" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="meetings" fill="var(--primary)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -122,20 +124,20 @@ export default function MeetingReportsPage() {
 
           <Section title="Attendance & discipline">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Stat label="Attendance rate" value={`${data.attendance.attendance_rate}%`} color="#16A34A" />
-              <Stat label="No-show rate" value={`${data.attendance.no_show_rate}%`} color={data.attendance.no_show_rate > 20 ? '#DC2626' : '#0F172A'} />
+              <Stat label="Attendance rate" value={`${data.attendance.attendance_rate}%`} color="var(--success)" />
+              <Stat label="No-show rate" value={`${data.attendance.no_show_rate}%`} color={data.attendance.no_show_rate > 20 ? 'var(--danger)' : 'var(--text-primary)'} />
               <Stat label="Started on time" value={`${data.attendance.started_on_time_rate}%`} />
             </div>
           </Section>
 
           <Section title="Output">
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-              <Stat label="Decisions / meeting" value={data.output.decisions_per_meeting} color="#2563EB" />
-              <Stat label="Zero-decision meetings" value={data.output.zero_decision_meetings} color="#DC2626" flag={data.output.zero_decision_meetings > 0} />
+              <Stat label="Decisions / meeting" value={data.output.decisions_per_meeting} color="var(--primary-text)" />
+              <Stat label="Zero-decision meetings" value={data.output.zero_decision_meetings} color="var(--danger)" flag={data.output.zero_decision_meetings > 0} />
               <Stat label="Decisions total" value={data.output.decisions_total} />
               <Stat label="Action items created" value={data.output.action_items_created} />
               <Stat label="% linked to tasks" value={`${data.output.pct_linked_to_tasks}%`} />
-              <Stat label="% of those completed" value={`${data.output.pct_linked_tasks_completed}%`} color="#16A34A" />
+              <Stat label="% of those completed" value={`${data.output.pct_linked_tasks_completed}%`} color="var(--success)" />
             </div>
           </Section>
 

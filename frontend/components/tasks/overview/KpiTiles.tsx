@@ -15,13 +15,13 @@ type TileDef = {
 }
 
 const TILES: TileDef[] = [
-  { bucket: 'overdue', label: 'Overdue', color: '#DC2626', icon: <AlertTriangle size={18} />, key: 'overdue' },
-  { bucket: 'due_today', label: 'Due Today', color: '#D97706', icon: <Calendar size={18} />, key: 'due_today' },
-  { bucket: 'due_week', label: 'Due This Week', color: '#2563EB', icon: <CalendarDays size={18} />, key: 'due_week' },
-  { bucket: 'ongoing', label: 'Ongoing', color: '#0891B2', icon: <Activity size={18} />, key: 'ongoing' },
-  { bucket: 'completed', label: 'Completed', color: '#16A34A', icon: <CheckCircle2 size={18} />, key: 'completed' },
-  { bucket: 'recurring', label: 'Recurring', color: '#7C3AED', icon: <Repeat size={18} />, key: 'recurring' },
-  { bucket: null, label: 'All Tasks', color: '#475569', icon: <LayoutGrid size={18} />, key: 'total' },
+  { bucket: 'overdue', label: 'Overdue', color: 'var(--danger)', icon: <AlertTriangle size={18} />, key: 'overdue' },
+  { bucket: 'due_today', label: 'Due Today', color: 'var(--warning)', icon: <Calendar size={18} />, key: 'due_today' },
+  { bucket: 'due_week', label: 'Due This Week', color: 'var(--primary-text)', icon: <CalendarDays size={18} />, key: 'due_week' },
+  { bucket: 'ongoing', label: 'Ongoing', color: 'var(--text-secondary)', icon: <Activity size={18} />, key: 'ongoing' },
+  { bucket: 'completed', label: 'Completed', color: 'var(--success)', icon: <CheckCircle2 size={18} />, key: 'completed' },
+  { bucket: 'recurring', label: 'Recurring', color: 'var(--text-secondary)', icon: <Repeat size={18} />, key: 'recurring' },
+  { bucket: null, label: 'All Tasks', color: 'var(--text-secondary)', icon: <LayoutGrid size={18} />, key: 'total' },
 ]
 
 /**
@@ -60,7 +60,7 @@ export default function KpiTiles({
             </div>
             <div>
               <p className="text-2xl font-bold text-text-primary leading-tight tabular-nums">{value}</p>
-              <p className="text-[13px] mt-0.5" style={{ color: isActive ? t.color : '#475569' }}>{t.label}</p>
+              <p className="text-[13px] mt-0.5" style={{ color: isActive ? t.color : 'var(--text-secondary)' }}>{t.label}</p>
             </div>
           </button>
         )

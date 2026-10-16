@@ -17,7 +17,7 @@ export default function CategorySpreadChart({
     .slice()
     .sort((a, b) => b.total - a.total)
     .slice(0, 8)
-    .map((c) => ({ id: c.id, name: c.label, value: c.total, color: c.color || '#7C3AED' }))
+    .map((c) => ({ id: c.id, name: c.label, value: c.total, color: c.color || 'var(--text-secondary)' }))
 
   return (
     <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4 flex flex-col h-[320px]">
@@ -29,9 +29,9 @@ export default function CategorySpreadChart({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} layout="vertical" margin={{ top: 0, right: 12, left: 4, bottom: 0 }}>
               <XAxis type="number" hide allowDecimals={false} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: '#475569' }} axisLine={false} tickLine={false} width={92} />
-              <Tooltip cursor={{ fill: '#EFF6FF' }} contentStyle={{ borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 13 }} />
-              <Bar dataKey="value" name="Tasks" radius={[0, 4, 4, 0]} fill="#0891B2" cursor="pointer" onClick={(d: any) => d?.id && onSegment(d.id, d.name)} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} width={92} />
+              <Tooltip cursor={{ fill: 'var(--primary-subtle)' }} contentStyle={{ borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 13 }} />
+              <Bar dataKey="value" name="Tasks" radius={[0, 4, 4, 0]} fill="var(--text-secondary)" cursor="pointer" onClick={(d: any) => d?.id && onSegment(d.id, d.name)} />
             </BarChart>
           </ResponsiveContainer>
         </div>

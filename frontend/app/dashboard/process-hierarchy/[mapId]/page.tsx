@@ -1148,7 +1148,7 @@ function SaveTemplateModal({ orgId, mapId, mapName, onClose }: {
 }
 
 // ─── Diff panel ─────────────────────────────────────────────────────────────
-const CHANGE_COLOR: Record<string, string> = { added: '#16A34A', removed: '#DC2626', changed: '#D97706' }
+const CHANGE_COLOR: Record<string, string> = { added: 'var(--success)', removed: 'var(--danger)', changed: 'var(--warning)' }
 const FIELD_LABEL: Record<string, string> = {
   name: 'name', kind: 'type', status: 'status', description: 'description',
   responsible_user_id: 'responsible person', responsible_role_id: 'responsible role',

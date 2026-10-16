@@ -24,16 +24,16 @@ export default function TrendChart({ trend }: { trend: TrendPoint[] }) {
         <div style={{ width: '100%', height: 220 }}>
           <ResponsiveContainer>
             <LineChart data={data} margin={{ top: 6, right: 12, left: -16, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#475569' }} axisLine={{ stroke: '#E2E8F0' }} tickLine={false} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#475569' }} axisLine={false} tickLine={false} width={36} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={{ stroke: 'var(--border-light)' }} tickLine={false} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} width={36} />
               <Tooltip
                 contentStyle={{ borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 13 }}
-                labelStyle={{ color: '#0F172A', fontWeight: 600 }}
+                labelStyle={{ color: 'var(--text-primary)', fontWeight: 600 }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="created" name="Created" stroke="#2563EB" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="completed" name="Completed" stroke="#16A34A" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="created" name="Created" stroke="var(--primary)" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="completed" name="Completed" stroke="var(--success)" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>

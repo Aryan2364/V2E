@@ -105,7 +105,7 @@ export default function PeopleLeaderboard({
                   {s.isManager && <ChevronRight size={14} className="text-text-muted group-hover:text-primary-text shrink-0" />}
                 </button>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: s.teamOverdueRate >= 25 ? '#DC2626' : '#475569' }}>
+                  <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: s.teamOverdueRate >= 25 ? 'var(--danger)' : 'var(--text-secondary)' }}>
                     <span className="font-bold">{s.teamOverdueRate}%</span> overdue{s.isManager ? ' (team)' : ''}
                   </span>
                   <Tooltip label="Open report">

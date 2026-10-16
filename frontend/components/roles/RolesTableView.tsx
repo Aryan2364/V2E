@@ -94,7 +94,7 @@ export default function RolesTableView({
       headerClassName: 'px-5 py-3.5',
       render: (r) => {
         const dept = deptById.get(r.department_id)
-        const base = colors[r.department_id]?.base ?? '#94A3B8'
+        const base = colors[r.department_id]?.base ?? 'var(--text-muted)'
         return (
           <span className="inline-flex items-center gap-2 text-text-secondary">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: base }} />

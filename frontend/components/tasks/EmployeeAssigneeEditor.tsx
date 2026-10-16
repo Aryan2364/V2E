@@ -113,7 +113,7 @@ export default function EmployeeAssigneeEditor({
 
   // ── Left list: employees grouped by department, departments in parent→child order ──
   const colors = useMemo(() => computeNodeColors(view.departments as unknown as Department[]), [view.departments])
-  const colorOf = (id: string) => colors[id]?.base || '#94A3B8'
+  const colorOf = (id: string) => colors[id]?.base || 'var(--text-muted)'
   const deptOrder = useMemo(() => {
     const order = new Map<string, number>()
     flattenTree(view.departments as unknown as Department[]).forEach((r, i) => order.set(r.dept.id, i))

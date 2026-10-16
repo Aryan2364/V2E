@@ -58,10 +58,10 @@ function StatBanner({ data }: { data: TaskReportData }) {
   const rate = total > 0 ? Math.round((completed / total) * 100) : 0
 
   const stats = [
-    { label: 'Total Tasks', value: total, icon: <BarChart2 size={20} />, color: '#2563EB' },
-    { label: 'Completed', value: completed, icon: <CheckCircle2 size={20} />, color: '#16A34A' },
-    { label: 'Overdue', value: overdue, icon: <AlertTriangle size={20} />, color: '#DC2626' },
-    { label: 'Completion Rate', value: `${rate}%`, icon: <BarChart2 size={20} />, color: '#0891B2' },
+    { label: 'Total Tasks', value: total, icon: <BarChart2 size={20} />, color: 'var(--primary-text)' },
+    { label: 'Completed', value: completed, icon: <CheckCircle2 size={20} />, color: 'var(--success)' },
+    { label: 'Overdue', value: overdue, icon: <AlertTriangle size={20} />, color: 'var(--danger)' },
+    { label: 'Completion Rate', value: `${rate}%`, icon: <BarChart2 size={20} />, color: 'var(--text-secondary)' },
   ]
 
   return (
@@ -126,14 +126,14 @@ function UserPerformanceSection({ data }: { data: TaskReportData }) {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 4, left: -16 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#64748B' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
                 <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
                 <Legend iconSize={10} wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="Total" fill="#93C5FD" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Completed" fill="#16A34A" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Overdue" fill="#DC2626" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Total" fill="var(--primary-border)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Completed" fill="var(--success)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Overdue" fill="var(--danger)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -237,14 +237,14 @@ function DeptPerformanceSection({ data }: { data: TaskReportData }) {
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#64748B' }} />
-                <YAxis dataKey="name" type="category" width={110} tick={{ fontSize: 11, fill: '#64748B' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                <YAxis dataKey="name" type="category" width={110} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
                 <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
                 <Legend iconSize={10} wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="Total" fill="#93C5FD" radius={[0, 4, 4, 0]} />
-                <Bar dataKey="Completed" fill="#16A34A" radius={[0, 4, 4, 0]} />
-                <Bar dataKey="Overdue" fill="#DC2626" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="Total" fill="var(--primary-border)" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="Completed" fill="var(--success)" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="Overdue" fill="var(--danger)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -482,21 +482,21 @@ function FrequencySection({ data }: { data: TaskReportData }) {
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 4, left: -16 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748B' }} />
-              <YAxis tick={{ fontSize: 11, fill: '#64748B' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+              <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
               <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
               <Legend iconSize={10} wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="Total" fill="#93C5FD" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Completed" fill="#16A34A" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Total" fill="var(--primary-border)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Completed" fill="var(--success)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="space-y-3">
           {[
-            { label: 'Recurring', data: recurring, color: '#D97706' },
-            { label: 'One-Time', data: one_time, color: '#2563EB' },
+            { label: 'Recurring', data: recurring, color: 'var(--warning)' },
+            { label: 'One-Time', data: one_time, color: 'var(--primary-text)' },
           ].map(({ label, data: d, color }) => {
             const pct = total > 0 ? Math.round((d.total / total) * 100) : 0
             const rate = d.total > 0 ? Math.round((d.completed / d.total) * 100) : 0

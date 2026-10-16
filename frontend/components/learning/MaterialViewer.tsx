@@ -228,7 +228,7 @@ function WatermarkOverlay({ text }: { text: string }) {
     <div className="pointer-events-none absolute inset-0 overflow-hidden select-none" aria-hidden>
       <div
         className="absolute inset-[-25%] flex flex-wrap gap-x-16 gap-y-14 opacity-[0.12] rotate-[-30deg]"
-        style={{ fontSize: 13, color: '#0F172A', fontWeight: 600 }}
+        style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}
       >
         {Array.from({ length: 120 }).map((_, i) => (
           <span key={i} className="whitespace-nowrap">{text}</span>

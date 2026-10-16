@@ -6,10 +6,10 @@ import ProjectProgressBar from './ProjectProgressBar'
 import Tooltip from '@/components/ui/Tooltip'
 
 const STATUS_BADGE: Record<ProjectStatus, { bg: string; text: string; border: string; label: string }> = {
-  active:    { bg: '#DCFCE7', text: '#16A34A', border: '#BBF7D0', label: 'Active' },
-  on_hold:   { bg: '#FEF9C3', text: '#CA8A04', border: '#FDE68A', label: 'On Hold' },
-  completed: { bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE', label: 'Completed' },
-  cancelled: { bg: '#FEE2E2', text: '#DC2626', border: '#FECACA', label: 'Cancelled' },
+  active:    { bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success-border)', label: 'Active' },
+  on_hold:   { bg: 'var(--warning-bg)', text: 'var(--warning)', border: 'var(--warning-border)', label: 'On Hold' },
+  completed: { bg: 'var(--primary-subtle)', text: 'var(--primary-text)', border: 'var(--primary-border)', label: 'Completed' },
+  cancelled: { bg: 'var(--danger-bg)', text: 'var(--danger)', border: 'var(--danger-border)', label: 'Cancelled' },
 }
 
 interface ProjectCardProps {

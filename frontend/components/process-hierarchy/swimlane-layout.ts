@@ -410,7 +410,7 @@ export function buildSwimlane(
     const crossPool = groupOf(s) !== groupOf(t)
     const crossLane = bandKeyOf(s) !== bandKeyOf(t)
     const label = c.label || (c.condition_kind !== 'none' ? c.condition_kind.toUpperCase() : '')
-    const color = crossPool ? '#64748B' : '#475569'
+    const color = crossPool ? 'var(--text-muted)' : 'var(--text-secondary)'
     edges.push({
       id: c.id,
       source: c.source_node_id,

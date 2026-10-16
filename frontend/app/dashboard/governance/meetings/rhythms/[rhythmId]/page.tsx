@@ -52,11 +52,11 @@ function bucketOf(m: Meeting, now: number): Bucket {
   return start && start < now ? 'missed' : 'upcoming'
 }
 const BUCKET_META: Record<Bucket, { label: string; bg: string; fg: string; border: string }> = {
-  upcoming: { label: 'Upcoming', bg: '#EFF6FF', fg: '#2563EB', border: '#BFDBFE' },
-  in_progress: { label: 'In progress', bg: '#FEF9C3', fg: '#A16207', border: '#FDE68A' },
-  held: { label: 'Held', bg: '#DCFCE7', fg: '#16A34A', border: '#BBF7D0' },
-  missed: { label: 'Missed', bg: '#FEE2E2', fg: '#DC2626', border: '#FECACA' },
-  cancelled: { label: 'Cancelled', bg: '#F1F5F9', fg: '#64748B', border: '#E2E8F0' },
+  upcoming: { label: 'Upcoming', bg: 'var(--primary-subtle)', fg: 'var(--primary-text)', border: 'var(--primary-border)' },
+  in_progress: { label: 'In progress', bg: 'var(--warning-bg)', fg: 'var(--warning)', border: 'var(--warning-border)' },
+  held: { label: 'Held', bg: 'var(--success-bg)', fg: 'var(--success)', border: 'var(--success-border)' },
+  missed: { label: 'Missed', bg: 'var(--danger-bg)', fg: 'var(--danger)', border: 'var(--danger-border)' },
+  cancelled: { label: 'Cancelled', bg: 'var(--surface-control)', fg: 'var(--text-muted)', border: 'var(--border-light)' },
 }
 
 const STATUS_FILTERS: { key: 'all' | Bucket; label: string }[] = [
@@ -196,7 +196,7 @@ export default function RhythmDetailPage() {
             <h1 className="text-[26px] font-bold text-text-primary leading-tight flex items-center gap-2">
               <Repeat size={22} className="text-text-secondary shrink-0" /> {rhythm.title}
               <span className="inline-flex items-center font-medium text-[12px] rounded-full px-2.5 py-0.5 border shrink-0"
-                style={rhythm.is_active ? { backgroundColor: '#DCFCE7', color: '#16A34A', borderColor: '#BBF7D0' } : { backgroundColor: '#F1F5F9', color: '#475569', borderColor: '#E2E8F0' }}>
+                style={rhythm.is_active ? { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'var(--success-border)' } : { backgroundColor: 'var(--surface-control)', color: 'var(--text-secondary)', borderColor: 'var(--border-light)' }}>
                 {rhythm.is_active ? 'Active' : 'Paused'}
               </span>
             </h1>
@@ -218,10 +218,10 @@ export default function RhythmDetailPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-        <StatCard icon={<CalendarDays size={18} className="text-primary-text" />} value={meetings.length} label="Total occurrences" tint="#EFF6FF" />
-        <StatCard icon={<CheckCircle2 size={18} className="text-success" />} value={buckets.held} label="Held" tint="#DCFCE7" />
-        <StatCard icon={<CalendarClock size={18} className="text-text-secondary" />} value={buckets.upcoming} label="Upcoming" tint="#F5F3FF" />
-        <StatCard icon={<CalendarX2 size={18} className="text-danger" />} value={buckets.missed + buckets.cancelled} label="Missed / cancelled" tint="#FEE2E2" />
+        <StatCard icon={<CalendarDays size={18} className="text-primary-text" />} value={meetings.length} label="Total occurrences" tint="var(--primary-subtle)" />
+        <StatCard icon={<CheckCircle2 size={18} className="text-success" />} value={buckets.held} label="Held" tint="var(--success-bg)" />
+        <StatCard icon={<CalendarClock size={18} className="text-text-secondary" />} value={buckets.upcoming} label="Upcoming" tint="var(--surface-control)" />
+        <StatCard icon={<CalendarX2 size={18} className="text-danger" />} value={buckets.missed + buckets.cancelled} label="Missed / cancelled" tint="var(--danger-bg)" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 items-start">

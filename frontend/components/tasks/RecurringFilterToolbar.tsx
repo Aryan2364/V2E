@@ -11,8 +11,8 @@ import PeopleDeptFilter, { type DeptGroup } from './PeopleDeptFilter'
 export type RecurringStatusKey = 'active' | 'paused'
 const ALL_STATUSES: RecurringStatusKey[] = ['active', 'paused']
 const STATUS_META: Record<RecurringStatusKey, { label: string; color: string }> = {
-  active: { label: 'Active', color: '#16A34A' },
-  paused: { label: 'Paused', color: '#DC2626' },
+  active: { label: 'Active', color: 'var(--success)' },
+  paused: { label: 'Paused', color: 'var(--danger)' },
 }
 
 export interface RecurringFilters {

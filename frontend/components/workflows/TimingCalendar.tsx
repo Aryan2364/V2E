@@ -14,7 +14,9 @@ import { dateOfDayNumber, dayNumber, eventsOn, type CalendarSpan, type DayEvent,
 
 /** Band colours — the kit's categorical chart sequence (positions 2–6; position 1 is
  * the brand, which here means "selected"). Cycled when there are more steps. */
-export const BAND_COLORS = ['#C2841D', '#3B5A9A', '#A34A5E', '#6FA8A4', '#7A7268']
+// A 5-series qualitative chart palette (kit section 21), chart-2..6 by
+// position - these are the kit's own categorical hexes, now read as tokens.
+export const BAND_COLORS = ['var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)']
 export const bandColor = (i: number) => BAND_COLORS[((i % BAND_COLORS.length) + BAND_COLORS.length) % BAND_COLORS.length]
 
 /** A band's fill: light for a step, striped for one this step waits for (never colour alone). */

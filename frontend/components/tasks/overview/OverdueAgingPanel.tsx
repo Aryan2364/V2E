@@ -19,9 +19,9 @@ export default function OverdueAgingPanel({
   onSelect?: (band: AgingBand) => void
 }) {
   const bands: { key: AgingBand; label: string; value: number; color: string }[] = [
-    { key: 'd0_7', label: '1–7 days', value: aging.d0_7, color: '#D97706' },
-    { key: 'd8_30', label: '8–30 days', value: aging.d8_30, color: '#DC2626' },
-    { key: 'd30_plus', label: '30+ days', value: aging.d30_plus, color: '#991B1B' },
+    { key: 'd0_7', label: '1–7 days', value: aging.d0_7, color: 'var(--warning)' },
+    { key: 'd8_30', label: '8–30 days', value: aging.d8_30, color: 'var(--danger)' },
+    { key: 'd30_plus', label: '30+ days', value: aging.d30_plus, color: 'var(--danger)' },
   ]
   const total = bands.reduce((s, b) => s + b.value, 0)
 
@@ -41,7 +41,7 @@ export default function OverdueAgingPanel({
               {...(onSelect ? { type: 'button' as const, onClick: () => onSelect(b.key) } : {})}
               className={`text-left rounded-[10px] border border-border-light px-3.5 py-3 transition-colors ${onSelect ? 'hover:border-primary hover:bg-surface-sunken' : ''}`}
             >
-              <div className="text-2xl font-bold tabular-nums leading-none" style={{ color: b.value > 0 ? b.color : '#94A3B8' }}>{b.value}</div>
+              <div className="text-2xl font-bold tabular-nums leading-none" style={{ color: b.value > 0 ? b.color : 'var(--text-muted)' }}>{b.value}</div>
               <div className="text-[13px] text-text-secondary mt-1">{b.label}</div>
             </Tag>
           )

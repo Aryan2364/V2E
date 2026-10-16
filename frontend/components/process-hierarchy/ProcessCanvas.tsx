@@ -456,7 +456,7 @@ function Inner({
       const [tx, ty, scale] = getTransformForBounds(bounds, width, height, 0.2, 2, PAD)
       const { toPng } = await import('html-to-image')
       const dataUrl = await toPng(viewport, {
-        backgroundColor: '#ffffff', width, height, pixelRatio: 2, cacheBust: true,
+        backgroundColor: 'var(--surface)', width, height, pixelRatio: 2, cacheBust: true,
         style: { width: `${width}px`, height: `${height}px`, transform: `translate(${tx}px, ${ty}px) scale(${scale})` },
       })
       const link = document.createElement('a')
@@ -597,7 +597,7 @@ function Inner({
       minZoom={0.2}
       maxZoom={2}
     >
-      <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#E2E8F0" />
+      <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--border-light)" />
       {/* fitViewOptions must be repeated here — the Controls fit button uses its own,
           not the flow-level fitViewOptions (else it zooms in past 100%). */}
       <Controls showInteractive={false} fitViewOptions={FIT_OPTIONS} />
@@ -609,8 +609,8 @@ function Inner({
         // Paint the swimlane bands transparent so the minimap shows the actual step nodes, not
         // the full-width lane stripes that would otherwise cover everything.
         <MiniMap
-          nodeColor={(n) => (n.type === 'swimlane' ? 'transparent' : '#2563EB')}
-          nodeStrokeColor={(n) => (n.type === 'swimlane' ? 'transparent' : '#2563EB')}
+          nodeColor={(n) => (n.type === 'swimlane' ? 'transparent' : 'var(--primary-text)')}
+          nodeStrokeColor={(n) => (n.type === 'swimlane' ? 'transparent' : 'var(--primary-text)')}
           maskColor="rgba(15,23,42,0.05)" pannable zoomable
           className="hidden! sm:block!" style={{ width: 180, height: 120 }} />
       )}

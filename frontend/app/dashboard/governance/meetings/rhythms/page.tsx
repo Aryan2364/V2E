@@ -114,7 +114,7 @@ export default function RhythmsPage() {
               <div className="flex items-start justify-between gap-2">
                 <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-[16px] font-semibold text-text-primary hover:text-primary-text hover:underline">{r.title}</Link>
                 <span className="inline-flex items-center font-medium text-[12px] rounded-full px-2.5 py-0.5 border shrink-0"
-                  style={r.is_active ? { backgroundColor: '#DCFCE7', color: '#16A34A', borderColor: '#BBF7D0' } : { backgroundColor: '#F1F5F9', color: '#475569', borderColor: '#E2E8F0' }}>
+                  style={r.is_active ? { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'var(--success-border)' } : { backgroundColor: 'var(--surface-control)', color: 'var(--text-secondary)', borderColor: 'var(--border-light)' }}>
                   {r.is_active ? 'Active' : 'Paused'}
                 </span>
               </div>

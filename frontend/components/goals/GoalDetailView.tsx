@@ -358,9 +358,9 @@ export default function GoalDetailView({ goalId }: { goalId: string }) {
                         <span
                           className="text-[11px] font-medium rounded-full px-2 py-0.5 border whitespace-nowrap"
                           style={{
-                            backgroundColor: '#F8FAFC',
-                            borderColor: '#E2E8F0',
-                            color: t.status.color ?? '#475569',
+                            backgroundColor: 'var(--surface-sunken)',
+                            borderColor: 'var(--border-light)',
+                            color: t.status.color ?? 'var(--text-secondary)',
                           }}
                         >
                           {t.status.label}

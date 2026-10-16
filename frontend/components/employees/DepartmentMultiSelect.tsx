@@ -63,7 +63,7 @@ export default function DepartmentMultiSelect({
   }, [open])
 
   const colors = useMemo(() => computeNodeColors(departments), [departments])
-  const colorFor = (deptId?: string) => (deptId && colors[deptId]?.base) || '#94A3B8'
+  const colorFor = (deptId?: string) => (deptId && colors[deptId]?.base) || 'var(--text-muted)'
 
   const flat = useMemo(() => flattenTree(departments), [departments])
 

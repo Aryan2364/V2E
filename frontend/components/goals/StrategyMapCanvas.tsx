@@ -23,10 +23,10 @@ const BAND_META: Record<BandKey, { label: string; bg: string; text: string; bord
   ...FOCUS_AREA_META,
   untagged: {
     label: 'Not tagged',
-    bg: '#F1F5F9',
-    text: '#475569',
-    border: '#E2E8F0',
-    dot: '#94A3B8',
+    bg: 'var(--surface-control)',
+    text: 'var(--text-secondary)',
+    border: 'var(--border-light)',
+    dot: 'var(--text-muted)',
   },
 }
 
@@ -38,7 +38,7 @@ const BAND_META: Record<BandKey, { label: string; bg: string; text: string; bord
 const SELECTION_KEY = 'goals-strategy-map-selected'
 
 /** Idle connector colour — neutral, so the ovals' colours stay the loud thing. */
-const EDGE_IDLE = '#94A3B8'
+const EDGE_IDLE = 'var(--text-muted)'
 
 function rgba(hex: string, alpha: number): string {
   const h = hex.replace('#', '')
@@ -368,7 +368,7 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                   top: n.y,
                   width: OVAL_W,
                   height: OVAL_H,
-                  backgroundColor: hot || isPinned ? m.bg : '#FFFFFF',
+                  backgroundColor: hot || isPinned ? m.bg : 'var(--surface)',
                   border: `1.5px solid ${hot || isPinned ? m.dot : rgba(m.dot, 0.5)}`,
                   // A pin reads as a held ring, so "this one is selected" is
                   // distinguishable from "the mouse is over this one".

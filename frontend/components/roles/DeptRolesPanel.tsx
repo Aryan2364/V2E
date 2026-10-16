@@ -140,7 +140,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
           <div className="flex flex-col py-1 max-h-[600px] overflow-y-auto">
             {flat.map(({ dept, depth }) => {
               const active = dept.id === selectedDeptId
-              const swatch = colors[dept.id]?.base ?? '#94A3B8'
+              const swatch = colors[dept.id]?.base ?? 'var(--text-muted)'
               return (
                 <button
                   key={dept.id}

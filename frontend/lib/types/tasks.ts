@@ -732,13 +732,13 @@ export type TimingCounts = Record<Timing, number>
 
 /** Brand-system colors + labels for each timing bucket (DESIGN_RULES palette). */
 export const TIMING_META: Record<Timing, { label: string; color: string }> = {
-  early: { label: 'Completed Early', color: '#16A34A' },   // success green
-  on_time: { label: 'Completed On-Time', color: '#2563EB' }, // primary blue
-  late: { label: 'Completed Late', color: '#D97706' },     // warning amber
-  overdue: { label: 'Overdue', color: '#DC2626' },         // danger red
-  partial: { label: 'Partially Completed', color: '#EA580C' }, // orange — some did, some couldn't
-  incomplete: { label: 'Incomplete', color: '#92400E' },   // dark amber/brown — closed-not-done
-  pending: { label: 'Pending', color: '#94A3B8' },         // muted slate
+  early: { label: 'Completed Early', color: 'var(--success)' },   // success green
+  on_time: { label: 'Completed On-Time', color: 'var(--primary-text)' }, // primary blue
+  late: { label: 'Completed Late', color: 'var(--warning)' },     // warning amber
+  overdue: { label: 'Overdue', color: 'var(--danger)' },         // danger red
+  partial: { label: 'Partially Completed', color: 'var(--text-secondary)' }, // orange — some did, some couldn't
+  incomplete: { label: 'Incomplete', color: 'var(--warning)' },   // dark amber/brown — closed-not-done
+  pending: { label: 'Pending', color: 'var(--text-muted)' },         // muted slate
 }
 
 export const emptyTiming = (): TimingCounts => ({ early: 0, on_time: 0, late: 0, overdue: 0, partial: 0, incomplete: 0, pending: 0 })

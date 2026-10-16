@@ -36,14 +36,14 @@ const TABS: { id: Tab; label: string }[] = [
 ]
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  active:    { bg: '#DCFCE7', text: '#16A34A' },
-  on_hold:   { bg: '#FEF9C3', text: '#D97706' },
-  completed: { bg: '#EFF6FF', text: '#2563EB' },
-  cancelled: { bg: '#FEE2E2', text: '#DC2626' },
+  active:    { bg: 'var(--success-bg)', text: 'var(--success)' },
+  on_hold:   { bg: 'var(--warning-bg)', text: 'var(--warning)' },
+  completed: { bg: 'var(--primary-subtle)', text: 'var(--primary-text)' },
+  cancelled: { bg: 'var(--danger-bg)', text: 'var(--danger)' },
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const c = STATUS_COLORS[status] ?? { bg: '#F1F5F9', text: '#94A3B8' }
+  const c = STATUS_COLORS[status] ?? { bg: 'var(--surface-control)', text: 'var(--text-muted)' }
   return (
     <span
       className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold capitalize"
@@ -355,13 +355,13 @@ export default function ProjectDetailPage() {
                   <div key={pt.id} className="flex items-center gap-3 px-4 py-3">
                     <div
                       className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: task.status?.color ?? '#94A3B8' }}
+                      style={{ backgroundColor: task.status?.color ?? 'var(--text-muted)' }}
                     />
                     <span className="text-sm text-text-primary flex-1 truncate">{task.title}</span>
                     {task.status && (
                       <span
                         className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: (task.status.color ?? '#94A3B8') + '20', color: task.status.color ?? '#94A3B8' }}
+                        style={{ backgroundColor: (task.status.color ?? 'var(--text-muted)') + '20', color: task.status.color ?? 'var(--text-muted)' }}
                       >
                         {task.status.label}
                       </span>

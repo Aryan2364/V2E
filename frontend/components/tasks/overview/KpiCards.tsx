@@ -17,10 +17,10 @@ function Card({
   icon: React.ReactNode
   onClick?: () => void
 }) {
-  const bg = tone === 'alert' ? '#FEF2F2' : tone === 'warn' ? '#FFFBEB' : '#FFFFFF'
-  const border = tone === 'alert' ? '#FECACA' : tone === 'warn' ? '#FDE68A' : '#E2E8F0'
-  const valueColor = tone === 'alert' ? '#DC2626' : '#0F172A'
-  const iconColor = tone === 'alert' ? '#DC2626' : tone === 'warn' ? '#D97706' : '#2563EB'
+  const bg = tone === 'alert' ? 'var(--danger-bg)' : tone === 'warn' ? 'var(--warning-bg)' : 'var(--surface)'
+  const border = tone === 'alert' ? 'var(--danger-bg)' : tone === 'warn' ? 'var(--warning-bg)' : 'var(--border-light)'
+  const valueColor = tone === 'alert' ? 'var(--danger)' : 'var(--text-primary)'
+  const iconColor = tone === 'alert' ? 'var(--danger)' : tone === 'warn' ? 'var(--warning)' : 'var(--primary-text)'
   return (
     <button
       type="button"
@@ -38,7 +38,7 @@ function Card({
       <p className="text-2xl font-bold leading-none tabular-nums" style={{ color: valueColor }}>{value}</p>
       <p className="text-[13px] mt-1.5 text-text-secondary">{label}</p>
       {delta != null && (
-        <p className="text-[12px] mt-1 font-medium flex items-center gap-1" style={{ color: delta >= 0 ? '#16A34A' : '#DC2626' }}>
+        <p className="text-[12px] mt-1 font-medium flex items-center gap-1" style={{ color: delta >= 0 ? 'var(--success)' : 'var(--danger)' }}>
           {delta >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
           {Math.abs(delta)} pts <span className="text-text-muted font-normal">vs last month</span>
         </p>

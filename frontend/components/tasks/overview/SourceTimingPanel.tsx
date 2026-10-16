@@ -44,7 +44,7 @@ export default function SourceTimingPanel({
               >
                 <div className="flex items-center justify-between gap-3 mb-1.5">
                   <span className="font-semibold text-sm text-text-primary truncate">{it.label}</span>
-                  <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: overdueRate >= 25 ? '#DC2626' : '#475569' }}>
+                  <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: overdueRate >= 25 ? 'var(--danger)' : 'var(--text-secondary)' }}>
                     <span className="font-bold">{overdueRate}%</span> overdue · {it.total}
                   </span>
                 </div>

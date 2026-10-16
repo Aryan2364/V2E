@@ -81,9 +81,9 @@ function ResolutionTimeTab({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <StatCard label="Assignees with data" value={data.length} color="#2563EB" />
-        <StatCard label="Avg resolution time" value={`${avg.toFixed(1)}d`} color="#0891B2" />
-        <StatCard label="Fastest" value={sorted.length > 0 ? `${sorted[0].avg_days.toFixed(1)}d` : '—'} color="#16A34A" />
+        <StatCard label="Assignees with data" value={data.length} color="var(--primary-text)" />
+        <StatCard label="Avg resolution time" value={`${avg.toFixed(1)}d`} color="var(--text-secondary)" />
+        <StatCard label="Fastest" value={sorted.length > 0 ? `${sorted[0].avg_days.toFixed(1)}d` : '—'} color="var(--success)" />
       </div>
 
       {data.length === 0 ? (
@@ -93,11 +93,11 @@ function ResolutionTimeTab({
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 4, left: -16 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#64748B' }} unit="d" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} unit="d" />
                 <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => [`${v.toFixed(1)} days`, 'Avg resolution']} />
-                <Bar dataKey="avg_days" fill="#2563EB" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="avg_days" fill="var(--primary)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -158,8 +158,8 @@ function BreakdownTab({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <StatCard label={`Total ${label}`} value={data.length} color="#2563EB" />
-        <StatCard label="Total Tickets" value={total} color="#0891B2" />
+        <StatCard label={`Total ${label}`} value={data.length} color="var(--primary-text)" />
+        <StatCard label="Total Tickets" value={total} color="var(--text-secondary)" />
       </div>
 
       {data.length === 0 ? (
@@ -229,9 +229,9 @@ function SlaTab({ orgId, from, to }: { orgId: string; from: string; to: string }
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <StatCard label="Total Tickets" value={data.total} color="#2563EB" />
-        <StatCard label="SLA Breached" value={data.breached} color="#DC2626" />
-        <StatCard label="Breach Rate" value={`${data.breach_rate.toFixed(1)}%`} color="#D97706" />
+        <StatCard label="Total Tickets" value={data.total} color="var(--primary-text)" />
+        <StatCard label="SLA Breached" value={data.breached} color="var(--danger)" />
+        <StatCard label="Breach Rate" value={`${data.breach_rate.toFixed(1)}%`} color="var(--warning)" />
       </div>
 
       {data.tickets.length === 0 ? (
@@ -310,8 +310,8 @@ function RatingsTab({ orgId, from, to }: { orgId: string; from: string; to: stri
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <StatCard label="Total Ratings" value={data.total_ratings} color="#D97706" />
-        <StatCard label="Avg Rating" value={`${data.avg_rating.toFixed(2)} / 5`} color="#2563EB" />
+        <StatCard label="Total Ratings" value={data.total_ratings} color="var(--warning)" />
+        <StatCard label="Avg Rating" value={`${data.avg_rating.toFixed(2)} / 5`} color="var(--primary-text)" />
       </div>
 
       {data.total_ratings === 0 ? (
@@ -321,11 +321,11 @@ function RatingsTab({ orgId, from, to }: { orgId: string; from: string; to: stri
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 4, left: -16 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                <XAxis dataKey="name" tick={{ fontSize: 13, fill: '#64748B' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#64748B' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
+                <XAxis dataKey="name" tick={{ fontSize: 13, fill: 'var(--text-muted)' }} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
                 <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => [`${v} tickets`, '']} />
-                <Bar dataKey="count" fill="#D97706" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="count" fill="var(--warning)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -409,10 +409,10 @@ function FirstResponseTab({ orgId, from, to }: { orgId: string; from: string; to
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard label="Resolvers with data" value={data.length} color="#2563EB" />
-        <StatCard label="Responses" value={totalResponded} color="#0891B2" />
-        <StatCard label="Avg first response" value={`${avgHours.toFixed(1)}h`} color="#16A34A" />
-        <StatCard label="Response breaches" value={totalBreached} color="#DC2626" />
+        <StatCard label="Resolvers with data" value={data.length} color="var(--primary-text)" />
+        <StatCard label="Responses" value={totalResponded} color="var(--text-secondary)" />
+        <StatCard label="Avg first response" value={`${avgHours.toFixed(1)}h`} color="var(--success)" />
+        <StatCard label="Response breaches" value={totalBreached} color="var(--danger)" />
       </div>
 
       {data.length === 0 ? (
@@ -471,7 +471,7 @@ const firstResponseColumns: ResponsiveColumn<TicketReportFirstResponse>[] = [
 
 // ─── Backlog Aging ────────────────────────────────────────────────────────────
 
-const BACKLOG_BUCKET_COLORS = ['#16A34A', '#0891B2', '#2563EB', '#D97706', '#DC2626']
+const BACKLOG_BUCKET_COLORS = ['var(--success)', 'var(--text-secondary)', 'var(--primary-text)', 'var(--warning)', 'var(--danger)']
 
 function BacklogAgingTab({ orgId }: { orgId: string }) {
   const [data, setData] = useState<TicketReportBacklogAging | null>(null)
@@ -497,8 +497,8 @@ function BacklogAgingTab({ orgId }: { orgId: string }) {
       <p className="text-xs text-text-secondary -mt-1">Live snapshot of currently open tickets — not affected by the date range.</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <StatCard label="Total Open" value={data.total_open} color="#2563EB" />
-        <StatCard label="Oldest (days)" value={data.oldest.length > 0 ? data.oldest[0].age_days : '—'} color="#D97706" />
+        <StatCard label="Total Open" value={data.total_open} color="var(--primary-text)" />
+        <StatCard label="Oldest (days)" value={data.oldest.length > 0 ? data.oldest[0].age_days : '—'} color="var(--warning)" />
       </div>
 
       {data.total_open === 0 ? (
@@ -508,9 +508,9 @@ function BacklogAgingTab({ orgId }: { orgId: string }) {
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 4, left: -16 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#64748B' }} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} allowDecimals={false} />
                 <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => [`${v} tickets`, 'Open']} />
                 <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                   {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
@@ -594,9 +594,9 @@ function AgentLoadTab({ orgId }: { orgId: string }) {
       <p className="text-xs text-text-secondary -mt-1">Live snapshot of resolver workload — not affected by the date range.</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <StatCard label="Resolvers" value={data.length} color="#2563EB" />
-        <StatCard label="Active workload" value={totalOpen} color="#0891B2" />
-        <StatCard label="Breached" value={totalBreached} color="#DC2626" />
+        <StatCard label="Resolvers" value={data.length} color="var(--primary-text)" />
+        <StatCard label="Active workload" value={totalOpen} color="var(--text-secondary)" />
+        <StatCard label="Breached" value={totalBreached} color="var(--danger)" />
       </div>
 
       {data.length === 0 ? (
@@ -662,10 +662,10 @@ function ReopenRateTab({ orgId, from, to }: { orgId: string; from: string; to: s
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard label="Reopen Rate" value={`${data.reopen_rate.toFixed(1)}%`} color="#D97706" />
-        <StatCard label="Reopened Tickets" value={data.reopened_tickets} color="#2563EB" />
-        <StatCard label="Total Tickets" value={data.total_tickets} color="#0891B2" />
-        <StatCard label="Total Reopens" value={data.total_reopens} color="#DC2626" />
+        <StatCard label="Reopen Rate" value={`${data.reopen_rate.toFixed(1)}%`} color="var(--warning)" />
+        <StatCard label="Reopened Tickets" value={data.reopened_tickets} color="var(--primary-text)" />
+        <StatCard label="Total Tickets" value={data.total_tickets} color="var(--text-secondary)" />
+        <StatCard label="Total Reopens" value={data.total_reopens} color="var(--danger)" />
       </div>
 
       {data.most_reopened.length === 0 ? (

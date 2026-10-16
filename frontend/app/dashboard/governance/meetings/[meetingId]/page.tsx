@@ -554,7 +554,7 @@ function AnalyticsPanel({ orgId, meetingId }: { orgId: string; meetingId: string
   useEffect(() => { meetingsApi.analytics(orgId, meetingId).then(setData).catch(() => setData(null)).finally(() => setLoading(false)) }, [orgId, meetingId])
   if (loading) return <div className="p-2 text-sm text-text-secondary">Loading…</div>
   if (!data) return <div className="p-2 text-sm text-text-muted">No analytics.</div>
-  const stat = (label: string, value: string | number, color = '#0F172A') => (
+  const stat = (label: string, value: string | number, color = 'var(--text-primary)') => (
     <div className="bg-white border border-border-light rounded-[12px] p-4">
       <p className="text-[24px] font-bold leading-none" style={{ color }}>{value}</p>
       <p className="text-sm text-text-secondary mt-1">{label}</p>
@@ -565,16 +565,16 @@ function AnalyticsPanel({ orgId, meetingId }: { orgId: string; meetingId: string
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {stat('Planned (min)', data.planned_minutes ?? '—')}
-        {stat('Actual (min)', data.actual_minutes ?? '—', (data.overrun_minutes ?? 0) > 0 ? '#D97706' : '#16A34A')}
+        {stat('Actual (min)', data.actual_minutes ?? '—', (data.overrun_minutes ?? 0) > 0 ? 'var(--warning)' : 'var(--success)')}
         {stat('Expected', att.expected)}
         {stat('Attended', att.attendance_recorded ? `${att.attended}/${att.expected}` : '—')}
-        {stat('No-shows', att.no_show === null ? '—' : att.no_show, att.no_show ? '#DC2626' : '#16A34A')}
-        {stat('Declined', att.declined, att.declined ? '#DC2626' : '#0F172A')}
-        {stat('Declined (required)', att.declined_required, att.declined_required ? '#DC2626' : '#16A34A')}
+        {stat('No-shows', att.no_show === null ? '—' : att.no_show, att.no_show ? 'var(--danger)' : 'var(--success)')}
+        {stat('Declined', att.declined, att.declined ? 'var(--danger)' : 'var(--text-primary)')}
+        {stat('Declined (required)', att.declined_required, att.declined_required ? 'var(--danger)' : 'var(--success)')}
         {stat('Action items', data.action_items.created)}
         {stat('Linked to tasks', data.action_items.linked)}
-        {stat('Done', data.action_items.done, '#16A34A')}
-        {stat('Decisions', data.decisions, data.decisions ? '#16A34A' : '#DC2626')}
+        {stat('Done', data.action_items.done, 'var(--success)')}
+        {stat('Decisions', data.decisions, data.decisions ? 'var(--success)' : 'var(--danger)')}
       </div>
       {!att.attendance_recorded && (
         <div className="flex items-start gap-2 bg-surface-control border border-border-light rounded-[8px] px-3 py-2 text-sm text-text-secondary">

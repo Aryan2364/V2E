@@ -4,9 +4,9 @@ import { Settings2 } from 'lucide-react'
 import type { AuditEntry } from '@/lib/types/audit'
 
 export const ACTION_META: Record<string, { label: string; bg: string; text: string }> = {
-  create: { label: 'Create', bg: '#DCFCE7', text: '#16A34A' },
-  update: { label: 'Update', bg: '#E0F2FE', text: '#0369A1' },
-  delete: { label: 'Delete', bg: '#FEE2E2', text: '#DC2626' },
+  create: { label: 'Create', bg: 'var(--success-bg)', text: 'var(--success)' },
+  update: { label: 'Update', bg: 'var(--surface-control)', text: 'var(--text-secondary)' },
+  delete: { label: 'Delete', bg: 'var(--danger-bg)', text: 'var(--danger)' },
 }
 
 /** Human label for a system trigger source. */
@@ -69,7 +69,7 @@ export function ActorCell({ entry }: { entry: AuditEntry }) {
     return (
       <span
         className="inline-flex items-center gap-1 text-[12px] font-medium rounded-full px-2 py-0.5"
-        style={{ backgroundColor: '#EEF2FF', color: '#4338CA' }}
+        style={{ backgroundColor: 'var(--primary-subtle)', color: 'var(--text-secondary)' }}
       >
         <Settings2 size={12} /> System
       </span>
@@ -79,7 +79,7 @@ export function ActorCell({ entry }: { entry: AuditEntry }) {
 }
 
 export function ActionBadge({ action }: { action: string }) {
-  const am = ACTION_META[action] ?? { label: action, bg: '#F1F5F9', text: '#475569' }
+  const am = ACTION_META[action] ?? { label: action, bg: 'var(--surface-control)', text: 'var(--text-secondary)' }
   return (
     <span className="text-[12px] font-medium rounded-full px-2.5 py-0.5" style={{ backgroundColor: am.bg, color: am.text }}>
       {am.label}
@@ -107,7 +107,7 @@ export function AuditExpandedDetail({ entry }: { entry: AuditEntry }) {
         {entry.actor_type === 'system' && entry.trigger_source && (
           <span
             className="text-[12px] font-medium rounded-full px-2 py-0.5"
-            style={{ backgroundColor: '#E0F2FE', color: '#0369A1' }}
+            style={{ backgroundColor: 'var(--surface-control)', color: 'var(--text-secondary)' }}
           >
             Triggered by: {triggerLabel(entry.trigger_source)}
           </span>

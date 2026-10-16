@@ -5,15 +5,15 @@ import type { EntryDateStatus, HandoverInfo } from '@/lib/types/reports'
 // A task past its due date and not finished always carries the red Overdue tag, no
 // matter what stage the person left it in.
 const STYLE: Record<EntryDateStatus, { label: string; bg: string; fg: string; border: string }> = {
-  completed: { label: 'Completed', bg: '#DCFCE7', fg: '#15803D', border: '#BBF7D0' },
-  overdue: { label: 'Overdue', bg: '#FEE2E2', fg: '#B91C1C', border: '#FECACA' },
-  in_progress: { label: 'In Progress', bg: '#DBEAFE', fg: '#1D4ED8', border: '#BFDBFE' },
-  not_yet_due: { label: 'Not Yet Due', bg: '#F1F5F9', fg: '#64748B', border: '#E2E8F0' },
-  closed: { label: 'Closed', bg: '#F1F5F9', fg: '#64748B', border: '#E2E8F0' },
+  completed: { label: 'Completed', bg: 'var(--success-bg)', fg: 'var(--success)', border: 'var(--success-border)' },
+  overdue: { label: 'Overdue', bg: 'var(--danger-bg)', fg: 'var(--danger)', border: 'var(--danger-border)' },
+  in_progress: { label: 'In Progress', bg: 'var(--primary-subtle)', fg: 'var(--primary-text)', border: 'var(--primary-border)' },
+  not_yet_due: { label: 'Not Yet Due', bg: 'var(--surface-control)', fg: 'var(--text-muted)', border: 'var(--border-light)' },
+  closed: { label: 'Closed', bg: 'var(--surface-control)', fg: 'var(--text-muted)', border: 'var(--border-light)' },
   // Deliberately NOT red. The work left this person; showing it in the overdue colour
   // is what made readers chase the wrong name. Slate = "closed on them, look elsewhere",
   // with the frozen lateness and the new owner spelled out beside it.
-  handed_over: { label: 'Handed over', bg: '#F1F5F9', fg: '#475569', border: '#CBD5E1' },
+  handed_over: { label: 'Handed over', bg: 'var(--surface-control)', fg: 'var(--text-secondary)', border: 'var(--border)' },
 }
 
 export function DateStatusTag({

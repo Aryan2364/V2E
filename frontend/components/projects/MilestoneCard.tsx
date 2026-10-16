@@ -7,9 +7,9 @@ import MilestoneTaskRow from './MilestoneTaskRow'
 import type { ProjectMilestone, ProjectTask, DependencyWarning } from '@/lib/types/projects'
 
 const STATUS_BADGE: Record<string, { bg: string; text: string; border: string; label: string }> = {
-  pending: { bg: '#F8FAFC', text: '#64748B', border: '#E2E8F0', label: 'Pending' },
-  in_progress: { bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE', label: 'In Progress' },
-  achieved: { bg: '#DCFCE7', text: '#16A34A', border: '#BBF7D0', label: 'Achieved' },
+  pending: { bg: 'var(--surface-sunken)', text: 'var(--text-muted)', border: 'var(--border-light)', label: 'Pending' },
+  in_progress: { bg: 'var(--primary-subtle)', text: 'var(--primary-text)', border: 'var(--primary-border)', label: 'In Progress' },
+  achieved: { bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success-border)', label: 'Achieved' },
 }
 
 interface MilestoneCardProps {

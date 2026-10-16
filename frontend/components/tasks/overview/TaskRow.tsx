@@ -95,7 +95,7 @@ export default function TaskRow({
       {/* Priority rail */}
       <span
         className="w-1 self-stretch rounded-full shrink-0"
-        style={{ backgroundColor: priority?.color ?? '#CBD5E1' }}
+        style={{ backgroundColor: priority?.color ?? 'var(--border)' }}
       />
 
       {/* Title + meta */}

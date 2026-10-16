@@ -64,7 +64,7 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
     rows.push({
       id: 'project',
       label: project.name,
-      color: '#2563EB',
+      color: 'var(--primary-text)',
       start: new Date(project.start_date),
       end: new Date(project.end_date),
       completed: project.completion_percentage === 100,
@@ -75,7 +75,7 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
     rows.push({
       id: `ms-${ms.id}`,
       label: ms.name,
-      color: ms.status === 'achieved' ? '#16A34A' : '#D97706',
+      color: ms.status === 'achieved' ? 'var(--success)' : 'var(--warning)',
       start: ms.due_date ? new Date(ms.due_date) : undefined,
       isDiamond: true,
       isMilestone: true,
@@ -88,7 +88,7 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
       rows.push({
         id: `task-${pt.id}`,
         label: task.title ?? 'Task',
-        color: task.status?.color ?? '#94A3B8',
+        color: task.status?.color ?? 'var(--text-muted)',
         start: undefined,
         end: task.deadline ? new Date(task.deadline) : undefined,
         completed: task.status?.type === 'completed',
@@ -102,7 +102,7 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
     rows.push({
       id: `task-${pt.id}`,
       label: task.title ?? 'Task',
-      color: task.status?.color ?? '#94A3B8',
+      color: task.status?.color ?? 'var(--text-muted)',
       end: task.deadline ? new Date(task.deadline) : undefined,
       completed: task.status?.type === 'completed',
     })

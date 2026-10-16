@@ -91,10 +91,10 @@ const meetingColumns: ResponsiveColumn<Meeting>[] = [
 ]
 
 const LEGEND: { label: string; fill: string; stripe: string }[] = [
-  { label: 'Meeting', fill: '#EFF6FF', stripe: '#2563EB' },
-  { label: 'Rhythm', fill: '#F5F3FF', stripe: '#7C3AED' },
-  { label: 'Live', fill: '#DCFCE7', stripe: '#16A34A' },
-  { label: 'Closed', fill: '#F1F5F9', stripe: '#94A3B8' },
+  { label: 'Meeting', fill: 'var(--primary-subtle)', stripe: 'var(--primary)' },
+  { label: 'Rhythm', fill: 'var(--surface-control)', stripe: 'var(--text-secondary)' },
+  { label: 'Live', fill: 'var(--success-bg)', stripe: 'var(--success)' },
+  { label: 'Closed', fill: 'var(--surface-control)', stripe: 'var(--text-muted)' },
 ]
 
 export default function MeetingsPage() {
@@ -277,7 +277,7 @@ export default function MeetingsPage() {
                   <button onClick={() => { setMenuOpen(false); setGcalOpen(true) }} role="menuitem" className="w-full flex items-center gap-2.5 px-2.5 py-2 text-sm text-text-secondary rounded-[6px] hover:bg-surface-control">
                     <Calendar size={16} className="text-text-muted" />
                     <span className="flex-1 text-left">Google Calendar</span>
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: gcal.connected ? '#22C55E' : '#CBD5E1' }} />
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: gcal.connected ? 'var(--success)' : 'var(--border)' }} />
                   </button>
                 )}
               </div>

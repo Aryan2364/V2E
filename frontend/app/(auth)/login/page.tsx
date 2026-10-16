@@ -73,13 +73,13 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full grid lg:grid-cols-[1.05fr_1fr]">
       {/* Brand panel — hidden on small screens, condensed to a bar on mobile */}
-      <aside className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-[#0B1220] px-16 py-14 text-white">
+      <aside className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-primary-pressed px-16 py-14 text-primary-foreground">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(120% 120% at 0% 0%, #1E293B 0%, transparent 55%), radial-gradient(130% 130% at 100% 100%, #172554 0%, transparent 50%)',
+              'radial-gradient(120% 120% at 0% 0%, var(--primary-hover) 0%, transparent 55%), radial-gradient(130% 130% at 100% 100%, var(--primary) 0%, transparent 50%)',
           }}
         />
         <div

@@ -84,7 +84,7 @@ export default function RolesTreeView({
   return (
     <div className="bg-white border border-border-light rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden divide-y divide-surface-control">
       {blocks.map(({ dept, depth, roles: deptRoles }) => {
-        const base = colors[dept.id]?.base ?? '#94A3B8'
+        const base = colors[dept.id]?.base ?? 'var(--text-muted)'
         return (
           <div key={dept.id}>
             {/* Department header */}

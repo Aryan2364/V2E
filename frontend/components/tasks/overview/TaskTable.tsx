@@ -23,7 +23,7 @@ function fmt(d?: string) {
 }
 
 function Badge({ label, color }: { label: string; color?: string }) {
-  const c = color || '#475569'
+  const c = color || 'var(--text-secondary)'
   return (
     <span className="inline-block text-[11px] font-medium rounded-full px-2 py-0.5 whitespace-nowrap" style={{ backgroundColor: c + '22', color: c }}>
       {label}
@@ -232,7 +232,7 @@ export default function TaskTable({
                         {TIMING_META[timing].label}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 align-top whitespace-nowrap tabular-nums" style={{ color: overdue ? '#DC2626' : '#475569' }}>{fmt(t.deadline)}</td>
+                    <td className="px-3 py-2.5 align-top whitespace-nowrap tabular-nums" style={{ color: overdue ? 'var(--danger)' : 'var(--text-secondary)' }}>{fmt(t.deadline)}</td>
                   </tr>
                 )
               })

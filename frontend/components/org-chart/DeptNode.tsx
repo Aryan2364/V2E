@@ -17,13 +17,13 @@ export interface DeptNodeData {
 }
 
 function DeptNode({ data, selected }: { data: DeptNodeData; selected: boolean }) {
-  const fill = data.colors?.fill ?? '#FFFFFF';
-  const text = data.colors?.text ?? '#0F172A';
+  const fill = data.colors?.fill ?? 'var(--surface)';
+  const text = data.colors?.text ?? 'var(--text-primary)';
   const border = data.highlighted
-    ? '#F59E0B'
+    ? 'var(--text-secondary)'
     : selected
-    ? '#2563EB'
-    : data.colors?.border ?? '#E2E8F0';
+    ? 'var(--primary-text)'
+    : data.colors?.border ?? 'var(--border-light)';
 
   return (
     <div

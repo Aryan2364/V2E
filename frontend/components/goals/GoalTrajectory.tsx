@@ -77,7 +77,7 @@ export default function GoalTrajectory({
           x2={W}
           y1={targetY}
           y2={targetY}
-          stroke="#CBD5E1"
+          stroke="var(--border)"
           strokeWidth={1}
           strokeDasharray="5 5"
           vectorEffect="non-scaling-stroke"
@@ -86,7 +86,7 @@ export default function GoalTrajectory({
           <path
             d={linePath}
             fill="none"
-            stroke="#2563EB"
+            stroke="var(--primary)"
             strokeWidth={2}
             strokeLinejoin="round"
             strokeLinecap="round"
@@ -99,8 +99,8 @@ export default function GoalTrajectory({
             cx={xOf(i)}
             cy={yOf(p.value)}
             r={4}
-            fill={STATUS_META[p.status]?.dot ?? '#2563EB'}
-            stroke="#FFFFFF"
+            fill={STATUS_META[p.status]?.dot ?? 'var(--primary-text)'}
+            stroke="var(--border-light)"
             strokeWidth={1.5}
             vectorEffect="non-scaling-stroke"
           />

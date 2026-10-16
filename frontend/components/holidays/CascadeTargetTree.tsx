@@ -32,7 +32,7 @@ interface SubRow {
  */
 export default function CascadeTargetTree({ departments, originDeptId, originDeptName, value, onChange }: Props) {
   const colors = useMemo(() => computeNodeColors(departments), [departments])
-  const colorFor = (id: string) => colors[id]?.base || '#94A3B8'
+  const colorFor = (id: string) => colors[id]?.base || 'var(--text-muted)'
 
   // Subtree under the origin, in pre-order, with relative depth + descendant ids.
   const rows = useMemo<SubRow[]>(() => {

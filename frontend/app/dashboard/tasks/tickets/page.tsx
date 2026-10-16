@@ -102,10 +102,10 @@ export default function TicketsPage() {
       {/* Stats */}
       {stats && (
         <div className="flex gap-3 flex-wrap">
-          {statCard('Open', stats.open, '#2563EB')}
-          {statCard('Assigned to Me', stats.assignedToMe, '#0891B2')}
-          {statCard('SLA Breached', stats.slaBreached, '#DC2626')}
-          {statCard('Resolved This Month', stats.resolvedThisMonth, '#16A34A')}
+          {statCard('Open', stats.open, 'var(--primary-text)')}
+          {statCard('Assigned to Me', stats.assignedToMe, 'var(--text-secondary)')}
+          {statCard('SLA Breached', stats.slaBreached, 'var(--danger)')}
+          {statCard('Resolved This Month', stats.resolvedThisMonth, 'var(--success)')}
         </div>
       )}
 

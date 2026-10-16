@@ -116,7 +116,7 @@ export default function ProcessHierarchyListPage() {
             <Tooltip label={m.is_pinned ? 'Unpin' : 'Pin to top'}>
               <button onClick={() => togglePin(m)} aria-label="Pin"
                 className={`w-7 h-7 flex items-center justify-center rounded-[6px] hover:bg-surface-control-pressed ${m.is_pinned ? 'text-warning' : 'text-text-muted hover:text-text-primary'}`}>
-                <Star size={14} fill={m.is_pinned ? '#D97706' : 'none'} />
+                <Star size={14} fill={m.is_pinned ? 'var(--warning)' : 'none'} />
               </button>
             </Tooltip>
             {canCreate && (
@@ -142,7 +142,7 @@ export default function ProcessHierarchyListPage() {
           <Tooltip label={m.is_pinned ? 'Unpin' : 'Pin to top'}>
             <button onClick={() => togglePin(m)} aria-label="Pin"
               className={`w-7 h-7 flex items-center justify-center rounded-[6px] hover:bg-surface-control ${m.is_pinned ? 'text-warning' : 'text-text-muted hover:text-text-primary'}`}>
-              <Star size={15} fill={m.is_pinned ? '#D97706' : 'none'} />
+              <Star size={15} fill={m.is_pinned ? 'var(--warning)' : 'none'} />
             </button>
           </Tooltip>
           {canCreate && (
@@ -289,7 +289,7 @@ export default function ProcessHierarchyListPage() {
                       {pinned.map((m) => (
                         <button key={m.id} onClick={() => router.push(`/dashboard/process-hierarchy/${m.id}`)}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-border-light hover:border-primary text-[13px] font-medium text-text-primary transition-colors">
-                          <Star size={12} className="text-warning" fill="#D97706" /> <span className="truncate max-w-[160px]">{m.name}</span>
+                          <Star size={12} className="text-warning" fill="var(--warning)" /> <span className="truncate max-w-[160px]">{m.name}</span>
                         </button>
                       ))}
                     </div>

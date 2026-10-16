@@ -141,8 +141,8 @@ function CategoriesTab({ orgId }: { orgId: string }) {
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [form, setForm] = useState({ name: '', description: '', color: '#2563EB' })
-  const [editForm, setEditForm] = useState({ name: '', description: '', color: '#2563EB' })
+  const [form, setForm] = useState({ name: '', description: '', color: 'var(--primary-text)' })
+  const [editForm, setEditForm] = useState({ name: '', description: '', color: 'var(--primary-text)' })
   const [submitting, setSubmitting] = useState(false)
 
   const loadData = useCallback(() => {
@@ -158,7 +158,7 @@ function CategoriesTab({ orgId }: { orgId: string }) {
     try {
       const item = await tasksApi.createCategory(orgId, { name: form.name.trim(), description: form.description.trim() || undefined, color: form.color, is_active: true })
       setItems((prev) => [...prev, item])
-      setForm({ name: '', description: '', color: '#2563EB' })
+      setForm({ name: '', description: '', color: 'var(--primary-text)' })
       setCreating(false)
     } catch { /* ignore */ } finally { setSubmitting(false) }
   }
@@ -249,7 +249,7 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
   const [items, setItems] = useState<TaskPriority[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
-  const [form, setForm] = useState({ label: '', color: '#DC2626' })
+  const [form, setForm] = useState({ label: '', color: 'var(--danger)' })
   const [submitting, setSubmitting] = useState(false)
   const [savingOrder, setSavingOrder] = useState(false)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
@@ -281,7 +281,7 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
       // New priorities go to the bottom of the list; rank is derived from position, never typed.
       const item = await tasksApi.createPriority(orgId, { label: form.label.trim(), color: form.color, order_index: items.length, is_active: true })
       setItems((prev) => [...prev, item])
-      setForm({ label: '', color: '#DC2626' })
+      setForm({ label: '', color: 'var(--danger)' })
       setCreating(false)
     } catch { /* ignore */ } finally { setSubmitting(false) }
   }
@@ -386,9 +386,9 @@ function StatusesTab({ orgId }: { orgId: string }) {
   const [items, setItems] = useState<TaskStatus[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ label: '', color: '#2563EB' })
+  const [editForm, setEditForm] = useState({ label: '', color: 'var(--primary-text)' })
   const [adding, setAdding] = useState(false)
-  const [addForm, setAddForm] = useState({ label: '', color: '#0891B2' })
+  const [addForm, setAddForm] = useState({ label: '', color: 'var(--text-secondary)' })
   const [submitting, setSubmitting] = useState(false)
   const [savingOrder, setSavingOrder] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -413,7 +413,7 @@ function StatusesTab({ orgId }: { orgId: string }) {
       const maxOrder = items.reduce((m, s) => Math.max(m, s.order_index), 0)
       const item = await tasksApi.createStatus(orgId, { label: addForm.label.trim(), type: 'in_progress', color: addForm.color, order_index: maxOrder + 1, is_active: true } as Omit<TaskStatus, 'id' | 'organization_id'>)
       setItems((prev) => [...prev, item])
-      setAddForm({ label: '', color: '#0891B2' }); setAdding(false)
+      setAddForm({ label: '', color: 'var(--text-secondary)' }); setAdding(false)
     } catch (e) { setError(apiError(e) ?? 'Could not add stage.') } finally { setSubmitting(false) }
   }
 
@@ -524,9 +524,9 @@ function StatusesTab({ orgId }: { orgId: string }) {
         <div className="flex items-center gap-2.5 bg-surface-sunken border border-border-light rounded-[8px] pl-3 pr-2 py-2">
           <span className="w-[78px] shrink-0" />
           <input type="color" value={addForm.color} onChange={(e) => setAddForm({ ...addForm, color: e.target.value })} className="w-7 h-7 shrink-0 rounded-[6px] border border-border cursor-pointer p-0" />
-          <input type="text" autoFocus value={addForm.label} onChange={(e) => setAddForm({ ...addForm, label: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAdding(false); setAddForm({ label: '', color: '#0891B2' }) } }} placeholder="New stage name (e.g. In Review)" className="flex-1 min-w-0 border border-border rounded-[6px] px-2.5 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white" />
+          <input type="text" autoFocus value={addForm.label} onChange={(e) => setAddForm({ ...addForm, label: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setAdding(false); setAddForm({ label: '', color: 'var(--text-secondary)' }) } }} placeholder="New stage name (e.g. In Review)" className="flex-1 min-w-0 border border-border rounded-[6px] px-2.5 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-white" />
           <button onClick={handleAdd} disabled={submitting || !addForm.label.trim()} className="px-3 py-1.5 text-sm font-semibold text-white bg-primary rounded-[6px] hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors shrink-0">{submitting ? 'Adding…' : 'Add'}</button>
-          <button onClick={() => { setAdding(false); setAddForm({ label: '', color: '#0891B2' }) }} aria-label="Cancel" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"><X size={15} /></button>
+          <button onClick={() => { setAdding(false); setAddForm({ label: '', color: 'var(--text-secondary)' }) }} aria-label="Cancel" className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0"><X size={15} /></button>
         </div>
       ) : (
         <div className="flex items-center gap-2.5">
@@ -956,7 +956,7 @@ function TktTypesTab({ orgId }: { orgId: string }) {
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const emptyForm = { name: '', icon: '🎫', color: '#2563EB', default_sla_days: 3, default_response_sla_hours: '', resolver_group_id: '', description: '' }
+  const emptyForm = { name: '', icon: '🎫', color: 'var(--primary-text)', default_sla_days: 3, default_response_sla_hours: '', resolver_group_id: '', description: '' }
   const [form, setForm] = useState({ ...emptyForm })
   const [editForm, setEditForm] = useState({ ...emptyForm })
   const [submitting, setSubmitting] = useState(false)
@@ -1070,7 +1070,7 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
   const [groups, setGroups] = useState<TicketResolverGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
-  const emptyForm = { name: '', color: '#0891B2', ticket_type_id: '', default_sla_days: '', default_response_sla_hours: '', resolver_group_id: '', description: '' }
+  const emptyForm = { name: '', color: 'var(--text-secondary)', ticket_type_id: '', default_sla_days: '', default_response_sla_hours: '', resolver_group_id: '', description: '' }
   const [form, setForm] = useState({ ...emptyForm })
   const [submitting, setSubmitting] = useState(false)
 
@@ -1179,7 +1179,7 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
   const [items, setItems] = useState<TicketPriority[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
-  const [form, setForm] = useState({ label: '', color: '#DC2626', sla_days: '', order_index: 0 })
+  const [form, setForm] = useState({ label: '', color: 'var(--danger)', sla_days: '', order_index: 0 })
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -1193,7 +1193,7 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
     try {
       const item = await ticketsApi.createPriority(orgId, { label: form.label.trim(), color: form.color, sla_days: form.sla_days ? parseInt(form.sla_days) : undefined, order_index: form.order_index, is_active: true })
       setItems((prev) => [...prev, item].sort((a, b) => a.order_index - b.order_index))
-      setForm({ label: '', color: '#DC2626', sla_days: '', order_index: 0 }); setCreating(false)
+      setForm({ label: '', color: 'var(--danger)', sla_days: '', order_index: 0 }); setCreating(false)
     } catch { /* ignore */ } finally { setSubmitting(false) }
   }
 
@@ -1251,7 +1251,7 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
   const [items, setItems] = useState<TicketStatus[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
-  const [form, setForm] = useState({ label: '', type: 'open' as TicketStatusType, color: '#2563EB', order_index: 0, is_default: false })
+  const [form, setForm] = useState({ label: '', type: 'open' as TicketStatusType, color: 'var(--primary-text)', order_index: 0, is_default: false })
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -1265,7 +1265,7 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
     try {
       const item = await ticketsApi.createStatus(orgId, { label: form.label.trim(), type: form.type, color: form.color, order_index: form.order_index, is_default: form.is_default, is_active: true })
       setItems((prev) => [...prev, item].sort((a, b) => a.order_index - b.order_index))
-      setForm({ label: '', type: 'open', color: '#2563EB', order_index: 0, is_default: false }); setCreating(false)
+      setForm({ label: '', type: 'open', color: 'var(--primary-text)', order_index: 0, is_default: false }); setCreating(false)
     } catch { /* ignore */ } finally { setSubmitting(false) }
   }
 

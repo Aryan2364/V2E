@@ -352,7 +352,7 @@ function UpwardSection({ orgId, view, onChange, apiError }: { orgId: string; vie
   // Match the org-chart hue scheme and tree ordering used by the Unify card, so the two
   // Department-rules cards read as parallel views of the same hierarchy.
   const colors = useMemo(() => computeNodeColors(depts as unknown as Department[]), [depts])
-  const colorOf = (id: string) => colors[id]?.base || '#94A3B8'
+  const colorOf = (id: string) => colors[id]?.base || 'var(--text-muted)'
   const rows = useMemo(() => flattenTree(depts as unknown as Department[]), [depts])
 
   // Nearest ancestor (excluding self) merged via "Merge a department with its sub-departments". When present,
@@ -435,7 +435,7 @@ function UnifySection({ orgId, view, onChange, apiError }: { orgId: string; view
   // Reuse the org-chart hue scheme so swatches here match the chart (branch hue,
   // faded by depth, honouring explicit per-department color overrides).
   const colors = useMemo(() => computeNodeColors(depts as unknown as Department[]), [depts])
-  const colorOf = (id: string) => colors[id]?.base || '#94A3B8'
+  const colorOf = (id: string) => colors[id]?.base || 'var(--text-muted)'
   // Whole department forest in pre-order (root → branch → leaves), indented by depth —
   // so the list follows the hierarchy instead of being a flat alphabetical list.
   const rows = useMemo(() => flattenTree(depts as unknown as Department[]), [depts])

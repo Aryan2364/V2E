@@ -7,31 +7,31 @@ interface Props {
 }
 
 const ACTION_CONFIG: Record<TicketActivityAction, { label: string; color: string; bg: string }> = {
-  created:                { label: 'Ticket created',               color: '#2563EB', bg: '#EFF6FF' },
-  assigned:               { label: 'Ticket assigned',              color: '#0891B2', bg: '#E0F2FE' },
-  reassigned:             { label: 'Ticket reassigned',            color: '#7C3AED', bg: '#EDE9FE' },
-  status_changed:         { label: 'Status changed',               color: '#475569', bg: '#F1F5F9' },
-  accepted:               { label: 'Ticket accepted',              color: '#2563EB', bg: '#EFF6FF' },
-  resolved:               { label: 'Ticket resolved',              color: '#16A34A', bg: '#DCFCE7' },
-  closed:                 { label: 'Ticket closed',                color: '#475569', bg: '#F1F5F9' },
-  reopened:               { label: 'Ticket reopened',              color: '#D97706', bg: '#FEF9C3' },
-  escalated:              { label: 'Ticket escalated',             color: '#D97706', bg: '#FEF3C7' },
-  comment_added:          { label: 'Comment added',                color: '#475569', bg: '#F8FAFC' },
-  comment_deleted:        { label: 'Comment deleted',              color: '#94A3B8', bg: '#F8FAFC' },
-  proof_attached:         { label: 'Proof attached',               color: '#059669', bg: '#D1FAE5' },
-  checklist_updated:      { label: 'Checklist updated',            color: '#475569', bg: '#F1F5F9' },
-  rating_submitted:       { label: 'Rating submitted',             color: '#D97706', bg: '#FEF9C3' },
-  deleted:                { label: 'Ticket deleted',               color: '#DC2626', bg: '#FEE2E2' },
-  sla_breached:           { label: 'SLA breached',                 color: '#DC2626', bg: '#FEE2E2' },
-  confirmation_requested: { label: 'Confirmation requested',       color: '#2563EB', bg: '#EFF6FF' },
-  raiser_confirmed:       { label: 'Raiser confirmed resolution',  color: '#16A34A', bg: '#DCFCE7' },
-  rejected:               { label: 'Ticket rejected to triage',    color: '#DC2626', bg: '#FEE2E2' },
-  transferred:            { label: 'Ticket transferred',           color: '#7C3AED', bg: '#EDE9FE' },
-  put_on_hold:            { label: 'Put on hold',                  color: '#6B7280', bg: '#F1F5F9' },
-  resumed:                { label: 'Resumed from hold',            color: '#0891B2', bg: '#E0F2FE' },
-  first_responded:        { label: 'First response',               color: '#16A34A', bg: '#DCFCE7' },
-  response_breached:      { label: 'Response SLA breached',        color: '#DC2626', bg: '#FEE2E2' },
-  claimed:                { label: 'Ticket claimed',               color: '#2563EB', bg: '#EFF6FF' },
+  created:                { label: 'Ticket created',               color: 'var(--primary-text)', bg: 'var(--primary-subtle)' },
+  assigned:               { label: 'Ticket assigned',              color: 'var(--text-secondary)', bg: 'var(--surface-control)' },
+  reassigned:             { label: 'Ticket reassigned',            color: 'var(--text-secondary)', bg: 'var(--surface-control)' },
+  status_changed:         { label: 'Status changed',               color: 'var(--text-secondary)', bg: 'var(--surface-control)' },
+  accepted:               { label: 'Ticket accepted',              color: 'var(--primary-text)', bg: 'var(--primary-subtle)' },
+  resolved:               { label: 'Ticket resolved',              color: 'var(--success)', bg: 'var(--success-bg)' },
+  closed:                 { label: 'Ticket closed',                color: 'var(--text-secondary)', bg: 'var(--surface-control)' },
+  reopened:               { label: 'Ticket reopened',              color: 'var(--warning)', bg: 'var(--warning-bg)' },
+  escalated:              { label: 'Ticket escalated',             color: 'var(--warning)', bg: 'var(--warning-bg)' },
+  comment_added:          { label: 'Comment added',                color: 'var(--text-secondary)', bg: 'var(--surface-sunken)' },
+  comment_deleted:        { label: 'Comment deleted',              color: 'var(--text-muted)', bg: 'var(--surface-sunken)' },
+  proof_attached:         { label: 'Proof attached',               color: 'var(--success)', bg: 'var(--success-bg)' },
+  checklist_updated:      { label: 'Checklist updated',            color: 'var(--text-secondary)', bg: 'var(--surface-control)' },
+  rating_submitted:       { label: 'Rating submitted',             color: 'var(--warning)', bg: 'var(--warning-bg)' },
+  deleted:                { label: 'Ticket deleted',               color: 'var(--danger)', bg: 'var(--danger-bg)' },
+  sla_breached:           { label: 'SLA breached',                 color: 'var(--danger)', bg: 'var(--danger-bg)' },
+  confirmation_requested: { label: 'Confirmation requested',       color: 'var(--primary-text)', bg: 'var(--primary-subtle)' },
+  raiser_confirmed:       { label: 'Raiser confirmed resolution',  color: 'var(--success)', bg: 'var(--success-bg)' },
+  rejected:               { label: 'Ticket rejected to triage',    color: 'var(--danger)', bg: 'var(--danger-bg)' },
+  transferred:            { label: 'Ticket transferred',           color: 'var(--text-secondary)', bg: 'var(--surface-control)' },
+  put_on_hold:            { label: 'Put on hold',                  color: 'var(--text-secondary)', bg: 'var(--surface-control)' },
+  resumed:                { label: 'Resumed from hold',            color: 'var(--text-secondary)', bg: 'var(--surface-control)' },
+  first_responded:        { label: 'First response',               color: 'var(--success)', bg: 'var(--success-bg)' },
+  response_breached:      { label: 'Response SLA breached',        color: 'var(--danger)', bg: 'var(--danger-bg)' },
+  claimed:                { label: 'Ticket claimed',               color: 'var(--primary-text)', bg: 'var(--primary-subtle)' },
 }
 
 function formatTime(d: string) {
@@ -46,7 +46,7 @@ export default function TicketActivityFeed({ logs }: Props) {
   return (
     <div className="flex flex-col gap-2">
       {logs.map((log) => {
-        const cfg = ACTION_CONFIG[log.action] ?? { label: log.action, color: '#475569', bg: '#F8FAFC' }
+        const cfg = ACTION_CONFIG[log.action] ?? { label: log.action, color: 'var(--text-secondary)', bg: 'var(--surface-sunken)' }
         return (
           <div key={log.id} className="flex items-start gap-3 py-2 border-b border-border-light last:border-0">
             <div

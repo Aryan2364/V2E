@@ -8,7 +8,7 @@ interface ProjectProgressBarProps {
 
 export default function ProjectProgressBar({ percentage, showLabel = true, height = 8 }: ProjectProgressBarProps) {
   const pct = Math.min(100, Math.max(0, percentage))
-  const color = pct === 100 ? '#16A34A' : pct >= 50 ? '#2563EB' : '#D97706'
+  const color = pct === 100 ? 'var(--success)' : pct >= 50 ? 'var(--primary-text)' : 'var(--warning)'
 
   return (
     <div className="w-full">

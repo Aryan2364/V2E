@@ -103,7 +103,7 @@ export default function GoogleCalendarConnect({
         >
           <span
             className="w-2 h-2 rounded-full shrink-0"
-            style={{ backgroundColor: connected ? '#22C55E' : '#CBD5E1' }}
+            style={{ backgroundColor: connected ? 'var(--success)' : 'var(--border)' }}
           />
           <Calendar size={16} />
           <span className="hidden sm:inline">Google Calendar</span>
@@ -195,9 +195,9 @@ export default function GoogleCalendarConnect({
           <div
             className="fixed bottom-5 right-5 z-1001 flex items-center gap-2 px-4 py-3 rounded-[10px] shadow-lg border text-sm"
             style={{
-              backgroundColor: toast === 'connected' ? '#FFFFFF' : '#FEF2F2',
-              borderColor: toast === 'connected' ? '#BBF7D0' : '#FECACA',
-              color: toast === 'connected' ? '#166534' : '#B91C1C',
+              backgroundColor: toast === 'connected' ? 'var(--surface)' : 'var(--danger-bg)',
+              borderColor: toast === 'connected' ? 'var(--success-bg)' : 'var(--danger-bg)',
+              color: toast === 'connected' ? 'var(--success)' : 'var(--danger)',
             }}
           >
             {toast === 'connected' ? <Check size={16} /> : <X size={16} />}

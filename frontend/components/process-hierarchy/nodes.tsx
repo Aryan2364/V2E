@@ -25,19 +25,19 @@ export interface ProcessNodeData {
 }
 
 const DIFF_COLOR: Partial<Record<DiffChangeKind, string>> = {
-  added: '#16A34A',
-  removed: '#DC2626',
-  changed: '#D97706',
+  added: 'var(--success)',
+  removed: 'var(--danger)',
+  changed: 'var(--warning)',
 }
 
 /** Border colour: selection wins, then a diff tint, else the kind accent. */
 export function borderColor(data: ProcessNodeData, accent: string): string {
-  if (data.selected) return '#2563EB'
+  if (data.selected) return 'var(--primary-text)'
   if (data.diff && DIFF_COLOR[data.diff]) return DIFF_COLOR[data.diff]!
   return accent
 }
 
-const handleStyle: React.CSSProperties = { width: 7, height: 7, background: '#2563EB', border: '2px solid #fff' }
+const handleStyle: React.CSSProperties = { width: 7, height: 7, background: 'var(--primary)', border: '2px solid #fff' }
 
 // Four connection dots (top / right / bottom / left), each usable as input OR output — the canvas
 // runs in connectionMode="loose", and enforces the rule "left = input only, right = output only"
@@ -77,7 +77,7 @@ function EditButton({ data }: { data: ProcessNodeData }) {
 
 function StepNode({ data }: NodeProps<ProcessNodeData>) {
   const isContainer = data.kind === 'container'
-  const accent = data.kind === 'container' || data.kind === 'subprocess' ? '#3B82F6' : '#CBD5E1'
+  const accent = data.kind === 'container' || data.kind === 'subprocess' ? 'var(--primary-text)' : 'var(--border)'
   const canOpen = data.drillable || !!data.linkedMapName
   const checks = data.checklist ?? []
   const [showChecks, setShowChecks] = useState(false)
@@ -101,7 +101,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
           </Tooltip>
         )}
         <div className={`flex items-start gap-1.5 ${data.canExpand ? 'pr-11' : canOpen ? 'pr-5' : ''}`}>
-          <span style={{ color: '#2563EB' }} className="shrink-0 mt-0.5">{KIND_META[data.kind].icon}</span>
+          <span style={{ color: 'var(--primary-text)' }} className="shrink-0 mt-0.5">{KIND_META[data.kind].icon}</span>
           <span className="flex-1 min-w-0 text-[13px] font-medium text-text-primary leading-snug wrap-break-word">{data.name}</span>
         </div>
         {data.linkedMapName && data.linkedMapName !== data.name && (
@@ -166,7 +166,7 @@ function DecisionNode({ data }: NodeProps<ProcessNodeData>) {
           top: 15,
           left: 15,
           transform: 'rotate(45deg)',
-          border: `2px solid ${borderColor(data, '#D97706')}`,
+          border: `2px solid ${borderColor(data, 'var(--warning)')}`,
           borderRadius: 6,
         }}
       />
@@ -179,7 +179,7 @@ function DecisionNode({ data }: NodeProps<ProcessNodeData>) {
 
 function EventNode({ data }: NodeProps<ProcessNodeData>) {
   const isStart = data.kind === 'start_event'
-  const accent = isStart ? '#16A34A' : '#DC2626'
+  const accent = isStart ? 'var(--success)' : 'var(--danger)'
   return (
     <>
       {/* Start has no input (hide the left dot); End has no output (hide the right dot). */}
@@ -229,7 +229,7 @@ function NoteNode({ data }: NodeProps<ProcessNodeData>) {
   return (
     <div
       className={`relative rounded-[6px] px-3 py-2.5 shadow-xs ${data.selected ? 'ring-2 ring-primary' : ''}`}
-      style={{ width: 190, minHeight: 96, background: '#FEF9C3', border: '1px solid #FDE68A' }}
+      style={{ width: 190, minHeight: 96, background: 'var(--warning-bg)', border: '1px solid #FDE68A' }}
     >
       <div className="flex items-center gap-1 mb-1 text-warning">
         <StickyNote size={12} className="shrink-0" />
@@ -253,14 +253,14 @@ function SwimlaneBandNode({ data }: NodeProps<SwimlaneBandData>) {
     <div
       className="relative w-full h-full"
       style={{
-        border: `1.5px solid ${isPool ? '#94A3B8' : '#CBD5E1'}`,
+        border: `1.5px solid ${isPool ? 'var(--text-muted)' : 'var(--border)'}`,
         background: isPool ? 'rgba(248,250,252,0.35)' : 'rgba(241,245,249,0.30)',
         borderRadius: 4,
       }}
     >
       <div
         className="absolute left-0 top-0 bottom-0 flex flex-col items-center border-r"
-        style={{ width: 30, borderColor: isPool ? '#CBD5E1' : '#E2E8F0', paddingTop: 6, gap: 4 }}
+        style={{ width: 30, borderColor: isPool ? 'var(--border)' : 'var(--border-light)', paddingTop: 6, gap: 4 }}
       >
         {/* Drag grip: reorder this lane among the department lanes, or this pool among the pools. */}
         {data.onReorderStart && (
@@ -351,8 +351,8 @@ function DocNode({ data }: NodeProps<DocNodeData>) {
           style={{ width: DOC_CHIP_W, height: DOC_CHIP_H }}
           className="nodrag group flex items-center gap-1.5 px-2 rounded-[7px] border border-dashed border-border bg-white shadow-xs text-left transition-colors hover:border-primary"
         >
-          <span className="w-[3px] self-stretch my-1 rounded-full shrink-0" style={{ background: isInput ? '#0EA5E9' : '#8B5CF6' }} />
-          <Icon size={13} className="shrink-0" style={{ color: isInput ? '#0EA5E9' : '#8B5CF6' }} />
+          <span className="w-[3px] self-stretch my-1 rounded-full shrink-0" style={{ background: isInput ? 'var(--text-secondary)' : 'var(--text-secondary)' }} />
+          <Icon size={13} className="shrink-0" style={{ color: isInput ? 'var(--text-secondary)' : 'var(--text-secondary)' }} />
           <span className="flex-1 min-w-0 truncate text-[11px] font-medium text-text-secondary group-hover:text-text-primary">{data.name}</span>
         </button>
       </Tooltip>

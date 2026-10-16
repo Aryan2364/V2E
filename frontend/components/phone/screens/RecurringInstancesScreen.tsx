@@ -22,7 +22,7 @@ import { RECURRING_TEMPLATES_HREF, type PhoneRoute } from '@/lib/phone-routes'
 
 function statusBadge(task: Task): { label: string; bg: string; text: string } {
   if (task.status) return { label: task.status.label, bg: `${task.status.color}20`, text: task.status.color }
-  return { label: 'Open', bg: '#EFF6FF', text: '#2563EB' }
+  return { label: 'Open', bg: 'var(--primary-subtle)', text: 'var(--primary-text)' }
 }
 
 export default function RecurringInstancesScreen({ route }: { route: PhoneRoute }) {

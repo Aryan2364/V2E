@@ -14,10 +14,10 @@ import type { Goal, GoalCandidateProject, LinkedProject } from '@/lib/types/goal
 import { CountBadge, formatDate } from './shared'
 
 const PROJECT_STATUS_META: Record<string, { label: string; bg: string; text: string; border: string }> = {
-  active: { label: 'Active', bg: '#DCFCE7', text: '#16A34A', border: '#BBF7D0' },
-  on_hold: { label: 'On hold', bg: '#FEF9C3', text: '#CA8A04', border: '#FDE68A' },
-  completed: { label: 'Completed', bg: '#E0F2FE', text: '#0369A1', border: '#BAE6FD' },
-  cancelled: { label: 'Cancelled', bg: '#FEE2E2', text: '#DC2626', border: '#FECACA' },
+  active: { label: 'Active', bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success-border)' },
+  on_hold: { label: 'On hold', bg: 'var(--warning-bg)', text: 'var(--warning)', border: 'var(--warning-border)' },
+  completed: { label: 'Completed', bg: 'var(--surface-control)', text: 'var(--text-secondary)', border: 'var(--border-light)' },
+  cancelled: { label: 'Cancelled', bg: 'var(--danger-bg)', text: 'var(--danger)', border: 'var(--danger-border)' },
 }
 
 /**
@@ -137,9 +137,9 @@ function ProjectRow({
 
   const meta = PROJECT_STATUS_META[project.status] ?? {
     label: project.status,
-    bg: '#F1F5F9',
-    text: '#475569',
-    border: '#E2E8F0',
+    bg: 'var(--surface-control)',
+    text: 'var(--text-secondary)',
+    border: 'var(--border-light)',
   }
 
   async function unlink() {

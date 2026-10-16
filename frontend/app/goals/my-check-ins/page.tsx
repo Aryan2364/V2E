@@ -126,8 +126,8 @@ export default function MyCheckInsPage() {
                         className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[12px] font-semibold"
                         style={
                           late
-                            ? { backgroundColor: '#FEE2E2', borderColor: '#FECACA', color: '#DC2626' }
-                            : { backgroundColor: '#FEF9C3', borderColor: '#FDE68A', color: '#CA8A04' }
+                            ? { backgroundColor: 'var(--danger-bg)', borderColor: 'var(--danger-border)', color: 'var(--danger)' }
+                            : { backgroundColor: 'var(--warning-bg)', borderColor: 'var(--warning-border)', color: 'var(--warning)' }
                         }
                       >
                         {g.due_reason}

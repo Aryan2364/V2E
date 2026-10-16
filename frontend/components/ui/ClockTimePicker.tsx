@@ -21,8 +21,8 @@ const R_IN  = 62;
 const R_MID = (R_OUT + R_IN) / 2;
 
 // Brand palette — kept in sync with DatePicker (#2563EB).
-const BLUE      = "#2563EB";
-const BLUE_DARK = "#1D4ED8";
+const BLUE      = "var(--primary-text)";
+const BLUE_DARK = "var(--primary-text)";
 
 // Outer ring  : 12,  1,  2, …, 11
 const OUTER = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -141,7 +141,7 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
         position: "fixed", top: "50%", left: "50%",
         transform: "translate(-50%,-50%)",
         zIndex: 211,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "var(--surface)",
         border: "1px solid #E2E8F0",
         borderRadius: "16px",
         padding: "24px 24px 20px",
@@ -155,14 +155,14 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
         <button
           onClick={onClose}
           aria-label="Close"
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F1F5F9"; e.currentTarget.style.color = "#0F172A"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#94A3B8"; }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--surface-control)"; e.currentTarget.style.color = "var(--text-primary)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; }}
           style={{
             position: "absolute", top: "14px", right: "14px",
             width: "28px", height: "28px",
             display: "flex", alignItems: "center", justifyContent: "center",
             borderRadius: "8px", border: "none", background: "transparent",
-            color: "#94A3B8", cursor: "pointer",
+            color: "var(--text-muted)", cursor: "pointer",
           }}
         >
           <X size={16} />
@@ -171,7 +171,7 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
         {/* Label */}
         <p style={{
           fontSize: "10px", fontWeight: 700, textTransform: "uppercase",
-          letterSpacing: "0.1em", color: "#94A3B8", margin: "0 0 12px",
+          letterSpacing: "0.1em", color: "var(--text-muted)", margin: "0 0 12px",
         }}>
           {label ?? "Select time"}
         </p>
@@ -186,8 +186,8 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
             style={{
               fontSize: "52px", fontWeight: 800, lineHeight: 1,
               padding: "6px 14px", borderRadius: "14px", border: "none",
-              backgroundColor: mode === "hour" ? "#EFF6FF" : "#F1F5F9",
-              color: mode === "hour" ? BLUE : "#0F172A",
+              backgroundColor: mode === "hour" ? "var(--primary-subtle)" : "var(--surface-control)",
+              color: mode === "hour" ? BLUE : "var(--text-primary)",
               cursor: "pointer", minWidth: "84px", textAlign: "center",
               outline: mode === "hour" ? `2px solid ${BLUE}` : "2px solid transparent",
               transition: "all 0.15s",
@@ -197,7 +197,7 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
           </button>
 
           <span style={{
-            fontSize: "52px", fontWeight: 800, color: "#94A3B8",
+            fontSize: "52px", fontWeight: 800, color: "var(--text-muted)",
             lineHeight: 1, padding: "0 2px",
           }}>
             :
@@ -208,8 +208,8 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
             style={{
               fontSize: "52px", fontWeight: 800, lineHeight: 1,
               padding: "6px 14px", borderRadius: "14px", border: "none",
-              backgroundColor: mode === "minute" ? "#EFF6FF" : "#F1F5F9",
-              color: mode === "minute" ? BLUE : "#0F172A",
+              backgroundColor: mode === "minute" ? "var(--primary-subtle)" : "var(--surface-control)",
+              color: mode === "minute" ? BLUE : "var(--text-primary)",
               cursor: "pointer", minWidth: "84px", textAlign: "center",
               outline: mode === "minute" ? `2px solid ${BLUE}` : "2px solid transparent",
               transition: "all 0.15s",
@@ -221,7 +221,7 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
 
         {/* Mode hint */}
         <p style={{
-          fontSize: "10px", color: "#94A3B8", margin: "0 0 14px",
+          fontSize: "10px", color: "var(--text-muted)", margin: "0 0 14px",
           fontStyle: "italic",
         }}>
           {mode === "hour" ? "Tap or drag to pick hour" : "Tap or drag to pick minute"}
@@ -238,7 +238,7 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
             style={{ cursor: "pointer", touchAction: "none", display: "block" }}
           >
             {/* Background circle */}
-            <circle cx={CX} cy={CY} r={CX - 1} fill="#F1F5F9" />
+            <circle cx={CX} cy={CY} r={CX - 1} fill="var(--surface-control)" />
 
             {/* Minute tick marks (background dots) */}
             {mode === "minute" && tickAngles.map((i) => {
@@ -248,7 +248,7 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
               const ty  = CY - r * Math.cos(a);
               const is5 = i % 5 === 0;
               return !is5 ? (
-                <circle key={i} cx={tx} cy={ty} r={1.5} fill="#CBD5E1" />
+                <circle key={i} cx={tx} cy={ty} r={1.5} fill="var(--surface-control-pressed)" />
               ) : null;
             })}
 
@@ -277,7 +277,7 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
                   <text
                     textAnchor="middle" dominantBaseline="central"
                     fontSize="13" fontWeight={sel ? "700" : "500"}
-                    fill={sel ? "#FFFFFF" : "#0F172A"}
+                    fill={sel ? "var(--surface)" : "var(--text-primary)"}
                     style={{ pointerEvents: "none" }}
                   >
                     {h}
@@ -299,7 +299,7 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
                   <text
                     textAnchor="middle" dominantBaseline="central"
                     fontSize="11" fontWeight={sel ? "700" : "400"}
-                    fill={sel ? "#FFFFFF" : "#475569"}
+                    fill={sel ? "var(--surface)" : "var(--text-secondary)"}
                     style={{ pointerEvents: "none" }}
                   >
                     {h === 0 ? "00" : h}
@@ -323,7 +323,7 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
                   <text
                     textAnchor="middle" dominantBaseline="central"
                     fontSize="13" fontWeight={sel ? "700" : "500"}
-                    fill={sel ? "#FFFFFF" : "#0F172A"}
+                    fill={sel ? "var(--surface)" : "var(--text-primary)"}
                     style={{ pointerEvents: "none" }}
                   >
                     {String(m).padStart(2, "0")}
@@ -334,7 +334,7 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
 
             {/* Selected minute indicator when not on a labelled position */}
             {mode === "minute" && !MIN_LBL.includes(selM) && (
-              <circle cx={hx} cy={hy} r={5} fill="#FFFFFF" />
+              <circle cx={hx} cy={hy} r={5} fill="var(--surface)" />
             )}
           </svg>
         </div>
@@ -345,8 +345,8 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
             onClick={onClose}
             style={{
               padding: "8px 22px", borderRadius: "10px",
-              border: "1px solid #E2E8F0", backgroundColor: "#FFFFFF",
-              fontSize: "13px", fontWeight: 600, color: "#475569",
+              border: "1px solid #E2E8F0", backgroundColor: "var(--surface)",
+              fontSize: "13px", fontWeight: 600, color: "var(--text-secondary)",
               cursor: "pointer",
             }}
           >
@@ -359,7 +359,7 @@ export default function ClockTimePicker({ value, label, onChange, onClose }: Pro
             style={{
               padding: "8px 28px", borderRadius: "10px", border: "none",
               backgroundColor: BLUE,
-              fontSize: "13px", fontWeight: 700, color: "#FFFFFF",
+              fontSize: "13px", fontWeight: 700, color: "var(--surface)",
               cursor: "pointer",
               boxShadow: "0 2px 10px rgba(37,99,235,0.4)",
             }}

@@ -1015,9 +1015,9 @@ export default function TaskDetailPage() {
               <span
                 className="flex items-center gap-2 px-4 py-[8px] text-sm font-semibold rounded-[8px] cursor-default select-none"
                 style={{
-                  backgroundColor: (task.status?.color ?? '#64748B') + '1A',
-                  color: task.status?.color ?? '#64748B',
-                  border: `1px solid ${(task.status?.color ?? '#64748B')}44`,
+                  backgroundColor: (task.status?.color ?? 'var(--text-muted)') + '1A',
+                  color: task.status?.color ?? 'var(--text-muted)',
+                  border: `1px solid ${(task.status?.color ?? 'var(--text-muted)')}44`,
                 }}
               >
                 {task.status?.type === 'completed' ? <CheckCircle2 size={15} /> : <XCircle size={15} />}
@@ -2033,7 +2033,7 @@ export default function TaskDetailPage() {
                       // Creator/admin can drive any person's track — but only in per-person mode,
                       // and not once the person has closed their part as incomplete (final).
                       const editable = !!canEdit && isAllMustComplete && !a.is_completed && !a.cannot_complete
-                      const trackColor = a.status?.color ?? '#64748B'
+                      const trackColor = a.status?.color ?? 'var(--text-muted)'
                       const trackLabel = a.status?.label ?? 'Not Started'
                       return (
                         <div key={a.id} className="space-y-2">

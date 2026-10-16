@@ -73,7 +73,7 @@ function buildEdges(departments: Department[], colors: Record<string, NodeColor>
       id: `e-${d.parent_department_id}-${d.id}`,
       source: d.parent_department_id!,
       target: d.id,
-      style: { stroke: colors[d.id]?.base ?? '#CBD5E1', strokeWidth: 2, opacity: 0.55 },
+      style: { stroke: colors[d.id]?.base ?? 'var(--border)', strokeWidth: 2, opacity: 0.55 },
       type: 'smoothstep',
     }))
 }
@@ -216,7 +216,7 @@ function OrgChartInner({
       const [tx, ty, scale] = getTransformForBounds(bounds, width, height, 0.2, 2, PAD)
       const { toPng } = await import('html-to-image')
       const dataUrl = await toPng(viewport, {
-        backgroundColor: '#ffffff',
+        backgroundColor: 'var(--surface)',
         width,
         height,
         pixelRatio: 2,
@@ -299,11 +299,11 @@ function OrgChartInner({
           minZoom={0.2}
           maxZoom={2}
         >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#E2E8F0" />
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--border-light)" />
           <Controls showInteractive={false} />
           {!nav.isTouch && <CanvasScrollbars nodes={nodes} setInstant={nav.setInstant} />}
           {nav.needsMinimap && (
-            <MiniMap nodeColor={() => '#2563EB'} maskColor="rgba(15,23,42,0.05)" pannable zoomable
+            <MiniMap nodeColor={() => 'var(--primary-text)'} maskColor="rgba(15,23,42,0.05)" pannable zoomable
               className="hidden! sm:block!" style={{ width: 180, height: 120 }} />
           )}
         </ReactFlow>

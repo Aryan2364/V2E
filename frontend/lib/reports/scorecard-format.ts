@@ -4,11 +4,11 @@ import type { ScorecardMetrics } from '@/lib/types/reports'
 // Scorecard detail screen. Colour is only ever applied where the value has a
 // judgement behind it (performance / lateness); plain counts stay dark grey.
 
-export const INK = '#0F172A'
-export const MUTE = '#94A3B8'
-export const GREEN = '#16A34A'
-export const AMBER = '#B45309'
-export const RED = '#DC2626'
+export const INK = 'var(--text-primary)'
+export const MUTE = 'var(--text-muted)'
+export const GREEN = 'var(--success)'
+export const AMBER = 'var(--warning)'
+export const RED = 'var(--danger)'
 
 /** Days late as a full-words phrase. Minus = finished early. */
 export function daysLatePhrase(n: number | null): string {
@@ -31,7 +31,7 @@ export function completionColor(pct: number | null): string {
 
 export function onTimeColor(pct: number | null): string {
   if (pct === null) return MUTE
-  return pct >= 60 ? GREEN : pct >= 30 ? '#65A30D' : pct >= 15 ? AMBER : RED
+  return pct >= 60 ? GREEN : pct >= 30 ? 'var(--success)' : pct >= 15 ? AMBER : RED
 }
 
 /** Completed-work delay: early / on time is good, small late is amber, big late is red. */

@@ -253,7 +253,7 @@ function Flow({
       minZoom={0.2}
       maxZoom={2.5}
     >
-      <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#E2E8F0" />
+      <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--border-light)" />
       <Panel position="bottom-center">
         <div
           className={`pointer-events-none select-none rounded-[999px] border border-border-light bg-white/85 px-3 py-1 text-[11px] font-medium text-text-muted shadow-xs backdrop-blur transition-opacity duration-500 ${
@@ -266,7 +266,7 @@ function Flow({
       <Controls showInteractive={false} onFitView={() => frameTop(300)} />
       {!nav.isTouch && <CanvasScrollbars nodes={rfNodes} setInstant={nav.setInstant} />}
       {nav.needsMinimap && (
-        <MiniMap nodeColor={() => '#2563EB'} maskColor="rgba(15,23,42,0.05)" pannable zoomable
+        <MiniMap nodeColor={() => 'var(--primary-text)'} maskColor="rgba(15,23,42,0.05)" pannable zoomable
           className="hidden! sm:block!" style={{ width: 180, height: 120 }} />
       )}
     </ReactFlow>
@@ -387,7 +387,7 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
   const fitRef = useRef<(() => void) | null>(null)
 
   const colors = useMemo(() => computeNodeColors(departments), [departments])
-  const colorFor = (deptId: string) => colors[deptId]?.base ?? '#94A3B8'
+  const colorFor = (deptId: string) => colors[deptId]?.base ?? 'var(--text-muted)'
 
   // Build the forest from the visible set, but classify roots against the FULL
   // org so a person whose manager/reports were merely filtered out stays in the
@@ -468,7 +468,7 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
         id: `frlabel-${i}`,
         type: 'frLabel',
         position: { x: l.x, y: l.y },
-        data: { label: l.dept?.name ?? 'No department', color: l.dept ? colorFor(l.dept.id) : '#94A3B8' },
+        data: { label: l.dept?.name ?? 'No department', color: l.dept ? colorFor(l.dept.id) : 'var(--text-muted)' },
         draggable: false,
         selectable: false,
       })
@@ -577,7 +577,7 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
                     <div className="flex items-center gap-1.5 mb-1.5 text-xs text-text-secondary">
                       <span
                         className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: c.dept ? colorFor(c.dept.id) : '#94A3B8' }}
+                        style={{ backgroundColor: c.dept ? colorFor(c.dept.id) : 'var(--text-muted)' }}
                       />
                       {c.dept?.name ?? 'No department'}
                     </div>

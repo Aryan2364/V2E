@@ -28,9 +28,9 @@ export default function DelegationPanel({
       <Tag
         {...(onSelect ? { type: 'button' as const, onClick: () => onSelect(kind) } : {})}
         className={`text-left rounded-[10px] border px-4 py-3 transition-colors ${onSelect ? 'hover:border-primary hover:bg-white' : ''}`}
-        style={{ borderColor: danger && value > 0 ? '#FECACA' : '#E2E8F0', background: danger && value > 0 ? '#FEF2F2' : '#FFFFFF' }}
+        style={{ borderColor: danger && value > 0 ? 'var(--danger-bg)' : 'var(--border-light)', background: danger && value > 0 ? 'var(--danger-bg)' : 'var(--surface)' }}
       >
-        <div className="text-2xl font-bold tabular-nums leading-none" style={{ color: danger && value > 0 ? '#DC2626' : '#0F172A' }}>{value}</div>
+        <div className="text-2xl font-bold tabular-nums leading-none" style={{ color: danger && value > 0 ? 'var(--danger)' : 'var(--text-primary)' }}>{value}</div>
         <div className="text-[13px] text-text-secondary mt-1">{label}</div>
       </Tag>
     )

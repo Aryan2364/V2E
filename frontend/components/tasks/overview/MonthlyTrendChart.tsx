@@ -37,15 +37,15 @@ export default function MonthlyTrendChart({
                 if (p && onMonth) onMonth(p.month, p.label)
               }}
             >
-              <CartesianGrid vertical={false} stroke="#E2E8F0" />
-              <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#475569' }} axisLine={false} tickLine={false} />
-              <YAxis yAxisId="l" tick={{ fontSize: 12, fill: '#475569' }} axisLine={false} tickLine={false} allowDecimals={false} />
-              <YAxis yAxisId="r" orientation="right" domain={[0, 100]} unit="%" tick={{ fontSize: 12, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+              <CartesianGrid vertical={false} stroke="var(--border-light)" />
+              <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="l" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <YAxis yAxisId="r" orientation="right" domain={[0, 100]} unit="%" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 13 }} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Area yAxisId="l" dataKey="due" name="Due" fill="#EFF6FF" stroke="#93C5FD" strokeWidth={1.5} />
-              <Bar yAxisId="l" dataKey="completed" name="Completed" barSize={16} radius={[3, 3, 0, 0]} fill="#2563EB" cursor="pointer" />
-              <Line yAxisId="r" dataKey="on_time_rate" name="On-time %" stroke="#D97706" strokeWidth={2} dot={{ r: 3 }} connectNulls />
+              <Area yAxisId="l" dataKey="due" name="Due" fill="var(--primary-subtle)" stroke="var(--primary-border)" strokeWidth={1.5} />
+              <Bar yAxisId="l" dataKey="completed" name="Completed" barSize={16} radius={[3, 3, 0, 0]} fill="var(--primary)" cursor="pointer" />
+              <Line yAxisId="r" dataKey="on_time_rate" name="On-time %" stroke="var(--warning)" strokeWidth={2} dot={{ r: 3 }} connectNulls />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

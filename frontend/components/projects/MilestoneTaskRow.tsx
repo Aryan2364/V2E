@@ -25,7 +25,7 @@ export default function MilestoneTaskRow({ pt, warnings, onSetup }: MilestoneTas
     )
   }
 
-  const statusColor = task.status?.color ?? '#94A3B8'
+  const statusColor = task.status?.color ?? 'var(--text-muted)'
   const completed = task.status?.type === 'completed'
 
   return (

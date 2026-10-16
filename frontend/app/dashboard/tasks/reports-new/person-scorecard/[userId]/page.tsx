@@ -330,17 +330,17 @@ export default function ScorecardDetailPage() {
                       <td className="px-4 py-2.5 text-center tabular-nums text-text-secondary">{r.fired}</td>
                       <td className="px-4 py-2.5 text-center tabular-nums" style={{ color: r.fired > 0 && r.done === 0 ? RED : INK }}>{r.done}</td>
                       <td className="px-4 py-2.5 text-center tabular-nums">{r.on_time_rate === null ? <span className="text-text-muted">—</span> : `${r.on_time_rate}%`}</td>
-                      <td className="px-4 py-2.5 text-center tabular-nums" style={{ color: r.withdrawn ? '#64748B' : '#CBD5E1' }}>{r.withdrawn}</td>
-                    <td className="px-4 py-2.5 text-center tabular-nums" style={{ color: r.handed_over ? '#475569' : '#CBD5E1' }}>{r.handed_over}</td>
+                      <td className="px-4 py-2.5 text-center tabular-nums" style={{ color: r.withdrawn ? 'var(--text-muted)' : 'var(--border)' }}>{r.withdrawn}</td>
+                    <td className="px-4 py-2.5 text-center tabular-nums" style={{ color: r.handed_over ? 'var(--text-secondary)' : 'var(--border)' }}>{r.handed_over}</td>
                       <td className="px-4 py-2.5">
                         <span
                           className="inline-flex items-center rounded-full px-2 py-0.5 text-[12px] font-medium"
                           style={
                             r.freshness_state === 'behind'
-                              ? { backgroundColor: '#FEE2E2', color: '#B91C1C' }
+                              ? { backgroundColor: 'var(--danger-bg)', color: 'var(--danger)' }
                               : r.freshness_state === 'current'
-                              ? { backgroundColor: '#DCFCE7', color: '#15803D' }
-                              : { backgroundColor: '#F1F5F9', color: '#94A3B8' }
+                              ? { backgroundColor: 'var(--success-bg)', color: 'var(--success)' }
+                              : { backgroundColor: 'var(--surface-control)', color: 'var(--text-muted)' }
                           }
                         >
                           {r.freshness_label}
@@ -450,7 +450,7 @@ export default function ScorecardDetailPage() {
                                         </td>
                                         <td className="px-2 py-1.5 tabular-nums" style={{ color: e.days_late == null || e.date_status === 'handed_over' ? MUTE : e.date_status === 'overdue' ? pendingAgeColor(e.days_late) : completedDelayColor(e.days_late) }}>{daysLateCell(e)}</td>
                                         {!pendingView && <td className="px-2 py-1.5 text-text-secondary">{fmt(e.completion_date)}</td>}
-                                        {!pendingView && <td className="px-2 py-1.5 font-medium" style={{ color: e.on_time === 'Yes' ? '#15803D' : e.on_time === 'No' ? RED : MUTE }}>{e.on_time || '—'}</td>}
+                                        {!pendingView && <td className="px-2 py-1.5 font-medium" style={{ color: e.on_time === 'Yes' ? 'var(--success)' : e.on_time === 'No' ? RED : MUTE }}>{e.on_time || '—'}</td>}
                                       </tr>
                                     ))}
                                   </tbody>
@@ -492,7 +492,7 @@ export default function ScorecardDetailPage() {
                         </td>
                         <td className="px-3 py-2 tabular-nums" style={{ color: e.days_late == null || e.date_status === 'handed_over' ? MUTE : e.date_status === 'overdue' ? pendingAgeColor(e.days_late) : completedDelayColor(e.days_late) }}>{daysLateCell(e)}</td>
                         {!pendingView && <td className="px-3 py-2 text-text-secondary">{fmt(e.completion_date)}</td>}
-                        {!pendingView && <td className="px-3 py-2 text-center font-medium" style={{ color: e.on_time === 'Yes' ? '#15803D' : e.on_time === 'No' ? RED : MUTE }}>{e.on_time || '—'}</td>}
+                        {!pendingView && <td className="px-3 py-2 text-center font-medium" style={{ color: e.on_time === 'Yes' ? 'var(--success)' : e.on_time === 'No' ? RED : MUTE }}>{e.on_time || '—'}</td>}
                       </tr>
                     ))}
                   </tbody>

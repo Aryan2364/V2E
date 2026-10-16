@@ -72,7 +72,7 @@ export default function DepartmentsPage() {
                   <span className="flex items-center gap-2 min-w-0">
                     <span
                       className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: colors[dept.id]?.base || '#94A3B8' }}
+                      style={{ backgroundColor: colors[dept.id]?.base || 'var(--text-muted)' }}
                     />
                     <span className="truncate">{dept.name}</span>
                   </span>

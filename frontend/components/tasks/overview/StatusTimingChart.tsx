@@ -27,8 +27,8 @@ export default function StatusTimingChart({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} layout="vertical" margin={{ top: 0, right: 12, left: 4, bottom: 0 }}>
               <XAxis type="number" hide allowDecimals={false} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 12, fill: '#475569' }} axisLine={false} tickLine={false} width={104} />
-              <Tooltip cursor={{ fill: '#EFF6FF' }} contentStyle={{ borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 13 }} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} width={104} />
+              <Tooltip cursor={{ fill: 'var(--primary-subtle)' }} contentStyle={{ borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 13 }} />
               {TIMINGS.map((t) => (
                 <Bar
                   key={t}

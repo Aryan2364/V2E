@@ -24,7 +24,7 @@ const REPORTS: ReportTile[] = [
       'A per-person task compliance scorecard — scope, total entries, completion, on-time rate, delay and an automatic Grade. Open one person or download everyone in your scope.',
     href: '/dashboard/tasks/reports-new/person-scorecard',
     Icon: UserSquare2,
-    accent: '#2563EB',
+    accent: 'var(--primary-text)',
     badge: 'New',
   },
   {
@@ -34,7 +34,7 @@ const REPORTS: ReportTile[] = [
       'Open work only — Overdue or Ongoing — bucketed by how late it is, by person and by task. Click any number to see exactly those tasks. Download the full three-sheet report.',
     href: '/dashboard/tasks/reports-new/ageing',
     Icon: CalendarClock,
-    accent: '#DC2626',
+    accent: 'var(--danger)',
     badge: 'New',
   },
   {
@@ -44,7 +44,7 @@ const REPORTS: ReportTile[] = [
       'A month grid, one row per task and person — each day coloured green (on time), amber (late), red (missed) or white (not due yet). Pick any month, filter, and click a square to open the task.',
     href: '/dashboard/tasks/reports-new/calendar',
     Icon: CalendarDays,
-    accent: '#7C3AED',
+    accent: 'var(--text-secondary)',
     badge: 'New',
   },
   {
@@ -54,7 +54,7 @@ const REPORTS: ReportTile[] = [
       'Organization-wide task analytics — team- and department-level completion rates and priority / category / status breakdowns.',
     href: '/dashboard/tasks/reports',
     Icon: BarChart2,
-    accent: '#0891B2',
+    accent: 'var(--text-secondary)',
   },
 ]
 

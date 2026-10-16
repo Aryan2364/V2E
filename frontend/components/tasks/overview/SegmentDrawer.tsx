@@ -85,8 +85,8 @@ export default function SegmentDrawer({
 
         <div className="px-5 py-3 flex gap-6 border-b border-border-light bg-surface-sunken">
           <Stat label="Tasks" value={total} />
-          <Stat label="Completed" value={completed} color="#16A34A" />
-          <Stat label="Overdue" value={overdue} color={overdue ? '#DC2626' : '#94A3B8'} />
+          <Stat label="Completed" value={completed} color="var(--success)" />
+          <Stat label="Overdue" value={overdue} color={overdue ? 'var(--danger)' : 'var(--text-muted)'} />
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -109,7 +109,7 @@ export default function SegmentDrawer({
                   <div className="flex items-start justify-between gap-3 mb-1.5">
                     <div className="font-semibold text-sm leading-snug text-text-primary">{r.title}</div>
                     {r.priority && (
-                      <span className="text-[11px] font-medium rounded-full px-2 py-0.5 shrink-0" style={{ backgroundColor: (r.priority.color || '#475569') + '22', color: r.priority.color || '#475569' }}>
+                      <span className="text-[11px] font-medium rounded-full px-2 py-0.5 shrink-0" style={{ backgroundColor: (r.priority.color || 'var(--text-secondary)') + '22', color: r.priority.color || 'var(--text-secondary)' }}>
                         {r.priority.label}
                       </span>
                     )}
@@ -144,7 +144,7 @@ export default function SegmentDrawer({
   )
 }
 
-function Stat({ label, value, color = '#0F172A' }: { label: string; value: number; color?: string }) {
+function Stat({ label, value, color = 'var(--text-primary)' }: { label: string; value: number; color?: string }) {
   return (
     <div>
       <div className="text-lg font-bold tabular-nums leading-none" style={{ color }}>{value}</div>

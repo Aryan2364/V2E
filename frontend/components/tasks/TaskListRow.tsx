@@ -73,7 +73,7 @@ export default function TaskListRow({
 
   // A left accent bar carries urgency at a glance: red when overdue, else the
   // priority colour, else a neutral hairline.
-  const accent = task.is_overdue ? '#DC2626' : priority?.color ?? '#CBD5E1'
+  const accent = task.is_overdue ? 'var(--danger)' : priority?.color ?? 'var(--border)'
 
   // The inline control only moves a task between OPEN states; terminal states show a
   // read-only pill (close / reopen happens via actions on the task) — same rule as TaskCard.

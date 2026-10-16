@@ -427,7 +427,7 @@ export default function AgeingReportPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-3 text-center tabular-nums font-semibold whitespace-nowrap" style={{ color: r.days_late === null ? '#94A3B8' : r.days_late > 30 ? '#DC2626' : '#B45309' }}>{r.days_late ?? '—'}</td>
+                    <td className="px-3 py-3 text-center tabular-nums font-semibold whitespace-nowrap" style={{ color: r.days_late === null ? 'var(--text-muted)' : r.days_late > 30 ? 'var(--danger)' : 'var(--warning)' }}>{r.days_late ?? '—'}</td>
                     <td className="px-3 py-3 whitespace-nowrap"><span className={`text-xs font-medium ${r.status === 'Overdue' ? 'text-danger' : 'text-text-secondary'}`}>{r.bucket_label}</span></td>
                   </tr>
                 ))}
@@ -516,8 +516,8 @@ function BandCells({ b, onDrill }: { b: AgeBuckets; onDrill: (buckets: AgeBucket
       {BUCKETS.map((meta) => (
         <CountCell key={meta.key} value={b[meta.key]} color={countColor(meta.key, b[meta.key])} onClick={() => onDrill([meta.key], meta.label)} />
       ))}
-      <CountCell value={b.total_pending} color="#0F172A" bold onClick={() => onDrill(null, null)} />
-      <CountCell value={b.over_month_late} color={b.over_month_late ? '#DC2626' : '#CBD5E1'} bold onClick={() => onDrill(OVER_MONTH_BUCKETS, 'More than a Month Late')} />
+      <CountCell value={b.total_pending} color="var(--text-primary)" bold onClick={() => onDrill(null, null)} />
+      <CountCell value={b.over_month_late} color={b.over_month_late ? 'var(--danger)' : 'var(--border)'} bold onClick={() => onDrill(OVER_MONTH_BUCKETS, 'More than a Month Late')} />
       <td className="px-3 py-3 text-center tabular-nums text-text-secondary">{b.oldest_late_days ?? '—'}</td>
       <td className="px-3 py-3 text-center tabular-nums text-text-secondary">{b.avg_late_days ?? '—'}</td>
       {/* Clickable like every other count: it passes the 'withdrawn' bucket explicitly,
@@ -532,13 +532,13 @@ function BandCells({ b, onDrill }: { b: AgeBuckets; onDrill: (buckets: AgeBucket
           the rows it opens match exactly. Never part of Total Pending. */}
       <CountCell
         value={b.handed_over}
-        color={b.handed_over ? '#475569' : '#CBD5E1'}
+        color={b.handed_over ? 'var(--text-secondary)' : 'var(--border)'}
         onClick={() => onDrill(['handed_over'], 'Handed over to someone else')}
       />
       {/* Not click-through: `revised_entries` cuts ACROSS the buckets (a revised task is
           still in whichever band it belongs to), so it is not a filter dimension the
           drawer can honour without breaking count === rows. Read-only flag. */}
-      <td className="px-3 py-3 text-center tabular-nums" style={{ color: b.revised_entries ? '#B45309' : '#CBD5E1' }}>
+      <td className="px-3 py-3 text-center tabular-nums" style={{ color: b.revised_entries ? 'var(--warning)' : 'var(--border)' }}>
         {b.revised_entries.toLocaleString()}
       </td>
     </>
@@ -553,7 +553,7 @@ function TotalsFoot({ label, totals, leadCols }: { label: string; totals: AgeBuc
         {Array.from({ length: leadCols - 1 }).map((_, i) => <td key={i} className="px-3 py-3" />)}
         {BUCKETS.map((meta) => <td key={meta.key} className="px-3 py-3 text-center tabular-nums">{totals[meta.key].toLocaleString()}</td>)}
         <td className="px-3 py-3 text-center tabular-nums">{totals.total_pending.toLocaleString()}</td>
-        <td className="px-3 py-3 text-center tabular-nums" style={{ color: totals.over_month_late ? '#DC2626' : '#0F172A' }}>{totals.over_month_late.toLocaleString()}</td>
+        <td className="px-3 py-3 text-center tabular-nums" style={{ color: totals.over_month_late ? 'var(--danger)' : 'var(--text-primary)' }}>{totals.over_month_late.toLocaleString()}</td>
         <td className="px-3 py-3 text-center tabular-nums">{totals.oldest_late_days ?? '—'}</td>
         <td className="px-3 py-3 text-center tabular-nums">{totals.avg_late_days ?? '—'}</td>
         {/* Withdrawn is its own total — never folded into Total Pending or a band. */}

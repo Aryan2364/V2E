@@ -109,7 +109,7 @@ export default function DeptBreakdownChart({
                     {r.label}
                     {drillable && <ChevronRight size={14} className="text-text-muted group-hover:text-primary-text" />}
                   </span>
-                  <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: overdueRate >= 25 ? '#DC2626' : '#475569' }}>
+                  <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: overdueRate >= 25 ? 'var(--danger)' : 'var(--text-secondary)' }}>
                     <span className="font-bold">{overdueRate}%</span> overdue · {r.total}
                   </span>
                 </div>

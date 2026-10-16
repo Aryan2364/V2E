@@ -23,13 +23,13 @@ const ACTION_LABELS: Record<ProjectActivityAction, string> = {
 }
 
 const ACTION_COLORS: Partial<Record<ProjectActivityAction, string>> = {
-  created: '#16A34A',
-  milestone_achieved: '#16A34A',
-  task_completed: '#16A34A',
-  status_changed: '#D97706',
-  member_removed: '#DC2626',
-  task_removed: '#DC2626',
-  deleted: '#DC2626',
+  created: 'var(--success)',
+  milestone_achieved: 'var(--success)',
+  task_completed: 'var(--success)',
+  status_changed: 'var(--warning)',
+  member_removed: 'var(--danger)',
+  task_removed: 'var(--danger)',
+  deleted: 'var(--danger)',
 }
 
 interface ProjectActivityFeedProps {
@@ -48,7 +48,7 @@ export default function ProjectActivityFeed({ logs }: ProjectActivityFeedProps) 
   return (
     <div className="space-y-3">
       {logs.map((log) => {
-        const color = ACTION_COLORS[log.action] ?? '#2563EB'
+        const color = ACTION_COLORS[log.action] ?? 'var(--primary-text)'
         return (
           <div key={log.id} className="flex items-start gap-3">
             <div

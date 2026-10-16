@@ -41,24 +41,24 @@ export function BrandGlyph({
     >
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#3B82F6" />
-          <stop offset="1" stopColor="#2563EB" />
+          <stop offset="0" stopColor="var(--primary-text)" />
+          <stop offset="1" stopColor="var(--primary-text)" />
         </linearGradient>
       </defs>
       <rect width="32" height="32" rx={radius} fill={`url(#${gid})`} />
       {/* vision node */}
-      <circle cx="9" cy="22" r="2.4" fill="#fff" />
+      <circle cx="9" cy="22" r="2.4" fill="var(--surface)" />
       {/* journey to execution */}
       <path
         d="M10.5 20.5 L21 9.5"
-        stroke="#fff"
+        stroke="var(--border-light)"
         strokeWidth="2.4"
         strokeLinecap="round"
       />
       {/* execution arrowhead */}
       <path
         d="M15 9.5 L21.5 9.5 L21.5 16"
-        stroke="#fff"
+        stroke="var(--border-light)"
         strokeWidth="2.4"
         strokeLinecap="round"
         strokeLinejoin="round"

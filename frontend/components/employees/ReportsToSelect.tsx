@@ -63,7 +63,7 @@ export default function ReportsToSelect({
   const { triggerRef, panelRef, pos, style } = useAnchoredPanel(open, () => setOpen(false))
 
   const colors = useMemo(() => computeNodeColors(departments), [departments])
-  const colorFor = (deptId?: string) => (deptId && colors[deptId]?.base) || '#94A3B8'
+  const colorFor = (deptId?: string) => (deptId && colors[deptId]?.base) || 'var(--text-muted)'
 
   const selected = useMemo(
     () => employees.find((e) => e.user_id === value) ?? null,

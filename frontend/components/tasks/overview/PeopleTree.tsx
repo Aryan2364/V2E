@@ -70,10 +70,10 @@ function Row({ node, depth }: { node: TreeNode; depth: number }) {
           )}
         </button>
         <div className="flex items-center gap-3 shrink-0 pl-2">
-          <Stat icon={<Users size={12} />} value={node.assignee.total} color="#475569" title="Tasks assigned to them" />
-          {node.assignee.overdue > 0 && <Stat icon={<AlertTriangle size={12} />} value={node.assignee.overdue} color="#DC2626" title="Overdue" />}
-          <Stat icon={<CheckCircle2 size={12} />} value={node.assignee.completed} color="#16A34A" title="Completed" />
-          <Stat icon={<Send size={12} />} value={node.assigned_count} color="#0891B2" title="Tasks they assigned to others" />
+          <Stat icon={<Users size={12} />} value={node.assignee.total} color="var(--text-secondary)" title="Tasks assigned to them" />
+          {node.assignee.overdue > 0 && <Stat icon={<AlertTriangle size={12} />} value={node.assignee.overdue} color="var(--danger)" title="Overdue" />}
+          <Stat icon={<CheckCircle2 size={12} />} value={node.assignee.completed} color="var(--success)" title="Completed" />
+          <Stat icon={<Send size={12} />} value={node.assigned_count} color="var(--text-secondary)" title="Tasks they assigned to others" />
         </div>
       </div>
       {open && hasChildren && (

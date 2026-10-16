@@ -60,7 +60,7 @@ export default function DeptTableView({
       cellClassName: 'px-5 py-3.5',
       headerClassName: 'px-5 py-3.5',
       render: ({ department, depth }) => {
-        const base = colorMap[department.id]?.base ?? '#94A3B8'
+        const base = colorMap[department.id]?.base ?? 'var(--text-muted)'
         return (
           <div className="flex items-center min-w-0" style={{ paddingLeft: depth * 20 }}>
             {depth > 0 && (

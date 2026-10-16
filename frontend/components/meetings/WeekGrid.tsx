@@ -48,11 +48,11 @@ interface BlockLook {
   rhythm: boolean
 }
 function look(m: Meeting): BlockLook {
-  if (m.status === 'cancelled') return { fill: '#F1F5F9', stripe: '#CBD5E1', text: '#94A3B8', strike: true, live: false, rhythm: false }
-  if (m.status === 'closed') return { fill: '#F1F5F9', stripe: '#94A3B8', text: '#475569', strike: true, live: false, rhythm: false }
-  if (m.status === 'in_progress') return { fill: '#DCFCE7', stripe: '#16A34A', text: '#166534', strike: false, live: true, rhythm: false }
-  if (m.rhythm_id) return { fill: '#F5F3FF', stripe: '#7C3AED', text: '#6D28D9', strike: false, live: false, rhythm: true }
-  return { fill: '#EFF6FF', stripe: '#2563EB', text: '#1D4ED8', strike: false, live: false, rhythm: false }
+  if (m.status === 'cancelled') return { fill: 'var(--surface-control)', stripe: 'var(--surface-control-pressed)', text: 'var(--text-muted)', strike: true, live: false, rhythm: false }
+  if (m.status === 'closed') return { fill: 'var(--surface-control)', stripe: 'var(--text-muted)', text: 'var(--text-secondary)', strike: true, live: false, rhythm: false }
+  if (m.status === 'in_progress') return { fill: 'var(--success-bg)', stripe: 'var(--success)', text: 'var(--success)', strike: false, live: true, rhythm: false }
+  if (m.rhythm_id) return { fill: 'var(--surface-control)', stripe: 'var(--text-secondary)', text: 'var(--text-secondary)', strike: false, live: false, rhythm: true }
+  return { fill: 'var(--primary-subtle)', stripe: 'var(--primary)', text: 'var(--primary-text)', strike: false, live: false, rhythm: false }
 }
 
 // ── per-day overlap layout ───────────────────────────────────────────────────
@@ -265,7 +265,7 @@ export default function WeekGrid({
                         type="button"
                         onClick={(e) => { e.stopPropagation(); onBlockSelect?.(b) }}
                         className="absolute rounded-[6px] overflow-hidden px-1.5 py-1 border-l-[3px] border-dashed text-left cursor-pointer hover:brightness-95"
-                        style={{ top, height, left: '2px', right: '2px', background: 'repeating-linear-gradient(45deg,#F1F5F9,#F1F5F9 6px,#E2E8F0 6px,#E2E8F0 12px)', borderLeftColor: '#94A3B8', color: '#475569', zIndex: 6 }}
+                        style={{ top, height, left: '2px', right: '2px', background: 'repeating-linear-gradient(45deg,#F1F5F9,#F1F5F9 6px,#E2E8F0 6px,#E2E8F0 12px)', borderLeftColor: 'var(--text-muted)', color: 'var(--text-secondary)', zIndex: 6 }}
                         {...tip.bind(<div><div className="font-semibold">{b.title}</div><div className="text-white/70">{b.all_day ? 'All day' : `${fmtTime(b.start_at)} – ${fmtTime(b.end_at)}`} · Time-block</div></div>)}
                       >
                         <div className="text-[12px] font-semibold truncate flex items-center gap-1">

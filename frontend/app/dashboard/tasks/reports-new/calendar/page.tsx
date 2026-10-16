@@ -201,17 +201,17 @@ export default function CalendarReportPage() {
         <div className="flex gap-6 flex-wrap bg-white border border-border-light rounded-[12px] px-5 py-3">
           <Stat label="Task · person rows" value={t.rows} />
           <Stat label="Scheduled" value={t.scheduled} />
-          <Stat label="Done on time" value={t.on_time} color="#166534" />
-          <Stat label="Done late" value={t.late} color="#92400E" />
-          <Stat label="Missed" value={t.missed} color={t.missed ? '#991B1B' : '#94A3B8'} />
-          <Stat label="Brought forward" value={t.brought_forward} color={t.brought_forward ? '#991B1B' : '#94A3B8'} />
+          <Stat label="Done on time" value={t.on_time} color="var(--success)" />
+          <Stat label="Done late" value={t.late} color="var(--warning)" />
+          <Stat label="Missed" value={t.missed} color={t.missed ? 'var(--danger)' : 'var(--text-muted)'} />
+          <Stat label="Brought forward" value={t.brought_forward} color={t.brought_forward ? 'var(--danger)' : 'var(--text-muted)'} />
           {/* Own tiles, never folded into Scheduled or a verdict: Withdrawn = removed
               before the original due date (no verdict earned or owed); Revised = due
               dates that were moved, which the marks were NOT graded against. */}
-          {t.withdrawn > 0 && <Stat label="Withdrawn" value={t.withdrawn} color="#64748B" />}
-          {t.handed_over > 0 && <Stat label="Handed over" value={t.handed_over} color="#475569" />}
-          {t.revised_entries > 0 && <Stat label="Due date revised" value={t.revised_entries} color="#B45309" />}
-          <Stat label="On-time rate" value={onTimePct === null ? '—' : `${onTimePct}%`} color={onTimePct === null ? '#94A3B8' : onTimePct >= 60 ? '#166534' : onTimePct >= 30 ? '#92400E' : '#991B1B'} />
+          {t.withdrawn > 0 && <Stat label="Withdrawn" value={t.withdrawn} color="var(--text-muted)" />}
+          {t.handed_over > 0 && <Stat label="Handed over" value={t.handed_over} color="var(--text-secondary)" />}
+          {t.revised_entries > 0 && <Stat label="Due date revised" value={t.revised_entries} color="var(--warning)" />}
+          <Stat label="On-time rate" value={onTimePct === null ? '—' : `${onTimePct}%`} color={onTimePct === null ? 'var(--text-muted)' : onTimePct >= 60 ? 'var(--success)' : onTimePct >= 30 ? 'var(--warning)' : 'var(--danger)'} />
         </div>
       )}
 
@@ -254,7 +254,7 @@ export default function CalendarReportPage() {
                           <p className="text-[12px] text-text-muted truncate">{row.person} · {row.frequency}</p>
                         </div>
                       </td>
-                      <td className="px-2 py-2 text-center tabular-nums border border-border" style={{ color: row.brought_forward ? '#B91C1C' : '#CBD5E1' }}>{row.brought_forward || ''}</td>
+                      <td className="px-2 py-2 text-center tabular-nums border border-border" style={{ color: row.brought_forward ? 'var(--danger)' : 'var(--border)' }}>{row.brought_forward || ''}</td>
                       {report.days.map((d) => {
                         const c = marks.get(d.day)
                         // Not scheduled that day → grey "not applicable" cell.
@@ -275,9 +275,9 @@ export default function CalendarReportPage() {
                         )
                       })}
                       <td className="px-2 py-2 text-center font-semibold tabular-nums text-text-primary border border-border">{row.scheduled}</td>
-                      <td className="px-2 py-2 text-center tabular-nums border border-border" style={{ color: row.on_time ? '#166534' : '#CBD5E1' }}>{row.on_time || ''}</td>
-                      <td className="px-2 py-2 text-center tabular-nums border border-border" style={{ color: row.late ? '#92400E' : '#CBD5E1' }}>{row.late || ''}</td>
-                      <td className="px-2 py-2 text-center tabular-nums border border-border" style={{ color: row.missed ? '#991B1B' : '#CBD5E1' }}>{row.missed || ''}</td>
+                      <td className="px-2 py-2 text-center tabular-nums border border-border" style={{ color: row.on_time ? 'var(--success)' : 'var(--border)' }}>{row.on_time || ''}</td>
+                      <td className="px-2 py-2 text-center tabular-nums border border-border" style={{ color: row.late ? 'var(--warning)' : 'var(--border)' }}>{row.late || ''}</td>
+                      <td className="px-2 py-2 text-center tabular-nums border border-border" style={{ color: row.missed ? 'var(--danger)' : 'var(--border)' }}>{row.missed || ''}</td>
                     </tr>
                   )
                 })}
@@ -297,7 +297,7 @@ export default function CalendarReportPage() {
   )
 }
 
-function Stat({ label, value, color = '#0F172A' }: { label: string; value: number | string; color?: string }) {
+function Stat({ label, value, color = 'var(--text-primary)' }: { label: string; value: number | string; color?: string }) {
   return (
     <div>
       <div className="text-lg font-bold tabular-nums leading-none" style={{ color }}>{typeof value === 'number' ? value.toLocaleString() : value}</div>

@@ -13,13 +13,13 @@ export interface BucketMeta {
 }
 
 export const BUCKETS: BucketMeta[] = [
-  { key: 'not_yet_due', label: 'Not Yet Due', short: 'Not Yet Due', color: '#475569', headTint: '#F8FAFC' },
-  { key: 'd1_7', label: '1 to 7 Days Late', short: '1–7', color: '#B45309', headTint: '#FFFBEB' },
-  { key: 'd8_15', label: '8 to 15 Days Late', short: '8–15', color: '#B45309', headTint: '#FFFBEB' },
-  { key: 'd16_30', label: '16 to 30 Days Late', short: '16–30', color: '#C2410C', headTint: '#FFF7ED' },
-  { key: 'd31_60', label: '31 to 60 Days Late', short: '31–60', color: '#DC2626', headTint: '#FEF2F2' },
-  { key: 'd61_90', label: '61 to 90 Days Late', short: '61–90', color: '#DC2626', headTint: '#FEF2F2' },
-  { key: 'd90_plus', label: 'More than 90 Days Late', short: '90+', color: '#B91C1C', headTint: '#FEE2E2' },
+  { key: 'not_yet_due', label: 'Not Yet Due', short: 'Not Yet Due', color: 'var(--text-secondary)', headTint: 'var(--surface-sunken)' },
+  { key: 'd1_7', label: '1 to 7 Days Late', short: '1–7', color: 'var(--warning)', headTint: 'var(--warning-bg)' },
+  { key: 'd8_15', label: '8 to 15 Days Late', short: '8–15', color: 'var(--warning)', headTint: 'var(--warning-bg)' },
+  { key: 'd16_30', label: '16 to 30 Days Late', short: '16–30', color: 'var(--warning)', headTint: 'var(--warning-bg)' },
+  { key: 'd31_60', label: '31 to 60 Days Late', short: '31–60', color: 'var(--danger)', headTint: 'var(--danger-bg)' },
+  { key: 'd61_90', label: '61 to 90 Days Late', short: '61–90', color: 'var(--danger)', headTint: 'var(--danger-bg)' },
+  { key: 'd90_plus', label: 'More than 90 Days Late', short: '90+', color: 'var(--danger)', headTint: 'var(--danger-bg)' },
 ]
 
 /**
@@ -32,8 +32,8 @@ export const WITHDRAWN_META: BucketMeta = {
   key: 'withdrawn',
   label: 'Withdrawn (removed before due)',
   short: 'Withdrawn',
-  color: '#64748B',
-  headTint: '#F1F5F9',
+  color: 'var(--text-muted)',
+  headTint: 'var(--surface-control)',
 }
 
 /**
@@ -45,8 +45,8 @@ export const HANDED_OVER_META: BucketMeta = {
   key: 'handed_over',
   label: 'Handed over to someone else',
   short: 'Handed over',
-  color: '#475569',
-  headTint: '#F1F5F9',
+  color: 'var(--text-secondary)',
+  headTint: 'var(--surface-control)',
 }
 
 /** The three late bands that make up "More than a Month Late". */
@@ -58,8 +58,8 @@ export const BUCKET_LABEL: Record<AgeBucketKey, string> = Object.fromEntries(
 
 /** Count colour: muted when zero (so the eye skips empty cells), band colour otherwise. */
 export function countColor(key: AgeBucketKey, value: number): string {
-  if (value === 0) return '#CBD5E1'
-  return [...BUCKETS, WITHDRAWN_META, HANDED_OVER_META].find((b) => b.key === key)?.color ?? '#0F172A'
+  if (value === 0) return 'var(--border)'
+  return [...BUCKETS, WITHDRAWN_META, HANDED_OVER_META].find((b) => b.key === key)?.color ?? 'var(--text-primary)'
 }
 
 export function bandValue(b: AgeBuckets, key: AgeBucketKey): number {

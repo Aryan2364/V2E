@@ -70,13 +70,13 @@ function avatarColor(str: string): string {
 // ─── Timing taxonomy (mirrors the Work Overview colors) ───────────────────────
 
 const TIMING_META: Record<RecurringInstanceTiming, { label: string; color: string; bg: string }> = {
-  early: { label: 'Early', color: '#0891B2', bg: '#E0F2FE' },
-  on_time: { label: 'On time', color: '#16A34A', bg: '#DCFCE7' },
-  late: { label: 'Late', color: '#D97706', bg: '#FEF9C3' },
-  partial: { label: 'Partly done', color: '#9333EA', bg: '#F3E8FF' },
-  incomplete: { label: 'Not done', color: '#DC2626', bg: '#FEE2E2' },
-  overdue: { label: 'Overdue (open)', color: '#DC2626', bg: '#FEE2E2' },
-  pending: { label: 'Open', color: '#94A3B8', bg: '#F1F5F9' },
+  early: { label: 'Early', color: 'var(--text-secondary)', bg: 'var(--surface-control)' },
+  on_time: { label: 'On time', color: 'var(--success)', bg: 'var(--success-bg)' },
+  late: { label: 'Late', color: 'var(--warning)', bg: 'var(--warning-bg)' },
+  partial: { label: 'Partly done', color: 'var(--text-secondary)', bg: 'var(--surface-control)' },
+  incomplete: { label: 'Not done', color: 'var(--danger)', bg: 'var(--danger-bg)' },
+  overdue: { label: 'Overdue (open)', color: 'var(--danger)', bg: 'var(--danger-bg)' },
+  pending: { label: 'Open', color: 'var(--text-muted)', bg: 'var(--surface-control)' },
 }
 
 function reminderSpecLabel(s: ReminderSpec): string {
@@ -172,10 +172,10 @@ function PerformanceCard({ stats, onOpenInstance }: { stats: RecurringStats; onO
                     <div
                       className="w-full max-w-[44px] flex-1 flex flex-col-reverse rounded-[4px] overflow-hidden bg-surface-sunken border border-border-light"
                     >
-                      <div style={{ height: seg(m.on_time), backgroundColor: '#16A34A' }} />
-                      <div style={{ height: seg(m.late), backgroundColor: '#D97706' }} />
-                      <div style={{ height: seg(m.missed), backgroundColor: '#DC2626' }} />
-                      <div style={{ height: seg(m.open), backgroundColor: '#CBD5E1' }} />
+                      <div style={{ height: seg(m.on_time), backgroundColor: 'var(--success)' }} />
+                      <div style={{ height: seg(m.late), backgroundColor: 'var(--warning)' }} />
+                      <div style={{ height: seg(m.missed), backgroundColor: 'var(--danger)' }} />
+                      <div style={{ height: seg(m.open), backgroundColor: 'var(--surface-control-pressed)' }} />
                     </div>
                     </Tooltip>
                     <span className="text-[10px] text-text-muted">{label}</span>
@@ -185,7 +185,7 @@ function PerformanceCard({ stats, onOpenInstance }: { stats: RecurringStats; onO
               })}
             </div>
             <div className="flex items-center gap-3 flex-wrap mt-2">
-              {([['On time', '#16A34A'], ['Late', '#D97706'], ['Missed', '#DC2626'], ['Still open', '#CBD5E1']] as const).map(([l, c]) => (
+              {([['On time', 'var(--success)'], ['Late', 'var(--warning)'], ['Missed', 'var(--danger)'], ['Still open', 'var(--border)']] as const).map(([l, c]) => (
                 <span key={l} className="inline-flex items-center gap-1.5 text-[11px] text-text-secondary">
                   <span className="w-2.5 h-2.5 rounded-[3px]" style={{ backgroundColor: c }} />
                   {l}

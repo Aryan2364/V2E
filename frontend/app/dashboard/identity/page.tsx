@@ -9,7 +9,8 @@ import type { OrgIdentity } from '@/lib/types'
 import { Building2, Pencil, Target, Rocket, Heart } from 'lucide-react'
 
 // Core-value stripe colors. Cycles automatically for any number of values.
-const STRIPE_COLORS = ['#7C3AED', '#16A34A', '#EA580C'] // purple, green, orange
+// A 3-series qualitative chart palette (kit section 21): chart-1..3 by position.
+const STRIPE_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)']
 
 // ─── Mission / Purpose card ───────────────────────────────────────────────────
 
@@ -150,15 +151,15 @@ export default function IdentityPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <PillarCard
                 icon={Rocket}
-                iconColor="#2563EB"
-                iconBg="#EFF6FF"
+                iconColor="var(--primary-text)"
+                iconBg="var(--primary-subtle)"
                 label="Mission"
                 content={identity?.mission}
               />
               <PillarCard
                 icon={Heart}
-                iconColor="#7C3AED"
-                iconBg="#F5F3FF"
+                iconColor="var(--text-secondary)"
+                iconBg="var(--surface-control)"
                 label="Purpose"
                 content={identity?.purpose}
               />

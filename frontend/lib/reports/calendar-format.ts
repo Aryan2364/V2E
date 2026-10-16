@@ -12,18 +12,18 @@ export interface ResultMeta {
 }
 
 export const RESULT_META: Record<DayResult, ResultMeta> = {
-  on_time: { code: 'D', label: 'Done on time', fg: '#166534', bg: '#DCFCE7', border: '#86EFAC' },
-  late: { code: 'L', label: 'Done late', fg: '#92400E', bg: '#FEF3C7', border: '#FCD34D' },
-  missed: { code: 'X', label: 'Missed — still not done', fg: '#991B1B', bg: '#FEE2E2', border: '#FCA5A5' },
-  future: { code: 'W', label: 'Due, date not yet arrived', fg: '#475569', bg: '#FFFFFF', border: '#CBD5E1' },
+  on_time: { code: 'D', label: 'Done on time', fg: 'var(--success)', bg: 'var(--success-bg)', border: 'var(--success-border)' },
+  late: { code: 'L', label: 'Done late', fg: 'var(--warning)', bg: 'var(--warning-bg)', border: 'var(--warning-border)' },
+  missed: { code: 'X', label: 'Missed — still not done', fg: 'var(--danger)', bg: 'var(--danger-bg)', border: 'var(--danger-border)' },
+  future: { code: 'W', label: 'Due, date not yet arrived', fg: 'var(--text-secondary)', bg: 'var(--surface)', border: 'var(--border)' },
   // Neutral slate, not a severity colour: the person was taken off this occurrence
   // before its original due date, so there is no verdict to convey — only the fact of
   // the removal. Excluded from Scheduled and from every D/L/X/W count.
-  withdrawn: { code: '–', label: 'Withdrawn — removed before due', fg: '#64748B', bg: '#F1F5F9', border: '#CBD5E1' },
+  withdrawn: { code: '–', label: 'Withdrawn — removed before due', fg: 'var(--text-muted)', bg: 'var(--surface-control)', border: 'var(--border)' },
   // Same neutral treatment, different fact: it WAS late when they let it go, and the
   // square's tooltip says by how much. Kept out of the red 'missed' count because it
   // is no longer a miss this person can close — someone else holds the occurrence.
-  handed_over: { code: '→', label: 'Handed over to someone else', fg: '#475569', bg: '#F1F5F9', border: '#CBD5E1' },
+  handed_over: { code: '→', label: 'Handed over to someone else', fg: 'var(--text-secondary)', bg: 'var(--surface-control)', border: 'var(--border)' },
 }
 
 export const RESULT_ORDER: DayResult[] = ['on_time', 'late', 'missed', 'future', 'withdrawn', 'handed_over']

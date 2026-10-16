@@ -92,10 +92,10 @@ export default function ProjectsPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <ProjectStatCard label="Total Projects" value={projects.length} color="#2563EB" />
-        <ProjectStatCard label="Active" value={active} color="#16A34A" />
-        <ProjectStatCard label="On Hold" value={onHold} color="#D97706" />
-        <ProjectStatCard label="Avg. Progress" value={`${avgProgress}%`} color="#0891B2" />
+        <ProjectStatCard label="Total Projects" value={projects.length} color="var(--primary-text)" />
+        <ProjectStatCard label="Active" value={active} color="var(--success)" />
+        <ProjectStatCard label="On Hold" value={onHold} color="var(--warning)" />
+        <ProjectStatCard label="Avg. Progress" value={`${avgProgress}%`} color="var(--text-secondary)" />
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">

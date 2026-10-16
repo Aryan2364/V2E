@@ -221,15 +221,15 @@ export interface BusyView {
 
 // ─── Labels & palette (DESIGN_RULES badge colors) ──────────────────────────────
 export const MEETING_STATUS_META: Record<MeetingStatus, { label: string; bg: string; text: string; border: string }> = {
-  scheduled: { label: 'Scheduled', bg: '#E0F2FE', text: '#0369A1', border: '#BAE6FD' },
-  in_progress: { label: 'In progress', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' },
-  closed: { label: 'Closed', bg: '#DCFCE7', text: '#16A34A', border: '#BBF7D0' },
-  cancelled: { label: 'Cancelled', bg: '#FEE2E2', text: '#DC2626', border: '#FECACA' },
+  scheduled: { label: 'Scheduled', bg: 'var(--surface-control)', text: 'var(--text-secondary)', border: 'var(--border-light)' },
+  in_progress: { label: 'In progress', bg: 'var(--primary-subtle)', text: 'var(--primary-text)', border: 'var(--primary-border)' },
+  closed: { label: 'Closed', bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success-border)' },
+  cancelled: { label: 'Cancelled', bg: 'var(--danger-bg)', text: 'var(--danger)', border: 'var(--danger-border)' },
 }
 
 export const RESPONSE_META: Record<MeetingAttendeeResponse, { label: string; bg: string; text: string }> = {
-  attending: { label: 'Attending', bg: '#DCFCE7', text: '#16A34A' },
-  declined: { label: "Won't make it", bg: '#FEE2E2', text: '#DC2626' },
+  attending: { label: 'Attending', bg: 'var(--success-bg)', text: 'var(--success)' },
+  declined: { label: "Won't make it", bg: 'var(--danger-bg)', text: 'var(--danger)' },
 }
 
 export const TYPE_LABEL: Record<MeetingType, string> = { online: 'Online', offline: 'Offline', hybrid: 'Hybrid' }

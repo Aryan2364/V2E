@@ -6,9 +6,9 @@ import { meetingsApi } from '@/lib/api/meetings'
 import type { BusyView } from '@/lib/types/meetings'
 
 const KIND_META: Record<string, { label: string; bg: string; text: string }> = {
-  meeting: { label: 'Meeting', bg: '#EFF6FF', text: '#2563EB' },
-  leave: { label: 'Leave', bg: '#FEF9C3', text: '#CA8A04' },
-  holiday: { label: 'Holiday', bg: '#F1F5F9', text: '#475569' },
+  meeting: { label: 'Meeting', bg: 'var(--primary-subtle)', text: 'var(--primary-text)' },
+  leave: { label: 'Leave', bg: 'var(--warning-bg)', text: 'var(--warning)' },
+  holiday: { label: 'Holiday', bg: 'var(--surface-control)', text: 'var(--text-secondary)' },
 }
 
 function fmt(iso: string): string {
@@ -81,10 +81,10 @@ export default function BusyTimesPanel({
                     onClick={() => onPick?.(s.start, s.end)}
                     disabled={!onPick}
                     className="flex items-center justify-between gap-2 text-left border rounded-[8px] px-3 py-2 hover:border-primary disabled:cursor-default"
-                    style={{ borderColor: clean ? '#BBF7D0' : '#FDE68A', backgroundColor: clean ? '#F0FDF4' : '#FEFCE8' }}
+                    style={{ borderColor: clean ? 'var(--success-bg)' : 'var(--warning-bg)', backgroundColor: clean ? 'var(--success-bg)' : 'var(--warning-bg)' }}
                   >
                     <span className="text-sm text-text-primary">{fmt(s.start)}</span>
-                    <span className="text-xs" style={{ color: clean ? '#16A34A' : '#CA8A04' }}>
+                    <span className="text-xs" style={{ color: clean ? 'var(--success)' : 'var(--warning)' }}>
                       {clean
                         ? 'No required clashes'
                         : `${s.hard_conflicts.length} required clash${s.hard_conflicts.length > 1 ? 'es' : ''}`}

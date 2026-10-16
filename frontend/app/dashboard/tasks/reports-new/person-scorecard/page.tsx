@@ -27,7 +27,7 @@ function windowLabel(from: string, to: string) {
 const pct = (v: number | null) => (v === null || v === undefined ? '—' : `${v}%`)
 const num = (v: number | null) => (v === null || v === undefined ? '—' : v.toLocaleString())
 const onTimeColor = (v: number | null) =>
-  v === null ? '#94A3B8' : v >= 60 ? '#16A34A' : v >= 30 ? '#65A30D' : v >= 15 ? '#B45309' : '#DC2626'
+  v === null ? 'var(--text-muted)' : v >= 60 ? 'var(--success)' : v >= 30 ? 'var(--success)' : v >= 15 ? 'var(--warning)' : 'var(--danger)'
 
 export default function ScorecardRosterPage() {
   const { user } = useAuth()
@@ -221,16 +221,16 @@ export default function ScorecardRosterPage() {
                     <td className="px-3 py-3 text-center font-semibold text-text-secondary tabular-nums">{p.different_tasks}</td>
                     <td className="px-3 py-3 text-center font-semibold text-text-primary tabular-nums">{num(p.total_given)}</td>
                     <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{num(p.completed)}</td>
-                    <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.pending > 0 ? '#DC2626' : '#94A3B8' }}>{num(p.pending)}</td>
+                    <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.pending > 0 ? 'var(--danger)' : 'var(--text-muted)' }}>{num(p.pending)}</td>
                     <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{pct(p.completion_pct)}</td>
                     <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{num(p.completed_on_time)}</td>
                     <td className="px-3 py-3 text-center tabular-nums font-semibold" style={{ color: onTimeColor(p.on_time_pct) }}>{pct(p.on_time_pct)}</td>
                     <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{p.avg_delay_days ?? '—'}</td>
                     <td className="px-3 py-3 text-center text-text-secondary tabular-nums">{p.longest_delay_days ?? '—'}</td>
                     <td className="px-3 py-3"><GradePill grade={p.grade} /></td>
-                    <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.withdrawn ? '#64748B' : '#CBD5E1' }}>{num(p.withdrawn)}</td>
-                    <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.handed_over ? '#475569' : '#CBD5E1' }}>{num(p.handed_over)}</td>
-                    <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.revised_entries ? '#B45309' : '#CBD5E1' }}>{num(p.revised_entries)}</td>
+                    <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.withdrawn ? 'var(--text-muted)' : 'var(--border)' }}>{num(p.withdrawn)}</td>
+                    <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.handed_over ? 'var(--text-secondary)' : 'var(--border)' }}>{num(p.handed_over)}</td>
+                    <td className="px-3 py-3 text-center tabular-nums" style={{ color: p.revised_entries ? 'var(--warning)' : 'var(--border)' }}>{num(p.revised_entries)}</td>
                     <td className="px-3 py-3 text-right"><ChevronRight size={16} className="text-[#CBD5E1]" /></td>
                   </tr>
                 ))}

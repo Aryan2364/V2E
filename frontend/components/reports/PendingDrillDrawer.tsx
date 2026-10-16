@@ -142,8 +142,8 @@ export default function PendingDrillDrawer({
         {/* Stat strip */}
         <div className="px-5 py-3 flex gap-6 border-b border-border-light shrink-0">
           <Stat label="Total pending" value={total} />
-          <Stat label="More than a month late" value={overMonth} color={overMonth ? '#DC2626' : '#94A3B8'} />
-          <Stat label="Oldest late task" value={oldest === null ? '—' : `${oldest} days`} color={oldest === null ? '#94A3B8' : '#B91C1C'} />
+          <Stat label="More than a month late" value={overMonth} color={overMonth ? 'var(--danger)' : 'var(--text-muted)'} />
+          <Stat label="Oldest late task" value={oldest === null ? '—' : `${oldest} days`} color={oldest === null ? 'var(--text-muted)' : 'var(--danger)'} />
         </div>
 
         {/* List */}
@@ -193,7 +193,7 @@ export default function PendingDrillDrawer({
                     <td className="px-3 py-3 text-text-secondary whitespace-nowrap">{r.frequency}</td>
                     <td className="px-3 py-3 text-text-secondary whitespace-nowrap">{r.assigned_by ?? '—'}</td>
                     <td className="px-3 py-3 text-text-secondary whitespace-nowrap tabular-nums">{fmtDate(r.due_date)}</td>
-                    <td className="px-3 py-3 text-right tabular-nums font-semibold whitespace-nowrap" style={{ color: r.days_late === null ? '#94A3B8' : r.days_late > 30 ? '#DC2626' : '#B45309' }}>
+                    <td className="px-3 py-3 text-right tabular-nums font-semibold whitespace-nowrap" style={{ color: r.days_late === null ? 'var(--text-muted)' : r.days_late > 30 ? 'var(--danger)' : 'var(--warning)' }}>
                       {r.days_late === null ? '—' : r.days_late}
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap">
@@ -223,7 +223,7 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   )
 }
 
-function Stat({ label, value, color = '#0F172A' }: { label: string; value: number | string; color?: string }) {
+function Stat({ label, value, color = 'var(--text-primary)' }: { label: string; value: number | string; color?: string }) {
   return (
     <div>
       <div className="text-lg font-bold tabular-nums leading-none" style={{ color }}>{value}</div>

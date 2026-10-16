@@ -91,7 +91,7 @@ export default function RecurringTable({
                   <td className={`${TD} whitespace-nowrap`}>
                     {cat ? (
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color ?? '#CBD5E1' }} />
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color ?? 'var(--border)' }} />
                         {cat.name}
                       </span>
                     ) : '—'}
@@ -104,7 +104,7 @@ export default function RecurringTable({
                   <td className={`${TD} whitespace-nowrap`}>
                     {prio ? (
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: prio.color ?? '#CBD5E1' }} />
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: prio.color ?? 'var(--border)' }} />
                         {prio.label}
                       </span>
                     ) : '—'}

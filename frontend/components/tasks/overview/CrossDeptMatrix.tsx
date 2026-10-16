@@ -51,8 +51,8 @@ export default function CrossDeptMatrix({
                       const to = matrix.depts[ci]
                       const within = row.from === to.id
                       const a = v / max
-                      const bg = v === 0 ? '#F8FAFC' : within ? `rgba(37,99,235,${0.12 + a * 0.7})` : `rgba(220,38,38,${0.12 + a * 0.7})`
-                      const color = a > 0.5 ? '#FFFFFF' : '#475569'
+                      const bg = v === 0 ? 'var(--surface-sunken)' : within ? `rgba(37,99,235,${0.12 + a * 0.7})` : `rgba(220,38,38,${0.12 + a * 0.7})`
+                      const color = a > 0.5 ? 'var(--surface)' : 'var(--text-secondary)'
                       return (
                         <td key={ci} className="p-0.5">
                           <Tooltip label={`${from?.name} → ${to.name}: ${v}`}>

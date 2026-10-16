@@ -5,12 +5,12 @@ import type { ScorecardGrade } from '@/lib/types/reports'
 // Excel export all read the same. Colour carries the meaning: strong green = ahead,
 // amber = watch, red = act, blue = "closing but late", grey = not enough data.
 const STYLE: Record<ScorecardGrade, { bg: string; fg: string; border: string }> = {
-  'Very Good': { bg: '#16A34A', fg: '#FFFFFF', border: '#16A34A' },
-  'Good': { bg: '#DCFCE7', fg: '#15803D', border: '#BBF7D0' },
-  'Average': { bg: '#FEF3C7', fg: '#B45309', border: '#FDE68A' },
-  'Late but Closing': { bg: '#DBEAFE', fg: '#1D4ED8', border: '#BFDBFE' },
-  'Needs Attention': { bg: '#FEE2E2', fg: '#B91C1C', border: '#FECACA' },
-  'Too Few Tasks to Judge': { bg: '#F1F5F9', fg: '#64748B', border: '#E2E8F0' },
+  'Very Good': { bg: 'var(--success)', fg: 'var(--surface)', border: 'var(--success)' },
+  'Good': { bg: 'var(--success-bg)', fg: 'var(--success)', border: 'var(--success-border)' },
+  'Average': { bg: 'var(--warning-bg)', fg: 'var(--warning)', border: 'var(--warning-border)' },
+  'Late but Closing': { bg: 'var(--primary-subtle)', fg: 'var(--primary-text)', border: 'var(--primary-border)' },
+  'Needs Attention': { bg: 'var(--danger-bg)', fg: 'var(--danger)', border: 'var(--danger-border)' },
+  'Too Few Tasks to Judge': { bg: 'var(--surface-control)', fg: 'var(--text-muted)', border: 'var(--border-light)' },
 }
 
 export function GradePill({ grade, className = '' }: { grade: ScorecardGrade; className?: string }) {

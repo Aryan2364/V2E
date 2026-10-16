@@ -154,8 +154,8 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                     const priority = task.priority_id ? priorityMap.get(task.priority_id) : null
                     const isTaskOverdue = isPastDay && !TERMINAL_STATUS_PHASES.includes(task.status?.type as any)
                     const dotColor = isTaskOverdue
-                      ? '#DC2626'
-                      : priority?.color ?? '#2563EB'
+                      ? 'var(--danger)'
+                      : priority?.color ?? 'var(--primary-text)'
 
                     return (
                       <Tooltip key={task.id} label={task.title}>
@@ -216,7 +216,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
                   {priority && (
                     <span
                       className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: isOverdue ? '#DC2626' : priority.color }}
+                      style={{ backgroundColor: isOverdue ? 'var(--danger)' : priority.color }}
                     />
                   )}
                   <div className="flex-1 min-w-0">

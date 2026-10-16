@@ -43,9 +43,9 @@ const BOX: Record<FlowTone, string> = {
 }
 
 const EDGE: Record<EdgeTone, { stroke: string; dash?: string; marker: string }> = {
-  default: { stroke: '#64748B', marker: 'wf-arrow-default' },
-  done: { stroke: '#16A34A', marker: 'wf-arrow-done' },
-  muted: { stroke: '#94A3B8', dash: '5 4', marker: 'wf-arrow-muted' },
+  default: { stroke: 'var(--border-strong)', marker: 'wf-arrow-default' },
+  done: { stroke: 'var(--success)', marker: 'wf-arrow-done' },
+  muted: { stroke: 'var(--border-strong)', dash: '5 4', marker: 'wf-arrow-muted' },
 }
 
 interface Edge {
@@ -232,7 +232,7 @@ export default function FlowDiagram({
           </defs>
           {edges.map((e) => (
             <React.Fragment key={e.key}>
-              {e.cross && <path d={e.d} fill="none" stroke="#FFFFFF" strokeWidth={5} strokeLinecap="round" />}
+              {e.cross && <path d={e.d} fill="none" stroke="var(--border-light)" strokeWidth={5} strokeLinecap="round" />}
               <path
                 d={e.d}
                 fill="none"

@@ -164,7 +164,7 @@ export function FloatingStepEdge({ id, source, target, style, data }: EdgeProps<
     sourceX: sx, sourceY: sy, sourcePosition: sourcePos,
     targetX: tx, targetY: ty, targetPosition: targetPos, borderRadius: 8,
   })
-  const color = (style?.stroke as string) ?? '#475569'
+  const color = (style?.stroke as string) ?? 'var(--text-secondary)'
 
   return (
     <>
