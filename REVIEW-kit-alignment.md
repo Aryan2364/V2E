@@ -512,3 +512,128 @@ Folders: `app/settings/**`, `app/dashboard/{employees,roles}/**`, `components/{e
 - `8e15953` — mechanical token/format sweep + `masters/page.tsx`'s 7 `confirm()` calls to
   `AlertDialog`.
 - `02da0d7` — off-scale spacing rounded to the kit scale.
+
+## Governance (meetings, work log, decisions, rhythms, reports) and the dashboard home
+
+Folders: `app/dashboard/governance/**`, `app/dashboard/page.tsx`, `app/dashboard/layout.tsx`,
+`app/dashboard/more/**`, `app/dashboard/notifications/**`, `app/dashboard/performance/**`,
+`app/dashboard/profile/**`, `components/meetings/**`, `components/work-logs/**`,
+`components/delegation/**`, `components/dashboard/**`, `components/reports/**`,
+`components/notifications/**`, `lib/reports/**`.
+
+### What was done
+
+- Tokens: every hex/rgba in this module's files replaced. Dynamic busy/free heat-scale colours
+  (FindTimeDialog's density heatmap, WeekGrid's "today" tint and time-block hatch pattern) now
+  use color-mix() over --success/--danger/--warning/--text-muted/--primary-subtle instead of
+  hardcoded hex with manual opacity math - same visual read, token sourced. bg-white and ad-hoc
+  rounded-[Npx]/shadow-[...rgba...] replaced with bg-surface/rounded-xl/rounded-lg/shadow-card/
+  shadow-dialog across governance pages and meetings components.
+- Weights: font-semibold/font-bold to font-medium throughout.
+- Spacing: off-scale utilities (p-5, gap-7, py-9, etc.) snapped to the nearest section 5.1 scale
+  value across all files that had them.
+- Type sizes: sub-12px arbitrary sizes (text-[8px]..text-[11px]) bumped to text-meta (12px)
+  across governance/meetings/work-logs/dashboard/reports.
+- Native controls: work-log/access/page.tsx's two native <select>s to SearchableSelect; its two
+  hand-rolled toggle switches to kit Switch; its hand-rolled checkbox list to kit Checkbox; its
+  Add button to kit Button.
+- Overlays to Dialog: WishModal, DemandModal, GoogleCalendarConnect (its connect/disconnect
+  modal; its hand-rolled toast also moved to sonner's toast), and MeetingAttendeeSelector's
+  attendee picker - all converted from hand-rolled fixed inset-0 plus backdrop markup to kit
+  Dialog/DialogContent/DialogHeader/DialogBody/DialogFooter, keeping each one's own fields,
+  validation and submit behaviour unchanged.
+- PageHeader adoption: app/dashboard/page.tsx (dashboard home, section 11.4), governance/
+  decisions, governance/meetings/reports, governance/meetings/rhythms, governance/reports,
+  governance/work-log/demands, governance/work-log/review, dashboard/notifications,
+  dashboard/performance, dashboard/profile now give their title/meta/breadcrumb/primary action
+  through PageHeader instead of a hand-rolled h1 block. Two desktop back-arrow Links
+  (governance/meetings/reports, governance/meetings/rhythms) removed and replaced by
+  PageHeader's breadcrumb trail (section 1.11).
+- Dates: toLocaleDateString/toLocaleString replaced with lib/format.ts's
+  formatDate/formatDateTime/formatWeekday/formatDayMonth wherever they match "DD Mon YYYY" /
+  "DD Mon YYYY, h:mm A"; where a caller genuinely needed a long weekday name with no kit helper
+  (daily-update's day-of-week heading, work-log/review's log date), date-fns's format() is used
+  instead of toLocaleDateString - still not browser-locale-dependent, and date-fns is already a
+  pinned kit dependency.
+- Loading state: dashboard/notifications's spinner replaced with Skeleton blocks (section 14).
+
+### Kept for owner decision
+
+- DateStatusTag.tsx (components/reports) hand-rolls its own status chip with inline
+  style={{backgroundColor, color, border}} instead of badge.tsx, including a handed_over slate
+  variant and a tooltip-via-title that explains the frozen lateness/new-owner story. Kit says
+  "status is always a Badge" (2.4/4.1), but this chip's behaviour (freezing a figure at
+  handover, a non-standard 5th colour, and a long explanatory tooltip) is bespoke reporting
+  logic the kit's badge.tsx doesn't model. Kept as-is per D12 rather than force a lossy
+  migration; flagged for a dedicated pass if the owner wants it unified with badge.tsx.
+- Module filter pills on dashboard/notifications (All / Tasks / Projects / ...) stay as
+  hand-rolled toggle buttons rather than tabs.tsx or section-tabs.tsx: they filter a list in
+  place, not route to sibling views in the URL, so section-tabs.tsx (section 33, URL-driven)
+  doesn't fit; kept restyled to tokens only.
+- MeetingAttendeeSelector, GoogleCalendarConnect, WishModal, DemandModal dialogs keep their own
+  multi-step internal state (search/select, connect/disconnect, send) inside DialogBody rather
+  than being split into separate dialogs - matches D12 and the coordinator's note that
+  multi-step flows keep their steps in the dialog body.
+
+### Not done / follow-up (honest list)
+
+- Adapters not migrated off in this module: DatePicker/TimeField call sites in
+  components/meetings/{CreateMeetingModal,CreateTimeBlockModal,EditMeetingModal,FindTimeDialog,
+  MeetingScheduleTab,CreateRhythmModal}.tsx and components/work-logs/DemandModal.tsx. These are
+  the richer min/max/marked-dates and 12h-popover adapter contracts from P3; mechanically
+  swapping each call site to the raw kit date-picker.tsx/time-picker.tsx across these
+  scheduling-heavy files was judged a real review-each-call-site task, not a safe mechanical
+  pass, given the risk of silently changing a recurrence/scheduling form's behaviour.
+  useToast/Toast.tsx call sites in this module (meetings, work-logs, delegation) are still on
+  the adapter; it is already a thin pass-through to sonner (P3), so no behaviour differs, but
+  they were not rewritten to import toast from sonner directly.
+- fixed inset-0 still hand-rolled in FindTimeDialog.tsx (a full-screen time-finder with its own
+  per-person/aggregate grid, drag-select and heatmap - a genuinely different shape than Dialog),
+  MonthDayPanel.tsx (a hover-tooltip-style popover anchored to a calendar cell, built as a
+  fixed-position catcher, not a dialog), WeekGrid.tsx (a transparent click-outside catcher
+  behind a floating panel, not an overlay itself) and PendingDrillDrawer.tsx (a right-edge
+  drill-down drawer over a report table - a candidate for kit Sheet with side="right", but not
+  attempted here: the drawer's sortable/stickied table body and backdrop-click-to-close needed a
+  careful behavioural diff against sheet.tsx that there wasn't time to do safely). All four are
+  logged rather than forced; each would benefit from a dedicated pass.
+- PageHeader not adopted on the remaining pages in this module: governance/meetings/page.tsx
+  (calendar/week/month/day view switcher with its own toolbar - its view controls are tightly
+  coupled to the page body, not a plain header), governance/meetings/[meetingId]/page.tsx and
+  governance/meetings/rhythms/[rhythmId]/page.tsx (detail pages needing a proper section 11.2
+  breadcrumb trail plus record header treatment, not the list-page pattern used elsewhere in
+  this pass), governance/work-log/access/page.tsx (controls migrated this pass; header left for
+  follow-up), governance/work-log/page.tsx, governance/page.tsx, app/dashboard/more/**. Budget
+  ran out before a correct-trail, correct-template pass on these.
+- Pagination (D5): dashboard/notifications's list and the governance report/decision tables
+  render whatever the API returns, unbounded - no server pagination exists to call. Noted per
+  D5, not fixed.
+- Status colours: did not do a full section 2.4 "one status to one colour map" audit of every
+  status word across meetings/rhythms/work-log statuses against badge.tsx's variants; several
+  already use Badge correctly post-P2, but the module-colour chips on dashboard/notifications
+  were left as their own MODULE_COLORS map rather than converted to Badge, since module colour
+  there is a category tag, not a section-2.4 status.
+
+### Self-check results (this module's folders)
+
+- hex/rgba outside globals.css: none.
+- font-(semibold|bold|extrabold|black): none.
+- native confirm()/alert()/prompt(): none (the one "confirm" hit is a local function name in
+  FindTimeDialog.tsx, not a native dialog call).
+- native <select: none.
+- off-scale spacing (5/7/9/10/11/14/16/20): none.
+- fixed inset-0: 4 remaining (FindTimeDialog, MonthDayPanel, WeekGrid, PendingDrillDrawer - see
+  follow-up above).
+- toLocale(Date|Time)?String: none.
+- adapter imports (Modal|ConfirmDialog|StyledSelect|DatePicker|ResponsiveTable|Toast): still
+  present in the 7 files listed under follow-up above.
+- npx tsc --noEmit filtered to this module's folders: clean throughout.
+
+### Commits
+
+Work in this module landed in the shared worktree (all module agents commit into the same
+working tree per the brief). This agent's own commit is a1b0b1f (tokens/weights/spacing/
+native-controls/first Dialog migrations). A later batch (PageHeader adoption, back-arrow
+removal, remaining token/date sweep) was staged by this agent but got folded into a concurrent
+commit by another module agent (b3a0f9b, "goals-learning-communication") when the shared git
+index was mid-commit at the same time - the content is this agent's, the attribution on that
+commit is not. npx tsc --noEmit was clean for this module's folders at every checkpoint.
