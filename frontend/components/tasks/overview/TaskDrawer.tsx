@@ -340,22 +340,25 @@ export default function TaskDrawer({
                   options={statuses.map((s) => ({ value: s.id, label: s.label, color: s.color }))}
                 />
                 {!isTerminal && (
-                  <button
+                  <Button
                     onClick={complete}
-                    disabled={busy || isFutureTask}
-                    className="shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg bg-success text-primary-foreground text-body font-medium hover:bg-success disabled:opacity-60 transition-colors"
+                    disabled={isFutureTask}
+                    loading={busy}
+                    className="shrink-0 bg-success border-success hover:bg-success active:bg-success"
                   >
                     <CheckCircle2 size={15} /> Complete
-                  </button>
+                  </Button>
                 )}
                 <Tooltip label="Open full task page">
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="shrink-0"
                     onClick={() => router.push(`/dashboard/tasks/${taskId}`)}
                     aria-label="Open full task page"
-                    className="shrink-0 w-[42px] h-[42px] rounded-lg border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
                   >
                     <ExternalLink size={16} />
-                  </button>
+                  </Button>
                 </Tooltip>
               </div>
               {/* Comment box */}
@@ -369,13 +372,16 @@ export default function TaskDrawer({
                   placeholder={isFutureTask ? "Comments are locked on future tasks..." : "Write a comment…"}
                   className="flex-1 resize-none rounded-lg border border-border bg-surface px-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary max-h-28"
                 />
-                <button
+                <Button
+                  size="icon"
+                  className="shrink-0"
                   onClick={send}
-                  disabled={!draft.trim() || sending || isFutureTask}
-                  className="shrink-0 w-[42px] h-[42px] rounded-lg bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+                  disabled={!draft.trim() || isFutureTask}
+                  loading={sending}
+                  aria-label="Send comment"
                 >
                   <Send size={16} />
-                </button>
+                </Button>
               </div>
               {/* Attach documents to the comment */}
               <FileDropzone onFiles={(fs) => setDraftFiles((prev) => [...prev, ...fs])} disabled={sending || isFutureTask} compact />

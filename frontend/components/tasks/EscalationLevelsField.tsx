@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { Plus, X, TrendingUp, ShieldAlert } from 'lucide-react'
 import EmployeePicker, { type EmployeePickerOption } from '@/components/ui/EmployeePicker'
+import { Button } from '@/components/ui/button'
 import { tasksApi } from '@/lib/api/tasks'
 
 const MAX_LEVELS = 5
@@ -176,26 +177,24 @@ export default function EscalationLevelsField({ orgId, value, onChange, assigner
                       />
                     )}
                   </div>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="shrink-0 hover:text-danger hover:bg-danger-bg"
                     onClick={() => removeLevel(idx)}
-                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"
                     aria-label={`Remove level ${idx + 1}`}
                   >
                     <X size={14} />
-                  </button>
+                  </Button>
                 </div>
               )
             })}
             {rowError && <p className="text-meta text-danger">{rowError}</p>}
             {rows.length < MAX_LEVELS && (
-              <button
-                type="button"
-                onClick={addLevel}
-                className="flex items-center justify-center gap-1.5 w-full px-3 py-2 text-body font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors"
-              >
+              <Button type="button" variant="secondary" className="w-full" onClick={addLevel}>
                 <Plus size={14} /> Add escalation level
-              </button>
+              </Button>
             )}
           </div>
         )}
