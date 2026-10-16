@@ -8,7 +8,7 @@ import type { TicketArchiveEntry, Ticket } from '@/lib/types/tickets'
 import TicketStatusBadge from '@/components/tickets/TicketStatusBadge'
 import TicketTypeBadge from '@/components/tickets/TicketTypeBadge'
 import { formatDate as formatDateToken } from '@/lib/format'
-import PageHeader from '@/components/shell/page-header'
+import { PageHeader } from '@/components/shell/page-header'
 import { Badge } from '@/components/ui/badge'
 
 function formatDate(iso: string) {

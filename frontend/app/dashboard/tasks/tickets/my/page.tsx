@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth/context'
 import { ticketsApi } from '@/lib/api/tickets'
 import type { Ticket } from '@/lib/types/tickets'
 import TicketCard from '@/components/tickets/TicketCard'
-import PageHeader from '@/components/shell/page-header'
+import { PageHeader } from '@/components/shell/page-header'
 
 export default function MyTicketsPage() {
   const { user } = useAuth()

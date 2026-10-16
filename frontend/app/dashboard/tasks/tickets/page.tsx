@@ -10,7 +10,7 @@ import TicketCard from '@/components/tickets/TicketCard'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { usePermissions } from '@/lib/auth/use-permissions'
-import PageHeader from '@/components/shell/page-header'
+import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
 import { TextLink } from '@/components/ui/text-link'
 
