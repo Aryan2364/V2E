@@ -361,23 +361,57 @@ Folders: `app/settings/**`, `app/dashboard/{employees,roles}/**`, `components/{e
 ### Not done / follow-up
 
 - `fixed inset-0` hand-rolled overlays: 10 occurrences across 7 files (listed above) not converted to
-  `Dialog`/`Sheet`/`AlertDialog` — see "Kept for owner decision".
-- Adapter imports not migrated off this pass: 17 files in this module still import
-  `Modal`/`ConfirmDialog`/`StyledSelect`/`DatePicker`/`ResponsiveTable`/`Toast` from
-  `@/components/ui/*` rather than the kit component directly. Per `components/ui/ADAPTERS.md` these
-  are now thin adapters over the kit (so presentation is already correct), but call sites were not
-  individually migrated to `dialog.tsx`/`alert-dialog.tsx`/`select.tsx`/`date-picker.tsx`/`table.tsx`/
-  `sonner.tsx` given the volume (~17 files) versus the time available this pass.
-- `toLocaleDateString` with no year (`OrgHolidayList.tsx` weekday/day-month strip,
-  `PendingHolidayReviewer.tsx` day-month chip) was left as-is: `lib/format.ts` (shared, out of this
-  module's edit scope) has no exported day/month-only or weekday-only formatter to delegate to
-  without adding one. Flagged as a shared-file need: a `formatDayMonth`/`formatWeekday` export would
-  let these two files drop their own `toLocaleDateString` calls.
+  `Dialog`/`Sheet`/`AlertDialog` — see "Kept for owner decision". Still not done after the second pass
+  either: given the second pass's time went to the toast correctness bug below plus the mandatory
+  adapter migrations, the overlay conversions (the coordinator's item 1) did not get done. These remain
+  real follow-up work, not a rushed wrapper — see the reasoning in "Kept for owner decision" above.
+- Adapter imports: down from 17 files to 13. Migrated off this pass: `StyledSelect` (access-rights'
+  two `ScopeSelect`s, `EmployeePermissionsPanel`'s override-scope select, `HolidayFormModal`'s type
+  select — all now `select.tsx` directly), `ConfirmDialog` (access-rights' role-delete confirmation,
+  now `alert-dialog.tsx` directly), and `useToast` (all 7 call sites in this module, now `sonner.tsx`'s
+  `toast` directly). Still on the adapter and not migrated: `Modal` (4 files: `AddEmployeeModal`,
+  `ImportEmployeesModal`, `ImportJobRolesModal`, `ImportHolidaysModal` — these are the same multi-step
+  wizard shells listed as `fixed inset-0` follow-up above, so migrating `Modal`→`Dialog` there is the
+  same piece of work as the overlay conversion, not separate), `DatePicker` (6 files), `ResponsiveTable`
+  (5 files). `StyledSelect` also remains on 2 files (`AddEmployeeModal`'s and the employee detail
+  page's department/role/reports-to pickers) where the option list is data-driven and can exceed 6
+  items, so each needs a considered `Select` vs `SearchableSelect` choice rather than a mechanical swap
+  — not done this pass.
+- `toLocaleDateString` with no year — **resolved this pass**: the coordinator added
+  `formatDayMonth`/`formatWeekday` to `lib/format.ts` (commit 78600ae); `OrgHolidayList.tsx` and
+  `PendingHolidayReviewer.tsx` now use them. Zero `toLocale*String` calls remain in this module.
+- PageHeader (§11, §12.3), Button/icon-button/TextLink migration (§6), and switch/checkbox/radio-group
+  migration — the coordinator's items 3 and 4 — were **not attempted this pass**. Given the toast bug
+  (below) ate a large share of the second pass's time, and the mandatory adapter migrations were
+  prioritised per the coordinator's explicit ordering, these are honestly left undone: no page in this
+  module gives its title/breadcrumb/primary action through `PageHeader` yet, hand-rolled `<button>`
+  markup is still widespread (41 files had at least one `<button` as of the second pass), and no
+  switch/checkbox in this module was checked against `switch.tsx`/`checkbox.tsx`/`radio-group.tsx`.
+  This is the single largest remaining item for this module, same as other modules reported.
 - Pagination (D5): `app/dashboard/employees/page.tsx`, `app/dashboard/roles/page.tsx` and the audit
   log list render unbounded/current-loading lists with no server pagination added, per the brief.
 - `z-60`/`z-70`/`z-50` on the hand-rolled overlays above are ad-hoc numbers, not the shared
   `--z-dialog`/`--z-popover` tokens (section 5.5) — left alongside the overlay shells themselves
   rather than partially tokenising one piece of a file that otherwise keeps its own stacking logic.
+
+### A bug found and fixed in this module's own earlier work
+
+The first pass's `useToast`→`sonner` codemod (commit `8cd2a26`) used a lazy regex
+(`addToast\(([\s\S]*?),\s*'TYPE'\)`) to rewrite call sites. For any call whose toast type was a runtime
+expression rather than a literal (`addToast(msg, cond ? 'warning' : 'success')`), the regex's lazy
+`[\s\S]*?` skipped past that call (no literal `'success'`/`'error'` immediately before its own closing
+paren) and matched against the *next* call's literal type instead, silently merging the two: the first
+call's text became the wrapper, and the second call's own type argument was deleted. Net effect: several
+genuine `success`/`error` toasts were swapped or silently dropped (e.g. "Access saved" fired as an error
+toast; a load failure fired as if it succeeded). `npx tsc --noEmit` did not catch most of these (sonner's
+functions all accept a plain string, so the swap type-checks fine) — only the two calls that happened to
+leave a literal second argument on a type-mismatched function (`toast.success(msg, 'error')`) surfaced as
+TS2559 errors. Found by re-deriving every call site from the commit's own diff and comparing by hand
+against the live file. Fixed in commit `00216a3` across `access-rights/page.tsx` (10 swapped calls),
+`leave-rules/page.tsx` (2), `MyLeavePanel.tsx` (2), and `ImportEmployeesModal.tsx`/`ImportJobRolesModal.tsx`
+(2 each, rewritten as explicit `if/else` since sonner has no single call taking the type as a runtime
+string). Recorded here in case another module's agent used the same regex pattern on their own
+`useToast` call sites — worth a quick grep for `addToast\(.*\?.*:.*'(success|error|warning)'` elsewhere.
 
 ### Visual changes the owner will notice
 
@@ -399,24 +433,34 @@ Folders: `app/settings/**`, `app/dashboard/{employees,roles}/**`, `components/{e
   `formatDate`/`formatDateTime`, which is the same "12 Aug 2026" / "12 Aug 2026, 3:45 PM" shape these
   already produced, so no visible format change is expected there.
 
-### Self-check results (this module's folders only)
+### Self-check results (this module's folders only, after the second pass)
 
 - hex/rgba outside globals.css: none.
 - `font-(semibold|bold|extrabold|black)`: none.
 - native `confirm()/alert()/prompt()`: none found.
 - native `<select`: none (two remaining grep hits are code comments, not markup).
 - off-scale spacing (5/7/9/10/11/14/16/20): none.
-- `fixed inset-0`: 10 remaining, documented above as kept/follow-up.
-- `toLocale(Date|Time)?String`: 4 remaining (day/month-only, no `lib/format.ts` export to delegate
-  to — documented above).
-- adapter imports (`Modal|ConfirmDialog|StyledSelect|DatePicker|ResponsiveTable|Toast`): 17 files,
-  documented above as follow-up.
-- `npx tsc --noEmit` filtered to this module's folders: clean.
+- `fixed inset-0`: 10 remaining, documented above as kept/follow-up (unchanged from pass 1).
+- `text-xs/sm/base/lg/xl/2xl` and arbitrary `text-[Npx]`: none remaining; all on kit type tokens,
+  nothing below 12px.
+- `toLocale(Date|Time)?String`: **0 remaining** (was 4; resolved via the coordinator's
+  `formatDayMonth`/`formatWeekday` additions to `lib/format.ts`).
+- adapter imports (`Modal|ConfirmDialog|StyledSelect|DatePicker|ResponsiveTable|Toast`): 11 files
+  remain (was 17) — `Modal` (4), `DatePicker` (6, one of which is also `Modal`), `ResponsiveTable`
+  (5), `StyledSelect` (2). `ConfirmDialog`'s last call site (`MyLeavePanel.tsx`'s cancel-leave
+  confirmation) is now also migrated to `alert-dialog.tsx` directly — 0 `ConfirmDialog` imports
+  remain in this module. See "Not done / follow-up" for the rest.
+- `PageHeader` adoption: 0 of this module's pages — not attempted this pass, see follow-up.
+- `npx tsc --noEmit` filtered to this module's folders: clean after every commit below.
 
 ### Commits
 
-- `78df27d` — tokens, weights, spacing, date formatting to kit.
-- `ff3dcaa` — native `<select>` elements to `StyledSelect`.
+Pass 1: `78df27d` (tokens/weights/spacing/dates), `ff3dcaa` (native `<select>`→`StyledSelect`).
+Pass 2 (this round): `5065052` (type scale to kit tokens), `5c86f5b` (last 4 `toLocale` calls to
+`lib/format.ts`'s new `formatDayMonth`/`formatWeekday`), `8cd2a26` (`useToast`→`sonner` — **introduced
+the toast-swap bug described above**), `00216a3` (fixes that bug by hand), `550465f`
+(`StyledSelect`/`ConfirmDialog`→`select.tsx`/`alert-dialog.tsx` directly, 3 files), plus one more commit
+migrating `MyLeavePanel.tsx`'s `ConfirmDialog` to `alert-dialog.tsx`.
 
 ## M1a — Tasks pages (`app/dashboard/tasks/**`, excluding `tickets/**` and `workflows/**`)
 

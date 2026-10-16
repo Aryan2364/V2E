@@ -5,7 +5,16 @@ import { Loader2, Plus, CalendarOff, RefreshCw } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { toast } from '@/components/ui/sonner'
 import DatePicker from '@/components/ui/DatePicker'
-import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import LeaveStateBadge from '@/components/leave/LeaveStateBadge'
 import { leaveApi } from '@/lib/api/leave'
 import type { Leave } from '@/lib/types/leave'
@@ -245,22 +254,34 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
         )}
       </div>
 
-      <ConfirmDialog
+      <AlertDialog
         open={!!cancelTarget}
-        danger
-        title="Cancel this leave?"
-        message={
-          cancelTarget
-            ? `Your leave from ${fmt(cancelTarget.start_date)} to ${fmt(cancelTarget.end_date)} will be cancelled and you will show as available on those days. This cannot be undone.`
-            : undefined
-        }
-        confirmLabel="Cancel leave"
-        cancelLabel="Keep leave"
-        loading={cancelling}
-        error={cancelError}
-        onConfirm={confirmCancel}
-        onCancel={() => { if (!cancelling) setCancelTarget(null) }}
-      />
+        onOpenChange={(next) => { if (!next && !cancelling) setCancelTarget(null) }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel this leave?</AlertDialogTitle>
+            {cancelTarget ? (
+              <AlertDialogDescription>
+                Your leave from {fmt(cancelTarget.start_date)} to {fmt(cancelTarget.end_date)} will be
+                cancelled and you will show as available on those days. This cannot be undone.
+              </AlertDialogDescription>
+            ) : null}
+            {cancelError ? (
+              <div className="rounded-lg border border-danger-border bg-danger-bg px-3 py-2 text-body text-danger">
+                {cancelError}
+              </div>
+            ) : null}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cancelling}>Keep leave</AlertDialogCancel>
+            <AlertDialogAction variant="danger" disabled={cancelling} onClick={confirmCancel}>
+              {cancelling ? <Loader2 size={15} className="animate-spin" /> : null}
+              Cancel leave
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
