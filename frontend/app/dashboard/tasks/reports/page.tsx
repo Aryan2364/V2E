@@ -11,6 +11,8 @@ import {
 import { Download, Users, Building2, Tag, CheckCircle2, RotateCcw, BarChart2, AlertTriangle } from 'lucide-react'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import DateRangePicker from '@/components/ui/DateRangePicker'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 // Flatten the ResponsiveTable card so it blends into the section card it lives in.
 const FLAT_TABLE = 'border-0 shadow-none rounded-none'
@@ -560,28 +562,26 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
-        <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Analytics</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">Organization-wide task analytics — completion, priority, category and status breakdowns.</p>
-        </div>
-
-        {/* Date range filter */}
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="w-[220px]">
-            <DateRangePicker from={fromDate} to={toDate} onChange={(f, t) => { setFromDate(f); setToDate(t) }} />
+      <PageHeader
+        title="Analytics"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        meta="Organization-wide task analytics — completion, priority, category and status breakdowns."
+        actions={
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-[220px]">
+              <DateRangePicker from={fromDate} to={toDate} onChange={(f, t) => { setFromDate(f); setToDate(t) }} />
+            </div>
+            {(fromDate || toDate) && (
+              <Button
+                variant="secondary"
+                onClick={() => { setFromDate(''); setToDate('') }}
+              >
+                Clear
+              </Button>
+            )}
           </div>
-          {(fromDate || toDate) && (
-            <button
-              onClick={() => { setFromDate(''); setToDate('') }}
-              className="px-3 py-[7px] text-sm font-medium text-danger border border-danger-border bg-danger-bg rounded-control hover:bg-danger-bg transition-colors"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-      </div>
+        }
+      />
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
@@ -590,7 +590,7 @@ export default function ReportsPage() {
       ) : !data ? (
         <div className="flex flex-col items-center justify-center h-64">
           <p className="font-medium text-text-primary">Failed to load reports</p>
-          <button onClick={loadData} className="mt-3 px-4 py-2 text-sm font-medium bg-primary text-white rounded-control hover:bg-primary-hover transition-colors">Retry</button>
+          <Button className="mt-3" onClick={loadData}>Retry</Button>
         </div>
       ) : (
         <>
