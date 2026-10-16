@@ -84,7 +84,7 @@ export default function EditTemplatePage() {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <p className="font-medium text-text-primary">Template not found</p>
-        <Link href="/dashboard/projects/templates" className="mt-2 text-sm text-primary-text hover:underline">
+        <Link href="/dashboard/projects/templates" className="mt-2 text-body text-primary-text hover:underline">
           Back to Templates
         </Link>
       </div>
@@ -96,17 +96,17 @@ export default function EditTemplatePage() {
       <div>
         <Link
           href="/dashboard/projects/templates"
-          className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors mb-3"
+          className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3"
         >
           <ChevronLeft size={15} />
           Back to Templates
         </Link>
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Edit Template</h1>
-        <p className="mt-1 text-[15px] text-text-secondary">{template.name}</p>
+        <h1 className="text-page-title font-medium text-text-primary leading-tight">Edit Template</h1>
+        <p className="mt-1 text-body text-text-secondary">{template.name}</p>
       </div>
 
       {error && (
-        <div className="px-4 py-3 rounded-[8px] border border-danger-border bg-danger-bg text-sm text-danger">
+        <div className="px-4 py-3 rounded-[8px] border border-danger-border bg-danger-bg text-body text-danger">
           {error}
         </div>
       )}
@@ -129,7 +129,7 @@ export default function EditTemplatePage() {
           type="button"
           disabled={saving}
           onClick={handleSave}
-          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-medium disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
+          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-body font-medium disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
         >
           {saving && <Loader2 size={14} className="animate-spin" />}
           {saving ? 'Saving...' : 'Save Changes'}

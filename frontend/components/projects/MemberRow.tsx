@@ -19,11 +19,11 @@ export default function MemberRow({ member, currentUserId, canEdit, onRoleChange
   return (
     <div className="flex items-center gap-3 py-2.5 border-b border-border-light last:border-0">
       <div className="w-8 h-8 rounded-full bg-primary-subtle border border-primary-border flex items-center justify-center shrink-0">
-        <span className="text-xs font-medium text-primary-text">{member.user_id.charAt(0).toUpperCase()}</span>
+        <span className="text-meta font-medium text-primary-text">{member.user_id.charAt(0).toUpperCase()}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-text-primary truncate">{member.user_id}</p>
-        {isSelf && <p className="text-[11px] text-text-muted">You</p>}
+        <p className="text-body font-medium text-text-primary truncate">{member.user_id}</p>
+        {isSelf && <p className="text-meta text-text-muted">You</p>}
       </div>
       {canEdit && !isSelf ? (
         <>
@@ -58,8 +58,8 @@ export default function MemberRow({ member, currentUserId, canEdit, onRoleChange
         </>
       ) : (
         <div className="flex items-center gap-2">
-          <span className="text-xs px-2 py-0.5 rounded-full border border-border-light text-text-secondary capitalize">{member.role}</span>
-          <span className="text-xs text-text-muted">{member.task_visibility === 'all_member_tasks' ? 'All tasks' : 'Own tasks'}</span>
+          <span className="text-meta px-2 py-0.5 rounded-full border border-border-light text-text-secondary capitalize">{member.role}</span>
+          <span className="text-meta text-text-muted">{member.task_visibility === 'all_member_tasks' ? 'All tasks' : 'Own tasks'}</span>
         </div>
       )}
     </div>

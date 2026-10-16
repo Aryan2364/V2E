@@ -22,7 +22,7 @@ export default function ProjectProgressBar({ percentage, showLabel = true, heigh
         />
       </div>
       {showLabel && (
-        <p className="text-xs text-text-secondary mt-1">{Math.round(pct)}% complete</p>
+        <p className="text-meta text-text-secondary mt-1">{Math.round(pct)}% complete</p>
       )}
     </div>
   )

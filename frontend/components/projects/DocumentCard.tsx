@@ -24,11 +24,11 @@ export default function DocumentCard({ doc, canDelete, onDelete }: DocumentCardP
         {typeIcon(doc.type)}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-text-primary truncate">{doc.name}</p>
+        <p className="text-body font-medium text-text-primary truncate">{doc.name}</p>
         {doc.type && (
-          <p className="text-xs text-text-muted uppercase">{doc.type}</p>
+          <p className="text-meta text-text-muted uppercase">{doc.type}</p>
         )}
-        <p className="text-xs text-text-muted mt-0.5">
+        <p className="text-meta text-text-muted mt-0.5">
           {formatDate(doc.created_at)}
         </p>
       </div>

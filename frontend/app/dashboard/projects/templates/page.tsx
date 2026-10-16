@@ -60,20 +60,20 @@ function TemplateCard({ template, onDelete }: { template: ProjectTemplate; onDel
       </div>
 
       <div>
-        <h3 className="text-sm font-medium text-text-primary leading-snug">{template.name}</h3>
+        <h3 className="text-body font-medium text-text-primary leading-snug">{template.name}</h3>
         {template.description && (
-          <p className="text-xs text-text-secondary mt-0.5 line-clamp-2">{template.description}</p>
+          <p className="text-meta text-text-secondary mt-0.5 line-clamp-2">{template.description}</p>
         )}
       </div>
 
-      <div className="flex items-center gap-3 text-xs text-text-muted">
+      <div className="flex items-center gap-3 text-meta text-text-muted">
         <span>{msCount} milestone{msCount !== 1 ? 's' : ''}</span>
         <span>·</span>
         <span>{taskCount} task{taskCount !== 1 ? 's' : ''}</span>
       </div>
 
       <div className="pt-1 border-t border-border-light flex items-center justify-between">
-        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+        <span className={`text-meta font-medium px-2 py-0.5 rounded-full ${
           template.is_active
             ? 'bg-success-bg text-success'
             : 'bg-surface-control text-text-muted'
@@ -82,7 +82,7 @@ function TemplateCard({ template, onDelete }: { template: ProjectTemplate; onDel
         </span>
         <Link
           href={`/dashboard/projects/templates/${template.id}`}
-          className="text-xs font-medium text-primary-text hover:text-primary-text transition-colors"
+          className="text-meta font-medium text-primary-text hover:text-primary-text transition-colors"
         >
           Edit
         </Link>
@@ -123,12 +123,12 @@ export default function TemplatesPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Project Templates</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">Reusable project structures with predefined milestones and tasks.</p>
+          <h1 className="text-page-title font-medium text-text-primary leading-tight">Project Templates</h1>
+          <p className="mt-1 text-body text-text-secondary">Reusable project structures with predefined milestones and tasks.</p>
         </div>
         <Link
           href="/dashboard/projects/templates/new"
-          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-sm font-medium hover:bg-primary-hover transition-colors shrink-0"
+          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-body font-medium hover:bg-primary-hover transition-colors shrink-0"
         >
           <Plus size={16} />
           New Template
@@ -141,10 +141,10 @@ export default function TemplatesPage() {
             <BookTemplate size={24} className="text-text-muted" />
           </div>
           <p className="font-medium text-text-primary">No templates yet</p>
-          <p className="text-sm text-text-secondary mt-1">Create a template to speed up project setup.</p>
+          <p className="text-body text-text-secondary mt-1">Create a template to speed up project setup.</p>
           <Link
             href="/dashboard/projects/templates/new"
-            className="mt-4 px-4 py-2 bg-primary text-white text-sm font-medium rounded-[8px] hover:bg-primary-hover transition-colors"
+            className="mt-4 px-4 py-2 bg-primary text-white text-body font-medium rounded-[8px] hover:bg-primary-hover transition-colors"
           >
             New Template
           </Link>

@@ -86,8 +86,8 @@ export default function TemplateBuilder({
     onDirectTasksChange(directTasks.filter((t) => t.id !== id))
   }
 
-  const inputCls = 'w-full h-9 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden'
-  const labelCls = 'block text-xs font-medium text-text-secondary mb-1'
+  const inputCls = 'w-full h-9 px-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden'
+  const labelCls = 'block text-meta font-medium text-text-secondary mb-1'
 
   function TaskRow({ task, onChange, onRemove }: { task: TemplateTask; onChange: (p: Partial<TemplateTask>) => void; onRemove: () => void }) {
     return (
@@ -113,21 +113,21 @@ export default function TemplateBuilder({
         </div>
         <div>
           <label className={labelCls}>Description</label>
-          <textarea value={description} onChange={(e) => onDescChange(e.target.value)} placeholder="Brief description..." rows={2} className="w-full px-3 py-2 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden resize-none" />
+          <textarea value={description} onChange={(e) => onDescChange(e.target.value)} placeholder="Brief description..." rows={2} className="w-full px-3 py-2 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden resize-none" />
         </div>
       </div>
 
       {/* Milestones */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-[15px] font-medium text-text-primary">Milestones</h3>
-          <button type="button" onClick={addMilestone} className="flex items-center gap-1.5 text-xs font-medium text-primary-text hover:text-primary-text transition-colors">
+          <h3 className="text-body font-medium text-text-primary">Milestones</h3>
+          <button type="button" onClick={addMilestone} className="flex items-center gap-1.5 text-meta font-medium text-primary-text hover:text-primary-text transition-colors">
             <Plus size={13} /> Add Milestone
           </button>
         </div>
 
         {milestones.length === 0 && (
-          <p className="text-sm text-text-muted py-2">No milestones yet.</p>
+          <p className="text-body text-text-muted py-2">No milestones yet.</p>
         )}
 
         <div className="space-y-3">
@@ -143,7 +143,7 @@ export default function TemplateBuilder({
                   onChange={(e) => { e.stopPropagation(); updateMilestone(ms.id, { name: e.target.value }) }}
                   onClick={(e) => e.stopPropagation()}
                   placeholder="Milestone name"
-                  className="flex-1 bg-transparent text-sm font-medium text-text-primary placeholder:text-text-muted focus:outline-hidden"
+                  className="flex-1 bg-transparent text-body font-medium text-text-primary placeholder:text-text-muted focus:outline-hidden"
                 />
                 <button
                   type="button"
@@ -157,7 +157,7 @@ export default function TemplateBuilder({
                 <div className="px-4 py-3 space-y-3">
                   <input value={ms.description} onChange={(e) => updateMilestone(ms.id, { description: e.target.value })} placeholder="Milestone description (optional)" className={inputCls} />
                   <div>
-                    <p className="text-xs font-medium text-text-secondary mb-2">Tasks</p>
+                    <p className="text-meta font-medium text-text-secondary mb-2">Tasks</p>
                     {ms.tasks.map((t) => (
                       <TaskRow
                         key={t.id}
@@ -166,7 +166,7 @@ export default function TemplateBuilder({
                         onRemove={() => removeTaskFromMilestone(ms.id, t.id)}
                       />
                     ))}
-                    <button type="button" onClick={() => addTaskToMilestone(ms.id)} className="flex items-center gap-1 text-xs text-primary-text hover:text-primary-text font-medium transition-colors">
+                    <button type="button" onClick={() => addTaskToMilestone(ms.id)} className="flex items-center gap-1 text-meta text-primary-text hover:text-primary-text font-medium transition-colors">
                       <Plus size={12} /> Add task
                     </button>
                   </div>
@@ -180,13 +180,13 @@ export default function TemplateBuilder({
       {/* Direct tasks */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-[15px] font-medium text-text-primary">Direct Tasks (No Milestone)</h3>
-          <button type="button" onClick={addDirectTask} className="flex items-center gap-1.5 text-xs font-medium text-primary-text hover:text-primary-text transition-colors">
+          <h3 className="text-body font-medium text-text-primary">Direct Tasks (No Milestone)</h3>
+          <button type="button" onClick={addDirectTask} className="flex items-center gap-1.5 text-meta font-medium text-primary-text hover:text-primary-text transition-colors">
             <Plus size={13} /> Add Task
           </button>
         </div>
         {directTasks.length === 0 && (
-          <p className="text-sm text-text-muted">No direct tasks.</p>
+          <p className="text-body text-text-muted">No direct tasks.</p>
         )}
         {directTasks.map((t) => (
           <TaskRow key={t.id} task={t} onChange={(p) => updateDirectTask(t.id, p)} onRemove={() => removeDirectTask(t.id)} />

@@ -19,12 +19,12 @@ export default function BudgetCard({ planned, actual, currency }: BudgetCardProp
 
   return (
     <div className="bg-surface border border-border-light rounded-card p-6 shadow-card">
-      <h3 className="text-[15px] font-medium text-text-primary mb-3">Budget</h3>
-      <div className="flex justify-between text-sm mb-2">
+      <h3 className="text-body font-medium text-text-primary mb-3">Budget</h3>
+      <div className="flex justify-between text-body mb-2">
         <span className="text-text-secondary">Planned</span>
         <span className="font-medium text-text-primary">{planned ? fmt(planned, currency) : '—'}</span>
       </div>
-      <div className="flex justify-between text-sm mb-3">
+      <div className="flex justify-between text-body mb-3">
         <span className="text-text-secondary">Actual Spent</span>
         <span className={`font-medium ${over ? 'text-danger' : 'text-text-primary'}`}>
           {actual ? fmt(actual, currency) : '—'}
@@ -36,7 +36,7 @@ export default function BudgetCard({ planned, actual, currency }: BudgetCardProp
         </div>
       ) : null}
       {over && (
-        <p className="text-xs text-danger mt-1">Over budget by {fmt(actual! - planned!, currency)}</p>
+        <p className="text-meta text-danger mt-1">Over budget by {fmt(actual! - planned!, currency)}</p>
       )}
     </div>
   )

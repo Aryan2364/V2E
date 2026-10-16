@@ -61,17 +61,17 @@ export default function NewTemplatePage() {
       <div>
         <Link
           href="/dashboard/projects/templates"
-          className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors mb-3"
+          className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3"
         >
           <ChevronLeft size={15} />
           Back to Templates
         </Link>
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">New Template</h1>
-        <p className="mt-1 text-[15px] text-text-secondary">Define a reusable project structure.</p>
+        <h1 className="text-page-title font-medium text-text-primary leading-tight">New Template</h1>
+        <p className="mt-1 text-body text-text-secondary">Define a reusable project structure.</p>
       </div>
 
       {error && (
-        <div className="px-4 py-3 rounded-[8px] border border-danger-border bg-danger-bg text-sm text-danger">
+        <div className="px-4 py-3 rounded-[8px] border border-danger-border bg-danger-bg text-body text-danger">
           {error}
         </div>
       )}
@@ -94,7 +94,7 @@ export default function NewTemplatePage() {
           type="button"
           disabled={saving}
           onClick={handleSave}
-          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-medium disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
+          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-body font-medium disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
         >
           {saving && <Loader2 size={14} className="animate-spin" />}
           {saving ? 'Saving...' : 'Save Template'}

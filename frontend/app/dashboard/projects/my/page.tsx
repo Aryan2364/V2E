@@ -43,19 +43,19 @@ export default function MyProjectsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">My Projects</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">Projects you are a member of.</p>
+          <h1 className="text-page-title font-medium text-text-primary leading-tight">My Projects</h1>
+          <p className="mt-1 text-body text-text-secondary">Projects you are a member of.</p>
         </div>
         <Link
           href="/dashboard/projects/new"
-          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-sm font-medium hover:bg-primary-hover transition-colors shrink-0"
+          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-body font-medium hover:bg-primary-hover transition-colors shrink-0"
         >
           <Plus size={16} />
           New Project
         </Link>
       </div>
 
-      <p className="text-sm text-text-secondary">{projects.length} project{projects.length !== 1 ? 's' : ''}</p>
+      <p className="text-body text-text-secondary">{projects.length} project{projects.length !== 1 ? 's' : ''}</p>
 
       {projects.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
@@ -63,7 +63,7 @@ export default function MyProjectsPage() {
             <Briefcase size={24} className="text-text-muted" />
           </div>
           <p className="font-medium text-text-primary">Not a member of any project yet</p>
-          <p className="text-sm text-text-secondary mt-1">Projects you join will appear here.</p>
+          <p className="text-body text-text-secondary mt-1">Projects you join will appear here.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

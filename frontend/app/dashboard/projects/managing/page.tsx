@@ -43,19 +43,19 @@ export default function ManagingProjectsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Managing</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">Projects where you are the project manager.</p>
+          <h1 className="text-page-title font-medium text-text-primary leading-tight">Managing</h1>
+          <p className="mt-1 text-body text-text-secondary">Projects where you are the project manager.</p>
         </div>
         <Link
           href="/dashboard/projects/new"
-          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-sm font-medium hover:bg-primary-hover transition-colors shrink-0"
+          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-body font-medium hover:bg-primary-hover transition-colors shrink-0"
         >
           <Plus size={16} />
           New Project
         </Link>
       </div>
 
-      <p className="text-sm text-text-secondary">{projects.length} project{projects.length !== 1 ? 's' : ''}</p>
+      <p className="text-body text-text-secondary">{projects.length} project{projects.length !== 1 ? 's' : ''}</p>
 
       {projects.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12">
@@ -63,10 +63,10 @@ export default function ManagingProjectsPage() {
             <Briefcase size={24} className="text-text-muted" />
           </div>
           <p className="font-medium text-text-primary">No projects to manage</p>
-          <p className="text-sm text-text-secondary mt-1">Projects where you are the manager will appear here.</p>
+          <p className="text-body text-text-secondary mt-1">Projects where you are the manager will appear here.</p>
           <Link
             href="/dashboard/projects/new"
-            className="mt-4 px-4 py-2 bg-primary text-white text-sm font-medium rounded-[8px] hover:bg-primary-hover transition-colors"
+            className="mt-4 px-4 py-2 bg-primary text-white text-body font-medium rounded-[8px] hover:bg-primary-hover transition-colors"
           >
             New Project
           </Link>

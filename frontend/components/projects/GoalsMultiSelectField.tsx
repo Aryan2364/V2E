@@ -50,7 +50,7 @@ export default function GoalsMultiSelectField({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-text-secondary mb-1.5">Goals this serves</label>
+      <label className="block text-body font-medium text-text-secondary mb-1.5">Goals this serves</label>
       <MultiSelect
         value={value}
         onValueChange={onChange}
@@ -69,7 +69,7 @@ export default function GoalsMultiSelectField({
           ]),
         )}
       />
-      <p className="text-[11px] text-text-secondary mt-1">
+      <p className="text-meta text-text-secondary mt-1">
         Optional — this project shows on each goal’s page as part of the work behind it.
       </p>
     </div>

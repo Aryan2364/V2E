@@ -62,7 +62,7 @@ export default function ProjectsPage() {
   if (!permsLoading && !can('projects.project.manage', 'read')) {
     return (
       <div className="space-y-6">
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Projects</h1>
+        <h1 className="text-page-title font-medium text-text-primary leading-tight">Projects</h1>
         <AccessHiddenState orgId={orgId} leaf="projects.project.manage" moduleLabel="Projects" />
       </div>
     )
@@ -80,12 +80,12 @@ export default function ProjectsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Projects</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">All projects across your organization.</p>
+          <h1 className="text-page-title font-medium text-text-primary leading-tight">Projects</h1>
+          <p className="mt-1 text-body text-text-secondary">All projects across your organization.</p>
         </div>
         <Link
           href="/dashboard/projects/new"
-          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-sm font-medium hover:bg-primary-hover transition-colors shrink-0"
+          className="flex items-center gap-2 px-6 py-[10px] bg-primary text-white rounded-[8px] text-body font-medium hover:bg-primary-hover transition-colors shrink-0"
         >
           <Plus size={16} />
           New Project
@@ -106,7 +106,7 @@ export default function ProjectsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search projects..."
-            className="w-full h-9 pl-8 pr-3 rounded-control border border-border text-sm text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden"
+            className="w-full h-9 pl-8 pr-3 rounded-control border border-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden"
           />
         </div>
         <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as 'all' | ProjectStatus)}>
@@ -119,7 +119,7 @@ export default function ProjectsPage() {
             ))}
           </SelectContent>
         </Select>
-        <span className="text-sm text-text-secondary">
+        <span className="text-body text-text-secondary">
           {filtered.length} project{filtered.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -130,13 +130,13 @@ export default function ProjectsPage() {
             <Briefcase size={24} className="text-text-muted" />
           </div>
           <p className="font-medium text-text-primary">No projects found</p>
-          <p className="text-sm text-text-secondary mt-1">
+          <p className="text-body text-text-secondary mt-1">
             {projects.length === 0 ? 'Create your first project to get started.' : 'Try adjusting your filters.'}
           </p>
           {projects.length === 0 && (
             <Link
               href="/dashboard/projects/new"
-              className="mt-4 px-4 py-2 bg-primary text-white text-sm font-medium rounded-[8px] hover:bg-primary-hover transition-colors"
+              className="mt-4 px-4 py-2 bg-primary text-white text-body font-medium rounded-[8px] hover:bg-primary-hover transition-colors"
             >
               New Project
             </Link>

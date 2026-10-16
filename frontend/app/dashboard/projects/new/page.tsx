@@ -24,13 +24,13 @@ export default function NewProjectPage() {
       <div>
         <Link
           href="/dashboard/projects"
-          className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors mb-3"
+          className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3"
         >
           <ChevronLeft size={15} />
           Back to Projects
         </Link>
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">New Project</h1>
-        <p className="mt-1 text-[15px] text-text-secondary">Set up a new project for your team.</p>
+        <h1 className="text-page-title font-medium text-text-primary leading-tight">New Project</h1>
+        <p className="mt-1 text-body text-text-secondary">Set up a new project for your team.</p>
       </div>
 
       <CreateProjectWizard templates={templates} />

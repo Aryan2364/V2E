@@ -12,7 +12,7 @@ export default function DependencyWarning({ warnings }: DependencyWarningProps) 
   return (
     <div className="flex items-start gap-1.5 text-warning mt-1">
       <AlertTriangle size={13} className="shrink-0 mt-0.5" />
-      <p className="text-xs">
+      <p className="text-meta">
         Waiting on: {warnings.map((w) => w.title).join(', ')}
       </p>
     </div>

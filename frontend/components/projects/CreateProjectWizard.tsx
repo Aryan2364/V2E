@@ -75,11 +75,11 @@ function UserSearchDropdown({
   if (selected) {
     return (
       <div className="flex items-center gap-2 h-10 px-3 rounded-[8px] border border-border bg-white">
-        <div className={`w-6 h-6 rounded-full ${avatarColor(selected.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
+        <div className={`w-6 h-6 rounded-full ${avatarColor(selected.name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}>
           {getInitials(selected.name)}
         </div>
-        <span className="text-sm text-text-primary flex-1 truncate">{selected.name}</span>
-        <span className="text-xs text-text-muted truncate">{selected.role_title}</span>
+        <span className="text-body text-text-primary flex-1 truncate">{selected.name}</span>
+        <span className="text-meta text-text-muted truncate">{selected.role_title}</span>
         <button
           type="button"
           onClick={() => onSelect(null)}
@@ -100,15 +100,15 @@ function UserSearchDropdown({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          className="w-full h-10 pl-8 pr-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
+          className="w-full h-10 pl-8 pr-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
         />
       </div>
       {open && (
         <div className="absolute z-20 mt-1 w-full bg-surface border border-border-light rounded-lg shadow-menu max-h-48 overflow-y-auto">
           {loading ? (
-            <div className="px-4 py-3 text-sm text-text-muted">Searching…</div>
+            <div className="px-4 py-3 text-body text-text-muted">Searching…</div>
           ) : results.length === 0 ? (
-            <div className="px-4 py-3 text-sm text-text-muted">No users found</div>
+            <div className="px-4 py-3 text-body text-text-muted">No users found</div>
           ) : results.map((u) => (
             <button
               key={u.user_id}
@@ -116,12 +116,12 @@ function UserSearchDropdown({
               onClick={() => { onSelect(u); setQuery(''); setOpen(false) }}
               className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-sunken transition-colors text-left"
             >
-              <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
+              <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}>
                 {getInitials(u.name)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text-primary truncate">{u.name}</p>
-                <p className="text-xs text-text-muted truncate">{u.role_title} · {u.department_name}</p>
+                <p className="text-body font-medium text-text-primary truncate">{u.name}</p>
+                <p className="text-meta text-text-muted truncate">{u.role_title} · {u.department_name}</p>
               </div>
             </button>
           ))}
@@ -182,15 +182,15 @@ function MultiUserSearch({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           placeholder="Search team members to add…"
-          className="w-full h-10 pl-8 pr-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
+          className="w-full h-10 pl-8 pr-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors"
         />
       </div>
       {open && (
         <div className="absolute z-20 mt-1 w-full bg-surface border border-border-light rounded-lg shadow-menu max-h-56 overflow-y-auto">
           {loading ? (
-            <div className="px-4 py-3 text-sm text-text-muted">Searching…</div>
+            <div className="px-4 py-3 text-body text-text-muted">Searching…</div>
           ) : results.length === 0 ? (
-            <div className="px-4 py-3 text-sm text-text-muted">No users found</div>
+            <div className="px-4 py-3 text-body text-text-muted">No users found</div>
           ) : results.map((u) => {
             const already = excludeIds.includes(u.user_id)
             return (
@@ -201,12 +201,12 @@ function MultiUserSearch({
                 disabled={already}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${already ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-sunken'}`}
               >
-                <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
+                <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}>
                   {getInitials(u.name)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{u.name}</p>
-                  <p className="text-xs text-text-muted truncate">{u.role_title} · {u.department_name}</p>
+                  <p className="text-body font-medium text-text-primary truncate">{u.name}</p>
+                  <p className="text-meta text-text-muted truncate">{u.role_title} · {u.department_name}</p>
                 </div>
                 {already && <Check size={14} className="text-success shrink-0" />}
               </button>
@@ -257,8 +257,8 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
   // Step 2 fields
   const [members, setMembers] = useState<WizardMember[]>([])
 
-  const inputCls = 'w-full h-10 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors'
-  const labelCls = 'block text-sm font-medium text-text-secondary mb-1.5'
+  const inputCls = 'w-full h-10 px-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors'
+  const labelCls = 'block text-body font-medium text-text-secondary mb-1.5'
 
   const todayStr = getNow().toISOString().split('T')[0]
 
@@ -351,10 +351,10 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
       <div className="flex items-center gap-3 mb-8">
         {[1, 2].map((s) => (
           <div key={s} className="flex items-center gap-2">
-            <div className={['w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium', s === step ? 'bg-primary text-white' : s < step ? 'bg-success-bg text-success' : 'bg-surface-control text-text-muted'].join(' ')}>
+            <div className={['w-8 h-8 rounded-full flex items-center justify-center text-body font-medium', s === step ? 'bg-primary text-white' : s < step ? 'bg-success-bg text-success' : 'bg-surface-control text-text-muted'].join(' ')}>
               {s}
             </div>
-            <span className={`text-sm font-medium ${s === step ? 'text-text-primary' : 'text-text-muted'}`}>
+            <span className={`text-body font-medium ${s === step ? 'text-text-primary' : 'text-text-muted'}`}>
               {s === 1 ? 'Project Setup' : 'Add Members'}
             </span>
             {s < 2 && <div className="w-8 h-px bg-surface-control-pressed" />}
@@ -363,7 +363,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
       </div>
 
       {error && (
-        <div className="mb-4 px-4 py-3 rounded-[8px] border border-danger-border bg-danger-bg text-sm text-danger">{error}</div>
+        <div className="mb-4 px-4 py-3 rounded-[8px] border border-danger-border bg-danger-bg text-body text-danger">{error}</div>
       )}
 
       {step === 1 && (
@@ -374,7 +374,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
           </div>
           <div>
             <label className={labelCls}>Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description..." rows={3} className="w-full px-3 py-2 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden resize-none" />
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description..." rows={3} className="w-full px-3 py-2 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden resize-none" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -417,7 +417,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
           {/* The goals this project exists to move — it can serve several. */}
           <GoalsMultiSelectField orgId={orgId} value={goalIds} onChange={setGoalIds} />
           <div className="flex justify-end pt-2">
-            <button type="button" onClick={() => { if (validateStep1()) setStep(2) }} className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-medium transition-colors">
+            <button type="button" onClick={() => { if (validateStep1()) setStep(2) }} className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-body font-medium transition-colors">
               Next: Add Members
             </button>
           </div>
@@ -426,7 +426,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
 
       {step === 2 && (
         <div className="bg-surface border border-border-light rounded-card p-6 shadow-card">
-          <p className="text-sm text-text-secondary mb-4">
+          <p className="text-body text-text-secondary mb-4">
             You and the project manager are automatically added. Add additional team members below.
           </p>
 
@@ -434,26 +434,26 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
           <div className="space-y-2 mb-4">
             {user && (
               <div className="flex items-center gap-3 p-3 bg-surface-sunken rounded-[8px] border border-border-light">
-                <div className={`w-7 h-7 rounded-full ${avatarColor(user.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
+                <div className={`w-7 h-7 rounded-full ${avatarColor(user.name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}>
                   {getInitials(user.name)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{user.name}</p>
-                  <p className="text-xs text-text-muted">You (creator)</p>
+                  <p className="text-body font-medium text-text-primary truncate">{user.name}</p>
+                  <p className="text-meta text-text-muted">You (creator)</p>
                 </div>
-                <span className="text-xs text-text-secondary bg-surface-control border border-border-light rounded-[6px] px-2 py-1">Owner</span>
+                <span className="text-meta text-text-secondary bg-surface-control border border-border-light rounded-[6px] px-2 py-1">Owner</span>
               </div>
             )}
             {pmUser && pmUser.user_id !== user?.id && (
               <div className="flex items-center gap-3 p-3 bg-surface-sunken rounded-[8px] border border-border-light">
-                <div className={`w-7 h-7 rounded-full ${avatarColor(pmUser.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
+                <div className={`w-7 h-7 rounded-full ${avatarColor(pmUser.name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}>
                   {getInitials(pmUser.name)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{pmUser.name}</p>
-                  <p className="text-xs text-text-muted">{pmUser.role_title} · Project Manager</p>
+                  <p className="text-body font-medium text-text-primary truncate">{pmUser.name}</p>
+                  <p className="text-meta text-text-muted">{pmUser.role_title} · Project Manager</p>
                 </div>
-                <span className="text-xs text-text-secondary bg-surface-control border border-border-light rounded-[6px] px-2 py-1">Manager</span>
+                <span className="text-meta text-text-secondary bg-surface-control border border-border-light rounded-[6px] px-2 py-1">Manager</span>
               </div>
             )}
           </div>
@@ -465,17 +465,17 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
 
           {/* Added members */}
           {members.length === 0 ? (
-            <p className="text-sm text-text-muted mb-6">No additional members added.</p>
+            <p className="text-body text-text-muted mb-6">No additional members added.</p>
           ) : (
             <div className="space-y-2 mb-6">
               {members.map((m) => (
                 <div key={m.user_id} className="flex items-center gap-3 p-3 bg-surface-sunken rounded-[8px] border border-border-light">
-                  <div className={`w-7 h-7 rounded-full ${avatarColor(m.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
+                  <div className={`w-7 h-7 rounded-full ${avatarColor(m.name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}>
                     {getInitials(m.name)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-text-primary truncate">{m.name}</p>
-                    <p className="text-xs text-text-muted truncate">{m.role_title}</p>
+                    <p className="text-body font-medium text-text-primary truncate">{m.name}</p>
+                    <p className="text-meta text-text-muted truncate">{m.role_title}</p>
                   </div>
                   <StyledSelect
                     value={m.role}
@@ -507,14 +507,14 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
           )}
 
           <div className="flex justify-between">
-            <button type="button" onClick={() => setStep(1)} className="h-10 px-4 rounded-[8px] border-2 border-primary text-primary-text text-sm font-medium hover:bg-primary-subtle transition-colors flex items-center gap-1.5">
+            <button type="button" onClick={() => setStep(1)} className="h-10 px-4 rounded-[8px] border-2 border-primary text-primary-text text-body font-medium hover:bg-primary-subtle transition-colors flex items-center gap-1.5">
               <ChevronLeft size={16} /> Back
             </button>
             <button
               type="button"
               disabled={saving}
               onClick={handleCreate}
-              className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-medium disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
+              className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-body font-medium disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
             >
               {saving && <Loader2 size={14} className="animate-spin" />}
               {saving ? 'Creating...' : 'Create Project'}

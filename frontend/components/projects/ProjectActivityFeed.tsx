@@ -41,7 +41,7 @@ export default function ProjectActivityFeed({ logs }: ProjectActivityFeedProps) 
   if (!logs.length) {
     return (
       <div className="text-center py-8">
-        <p className="text-sm text-text-muted">No activity yet.</p>
+        <p className="text-body text-text-muted">No activity yet.</p>
       </div>
     )
   }
@@ -57,11 +57,11 @@ export default function ProjectActivityFeed({ logs }: ProjectActivityFeedProps) 
               style={{ backgroundColor: color }}
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-text-primary">
+              <p className="text-body text-text-primary">
                 <span className="font-medium text-text-primary">User</span>{' '}
                 {ACTION_LABELS[log.action] ?? log.action}
               </p>
-              <p className="text-xs text-text-muted mt-0.5">
+              <p className="text-meta text-text-muted mt-0.5">
                 {formatDateTime(log.created_at)}
               </p>
             </div>

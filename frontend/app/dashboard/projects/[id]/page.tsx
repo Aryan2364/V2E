@@ -47,7 +47,7 @@ function StatusBadge({ status }: { status: string }) {
   const c = STATUS_COLORS[status] ?? { bg: 'var(--surface-control)', text: 'var(--text-muted)' }
   return (
     <span
-      className="px-2.5 py-0.5 rounded-full text-[11px] font-medium capitalize"
+      className="px-2.5 py-0.5 rounded-full text-meta font-medium capitalize"
       style={{ backgroundColor: c.bg, color: c.text }}
     >
       {status.replace('_', ' ')}
@@ -150,7 +150,7 @@ export default function ProjectDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <p className="font-medium text-text-primary">Project not found</p>
-        <Link href="/dashboard/projects" className="mt-2 text-sm text-primary-text hover:underline">
+        <Link href="/dashboard/projects" className="mt-2 text-body text-primary-text hover:underline">
           Back to Projects
         </Link>
       </div>
@@ -165,7 +165,7 @@ export default function ProjectDetailPage() {
       <div>
         <Link
           href="/dashboard/projects"
-          className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors mb-3"
+          className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3"
         >
           <ChevronLeft size={15} />
           Projects
@@ -173,18 +173,18 @@ export default function ProjectDetailPage() {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-[26px] font-medium text-text-primary leading-tight">{project.name}</h1>
+              <h1 className="text-page-title font-medium text-text-primary leading-tight">{project.name}</h1>
               <StatusBadge status={project.status} />
             </div>
             {project.description && (
-              <p className="mt-1 text-sm text-text-secondary">{project.description}</p>
+              <p className="mt-1 text-body text-text-secondary">{project.description}</p>
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => openAddTask()}
-              className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-[8px] transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-body font-medium rounded-[8px] transition-colors"
             >
               <Plus size={15} />
               Add Task
@@ -212,7 +212,7 @@ export default function ProjectDetailPage() {
             type="button"
             onClick={() => setTab(t.id)}
             className={[
-              'px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors',
+              'px-4 py-2.5 text-body font-medium whitespace-nowrap border-b-2 transition-colors',
               tab === t.id
                 ? 'border-primary text-primary-text'
                 : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border',
@@ -229,29 +229,29 @@ export default function ProjectDetailPage() {
           <div className="lg:col-span-2 space-y-4">
             {/* Key info */}
             <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
-              <h2 className="text-sm font-medium text-text-primary mb-4">Project Info</h2>
-              <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+              <h2 className="text-body font-medium text-text-primary mb-4">Project Info</h2>
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-body">
                 <div>
-                  <dt className="text-text-muted text-xs font-medium mb-0.5">Start Date</dt>
+                  <dt className="text-text-muted text-meta font-medium mb-0.5">Start Date</dt>
                   <dd className="text-text-primary">{project.start_date ?? '—'}</dd>
                 </div>
                 <div>
-                  <dt className="text-text-muted text-xs font-medium mb-0.5">End Date</dt>
+                  <dt className="text-text-muted text-meta font-medium mb-0.5">End Date</dt>
                   <dd className="text-text-primary">{project.end_date ?? '—'}</dd>
                 </div>
                 <div>
-                  <dt className="text-text-muted text-xs font-medium mb-0.5">Milestones</dt>
+                  <dt className="text-text-muted text-meta font-medium mb-0.5">Milestones</dt>
                   <dd className="text-text-primary">{project.achieved_milestones}/{project.total_milestones} achieved</dd>
                 </div>
                 <div>
-                  <dt className="text-text-muted text-xs font-medium mb-0.5">Tasks</dt>
+                  <dt className="text-text-muted text-meta font-medium mb-0.5">Tasks</dt>
                   <dd className="text-text-primary">{project.completed_tasks}/{project.total_tasks} completed</dd>
                 </div>
                 {/* The goals this project moves — visible from both ends, so
                     neither side is a dead end. A project may serve several. */}
                 {!!project.goals?.length && (
                   <div className="col-span-2">
-                    <dt className="text-text-muted text-xs font-medium mb-0.5">
+                    <dt className="text-text-muted text-meta font-medium mb-0.5">
                       {project.goals.length === 1 ? 'Goal' : 'Goals'}
                     </dt>
                     <dd className="flex flex-wrap gap-x-3 gap-y-1">
@@ -268,11 +268,11 @@ export default function ProjectDetailPage() {
                   </div>
                 )}
                 <div>
-                  <dt className="text-text-muted text-xs font-medium mb-0.5">Progress</dt>
+                  <dt className="text-text-muted text-meta font-medium mb-0.5">Progress</dt>
                   <dd className="text-text-primary font-medium">{Math.round(project.completion_percentage)}%</dd>
                 </div>
                 <div>
-                  <dt className="text-text-muted text-xs font-medium mb-0.5">Members</dt>
+                  <dt className="text-text-muted text-meta font-medium mb-0.5">Members</dt>
                   <dd className="text-text-primary">{project._count?.members ?? project.members?.length ?? 0}</dd>
                 </div>
               </dl>
@@ -293,10 +293,10 @@ export default function ProjectDetailPage() {
       {tab === 'milestones' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-text-secondary">{milestones.length} milestone{milestones.length !== 1 ? 's' : ''}</p>
+            <p className="text-body text-text-secondary">{milestones.length} milestone{milestones.length !== 1 ? 's' : ''}</p>
           </div>
           {milestones.length === 0 ? (
-            <div className="bg-surface border border-border-light rounded-card p-12 text-center text-sm text-text-muted">
+            <div className="bg-surface border border-border-light rounded-card p-12 text-center text-body text-text-muted">
               No milestones yet. Add them in project settings.
             </div>
           ) : (
@@ -326,18 +326,18 @@ export default function ProjectDetailPage() {
       {tab === 'tasks' && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-text-secondary">{tasks.length} task{tasks.length !== 1 ? 's' : ''} total · {directTasks.length} direct</p>
+            <p className="text-body text-text-secondary">{tasks.length} task{tasks.length !== 1 ? 's' : ''} total · {directTasks.length} direct</p>
             <button
               type="button"
               onClick={() => openAddTask()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-text border border-primary-border bg-primary-subtle rounded-[6px] hover:bg-primary-subtle transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium text-primary-text border border-primary-border bg-primary-subtle rounded-[6px] hover:bg-primary-subtle transition-colors"
             >
               <Plus size={12} />
               Add Task
             </button>
           </div>
           {tasks.length === 0 ? (
-            <div className="bg-surface border border-border-light rounded-card p-12 text-center text-sm text-text-muted">
+            <div className="bg-surface border border-border-light rounded-card p-12 text-center text-body text-text-muted">
               No tasks linked yet. Use &quot;Add Task&quot; to link tasks to this project.
             </div>
           ) : (
@@ -348,7 +348,7 @@ export default function ProjectDetailPage() {
                   return (
                     <div key={pt.id} className="flex items-center gap-3 px-4 py-3">
                       <div className="w-2 h-2 rounded-full bg-warning" />
-                      <span className="text-sm text-warning font-medium">Pending task — setup required</span>
+                      <span className="text-body text-warning font-medium">Pending task — setup required</span>
                     </div>
                   )
                 }
@@ -358,22 +358,22 @@ export default function ProjectDetailPage() {
                       className="w-2 h-2 rounded-full shrink-0"
                       style={{ backgroundColor: task.status?.color ?? 'var(--text-muted)' }}
                     />
-                    <span className="text-sm text-text-primary flex-1 truncate">{task.title}</span>
+                    <span className="text-body text-text-primary flex-1 truncate">{task.title}</span>
                     {task.status && (
                       <span
-                        className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                        className="text-meta font-medium px-2 py-0.5 rounded-full"
                         style={{ backgroundColor: (task.status.color ?? 'var(--text-muted)') + '20', color: task.status.color ?? 'var(--text-muted)' }}
                       >
                         {task.status.label}
                       </span>
                     )}
                     {task.deadline && (
-                      <span className="text-xs text-text-muted shrink-0">
+                      <span className="text-meta text-text-muted shrink-0">
                         {formatDate(task.deadline)}
                       </span>
                     )}
                     {pt.milestone_id && (
-                      <span className="text-[10px] text-text-muted shrink-0">
+                      <span className="text-meta text-text-muted shrink-0">
                         {milestones.find((m) => m.id === pt.milestone_id)?.name ?? ''}
                       </span>
                     )}
@@ -401,11 +401,11 @@ export default function ProjectDetailPage() {
       {tab === 'documents' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-text-secondary">{documents.length} document{documents.length !== 1 ? 's' : ''}</p>
+            <p className="text-body text-text-secondary">{documents.length} document{documents.length !== 1 ? 's' : ''}</p>
             <button
               type="button"
               onClick={() => setShowAddDoc((v) => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-text border border-primary-border bg-primary-subtle rounded-[6px] hover:bg-primary-subtle transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium text-primary-text border border-primary-border bg-primary-subtle rounded-[6px] hover:bg-primary-subtle transition-colors"
             >
               <Plus size={12} />
               Add Document
@@ -414,12 +414,12 @@ export default function ProjectDetailPage() {
 
           {showAddDoc && (
             <div className="bg-surface border border-border-light rounded-card p-4 shadow-card space-y-3">
-              <p className="text-sm font-medium text-text-primary">Add Document Link</p>
+              <p className="text-body font-medium text-text-primary">Add Document Link</p>
               <input
                 value={docName}
                 onChange={(e) => setDocName(e.target.value)}
                 placeholder="Document name"
-                className="w-full h-9 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden"
+                className="w-full h-9 px-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden"
               />
               <div className="relative">
                 <Link2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
@@ -427,14 +427,14 @@ export default function ProjectDetailPage() {
                   value={docUrl}
                   onChange={(e) => setDocUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full h-9 pl-8 pr-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden"
+                  className="w-full h-9 pl-8 pr-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden"
                 />
               </div>
               <div className="flex gap-2 justify-end">
                 <button
                   type="button"
                   onClick={() => { setShowAddDoc(false); setDocName(''); setDocUrl('') }}
-                  className="h-8 px-3 text-xs font-medium text-text-secondary border border-border-light rounded-[6px] hover:bg-surface-sunken transition-colors"
+                  className="h-8 px-3 text-meta font-medium text-text-secondary border border-border-light rounded-[6px] hover:bg-surface-sunken transition-colors"
                 >
                   Cancel
                 </button>
@@ -442,7 +442,7 @@ export default function ProjectDetailPage() {
                   type="button"
                   disabled={docSaving || !docName.trim() || !docUrl.trim()}
                   onClick={handleAddDoc}
-                  className="h-8 px-3 text-xs font-medium bg-primary text-white rounded-[6px] hover:bg-primary-hover disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                  className="h-8 px-3 text-meta font-medium bg-primary text-white rounded-[6px] hover:bg-primary-hover disabled:opacity-50 transition-colors flex items-center gap-1.5"
                 >
                   {docSaving && <Loader2 size={12} className="animate-spin" />}
                   Save
@@ -456,8 +456,8 @@ export default function ProjectDetailPage() {
               <div className="w-12 h-12 rounded-full bg-surface-control flex items-center justify-center mx-auto mb-3">
                 <FileText size={20} className="text-text-muted" />
               </div>
-              <p className="text-sm font-medium text-text-primary">No documents yet</p>
-              <p className="text-xs text-text-secondary mt-1">Add links to project documents, specs, or resources.</p>
+              <p className="text-body font-medium text-text-primary">No documents yet</p>
+              <p className="text-meta text-text-secondary mt-1">Add links to project documents, specs, or resources.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

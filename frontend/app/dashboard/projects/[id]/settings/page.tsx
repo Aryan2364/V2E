@@ -66,11 +66,11 @@ function UserSearchDropdown({ orgId, selected, onSelect, excludeIds = [] }: {
   if (selected) {
     return (
       <div className="flex items-center gap-2 h-10 px-3 rounded-[8px] border border-border bg-white">
-        <div className={`w-6 h-6 rounded-full ${avatarColor(selected.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
+        <div className={`w-6 h-6 rounded-full ${avatarColor(selected.name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}>
           {getInitials(selected.name)}
         </div>
-        <span className="text-sm text-text-primary flex-1 truncate">{selected.name}</span>
-        <span className="text-xs text-text-muted truncate">{selected.role_title}</span>
+        <span className="text-body text-text-primary flex-1 truncate">{selected.name}</span>
+        <span className="text-meta text-text-muted truncate">{selected.role_title}</span>
         <button type="button" onClick={() => onSelect(null)} className="p-0.5 rounded-xs hover:bg-surface-control text-text-muted hover:text-text-primary transition-colors shrink-0">
           <X size={13} />
         </button>
@@ -83,21 +83,21 @@ function UserSearchDropdown({ orgId, selected, onSelect, excludeIds = [] }: {
       <div className="relative">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
         <input value={query} onChange={(e) => setQuery(e.target.value)} onFocus={() => setOpen(true)} placeholder="Search by name…"
-          className="w-full h-10 pl-8 pr-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors" />
+          className="w-full h-10 pl-8 pr-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors" />
       </div>
       {open && (
         <div className="absolute z-20 mt-1 w-full bg-surface border border-border-light rounded-lg shadow-menu max-h-48 overflow-y-auto">
-          {loading ? <div className="px-4 py-3 text-sm text-text-muted">Searching…</div>
-            : results.length === 0 ? <div className="px-4 py-3 text-sm text-text-muted">No users found</div>
+          {loading ? <div className="px-4 py-3 text-body text-text-muted">Searching…</div>
+            : results.length === 0 ? <div className="px-4 py-3 text-body text-text-muted">No users found</div>
             : results.map((u) => (
               <button key={u.user_id} type="button" onClick={() => { onSelect(u); setQuery(''); setOpen(false) }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-sunken transition-colors text-left">
-                <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
+                <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}>
                   {getInitials(u.name)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{u.name}</p>
-                  <p className="text-xs text-text-muted truncate">{u.role_title} · {u.department_name}</p>
+                  <p className="text-body font-medium text-text-primary truncate">{u.name}</p>
+                  <p className="text-meta text-text-muted truncate">{u.role_title} · {u.department_name}</p>
                 </div>
               </button>
             ))}
@@ -148,23 +148,23 @@ function MultiUserSearch({ orgId, excludeIds, onAdd }: {
       <div className="relative">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
         <input value={query} onChange={(e) => setQuery(e.target.value)} onFocus={() => setOpen(true)} placeholder="Search team members to add…"
-          className="w-full h-10 pl-8 pr-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors" />
+          className="w-full h-10 pl-8 pr-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden transition-colors" />
       </div>
       {open && (
         <div className="absolute z-20 mt-1 w-full bg-surface border border-border-light rounded-lg shadow-menu max-h-56 overflow-y-auto">
-          {loading ? <div className="px-4 py-3 text-sm text-text-muted">Searching…</div>
-            : results.length === 0 ? <div className="px-4 py-3 text-sm text-text-muted">No users found</div>
+          {loading ? <div className="px-4 py-3 text-body text-text-muted">Searching…</div>
+            : results.length === 0 ? <div className="px-4 py-3 text-body text-text-muted">No users found</div>
             : results.map((u) => {
               const already = excludeIds.includes(u.user_id)
               return (
                 <button key={u.user_id} type="button" onClick={() => { if (!already) { onAdd(u); setQuery(''); setOpen(false) } }} disabled={already}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${already ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-sunken'}`}>
-                  <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-[10px] font-medium shrink-0`}>
+                  <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}>
                     {getInitials(u.name)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-text-primary truncate">{u.name}</p>
-                    <p className="text-xs text-text-muted truncate">{u.role_title} · {u.department_name}</p>
+                    <p className="text-body font-medium text-text-primary truncate">{u.name}</p>
+                    <p className="text-meta text-text-muted truncate">{u.role_title} · {u.department_name}</p>
                   </div>
                   {already && <Check size={14} className="text-success shrink-0" />}
                 </button>
@@ -185,8 +185,8 @@ const STATUS_OPTS = [
   { value: 'cancelled', label: 'Cancelled' },
 ]
 
-const inputCls = 'w-full h-10 px-3 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden'
-const labelCls = 'block text-sm font-medium text-text-secondary mb-1.5'
+const inputCls = 'w-full h-10 px-3 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden'
+const labelCls = 'block text-body font-medium text-text-secondary mb-1.5'
 
 export default function ProjectSettingsPage() {
   const { id } = useParams<{ id: string }>()
@@ -374,7 +374,7 @@ export default function ProjectSettingsPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <p className="font-medium text-text-primary">Project not found</p>
-        <Link href="/dashboard/projects" className="mt-2 text-sm text-primary-text hover:underline">Back to Projects</Link>
+        <Link href="/dashboard/projects" className="mt-2 text-body text-primary-text hover:underline">Back to Projects</Link>
       </div>
     )
   }
@@ -382,23 +382,23 @@ export default function ProjectSettingsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <Link href={`/dashboard/projects/${id}`} className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors mb-3">
+        <Link href={`/dashboard/projects/${id}`} className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3">
           <ChevronLeft size={15} /> Back to Project
         </Link>
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Project Settings</h1>
-        <p className="mt-1 text-[15px] text-text-secondary">{project.name}</p>
+        <h1 className="text-page-title font-medium text-text-primary leading-tight">Project Settings</h1>
+        <p className="mt-1 text-body text-text-secondary">{project.name}</p>
       </div>
 
       {error && (
-        <div className="px-4 py-3 rounded-[8px] border border-danger-border bg-danger-bg text-sm text-danger">{error}</div>
+        <div className="px-4 py-3 rounded-[8px] border border-danger-border bg-danger-bg text-body text-danger">{error}</div>
       )}
       {success && (
-        <div className="px-4 py-3 rounded-[8px] border border-success-border bg-success-bg text-sm text-success">{success}</div>
+        <div className="px-4 py-3 rounded-[8px] border border-success-border bg-success-bg text-body text-success">{success}</div>
       )}
 
       {/* General */}
       <div className="bg-surface border border-border-light rounded-card p-6 shadow-card space-y-4">
-        <h2 className="text-base font-medium text-text-primary">General</h2>
+        <h2 className="text-card-heading font-medium text-text-primary">General</h2>
         <div>
           <label className={labelCls}>Project name <span className="text-danger">*</span></label>
           <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
@@ -406,7 +406,7 @@ export default function ProjectSettingsPage() {
         <div>
           <label className={labelCls}>Description</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
-            className="w-full px-3 py-2 rounded-[8px] border border-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden resize-none" />
+            className="w-full px-3 py-2 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-primary focus:outline-hidden resize-none" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -428,7 +428,7 @@ export default function ProjectSettingsPage() {
 
       {/* Status */}
       <div className="bg-surface border border-border-light rounded-card p-6 shadow-card space-y-4">
-        <h2 className="text-base font-medium text-text-primary">Status</h2>
+        <h2 className="text-card-heading font-medium text-text-primary">Status</h2>
         <div>
           <label className={labelCls}>Project status</label>
           <StyledSelect value={status} onChange={setStatus} options={STATUS_OPTS} />
@@ -444,7 +444,7 @@ export default function ProjectSettingsPage() {
 
       {/* Budget */}
       <div className="bg-surface border border-border-light rounded-card p-6 shadow-card space-y-4">
-        <h2 className="text-base font-medium text-text-primary">Budget</h2>
+        <h2 className="text-card-heading font-medium text-text-primary">Budget</h2>
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2">
             <label className={labelCls}>Planned budget</label>
@@ -468,7 +468,7 @@ export default function ProjectSettingsPage() {
       {/* Save */}
       <div className="flex justify-end">
         <button type="button" disabled={saving} onClick={handleSave}
-          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-sm font-medium disabled:opacity-60 transition-colors flex items-center gap-2">
+          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-white text-body font-medium disabled:opacity-60 transition-colors flex items-center gap-2">
           {saving && <Loader2 size={14} className="animate-spin" />}
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
@@ -476,7 +476,7 @@ export default function ProjectSettingsPage() {
 
       {/* Members */}
       <div className="bg-surface border border-border-light rounded-card p-6 shadow-card space-y-4">
-        <h2 className="text-base font-medium text-text-primary">Members</h2>
+        <h2 className="text-card-heading font-medium text-text-primary">Members</h2>
         <MultiUserSearch orgId={orgId} excludeIds={memberIds} onAdd={handleAddMember} />
         <div className="space-y-1">
           {members.map((m) => (
@@ -495,27 +495,27 @@ export default function ProjectSettingsPage() {
 
       {/* Danger zone */}
       <div className="bg-white border border-danger-border rounded-[12px] p-6 shadow-card space-y-4">
-        <h2 className="text-base font-medium text-danger">Danger Zone</h2>
-        <p className="text-sm text-text-secondary">
+        <h2 className="text-card-heading font-medium text-danger">Danger Zone</h2>
+        <p className="text-body text-text-secondary">
           Deleting a project is irreversible. All milestones and project task links will be removed.
           Tasks in the tasks system will not be deleted.
         </p>
         {!showDelete ? (
           <button type="button" onClick={() => setShowDelete(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-danger-border text-danger text-sm font-medium hover:bg-danger-bg transition-colors">
+            className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-danger-border text-danger text-body font-medium hover:bg-danger-bg transition-colors">
             <Trash2 size={14} /> Delete Project
           </button>
         ) : (
           <div className="space-y-3">
             <input value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} placeholder="Reason for deletion (required)"
-              className="w-full h-10 px-3 rounded-[8px] border border-danger-border text-sm text-text-primary placeholder:text-text-muted bg-white focus:border-danger focus:outline-hidden" />
+              className="w-full h-10 px-3 rounded-[8px] border border-danger-border text-body text-text-primary placeholder:text-text-muted bg-white focus:border-danger focus:outline-hidden" />
             <div className="flex gap-2">
               <button type="button" onClick={() => setShowDelete(false)}
-                className="h-9 px-4 rounded-[8px] border border-border-light text-sm font-medium text-text-secondary hover:bg-surface-sunken transition-colors">
+                className="h-9 px-4 rounded-[8px] border border-border-light text-body font-medium text-text-secondary hover:bg-surface-sunken transition-colors">
                 Cancel
               </button>
               <button type="button" disabled={deleting || !deleteReason.trim()} onClick={handleDelete}
-                className="h-9 px-4 rounded-[8px] bg-danger hover:bg-danger-hover text-white text-sm font-medium disabled:opacity-60 transition-colors flex items-center gap-1.5">
+                className="h-9 px-4 rounded-[8px] bg-danger hover:bg-danger-hover text-white text-body font-medium disabled:opacity-60 transition-colors flex items-center gap-1.5">
                 {deleting && <Loader2 size={13} className="animate-spin" />}
                 Confirm Delete
               </button>

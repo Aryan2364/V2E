@@ -37,9 +37,9 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 className="text-[15px] font-medium text-text-primary">{milestone.name}</h3>
+            <h3 className="text-body font-medium text-text-primary">{milestone.name}</h3>
             <span
-              className="text-[11px] font-medium px-2.5 py-0.5 rounded-full border"
+              className="text-meta font-medium px-2.5 py-0.5 rounded-full border"
               style={{ backgroundColor: badge.bg, color: badge.text, borderColor: badge.border }}
             >
               {milestone.status === 'achieved' && <CheckCircle2 size={10} className="inline mr-1" />}
@@ -47,7 +47,7 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
             </span>
           </div>
           {milestone.due_date && (
-            <p className="text-xs text-text-muted mb-2">
+            <p className="text-meta text-text-muted mb-2">
               Due {formatDate(milestone.due_date)}
             </p>
           )}
@@ -55,7 +55,7 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
             <div className="flex-1">
               <ProjectProgressBar percentage={milestone.completion_percentage} showLabel={false} height={5} />
             </div>
-            <span className="text-xs text-text-secondary shrink-0 whitespace-nowrap">
+            <span className="text-meta text-text-secondary shrink-0 whitespace-nowrap">
               {milestone.completed_tasks}/{milestone.total_tasks} tasks
             </span>
           </div>
@@ -65,7 +65,7 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
       {expanded && (
         <>
           {tasks.length === 0 ? (
-            <div className="px-6 py-3 text-sm text-text-muted border-t border-border-light">No tasks yet.</div>
+            <div className="px-6 py-3 text-body text-text-muted border-t border-border-light">No tasks yet.</div>
           ) : (
             <div className="border-t border-border-light">
               {tasks.map((pt) => (
@@ -83,7 +83,7 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onAddTask(milestone.id) }}
-                className="flex items-center gap-1.5 text-xs text-primary-text hover:text-primary-text font-medium transition-colors"
+                className="flex items-center gap-1.5 text-meta text-primary-text hover:text-primary-text font-medium transition-colors"
               >
                 <Plus size={13} /> Add Task
               </button>
