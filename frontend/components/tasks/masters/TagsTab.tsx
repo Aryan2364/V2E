@@ -10,7 +10,7 @@ import Tooltip from '@/components/ui/tooltip'
 import TagChip from '@/components/ui/TagChip'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import { CREATE_TAG_REASON } from '@/components/tasks/TagPicker'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth/context'
 import { usePermissions } from '@/lib/auth/use-permissions'
 import { isTagConflictError, tagErrorMessage, tasksApi } from '@/lib/api/tasks'
@@ -688,7 +688,6 @@ type Pending =
 export function TagsTab({ orgId }: { orgId: string }) {
   const { user } = useAuth()
   const perms = usePermissions()
-  const { addToast } = useToast()
 
   // undefined = not known yet (kit §26.1): disabled with no reason.
   const known = !perms.loading
@@ -848,9 +847,9 @@ export function TagsTab({ orgId }: { orgId: string }) {
         : tag
     applyTag(full)
     setForm(null)
-    if (kind === 'created') addToast(`Tag ‘${full.name}’ created`, 'success')
-    else if (kind === 'reactivated') addToast(`‘${full.name}’ reactivated`, 'success')
-    else addToast(`‘${full.name}’ saved`, 'success')
+    if (kind === 'created') toast.success(`Tag ‘${full.name}’ created`)
+    else if (kind === 'reactivated') toast.success(`‘${full.name}’ reactivated`)
+    else toast.success(`‘${full.name}’ saved`)
     reveal(full)
   }
 
@@ -870,7 +869,7 @@ export function TagsTab({ orgId }: { orgId: string }) {
       setKeepVisible((s) => new Set(s).add(tag.id))
       applyTag(updated)
       setPending(null)
-      addToast(`‘${tag.name}’ deactivated`, 'success')
+      toast.success(`‘${tag.name}’ deactivated`)
     } catch (e) {
       setActionError(tagErrorMessage(e, 'We couldn’t deactivate this tag. Try again.'))
     } finally {
@@ -883,9 +882,9 @@ export function TagsTab({ orgId }: { orgId: string }) {
     try {
       const updated = await tasksApi.updateTag(orgId, tag.id, { is_active: true })
       applyTag(updated)
-      addToast(`‘${tag.name}’ reactivated`, 'success')
+      toast.success(`‘${tag.name}’ reactivated`)
     } catch (e) {
-      addToast(tagErrorMessage(e, 'We couldn’t reactivate this tag. Try again.'), 'error')
+      toast.error(tagErrorMessage(e, 'We couldn’t reactivate this tag. Try again.'))
     } finally {
       setRowBusyId(null)
     }
@@ -899,12 +898,12 @@ export function TagsTab({ orgId }: { orgId: string }) {
       setPending(null)
       if (res.result === 'deleted') {
         dropTag(tag.id)
-        addToast(`‘${tag.name}’ deleted`, 'success')
+        toast.success(`‘${tag.name}’ deleted`)
       } else {
         // The server found a reference we couldn't see (a recurring task, or a task tagged just now).
         setKeepVisible((s) => new Set(s).add(tag.id))
         applyTag({ ...tag, is_active: false })
-        addToast(`‘${tag.name}’ is still used by a recurring task, so it was deactivated instead of deleted.`, 'info')
+        toast.message(`‘${tag.name}’ is still used by a recurring task, so it was deactivated instead of deleted.`)
       }
     } catch (e) {
       setActionError(tagErrorMessage(e, 'We couldn’t delete this tag. Try again.'))
@@ -922,7 +921,7 @@ export function TagsTab({ orgId }: { orgId: string }) {
       setTags((prev) => (prev ? prev.filter((t) => t.id !== source.id).map((t) => (t.id === res.into.id ? { ...t, ...res.into } : t)) : prev))
       // A merge changes two tags and every picker's list: refetch them all.
       invalidateTaskTags(orgId)
-      addToast(`Merged ‘${source.name}’ into ‘${res.into.name}’ · ${plural(res.moved, 'task')} moved`, 'success')
+      toast.success(`Merged ‘${source.name}’ into ‘${res.into.name}’ · ${plural(res.moved, 'task')} moved`)
       reveal(res.into)
     } catch (e) {
       setActionError(tagErrorMessage(e, 'We couldn’t merge these tags. Try again.'))

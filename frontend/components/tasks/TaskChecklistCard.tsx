@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { CheckSquare, Check, Ban, ShieldCheck, RotateCcw, Users, X, ChevronDown } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import Tooltip from '@/components/ui/tooltip'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from 'sonner'
 import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
 import { TERMINAL_STATUS_PHASES, type Task, type TaskChecklistItem, type TaskChecklistItemStateEntry } from '@/lib/types/tasks'
@@ -26,7 +26,6 @@ function initials(name?: string | null): string {
 }
 
 export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, canEdit, onChanged }: Props) {
-  const { addToast } = useToast()
   const items = task.checklist ?? []
   const isAllMust = task.completion_mode === 'all_must_complete'
   const isTerminal = !!task.status && TERMINAL_STATUS_PHASES.includes(task.status.type)
@@ -52,7 +51,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
       // Surface the backend's plain-English reason (e.g. the gate message) via the
       // app's own toast — never a native browser dialog.
       const msg = e?.response?.data?.message ?? e?.message ?? 'Something went wrong.'
-      addToast(Array.isArray(msg) ? msg.join('\n') : msg, 'warning')
+      toast.warning(Array.isArray(msg) ? msg.join('\n') : msg)
     } finally {
       setBusy(null)
     }

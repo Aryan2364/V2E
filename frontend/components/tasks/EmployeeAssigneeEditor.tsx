@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Search, X, Zap, Briefcase, RotateCcw, Loader2, Check, UserPlus, Users, Trash2, HelpCircle } from 'lucide-react'
 import { tasksApi } from '@/lib/api/tasks'
 import { getEmployees } from '@/lib/api/employees'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from 'sonner'
 import Modal from '@/components/ui/Modal'
 import Tooltip from '@/components/ui/tooltip'
 import { computeNodeColors } from '@/lib/org-chart-colors'
@@ -75,7 +75,6 @@ export default function EmployeeAssigneeEditor({
   orgId: string
   view: AssigneeVisibilityAdminView
 }) {
-  const { addToast } = useToast()
   const [emps, setEmps] = useState<ActiveEmp[]>([])
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -108,8 +107,8 @@ export default function EmployeeAssigneeEditor({
             })),
         ),
       )
-      .catch(() => addToast('Could not load employees', 'error'))
-  }, [orgId, addToast])
+      .catch(() => toast.error('Could not load employees'))
+  }, [orgId])
 
   // ── Left list: employees grouped by department, departments in parent→child order ──
   const colors = useMemo(() => computeNodeColors(view.departments as unknown as Department[]), [view.departments])
@@ -143,12 +142,12 @@ export default function EmployeeAssigneeEditor({
         setPreview(data)
         setDraft({ added: data.override.added_user_ids, removed: data.override.removed_user_ids })
       } catch {
-        addToast('Could not load this employee', 'error')
+        toast.error('Could not load this employee')
       } finally {
         setLoadingPreview(false)
       }
     },
-    [orgId, addToast],
+    [orgId],
   )
 
   const dirty = useMemo(() => {
@@ -245,10 +244,10 @@ export default function EmployeeAssigneeEditor({
         added_user_ids: draft.added,
         removed_user_ids: draft.removed,
       })
-      addToast('Saved', 'success')
+      toast.success('Saved')
       await loadPreview(selectedId)
     } catch {
-      addToast('Could not save changes', 'error')
+      toast.error('Could not save changes')
     } finally {
       setSaving(false)
     }

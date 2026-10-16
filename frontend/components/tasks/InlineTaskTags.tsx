@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react'
 import TagChip from '@/components/ui/TagChip'
 import TagPicker from '@/components/tasks/TagPicker'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from 'sonner'
 import { tasksApi, tagErrorMessage } from '@/lib/api/tasks'
 import { useTaskTags } from '@/lib/tasks/useTaskTags'
 import type { Task, TaskTagRef } from '@/lib/types/tasks'
@@ -60,7 +60,6 @@ const sameIds = (a: string[], b: string[]) => a.length === b.length && a.every((
  *   last saved list and shows the server's reason in a toast.
  */
 export function InlineTaskTags({ orgId, taskId, tags, canEdit, onUpdated, className = '' }: InlineTaskTagsProps) {
-  const { addToast } = useToast()
   // Same cached list the picker reads, so a just-picked or just-created tag has its chip.
   const { tags: master } = useTaskTags(canEdit ? orgId : null, { includeInactive: true })
 
@@ -127,7 +126,7 @@ export function InlineTaskTags({ orgId, taskId, tags, canEdit, onUpdated, classN
           wantedRef.current = null
           setConfirmed(confirmedRef.current)
           setPendingIds(null)
-          addToast(tagErrorMessage(e, 'Couldn’t update this task’s tags. Try again.'), 'error')
+          toast.error(tagErrorMessage(e, 'Couldn’t update this task’s tags. Try again.'))
           break
         }
       }
@@ -135,7 +134,7 @@ export function InlineTaskTags({ orgId, taskId, tags, canEdit, onUpdated, classN
       savingRef.current = false
       setSaving(false)
     }
-  }, [orgId, taskId, onUpdated, addToast])
+  }, [orgId, taskId, onUpdated])
 
   const change = useCallback(
     (next: string[]) => {

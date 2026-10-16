@@ -16,7 +16,7 @@ import {
   Search,
 } from 'lucide-react'
 import { tasksApi } from '@/lib/api/tasks'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from 'sonner'
 import Tooltip from '@/components/ui/tooltip'
 import { computeNodeColors } from '@/lib/org-chart-colors'
 import { flattenTree } from '@/lib/dept-tree'
@@ -108,7 +108,6 @@ function Card({ title, description, children }: { title: string; description?: s
 // ─── Main tab ───────────────────────────────────────────────────────────────────
 
 export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
-  const { addToast } = useToast()
   const [view, setView] = useState<AssigneeVisibilityAdminView | null>(null)
   const [settings, setSettings] = useState<AssigneeVisibilitySettings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -127,13 +126,13 @@ export function AssigneeVisibilityTab({ orgId }: { orgId: string }) {
   useEffect(() => {
     setLoading(true)
     reload()
-      .catch(() => addToast('Could not load visibility settings', 'error'))
+      .catch(() => toast.error('Could not load visibility settings'))
       .finally(() => setLoading(false))
-  }, [reload, addToast])
+  }, [reload])
 
   const apiError = (e: any, fallback: string) => {
     const m = e?.response?.data?.message ?? fallback
-    addToast(Array.isArray(m) ? m.join(', ') : m, 'error')
+    toast.error(Array.isArray(m) ? m.join(', ') : m)
   }
 
   // ── Auto-save (no Save button). Settings persist as you edit. ──
