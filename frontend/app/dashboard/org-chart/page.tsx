@@ -31,9 +31,12 @@ import DeptTableView from '@/components/org-chart/DeptTableView'
 import ImportDepartmentsModal from '@/components/org-chart/ImportDepartmentsModal'
 import ViewToggle, { type ViewMode } from '@/components/ui/ViewToggle'
 import { useFlowNav, CanvasScrollbars, FlowNavStyles } from '@/components/ui/flow-nav'
-import { useToast } from '@/components/ui/Toast'
+import { toast } from '@/components/ui/sonner'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { PageHeader } from '@/components/shell/page-header'
 import type { Department, EmployeeProfile, User } from '@/lib/types'
-import { Download, Network, Plus, LayoutGrid, Search, Check, Upload } from 'lucide-react'
+import { DownloadIcon, NetworkIcon, PlusIcon, LayoutGridIcon, SearchIcon, CheckIcon, UploadIcon } from 'lucide-react'
 
 const nodeTypes = { deptNode: DeptNode }
 const STRUCTURE_LEAF = 'settings.organization.structure'
@@ -102,7 +105,6 @@ function OrgChartInner({
   onDepartmentsChange,
 }: InnerProps) {
   const { setCenter, getNodes } = useReactFlow()
-  const { addToast } = useToast()
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges] = useEdgesState([])
   const [exporting, setExporting] = useState(false)
@@ -232,11 +234,11 @@ function OrgChartInner({
       link.download = 'department-structure.png'
       link.click()
     } catch {
-      addToast('Could not export the image. Please try again.', 'error')
+      toast.error('Could not export the image. Please try again.')
     } finally {
       setExporting(false)
     }
-  }, [getNodes, addToast])
+  }, [getNodes])
 
   return (
     <div
@@ -257,7 +259,7 @@ function OrgChartInner({
             {saveStatus === 'saving' && <span className="text-text-muted">Saving…</span>}
             {saveStatus === 'saved' && (
               <span className="text-success inline-flex items-center gap-1">
-                <Check size={13} /> All changes saved
+                <CheckIcon size={13} /> All changes saved
               </span>
             )}
             {saveStatus === 'error' && <span className="text-danger">Save failed</span>}
@@ -270,7 +272,7 @@ function OrgChartInner({
               onClick={handleAutoArrange}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-white border border-border-light text-text-secondary hover:text-text-primary hover:border-border transition-colors"
             >
-              <LayoutGrid size={15} /> Auto-arrange
+              <LayoutGridIcon size={15} /> Auto-arrange
             </button>
           )}
           <button
@@ -278,7 +280,7 @@ function OrgChartInner({
             disabled={exporting}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-white border border-border-light text-text-secondary hover:text-text-primary hover:border-border disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
-            <Download size={15} /> {exporting ? 'Exporting…' : 'Export PNG'}
+            <DownloadIcon size={15} /> {exporting ? 'Exporting…' : 'Export PNG'}
           </button>
         </div>
       </div>
@@ -318,7 +320,7 @@ function EmptyState({ canEdit, onAdd }: { canEdit: boolean; onAdd: () => void })
   return (
     <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12 text-center">
       <div className="w-16 h-16 rounded-full bg-surface-control flex items-center justify-center mb-4">
-        <Network size={28} className="text-text-muted" />
+        <NetworkIcon size={28} className="text-text-muted" />
       </div>
       <h2 className="text-lg font-medium text-text-primary">No departments yet</h2>
       <p className="text-text-secondary text-sm mt-1 max-w-xs">
@@ -331,7 +333,7 @@ function EmptyState({ canEdit, onAdd }: { canEdit: boolean; onAdd: () => void })
           onClick={onAdd}
           className="mt-4 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
         >
-          <Plus size={15} /> Add Department
+          <PlusIcon size={15} /> Add Department
         </button>
       )}
     </div>
@@ -444,58 +446,52 @@ export default function OrgChartPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="flex h-64 flex-col gap-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-40 rounded-card" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div>
-          <h1 className="text-[28px] font-medium text-text-primary leading-tight">Department Structure</h1>
-          <p className="mt-1 text-[15px] text-text-secondary">
-            {canEdit
-              ? 'Drag to arrange, click a department for details, and use the pencil to edit.'
-              : 'Interactive view of your department structure and hierarchy.'}
-          </p>
-        </div>
-        {canEdit && (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowImport(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-primary-text bg-white border-2 border-primary hover:bg-primary-subtle transition-colors"
-            >
-              <Upload size={16} />
-              Import
-            </button>
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-hover transition-colors"
-            >
-              <Plus size={16} />
-              Add Department
-            </button>
-          </div>
-        )}
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Department Structure"
+        meta={
+          canEdit
+            ? 'Drag to arrange, click a department for details, and use the pencil to edit.'
+            : 'Interactive view of your department structure and hierarchy.'
+        }
+        actions={
+          canEdit ? (
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" onClick={() => setShowImport(true)}>
+                <UploadIcon size={16} />
+                Import
+              </Button>
+              <Button onClick={openCreate}>
+                <PlusIcon size={16} />
+                Add Department
+              </Button>
+            </div>
+          ) : undefined
+        }
+      />
 
       {departments.length === 0 ? (
         <EmptyState canEdit={canEdit} onAdd={openCreate} />
       ) : (
         <>
-          {/* Search */}
+          {/* SearchIcon */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 max-w-xs">
-              <Search
+              <SearchIcon
                 size={15}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
               />
               <input
                 type="text"
-                placeholder="Search departments…"
+                placeholder="SearchIcon departments…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full pl-8 pr-3 py-[10px] text-sm rounded-lg border border-border focus:border-primary focus:outline-hidden bg-white text-text-primary placeholder:text-text-muted"
