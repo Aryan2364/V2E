@@ -4,6 +4,7 @@ import React from 'react'
 import { X, Plus, ChevronDown, ChevronUp } from 'lucide-react'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
+import { Button } from '@/components/ui/button'
 import type { ReminderSpec, ReminderRecipient } from '@/lib/types/tasks'
 
 // A reminder being edited in a task/recurring form. The assignee is always
@@ -285,14 +286,16 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
                 return (
                   <div key={r.key} className="relative rounded-lg border border-border-light bg-surface-sunken p-3 space-y-2.5">
                     {/* remove — top-right corner */}
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={() => remove(r.key)}
-                      className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-[6px] text-text-muted hover:text-danger hover:bg-surface transition-colors"
+                      className="absolute top-2 right-2 hover:text-danger"
                       aria-label="Remove reminder"
                     >
                       <X size={14} />
-                    </button>
+                    </Button>
 
                     {/* kind toggle — full width, with room reserved for the corner X */}
                     <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-surface-control border border-border-light mr-6">
@@ -386,13 +389,9 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
                 )
               })
             )}
-            <button
-              type="button"
-              onClick={add}
-              className="flex items-center justify-center gap-1.5 w-full px-3 py-2 text-body font-medium text-primary-text border border-primary rounded-lg hover:bg-primary-subtle transition-colors"
-            >
+            <Button type="button" variant="secondary" className="w-full" onClick={add}>
               <Plus size={14} /> Add reminder
-            </button>
+            </Button>
           </div>
         )}
       </div>
