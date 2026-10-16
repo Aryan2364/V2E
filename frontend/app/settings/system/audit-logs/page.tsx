@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth/context'
 import { auditApi, type AuditFilters } from '@/lib/api/audit'
 import type { AuditEntry, AuditModuleFacet } from '@/lib/types/audit'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
-import SelectField from '@/components/ui/SelectField'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import DateRangePicker from '@/components/ui/DateRangePicker'
 import {
   ActorCell,
@@ -21,6 +21,12 @@ import {
 // but share the dropdowns' height and radius so the filter row stays aligned.
 const inputClass =
   'rounded-[8px] border border-border bg-white px-3.5 py-2.5 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-colors'
+
+// Sentinel for "no filter" in the five Select controls below. The filter
+// state itself stays '' (what AuditFilters expects); only the Select's
+// own value ever sees this sentinel, so an "All ..." row can be the
+// Select's real selected item instead of a placeholder.
+const ALL_VALUE = '__all__'
 
 export default function AuditLogsPage() {
   const { user } = useAuth()
@@ -206,73 +212,105 @@ export default function AuditLogsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* 1 — Module: the primary, navigation-level filter */}
-          <SelectField
-            wrapperClassName="flex-1 min-w-[150px]"
-            value={module}
-            onChange={(e) => {
-              setModule(e.target.value)
+          {/* 1 — Module: the primary, navigation-level filter. ALL_VALUE
+              stands in for "" (no filter): Base UI's Select treats an
+              item whose value stringifies to "" as having no selection,
+              which would make the trigger fall back to its placeholder
+              text instead of showing the chosen "All ..." row. */}
+          <Select
+            value={module || ALL_VALUE}
+            onValueChange={(next) => {
+              setModule(next === ALL_VALUE ? '' : (next as string))
               setResource('') // reset the dependent Type when the module changes
             }}
           >
-            <option value="">All modules</option>
-            {modules.map((m) => (
-              <option key={m.key} value={m.key}>
-                {m.label}
-              </option>
-            ))}
-          </SelectField>
+            <SelectTrigger className="flex-1 min-w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_VALUE}>All modules</SelectItem>
+              {modules.map((m) => (
+                <SelectItem key={m.key} value={m.key}>
+                  {m.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* 2 — Type: stays in place, inactive when the module has no sub-types */}
-          <SelectField
-            wrapperClassName="flex-1 min-w-[150px]"
-            value={resource}
+          <Select
+            value={resource || ALL_VALUE}
             disabled={typeDisabled}
-            onChange={(e) => setResource(e.target.value)}
+            onValueChange={(next) => setResource(next === ALL_VALUE ? '' : (next as string))}
           >
-            {typeDisabled ? (
-              <option value="">Category</option>
-            ) : (
-              <>
-                <option value="">All {selectedModule!.label.toLowerCase()}</option>
-                {typeOptions.map((r) => (
-                  <option key={r.key} value={r.key}>
-                    {r.label}
-                  </option>
-                ))}
-              </>
-            )}
-          </SelectField>
+            <SelectTrigger className="flex-1 min-w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {typeDisabled ? (
+                <SelectItem value={ALL_VALUE}>Category</SelectItem>
+              ) : (
+                <>
+                  <SelectItem value={ALL_VALUE}>All {selectedModule!.label.toLowerCase()}</SelectItem>
+                  {typeOptions.map((r) => (
+                    <SelectItem key={r.key} value={r.key}>
+                      {r.label}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
+            </SelectContent>
+          </Select>
 
           {/* 3 — Action */}
-          <SelectField wrapperClassName="flex-1 min-w-[140px]" value={action} onChange={(e) => setAction(e.target.value)}>
-            <option value="">All actions</option>
-            <option value="create">Create</option>
-            <option value="update">Update</option>
-            <option value="delete">Delete</option>
-          </SelectField>
+          <Select
+            value={action || ALL_VALUE}
+            onValueChange={(next) => setAction(next === ALL_VALUE ? '' : (next as string))}
+          >
+            <SelectTrigger className="flex-1 min-w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_VALUE}>All actions</SelectItem>
+              <SelectItem value="create">Create</SelectItem>
+              <SelectItem value="update">Update</SelectItem>
+              <SelectItem value="delete">Delete</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* 4 — Actor */}
-          <SelectField wrapperClassName="flex-1 min-w-[140px]" value={actorType} onChange={(e) => setActorType(e.target.value)}>
-            <option value="">User &amp; System</option>
-            <option value="user">User</option>
-            <option value="system">System</option>
-          </SelectField>
+          <Select
+            value={actorType || ALL_VALUE}
+            onValueChange={(next) => setActorType(next === ALL_VALUE ? '' : (next as string))}
+          >
+            <SelectTrigger className="flex-1 min-w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_VALUE}>User &amp; System</SelectItem>
+              <SelectItem value="user">User</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* 5 — Trigger (only when system entries with a known trigger exist) */}
-          <SelectField
-            wrapperClassName="flex-1 min-w-[140px]"
-            value={triggerSource}
+          <Select
+            value={triggerSource || ALL_VALUE}
             disabled={triggerSources.length === 0}
-            onChange={(e) => setTriggerSource(e.target.value)}
+            onValueChange={(next) => setTriggerSource(next === ALL_VALUE ? '' : (next as string))}
           >
-            <option value="">All triggers</option>
-            {triggerSources.map((t) => (
-              <option key={t} value={t}>
-                {triggerLabel(t)}
-              </option>
-            ))}
-          </SelectField>
+            <SelectTrigger className="flex-1 min-w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_VALUE}>All triggers</SelectItem>
+              {triggerSources.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {triggerLabel(t)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Date range — single tab, opens a calendar with quick presets */}
           <DateRangePicker
