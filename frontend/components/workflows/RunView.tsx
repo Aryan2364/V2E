@@ -5,6 +5,7 @@ import { CalendarClock, CheckSquare, Clock, FileText, FolderOpen, MessageSquare,
 import { useAuth } from '@/lib/auth/context'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/Toast'
+import Tooltip from '@/components/ui/tooltip'
 import { workflowsApi, workflowErrorMessage, workflowErrorStatus } from '@/lib/api/workflows'
 import type { WorkflowInstance, WorkflowInstanceStep } from '@/lib/types/workflows'
 import ActionMenu, { type ActionMenuItem } from './ActionMenu'
@@ -326,19 +327,25 @@ export default function RunView({ templateId, instanceId }: { templateId: string
               {t && (t.checklist_total > 0 || t.proof_count > 0 || t.comment_count > 0) && (
                 <span className="flex items-center gap-3 text-meta text-text-secondary">
                   {t.checklist_total > 0 && (
-                    <span className="inline-flex items-center gap-1" title="Checklist">
-                      <CheckSquare size={12} className="text-text-secondary" /> {t.checklist_done}/{t.checklist_total}
-                    </span>
+                    <Tooltip label="Checklist">
+                      <span className="inline-flex items-center gap-1">
+                        <CheckSquare size={12} className="text-text-secondary" /> {t.checklist_done}/{t.checklist_total}
+                      </span>
+                    </Tooltip>
                   )}
                   {t.proof_count > 0 && (
-                    <span className="inline-flex items-center gap-1" title="Proof files">
-                      <FileText size={12} className="text-text-secondary" /> {t.proof_count}
-                    </span>
+                    <Tooltip label="Proof files">
+                      <span className="inline-flex items-center gap-1">
+                        <FileText size={12} className="text-text-secondary" /> {t.proof_count}
+                      </span>
+                    </Tooltip>
                   )}
                   {t.comment_count > 0 && (
-                    <span className="inline-flex items-center gap-1" title="Comments">
-                      <MessageSquare size={12} className="text-text-secondary" /> {t.comment_count}
-                    </span>
+                    <Tooltip label="Comments">
+                      <span className="inline-flex items-center gap-1">
+                        <MessageSquare size={12} className="text-text-secondary" /> {t.comment_count}
+                      </span>
+                    </Tooltip>
                   )}
                 </span>
               )}
