@@ -3,7 +3,17 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ShieldCheck, CheckCircle2, Clock, Download, Lock, Users, Trash2 } from 'lucide-react'
 import FileDropzone, { AttachmentErrorBox } from '@/components/ui/FileDropzone'
-import Modal from '@/components/ui/Modal'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog'
 import Tooltip from '@/components/ui/tooltip'
 import { useAuth } from '@/lib/auth/context'
 import { tasksApi } from '@/lib/api/tasks'
@@ -260,13 +270,17 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
       )}
 
       {/* Per-file visibility popup (all_must) — asked once per file as it's uploaded. */}
-      <Modal
-        isOpen={queue.length > 0}
-        onClose={() => { if (!uploading) setQueue([]) }}
-        title="Who can see this proof?"
-        size="sm"
-        closeOnEscape={!uploading}
+      <Dialog
+        open={queue.length > 0}
+        onOpenChange={(open, eventDetails) => {
+          if (open) return
+          if (eventDetails.reason === 'escape-key' && uploading) { eventDetails.cancel(); return }
+          if (!uploading) setQueue([])
+        }}
       >
+        <DialogContent size="sm">
+        <DialogHeader><DialogTitle>Who can see this proof?</DialogTitle></DialogHeader>
+        <DialogBody>
         {queue[0] && (
           <div>
             <p className="text-[13px] text-text-secondary mb-3 break-all">
@@ -300,35 +314,39 @@ export default function ProofOfCompletionCard({ task, assignees, reloadToken, lo
             </div>
           </div>
         )}
-      </Modal>
+        </DialogBody>
+        </DialogContent>
+      </Dialog>
 
       {/* Confirm before removing a proof file — it's evidence, so guard it like the
           plain-attachment delete does. */}
-      <Modal
-        isOpen={!!proofToDelete}
-        onClose={() => { if (!deleting) setProofToDelete(null) }}
-        title="Remove this proof?"
-        size="sm"
-        closeOnEscape={!deleting}
+      <AlertDialog
+        open={!!proofToDelete}
+        onOpenChange={(next) => { if (!next && !deleting) setProofToDelete(null) }}
       >
-        {proofToDelete && (
-          <div>
-            <p className="text-[14px] text-text-secondary">
-              <span className="font-medium text-text-primary break-all">{proofToDelete.file_name}</span> will be permanently
-              removed and will no longer count toward the proof requirement. This can’t be undone.
-            </p>
-            <div className="mt-4 flex items-center justify-end">
-              <button
-                onClick={() => handleDeleteProof(proofToDelete)}
-                disabled={deleting}
-                className="text-sm font-medium text-white bg-danger rounded-lg px-4 py-2 hover:bg-danger-hover disabled:opacity-60 transition-colors"
-              >
-                {deleting ? 'Removing…' : 'Remove proof'}
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this proof?</AlertDialogTitle>
+            {proofToDelete && (
+              <AlertDialogDescription>
+                <span className="font-medium text-text-primary break-all">{proofToDelete.file_name}</span> will be permanently
+                removed and will no longer count toward the proof requirement. This can’t be undone.
+              </AlertDialogDescription>
+            )}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="danger"
+              disabled={deleting}
+              loading={deleting}
+              onClick={() => proofToDelete && handleDeleteProof(proofToDelete)}
+            >
+              Remove proof
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

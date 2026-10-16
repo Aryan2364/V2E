@@ -2,7 +2,16 @@
 
 import React, { useState } from 'react'
 import { CheckSquare, Check, Ban, ShieldCheck, RotateCcw, Users, X, ChevronDown } from 'lucide-react'
-import Modal from '@/components/ui/Modal'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog'
 import Tooltip from '@/components/ui/tooltip'
 import { toast } from 'sonner'
 import { tasksApi } from '@/lib/api/tasks'
@@ -117,55 +126,68 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
       </div>
 
       {/* Skip (can't do) reason dialog */}
-      <Modal isOpen={!!skipItem} onClose={() => setSkipItem(null)} title="Can’t do this item" size="sm" closeOnEscape={false}>
-        <p className="text-[14px] text-text-secondary mb-3">
-          Tell everyone why this step can’t be done. It counts toward finishing your part, and stays visible with your reason.
-        </p>
-        <textarea
-          value={skipReason}
-          onChange={(e) => setSkipReason(e.target.value)}
-          rows={3}
-          autoFocus
-          placeholder="Reason (required)"
-          className="w-full rounded-lg border border-border focus:border-primary focus:outline-hidden focus:ring-0 px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted"
-        />
-        <div className="flex justify-end mt-4">
-          <button
-            onClick={() =>
-              skipItem &&
-              run(`skip:${skipItem.id}`, () =>
-                tasksApi.skipChecklistItem(orgId, taskId, skipItem.id, skipReason.trim()),
-              ).then(() => { setSkipItem(null); setSkipReason('') })
-            }
-            disabled={!skipReason.trim() || busy === `skip:${skipItem?.id}`}
-            className="px-4 py-2.5 rounded-lg font-medium text-white bg-warning hover:bg-warning disabled:bg-surface-control-pressed disabled:text-text-muted"
-          >
-            {busy === `skip:${skipItem?.id}` ? 'Saving…' : 'Mark can’t do'}
-          </button>
-        </div>
-      </Modal>
+      <AlertDialog open={!!skipItem} onOpenChange={() => { /* Escape/backdrop are no-ops on AlertDialog itself (24.3) */ }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Can’t do this item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tell everyone why this step can’t be done. It counts toward finishing your part, and stays visible with your reason.
+            </AlertDialogDescription>
+            <textarea
+              value={skipReason}
+              onChange={(e) => setSkipReason(e.target.value)}
+              rows={3}
+              autoFocus
+              placeholder="Reason (required)"
+              className="w-full rounded-lg border border-border focus:border-primary focus:outline-hidden focus:ring-0 px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted"
+            />
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSkipItem(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="primary"
+              onClick={() =>
+                skipItem &&
+                run(`skip:${skipItem.id}`, () =>
+                  tasksApi.skipChecklistItem(orgId, taskId, skipItem.id, skipReason.trim()),
+                ).then(() => { setSkipItem(null); setSkipReason('') })
+              }
+              disabled={!skipReason.trim() || busy === `skip:${skipItem?.id}`}
+              loading={busy === `skip:${skipItem?.id}`}
+            >
+              Mark can’t do
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Challenge confirm — reopens the person's part */}
-      <Modal isOpen={!!challenge} onClose={() => setChallenge(null)} title="Reopen this item?" size="sm">
-        <p className="text-[14px] text-text-primary">
-          This reopens the task for <span className="font-medium">{challenge?.userName}</span> so they can address
-          {' '}<span className="font-medium">“{challenge?.item.title}”</span>. Their other finished items stay as they are.
-        </p>
-        <div className="flex justify-end mt-4">
-          <button
-            onClick={() =>
-              challenge &&
-              run(`challenge:${challenge.item.id}:${challenge.userId}`, () =>
-                tasksApi.challengeChecklistItem(orgId, taskId, challenge.item.id, challenge.userId),
-              ).then(() => setChallenge(null))
-            }
-            disabled={!!challenge && busy === `challenge:${challenge.item.id}:${challenge.userId}`}
-            className="px-4 py-2.5 rounded-lg font-medium text-white bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
-          >
-            Reopen &amp; challenge
-          </button>
-        </div>
-      </Modal>
+      <AlertDialog open={!!challenge} onOpenChange={(next) => { if (!next) setChallenge(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reopen this item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This reopens the task for <span className="font-medium">{challenge?.userName}</span> so they can address
+              {' '}<span className="font-medium">“{challenge?.item.title}”</span>. Their other finished items stay as they are.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="primary"
+              onClick={() =>
+                challenge &&
+                run(`challenge:${challenge.item.id}:${challenge.userId}`, () =>
+                  tasksApi.challengeChecklistItem(orgId, taskId, challenge.item.id, challenge.userId),
+                ).then(() => setChallenge(null))
+              }
+              disabled={!!challenge && busy === `challenge:${challenge.item.id}:${challenge.userId}`}
+            >
+              Reopen &amp; challenge
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </div>
   )
