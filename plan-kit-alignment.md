@@ -107,3 +107,46 @@ npx next build
   and `npm run test:unit` (69/69) all green. No lucide-react/recharts version bump attempted
   (kept v2e's 1.x/2.x; build was already clean, out of scope to push further here). Commits
   e8ea753 (framework upgrade) and f5403ea (Tailwind 4 migration).
+- 16 Oct 2026: P2 done. app/globals.css rewritten on the kit's globals.css (same
+  token vocabulary/type scale/spacing/radii/shadows/z-layers/motion/scrollbars/
+  autofill); the phone-only block from feat/phone-app merged into the one global
+  token layer (D10), keeping only phone overrides/behaviour scoped to
+  [data-layout="phone"]. Brand block carries v2e's 8 blue values unchanged (D3);
+  scrollbar colours and --on-brand-accent newly derived per kit sections
+  0.1/10.1/36.8. V2E-specific CSS with live call sites kept: task tag palette,
+  boot splash, overlay keyframes, react-flow font, table-scroll/sidebar-scroll
+  scrollbars, number-input spinner removal. tailwind.config.ts retired (no
+  @config import); its colour AND fontSize/shadow "phone-*" aliases (two
+  separate mechanisms sharing a prefix by coincidence) rewritten to plain kit
+  token classes by one-off scripts, in components/phone/**. Geist replaces
+  Inter; body drops to 14px. lib/utils.ts, lib/format.ts copied from the kit
+  unchanged; lib/phone-format.ts's fmtDate/fmtTime/fmtDateTime now delegate to
+  lib/format.ts. shadcn added at 4.19.0.
+  Colour codemod: audit/colour-map.md records hex->token decisions by role
+  (text/fill/border); three scripts (frontend/scripts/kit-colour-codemod*.mjs)
+  applied it across app/components/lib - Tailwind arbitrary-hex classes, then
+  key:'#hex' property values, then bare hex string literals. lib/install-
+  settings.ts and lib/org-chart-colors.ts left as data. Three chart-series
+  arrays (PIE, STRIPE_COLORS, BAND_COLORS) hand-corrected to var(--chart-1..6)
+  by position instead of the scripts' per-hex guess. The sign-in brand panel's
+  three unrelated darks now read off the primary block.
+  Known gap, left for P3/P4/P5: ~230 hex codes remain, almost all of them the
+  dark desktop nav sidebar's light-on-dark text/background (components/layout/*,
+  D4 - P4 restyles that shell) plus a long tail of tree/calendar/gantt/decorative
+  SVG colours in components/{employees,holidays,projects,process-hierarchy,
+  roles,org-chart,workflows}/** and components/ui/{DatePicker,SelectField,
+  StyledSelect,Tooltip,ClockTimePicker,...}.tsx that this pass's three scripts
+  couldn't reach (gradients, un-keyed JSX props, SVG path/polygon fills) and
+  that a full scan surfaced after the codemod runs - genuine hand-pass work for
+  whichever phase (P3 primitives, P5 module screens) next touches each file.
+  rgba(...) values (303) were not converted - out of this phase's scripted
+  reach, same reasoning. Rules files copied into frontend/ with the product
+  header and section 2.2 table filled in; frontend/AGENTS.md and
+  frontend/CLAUDE.md created (CLAUDE.md force-added past the repo's blanket
+  gitignore rule for that filename). Repo-root DESIGN_RULES.md no longer
+  exists on this branch (removed before this work in cc87a09), so no
+  superseding line was added.
+  `tsc --noEmit` and `next build` green throughout. Commits 36be244 (a: token
+  layer/Geist/utils/format), 0dfa536 (b: codemod script + map), bbe922d
+  (c: codemod applied), 89b16a0 (d: hand remainders), f162a7e (e: rules files),
+  829170d (f: fontSize/shadow phone-* fix).
