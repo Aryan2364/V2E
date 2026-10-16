@@ -1,0 +1,2 @@
+@AGENTS.md
+@FRONTEND_RULES.md
