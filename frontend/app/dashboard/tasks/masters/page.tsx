@@ -36,6 +36,7 @@ import type {
 } from '@/lib/types/tickets'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import StyledSelect from '@/components/ui/StyledSelect'
+import { PageHeader } from '@/components/shell/page-header'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,7 +47,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Plus, Pencil, Trash2, Save, X, Settings2, Tag, Tags, BarChart, Activity, List, Users, Ticket as TicketIcon, CheckSquare, Bell, Loader2, GripVertical, ChevronUp, ChevronDown, ArrowLeft, Upload } from 'lucide-react'
+import { Plus, Pencil, Trash2, Save, X, Settings2, Tag, Tags, BarChart, Activity, List, Users, Ticket as TicketIcon, CheckSquare, Bell, Loader2, GripVertical, ChevronUp, ChevronDown, Upload } from 'lucide-react'
 import { notificationsApi, type NotificationMaster } from '@/lib/api/notifications'
 import { AssigneeVisibilityTab } from '@/components/tasks/AssigneeVisibilityTab'
 import ImportChecklistsModal from '@/components/tasks/ImportChecklistsModal'
@@ -801,7 +802,6 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
     return (
       <div className="space-y-4 max-w-6xl">
         <div className="flex items-center gap-3">
-          <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-control border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
             <h2 className="text-[22px] font-medium text-text-primary leading-tight">{editingId ? 'Edit Checklist Template' : 'New Checklist Template'}</h2>
             <p className="text-sm text-text-secondary">{editingId ? 'Update the name, items, and who can use this template.' : 'Name the template, add its items, and choose who can use it.'}</p>
@@ -1502,7 +1502,6 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
     return (
       <div className="space-y-4 max-w-3xl">
         <div className="flex items-center gap-3">
-          <button onClick={closeForm} aria-label="Back to resolver groups" className="w-9 h-9 flex items-center justify-center rounded-control border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
             <h2 className="text-[22px] font-medium text-text-primary leading-tight">{editingId ? 'Edit Resolver Group' : 'New Resolver Group'}</h2>
             <p className="text-sm text-text-secondary">A pool of people who resolve tickets routed to this group.</p>
@@ -1776,7 +1775,6 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
     return (
       <div className="space-y-4 max-w-6xl">
         <div className="flex items-center gap-3">
-          <button onClick={closeForm} aria-label="Back to templates" className="w-9 h-9 flex items-center justify-center rounded-control border border-border-light text-text-secondary hover:bg-surface-control transition-colors shrink-0"><ArrowLeft size={18} /></button>
           <div>
             <h2 className="text-[22px] font-medium text-text-primary leading-tight">{editingId ? 'Edit Ticket Template' : 'New Ticket Template'}</h2>
             <p className="text-sm text-text-secondary">Pre-fill ticket fields and choose who can use this template.</p>
@@ -2238,10 +2236,11 @@ export default function MastersPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-[28px] font-medium text-text-primary leading-tight">Work Settings</h1>
-        <p className="mt-1 text-[15px] text-text-secondary">Configure system settings for tasks and tickets.</p>
-      </div>
+      <PageHeader
+        title="Work Settings"
+        trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
+        meta="Configure system settings for tasks and tickets."
+      />
 
       {/* Top-level switcher */}
       <div className="flex gap-2 p-1 bg-surface-control rounded-control w-fit">
