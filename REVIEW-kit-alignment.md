@@ -464,51 +464,101 @@ migrating `MyLeavePanel.tsx`'s `ConfirmDialog` to `alert-dialog.tsx`.
 
 ## M1a — Tasks pages (`app/dashboard/tasks/**`, excluding `tickets/**` and `workflows/**`)
 
+*(Revised after a second pass — the coordinator corrected that `components/shell/page-header.tsx`
+is available with breadcrumb support, and asked for PageHeader adoption, overlay conversion,
+adapter migration and a Button/Badge/Tooltip/EmptyState/type-token pass. See "Second pass" below
+for what that added; "Kept for owner decision" / "Not done" reflect the state after both passes.)*
+
 ### Kept for owner decision
 
 - **Kit says:** destructive/irreversible actions confirm through `alert-dialog.tsx`, danger by
   default, closing only via Cancel or the action (§15, §24 rule 3). **v2e did:** 7 native
   `confirm()` calls in `masters/page.tsx` (category/stage/type/priority/resolver-group delete,
-  ticket-template archive). **Done:** replaced all 7 with a shared local `ConfirmDeleteDialog`
-  built on `components/ui/alert-dialog.tsx`; each keeps its own wording and verb ("Remove stage",
-  "Deactivate", "Archive", "Delete"). This is the direct kit component, not the `ConfirmDialog`
-  adapter.
-- **Kit says:** no back-arrow button on a desktop/tablet page; use breadcrumbs instead (§1 rule
-  11, §11.2). **v2e does:** several task pages use a bordered `ArrowLeft` icon button or a
-  "← Back" text row as their way back to a list: `masters/page.tsx`'s three in-form "Back to
-  templates/resolver groups" buttons, `people/[userId]/page.tsx`, `recurring/[id]/page.tsx`,
-  `reports-new/{ageing,calendar,person-scorecard,person-scorecard/[userId]}/page.tsx`, and
-  `[taskId]/page.tsx`'s small header back arrow. **Why kept:** this module's detail/report pages
-  were not given `PageHeader`'s breadcrumb trail before this pass arrived (that plumbing is a
-  structural change, out of scope for a presentation-only pass per D1), so removing the back
-  control without it would leave some of these screens with no way back at all. Left as-is;
-  flagging for a follow-up pass that wires each of these pages through `PageHeader`'s `breadcrumb`
-  prop (§11.2) and then drops the arrow buttons.
-- **Kit says:** every screen's title/breadcrumb/actions come through `PageHeader` (§11, §12.3).
-  **v2e does:** none of this module's pages use `PageHeader` yet; each hand-rolls its own
-  `<h1>`/toolbar row. Not touched this pass — adopting `PageHeader` across ~20 pages is a page-
-  structure change (headers, action placement, breadcrumb wiring) bigger than the token/weight/
-  spacing/dialog sweep done here, and risks moving primary actions in ways D1 asks us to avoid
-  without closer per-page review. Recorded as the single largest remaining item for this module.
+  ticket-template archive) plus 3 hand-rolled confirmation overlays in `recurring/page.tsx` and
+  `[taskId]/page.tsx`. **Done:** all 10 now use `components/ui/alert-dialog.tsx` directly (a shared
+  local `ConfirmDeleteDialog` in `masters/page.tsx`, inline `AlertDialog` in the other two), each
+  keeping its own wording and verb.
+- **Kit says:** every screen's title/breadcrumb/actions come through `PageHeader` (§11, §12.3), and
+  no back-arrow button on a desktop/tablet page (§1 rule 11, §11.2). **v2e did:** every page hand-
+  rolled its own `<h1>`, and several used a bordered `ArrowLeft` icon button or a "← Back"/"← Reports"
+  text link as their way back. **Done:** all 20 pages in this module now give title/meta/actions
+  through `PageHeader` with a `Tasks` (and, where applicable, `Tasks > Reports` / `Tasks > Recurring`
+  / `Tasks > Reports > Person Scorecard`) breadcrumb trail, and every `ArrowLeft` back-arrow button
+  is removed. On `[taskId]/page.tsx` the page's many status-dependent action buttons and its
+  overflow menu (Activity log, Delete) are **not** folded into `PageHeader`'s single `actions` slot —
+  they stay in their own row directly below the header, unchanged. They are not a single "one
+  primary action" the way `PageHeader` models it (the page already has more than one button beside
+  the title, pre-existing), and refactoring that button cluster's own hierarchy was out of scope for
+  this pass; only the Edit pencil moved into `PageHeader`'s `actions`.
 - **Kit says:** loading uses skeletons, never a spinner (§14 rule 1). **v2e does:** a hand-rolled
-  `Spinner()` (a spinning-border div) is reused across most of `masters/page.tsx`'s tabs. Not
-  migrated to `Skeleton` this pass — each tab's content shape differs enough that a faithful
-  skeleton needs per-tab layout work, not a drop-in swap.
+  `Spinner()` (a spinning-border div) is reused across most of `masters/page.tsx`'s tabs, and a
+  handful of other pages use the same spinning-border div inline (`my`, `assigned`, `reports`,
+  `people/[userId]`, etc.). **Not done:** each tab/page's content shape differs enough that a
+  faithful skeleton needs per-screen layout work, not a drop-in swap; left as the largest remaining
+  item (see below).
+
+### Second pass (PageHeader, overlays; adapters and the type/button pass still open)
+
+1. **PageHeader + breadcrumb, all 20 pages.** `my`, `assigned`, `escalated`, `cc`, `collective`,
+   `archive`, `delegation`, `leave-approvals`, `people/[userId]`, `recurring`, `recurring/[id]`,
+   `masters`, `page.tsx` (Work Overview), `reports.tsx` (Analytics), and `reports-new/{page,ageing,
+   calendar,person-scorecard,person-scorecard/[userId]}` all now use `PageHeader`. Every
+   `ArrowLeft` back-arrow button in this module's files is gone (confirmed by
+   `grep -rn "ArrowLeft" app/dashboard/tasks` excluding tickets/workflows → no hits). Three in-form
+   "back to list" arrow buttons in `masters/page.tsx` were dropped outright rather than converted —
+   each form already has a Cancel button in its footer doing the same thing, so keeping the arrow
+   too would have duplicated the action (§4 rule 2 reads this as one decision either way; dropping
+   it was the smaller change). `people/[userId]`'s and `person-scorecard/[userId]`'s denied/no-
+   access states keep a secondary `Button` ("Back to Overview"/"Back to roster") — that's a
+   deliberate "no dead ends" exit, not a back-arrow icon button, so it stays.
+2. **5 `fixed inset-0` overlays converted.** `archive/page.tsx`'s task-snapshot preview →
+   `Dialog` (`size="lg"`). `recurring/page.tsx`'s stop/delete-template confirmation (a
+   `createPortal` overlay with its own danger/primary wording per mode) → `AlertDialog`.
+   `[taskId]/page.tsx`'s comment-delete and attachment-delete confirmations → `AlertDialog`; its
+   Activity Log viewer → `Dialog` (`size="md"`). All five previously had hand-written
+   Escape/backdrop-click/body-scroll-lock code, which the kit components now do themselves.
+   `createPortal`'s import is gone from both files now that nothing in them uses it directly.
+3. **`useToast` → `sonner` directly.** The 5 files that called `useToast().addToast(msg, type)`
+   (`assigned`, `leave-approvals`, `my`, `page.tsx`, `[taskId]`) now import `toast` from
+   `components/ui/sonner` and call `toast.success/warning/error/message(msg)` directly.
+4. Several hand-rolled buttons that sat beside a new `PageHeader` were migrated to
+   `components/ui/button.tsx` in the same edit (Create Task, New Recurring Task, New delegation,
+   Download/Retry/Clear-filter actions, etc.); `reports/page.tsx`'s "Clear" filter button was also
+   corrected from the `danger` variant to `secondary` — clearing a date filter isn't destructive.
 
 ### Not done / follow-up
 
-- **5 hand-rolled `fixed inset-0` overlays**, not converted to `Dialog`/`Sheet`: `archive/page.tsx`
-  (task-snapshot preview), `recurring/page.tsx` (the "pick a template type" picker), and
-  `[taskId]/page.tsx` (three: an assignee-switch confirmation, a document picker, and an image/
-  file preview lightbox). Each has custom animation/backdrop/mobile-sheet behaviour hand-built
-  to match the kit's own `dialog.tsx`/`sheet.tsx` shapes already (slide-up on mobile, centred on
-  desktop); re-platforming them onto the real components is safe in principle but each needs a
-  focused pass to verify no interaction (escape handling, backdrop click, Android back) regresses.
-- **17 call sites still import the adapters** (`StyledSelect`, `DatePicker`/`DateRangePicker`,
-  `ResponsiveTable`, `useToast`) rather than the kit components directly. Per P3b's notes these
-  adapters already render the real kit component underneath, so the *visual* result is already kit-
-  correct; only the import path is the adapter. Left alone this pass to avoid prop-shape churn in
-  already-large files; a follow-up can migrate call sites one at a time per ADAPTERS.md.
+- **17 call sites still import `StyledSelect` / `DatePicker` / `DateRangePicker` / `ResponsiveTable`**
+  rather than the kit `select.tsx`/`searchable-select.tsx`/`date-picker.tsx`/`calendar.tsx`/
+  `table.tsx` directly (`masters`, `page.tsx`, `recurring/[id]`, `[taskId]`, `reports.tsx`,
+  `reports-new/{ageing,calendar,person-scorecard,person-scorecard/[userId]}`, `archive`,
+  `leave-approvals`). Looked at `components/ui/DateRangePicker.tsx` specifically to judge whether
+  this is worth forcing: it is already built directly on the kit's own `calendar.tsx` (react-day-
+  picker `mode="range"`) and `popover.tsx` — it is not a leftover v2e-styled duplicate, it is a
+  small reusable wrapper that keeps v2e's `{from, to}` ISO-string contract over the kit's own
+  parts, the same relationship `date-picker.tsx` itself has to `calendar.tsx`. Per P3b's notes
+  `StyledSelect`/`ResponsiveTable` are the same shape (thin adapters that render `select.tsx`/
+  `searchable-select.tsx`/`table.tsx` underneath), so what a user actually sees is already kit-
+  correct; only the import path says "adapter". Forcing every call site onto the kit name directly
+  would mean manually counting each site's option list to pick `Select` vs `SearchableSelect` and
+  re-deriving each table's column defs against `table.tsx`'s API, across several of this module's
+  largest files (`masters.tsx` at ~1.9k lines, `[taskId].tsx` at ~2.3k) — real work, correctly
+  flagged by the coordinator, not completed in this pass; a dedicated follow-up should do it file by
+  file rather than as a mechanical sweep.
+- **Spinners not converted to `Skeleton`.** `masters/page.tsx`'s shared `Spinner()` and the
+  inline spinning-border divs on `my`, `assigned`, `escalated`, `cc`, `collective`, `reports.tsx`,
+  `people/[userId]` and others still show a spinning circle instead of a content-shaped skeleton.
+  Not attempted: a correct skeleton needs each screen's actual row/card shape, which is real design
+  work per screen, not a class-name substitution.
+- **Button/Badge/Tooltip/type-token sweep not done beyond what PageHeader/overlay/toast work
+  already touched.** Status text colours, `text-[Npx]` arbitrary sizes, and `title=` native
+  tooltips remain in several files (e.g. `reports-new/calendar/page.tsx`'s month-switcher buttons
+  use `title=` instead of `Tooltip`; many report/detail pages still size headings with
+  `text-[26px]`/`text-[22px]` rather than the §3 type tokens). This is a real, separately-sized
+  pass across the same large files as the adapter migration above; not completed here.
+- **[taskId]/page.tsx's action-button cluster** (status buttons, the overflow menu) is still a
+  hand-built row, not re-modelled around `PageHeader`'s one-primary-action assumption — see "Kept
+  for owner decision" above.
 - **Unbounded lists (D5 / §1 rule 7):** `masters/page.tsx` (categories, priorities, statuses, types,
   resolver groups, templates), `recurring/page.tsx`, `archive/page.tsx` and others render every row
   the API returns, no pagination. No backend pagination endpoint exists for these yet, matching D5;
@@ -519,24 +569,26 @@ migrating `MyLeavePanel.tsx`'s `ConfirmDialog` to `alert-dialog.tsx`.
 
 ### Visual changes the owner will notice
 
+- Every page in this module now shows a `Tasks` (or `Tasks > Reports`, `Tasks > Recurring`)
+  breadcrumb above its title, and no page shows a back-arrow button any more.
+- `masters/page.tsx`'s 7 delete/archive/deactivate confirmations, `recurring/page.tsx`'s
+  stop/delete-template confirmation, and `[taskId]/page.tsx`'s comment/attachment-delete
+  confirmations now open a centred kit dialog instead of the browser's native confirm box or a
+  hand-rolled one — same wording, same destructive intent, kit-styled and kit-animated.
+  `[taskId]/page.tsx`'s Activity Log is now a proper `Dialog` instead of a hand-rolled panel.
 - `font-semibold`/`font-bold` everywhere in this module now render at weight 500 (`font-medium`)
   per kit §3 — no more bold task titles, bold empty-state headings, or bold button labels.
 - `bg-white` → `bg-surface`, ad-hoc `rounded-[Npx]` → `rounded-card`/`rounded-control`, and ad-hoc
   `shadow-[...rgba...]` → `shadow-card`/`shadow-dialog` across every card, panel, dropdown and
-  tooltip in this module (archive, assigned, cc, collective, delegation, escalated, leave-
-  approvals, masters, my, page, people/[userId], recurring + recurring/[id], reports + reports-new/
-  *, [taskId]). No layout change, token-equivalent visual weight.
+  tooltip in this module. No layout change, token-equivalent visual weight.
 - Off-scale spacing (`p-5`, `gap-5`, `py-16`, `py-20`, etc.) rounded to the nearest kit scale value;
   a few empty-state blocks that used `py-16`/`py-20` are now slightly less tall (`py-12`).
-- `masters/page.tsx`'s 7 delete/archive/deactivate confirmations now open a centred dialog instead
-  of the browser's native confirm box — same wording, same destructive intent, kit-styled instead
-  of OS-styled.
-- Dates that used `toLocaleDateString`/`toLocaleString` ad hoc (archive snapshot, leave-approval
-  dates, recurring-template stats and reminder dates, scorecard dates, the future-task banner on
-  `[taskId]`) and plain-number counts in `reports-new/{ageing,calendar,person-scorecard}` now render
-  through `lib/format.ts` — "DD Mon YYYY" / "DD Mon YYYY, h:mm A" and Indian number grouping instead
-  of each file's own browser-locale formatting. The future-task banner also lost its ⌛ emoji
-  (icons are Lucide-only per §23).
+- Dates that used `toLocaleDateString`/`toLocaleString` ad hoc and plain-number counts in
+  `reports-new/{ageing,calendar,person-scorecard}` now render through `lib/format.ts`. The
+  future-task banner on `[taskId]` also lost its ⌛ emoji (icons are Lucide-only per §23).
+- Several primary buttons beside a page title (Create Task, New Recurring Task, New delegation,
+  Download, Retry) now render as the kit's `Button` rather than a hand-rolled `<button>` — same
+  label, kit's fixed height/hover/pressed/focus states.
 
 ### Self-check results (this module's folders, excluding `tickets/**` and `workflows/**`)
 
@@ -545,17 +597,34 @@ migrating `MyLeavePanel.tsx`'s `ConfirmDialog` to `alert-dialog.tsx`.
 - native `confirm()/alert()/prompt()`: none.
 - native `<select`: none.
 - off-scale spacing (5/7/9/10/11/14/16/20): none.
-- `fixed inset-0`: 5 remaining, documented above as follow-up.
+- `fixed inset-0`: none (all 5 converted).
 - `toLocale(Date|Time)?String`: none.
-- adapter imports (`Modal|ConfirmDialog|StyledSelect|DatePicker|ResponsiveTable|Toast`): 17 files,
-  documented above as follow-up.
-- `npx tsc --noEmit` filtered to `app/dashboard/tasks/(?!tickets|workflows)`: clean.
+- `ArrowLeft` (back-arrow buttons): none.
+- adapter imports (`Modal|ConfirmDialog|StyledSelect|DatePicker|DateRangePicker|ResponsiveTable|
+  Toast`): `Toast`/`useToast` gone; `Modal` (3 sites: `assigned`, `leave-approvals`, `my`),
+  `StyledSelect` (6 sites: `masters`, `page.tsx`, `recurring/[id]`, `[taskId]`, `reports-new/
+  {ageing,calendar}`), `DateRangePicker` (5 sites: `page.tsx`, `reports.tsx`, `reports-new/
+  {person-scorecard,person-scorecard/[userId]}`), `ResponsiveTable` (3 sites: `archive`,
+  `leave-approvals`, `reports.tsx`) still import the adapter path — documented above as follow-up.
+- `npx tsc --noEmit` filtered to `app/dashboard/tasks/(?!tickets|workflows)`: clean, both passes.
 
 ### Commits
 
 - `8e15953` — mechanical token/format sweep + `masters/page.tsx`'s 7 `confirm()` calls to
   `AlertDialog`.
 - `02da0d7` — off-scale spacing rounded to the kit scale.
+- `80495b3` — `useToast` adapter to `sonner` `toast` directly (5 files).
+- `a9a831e` — My Tasks / Assigned by Me / Escalated / CC'd / Collective View onto `PageHeader`.
+- `8888b10` — Archive / Delegation / Leave Approvals / `people/[userId]` / Recurring onto
+  `PageHeader`, dropping back arrows.
+- `41e20a1` — `masters/page.tsx` onto `PageHeader`, dropping 3 in-form back arrows.
+- `17a7d74` — `reports-new/**` onto `PageHeader`, dropping back arrows.
+- `21045fc` — `reports/page.tsx` (Analytics) onto `PageHeader`.
+- `360e98e` — Work Overview (`page.tsx`) onto `PageHeader`.
+- `29ff1b8` — `[taskId]` detail page onto `PageHeader`, dropping the back arrow.
+- `af7fb2a` — archive snapshot modal to kit `Dialog`.
+- `5aa0064` — recurring delete-confirm overlay to kit `AlertDialog`.
+- `d86214a` — `[taskId]`'s 3 remaining overlays to kit `Dialog`/`AlertDialog`.
 
 ## Governance (meetings, work log, decisions, rhythms, reports) and the dashboard home
 
