@@ -11,6 +11,8 @@ pre-kit implementation, not yet touched.
 |---|---|---|---|
 | `Toast.tsx` | `sonner.tsx` (`toast`) | ~75 | `useToast().addToast(message, type)` now calls sonner's `toast.success/error/warning/message`. `<Toaster />` is mounted once in `app/layout.tsx`. `ToastProvider` is a no-op passthrough. |
 | `PermissionTooltip.tsx` | `tooltip.tsx` | 9 | Already delegates to the kit's `Tooltip` (`./tooltip`). Takes `allowed`/`reason` like the kit's `permission-tooltip.tsx`; call sites unchanged. New code should prefer `@/components/ui/permission-tooltip` directly, wired via `@/lib/auth/permission-tooltip-adapter.ts` (`useCanWithReason`). |
+| `Modal.tsx` | `dialog.tsx` | 32 | Same `isOpen`/`onClose`/`title`/`size`/`closeOnEscape`/`bodyScroll`/`elevated`/children API; now composes `Dialog`/`DialogContent`/`DialogHeader`/`DialogTitle`. `size` maps onto the kit's sm/md/lg. Escape vs backdrop-click behaviour preserved via `onOpenChange`'s close reason. `elevated` is kept for its one call site (`components/goals/QuickCreateProjectModal.tsx`) but is a no-op: Base UI's portals already paint in mount order, so a modal opened from within one still lands on top. |
+| `ConfirmDialog.tsx` | `alert-dialog.tsx` | 21 | Same `open`/`title`/`message`/`confirmLabel`/`cancelLabel`/`danger`/`loading`/`error`/`onConfirm`/`onCancel` API; now composes `AlertDialog`/`AlertDialogContent`/`Header`/`Footer`/`Title`/`Description`/`Action`/`Cancel`. Danger by default. Escape and the backdrop are ignored by the kit's `AlertDialog` itself (section 24 rule 3) - accepted per the brief, not a regression (the old version also only closed via its two buttons). The loading spinner on the confirm button and the inline error banner aren't modelled by `alert-dialog.tsx`, so both are added inside this adapter, not the kit file. |
 
 ## Still the original v2e implementation — not yet adapted or migrated
 
@@ -22,8 +24,6 @@ partial conversion.
 
 | File | Kit equivalent | Call sites | Why not done this pass |
 |---|---|---|---|
-| `Modal.tsx` | `dialog.tsx` | 32 | Different prop shape (`isOpen`/`onClose` vs Base UI's open/onOpenChange composition); needs a per-call-site read of `size`/`closeOnEscape` usage before a safe adapter. |
-| `ConfirmDialog.tsx` | `alert-dialog.tsx` | 21 | Same shape mismatch as Modal; also carries its own loading/error-message handling that the kit's alert-dialog does not model 1:1. |
 | `StyledSelect.tsx` | `searchable-select.tsx` | 42 | `StyledSelectOption` supports colour dots, dividers, danger variant and non-selectable "action" options — richer than the kit's option shape. Needs those variants added to `searchable-select.tsx` (kit-component-variant rule, FRONTEND_RULES.md §4 rule 4) before call sites can move, not a wrapper. |
 | `DatePicker.tsx` | `date-picker.tsx` | 28 | v2e's takes ISO string + `markedDates`/`markedHint` (leave-day dots) which `date-picker.tsx` doesn't support yet. |
 | `ResponsiveTable.tsx` | `table.tsx` | 23 | `ResponsiveTable` already implements the kit's mobile card-list rule itself (desktop table collapses to cards below a breakpoint); `table.tsx` has no such mode. Needs a deliberate design decision, not a mechanical swap. |
