@@ -1,14 +1,29 @@
 'use client'
 
-import { createPortal } from 'react-dom'
-import { Loader2, AlertTriangle } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 /**
- * Shared confirmation dialog — replaces the browser's native confirm(). Portals to
- * <body> (so no ancestor transform/overflow can clip it), centered with a dimmed
- * backdrop, and follows DESIGN_RULES (danger = red button). Supports an inline
- * loading spinner and an error message so a failed action shows here, not as a
- * raw error overlay.
+ * Thin adapter: same name and props every call site already uses (see
+ * components/ui/ADAPTERS.md), implemented on the kit's AlertDialog (section
+ * 15). Danger-by-default per the brief; Escape and the backdrop are ignored
+ * by the kit's alert-dialog itself (section 24 rule 3), which is the
+ * intended behaviour there, not a regression from the old hand-rolled
+ * version (which also only closed via its two buttons).
+ *
+ * The old ConfirmDialog's own loading-spinner-on-confirm and inline error
+ * message aren't modelled by alert-dialog.tsx, so they're added here, inside
+ * the adapter, rather than touching the kit file.
  */
 export default function ConfirmDialog({
   open,
@@ -33,54 +48,40 @@ export default function ConfirmDialog({
   onConfirm: () => void
   onCancel: () => void
 }) {
-  if (!open || typeof document === 'undefined') return null
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-70 flex items-center justify-center px-4 bg-black/50"
-      onClick={() => { if (!loading) onCancel() }}
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onCancel()
+      }}
     >
-      <div className="bg-white rounded-[16px] w-full max-w-sm p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start gap-3 mb-4">
-          {danger && (
-            <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
-              <AlertTriangle size={20} className="text-danger" />
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          {message ? <AlertDialogDescription>{message}</AlertDialogDescription> : null}
+          {error ? (
+            <div className="rounded-[8px] border border-danger-border bg-danger-bg px-3 py-2 text-sm text-danger">
+              {error}
             </div>
-          )}
-          <div className="min-w-0">
-            <h3 className="text-[18px] font-semibold text-text-primary">{title}</h3>
-            {message && <p className="text-sm text-text-secondary mt-1">{message}</p>}
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-[8px] border border-danger-border bg-danger-bg px-3 py-2 text-sm text-danger">
-            {error}
-          </div>
-        )}
-
-        <div className="flex items-center justify-end gap-3">
-          <button
-            onClick={onCancel}
+          ) : null}
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          {/*
+           * No onClick here: AlertDialogCancel is a Base UI Close, so
+           * clicking it already fires onOpenChange(false) above, which
+           * calls onCancel. Adding onClick too would call onCancel twice.
+           */}
+          <AlertDialogCancel disabled={loading}>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogAction
+            variant={danger ? 'danger' : 'primary'}
             disabled={loading}
-            className="px-4 py-2.5 text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors disabled:opacity-60"
-          >
-            {cancelLabel}
-          </button>
-          <button
             onClick={onConfirm}
-            disabled={loading}
-            className={[
-              'flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-[8px] transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed',
-              danger ? 'bg-danger hover:bg-danger-hover' : 'bg-primary hover:bg-primary-hover',
-            ].join(' ')}
           >
-            {loading && <Loader2 size={15} className="animate-spin" />}
+            {loading ? <Loader2 size={15} className="animate-spin" /> : null}
             {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
