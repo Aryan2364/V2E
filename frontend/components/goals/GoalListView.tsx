@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Plus, Search, Target, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
-import FilterButton, { type FilterSection } from '@/components/ui/FilterButton'
+import GoalsFilterPopover, { type FilterSection } from './GoalsFilterPopover'
 import { buildDeptForest, type DeptNode } from '@/lib/tasks/dept-tree'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
 import { goalsApi } from '@/lib/api/goals'
@@ -402,7 +402,7 @@ export default function GoalListView() {
               className="w-full border border-border rounded-[8px] pl-9 pr-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
-          <FilterButton
+          <GoalsFilterPopover
             sections={filterSections}
             onClearAll={clearAllFacets}
             resultCount={filtered.length}
