@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Loader2, Check, X, Inbox, RefreshCw, UserX } from 'lucide-react'
+import { Check, X, Inbox, RefreshCw, UserX } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { toast } from '@/components/ui/sonner'
@@ -12,6 +12,10 @@ import { leaveApi } from '@/lib/api/leave'
 import type { Leave } from '@/lib/types/leave'
 import { formatDate } from '@/lib/format'
 import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
 
 function fmt(iso: string): string {
   return formatDate(iso)
@@ -168,22 +172,23 @@ export default function LeaveApprovalsPage() {
       align: 'right',
       render: (l) => (
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            disabled={busy === l.id || readOnly}
+          <Button
+            size="sm"
+            disabled={readOnly}
+            loading={busy === l.id}
+            loadingLabel="Approving"
             onClick={() => approve(l)}
-            className="flex items-center gap-1 text-meta font-medium text-primary-foreground bg-success rounded-control px-3 py-1.5 min-h-[36px] hover:bg-success disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
           >
-            {busy === l.id ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Approve
-          </button>
-          <button
-            type="button"
+            <Check size={13} /> Approve
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
             disabled={busy === l.id || readOnly}
             onClick={() => openReject(l)}
-            className="flex items-center gap-1 text-meta font-medium text-danger border border-danger-border bg-surface rounded-control px-3 py-1.5 min-h-[36px] hover:bg-danger-bg disabled:bg-surface-control-pressed disabled:text-text-muted disabled:border-border-light disabled:cursor-not-allowed transition-colors"
           >
             <X size={13} /> Reject
-          </button>
+          </Button>
         </div>
       ),
     },
@@ -199,7 +204,7 @@ export default function LeaveApprovalsPage() {
 
       {status === 'loading' ? (
         <div className="bg-surface border border-border-light rounded-card p-4 space-y-3">
-          {[0, 1, 2].map((i) => <div key={i} className="h-10 rounded-control bg-surface-control animate-pulse" />)}
+          {[0, 1, 2].map((i) => <Skeleton key={i} className="h-10 rounded-control" />)}
         </div>
       ) : status === 'failed' ? (
         <StateCard
@@ -207,13 +212,9 @@ export default function LeaveApprovalsPage() {
           title="Leave requests could not be loaded"
           line="Check your connection and try again."
           action={
-            <button
-              type="button"
-              onClick={() => { setStatus('loading'); load() }}
-              className="px-4 py-2 text-body font-medium text-primary-text border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors"
-            >
+            <Button variant="secondary" onClick={() => { setStatus('loading'); load() }}>
               Retry
-            </button>
+            </Button>
           }
         />
       ) : status === 'not-approver' ? (
@@ -248,10 +249,10 @@ export default function LeaveApprovalsPage() {
               {fmt(rejectTarget.start_date)} to {fmt(rejectTarget.end_date)}. They will be told it was rejected, with your reason.
             </p>
             <div>
-              <label htmlFor="reject-note" className="block text-label font-medium text-text-secondary mb-1.5">
+              <Label htmlFor="reject-note" className="mb-1.5">
                 Reason (optional)
-              </label>
-              <textarea
+              </Label>
+              <Textarea
                 id="reject-note"
                 value={rejectNote}
                 onChange={(e) => setRejectNote(e.target.value)}
@@ -259,22 +260,21 @@ export default function LeaveApprovalsPage() {
                 maxLength={500}
                 autoFocus
                 placeholder="e.g. Quarter-end close needs full team"
-                className="w-full px-3 py-2.5 border border-border rounded-control text-body sm:text-body text-text-primary placeholder:text-text-muted bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary resize-none"
               />
             </div>
             {rejectError && (
               <div className="rounded-control border border-danger-border bg-danger-bg px-3 py-2 text-body text-danger">{rejectError}</div>
             )}
             <div className="flex justify-end">
-              <button
-                type="button"
+              <Button
+                variant="danger"
+                className="w-full sm:w-auto"
                 onClick={confirmReject}
-                disabled={rejecting}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] sm:min-h-0 text-body font-medium text-primary-foreground bg-danger hover:bg-danger-hover rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                loading={rejecting}
+                loadingLabel="Rejecting"
               >
-                {rejecting && <Loader2 size={15} className="animate-spin" />}
                 Reject leave
-              </button>
+              </Button>
             </div>
           </div>
         )}
