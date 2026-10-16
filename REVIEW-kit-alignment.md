@@ -659,6 +659,26 @@ for what that added; "Kept for owner decision" / "Not done" reflect the state af
 - `5aa0064` — recurring delete-confirm overlay to kit `AlertDialog`.
 - `d86214a` — `[taskId]`'s 3 remaining overlays to kit `Dialog`/`AlertDialog`.
 
+### Wave 2 finishing pass (W2)
+
+Closed the three items the first pass left open above. Type scale: all `text-xs/sm/base/lg/xl/2xl/
+3xl` and `text-[Npx]` arbitrary sizes (354 named + 180 arbitrary, the latter missed by the brief's
+own count-regex — its trailing `\b` doesn't match before `]`) now use kit tokens; `bg-white`/
+`text-white` (65) → `bg-surface`/`text-primary-foreground`. Spinners: `masters/page.tsx`'s shared
+`Spinner()` (used by ~12 tabs) and every remaining inline spinning-border div across the module →
+`Skeleton`, shaped to each screen's content; `masters/page.tsx`'s hand-rolled `role="switch"`
+`Toggle` → kit `Switch`. Buttons: raw `<button>` count for this module went from 169 to 34, all
+documented exceptions (row/cell click targets, segmented/tab/radio-style choice controls that
+aren't literally `button.tsx` cases — all given the kit's focus-visible ring). Two hand-rolled
+dropdown menus (`recurring/page.tsx`'s stop/delete popup, `[taskId]/page.tsx`'s kebab menu) moved
+to kit `DropdownMenu`, dropping their own outside-click/Escape listeners. One true duplicate action
+removed in `recurring/[id]/page.tsx` (a "View Task" button beside a task-title link going to the
+same place, and a "Download" button beside a file-name button that already downloaded it).
+Still open: the 17 `StyledSelect`/`DatePicker`/`DateRangePicker`/`ResponsiveTable` adapter imports
+and native text `<input>`/`<textarea>` fields not yet moved to kit `Input`/`Textarea` (out of this
+pass's scope per the W2 brief's checklist). `npx tsc --noEmit` filtered to this module: clean
+throughout, commits `860b505`..`29a7723`.
+
 ## Governance (meetings, work log, decisions, rhythms, reports) and the dashboard home
 
 Folders: `app/dashboard/governance/**`, `app/dashboard/page.tsx`, `app/dashboard/layout.tsx`,
