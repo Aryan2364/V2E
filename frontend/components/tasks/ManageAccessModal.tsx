@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { X, Shield, UserPlus, Info } from 'lucide-react'
+import { Shield, UserPlus, Info } from 'lucide-react'
 import { tasksApi } from '@/lib/api/tasks'
 import EmployeePicker, { type EmployeePickerOption } from '@/components/ui/EmployeePicker'
 import StyledSelect from '@/components/ui/StyledSelect'
 import type { RecurringAccessPanel, RecurringAccessLevel } from '@/lib/types/tasks'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const AVATAR_COLORS = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary']
 function avatarColor(name: string): string {
@@ -105,37 +107,30 @@ export default function ManageAccessModal({
     setAddLevel('view')
   }
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-80 flex items-center justify-center p-4 bg-black/40"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="w-full max-w-lg bg-surface rounded-xl shadow-dialog border border-border-light flex flex-col max-h-[85vh]">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3 px-4 py-4 border-b border-border-light">
+  return (
+    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
+      <DialogContent size="md">
+        <DialogHeader>
           <div className="flex items-center gap-2 min-w-0">
-            <Shield size={17} className="text-primary-text shrink-0" />
+            <Shield size={17} className="shrink-0" />
             <div className="min-w-0">
-              <h3 className="text-[16px] font-medium text-text-primary leading-tight">Manage access</h3>
-              {panel && <p className="text-[13px] text-text-secondary truncate">“{panel.title}”</p>}
+              <DialogTitle>Manage access</DialogTitle>
+              {panel && <p className="text-[13px] text-on-brand-muted truncate">“{panel.title}”</p>}
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors shrink-0">
-            <X size={18} />
-          </button>
-        </div>
+        </DialogHeader>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <DialogBody className="space-y-4">
           {error && (
             <div className="bg-danger-bg border border-danger-border rounded-lg px-3 py-2 text-sm text-danger">{error}</div>
           )}
 
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="space-y-2 py-2">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
             </div>
           ) : panel ? (
             <>
@@ -257,16 +252,12 @@ export default function ManageAccessModal({
               )}
             </>
           ) : null}
-        </div>
+        </DialogBody>
 
-        {/* Footer */}
-        <div className="flex justify-end px-4 py-3.5 border-t border-border-light">
-          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors">
-            Done
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
+        <DialogFooter>
+          <Button onClick={onClose}>Done</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
