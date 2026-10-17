@@ -137,6 +137,15 @@ export const ticketsApi = {
     const res = await apiClient.get(base(orgId), { params })
     return unwrap<Ticket[]>(res)
   },
+  // Server-side page (kit §11.1.1). Passing `page` makes the backend return the
+  // { items, total, page, pageSize } envelope instead of the plain array.
+  listPaged: async (
+    orgId: string,
+    params: Record<string, string | boolean | number | undefined> & { page: number; pageSize?: number },
+  ): Promise<{ items: Ticket[]; total: number; page: number; pageSize: number }> => {
+    const res = await apiClient.get(base(orgId), { params })
+    return unwrap<{ items: Ticket[]; total: number; page: number; pageSize: number }>(res)
+  },
   getStats: async (orgId: string): Promise<TicketStats> => {
     const res = await apiClient.get(`${base(orgId)}/stats`)
     return unwrap<TicketStats>(res)

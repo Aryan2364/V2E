@@ -770,6 +770,12 @@ export class TicketsService {
       to?: string
       search?: string
     },
+    // Opt-in pagination (kit §11.1.1). Omitting `page` returns the plain array,
+    // byte-for-byte what every existing caller (phone, /my, /assigned) already
+    // gets. Passing `page` returns the { items, total, page, pageSize } envelope.
+    page?: number,
+    pageSize?: number,
+    sort?: 'created_desc' | 'created_asc',
   ) {
     const where: Record<string, unknown> = {
       organization_id: orgId,
@@ -798,11 +804,19 @@ export class TicketsService {
     }
     const scopeWhere = await this.scope.listWhere(orgId, principal, TicketsService.TICKETS_LEAF)
     if (Object.keys(scopeWhere).length) (where as Record<string, unknown>).AND = [scopeWhere]
-    return this.prisma.ticket.findMany({
-      where,
-      include: TICKET_INCLUDE,
-      orderBy: { created_at: 'desc' },
-    })
+    const orderBy = { created_at: sort === 'created_asc' ? ('asc' as const) : ('desc' as const) }
+
+    if (page === undefined) {
+      return this.prisma.ticket.findMany({ where, include: TICKET_INCLUDE, orderBy })
+    }
+
+    const take = Math.min(Math.max(pageSize ?? 25, 1), 100)
+    const skip = (Math.max(page, 1) - 1) * take
+    const [items, total] = await Promise.all([
+      this.prisma.ticket.findMany({ where, include: TICKET_INCLUDE, orderBy, skip, take }),
+      this.prisma.ticket.count({ where }),
+    ])
+    return { items, total, page: Math.max(page, 1), pageSize: take }
   }
 
   /**

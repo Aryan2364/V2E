@@ -51,19 +51,29 @@ export class TicketsController {
     @Query('from') from?: string,
     @Query('to') to?: string,
     @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('sort') sort?: 'created_desc' | 'created_asc',
   ) {
-    return this.ticketsService.listTickets(orgId, principalFromUser(user), {
-      typeId,
-      categoryId,
-      priorityId,
-      statusId,
-      assignedTo,
-      raisedBy,
-      slaBreached: slaBreached !== undefined ? slaBreached === 'true' : undefined,
-      from,
-      to,
-      search,
-    })
+    return this.ticketsService.listTickets(
+      orgId,
+      principalFromUser(user),
+      {
+        typeId,
+        categoryId,
+        priorityId,
+        statusId,
+        assignedTo,
+        raisedBy,
+        slaBreached: slaBreached !== undefined ? slaBreached === 'true' : undefined,
+        from,
+        to,
+        search,
+      },
+      page !== undefined ? parseInt(page, 10) : undefined,
+      pageSize !== undefined ? parseInt(pageSize, 10) : undefined,
+      sort,
+    )
   }
 
   @Get('stats')
