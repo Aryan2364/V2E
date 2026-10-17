@@ -218,19 +218,31 @@ export class MeetingsService {
     }
     if (filters.search) where.title = { contains: filters.search, mode: 'insensitive' };
 
-    return this.prisma.meeting.findMany({
-      where,
-      orderBy: [{ scheduled_start: 'asc' }, { created_at: 'desc' }],
-      include: {
-        organizer: { select: { id: true, name: true } },
-        // Light attendee roster for calendar avatars (name + host flag). These are
-        // meetings the actor can already see, so no new visibility surface.
-        attendees: {
-          select: { user_id: true, is_organizer: true, response: true, user: { select: { id: true, name: true } } },
-        },
-        _count: { select: { attendees: true, action_items: true, decisions: true } },
+    const include = {
+      organizer: { select: { id: true, name: true } },
+      // Light attendee roster for calendar avatars (name + host flag). These are
+      // meetings the actor can already see, so no new visibility surface.
+      attendees: {
+        select: { user_id: true, is_organizer: true, response: true, user: { select: { id: true, name: true } } },
       },
-    });
+      _count: { select: { attendees: true, action_items: true, decisions: true } },
+    };
+    const orderBy: Prisma.MeetingOrderByWithRelationInput[] = [{ scheduled_start: 'asc' }, { created_at: 'desc' }];
+
+    // Opt-in pagination (kit §11.1.1): omitting `page` returns the plain array,
+    // byte-for-byte what every existing caller (the calendar view, filters) gets
+    // today. Passing `page` returns the { items, total, page, pageSize } envelope.
+    const page = filters.page ? parseInt(filters.page, 10) : undefined;
+    if (!page) {
+      return this.prisma.meeting.findMany({ where, orderBy, include });
+    }
+    const take = Math.min(Math.max(filters.pageSize ? parseInt(filters.pageSize, 10) : 25, 1), 100);
+    const skip = (Math.max(page, 1) - 1) * take;
+    const [items, total] = await Promise.all([
+      this.prisma.meeting.findMany({ where, orderBy, include, skip, take }),
+      this.prisma.meeting.count({ where }),
+    ]);
+    return { items, total, page: Math.max(page, 1), pageSize: take };
   }
 
   // Reverse view: the caller's own external Google events in [from, to], deduped

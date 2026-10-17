@@ -11,22 +11,39 @@ set today and filters/sorts/searches in the browser.
 | 3 | Knowledge posts | `GET /org/:orgId/knowledge` | `communication/knowledge/page.tsx` | No — filters server-side; just unpaginated | None |
 | 4 | Announcements | `GET /org/:orgId/announcements` | `communication/announcements/page.tsx` | No — filters server-side; just unpaginated | None |
 | 5 | Audit logs | `GET /org/:orgId/audit` | `settings/system/audit-logs/page.tsx` | Backend already supports `skip`/`take` + `count()`; frontend never asked for page 2 | None |
+| — | Ticket archive | `GET /org/:orgId/tickets/archive` | `tasks/tickets/archive/page.tsx` | Yes — search ran client-side over the whole array | None |
 | — | Tasks (Work dashboard) | `GET /org/:orgId/tasks/paged` | Work dashboard | Already paginated (`listTasksPaged`, page/pageSize/sort). **Reference implementation — no work needed.** | n/a |
 | — | Notifications | `GET /org/:orgId/notifications` | Notification panel + `/notifications` list, phone notifications screen | Already cursor-paginated (`cursor`/`limit`). Different shape (cursor, not page), but already server-side and already correct for phone's 25-at-a-time. **No work needed.** | Yes — must not change shape |
 | — | Employees directory | `GET /org/:orgId/employees` (`findAll`) | `settings/organization/employees/page.tsx` | Yes — search + department filter run in the browser | Not on phone |
 | — | Work logs (submissions/demands) | several `work-logs` endpoints | `governance/work-log/**` | Per-writer/per-day views, not a flat growing list | Not on phone |
-| — | Tickets archive | `GET /org/:orgId/tickets/archive` | `tasks/tickets/archive/page.tsx` | No | None |
 | — | Ticket notifications | `GET /org/:orgId/tickets/notifications` | — | No | None |
 
-## Top 5 picked for this pass
+## Top 5 picked for this pass (final)
 
-1. **Tickets** (`listTickets`, backs `/`, `/my`, `/assigned`) — done.
-2. **Meetings** (`MeetingsService.list`) — done.
-3. **Knowledge posts** (`KnowledgeService.findAll`) — done.
-4. **Announcements** (`AnnouncementsService.findAll`) — done.
+1. **Tickets** (`listTickets`, backs `/`, `/my`, `/assigned`) — done, backend + frontend.
+2. **Ticket archive** (`listArchive`) — done, backend + frontend. Promoted into
+   the top 5 in place of Meetings (see below): it's a clean fit for the kit's
+   list-page template and its client-side search was the exact problem this
+   task targets.
+3. **Knowledge posts** (`KnowledgeService.findAll`) — done, backend + frontend.
+4. **Announcements** (`AnnouncementsService.findAll`) — done, backend + frontend.
 5. **Audit logs** — backend already paginated (`skip`/`take`/`count`); only the
    frontend was missing a page-2 affordance. Wired to the kit `Pagination` +
    `lib/list-address.ts`.
+
+## Downgraded after inspection: Meetings
+
+`MeetingsService.list` got the same opt-in `page`/`pageSize` → `{ items, total,
+page, pageSize }` envelope as the others (harmless, backward compatible,
+already type-checked), but the frontend was **not** wired up, so it is not
+counted in the top 5. Reason: `dashboard/governance/meetings/page.tsx` is not
+a list page — one `meetings` array feeds Day/Week/Month calendar views (which
+need every meeting in a date range, not a page of 25) and only its List
+sub-view matches the kit's list-page template. Paginating just the List view
+would leave the calendar views on a second, still-unpaginated fetch, so it
+doesn't reduce what the browser loads — the real fix is giving the calendar
+views their own date-ranged query, which is a bigger change than this pass.
+The backend groundwork is in place for whoever does that next.
 
 ## Skipped
 
