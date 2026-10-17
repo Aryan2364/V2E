@@ -1196,3 +1196,5 @@ pointed at this worktree — e.g. `cd backend && npm run start:dev` from
 `D:\RGB_Software\products\v2e\.claude\worktrees\kit-alignment\backend` on a different
 port — and the frontend dev server already running on :3000 from this worktree will
 pick up the frontend changes via hot-reload with no restart needed.
+
+- **Follow-up (main session review):** the new `page`/`pageSize` params are parsed with `parseInt` without validation; a non-numeric value yields NaN → Prisma error (500) instead of a 400. Harmless for the app (it always sends numbers) but should get the project's DTO validation before merge.
