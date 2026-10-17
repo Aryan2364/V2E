@@ -162,6 +162,13 @@ export const ticketsApi = {
     const res = await apiClient.get(`${base(orgId)}/archive`)
     return unwrap<TicketArchiveEntry[]>(res)
   },
+  listArchivePaged: async (
+    orgId: string,
+    params: { search?: string; page: number; pageSize?: number },
+  ): Promise<{ items: TicketArchiveEntry[]; total: number; page: number; pageSize: number }> => {
+    const res = await apiClient.get(`${base(orgId)}/archive`, { params })
+    return unwrap<{ items: TicketArchiveEntry[]; total: number; page: number; pageSize: number }>(res)
+  },
   // ── Resolver Groups ──────────────────────────────────────────────────────────
 
   listResolverGroups: async (orgId: string): Promise<TicketResolverGroup[]> => {

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { Suspense, useEffect, useState, useCallback } from 'react'
 import { Archive, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { ticketsApi } from '@/lib/api/tickets'
@@ -10,6 +10,32 @@ import TicketTypeBadge from '@/components/tickets/TicketTypeBadge'
 import { formatDate as formatDateToken } from '@/lib/format'
 import { PageHeader } from '@/components/shell/page-header'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Pagination,
+  PaginationBar,
+  PaginationContent,
+  PaginationCount,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
+import { useListAddress, queryOf, type AddressParams } from '@/lib/list-address'
+
+const PAGE_SIZE = 25
+
+type Criteria = { q: string; page: number }
+
+function readCriteria(params: AddressParams): Criteria {
+  return { q: params.get('q') ?? '', page: Number(params.get('page')) > 0 ? Number(params.get('page')) : 1 }
+}
+function criteriaQuery(c: Criteria): string {
+  return queryOf([
+    ['q', c.q.trim()],
+    ['page', c.page !== 1 && c.page.toString()],
+  ])
+}
 
 function formatDate(iso: string) {
   return formatDateToken(iso)
@@ -126,35 +152,45 @@ function ArchiveRow({ entry }: { entry: TicketArchiveEntry }) {
   )
 }
 
-export default function TicketArchivePage() {
+function TicketArchivePageInner() {
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
 
+  const { criteria, apply } = useListAddress<Criteria>({ read: readCriteria, query: criteriaQuery })
+  const { q: search, page } = criteria
+
   const [entries, setEntries] = useState<TicketArchiveEntry[]>([])
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+
+  const [searchInput, setSearchInput] = useState(search)
+  useEffect(() => setSearchInput(search), [search])
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (searchInput !== search) apply({ q: searchInput, page: 1 }, 'replace')
+    }, 300)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput])
 
   const load = useCallback(async () => {
     if (!orgId) return
     setLoading(true)
     try {
-      setEntries(await ticketsApi.listArchive(orgId))
+      const res = await ticketsApi.listArchivePaged(orgId, { search: search || undefined, page, pageSize: PAGE_SIZE })
+      setEntries(res.items)
+      setTotal(res.total)
     } finally {
       setLoading(false)
     }
-  }, [orgId])
+  }, [orgId, search, page])
 
   useEffect(() => { load() }, [load])
 
-  const filtered = entries.filter((e) => {
-    if (!search) return true
-    const q = search.toLowerCase()
-    return (
-      e.ticket_snapshot.ticket_number.toLowerCase().includes(q) ||
-      e.ticket_snapshot.title.toLowerCase().includes(q) ||
-      e.deletion_reason.toLowerCase().includes(q)
-    )
-  })
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
+  const rangeEnd = Math.min(page * PAGE_SIZE, total)
+  const setPage = (next: number) => apply({ q: search, page: next }, 'push')
 
   return (
     <div className="flex flex-col gap-6">
@@ -163,36 +199,62 @@ export default function TicketArchivePage() {
         meta="Read-only snapshots of deleted tickets"
         actions={
           <Badge variant="neutral">
-            <Archive size={13} /> {entries.length} archived
+            <Archive size={13} /> {total} archived
           </Badge>
         }
       />
 
       <input
         type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
         placeholder="Search by ticket number, title, or deletion reason..."
         className="w-full px-3 py-2 border border-border rounded-[8px] text-body text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden"
       />
 
       {loading ? (
         <div className="flex flex-col gap-2">
-          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-surface-control rounded-[12px] animate-pulse" />)}
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16" />)}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : entries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 border border-dashed border-border-light rounded-[12px]">
           <Archive size={28} className="text-muted mb-3" />
           <p className="text-body font-medium text-text-primary">{search ? 'No matching archived tickets' : 'No archived tickets'}</p>
           {search && <p className="text-meta text-text-secondary mt-1">Try a different search term</p>}
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
-          {filtered.map((entry) => (
-            <ArchiveRow key={entry.id} entry={entry} />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-col gap-2">
+            {entries.map((entry) => (
+              <ArchiveRow key={entry.id} entry={entry} />
+            ))}
+          </div>
+          <PaginationBar>
+            <PaginationCount>{rangeStart}–{rangeEnd} of {total}</PaginationCount>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious aria-disabled={page <= 1} onClick={() => page > 1 && setPage(page - 1)} />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink isActive>{page}</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext aria-disabled={page >= totalPages} onClick={() => page < totalPages && setPage(page + 1)} />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </PaginationBar>
+        </>
       )}
     </div>
+  )
+}
+
+export default function TicketArchivePage() {
+  return (
+    <Suspense fallback={null}>
+      <TicketArchivePageInner />
+    </Suspense>
   )
 }

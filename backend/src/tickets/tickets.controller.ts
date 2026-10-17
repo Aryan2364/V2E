@@ -92,8 +92,20 @@ export class TicketsController {
   }
 
   @Get('archive')
-  listArchive(@Param('orgId') orgId: string, @CurrentUser() user: AuthUser) {
-    return this.ticketsService.listArchive(orgId, user.is_admin ? undefined : user.id)
+  listArchive(
+    @Param('orgId') orgId: string,
+    @CurrentUser() user: AuthUser,
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.ticketsService.listArchive(
+      orgId,
+      user.is_admin ? undefined : user.id,
+      search,
+      page !== undefined ? parseInt(page, 10) : undefined,
+      pageSize !== undefined ? parseInt(pageSize, 10) : undefined,
+    )
   }
 
   @Get('notifications')

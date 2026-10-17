@@ -1265,14 +1265,40 @@ export class TicketsService {
     await this.logActivity(orgId, ticketId, userId, 'deleted', { reason })
   }
 
-  async listArchive(orgId: string, raisedByUserId?: string) {
-    return this.prisma.ticketArchive.findMany({
-      where: {
-        organization_id: orgId,
-        ...(raisedByUserId && { raised_by_user_id: raisedByUserId }),
-      },
-      orderBy: { deleted_at: 'desc' },
-    })
+  async listArchive(
+    orgId: string,
+    raisedByUserId?: string,
+    search?: string,
+    page?: number,
+    pageSize?: number,
+  ) {
+    const where: Record<string, unknown> = {
+      organization_id: orgId,
+      ...(raisedByUserId && { raised_by_user_id: raisedByUserId }),
+      // ticket_number/title live inside the JSON snapshot, so they're matched with
+      // Postgres JSON-path filters; deletion_reason is a real column.
+      ...(search && {
+        OR: [
+          { deletion_reason: { contains: search, mode: 'insensitive' as const } },
+          { ticket_snapshot: { path: ['ticket_number'], string_contains: search } },
+          { ticket_snapshot: { path: ['title'], string_contains: search } },
+        ],
+      }),
+    }
+    const orderBy = { deleted_at: 'desc' as const }
+
+    // Opt-in pagination (kit §11.1.1): omitting `page` returns the plain array,
+    // byte-for-byte what the archive page gets today.
+    if (page === undefined) {
+      return this.prisma.ticketArchive.findMany({ where, orderBy })
+    }
+    const take = Math.min(Math.max(pageSize ?? 25, 1), 100)
+    const skip = (Math.max(page, 1) - 1) * take
+    const [items, total] = await Promise.all([
+      this.prisma.ticketArchive.findMany({ where, orderBy, skip, take }),
+      this.prisma.ticketArchive.count({ where }),
+    ])
+    return { items, total, page: Math.max(page, 1), pageSize: take }
   }
 
   // ─── Comments ──────────────────────────────────────────────────────────────
