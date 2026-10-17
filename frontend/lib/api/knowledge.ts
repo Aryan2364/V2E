@@ -13,6 +13,14 @@ export async function getKnowledgePosts(
   return res.data.data;
 }
 
+export async function getKnowledgePostsPaged(
+  orgId: string,
+  params: { scope?: string; tag?: string; search?: string; page: number; pageSize?: number },
+): Promise<{ items: KnowledgePost[]; total: number; page: number; pageSize: number }> {
+  const res = await apiClient.get(base(orgId), { params });
+  return res.data.data;
+}
+
 export async function getKnowledgeTags(orgId: string): Promise<string[]> {
   const res = await apiClient.get(`${base(orgId)}/tags`);
   return res.data.data;

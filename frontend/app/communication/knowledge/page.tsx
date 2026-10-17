@@ -1,24 +1,66 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth/context'
-import { getKnowledgePosts, getKnowledgeTags, deleteKnowledgePost, togglePinKnowledge, toggleKnowledgeReaction } from '@/lib/api/knowledge'
+import { getKnowledgePostsPaged, getKnowledgeTags, deleteKnowledgePost, togglePinKnowledge, toggleKnowledgeReaction } from '@/lib/api/knowledge'
 import type { KnowledgePost } from '@/lib/types/communication'
 import { formatDate } from '@/lib/format'
 import Link from 'next/link'
 import { BookOpen, Plus, Pin, Trash2, Search, Tag } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Pagination,
+  PaginationBar,
+  PaginationContent,
+  PaginationCount,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
+import { useListAddress, queryOf, type AddressParams } from '@/lib/list-address'
 
 const REACTIONS = ['👍', '❤️', '💡', '🎉', '🔥']
+const PAGE_SIZE = 25
 
-export default function KnowledgePage() {
+type Criteria = { q: string; tag: string; page: number }
+
+function readCriteria(params: AddressParams): Criteria {
+  return {
+    q: params.get('q') ?? '',
+    tag: params.get('tag') ?? '',
+    page: Number(params.get('page')) > 0 ? Number(params.get('page')) : 1,
+  }
+}
+function criteriaQuery(c: Criteria): string {
+  return queryOf([
+    ['q', c.q.trim()],
+    ['tag', c.tag],
+    ['page', c.page !== 1 && c.page.toString()],
+  ])
+}
+
+function KnowledgePageInner() {
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
   const isHR = !!user?.is_admin
   const [posts, setPosts] = useState<KnowledgePost[]>([])
+  const [total, setTotal] = useState(0)
   const [tags, setTags] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [activeTag, setActiveTag] = useState('')
+
+  const { criteria, apply } = useListAddress<Criteria>({ read: readCriteria, query: criteriaQuery })
+  const { q: search, tag: activeTag, page } = criteria
+
+  const [searchInput, setSearchInput] = useState(search)
+  useEffect(() => setSearchInput(search), [search])
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (searchInput !== search) apply({ ...criteria, q: searchInput, page: 1 }, 'replace')
+    }, 300)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput])
 
   useEffect(() => {
     if (!orgId) return
@@ -28,11 +70,22 @@ export default function KnowledgePage() {
   useEffect(() => {
     if (!orgId) return
     setLoading(true)
-    getKnowledgePosts(orgId, {
+    getKnowledgePostsPaged(orgId, {
       search: search || undefined,
       tag: activeTag || undefined,
-    }).then(setPosts).finally(() => setLoading(false))
-  }, [orgId, search, activeTag])
+      page,
+      pageSize: PAGE_SIZE,
+    }).then((res) => {
+      setPosts(res.items)
+      setTotal(res.total)
+    }).finally(() => setLoading(false))
+  }, [orgId, search, activeTag, page])
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
+  const rangeEnd = Math.min(page * PAGE_SIZE, total)
+  const setPage = (next: number) => apply({ ...criteria, page: next }, 'push')
+  const setActiveTag = (next: string) => apply({ ...criteria, tag: next, page: 1 }, 'push')
 
   async function handlePin(id: string) {
     if (!orgId) return
@@ -84,8 +137,8 @@ export default function KnowledgePage() {
         <div className="relative mb-4">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
             placeholder="Search knowledge posts…"
             className="w-full pl-8 pr-4 py-2 border border-border rounded-control text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary bg-surface"
           />
@@ -97,7 +150,7 @@ export default function KnowledgePage() {
             {tags.map(tag => (
               <button
                 key={tag}
-                onClick={() => setActiveTag(t => t === tag ? '' : tag)}
+                onClick={() => setActiveTag(activeTag === tag ? '' : tag)}
                 className={[
                   'flex items-center gap-1 px-2.5 py-1 rounded-full text-meta font-medium border transition-colors',
                   activeTag === tag
@@ -113,29 +166,55 @@ export default function KnowledgePage() {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="flex flex-col gap-4">
+            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32" />)}
           </div>
         ) : posts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <BookOpen size={40} className="text-muted mb-3" />
-            <p className="text-text-secondary font-medium">No posts yet</p>
-            <p className="text-label text-text-muted">Be the first to share your knowledge</p>
+            <p className="text-text-secondary font-medium">{search || activeTag ? 'No posts match this search' : 'No posts yet'}</p>
+            <p className="text-label text-text-muted">{search || activeTag ? 'Try a different search or tag' : 'Be the first to share your knowledge'}</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            {pinned.length > 0 && (
-              <>
-                <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Pinned</p>
-                {pinned.map(p => <KnowledgeCard key={p.id} post={p} userId={user?.id ?? ''} isHR={isHR} onPin={handlePin} onDelete={handleDelete} onReact={handleReact} />)}
-                {rest.length > 0 && <p className="text-meta font-medium text-text-muted uppercase tracking-wider mt-2">Recent</p>}
-              </>
-            )}
-            {rest.map(p => <KnowledgeCard key={p.id} post={p} userId={user?.id ?? ''} isHR={isHR} onPin={handlePin} onDelete={handleDelete} onReact={handleReact} />)}
-          </div>
+          <>
+            <div className="flex flex-col gap-4">
+              {pinned.length > 0 && (
+                <>
+                  <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Pinned</p>
+                  {pinned.map(p => <KnowledgeCard key={p.id} post={p} userId={user?.id ?? ''} isHR={isHR} onPin={handlePin} onDelete={handleDelete} onReact={handleReact} />)}
+                  {rest.length > 0 && <p className="text-meta font-medium text-text-muted uppercase tracking-wider mt-2">Recent</p>}
+                </>
+              )}
+              {rest.map(p => <KnowledgeCard key={p.id} post={p} userId={user?.id ?? ''} isHR={isHR} onPin={handlePin} onDelete={handleDelete} onReact={handleReact} />)}
+            </div>
+            <PaginationBar className="mt-4 rounded-card">
+              <PaginationCount>{rangeStart}–{rangeEnd} of {total}</PaginationCount>
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious aria-disabled={page <= 1} onClick={() => page > 1 && setPage(page - 1)} />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink isActive>{page}</PaginationLink>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext aria-disabled={page >= totalPages} onClick={() => page < totalPages && setPage(page + 1)} />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </PaginationBar>
+          </>
         )}
       </div>
     </div>
+  )
+}
+
+export default function KnowledgePage() {
+  return (
+    <Suspense fallback={null}>
+      <KnowledgePageInner />
+    </Suspense>
   )
 }
 

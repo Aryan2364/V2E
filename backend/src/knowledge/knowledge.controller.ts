@@ -35,8 +35,10 @@ export class KnowledgeController {
     @Query('scope') scope?: string,
     @Query('tag') tag?: string,
     @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
   ) {
-    return this.service.findAll(orgId, { scope, tag, search });
+    return this.service.findAll(orgId, { scope, tag, search, page, pageSize });
   }
 
   @Get('tags')

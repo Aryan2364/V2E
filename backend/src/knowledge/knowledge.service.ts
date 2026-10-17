@@ -20,21 +20,35 @@ const POST_INCLUDE = {
 export class KnowledgeService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(orgId: string, query: { scope?: string; tag?: string; search?: string }) {
-    return this.prisma.knowledgePost.findMany({
-      where: {
-        organization_id: orgId,
-        ...(query.scope ? { scope: query.scope as any } : {}),
-        ...(query.search ? {
-          OR: [
-            { title: { contains: query.search, mode: 'insensitive' } },
-            { body: { contains: query.search, mode: 'insensitive' } },
-          ],
-        } : {}),
-      },
-      include: POST_INCLUDE,
-      orderBy: [{ is_pinned: 'desc' }, { created_at: 'desc' }],
-    });
+  async findAll(
+    orgId: string,
+    query: { scope?: string; tag?: string; search?: string; page?: string; pageSize?: string },
+  ) {
+    const where = {
+      organization_id: orgId,
+      ...(query.scope ? { scope: query.scope as any } : {}),
+      ...(query.search ? {
+        OR: [
+          { title: { contains: query.search, mode: 'insensitive' as const } },
+          { body: { contains: query.search, mode: 'insensitive' as const } },
+        ],
+      } : {}),
+    };
+    const orderBy = [{ is_pinned: 'desc' as const }, { created_at: 'desc' as const }];
+
+    // Opt-in pagination (kit §11.1.1): omitting `page` returns the plain array,
+    // byte-for-byte what the knowledge feed gets today.
+    const page = query.page ? parseInt(query.page, 10) : undefined;
+    if (!page) {
+      return this.prisma.knowledgePost.findMany({ where, include: POST_INCLUDE, orderBy });
+    }
+    const take = Math.min(Math.max(query.pageSize ? parseInt(query.pageSize, 10) : 25, 1), 100);
+    const skip = (Math.max(page, 1) - 1) * take;
+    const [items, total] = await Promise.all([
+      this.prisma.knowledgePost.findMany({ where, include: POST_INCLUDE, orderBy, skip, take }),
+      this.prisma.knowledgePost.count({ where }),
+    ]);
+    return { items, total, page: Math.max(page, 1), pageSize: take };
   }
 
   async findOne(id: string, orgId: string) {
