@@ -1135,3 +1135,64 @@ Folders: `frontend/app/settings/**`, `frontend/app/dashboard/{employees,roles}/*
   `bg-black/NN` opacities — backdrop darkness may shift slightly to match the kit's value.
 - Toast "dismiss" (X) buttons in holiday screens: hover color changed from white (invisible
   on a light toast) to `text-text-primary`, fixing what looks like a pre-existing contrast bug.
+
+## Pagination (server-side, kit §11.1.1)
+
+Full inventory and reasoning: `audit/pagination-plan.md`.
+
+### Done — backend + frontend
+- **Tickets** (`TicketsService.listTickets`, backs `GET /tickets`, `/tickets/my`,
+  `/tickets/assigned`): opt-in `page`/`pageSize`/`sort`. Frontend wired with the kit
+  `Pagination`, 25/page, filters + page in the address via `lib/list-address.ts`.
+- **Ticket archive** (`TicketsService.listArchive`): opt-in pagination + server-side
+  search (ticket number/title via Postgres JSON-path filters on the snapshot, deletion
+  reason via a real column) replacing the old client-side filter over the whole array.
+- **Knowledge posts** (`KnowledgeService.findAll`): opt-in pagination; frontend paginates
+  the combined pinned+recent feed (pins still surface first within whichever page they
+  fall on).
+- **Announcements** (`AnnouncementsService.findAll`): same pattern.
+- **Audit logs**: backend already supported `skip`/`take`/`count()` — only the frontend
+  was missing a page-2 affordance. Added the kit `Pagination` bar and a `page` number in
+  the address; the existing filter controls stay local state (not moved into the address
+  this pass — see "Next" below).
+
+All five follow the same contract: omitting `page` returns the exact unpaginated response
+every existing caller (including any future phone caller) already gets; passing `page`
+returns `{ items, total, page, pageSize }`. Every `where` clause is unchanged — scope
+filters (`ScopeService.listWhere`, participant/org checks) are identical between the
+paginated and unpaginated branches, and `count()` always uses the same `where` as
+`findMany()`.
+
+### Backend groundwork, not wired to a screen
+- **Meetings** (`MeetingsService.list`): got the same opt-in envelope, but the frontend
+  was left alone. `dashboard/governance/meetings/page.tsx` isn't a list page — one
+  unpaginated fetch feeds Day/Week/Month calendar views that need a date range, not a
+  page of 25, and only its List sub-view matches the list-page template. Paginating just
+  that sub-view wouldn't reduce what the browser loads. Real fix: give the calendar views
+  their own date-ranged query — bigger than this pass.
+
+### Skipped
+- **Employees directory** (`EmployeesService.findAll`): the same array feeds the org
+  tree view and the Add-Employee modal's manager/duplicate checks, both of which need the
+  whole org. Paginating the table view alone wouldn't reduce total data loaded.
+- **Work logs**: per-writer, per-day timesheet views, not a flat growing list.
+
+### Next (if this continues)
+- Move the audit-logs filters (module/type/action/actor/trigger/date-range) into the
+  address alongside `page`, matching the other four screens exactly.
+- Give the meetings calendar views a date-ranged endpoint, then paginate its List view
+  for real.
+- Revisit employees once/if the tree view gets its own lighter endpoint, so the table
+  view can be paginated without doubling fetches.
+
+### Restarting the backend to review
+The worktree's `backend/node_modules` didn't exist at the start of this session (fresh
+worktree) — ran `npm ci --legacy-peer-deps` (the repo's own `@nestjs/schedule`/
+`@nestjs/common` peer range is already inconsistent; `--legacy-peer-deps` is required
+and not something introduced by this change) and `npx prisma generate`. The owner's
+backend dev server on :3001 runs from the **main checkout**, not this worktree, and was
+not touched. If the owner wants to review these changes live, they need a backend
+pointed at this worktree — e.g. `cd backend && npm run start:dev` from
+`D:\RGB_Software\products\v2e\.claude\worktrees\kit-alignment\backend` on a different
+port — and the frontend dev server already running on :3000 from this worktree will
+pick up the frontend changes via hot-reload with no restart needed.
