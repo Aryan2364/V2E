@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ScrollText, ChevronDown, ChevronRight, Search } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { auditApi, type AuditFilters } from '@/lib/api/audit'
@@ -16,6 +16,19 @@ import {
   fmtDateTime,
   triggerLabel,
 } from '@/components/audit/AuditDetail'
+import {
+  Pagination,
+  PaginationBar,
+  PaginationContent,
+  PaginationCount,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
+import { useListAddress, queryOf, type AddressParams } from '@/lib/list-address'
+
+const PAGE_SIZE = 25
 
 // Text inputs (search + dates) stay white to contrast the soft-filled dropdowns,
 // but share the dropdowns' height and radius so the filter row stays aligned.
@@ -28,11 +41,20 @@ const inputClass =
 // Select's real selected item instead of a placeholder.
 const ALL_VALUE = '__all__'
 
-export default function AuditLogsPage() {
+type PageCriteria = { page: number }
+function readPageCriteria(params: AddressParams): PageCriteria {
+  return { page: Number(params.get('page')) > 0 ? Number(params.get('page')) : 1 }
+}
+function pageCriteriaQuery(c: PageCriteria): string {
+  return queryOf([['page', c.page !== 1 && c.page.toString()]])
+}
+
+function AuditLogsPageInner() {
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
 
   const [items, setItems] = useState<AuditEntry[]>([])
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [denied, setDenied] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -48,6 +70,24 @@ export default function AuditLogsPage() {
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [search, setSearch] = useState('')
+
+  // Page number lives in the address (kit §11.1.1); the filters above stay in
+  // local state as they already did, and any filter change resets to page 1.
+  const { criteria: pageCriteria, apply: applyPage } = useListAddress<PageCriteria>({
+    read: readPageCriteria,
+    query: pageCriteriaQuery,
+  })
+  const page = pageCriteria.page
+  const setPage = useCallback((next: number) => applyPage({ page: next }, 'push'), [applyPage])
+  const filterKey = [module, resource, action, actorType, triggerSource, fromDate, toDate, search].join('|')
+  const prevFilterKeyRef = useRef(filterKey)
+  useEffect(() => {
+    if (filterKey !== prevFilterKeyRef.current) {
+      prevFilterKeyRef.current = filterKey
+      applyPage({ page: 1 }, 'replace')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterKey])
 
   // Load the filter option lists once.
   useEffect(() => {
@@ -107,19 +147,25 @@ export default function AuditLogsPage() {
       filters.to_date = end.toISOString()
     }
     if (search) filters.search = search
+    filters.skip = (Math.max(page, 1) - 1) * PAGE_SIZE
+    filters.take = PAGE_SIZE
     auditApi
       .list(orgId, filters)
-      .then((res) => setItems(res.items))
+      .then((res) => { setItems(res.items); setTotal(res.total) })
       .catch((err) => {
         if (err?.response?.status === 403) setDenied(true)
       })
       .finally(() => setLoading(false))
-  }, [orgId, module, resource, action, actorType, triggerSource, fromDate, toDate, search])
+  }, [orgId, module, resource, action, actorType, triggerSource, fromDate, toDate, search, page])
 
   useEffect(() => {
     const t = setTimeout(load, search ? 300 : 0)
     return () => clearTimeout(t)
   }, [load, search])
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
+  const rangeEnd = Math.min(page * PAGE_SIZE, total)
 
   const columns = useMemo<ResponsiveColumn<AuditEntry>[]>(
     () => [
@@ -341,6 +387,32 @@ export default function AuditLogsPage() {
           </div>
         }
       />
+      {!loading && items.length > 0 && (
+        <PaginationBar className="rounded-card">
+          <PaginationCount>{rangeStart}–{rangeEnd} of {total}</PaginationCount>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious aria-disabled={page <= 1} onClick={() => page > 1 && setPage(page - 1)} />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationLink isActive>{page}</PaginationLink>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext aria-disabled={page >= totalPages} onClick={() => page < totalPages && setPage(page + 1)} />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </PaginationBar>
+      )}
     </div>
+  )
+}
+
+export default function AuditLogsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuditLogsPageInner />
+    </Suspense>
   )
 }
