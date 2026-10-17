@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth/context'
-import { getAnnouncements, markAnnouncementRead, togglePinAnnouncement, deleteAnnouncement } from '@/lib/api/announcements'
+import { getAnnouncementsPaged, markAnnouncementRead, togglePinAnnouncement, deleteAnnouncement } from '@/lib/api/announcements'
 import type { Announcement } from '@/lib/types/communication'
 import { formatDate } from '@/lib/format'
 import Link from 'next/link'
@@ -13,6 +13,36 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Pagination,
+  PaginationBar,
+  PaginationContent,
+  PaginationCount,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
+import { useListAddress, queryOf, type AddressParams } from '@/lib/list-address'
+
+const PAGE_SIZE = 25
+
+type Criteria = { type: string; priority: string; page: number }
+
+function readCriteria(params: AddressParams): Criteria {
+  return {
+    type: params.get('type') ?? '',
+    priority: params.get('priority') ?? '',
+    page: Number(params.get('page')) > 0 ? Number(params.get('page')) : 1,
+  }
+}
+function criteriaQuery(c: Criteria): string {
+  return queryOf([
+    ['type', c.type],
+    ['priority', c.priority],
+    ['page', c.page !== 1 && c.page.toString()],
+  ])
+}
 
 const PRIORITY_VARIANT: Record<string, 'danger' | 'warning' | 'neutral'> = {
   urgent: 'danger',
@@ -32,21 +62,33 @@ const TYPE_LABEL: Record<string, string> = {
   emergency: 'Emergency',
 }
 
-export default function AnnouncementsPage() {
+function AnnouncementsPageInner() {
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
   const isHR = !!user?.is_admin
   const [items, setItems] = useState<Announcement[]>([])
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<{ type?: string; priority?: string }>({})
+
+  const { criteria, apply } = useListAddress<Criteria>({ read: readCriteria, query: criteriaQuery })
+  const { type, priority, page } = criteria
+  const filter = { type: type || undefined, priority: priority || undefined }
 
   useEffect(() => {
     if (!orgId) return
     setLoading(true)
-    getAnnouncements(orgId, filter)
-      .then(setItems)
+    getAnnouncementsPaged(orgId, { ...filter, page, pageSize: PAGE_SIZE })
+      .then((res) => { setItems(res.items); setTotal(res.total) })
       .finally(() => setLoading(false))
-  }, [orgId, filter])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId, type, priority, page])
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
+  const rangeEnd = Math.min(page * PAGE_SIZE, total)
+  const setPage = (next: number) => apply({ ...criteria, page: next }, 'push')
+  const toggleType = (t: string) => apply({ ...criteria, type: type === t ? '' : t, page: 1 }, 'push')
+  const togglePriority = (p: string) => apply({ ...criteria, priority: priority === p ? '' : p, page: 1 }, 'push')
 
   async function handleRead(id: string) {
     if (!orgId) return
@@ -90,9 +132,9 @@ export default function AnnouncementsPage() {
             <Button
               key={t}
               size="sm"
-              variant={filter.type === t ? 'primary' : 'secondary'}
+              variant={type === t ? 'primary' : 'secondary'}
               className="capitalize"
-              onClick={() => setFilter(f => ({ ...f, type: f.type === t ? undefined : t }))}
+              onClick={() => toggleType(t)}
             >
               {t}
             </Button>
@@ -101,9 +143,9 @@ export default function AnnouncementsPage() {
             <Button
               key={p}
               size="sm"
-              variant={filter.priority === p ? 'primary' : 'secondary'}
+              variant={priority === p ? 'primary' : 'secondary'}
               className="capitalize"
-              onClick={() => setFilter(f => ({ ...f, priority: f.priority === p ? undefined : p }))}
+              onClick={() => togglePriority(p)}
             >
               {p}
             </Button>
@@ -121,6 +163,7 @@ export default function AnnouncementsPage() {
             Check back later for updates.
           </EmptyState>
         ) : (
+          <>
           <div className="flex flex-col gap-4">
             {pinned.length > 0 && (
               <>
@@ -131,9 +174,34 @@ export default function AnnouncementsPage() {
             )}
             {rest.map(a => <AnnouncementCard key={a.id} ann={a} isHR={isHR} onRead={handleRead} onPin={handlePin} onDelete={handleDelete} />)}
           </div>
+          <PaginationBar className="mt-4 rounded-card">
+            <PaginationCount>{rangeStart}–{rangeEnd} of {total}</PaginationCount>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious aria-disabled={page <= 1} onClick={() => page > 1 && setPage(page - 1)} />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink isActive>{page}</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext aria-disabled={page >= totalPages} onClick={() => page < totalPages && setPage(page + 1)} />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </PaginationBar>
+          </>
         )}
       </div>
     </div>
+  )
+}
+
+export default function AnnouncementsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AnnouncementsPageInner />
+    </Suspense>
   )
 }
 

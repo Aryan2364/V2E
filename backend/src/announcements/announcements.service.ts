@@ -22,25 +22,37 @@ export class AnnouncementsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(orgId: string, userId: string, query: {
-    type?: string; scope?: string; priority?: string; pinned?: string;
+    type?: string; scope?: string; priority?: string; pinned?: string; page?: string; pageSize?: string;
   }) {
     const now = new Date();
-    return this.prisma.announcement.findMany({
-      where: {
-        organization_id: orgId,
-        published_at: { not: null, lte: now },
-        OR: [{ expires_at: null }, { expires_at: { gt: now } }],
-        ...(query.type ? { type: query.type as any } : {}),
-        ...(query.scope ? { scope: query.scope as any } : {}),
-        ...(query.priority ? { priority: query.priority as any } : {}),
-        ...(query.pinned === 'true' ? { is_pinned: true } : {}),
-      },
-      include: {
-        ...ANNOUNCEMENT_INCLUDE,
-        reads: { where: { user_id: userId }, select: { read_at: true } },
-      },
-      orderBy: [{ is_pinned: 'desc' }, { published_at: 'desc' }],
-    });
+    const where = {
+      organization_id: orgId,
+      published_at: { not: null, lte: now },
+      OR: [{ expires_at: null }, { expires_at: { gt: now } }],
+      ...(query.type ? { type: query.type as any } : {}),
+      ...(query.scope ? { scope: query.scope as any } : {}),
+      ...(query.priority ? { priority: query.priority as any } : {}),
+      ...(query.pinned === 'true' ? { is_pinned: true } : {}),
+    };
+    const include = {
+      ...ANNOUNCEMENT_INCLUDE,
+      reads: { where: { user_id: userId }, select: { read_at: true } },
+    };
+    const orderBy = [{ is_pinned: 'desc' as const }, { published_at: 'desc' as const }];
+
+    // Opt-in pagination (kit §11.1.1): omitting `page` returns the plain array,
+    // byte-for-byte what the announcements feed gets today.
+    const page = query.page ? parseInt(query.page, 10) : undefined;
+    if (!page) {
+      return this.prisma.announcement.findMany({ where, include, orderBy });
+    }
+    const take = Math.min(Math.max(query.pageSize ? parseInt(query.pageSize, 10) : 25, 1), 100);
+    const skip = (Math.max(page, 1) - 1) * take;
+    const [items, total] = await Promise.all([
+      this.prisma.announcement.findMany({ where, include, orderBy, skip, take }),
+      this.prisma.announcement.count({ where }),
+    ]);
+    return { items, total, page: Math.max(page, 1), pageSize: take };
   }
 
   async findOne(id: string, orgId: string, userId: string) {

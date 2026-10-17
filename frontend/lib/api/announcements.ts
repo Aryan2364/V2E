@@ -13,6 +13,14 @@ export async function getAnnouncements(
   return res.data.data;
 }
 
+export async function getAnnouncementsPaged(
+  orgId: string,
+  params: { type?: string; scope?: string; priority?: string; pinned?: string; page: number; pageSize?: number },
+): Promise<{ items: Announcement[]; total: number; page: number; pageSize: number }> {
+  const res = await apiClient.get(base(orgId), { params });
+  return res.data.data;
+}
+
 export async function getAnnouncement(orgId: string, id: string): Promise<Announcement> {
   const res = await apiClient.get(`${base(orgId)}/${id}`);
   return res.data.data;

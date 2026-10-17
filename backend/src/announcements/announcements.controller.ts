@@ -37,8 +37,10 @@ export class AnnouncementsController {
     @Query('scope') scope?: string,
     @Query('priority') priority?: string,
     @Query('pinned') pinned?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
   ) {
-    return this.service.findAll(orgId, req.user.id, { type, scope, priority, pinned });
+    return this.service.findAll(orgId, req.user.id, { type, scope, priority, pinned, page, pageSize });
   }
 
   @Get(':id')
