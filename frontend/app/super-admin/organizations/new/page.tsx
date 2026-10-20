@@ -19,6 +19,7 @@ import { ChoiceRow } from '@/components/ui/choice-row'
 import { Checkbox } from '@/components/ui/checkbox'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { PageHeader } from '@/components/shell/page-header'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect'
 import { DEFAULT_COUNTRY, cleanNationalNumber, nationalDigitsFor } from '@/lib/phone'
 import type { OrganizationGroup } from '@/lib/types'
@@ -95,11 +96,14 @@ export default function NewOrganizationPage() {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { timezone: 'Asia/Kolkata', admin_country_code: DEFAULT_COUNTRY },
   })
+
+  // Creating a record: leaving a filled-in form asks first (kit 11.3 rule 10).
+  const unsaved = useUnsavedChanges({ changed: isDirty && !isSubmitting, noun: 'organization', mode: 'create' })
 
   // Live "does this admin email already have a V2E login?" check. If it exists, we hide
   // the password field (they keep their login) and lock the name to their existing name
@@ -176,7 +180,7 @@ export default function NewOrganizationPage() {
       await createOrganization(payload)
       router.push('/super-admin/organizations')
     } catch (err: any) {
-      setServerError(err?.response?.data?.message ?? 'Something went wrong. Please try again.')
+      setServerError(err?.response?.data?.message ?? 'Could not create the organization. Try again.')
     }
   }
 
@@ -203,13 +207,14 @@ export default function NewOrganizationPage() {
         ) : null}
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+          {unsaved.warning}
           {/* Section 1 — Org details */}
           <Card>
             <h2 className="mb-4 border-b border-border-light pb-4 text-card-heading font-medium text-text-primary">
-              Organization Details
+              Organization details
             </h2>
             <div className="grid grid-cols-1 gap-4">
-              <Field label="Organization Name" error={errors.name?.message} required>
+              <Field label="Organization name" error={errors.name?.message} required>
                 <Input {...register('name')} className="max-w-none" />
               </Field>
 
@@ -241,7 +246,7 @@ export default function NewOrganizationPage() {
               </Field>
 
               {/* Group selector */}
-              <Field label="Group" hint="Optional — assign this org to an existing group">
+              <Field label="Group" hint="Assign this org to an existing group">
                 <SearchableSelect
                   options={groupOptions}
                   value={watch('group_id') ?? ''}
@@ -266,7 +271,7 @@ export default function NewOrganizationPage() {
           {/* Section 2 — First Admin Account */}
           <Card>
             <h2 className="mb-1 border-b border-border-light pb-4 text-card-heading font-medium text-text-primary">
-              First Admin Account
+              First admin account
             </h2>
 
             {/* One flow — just enter the admin's email. If it already has a V2E login we
@@ -275,11 +280,11 @@ export default function NewOrganizationPage() {
                 "new vs existing" choice — the email decides. */}
             <div className="mt-4 flex flex-col gap-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Admin Email" error={errors.admin_email?.message} required
+                <Field label="Admin email" error={errors.admin_email?.message} required
                   hint={checkingAdmin ? 'Checking…' : adminExists ? 'Existing account — no password needed' : 'Required — used to recover access'}>
                   <Input {...register('admin_email')} type="email" placeholder="name@company.com" className="max-w-none" />
                 </Field>
-                <Field label="Admin Phone" error={errors.admin_phone?.message} hint="Optional — an extra way to sign in">
+                <Field label="Admin phone" error={errors.admin_phone?.message} hint="An extra way to sign in">
                   <div className="flex gap-2">
                     <CountryCodeSelect
                       value={adminCountry}
@@ -301,7 +306,7 @@ export default function NewOrganizationPage() {
                   </div>
                 </Field>
               </div>
-              <Field label="Admin Name" error={errors.admin_name?.message} required
+              <Field label="Admin name" error={errors.admin_name?.message} required
                 hint={adminExists ? 'From their existing account' : undefined}>
                 <Input {...register('admin_name')} disabled={adminExists} className="max-w-none" />
               </Field>
@@ -324,11 +329,11 @@ export default function NewOrganizationPage() {
           </Card>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
-            <Button type="submit" loading={isSubmitting} loadingLabel="Creating">Create organization</Button>
-            <Button type="button" variant="secondary" onClick={() => router.push('/super-admin/organizations')} disabled={isSubmitting}>
+          <div className="flex items-center justify-end gap-3">
+            <Button type="button" variant="secondary" data-leaves-page onClick={() => router.push('/super-admin/organizations')} disabled={isSubmitting}>
               Cancel
             </Button>
+            <Button type="submit" loading={isSubmitting} loadingLabel="Creating">Create organization</Button>
           </div>
         </form>
       </div>

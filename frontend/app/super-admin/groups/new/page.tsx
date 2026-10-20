@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { OctagonXIcon } from 'lucide-react'
 import { createGroup } from '@/lib/api/groups'
 import { Button } from '@/components/ui/button'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 import Card from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -37,9 +38,12 @@ export default function NewGroupPage() {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
+  const { register, handleSubmit, formState: { errors, isSubmitting, isDirty } } = useForm<FormValues>({
     resolver: zodResolver(schema),
   })
+
+  // Creating a record: leaving a filled-in form asks first (kit 11.3 rule 10).
+  const unsaved = useUnsavedChanges({ changed: isDirty && !isSubmitting, noun: 'group', mode: 'create' })
 
   const onSubmit = async (values: FormValues) => {
     setServerError(null)
@@ -47,7 +51,7 @@ export default function NewGroupPage() {
       await createGroup(values)
       router.push('/super-admin/groups')
     } catch (err: any) {
-      setServerError(err?.response?.data?.message ?? 'Something went wrong.')
+      setServerError(err?.response?.data?.message ?? 'Could not create the group. Try again.')
     }
   }
 
@@ -71,29 +75,30 @@ export default function NewGroupPage() {
         ) : null}
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+          {unsaved.warning}
           <Card>
             <h2 className="mb-4 border-b border-border-light pb-4 text-card-heading font-medium text-text-primary">
-              Group Details
+              Group details
             </h2>
             <div className="flex flex-col gap-4">
-              <Field label="Group Name" error={errors.name?.message} required>
+              <Field label="Group name" error={errors.name?.message} required>
                 <Input {...register('name')} placeholder="RGB Group" className="max-w-none" />
               </Field>
               <Field label="Description" error={errors.description?.message}>
                 <Textarea
                   {...register('description')}
-                  placeholder="Optional — describe what this group represents"
+                  placeholder="For example, describe what this group represents"
                   rows={3}
                 />
               </Field>
             </div>
           </Card>
 
-          <div className="flex items-center gap-3">
-            <Button type="submit" loading={isSubmitting} loadingLabel="Creating">Create group</Button>
-            <Button type="button" variant="secondary" onClick={() => router.push('/super-admin/groups')} disabled={isSubmitting}>
+          <div className="flex items-center justify-end gap-3">
+            <Button type="button" variant="secondary" data-leaves-page onClick={() => router.push('/super-admin/groups')} disabled={isSubmitting}>
               Cancel
             </Button>
+            <Button type="submit" loading={isSubmitting} loadingLabel="Creating">Create group</Button>
           </div>
         </form>
       </div>

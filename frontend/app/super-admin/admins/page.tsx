@@ -8,6 +8,7 @@ import ResponsiveTable from '@/components/ui/ResponsiveTable'
 import Tooltip from '@/components/ui/tooltip'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/ui/password-input'
@@ -80,6 +81,14 @@ export default function AdminsPage() {
   const [form, setForm] = useState<AddFormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
+  // Field errors sit under the field that is wrong; focus goes to the first one (kit 11.3, 39.3).
+  type FieldErrors = { name?: string; email?: string; password?: string }
+  const [addErrors, setAddErrors] = useState<FieldErrors>({})
+  const [editErrors, setEditErrors] = useState<FieldErrors>({})
+  const focusFirst = (prefix: string, errs: FieldErrors) => {
+    const first = (['name', 'email', 'password'] as const).find((k) => errs[k])
+    if (first) requestAnimationFrame(() => document.getElementById(`${prefix}-${first}`)?.focus())
+  }
   const [actionId, setActionId] = useState<string | null>(null)
   const [revokeTarget, setRevokeTarget] = useState<AdminUser | null>(null)
 
@@ -102,18 +111,18 @@ export default function AdminsPage() {
   function resetForm() {
     setForm(EMPTY_FORM)
     setFormError('')
+    setAddErrors({})
     setShowAdd(false)
   }
 
   async function handleAdd() {
-    if (!form.name.trim() || !form.email.trim() || !form.password) {
-      setFormError('All fields are required.')
-      return
+    const errs: FieldErrors = {
+      name: form.name.trim() ? undefined : 'Enter the full name of the admin.',
+      email: form.email.trim() ? undefined : 'Enter an email address, like name@company.com.',
+      password: !form.password ? 'Enter a password of at least 8 characters.' : form.password.length < 8 ? 'Use at least 8 characters in the password.' : undefined,
     }
-    if (form.password.length < 8) {
-      setFormError('Password must be at least 8 characters.')
-      return
-    }
+    setAddErrors(errs)
+    if (errs.name || errs.email || errs.password) { focusFirst('add', errs); return }
     setSaving(true)
     setFormError('')
     try {
@@ -121,7 +130,7 @@ export default function AdminsPage() {
       setAdmins((prev) => [...prev, created])
       resetForm()
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Failed to add admin.'
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Could not add the admin. Try again.'
       setFormError(msg)
     } finally {
       setSaving(false)
@@ -144,6 +153,7 @@ export default function AdminsPage() {
     setEditingAdmin(admin)
     setEditForm({ name: admin.name, email: admin.email, password: '' })
     setEditError('')
+    setEditErrors({})
     setShowAdd(false)
   }
 
@@ -151,18 +161,18 @@ export default function AdminsPage() {
     setEditingAdmin(null)
     setEditForm(EMPTY_FORM)
     setEditError('')
+    setEditErrors({})
   }
 
   async function handleEdit() {
     if (!editingAdmin) return
-    if (!editForm.email.trim() || !editForm.password) {
-      setEditError('Email address and password are required to save changes.')
-      return
+    const errs: FieldErrors = {
+      name: editForm.name.trim() ? undefined : 'Enter the full name of the admin.',
+      email: editForm.email.trim() ? undefined : 'Enter an email address, like name@company.com.',
+      password: !editForm.password ? 'Enter a new password of at least 8 characters.' : editForm.password.length < 8 ? 'Use at least 8 characters in the password.' : undefined,
     }
-    if (editForm.password.length < 8) {
-      setEditError('Password must be at least 8 characters.')
-      return
-    }
+    setEditErrors(errs)
+    if (errs.name || errs.email || errs.password) { focusFirst('edit', errs); return }
     setSaving(true)
     setEditError('')
     try {
@@ -174,7 +184,7 @@ export default function AdminsPage() {
       setAdmins((prev) => prev.map((a) => a.id === updated.id ? updated : a))
       resetEditForm()
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Failed to save changes.'
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Could not save the admin. Try again.'
       setEditError(msg)
     } finally {
       setSaving(false)
@@ -197,7 +207,7 @@ export default function AdminsPage() {
   return (
     <div className="max-w-3xl">
       <PageHeader
-        title="Admin Users"
+        title="Admin users"
         meta={
           <>
             Manage who can access the Admin Portal at{' '}
@@ -207,7 +217,7 @@ export default function AdminsPage() {
         actions={
           <Button onClick={() => { setShowAdd(true); setEditingAdmin(null) }}>
             <PlusIcon size={15} />
-            Add Admin
+            Add admin
           </Button>
         }
       />
@@ -217,7 +227,7 @@ export default function AdminsPage() {
         {showAdd && (
           <div className="rounded-card border border-border-light bg-surface p-6 shadow-card">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-section font-medium text-text-primary">New Super Admin</h2>
+              <h2 className="text-section font-medium text-text-primary">New super admin</h2>
               <button
                 type="button"
                 onClick={resetForm}
@@ -230,14 +240,16 @@ export default function AdminsPage() {
 
             <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <Label htmlFor="add-name">Full name</Label>
+                <Label htmlFor="add-name" required>Full name</Label>
                 <Input
                   id="add-name"
                   value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="Jane Smith"
+                  onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); setAddErrors((p) => ({ ...p, name: undefined })) }}
+                  aria-invalid={addErrors.name ? true : undefined}
+                  placeholder="For example, Jane Smith"
                   className="mt-2 max-w-none"
                 />
+                <InlineFieldError>{addErrors.name}</InlineFieldError>
               </div>
               <div>
                 <Label htmlFor="add-email" required>
@@ -247,10 +259,12 @@ export default function AdminsPage() {
                   id="add-email"
                   type="email"
                   value={form.email}
-                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                  placeholder="jane@company.com"
+                  onChange={(e) => { setForm((f) => ({ ...f, email: e.target.value })); setAddErrors((p) => ({ ...p, email: undefined })) }}
+                  aria-invalid={addErrors.email ? true : undefined}
+                  placeholder="For example, jane@company.com"
                   className="mt-2 max-w-none"
                 />
+                <InlineFieldError>{addErrors.email}</InlineFieldError>
               </div>
             </div>
 
@@ -261,10 +275,11 @@ export default function AdminsPage() {
               <PasswordInput
                 id="add-password"
                 value={form.password}
-                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                placeholder="Min. 8 characters"
+                onChange={(e) => { setForm((f) => ({ ...f, password: e.target.value })); setAddErrors((p) => ({ ...p, password: undefined })) }}
+                aria-invalid={addErrors.password ? true : undefined}
                 className="mt-2 max-w-sm"
               />
+              <InlineFieldError>{addErrors.password}</InlineFieldError>
               <p className="mt-2 text-label text-text-muted">
                 If the email already exists in the system, that user will be promoted to super admin — no new account is created.
               </p>
@@ -282,7 +297,7 @@ export default function AdminsPage() {
                 Cancel
               </Button>
               <Button loading={saving} loadingLabel="Adding" onClick={handleAdd}>
-                Add Admin
+                Add admin
               </Button>
             </div>
           </div>
@@ -293,7 +308,7 @@ export default function AdminsPage() {
           <div className="rounded-card border border-border-light bg-surface p-6 shadow-card">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-section font-medium text-text-primary">
-                Edit Super Admin ({editingAdmin.name})
+                Edit super admin ({editingAdmin.name})
               </h2>
               <button
                 type="button"
@@ -307,14 +322,16 @@ export default function AdminsPage() {
 
             <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <Label htmlFor="edit-name">Full name</Label>
+                <Label htmlFor="edit-name" required>Full name</Label>
                 <Input
                   id="edit-name"
                   value={editForm.name}
-                  onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="Jane Smith"
+                  onChange={(e) => { setEditForm((f) => ({ ...f, name: e.target.value })); setEditErrors((p) => ({ ...p, name: undefined })) }}
+                  aria-invalid={editErrors.name ? true : undefined}
+                  placeholder="For example, Jane Smith"
                   className="mt-2 max-w-none"
                 />
+                <InlineFieldError>{editErrors.name}</InlineFieldError>
               </div>
               <div>
                 <Label htmlFor="edit-email" required>
@@ -324,10 +341,12 @@ export default function AdminsPage() {
                   id="edit-email"
                   type="email"
                   value={editForm.email}
-                  onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
-                  placeholder="jane@company.com"
+                  onChange={(e) => { setEditForm((f) => ({ ...f, email: e.target.value })); setEditErrors((p) => ({ ...p, email: undefined })) }}
+                  aria-invalid={editErrors.email ? true : undefined}
+                  placeholder="For example, jane@company.com"
                   className="mt-2 max-w-none"
                 />
+                <InlineFieldError>{editErrors.email}</InlineFieldError>
               </div>
             </div>
 
@@ -338,10 +357,11 @@ export default function AdminsPage() {
               <PasswordInput
                 id="edit-password"
                 value={editForm.password}
-                onChange={(e) => setEditForm((f) => ({ ...f, password: e.target.value }))}
-                placeholder="Min. 8 characters"
+                onChange={(e) => { setEditForm((f) => ({ ...f, password: e.target.value })); setEditErrors((p) => ({ ...p, password: undefined })) }}
+                aria-invalid={editErrors.password ? true : undefined}
                 className="mt-2 max-w-sm"
               />
+              <InlineFieldError>{editErrors.password}</InlineFieldError>
               <p className="mt-2 text-label text-text-muted">
                 For security, you must specify a new password (min. 8 characters) to save changes.
               </p>
@@ -359,7 +379,7 @@ export default function AdminsPage() {
                 Cancel
               </Button>
               <Button loading={saving} loadingLabel="Saving" onClick={handleEdit}>
-                Save Changes
+                Save admin
               </Button>
             </div>
           </div>
