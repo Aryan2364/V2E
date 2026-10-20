@@ -13,6 +13,7 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import GoalsMultiSelectField from './GoalsMultiSelectField'
 import type { ProjectTemplate } from '@/lib/types/projects'
 import type { EligibleAssigneeUser } from '@/lib/types/tasks'
+import { Label } from '@/components/ui/label'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -369,25 +370,25 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
       {step === 1 && (
         <div className="bg-surface border border-border-light rounded-card p-6 shadow-card space-y-4">
           <div>
-            <label className={labelCls}>Project name <span className="text-danger">*</span></label>
+            <Label className="mb-2" required>Project name</Label>
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Website Redesign Q3" className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Description</label>
+            <Label className="mb-2">Description</Label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description..." rows={3} className="w-full px-3 py-2 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden resize-none" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Start date</label>
+              <Label className="mb-2">Start date</Label>
               <DatePicker value={startDate} onChange={(iso) => handleDateChange(iso, setStartDate)} min="2000-01-01" max="2100-12-31" placeholder="Select date" />
             </div>
             <div>
-              <label className={labelCls}>End date</label>
+              <Label className="mb-2">End date</Label>
               <DatePicker value={endDate} onChange={(iso) => handleDateChange(iso, setEndDate)} min={endDateMin} max="2100-12-31" placeholder="Select date" />
             </div>
           </div>
           <div>
-            <label className={labelCls}>Project manager <span className="text-danger">*</span></label>
+            <Label className="mb-2" required>Project manager</Label>
             <UserSearchDropdown
               orgId={orgId}
               placeholder="Search by name…"
@@ -398,11 +399,11 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Planned budget</label>
+              <Label className="mb-2">Planned budget</Label>
               <input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="0" min="0" className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Currency</label>
+              <Label className="mb-2">Currency</Label>
               <StyledSelect
                 value={currency}
                 onChange={setCurrency}
@@ -411,7 +412,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
             </div>
           </div>
           <div>
-            <label className={labelCls}>Start from template</label>
+            <Label className="mb-2">Start from template</Label>
             <TemplatePicker templates={templates} selected={templateId} onSelect={setTemplateId} />
           </div>
           {/* The goals this project exists to move — it can serve several. */}

@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { X } from 'lucide-react'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import StyledSelect from '@/components/ui/StyledSelect'
+import { Label } from '@/components/ui/label'
 
 export default function NewKnowledgePostPage() {
   const { user } = useAuth()
@@ -77,7 +78,7 @@ export default function NewKnowledgePostPage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1">Title</label>
+              <Label className="mb-2">Title</Label>
               <input
                 value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
@@ -87,7 +88,7 @@ export default function NewKnowledgePostPage() {
             </div>
 
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1">Content</label>
+              <Label className="mb-2">Content</Label>
               <textarea
                 value={form.body}
                 onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
@@ -98,7 +99,7 @@ export default function NewKnowledgePostPage() {
             </div>
 
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1">Tags</label>
+              <Label className="mb-2">Tags</Label>
               <div className="flex gap-2">
                 <input
                   value={form.tagInput}
@@ -126,7 +127,7 @@ export default function NewKnowledgePostPage() {
             </div>
 
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1">Scope</label>
+              <Label className="mb-2">Scope</Label>
               <StyledSelect
                 value={form.scope}
                 onChange={(v) => setForm(f => ({ ...f, scope: v }))}

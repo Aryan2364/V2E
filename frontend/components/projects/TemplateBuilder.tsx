@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
+import { Label } from '@/components/ui/label'
 
 interface TemplateTask {
   id: string
@@ -108,11 +109,11 @@ export default function TemplateBuilder({
       {/* Template info */}
       <div className="space-y-3">
         <div>
-          <label className={labelCls}>Template name *</label>
+          <Label className="mb-2" required>Template name</Label>
           <input value={name} onChange={(e) => onNameChange(e.target.value)} placeholder="e.g. Software Development Sprint" className={inputCls} />
         </div>
         <div>
-          <label className={labelCls}>Description</label>
+          <Label className="mb-2">Description</Label>
           <textarea value={description} onChange={(e) => onDescChange(e.target.value)} placeholder="Brief description..." rows={2} className="w-full px-3 py-2 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden resize-none" />
         </div>
       </div>

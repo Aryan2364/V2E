@@ -5,6 +5,7 @@ import { MultiSelect } from '@/components/ui/multi-select'
 import { goalsApi } from '@/lib/api/goals'
 import { STATUS_META, type Goal } from '@/lib/types/goals'
 import { formatDate } from '@/lib/format'
+import { Label } from '@/components/ui/label'
 
 /**
  * "Goals this project serves" — the project side of the many-to-many link.
@@ -50,7 +51,7 @@ export default function GoalsMultiSelectField({
 
   return (
     <div>
-      <label className="block text-body font-medium text-text-secondary mb-1.5">Goals this serves</label>
+      <Label className="mb-2">Goals this serves</Label>
       <MultiSelect
         value={value}
         onValueChange={onChange}

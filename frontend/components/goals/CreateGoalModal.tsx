@@ -18,6 +18,7 @@ import GoalFormFields, {
 } from './GoalFormFields'
 import QuickCreateProjectModal from './QuickCreateProjectModal'
 import { formatDate } from './shared'
+import { Label } from '@/components/ui/label'
 
 const EMPTY: GoalFormState = {
   title: '',
@@ -319,7 +320,7 @@ function FieldWithAdd({
 }) {
   return (
     <div>
-      <label className={labelClass}>{label}</label>
+      <Label className="mb-2">{label}</Label>
       <div className="flex items-start gap-2">
         <div className="flex-1 min-w-0">{children}</div>
         <button

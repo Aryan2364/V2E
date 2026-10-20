@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Label } from '@/components/ui/label'
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 /** A leap year, so 29 Feb is pickable. Only month/day are read back; the year is discarded. */
@@ -157,7 +158,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
       {/* Type tabs */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className={labelCls}>Repeat</label>
+          <Label className="mb-2">Repeat</Label>
           <button
             type="button"
             onClick={() => {

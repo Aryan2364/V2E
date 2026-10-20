@@ -11,6 +11,7 @@ import type { Goal, GoalCandidate } from '@/lib/types/goals'
 import CreateGoalModal from './CreateGoalModal'
 import { inputClass, labelClass, type EmployeeOption } from './GoalFormFields'
 import { formatDate } from './shared'
+import { Label } from '@/components/ui/label'
 
 export type LinkDirection = 'supported_by' | 'supports'
 
@@ -118,7 +119,7 @@ export default function LinkGoalModal({
           </div>
 
           <div>
-            <label className={labelClass}>Goal *</label>
+            <Label className="mb-2" required>Goal</Label>
             {loading ? (
               <div className="flex items-center gap-2 text-label text-text-secondary py-2">
                 <Loader2 size={15} className="animate-spin" /> Loading goals…
@@ -143,7 +144,7 @@ export default function LinkGoalModal({
           </div>
 
           <div>
-            <label className={labelClass}>Why does this link exist?</label>
+            <Label className="mb-2">Why does this link exist?</Label>
             <textarea
               className={`${inputClass} resize-none`}
               rows={2}

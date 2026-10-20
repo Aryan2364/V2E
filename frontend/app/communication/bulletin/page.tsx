@@ -7,6 +7,7 @@ import type { BulletinBoard } from '@/lib/types/communication'
 import Link from 'next/link'
 import { Layout, Plus, Trash2, MessageSquare, Eye, MessageCircle } from 'lucide-react'
 import StyledSelect from '@/components/ui/StyledSelect'
+import { Label } from '@/components/ui/label'
 
 const MODE_LABEL: Record<string, string> = {
   read_only: 'Read Only',
@@ -78,7 +79,7 @@ export default function BulletinBoardsPage() {
           <form onSubmit={handleCreate} className="bg-surface border border-border-light rounded-card p-4 mb-6 flex flex-col gap-4">
             <h2 className="text-body font-medium text-text-primary">Create Board</h2>
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1">Board Name</label>
+              <Label className="mb-2">Board Name</Label>
               <input
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -87,7 +88,7 @@ export default function BulletinBoardsPage() {
               />
             </div>
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1">Description (optional)</label>
+              <Label className="mb-2">Description</Label>
               <input
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
@@ -96,7 +97,7 @@ export default function BulletinBoardsPage() {
               />
             </div>
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1">Interaction Mode</label>
+              <Label className="mb-2">Interaction Mode</Label>
               <StyledSelect
                 value={form.interaction_mode}
                 onChange={(v) => setForm(f => ({ ...f, interaction_mode: v }))}

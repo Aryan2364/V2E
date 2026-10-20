@@ -31,6 +31,7 @@ import { KIND_META } from '@/components/process-hierarchy/kind-meta'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import { getDepartments } from '@/lib/api/departments'
 import type { Department } from '@/lib/types'
+import { Label } from '@/components/ui/label'
 
 // Client-only: keeps ReactFlow + html-to-image out of this route's server/SSR bundle.
 const ProcessCanvas = dynamic(() => import('@/components/process-hierarchy/ProcessCanvas'), {
@@ -1128,7 +1129,7 @@ function SaveTemplateModal({ orgId, mapId, mapName, onClose }: {
           <p className="text-success text-body inline-flex items-center gap-2 py-4"><Check size={16} /> Template saved.</p>
         ) : (
           <>
-            <label className="block text-body font-medium text-text-secondary mb-1">Template name</label>
+            <Label className="mb-2">Template name</Label>
             <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && save()}
               className="w-full px-3 py-2.5 text-meta rounded-lg border border-border focus:border-primary focus:outline-hidden" />
             <p className="text-meta text-text-muted mt-1.5">Freezes this map’s current structure so you can spin up new maps from it later.</p>

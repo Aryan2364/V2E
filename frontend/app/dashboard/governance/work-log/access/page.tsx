@@ -9,6 +9,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Switch } from '@/components/ui/switch'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 
 const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
 
@@ -98,7 +99,7 @@ export default function WorkLogAccessPage() {
           <h3 className="text-body font-medium text-text-primary mb-2">Explicit reader → writer grants</h3>
           <div className="flex flex-wrap items-end gap-2 mb-3">
             <div className="w-[200px]">
-              <label className="text-meta font-medium text-text-secondary block mb-1">Reader</label>
+              <Label className="mb-2">Reader</Label>
               <SearchableSelect
                 value={newReader}
                 onValueChange={setNewReader}
@@ -107,7 +108,7 @@ export default function WorkLogAccessPage() {
               />
             </div>
             <div className="w-[200px]">
-              <label className="text-meta font-medium text-text-secondary block mb-1">Can read</label>
+              <Label className="mb-2">Can read</Label>
               <SearchableSelect
                 value={newWriter}
                 onValueChange={setNewWriter}

@@ -9,6 +9,7 @@ import { goalsApi } from '@/lib/api/goals'
 import { formatValue, type Goal, type GoalCheckIn } from '@/lib/types/goals'
 import { GoalStatusBadge, formatDate } from './shared'
 import { inputClass, labelClass } from './GoalFormFields'
+import { Label } from '@/components/ui/label'
 
 /**
  * The dated record. Rows are never edited or deleted — a wrong entry is VOIDED
@@ -186,7 +187,7 @@ function VoidModal({
         </p>
 
         <div>
-          <label className={labelClass}>Why is it being voided? *</label>
+          <Label className="mb-2" required>Why is it being voided?</Label>
           <textarea
             className={`${inputClass} resize-none`}
             rows={3}

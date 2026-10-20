@@ -52,6 +52,7 @@ import LeaveWarningBadge from '@/components/leave/LeaveWarningBadge'
 import { leaveApi } from '@/lib/api/leave'
 import type { LeaveAvailability } from '@/lib/types/leave'
 import { expandLeaveDays, leaveHorizon } from '@/lib/leave-availability'
+import { Label } from '@/components/ui/label'
 
 // One-time = a single task with a fixed deadline. Recurring = a template that
 // auto-spawns instances on a schedule (reuses the existing recurring engine).
@@ -545,9 +546,9 @@ export default function CreateTaskModal({
         <form id="create-task-form" onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">
-              Title <span className="text-danger">*</span>
-            </label>
+            <Label className="mb-2" required>
+              Title
+            </Label>
             <div className="relative">
               <input
                 type="text"
@@ -566,7 +567,7 @@ export default function CreateTaskModal({
 
           {/* Assignees & CC */}
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Assignees & CC</label>
+            <Label className="mb-2">Assignees & CC</Label>
             <AssigneeSelector
               orgId={orgId}
               value={assignees}
@@ -578,7 +579,7 @@ export default function CreateTaskModal({
 
           {/* Completion mode — only relevant when multiple assignees are selected */}
           {primaryAssigneeCount > 1 && <div>
-            <label className="block text-label font-medium text-text-secondary mb-2">Completion Mode</label>
+            <Label className="mb-2">Completion Mode</Label>
             <div className="flex gap-3">
               {(['any_can_complete', 'all_must_complete'] as CompletionMode[]).map((mode) => (
                 <label
@@ -604,7 +605,7 @@ export default function CreateTaskModal({
           {/* Schedule mode — one-time (single deadline) vs recurring (auto-spawns).
               Hidden when the host page locks the mode (e.g. the Recurring page). */}
           {!lockMode && <div>
-            <label className="block text-label font-medium text-text-secondary mb-2">Schedule</label>
+            <Label className="mb-2">Schedule</Label>
             <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-surface-control border border-border-light">
               {([
                 { value: 'one_time' as TaskMode, label: 'One-time', icon: Calendar },
@@ -640,7 +641,7 @@ export default function CreateTaskModal({
           /* Deadline */
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-label font-medium text-text-secondary">Deadline <span className="text-danger">*</span></label>
+              <Label required>Deadline</Label>
               {deadlineDate && (
                 <button
                   type="button"
@@ -688,9 +689,9 @@ export default function CreateTaskModal({
           ) : (
           /* Recurring schedule — reuses the recurring engine's schedule builder */
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-2">
-              Recurrence <span className="text-danger">*</span>
-            </label>
+            <Label className="mb-2" required>
+              Recurrence
+            </Label>
             <ScheduleEntryList entries={scheduleEntries} onChange={setScheduleEntries} />
           </div>
           )}
@@ -710,7 +711,7 @@ export default function CreateTaskModal({
 
           {/* Description */}
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Description</label>
+            <Label className="mb-2">Description</Label>
             <div className="relative">
               <textarea
                 value={description}
@@ -729,7 +730,7 @@ export default function CreateTaskModal({
 
           {/* Quadrant — hidden */}
           {/* <div>
-            <label className="block text-label font-medium text-text-secondary mb-2">Quadrant</label>
+            <Label className="mb-2">Quadrant</Label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {quadrants.map((q) => {
                 const cfg = quadrantColors[q.value]
@@ -760,7 +761,7 @@ export default function CreateTaskModal({
               is not shown here (set automatically). */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1.5">Priority</label>
+              <Label className="mb-2">Priority</Label>
               <StyledSelect
                 value={priorityId}
                 onChange={setPriorityId}
@@ -772,7 +773,7 @@ export default function CreateTaskModal({
               />
             </div>
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1.5">Category</label>
+              <Label className="mb-2">Category</Label>
               <StyledSelect
                 value={categoryId}
                 onChange={setCategoryId}
@@ -788,7 +789,7 @@ export default function CreateTaskModal({
           {/* Tags — full width, directly under Category/Priority. On a recurring task
               they are copied onto every spawned instance. */}
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Tags</label>
+            <Label className="mb-2">Tags</Label>
             <TagPicker orgId={orgId} value={tagIds} onChange={setTagIds} disabled={submitting} />
           </div>
 
@@ -827,7 +828,7 @@ export default function CreateTaskModal({
                 aria-expanded={attachmentsOpen}
                 className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-surface-sunken transition-colors"
               >
-                <label className="text-label font-medium text-text-secondary cursor-pointer">Attachments</label>
+                <Label className="cursor-pointer">Attachments</Label>
                 <span className="text-meta font-normal text-text-secondary">Optional</span>
                 {attachmentFiles.length > 0 && (
                   <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">

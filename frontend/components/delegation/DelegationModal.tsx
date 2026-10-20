@@ -8,6 +8,7 @@ import DatePicker from '@/components/ui/DatePicker'
 import EmployeePicker from '@/components/ui/EmployeePicker'
 import { useToast } from '@/components/ui/Toast'
 import { delegationsApi, type Delegation, type DelegationInput } from '@/lib/api/delegations'
+import { Label } from '@/components/ui/label'
 
 // Base has NO width utility — callers add `w-full` (most fields) or a flex sizing
 // (the criteria row) so `w-full` never fights `w-28`/`flex-1` and overflows the row.
@@ -120,7 +121,7 @@ export default function DelegationModal({
       <div className="flex flex-col gap-4">
         {/* Title */}
         <div>
-          <label className={labelClass}>Title *</label>
+          <Label className="mb-2" required>Title</Label>
           <input
             className={inputClass}
             value={title}
@@ -132,7 +133,7 @@ export default function DelegationModal({
 
         {/* Outcome */}
         <div>
-          <label className={labelClass}>Outcome *</label>
+          <Label className="mb-2" required>Outcome</Label>
           <textarea
             className={`${inputClass} min-h-[72px] resize-y`}
             value={outcome}
@@ -145,7 +146,7 @@ export default function DelegationModal({
         {/* Owner + dates */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>Owner *</label>
+            <Label className="mb-2" required>Owner</Label>
             <EmployeePicker
               value={ownerId}
               onChange={setOwnerId}
@@ -156,7 +157,7 @@ export default function DelegationModal({
             />
           </div>
           <div>
-            <label className={labelClass}>Fully running by</label>
+            <Label className="mb-2">Fully running by</Label>
             <DatePicker value={runningBy} onChange={setRunningBy} placeholder="Handover target date" />
           </div>
         </div>
@@ -164,7 +165,7 @@ export default function DelegationModal({
         {/* KRA (free text) + first check-in */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>KRA</label>
+            <Label className="mb-2">KRA</Label>
             <input
               className={inputClass}
               value={kra}
@@ -174,7 +175,7 @@ export default function DelegationModal({
             />
           </div>
           <div>
-            <label className={labelClass}>First check-in</label>
+            <Label className="mb-2">First check-in</Label>
             <DatePicker value={firstCheckIn} onChange={setFirstCheckIn} placeholder="First review date" />
             <p className="text-meta text-text-muted mt-1">A review task is created for you on this date.</p>
           </div>

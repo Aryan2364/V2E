@@ -4,6 +4,7 @@ import React from 'react'
 import { Link2, Plus, Trash2 } from 'lucide-react'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 
 /**
  * The least a template needs to be offered here. A task's ChecklistTemplate fits, and so
@@ -226,7 +227,7 @@ export default function ChecklistBuilderField({
             aria-expanded={open}
             className="w-full flex items-center gap-2 px-3 py-3 text-left rounded-t-[12px] hover:bg-surface-sunken transition-colors"
           >
-            <label className="text-label font-medium text-text-secondary cursor-pointer">Checklist</label>
+            <Label className="cursor-pointer">Checklist</Label>
             <span className="text-meta font-normal text-text-secondary">Optional</span>
             {countBadge}
             <span

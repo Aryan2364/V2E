@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/Toast'
 import { projectsApi } from '@/lib/api/projects'
 import type { Project } from '@/lib/types/projects'
 import { inputClass, labelClass, type EmployeeOption } from './GoalFormFields'
+import { Label } from '@/components/ui/label'
 
 /**
  * Create a project without leaving the goal form.
@@ -86,7 +87,7 @@ export default function QuickCreateProjectModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className={labelClass}>Project name *</label>
+          <Label className="mb-2" required>Project name</Label>
           <input
             className={inputClass}
             value={name}
@@ -98,7 +99,7 @@ export default function QuickCreateProjectModal({
         </div>
 
         <div>
-          <label className={labelClass}>Project manager *</label>
+          <Label className="mb-2" required>Project manager</Label>
           <EmployeePicker
             employees={employees}
             value={managerId}
@@ -110,7 +111,7 @@ export default function QuickCreateProjectModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Start date</label>
+            <Label className="mb-2">Start date</Label>
             <DatePicker
               value={startDate}
               onChange={setStartDate}
@@ -119,7 +120,7 @@ export default function QuickCreateProjectModal({
             />
           </div>
           <div>
-            <label className={labelClass}>End date</label>
+            <Label className="mb-2">End date</Label>
             <DatePicker
               value={endDate}
               onChange={setEndDate}

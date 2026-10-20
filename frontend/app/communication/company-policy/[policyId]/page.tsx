@@ -25,6 +25,7 @@ import { getEmployees } from '@/lib/api/employees'
 import type { CompanyPolicy, CompanyPolicyItem, CompanyPolicyAssignment, PolicyContentType, PolicyStatus } from '@/lib/types/company-policy'
 import type { EmployeeProfile } from '@/lib/types'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
+import { Label } from '@/components/ui/label'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -187,12 +188,12 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
           {error && <div className="text-label text-danger bg-danger-bg border border-danger-border rounded-control px-4 py-3">{error}</div>}
 
           <div>
-            <label className={labelClass}>Title <span className="text-danger">*</span></label>
+            <Label className="mb-2" required>Title</Label>
             <input type="text" value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="Item title" className={inputClass} />
           </div>
 
           <div>
-            <label className={labelClass}>Content Type</label>
+            <Label className="mb-2">Content Type</Label>
             <div className="grid grid-cols-2 gap-2">
               {(['article', 'video', 'document', 'url'] as PolicyContentType[]).map((type) => {
                 const Icon = TYPE_ICONS[type]
@@ -214,7 +215,7 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
 
           {form.content_type === 'article' ? (
             <div>
-              <label className={labelClass}>Article Content</label>
+              <Label className="mb-2">Article Content</Label>
               <textarea
                 value={form.content_body}
                 onChange={(e) => set('content_body', e.target.value)}
@@ -225,13 +226,13 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
             </div>
           ) : (
             <div>
-              <label className={labelClass}>{TYPE_LABELS[form.content_type]} URL</label>
+              <Label className="mb-2">{TYPE_LABELS[form.content_type]} URL</Label>
               <input type="url" value={form.content_url} onChange={(e) => set('content_url', e.target.value)} placeholder="https://" className={inputClass} />
             </div>
           )}
 
           <div>
-            <label className={labelClass}>Description <span className="text-text-secondary font-normal">(optional)</span></label>
+            <Label className="mb-2">Description</Label>
             <textarea value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="Short description…" rows={2} className={`${inputClass} resize-none`} />
           </div>
         </DialogBody>

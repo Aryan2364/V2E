@@ -30,6 +30,7 @@ import {
 } from './timing'
 import { anchorFor, orderProblemOf, stepNextCycle, type NamedStep, type PlanContext, type PlannedDates } from './timingPlan'
 import { predecessorName } from './timing'
+import { Label } from '@/components/ui/label'
 
 /** The sample run's plan (timingPlan.ts): the timing calendar, its greyed days and Save's order check. */
 export interface StepPlanInput {
@@ -633,9 +634,9 @@ export default function StepCard(props: EditProps | CreateProps) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 gap-y-6">
         {/* Title */}
         <div className="lg:col-span-7">
-          <label htmlFor={`${idPrefix}-title`} className={LABEL_CLS}>
-            Step title <span className="text-danger">*</span>
-          </label>
+          <Label className="mb-2" required>
+            Step title
+          </Label>
           <div className="relative">
             <input
               id={`${idPrefix}-title`}
@@ -826,9 +827,9 @@ export default function StepCard(props: EditProps | CreateProps) {
         <Reveal open={moreOpen} id={`${idPrefix}-more`}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 gap-y-6 pt-4">
             <div className="lg:col-span-12">
-              <label htmlFor={`${idPrefix}-desc`} className={LABEL_CLS}>
+              <Label className="mb-2">
                 Description
-              </label>
+              </Label>
               <textarea
                 id={`${idPrefix}-desc`}
                 rows={3}

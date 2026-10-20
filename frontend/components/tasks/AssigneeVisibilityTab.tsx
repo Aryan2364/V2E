@@ -31,6 +31,7 @@ import type {
   AssigneeVisibilitySettings,
   BridgeDepth,
 } from '@/lib/types/tasks'
+import { Label } from '@/components/ui/label'
 
 // Permissions collapsed to Administrators (is_admin) vs Members. 'org_admin'/'employee'
 // are the value strings the backend still matches; legacy 'hr_manager' is inert.
@@ -707,7 +708,7 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
     <Card title="Cross-department assignment" description="Let one department assign into another. One-directional by default — turn on “Both ways” on an entry to also open the reverse (B → A).">
       <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end pt-1">
         <div>
-          <label className="block text-meta font-medium text-text-secondary mb-1">From</label>
+          <Label className="mb-2">From</Label>
           <DepartmentSelect
             value={from}
             onChange={(id) => { setFrom(id); if (id === to) setTo('') }}
@@ -717,7 +718,7 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
           />
         </div>
         <div>
-          <label className="block text-meta font-medium text-text-secondary mb-1">Into</label>
+          <Label className="mb-2">Into</Label>
           <DepartmentSelect value={to} onChange={setTo} departments={toOptions} placeholder="Select…" inline />
         </div>
         <Button type="button" onClick={add} disabled={!from || !to} loading={adding}>
@@ -725,7 +726,7 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
         </Button>
       </div>
       <div>
-        <label className="block text-meta font-medium text-text-secondary mb-1">Reach into target</label>
+        <Label className="mb-2">Reach into target</Label>
         <div className="flex gap-2">
           <Chip label="Whole department" active={depth === 'whole_dept'} onClick={() => setDepth('whole_dept')} />
           <Chip label="Head & senior roles" active={depth === 'head_senior'} onClick={() => setDepth('head_senior')} />

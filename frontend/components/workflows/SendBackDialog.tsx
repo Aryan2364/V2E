@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/Toast'
 import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
 import type { SendBackTarget, WorkflowInstance } from '@/lib/types/workflows'
 import { BTN, ErrorBanner, InfoTip, Skeleton } from './shared'
+import { Label } from '@/components/ui/label'
 
 const MIN = 5
 const MAX = 2000
@@ -150,9 +151,9 @@ export default function SendBackDialog({
         </div>
 
         <div>
-          <label htmlFor="send-back-reason" className="block text-body font-medium text-text-secondary mb-2">
-            What needs fixing <span className="text-danger">*</span>
-          </label>
+          <Label htmlFor="send-back-reason" className="mb-2" required>
+            What needs fixing
+          </Label>
           <textarea
             id="send-back-reason"
             ref={reasonRef}

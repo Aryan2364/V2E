@@ -30,6 +30,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Tooltip from '@/components/ui/tooltip'
 import NodeDocuments from './node-materials'
 import { useToast } from '@/components/ui/Toast'
+import { Label } from '@/components/ui/label'
 
 const DRILLABLE = new Set(['container', 'subprocess'])
 const CONTAINER_KINDS = new Set(['container', 'subprocess'])
@@ -423,7 +424,7 @@ export default function NodeDrawer({
             {isNote ? (
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-meta font-medium text-text-secondary">Note</label>
+                  <Label>Note</Label>
                   {canEdit && <span className="text-meta text-text-muted tabular-nums">{name.length}/{NOTE_MAX}</span>}
                 </div>
                 <textarea className={`${inputCls} resize-none`} rows={6} value={name} disabled={!canEdit} maxLength={NOTE_MAX}
@@ -433,7 +434,7 @@ export default function NodeDrawer({
             ) : (
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-meta font-medium text-text-secondary">Name</label>
+                  <Label>Name</Label>
                   {canEdit && <span className="text-meta text-text-muted tabular-nums">{name.length}/{NAME_MAX}</span>}
                 </div>
                 <input className={inputCls} value={name} disabled={!canEdit} maxLength={NAME_MAX}
@@ -444,7 +445,7 @@ export default function NodeDrawer({
             {/* Change type — safe conversions only (backend blocks the unsafe ones). */}
             {canEdit && !isEvent(node.kind) && !isNote && (
               <div>
-                <label className="block text-meta font-medium text-text-secondary mb-1">Type</label>
+                <Label className="mb-2">Type</Label>
                 <StyledSelect value={kind} onChange={(k) => { setKind(k as ProcessNodeKind); touch() }}
                   options={(CONTAINER_KINDS.has(node.kind)
                     ? (['container', 'subprocess'] as ProcessNodeKind[])
@@ -462,7 +463,7 @@ export default function NodeDrawer({
                 linkified text (pasted links are clickable, open in a new tab); click it to edit. */}
             {!isNote && (
               <div>
-                <label className="block text-meta font-medium text-text-secondary mb-1">Description</label>
+                <Label className="mb-2">Description</Label>
                 {canEdit && descEditing ? (
                   <textarea autoFocus className={`${inputCls} resize-none`} rows={3} value={description}
                     placeholder="What happens in this step?"
@@ -495,7 +496,7 @@ export default function NodeDrawer({
                 department (their lane); Customer/Vendor sit in a single band. */}
             {!isNote && (
               <div>
-                <label className="block text-meta font-medium text-text-secondary mb-1"><Rows3 size={12} className="inline mr-1" />Pool / Lane</label>
+                <Label className="mb-2"><Rows3 size={12} className="inline mr-1" />Pool / Lane</Label>
                 {canEdit ? (
                   <>
                     <StyledSelect
@@ -531,7 +532,7 @@ export default function NodeDrawer({
             {!isEvent(node.kind) && !isNote && !isExternalPool && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-meta font-medium text-text-secondary mb-1"><UserCircle2 size={12} className="inline mr-1" />Person</label>
+                  <Label className="mb-2"><UserCircle2 size={12} className="inline mr-1" />Person</Label>
                   <EmployeePicker
                     value={respUser}
                     onChange={pickPerson}
@@ -543,7 +544,7 @@ export default function NodeDrawer({
                   />
                 </div>
                 <div>
-                  <label className="block text-meta font-medium text-text-secondary mb-1">Role</label>
+                  <Label className="mb-2">Role</Label>
                   <RolePicker value={respRole} onChange={pickRole}
                     roles={filteredRoles} title="Responsible role" placeholder="— None —" allowClear disabled={!canEdit} />
                 </div>
@@ -568,7 +569,7 @@ export default function NodeDrawer({
             {/* Opens another map (cross-link) — only areas open a deeper map. */}
             {CONTAINER_KINDS.has(node.kind) && (
               <div>
-                <label className="block text-meta font-medium text-text-secondary mb-1">Opens another map (cross-link)</label>
+                <Label className="mb-2">Opens another map (cross-link)</Label>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 min-w-0">
                     <StyledSelect value={node.linked_map_id ?? ''} onChange={(v) => setLinkedMap(v)}
@@ -685,7 +686,7 @@ function ChecklistEditor({ items, canEdit, onChange }: {
   if (!canEdit && items.length === 0) return null
   return (
     <div>
-      <label className="block text-meta font-medium text-text-secondary mb-1.5">Checklist</label>
+      <Label className="mb-2">Checklist</Label>
       <div className="space-y-1.5">
         {items.map((it, i) => (
           <div key={it.id ?? i} className="flex items-center gap-2">

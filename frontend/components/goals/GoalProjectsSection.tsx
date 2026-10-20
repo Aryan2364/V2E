@@ -12,6 +12,7 @@ import { useToast } from '@/components/ui/Toast'
 import { goalsApi } from '@/lib/api/goals'
 import type { Goal, GoalCandidateProject, LinkedProject } from '@/lib/types/goals'
 import { CountBadge, formatDate } from './shared'
+import { Label } from '@/components/ui/label'
 
 const PROJECT_STATUS_META: Record<string, { label: string; bg: string; text: string; border: string }> = {
   active: { label: 'Active', bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success-border)' },
@@ -282,7 +283,7 @@ function LinkProjectModal({
           </p>
         ) : (
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1">Project *</label>
+            <Label className="mb-2" required>Project</Label>
             <StyledSelect
               value={selected}
               onChange={setSelected}

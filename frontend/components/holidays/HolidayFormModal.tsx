@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import CascadeTargetTree from './CascadeTargetTree'
 import type { HolidayType } from '@/lib/types/holidays'
 import type { Department } from '@/lib/types'
+import { Label } from '@/components/ui/label'
 
 const HOLIDAY_TYPES: HolidayType[] = ['national', 'company', 'regional', 'team', 'personal', 'leave']
 
@@ -120,7 +121,7 @@ export default function HolidayFormModal({
         {/* Span selector — single day vs range */}
         {allowRange && (
           <div>
-            <label className="block text-meta font-medium text-text-secondary mb-1.5">Duration</label>
+            <Label className="mb-2">Duration</Label>
             <div className="inline-flex p-0.5 rounded-lg bg-surface-control border border-border-light">
               {(['single', 'range'] as Span[]).map((s) => (
                 <button
@@ -140,7 +141,7 @@ export default function HolidayFormModal({
         )}
 
         <div>
-          <label className="block text-meta font-medium text-text-secondary mb-1">Name *</label>
+          <Label className="mb-2" required>Name</Label>
           <input
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
@@ -153,13 +154,13 @@ export default function HolidayFormModal({
         {/* Date(s) */}
         {span === 'single' ? (
           <div>
-            <label className="block text-meta font-medium text-text-secondary mb-1">Date *</label>
+            <Label className="mb-2" required>Date</Label>
             <DatePicker value={form.date} onChange={(iso) => set('date', iso)} placeholder="Select date" />
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-meta font-medium text-text-secondary mb-1">Start date *</label>
+              <Label className="mb-2" required>Start date</Label>
               <DatePicker
                 value={form.date}
                 onChange={(iso) => set('date', iso)}
@@ -168,7 +169,7 @@ export default function HolidayFormModal({
               />
             </div>
             <div>
-              <label className="block text-meta font-medium text-text-secondary mb-1">End date *</label>
+              <Label className="mb-2" required>End date</Label>
               <DatePicker
                 value={form.end_date}
                 onChange={(iso) => set('end_date', iso)}
@@ -181,7 +182,7 @@ export default function HolidayFormModal({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-meta font-medium text-text-secondary mb-1">Type</label>
+            <Label className="mb-2">Type</Label>
             <Select
               value={form.type}
               onValueChange={(v) => set('type', v as HolidayType)}
@@ -198,7 +199,7 @@ export default function HolidayFormModal({
             </Select>
           </div>
           <div>
-            <label className="block text-meta font-medium text-text-secondary mb-1">Description</label>
+            <Label className="mb-2">Description</Label>
             <input
               value={form.description}
               onChange={(e) => set('description', e.target.value)}

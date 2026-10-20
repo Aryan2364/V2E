@@ -8,6 +8,7 @@ import { toast } from '@/components/ui/sonner'
 import { leaveApi } from '@/lib/api/leave'
 import { getEmployees } from '@/lib/api/employees'
 import type { LeaveApprovalMode, LeaveMaster } from '@/lib/types/leave'
+import { Label } from '@/components/ui/label'
 
 interface Person {
   user_id: string
@@ -173,7 +174,7 @@ export default function LeaveRulesPage() {
 
         {showApprovers && (
           <div>
-            <label className="block text-meta font-medium text-text-secondary mb-2">Named approvers</label>
+            <Label className="mb-2">Named approvers</Label>
             <UserMultiSelect
               people={people}
               selected={master.approver_user_ids}

@@ -30,6 +30,7 @@ import AssigneeMultiSelect from '@/components/learning/AssigneeMultiSelect'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
 import { Banner, BannerDescription } from '@/components/ui/banner'
+import { Label } from '@/components/ui/label'
 
 export default function CourseBuilderPage() {
   const router = useRouter()
@@ -318,7 +319,7 @@ export default function CourseBuilderPage() {
         <h2 className="text-card-heading font-medium text-text-primary mb-4">Course details</h2>
         <div className="flex flex-col gap-4">
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Title *</label>
+            <Label className="mb-2" required>Title</Label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -327,7 +328,7 @@ export default function CourseBuilderPage() {
             />
           </div>
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Description</label>
+            <Label className="mb-2">Description</Label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -337,7 +338,7 @@ export default function CourseBuilderPage() {
             />
           </div>
           <div className="max-w-xs">
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Order</label>
+            <Label className="mb-2">Order</Label>
             <StyledSelect
               value={mode}
               onChange={(v) => setMode(v as SequentialMode)}
@@ -410,7 +411,7 @@ export default function CourseBuilderPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Auto-assign to a role</label>
+            <Label className="mb-2">Auto-assign to a role</Label>
             <StyledSelect
               value={roleId}
               onChange={setRoleId}
@@ -423,7 +424,7 @@ export default function CourseBuilderPage() {
             <p className="text-meta text-text-muted mt-1">Everyone in this role gets it automatically — now and future joiners.</p>
           </div>
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Auto-assign to a department</label>
+            <Label className="mb-2">Auto-assign to a department</Label>
             <StyledSelect
               value={departmentId}
               onChange={setDepartmentId}
@@ -436,12 +437,12 @@ export default function CourseBuilderPage() {
             <p className="text-meta text-text-muted mt-1">Everyone in this department gets it automatically — now and future joiners.</p>
           </div>
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Due date (optional)</label>
+            <Label className="mb-2">Due date</Label>
             <DatePicker value={dueDate} onChange={setDueDate} placeholder="No deadline" />
           </div>
         </div>
 
-        <label className="block text-label font-medium text-text-secondary mb-1.5">Pick people</label>
+        <Label className="mb-2">Pick people</Label>
         <AssigneeMultiSelect
           employees={employees}
           selected={selectedEmployees}

@@ -6,6 +6,7 @@ import Modal from '@/components/ui/Modal'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import { timeBlocksApi, type TimeBlock } from '@/lib/api/time-blocks'
+import { Label } from '@/components/ui/label'
 
 const labelClass = 'block text-body font-medium text-text-secondary mb-1.5'
 const inputClass =
@@ -132,27 +133,27 @@ export default function CreateTimeBlockModal({
         )}
 
         <div>
-          <label className={labelClass}>Name <span className="text-danger">*</span></label>
+          <Label className="mb-2" required>Name</Label>
           <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Dentist, Focus time, Lunch" autoFocus={!isEditing} />
         </div>
 
         <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-3">
           <div>
-            <label className={labelClass}>Date <span className="text-danger">*</span></label>
+            <Label className="mb-2" required>Date</Label>
             <DatePicker value={date} onChange={setDate} placeholder="Select date" />
           </div>
           <div>
-            <label className={labelClass}>Start</label>
+            <Label className="mb-2">Start</Label>
             <TimeField value={startTime} onChange={(t) => { setEndTime(addMinutes(t, minutesBetween(startTime, endTime))); setStartTime(t) }} />
           </div>
           <div>
-            <label className={labelClass}>End</label>
+            <Label className="mb-2">End</Label>
             <TimeField value={endTime} onChange={setEndTime} />
           </div>
         </div>
 
         <div>
-          <label className={labelClass}>Note <span className="text-text-muted font-normal">(optional, private)</span></label>
+          <Label className="mb-2">Note <span className="text-text-muted font-normal">(optional, private)</span></Label>
           <textarea className={`${inputClass} min-h-[64px] resize-y`} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything you want to remember" />
         </div>
 

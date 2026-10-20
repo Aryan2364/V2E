@@ -11,6 +11,7 @@ import Button from '@/components/ui/button'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import LevelSelect from './LevelSelect'
 import type { Department, Role, RoleLevel } from '@/lib/types'
+import { Label } from '@/components/ui/label'
 
 export type RoleFormTarget =
   | { mode: 'create'; deptId?: string }
@@ -230,7 +231,7 @@ export default function RoleFormDrawer({
             {/* Department picker (page-level create / move) */}
             {departments && departments.length > 0 && (
               <div>
-                <label className={labelCls}>Department *</label>
+                <Label className="mb-2" required>Department</Label>
                 <Controller
                   control={control}
                   name="department_id"
@@ -251,7 +252,7 @@ export default function RoleFormDrawer({
             {/* Basic info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={labelCls}>Job Role Title *</label>
+                <Label className="mb-2" required>Job Role Title</Label>
                 <input
                   {...register('title')}
                   placeholder="e.g. Senior Engineer"
@@ -263,7 +264,7 @@ export default function RoleFormDrawer({
                 )}
               </div>
               <div>
-                <label className={labelCls}>Level *</label>
+                <Label className="mb-2" required>Level</Label>
                 <Controller
                   control={control}
                   name="level"
@@ -279,7 +280,7 @@ export default function RoleFormDrawer({
             </div>
 
             <div>
-              <label className={labelCls}>Job Description</label>
+              <Label className="mb-2">Job Description</Label>
               <textarea
                 {...register('job_description')}
                 rows={4}

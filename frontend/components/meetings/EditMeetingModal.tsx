@@ -11,6 +11,7 @@ import { meetingsApi } from '@/lib/api/meetings'
 import type { Meeting, MeetingType } from '@/lib/types/meetings'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
 import { DurationField } from './shared'
+import { Label } from '@/components/ui/label'
 
 const labelClass = 'block text-body font-medium text-text-secondary mb-1.5'
 const inputClass =
@@ -139,13 +140,13 @@ export default function EditMeetingModal({
         )}
 
         <div>
-          <label className={labelClass}>Title <span className="text-danger">*</span></label>
+          <Label className="mb-2" required>Title</Label>
           <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>Type</label>
+            <Label className="mb-2">Type</Label>
             <StyledSelect value={type} onChange={(v) => setType(v as MeetingType)} options={[
               { value: 'online', label: 'Online' },
               { value: 'offline', label: 'Offline' },
@@ -154,19 +155,19 @@ export default function EditMeetingModal({
           </div>
           {type !== 'offline' && (
             <div>
-              <label className={labelClass}>Meeting link</label>
+              <Label className="mb-2">Meeting link</Label>
               <input className={inputClass} value={onlineLink} onChange={(e) => setOnlineLink(e.target.value)} placeholder="https://…" />
             </div>
           )}
           {type !== 'offline' && (
             <div>
-              <label className={labelClass}>Password <span className="text-text-muted font-normal">(optional)</span></label>
+              <Label className="mb-2">Password</Label>
               <input className={inputClass} value={onlinePassword} onChange={(e) => setOnlinePassword(e.target.value)} />
             </div>
           )}
           {type !== 'online' && (
             <div>
-              <label className={labelClass}>Location</label>
+              <Label className="mb-2">Location</Label>
               <input className={inputClass} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Room / address" />
             </div>
           )}
@@ -174,15 +175,15 @@ export default function EditMeetingModal({
 
         <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-3">
           <div>
-            <label className={labelClass}>Date <span className="text-danger">*</span></label>
+            <Label className="mb-2" required>Date</Label>
             <DatePicker value={date} onChange={setDate} placeholder="Select date" />
           </div>
           <div>
-            <label className={labelClass}>Start</label>
+            <Label className="mb-2">Start</Label>
             <TimeField value={startTime} onChange={(t) => { setStartTime(t); setEndTime(addMinutes(t, durationMin)) }} />
           </div>
           <div>
-            <label className={labelClass}>End</label>
+            <Label className="mb-2">End</Label>
             <TimeField value={endTime} onChange={(t) => { setEndTime(t); setDurationMin(minutesBetween(startTime, t)) }} />
           </div>
         </div>
@@ -193,7 +194,7 @@ export default function EditMeetingModal({
         />
 
         <div>
-          <label className={labelClass}>Attendees</label>
+          <Label className="mb-2">Attendees</Label>
           <MeetingAttendeeSelector options={people} value={attendees} onChange={setAttendees} optional={optional} onToggleOptional={toggleOptional} />
           <p className="text-meta text-text-muted mt-1">Everyone is on it by default. Toggle who’s optional.</p>
         </div>

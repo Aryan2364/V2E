@@ -9,6 +9,7 @@ import { instanceNameKey, normalizeInstanceName, workflowsApi, workflowErrorMess
 import type { WorkflowTemplate } from '@/lib/types/workflows'
 import { instanceTitle } from './instanceLabel'
 import { BTN, ErrorBanner, InfoTip, runHref } from './shared'
+import { Label } from '@/components/ui/label'
 
 const NAME_MAX = 80
 const NAME_TAKEN = 'An instance with this name already exists in this workflow.'
@@ -143,10 +144,10 @@ export default function StartWorkflowModal({
         </p>
 
         <div>
-          <label htmlFor="instance-name" className="block text-body font-medium text-text-secondary mb-2">
-            Instance name <span className="text-danger">*</span>{' '}
+          <Label htmlFor="instance-name" className="mb-2" required>
+            Instance name{' '}
             <InfoTip label="Instance name" text="Shown on every task of this instance. Each instance of a workflow needs its own name." />
-          </label>
+          </Label>
           <input
             id="instance-name"
             ref={inputRef}

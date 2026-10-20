@@ -20,6 +20,7 @@ import ReportsToSelect from './ReportsToSelect'
 import DepartmentSelect from './DepartmentSelect'
 import RoleSelect from './RoleSelect'
 import type { Department, Role, User, EmployeeProfile, EmploymentType } from '@/lib/types'
+import { Label } from '@/components/ui/label'
 
 const STRUCTURE_LEAF = 'settings.organization.structure'
 
@@ -352,7 +353,7 @@ export default function AddEmployeeModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelClass}>Full name *</label>
+                <Label className="mb-2" required>Full name</Label>
                 <input
                   value={form.name}
                   onChange={(e) => set('name', e.target.value)}
@@ -365,7 +366,7 @@ export default function AddEmployeeModal({
                 )}
               </div>
               <div>
-                <label className={labelClass}>Email <span className="font-normal text-text-muted">or phone</span></label>
+                <Label className="mb-2">Email <span className="font-normal text-text-muted">or phone</span></Label>
                 <input
                   type="email"
                   value={form.email}
@@ -379,7 +380,7 @@ export default function AddEmployeeModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelClass}>Phone number</label>
+                <Label className="mb-2">Phone number</Label>
                 <div className="flex gap-2">
                   <CountryCodeSelect
                     value={form.country_code}
@@ -426,7 +427,7 @@ export default function AddEmployeeModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {!prefillSelf && !existingAccount && (
                 <div>
-                  <label className={labelClass}>Password *</label>
+                  <Label className="mb-2" required>Password</Label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
@@ -447,7 +448,7 @@ export default function AddEmployeeModal({
                 </div>
               )}
               <div className={prefillSelf || existingAccount ? 'sm:col-span-2' : ''}>
-                <label className={labelClass}>Department *</label>
+                <Label className="mb-2" required>Department</Label>
                 <DepartmentSelect
                   value={form.department_id}
                   departments={localDepartments}
@@ -493,7 +494,7 @@ export default function AddEmployeeModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelClass}>Job Role *</label>
+                <Label className="mb-2" required>Job Role</Label>
                 <RoleSelect
                   value={form.role_id}
                   roles={deptRoles}
@@ -528,7 +529,7 @@ export default function AddEmployeeModal({
                 )}
               </div>
               <div>
-                <label className={labelClass}>Reports to</label>
+                <Label className="mb-2">Reports to</Label>
                 <ReportsToSelect
                   value={form.reporting_to_user_id}
                   onChange={(userId) => set('reporting_to_user_id', userId)}
@@ -541,7 +542,7 @@ export default function AddEmployeeModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className={labelClass}>System Role *</label>
+                <Label className="mb-2" required>System Role</Label>
                 <StyledSelect
                   value={form.system_role_id}
                   onChange={(v) => set('system_role_id', v)}
@@ -554,7 +555,7 @@ export default function AddEmployeeModal({
                 />
               </div>
               <div>
-                <label className={labelClass}>Employment type</label>
+                <Label className="mb-2">Employment type</Label>
                 <StyledSelect
                   value={form.employment_type}
                   onChange={(v) => set('employment_type', v)}
@@ -562,7 +563,7 @@ export default function AddEmployeeModal({
                 />
               </div>
               <div>
-                <label className={labelClass}>Employee code</label>
+                <Label className="mb-2">Employee code</Label>
                 <input
                   value={form.employee_code}
                   onChange={(e) => set('employee_code', e.target.value)}
@@ -579,7 +580,7 @@ export default function AddEmployeeModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className={labelClass}>Date of joining</label>
+                <Label className="mb-2">Date of joining</Label>
                 <DatePicker
                   value={form.date_of_joining}
                   onChange={(iso) => set('date_of_joining', iso)}
@@ -587,7 +588,7 @@ export default function AddEmployeeModal({
                 />
               </div>
               <div>
-                <label className={labelClass}>Date of birth</label>
+                <Label className="mb-2">Date of birth</Label>
                 <DatePicker
                   value={form.date_of_birth}
                   onChange={(iso) => set('date_of_birth', iso)}
@@ -596,7 +597,7 @@ export default function AddEmployeeModal({
                 />
               </div>
               <div>
-                <label className={labelClass}>Marriage date</label>
+                <Label className="mb-2">Marriage date</Label>
                 <DatePicker
                   value={form.marriage_date}
                   onChange={(iso) => set('marriage_date', iso)}

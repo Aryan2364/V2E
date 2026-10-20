@@ -21,6 +21,7 @@ import { workLogApi, type UpsertDailyPayload } from '@/lib/api/workLogs'
 import type { DailyUpdateView, DayContext } from '@/lib/types/workLogs'
 import DatePicker from '@/components/ui/DatePicker'
 import { format as formatDateFns } from 'date-fns'
+import { Label } from '@/components/ui/label'
 
 // Local YYYY-MM-DD (avoids UTC drift from toISOString).
 function localDate(d: Date): string {
@@ -324,7 +325,7 @@ export default function DailyUpdatePage() {
               {/* Reflection fields */}
               <div className={`${cardCls} p-6 space-y-4`}>
                 <div>
-                  <label className={labelCls}>Where I was stuck today</label>
+                  <Label className="mb-2">Where I was stuck today</Label>
                   <textarea value={stuck} onChange={(e) => setStuck(e.target.value)} rows={2} className={`${inputCls} mt-1.5`} />
                 </div>
                 <div>
@@ -334,7 +335,7 @@ export default function DailyUpdatePage() {
                   <textarea value={decisions} onChange={(e) => setDecisions(e.target.value)} rows={2} className={`${inputCls} mt-1.5`} />
                 </div>
                 <div>
-                  <label className={labelCls}>How the overall day was</label>
+                  <Label className="mb-2">How the overall day was</Label>
                   <textarea value={daySummary} onChange={(e) => setDaySummary(e.target.value)} rows={2} className={`${inputCls} mt-1.5`} />
                 </div>
                 <div>

@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/Toast'
 import { meetingsApi } from '@/lib/api/meetings'
 import RichEditor from '@/components/ui/RichEditor'
 import type { Meeting } from '@/lib/types/meetings'
+import { Label } from '@/components/ui/label'
 
 // Agenda + Minutes as true WYSIWYG editors. Bold/Heading/List format the text
 // visually — the user never sees or types any symbols. Stored as markdown under
@@ -45,12 +46,12 @@ export default function MeetingRecordTab({ orgId, meeting, canEdit, onSaved }: {
       )}
 
       <div>
-        <label className={labelCls}>Agenda</label>
+        <Label className="mb-2">Agenda</Label>
         <RichEditor value={agenda} onChange={setAgenda} disabled={locked} minRows={3} placeholder="What will you discuss? One point per line." />
       </div>
 
       <div>
-        <label className={labelCls}>Minutes</label>
+        <Label className="mb-2">Minutes</Label>
         <RichEditor value={minutes} onChange={setMinutes} disabled={locked} minRows={5} placeholder="Capture what was discussed and the decisions made." />
       </div>
 

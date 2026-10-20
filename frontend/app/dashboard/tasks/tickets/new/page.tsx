@@ -10,6 +10,7 @@ import TicketTemplateCard from '@/components/tickets/TicketTemplateCard'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { PageHeader } from '@/components/shell/page-header'
 import { SHOW_MORE_LINK } from '@/components/ui/truncate'
+import { Label } from '@/components/ui/label'
 
 type Step = 'template' | 'form'
 
@@ -203,17 +204,17 @@ export default function NewTicketPage() {
           )}
 
           <div>
-            <label className="block text-body font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
+            <Label className="mb-2" required>Title</Label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Briefly describe the issue" className={inputCls} />
           </div>
 
           <div>
-            <label className="block text-body font-medium text-text-secondary mb-1.5">Description</label>
+            <Label className="mb-2">Description</Label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Provide details..." className={`${inputCls} resize-none`} />
           </div>
 
           <div>
-            <label className="block text-body font-medium text-text-secondary mb-1.5">Type <span className="text-danger">*</span></label>
+            <Label className="mb-2" required>Type</Label>
             <div className="grid grid-cols-2 gap-2">
               {types.map((t) => (
                 <button
@@ -232,7 +233,7 @@ export default function NewTicketPage() {
 
           {filteredCategories.length > 0 && (
             <div>
-              <label className="block text-body font-medium text-text-secondary mb-1.5">Category</label>
+              <Label className="mb-2">Category</Label>
               <StyledSelect
                 value={categoryId}
                 onChange={(v) => setCategoryId(v)}
@@ -247,7 +248,7 @@ export default function NewTicketPage() {
 
           {priorities.length > 0 && (
             <div>
-              <label className="block text-body font-medium text-text-secondary mb-1.5">Priority</label>
+              <Label className="mb-2">Priority</Label>
               <StyledSelect
                 value={priorityId}
                 onChange={(v) => setPriorityId(v)}

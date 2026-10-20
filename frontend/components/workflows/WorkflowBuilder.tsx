@@ -72,6 +72,7 @@ import {
   useWorkflowsWritable,
   workflowHref,
 } from './shared'
+import { Label } from '@/components/ui/label'
 
 /** From this many steps a second "Add step" sits in the section header too. */
 const LONG_LIST = 4
@@ -1547,9 +1548,9 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 gap-y-6">
           <div className="lg:col-span-6">
-            <label htmlFor="wf-name" className={LABEL_CLS}>
-              Workflow name <span className="text-danger">*</span>
-            </label>
+            <Label htmlFor="wf-name" className="mb-2" required>
+              Workflow name
+            </Label>
             <input
               id="wf-name"
               value={work.name}
@@ -1569,9 +1570,9 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             {nameError && <p className="mt-1.5 text-label text-danger">{nameError}</p>}
           </div>
           <div className="lg:col-span-12">
-            <label htmlFor="wf-desc" className={LABEL_CLS}>
+            <Label htmlFor="wf-desc" className="mb-2">
               Description
-            </label>
+            </Label>
             <textarea
               id="wf-desc"
               value={work.description}

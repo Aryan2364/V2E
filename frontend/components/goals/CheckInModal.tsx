@@ -15,6 +15,7 @@ import {
   type Goal,
 } from '@/lib/types/goals'
 import { inputClass, labelClass } from './GoalFormFields'
+import { Label } from '@/components/ui/label'
 
 const todayStr = () => {
   const d = new Date()
@@ -105,13 +106,13 @@ export default function CheckInModal({
         </div>
 
         <div>
-          <label className={labelClass}>Date *</label>
+          <Label className="mb-2" required>Date</Label>
           <DatePicker value={date} onChange={setDate} max={todayStr()} placeholder="Select date" disabled={saving} />
         </div>
 
         {hasTarget && (
           <div>
-            <label className={labelClass}>Where is the number today?</label>
+            <Label className="mb-2">Where is the number today?</Label>
             <div className="flex items-stretch gap-2">
               <input
                 className={inputClass}
@@ -131,7 +132,7 @@ export default function CheckInModal({
         )}
 
         <div>
-          <label className={labelClass}>Your call *</label>
+          <Label className="mb-2" required>Your call</Label>
           <div className="grid grid-cols-3 gap-2">
             {CHECK_IN_STATUSES.map((s) => {
               const m = STATUS_META[s]
@@ -167,7 +168,7 @@ export default function CheckInModal({
         </div>
 
         <div>
-          <label className={labelClass}>What’s happening &amp; why</label>
+          <Label className="mb-2">What’s happening &amp; why</Label>
           <textarea
             className={`${inputClass} resize-none`}
             rows={3}

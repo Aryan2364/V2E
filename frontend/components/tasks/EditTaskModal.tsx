@@ -42,6 +42,7 @@ import LeaveWarningBadge from '@/components/leave/LeaveWarningBadge'
 import { leaveApi } from '@/lib/api/leave'
 import type { LeaveAvailability } from '@/lib/types/leave'
 import { expandLeaveDays, leaveHorizon } from '@/lib/leave-availability'
+import { Label } from '@/components/ui/label'
 
 interface Props {
   task: Task
@@ -396,7 +397,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
         <form id="edit-task-form" onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
+            <Label className="mb-2" required>Title</Label>
             <div className="relative">
               <input
                 type="text"
@@ -418,9 +419,9 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {(canReassign || canEditCc) && (
             <div>
               <div className="flex items-center gap-2 mb-1.5">
-                <label className="text-label font-medium text-text-secondary">
-                  Assignees &amp; CC <span className="text-danger">*</span>
-                </label>
+                <Label required>
+                  Assignees &amp; CC
+                </Label>
                 {roster.length > 0 && (
                   <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
                     {roster.length}
@@ -517,7 +518,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {/* Completion mode */}
           {assigneeCount > 1 && (
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-2">Completion Mode</label>
+              <Label className="mb-2">Completion Mode</Label>
               <div className="flex gap-3">
                 {(['any_can_complete', 'all_must_complete'] as CompletionMode[]).map((mode) => (
                   <label key={mode} className="flex items-center gap-2 cursor-pointer">
@@ -532,7 +533,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {/* Deadline */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-label font-medium text-text-secondary">Deadline <span className="text-danger">*</span></label>
+              <Label required>Deadline</Label>
               {deadlineDate && (
                 <button type="button" onClick={() => { setDeadlineDate(''); setDeadlineTime('') }} className="flex items-center gap-1 text-meta text-text-muted hover:text-danger transition-colors">
                   <X size={10} /> Clear
@@ -620,9 +621,9 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 an existing one — a note attached to nothing is just noise. */}
             {task.deadline && deadline !== task.deadline && (
               <div className="mt-2">
-                <label className="block text-label font-medium text-text-secondary mb-1.5">
+                <Label className="mb-2">
                   Why is the deadline changing? <span className="text-text-secondary font-normal">Optional</span>
-                </label>
+                </Label>
                 <input
                   type="text"
                   value={deadlineReason}
@@ -640,7 +641,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
 
           {/* Description */}
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Description</label>
+            <Label className="mb-2">Description</Label>
             <div className="relative">
               <textarea
                 value={description}
@@ -658,7 +659,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {/* Priority + Category + Status */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1.5">Priority</label>
+              <Label className="mb-2">Priority</Label>
               <StyledSelect
                 value={priorityId}
                 onChange={(v) => setPriorityId(v)}
@@ -670,7 +671,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
               />
             </div>
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1.5">Category</label>
+              <Label className="mb-2">Category</Label>
               <StyledSelect
                 value={categoryId}
                 onChange={(v) => setCategoryId(v)}
@@ -682,7 +683,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
               />
             </div>
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1.5">Status</label>
+              <Label className="mb-2">Status</Label>
               {taskIsTerminal && currentStatus ? (
                 <div className="flex items-center h-[42px]">
                   <span
@@ -704,7 +705,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
 
           {/* Tags — full width, directly under Priority/Category/Status. */}
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Tags</label>
+            <Label className="mb-2">Tags</Label>
             <TagPicker orgId={orgId} value={tagIds} onChange={setTagIds} disabled={submitting} knownTags={task.tags} />
           </div>
 
@@ -744,7 +745,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 aria-expanded={attachmentsOpen}
                 className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-surface-sunken transition-colors"
               >
-                <label className="text-label font-medium text-text-secondary cursor-pointer">Attachments</label>
+                <Label className="cursor-pointer">Attachments</Label>
                 <span className="text-meta font-normal text-text-secondary">Optional</span>
                 {existingAttachments.length + attachmentFiles.length > 0 && (
                   <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">

@@ -478,7 +478,7 @@ function CreateMapModal({ orgId, parentId, onClose, onCreated }: { orgId: string
         </div>
         <div className="space-y-4">
           <div>
-            <label className="block text-body font-medium text-text-secondary mb-1">Name</label>
+            <Label className="mb-2">Name</Label>
             <input
               autoFocus
               value={name}
@@ -489,7 +489,7 @@ function CreateMapModal({ orgId, parentId, onClose, onCreated }: { orgId: string
             />
           </div>
           <div>
-            <label className="block text-body font-medium text-text-secondary mb-1">Description <span className="text-text-muted font-normal">(optional)</span></label>
+            <Label className="mb-2">Description</Label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}

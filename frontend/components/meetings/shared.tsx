@@ -8,6 +8,7 @@ import {
   type MeetingAttendeeResponse,
   type MeetingStatus,
 } from '@/lib/types/meetings'
+import { Label } from '@/components/ui/label'
 
 export interface MeetingPerms {
   read: boolean
@@ -198,7 +199,7 @@ export function DurationField({
       {inline ? (
         <span className="text-body text-text-secondary">{label}</span>
       ) : (
-        <label className="block text-body font-medium text-text-secondary mb-1.5">{label}</label>
+        <Label className="mb-2">{label}</Label>
       )}
       <div className="flex flex-wrap items-center gap-1.5">
         {DURATION_PRESETS.map((d) => (

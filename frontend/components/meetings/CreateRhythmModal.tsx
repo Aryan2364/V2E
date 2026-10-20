@@ -13,6 +13,7 @@ import ScheduleEntryRow, { type ScheduleEntryDraft } from '@/components/tasks/Sc
 import SkipHolidaysField from './SkipHolidaysField'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
 import { DurationField } from './shared'
+import { Label } from '@/components/ui/label'
 
 const inputClass =
   'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
@@ -221,13 +222,13 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Edit Rhythm' : 'New Rhythm'} size="lg" closeOnEscape={false}>
       <form onSubmit={submit} className="flex flex-col gap-4">
         <div>
-          <label className={labelClass}>Title *</label>
+          <Label className="mb-2" required>Title</Label>
           <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Daily huddle, Thursday review" autoFocus />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>Type</label>
+            <Label className="mb-2">Type</Label>
             <StyledSelect
               value={type}
               onChange={(v) => setType(v as MeetingType)}
@@ -240,13 +241,13 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
           </div>
           {type !== 'offline' && (
             <div>
-              <label className={labelClass}>Meeting link</label>
+              <Label className="mb-2">Meeting link</Label>
               <input className={inputClass} value={onlineLink} onChange={(e) => setOnlineLink(e.target.value)} placeholder="https://…" />
             </div>
           )}
           {type !== 'online' && (
             <div>
-              <label className={labelClass}>Location</label>
+              <Label className="mb-2">Location</Label>
               <input className={inputClass} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Room / address" />
             </div>
           )}
@@ -256,7 +257,7 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
 
         {/* Attendees */}
         <div>
-          <label className={labelClass}>Attendees</label>
+          <Label className="mb-2">Attendees</Label>
           <MeetingAttendeeSelector
             options={people}
             value={attendees}
@@ -272,7 +273,7 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
 
         {/* Recurrence — the SAME shared editor as recurring tasks and meetings */}
         <div>
-          <label className={labelClass}>Recurrence <span className="text-danger">*</span></label>
+          <Label className="mb-2" required>Recurrence</Label>
           <div className="border border-border-light rounded-[12px] p-4">
             <ScheduleEntryRow
               entry={sched}
@@ -290,7 +291,7 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
         </div>
 
         <div>
-          <label className={labelClass}>Agenda (optional)</label>
+          <Label className="mb-2">Agenda</Label>
           <textarea className={`${inputClass} resize-none`} rows={2} value={agenda} onChange={(e) => setAgenda(e.target.value)} placeholder="Standing agenda, copied to every occurrence" />
         </div>
 

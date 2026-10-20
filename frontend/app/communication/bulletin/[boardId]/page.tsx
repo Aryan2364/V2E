@@ -9,6 +9,7 @@ import { formatDate } from '@/lib/format'
 import Link from 'next/link'
 import { Plus, Pin, Trash2 } from 'lucide-react'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { Label } from '@/components/ui/label'
 
 const REACTIONS = ['👍', '❤️', '😂', '🎉', '🔥']
 
@@ -107,7 +108,7 @@ export default function BulletinBoardPage() {
             {showForm && (
               <form onSubmit={handlePost} className="bg-surface border border-border-light rounded-card p-4 mb-6 flex flex-col gap-4">
                 <div>
-                  <label className="block text-label font-medium text-text-secondary mb-1">Title</label>
+                  <Label className="mb-2">Title</Label>
                   <input
                     value={form.title}
                     onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
@@ -116,7 +117,7 @@ export default function BulletinBoardPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-label font-medium text-text-secondary mb-1">Content</label>
+                  <Label className="mb-2">Content</Label>
                   <textarea
                     value={form.body}
                     onChange={e => setForm(f => ({ ...f, body: e.target.value }))}

@@ -6,6 +6,7 @@ import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import { Button } from '@/components/ui/button'
 import type { ReminderSpec, ReminderRecipient } from '@/lib/types/tasks'
+import { Label } from '@/components/ui/label'
 
 // A reminder being edited in a task/recurring form. The assignee is always
 // notified; the assigner / CC toggles add extra recipients.
@@ -244,7 +245,7 @@ export default function RemindersField({ reminders, onChange, mode, deadlineDate
           aria-expanded={open}
           className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-surface-sunken transition-colors"
         >
-          <label className="text-label font-medium text-text-secondary cursor-pointer shrink-0">Reminders</label>
+          <Label className="cursor-pointer">Reminders</Label>
           <span className="text-meta font-normal text-text-secondary shrink-0">Optional</span>
           {available && reminders.length > 0 && (
             <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium shrink-0">

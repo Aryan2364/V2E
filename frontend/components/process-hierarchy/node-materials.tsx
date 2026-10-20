@@ -18,6 +18,7 @@ import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/lib/auth/context'
 import MaterialViewer from '@/components/learning/MaterialViewer'
 import type { MaterialViewData, PreviewKind } from '@/lib/types/learning'
+import { Label } from '@/components/ui/label'
 
 const TITLE_MAX = 50
 
@@ -301,12 +302,12 @@ function ArticleEditorModal({ initial, onSave, onCancel }: {
           <button onClick={onCancel} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
         </div>
         <div className="flex items-center justify-between mb-1">
-          <label className="text-meta font-medium text-text-secondary">Title</label>
+          <Label>Title</Label>
           <span className="text-[10px] text-text-muted tabular-nums">{name.length}/{TITLE_MAX}</span>
         </div>
         <input autoFocus value={name} maxLength={TITLE_MAX} onChange={(e) => setName(e.target.value)}
           className="w-full px-3 py-2 text-meta rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-surface mb-3" />
-        <label className="block text-meta font-medium text-text-secondary mb-1">Content</label>
+        <Label className="mb-2">Content</Label>
         <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={10}
           placeholder="Write the article…"
           className="w-full px-3 py-2 text-meta rounded-[8px] border border-border focus:border-primary focus:outline-hidden bg-surface resize-none" />

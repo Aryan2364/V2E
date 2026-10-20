@@ -13,6 +13,7 @@ import { getMyProfile, updateMyProfile, getEmployees } from '@/lib/api/employees
 import { changePassword } from '@/lib/api/auth'
 import type { EmployeeProfile, KraItem, Role } from '@/lib/types'
 import { formatDate as formatDateToken } from '@/lib/format'
+import { Label } from '@/components/ui/label'
 
 const roleLevelLabel: Record<string, string> = { junior: 'Junior', mid: 'Mid', senior: 'Senior', head: 'Head' }
 
@@ -399,11 +400,11 @@ function MyProfileContent() {
         <Section title="Personal details" subtitle="Only you can edit these">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-body font-medium text-text-secondary mb-1.5">Date of birth</label>
+              <Label className="mb-2">Date of birth</Label>
               <DatePicker value={dob} onChange={setDob} max={new Date().toISOString().slice(0, 10)} placeholder="Select date" />
             </div>
             <div>
-              <label className="block text-body font-medium text-text-secondary mb-1.5">Marriage date</label>
+              <Label className="mb-2">Marriage date</Label>
               <DatePicker value={marriage} onChange={setMarriage} max={new Date().toISOString().slice(0, 10)} placeholder="Select date" />
             </div>
           </div>
@@ -423,7 +424,7 @@ function MyProfileContent() {
       <Section title="Change password">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-body font-medium text-text-secondary mb-1.5">New password</label>
+            <Label className="mb-2">New password</Label>
             <div className="relative">
               <input
                 type={showNew ? 'text' : 'password'}
@@ -441,7 +442,7 @@ function MyProfileContent() {
             {passwordTooShort && <p className="text-meta text-danger mt-1">Use at least {MIN_PASSWORD} characters.</p>}
           </div>
           <div>
-            <label className="block text-body font-medium text-text-secondary mb-1.5">Confirm new password</label>
+            <Label className="mb-2">Confirm new password</Label>
             <div className="relative">
               <input
                 type={showConfirm ? 'text' : 'password'}

@@ -19,6 +19,7 @@ import LeaveStateBadge from '@/components/leave/LeaveStateBadge'
 import { leaveApi } from '@/lib/api/leave'
 import type { Leave } from '@/lib/types/leave'
 import { formatDate } from '@/lib/format'
+import { Label } from '@/components/ui/label'
 
 function fmt(iso: string): string {
   return formatDate(new Date(iso))
@@ -141,16 +142,16 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
         <CardHeader title="Apply for leave" subtitle={readOnly ? 'Preview — changes are disabled' : undefined} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-body font-medium text-text-secondary mb-1.5">From</label>
+            <Label className="mb-2">From</Label>
             <DatePicker value={start} onChange={setStart} min={todayStr} placeholder="Start date" disabled={readOnly} />
           </div>
           <div>
-            <label className="block text-body font-medium text-text-secondary mb-1.5">To</label>
+            <Label className="mb-2">To</Label>
             <DatePicker value={end} onChange={setEnd} min={start || todayStr} placeholder="End date" disabled={readOnly} />
           </div>
         </div>
         <div className="mt-4">
-          <label htmlFor="leave-reason" className="block text-body font-medium text-text-secondary mb-1.5">Reason (optional)</label>
+          <Label htmlFor="leave-reason" className="mb-2">Reason</Label>
           <input
             id="leave-reason"
             type="text"

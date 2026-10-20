@@ -32,6 +32,7 @@ import GoalSelectField from '@/components/tasks/GoalSelectField'
 import ProofRequirementField from '@/components/tasks/ProofRequirementField'
 import TagPicker from '@/components/tasks/TagPicker'
 import { isListboxOpen } from '@/components/tasks/InlineTaskTags'
+import { Label } from '@/components/ui/label'
 
 export interface EditRecurringModalProps {
   template: RecurringTemplate
@@ -341,7 +342,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           <div className="space-y-4">
             <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Task Details</p>
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1.5">Title <span className="text-danger">*</span></label>
+              <Label className="mb-2" required>Title</Label>
               <div className="relative">
                 <input
                   type="text"
@@ -356,7 +357,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
               </div>
             </div>
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1.5">Assignees & CC</label>
+              <Label className="mb-2">Assignees & CC</Label>
               <AssigneeSelector orgId={orgId} value={assignees} onChange={setAssignees} disabled={!assigneesLoaded} />
               <p className="text-meta text-text-secondary mt-1">
                 {assigneesLoaded
@@ -406,7 +407,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             </div>
             {primaryAssigneeCount > 1 && (
               <div>
-                <label className="block text-label font-medium text-text-secondary mb-2">Completion Mode</label>
+                <Label className="mb-2">Completion Mode</Label>
                 <div className="flex gap-4">
                   {(['any_can_complete', 'all_must_complete'] as CompletionMode[]).map((mode) => (
                     <label key={mode} className="flex items-center gap-2 cursor-pointer">
@@ -418,12 +419,12 @@ export default function EditRecurringModal({ template, orgId, categories, priori
               </div>
             )}
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1.5">Description</label>
+              <Label className="mb-2">Description</Label>
               <textarea value={description} onChange={(e) => setDescription(e.target.value.slice(0, 2000))} maxLength={2000} placeholder="Add a description..." rows={2} className="w-full border border-border rounded-lg px-3 py-[10px] text-body sm:text-body text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface resize-none" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-label font-medium text-text-secondary mb-1.5">Priority</label>
+                <Label className="mb-2">Priority</Label>
                 <StyledSelect
                   value={priorityId}
                   onChange={(v) => setPriorityId(v)}
@@ -435,7 +436,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                 />
               </div>
               <div>
-                <label className="block text-label font-medium text-text-secondary mb-1.5">Category</label>
+                <Label className="mb-2">Category</Label>
                 <StyledSelect
                   value={categoryId}
                   onChange={(v) => setCategoryId(v)}
@@ -449,7 +450,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             </div>
             {/* Tags — full width, directly under Category/Priority. */}
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1.5">Tags</label>
+              <Label className="mb-2">Tags</Label>
               <TagPicker orgId={orgId} value={tagIds} onChange={setTagIds} disabled={submitting} knownTags={template.tags} />
               <p className="text-meta text-text-secondary mt-1">Copied onto every new occurrence.</p>
             </div>
@@ -503,7 +504,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                 aria-expanded={attachmentsOpen}
                 className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-surface-sunken transition-colors"
               >
-                <label className="text-label font-medium text-text-secondary cursor-pointer">Attachments</label>
+                <Label className="cursor-pointer">Attachments</Label>
                 <span className="text-meta font-normal text-text-secondary">Optional</span>
                 {(attachments.length + pendingFiles.length) > 0 && (
                   <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">

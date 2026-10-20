@@ -21,6 +21,7 @@ import type { EmployeeProfile, EmployeeStatus, Role, Department } from '@/lib/ty
 import { ArrowLeft, Users, ChevronDown, Pencil, Loader2, X, Eye, EyeOff, Trash2 } from 'lucide-react'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import DatePicker from '@/components/ui/DatePicker'
+import { Label } from '@/components/ui/label'
 
 type Kpi = NonNullable<Role['kpi']>[number]
 
@@ -390,7 +391,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
           {/* Identity — name / email / password reset */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Full name</label>
+              <Label className="mb-2">Full name</Label>
               <input
                 type="text"
                 value={form.name}
@@ -400,7 +401,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
               />
             </div>
             <div>
-              <label className={labelClass}>Email</label>
+              <Label className="mb-2">Email</Label>
               <input
                 type="email"
                 value={form.email}
@@ -414,7 +415,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
           {/* Phone — a login identity. Editable here so a wrong number can be fixed
               or removed; clearing it removes phone sign-in (email still works). */}
           <div>
-            <label className={labelClass}>Phone number <span className="font-normal text-text-muted">— used to sign in</span></label>
+            <Label className="mb-2">Phone number <span className="font-normal text-text-muted">— used to sign in</span></Label>
             <div className="flex gap-2">
               <CountryCodeSelect
                 value={form.country_code}
@@ -440,7 +441,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
           </div>
 
           <div>
-            <label className={labelClass}>Reset password</label>
+            <Label className="mb-2">Reset password</Label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -463,7 +464,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
           <div className="grid grid-cols-2 gap-4">
             {/* Department */}
             <div>
-              <label className={labelClass}>Department</label>
+              <Label className="mb-2">Department</Label>
               <StyledSelect
                 value={form.department_id}
                 onChange={(v) => setForm((f) => ({ ...f, department_id: v, role_id: '' }))}
@@ -473,7 +474,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Job Role — scoped to the selected department */}
             <div>
-              <label className={labelClass}>Job Role</label>
+              <Label className="mb-2">Job Role</Label>
               <StyledSelect
                 value={form.role_id}
                 onChange={(v) => set('role_id', v)}
@@ -487,7 +488,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
             {/* System Role — access-rights bundle (required). StyledSelect (not a native
                 <select>) so it can't be silently scroll-changed to another role. */}
             <div>
-              <label className={labelClass}>System Role</label>
+              <Label className="mb-2">System Role</Label>
               <StyledSelect
                 value={form.system_role_id}
                 onChange={(v) => set('system_role_id', v)}
@@ -501,7 +502,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Employment Type */}
             <div>
-              <label className={labelClass}>Employment Type</label>
+              <Label className="mb-2">Employment Type</Label>
               <StyledSelect
                 value={form.employment_type}
                 onChange={(v) => set('employment_type', v)}
@@ -515,7 +516,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Status */}
             <div>
-              <label className={labelClass}>Status</label>
+              <Label className="mb-2">Status</Label>
               <StyledSelect
                 value={form.status}
                 onChange={(v) => set('status', v)}
@@ -534,7 +535,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Employee Code */}
             <div>
-              <label className={labelClass}>Employee Code</label>
+              <Label className="mb-2">Employee Code</Label>
               <input
                 type="text"
                 value={form.employee_code}
@@ -546,7 +547,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Date of Joining */}
             <div>
-              <label className={labelClass}>Date of Joining</label>
+              <Label className="mb-2">Date of Joining</Label>
               <DatePicker
                 value={form.date_of_joining}
                 onChange={(iso) => set('date_of_joining', iso)}
@@ -556,7 +557,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Date of Birth */}
             <div>
-              <label className={labelClass}>Date of Birth</label>
+              <Label className="mb-2">Date of Birth</Label>
               <DatePicker
                 value={form.date_of_birth}
                 onChange={(iso) => set('date_of_birth', iso)}
@@ -566,7 +567,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Marriage Date */}
             <div>
-              <label className={labelClass}>Marriage Date</label>
+              <Label className="mb-2">Marriage Date</Label>
               <DatePicker
                 value={form.marriage_date}
                 onChange={(iso) => set('marriage_date', iso)}
@@ -577,7 +578,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
           {/* Reporting To */}
           <div>
-            <label className={labelClass}>Reports To</label>
+            <Label className="mb-2">Reports To</Label>
             <StyledSelect
               value={form.reporting_to_user_id}
               onChange={(v) => set('reporting_to_user_id', v)}

@@ -121,7 +121,7 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
             </div>
 
             <div>
-              <Label className="mb-1.5">Description (optional)</Label>
+              <Label className="mb-1.5">Description</Label>
               <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
             </div>
 

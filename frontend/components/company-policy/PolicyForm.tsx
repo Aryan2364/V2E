@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Loader2, Lock } from 'lucide-react'
+import { Label } from '@/components/ui/label'
 
 export interface PolicyFormValues {
   title: string
@@ -71,9 +72,9 @@ export default function PolicyForm({
       )}
 
       <div>
-        <label htmlFor="policy-title" className={labelClass}>
-          Title <span className="text-danger">*</span>
-        </label>
+        <Label htmlFor="policy-title" className="mb-2" required>
+          Title
+        </Label>
         <input
           id="policy-title"
           type="text"
@@ -85,7 +86,7 @@ export default function PolicyForm({
       </div>
 
       <div>
-        <label htmlFor="policy-description" className={labelClass}>Description</label>
+        <Label htmlFor="policy-description" className="mb-2">Description</Label>
         <textarea
           id="policy-description"
           value={form.description}

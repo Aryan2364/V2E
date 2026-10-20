@@ -7,6 +7,7 @@ import DatePicker from '@/components/ui/DatePicker'
 import EmployeePicker from '@/components/ui/EmployeePicker'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
+import { Label } from '@/components/ui/label'
 
 const inputClass =
   'w-full border border-border rounded-control px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
@@ -72,11 +73,11 @@ export default function AddGoalTaskModal({ isOpen, onClose, orgId, goalId, emplo
           This creates a real task in the Tasks module, linked to this goal.
         </p>
         <div>
-          <label className={labelClass}>Task title *</label>
+          <Label className="mb-2" required>Task title</Label>
           <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="What needs to be done?" autoFocus />
         </div>
         <div>
-          <label className={labelClass}>Executor (assignee) *</label>
+          <Label className="mb-2" required>Executor (assignee)</Label>
           <EmployeePicker
             value={assignee}
             onChange={setAssignee}
@@ -86,7 +87,7 @@ export default function AddGoalTaskModal({ isOpen, onClose, orgId, goalId, emplo
           />
         </div>
         <div>
-          <label className={labelClass}>Deadline</label>
+          <Label className="mb-2">Deadline</Label>
           <DatePicker value={deadline} onChange={setDeadline} placeholder="Select date" />
         </div>
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-light">

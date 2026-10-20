@@ -18,6 +18,7 @@ import SkipHolidaysField from './SkipHolidaysField'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
 import FindTimeDialog from './FindTimeDialog'
 import { DurationField } from './shared'
+import { Label } from '@/components/ui/label'
 
 const inputClass =
   'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
@@ -265,13 +266,13 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
       <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
         {/* Title */}
         <div>
-          <label className={labelClass}>Title <span className="text-danger">*</span></label>
+          <Label className="mb-2" required>Title</Label>
           <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Meeting title" autoFocus />
         </div>
 
         {/* Attendees */}
         <div>
-          <label className={labelClass}>Attendees</label>
+          <Label className="mb-2">Attendees</Label>
           <MeetingAttendeeSelector options={people} value={attendees} onChange={setAttendees} optional={optional} onToggleOptional={toggleOptional} placeholder="Add attendees" hostId={hostId} hostLabel="You" ineligibleReasons={ineligibleReasons} />
           <p className="text-meta text-text-muted mt-1.5">You’re the host — always in the meeting. Everyone you add is attending; they can mark “can’t make it” with a reason. Toggle who’s optional.</p>
           {callMode === 'fixed' && recurMode === 'one_time' && attendees.length > 0 && (
@@ -308,15 +309,15 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
                 <>
                   <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-3">
                     <div>
-                      <label className={labelClass}>Date <span className="text-danger">*</span></label>
+                      <Label className="mb-2" required>Date</Label>
                       <DatePicker value={date} onChange={setDate} min={todayStr()} placeholder="Select date" />
                     </div>
                     <div>
-                      <label className={labelClass}>Start</label>
+                      <Label className="mb-2">Start</Label>
                       <TimeField value={startTime} onChange={(t) => { setStartTime(t); setEndTime(addMinutes(t, durationMin)) }} />
                     </div>
                     <div>
-                      <label className={labelClass}>End</label>
+                      <Label className="mb-2">End</Label>
                       <TimeField value={endTime} onChange={(t) => { setEndTime(t); setDurationMin(minutesBetween(startTime, t)) }} />
                     </div>
                   </div>
@@ -343,19 +344,19 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
           {callMode === 'log_past' && (
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className={labelClass}>Date <span className="text-danger">*</span></label>
+                <Label className="mb-2" required>Date</Label>
                 <DatePicker value={actualDate} onChange={setActualDate} max={todayStr()} placeholder="Select date" />
               </div>
               <div>
-                <label className={labelClass}>Started</label>
+                <Label className="mb-2">Started</Label>
                 <TimeField value={actualStart} onChange={setActualStart} />
               </div>
               <div>
-                <label className={labelClass}>Ended</label>
+                <Label className="mb-2">Ended</Label>
                 <TimeField value={actualEnd} onChange={setActualEnd} />
               </div>
               <div className="col-span-3">
-                <label className={labelClass}>Minutes (what happened)</label>
+                <Label className="mb-2">Minutes (what happened)</Label>
                 <textarea className={`${inputClass} resize-none`} rows={4} value={minutes} onChange={(e) => setMinutes(e.target.value)} placeholder="Notes / decisions (markdown supported). The meeting will be filed as Closed — use Reopen to amend." />
               </div>
             </div>
@@ -383,7 +384,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
 
         {/* Agenda */}
         <div className="border-t border-border-light pt-4">
-          <label className={labelClass}>{callMode === 'log_past' ? 'Agenda (what was planned)' : 'Agenda'}</label>
+          <Label className="mb-2">{callMode === 'log_past' ? 'Agenda (what was planned)' : 'Agenda'}</Label>
           <textarea className={`${inputClass} resize-none`} rows={3} value={agenda} onChange={(e) => setAgenda(e.target.value)} placeholder="Agenda (markdown supported)" />
         </div>
 
@@ -401,7 +402,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
         {showLinker && (
           <div className="border border-border-light rounded-[8px] p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>Link to</label>
+              <Label className="mb-2">Link to</Label>
               <StyledSelect
                 value={linkType}
                 onChange={(v) => { setLinkType(v as any); setLinkEntityId('') }}
@@ -416,7 +417,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
             </div>
             {linkType === 'goal' && (
               <div>
-                <label className={labelClass}>Goal</label>
+                <Label className="mb-2">Goal</Label>
                 <StyledSelect
                   value={linkEntityId}
                   onChange={setLinkEntityId}
@@ -427,7 +428,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
             )}
             {linkType && linkType !== 'goal' && (
               <div>
-                <label className={labelClass}>{linkType[0].toUpperCase() + linkType.slice(1)} ID</label>
+                <Label className="mb-2">{linkType[0].toUpperCase() + linkType.slice(1)} ID</Label>
                 <input className={inputClass} value={linkEntityId} onChange={(e) => setLinkEntityId(e.target.value)} placeholder="Entity ID" />
               </div>
             )}

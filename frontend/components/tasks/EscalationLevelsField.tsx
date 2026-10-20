@@ -5,6 +5,7 @@ import { Plus, X, TrendingUp, ShieldAlert } from 'lucide-react'
 import EmployeePicker, { type EmployeePickerOption } from '@/components/ui/EmployeePicker'
 import { Button } from '@/components/ui/button'
 import { tasksApi } from '@/lib/api/tasks'
+import { Label } from '@/components/ui/label'
 
 const MAX_LEVELS = 5
 
@@ -125,7 +126,7 @@ export default function EscalationLevelsField({ orgId, value, onChange, assigner
           aria-expanded={open}
           className="w-full flex items-center gap-2 px-3 py-3 text-left hover:bg-surface-sunken transition-colors"
         >
-          <label className="text-label font-medium text-text-secondary cursor-pointer shrink-0">Escalation</label>
+          <Label className="cursor-pointer">Escalation</Label>
           <span className="text-meta font-normal text-text-secondary shrink-0">Optional</span>
           {filledCount > 0 && (
             <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium shrink-0">

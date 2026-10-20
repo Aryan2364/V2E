@@ -19,6 +19,7 @@ import {
 import { descendantsOf } from '@/lib/dept-tree'
 import type { Department, Role, EmployeeProfile } from '@/lib/types'
 import type { ChecklistAccessMode, ChecklistAccessRuleInput } from '@/lib/types/tasks'
+import { Label } from '@/components/ui/label'
 
 export interface LocalRule extends ChecklistAccessRuleInput {
   _key: string
@@ -353,7 +354,7 @@ export default function ChecklistAccessEditor({
 
   return (
     <div>
-      <label className="block text-label font-medium text-text-secondary mb-1.5">Who can use this checklist</label>
+      <Label className="mb-2">Who can use this checklist</Label>
       <div className="flex gap-2 mb-1">
         <button type="button" className={pill(mode === 'everyone')} onClick={() => onModeChange('everyone')}>
           Everyone

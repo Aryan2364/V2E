@@ -14,6 +14,7 @@ import {
   type GoalFocusArea,
   type GoalStatus,
 } from '@/lib/types/goals'
+import { Label } from '@/components/ui/label'
 
 export const inputClass =
   'w-full border border-border rounded-control px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
@@ -92,7 +93,7 @@ export default function GoalFormFields({
   return (
     <div className="space-y-4">
       <div>
-        <label className={labelClass}>Goal *</label>
+        <Label className="mb-2" required>Goal</Label>
         <input
           className={inputClass}
           value={state.title}
@@ -104,7 +105,7 @@ export default function GoalFormFields({
       </div>
 
       <div>
-        <label className={labelClass}>Description</label>
+        <Label className="mb-2">Description</Label>
         <textarea
           className={`${inputClass} resize-none`}
           rows={3}
@@ -116,7 +117,7 @@ export default function GoalFormFields({
       </div>
 
       <div>
-        <label className={labelClass}>Focus area</label>
+        <Label className="mb-2">Focus area</Label>
         <StyledSelect
           value={state.focusArea}
           onChange={(v) => onChange({ focusArea: v as GoalFocusArea | '' })}
@@ -140,7 +141,7 @@ export default function GoalFormFields({
       {/* Who owns it and when it's due — the two facts that make a goal real. */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
         <div>
-          <label className={labelClass}>Owner *</label>
+          <Label className="mb-2" required>Owner</Label>
           <EmployeePicker
             employees={employees}
             value={state.ownerUserId}
@@ -154,7 +155,7 @@ export default function GoalFormFields({
           </p>
         </div>
         <div>
-          <label className={labelClass}>Deadline *</label>
+          <Label className="mb-2" required>Deadline</Label>
           <DatePicker
             value={state.dueDate}
             onChange={(iso) => onChange({ dueDate: iso })}
@@ -168,7 +169,7 @@ export default function GoalFormFields({
           concrete date is meaningless, so they're asked side by side. */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
         <div>
-          <label className={labelClass}>Check-in rhythm</label>
+          <Label className="mb-2">Check-in rhythm</Label>
           <StyledSelect
             value={state.cadence}
             onChange={(v) => {
@@ -192,7 +193,7 @@ export default function GoalFormFields({
         </div>
         {state.cadence !== 'none' && (
           <div>
-            <label className={labelClass}>{firstCheckInLabel} *</label>
+            <Label className="mb-2" required>{firstCheckInLabel}</Label>
             <DatePicker
               value={state.checkInDate}
               onChange={(iso) => onChange({ checkInDate: iso })}
@@ -218,7 +219,7 @@ export default function GoalFormFields({
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Target</label>
+            <Label className="mb-2">Target</Label>
             <input
               className={inputClass}
               value={state.targetValue}
@@ -229,7 +230,7 @@ export default function GoalFormFields({
             />
           </div>
           <div>
-            <label className={labelClass}>Unit</label>
+            <Label className="mb-2">Unit</Label>
             <input
               className={inputClass}
               value={state.unit}
@@ -244,7 +245,7 @@ export default function GoalFormFields({
 
       {showStatus && (
         <div className="sm:w-1/2 sm:pr-2">
-          <label className={labelClass}>Status</label>
+          <Label className="mb-2">Status</Label>
           <StyledSelect
             value={state.status}
             onChange={(v) => onChange({ status: v as GoalStatus })}

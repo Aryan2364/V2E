@@ -5,6 +5,7 @@ import { Check, CornerDownRight, Lock } from 'lucide-react'
 import { flattenTree } from '@/lib/dept-tree'
 import { computeNodeColors } from '@/lib/org-chart-colors'
 import type { Department } from '@/lib/types'
+import { Label } from '@/components/ui/label'
 
 interface Props {
   departments: Department[]
@@ -94,7 +95,7 @@ export default function CascadeTargetTree({ departments, originDeptId, originDep
 
   return (
     <div>
-      <label className="block text-meta font-medium text-text-secondary mb-1.5">Apply to sub-departments</label>
+      <Label className="mb-2">Apply to sub-departments</Label>
 
       {/* Quick selectors — All / Some / None */}
       <div className="inline-flex p-0.5 rounded-lg bg-surface-control border border-border-light mb-2">

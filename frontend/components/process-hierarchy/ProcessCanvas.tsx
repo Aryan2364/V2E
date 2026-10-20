@@ -34,6 +34,7 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Tooltip from '@/components/ui/tooltip'
 import { useFlowNav, useIsTouchDevice, CanvasScrollbars, FlowNavStyles } from '@/components/ui/flow-nav'
+import { Label } from '@/components/ui/label'
 
 const edgeTypes = { floating: FloatingEdge, floatingStep: FloatingStepEdge }
 import type { FlowLevel, ProcessConditionKind, ProcessConnection, DiffChangeKind, ProcessPool } from '@/lib/api/process-hierarchy'
@@ -669,7 +670,7 @@ function Inner({
             <span className="text-meta font-medium text-text-primary">Connection</span>
             <button onClick={() => setEdgeEdit(null)} aria-label="Close" className="text-text-muted hover:text-text-primary"><X size={14} /></button>
           </div>
-          <label className="block text-meta font-medium text-text-secondary mb-1">Label</label>
+          <Label className="mb-2">Label</Label>
           <input
             value={edgeEdit.label}
             onChange={(e) => setEdgeEdit({ ...edgeEdit, label: e.target.value })}
@@ -678,7 +679,7 @@ function Inner({
           />
           {edgeFromDecision && (
             <div className="mb-2">
-              <label className="block text-meta font-medium text-text-secondary mb-1">Branch</label>
+              <Label className="mb-2">Branch</Label>
               <StyledSelect
                 value={edgeEdit.conn.condition_kind}
                 onChange={(v) => {

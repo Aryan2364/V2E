@@ -9,6 +9,7 @@ import DatePicker from '@/components/ui/DatePicker'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
 import Tooltip from '@/components/ui/tooltip'
 import { DurationField } from './shared'
+import { Label } from '@/components/ui/label'
 
 // geometry
 const START_HOUR = 6
@@ -197,7 +198,7 @@ export default function FindTimeDialog({
           {/* left rail */}
           <aside className="w-[300px] shrink-0 border-r border-border-light overflow-y-auto p-4 flex flex-col gap-4">
             <div>
-              <label className="block text-body font-medium text-text-secondary mb-1">Participants</label>
+              <Label className="mb-2">Participants</Label>
               <MeetingAttendeeSelector options={people} value={attendees} onChange={onChangeAttendees} optional={optional} onToggleOptional={toggleOptional} />
             </div>
 

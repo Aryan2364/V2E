@@ -127,7 +127,7 @@ export default function NewAnnouncementPage() {
                 />
               </div>
               <div>
-                <Label>Expires at <span className="text-text-secondary font-normal">(optional)</span></Label>
+                <Label>Expires at</Label>
                 <DatePicker
                   value={form.expires_at}
                   onChange={(iso) => set('expires_at', iso)}

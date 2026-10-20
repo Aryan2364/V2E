@@ -15,6 +15,7 @@ import DatePicker from '@/components/ui/DatePicker'
 import StyledSelect from '@/components/ui/StyledSelect'
 import GoalsMultiSelectField from '@/components/projects/GoalsMultiSelectField'
 import { ChevronLeft, Plus, Loader2, Trash2, Search, X, Check } from 'lucide-react'
+import { Label } from '@/components/ui/label'
 
 // ─── Avatar helpers ────────────────────────────────────────────────────────────
 
@@ -402,26 +403,26 @@ export default function ProjectSettingsPage() {
       <div className="bg-surface border border-border-light rounded-card p-6 shadow-card space-y-4">
         <h2 className="text-card-heading font-medium text-text-primary">General</h2>
         <div>
-          <label className={labelCls}>Project name <span className="text-danger">*</span></label>
+          <Label className="mb-2" required>Project name</Label>
           <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
         </div>
         <div>
-          <label className={labelCls}>Description</label>
+          <Label className="mb-2">Description</Label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
             className="w-full px-3 py-2 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden resize-none" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Start date</label>
+            <Label className="mb-2">Start date</Label>
             <DatePicker value={startDate} onChange={(iso) => handleDateChange(iso, setStartDate)} min="2000-01-01" max="2100-12-31" placeholder="Select date" />
           </div>
           <div>
-            <label className={labelCls}>End date</label>
+            <Label className="mb-2">End date</Label>
             <DatePicker value={endDate} onChange={(iso) => handleDateChange(iso, setEndDate)} min={endDateMin} max="2100-12-31" placeholder="Select date" />
           </div>
         </div>
         <div>
-          <label className={labelCls}>Project manager <span className="text-danger">*</span></label>
+          <Label className="mb-2" required>Project manager</Label>
           <UserSearchDropdown orgId={orgId} selected={pmUser} onSelect={setPmUser} />
         </div>
         {/* The goals this project serves. Clearing one unlinks just that pair. */}
@@ -432,12 +433,12 @@ export default function ProjectSettingsPage() {
       <div className="bg-surface border border-border-light rounded-card p-6 shadow-card space-y-4">
         <h2 className="text-card-heading font-medium text-text-primary">Status</h2>
         <div>
-          <label className={labelCls}>Project status</label>
+          <Label className="mb-2">Project status</Label>
           <StyledSelect value={status} onChange={setStatus} options={STATUS_OPTS} />
         </div>
         {needsReason && (
           <div>
-            <label className={labelCls}>Status reason <span className="text-danger">*</span></label>
+            <Label className="mb-2" required>Status reason</Label>
             <input value={statusReason} onChange={(e) => setStatusReason(e.target.value)}
               placeholder="Explain why the project is being put on hold or cancelled" className={inputCls} />
           </div>
@@ -449,11 +450,11 @@ export default function ProjectSettingsPage() {
         <h2 className="text-card-heading font-medium text-text-primary">Budget</h2>
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2">
-            <label className={labelCls}>Planned budget</label>
+            <Label className="mb-2">Planned budget</Label>
             <input type="number" value={plannedBudget} onChange={(e) => setPlannedBudget(e.target.value)} min="0" className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Currency</label>
+            <Label className="mb-2">Currency</Label>
             <StyledSelect
               value={currency}
               onChange={setCurrency}
@@ -462,7 +463,7 @@ export default function ProjectSettingsPage() {
           </div>
         </div>
         <div>
-          <label className={labelCls}>Actual spent</label>
+          <Label className="mb-2">Actual spent</Label>
           <input type="number" value={actualSpent} onChange={(e) => setActualSpent(e.target.value)} min="0" className={inputCls} />
         </div>
       </div>

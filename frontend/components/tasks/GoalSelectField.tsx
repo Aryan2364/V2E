@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { goalsApi } from '@/lib/api/goals'
 import type { Goal } from '@/lib/types/goals'
+import { Label } from '@/components/ui/label'
 
 interface Props {
   orgId: string
@@ -40,7 +41,7 @@ export default function GoalSelectField({ orgId, value, onChange, hint }: Props)
 
   return (
     <div>
-      <label className="block text-label font-medium text-text-secondary mb-1.5">Link to goal</label>
+      <Label className="mb-2">Link to goal</Label>
       <StyledSelect
         value={value}
         onChange={onChange}

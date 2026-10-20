@@ -55,13 +55,14 @@ import { notificationsApi, type NotificationMaster } from '@/lib/api/notificatio
 import { AssigneeVisibilityTab } from '@/components/tasks/AssigneeVisibilityTab'
 import ImportChecklistsModal from '@/components/tasks/ImportChecklistsModal'
 import TagsTab from '@/components/tasks/masters/TagsTab'
+import { Label } from '@/components/ui/label'
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-label font-medium text-text-secondary mb-1.5">{label}</label>
+      <Label className="mb-2">{label}</Label>
       {children}
     </div>
   )
@@ -821,7 +822,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
             <FormField label="Template Name"><input type="text" autoFocus value={templateName} onChange={(e) => { setTemplateName(e.target.value); if (error) setError(null) }} placeholder="e.g. Onboarding Checklist" className={`${inputCls} max-w-xl`} /></FormField>
 
             <div>
-              <label className="block text-label font-medium text-text-secondary mb-1">Items</label>
+              <Label className="mb-2">Items</Label>
               <p className="text-meta text-text-muted mb-2">Press Enter to add the next item. Ctrl+Z undoes a removal.</p>
               {templateItems.map((item, idx) => (
                 <div key={idx} className="relative mb-2 max-w-xl">
@@ -1546,7 +1547,7 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
 
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <label className="block text-label font-medium text-text-secondary">Members</label>
+              <Label>Members</Label>
               <CountPill n={form.member_user_ids.length} />
             </div>
             <div className="border border-border-light rounded-control overflow-hidden">
@@ -1873,7 +1874,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
             <textarea value={form.description_template} onChange={(e) => setForm({ ...form, description_template: e.target.value })} rows={2} placeholder="Pre-filled description..." className={`${inputCls} resize-none`} />
           </FormField>
           <div>
-            <label className="block text-label font-medium text-text-secondary mb-1.5">Checklist Items</label>
+            <Label className="mb-2">Checklist Items</Label>
             {checklistItems.map((item, idx) => (
               <div key={idx} className="flex gap-2 mb-2 max-w-xl">
                 <input type="text" value={item} onChange={(e) => setChecklistItems((prev) => prev.map((v, i) => i === idx ? e.target.value : v))} placeholder={`Item ${idx + 1}`} className={inputCls} />
