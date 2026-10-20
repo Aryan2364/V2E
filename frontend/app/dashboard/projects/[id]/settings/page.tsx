@@ -14,8 +14,10 @@ import MemberRow from '@/components/projects/MemberRow'
 import DatePicker from '@/components/ui/DatePicker'
 import StyledSelect from '@/components/ui/StyledSelect'
 import GoalsMultiSelectField from '@/components/projects/GoalsMultiSelectField'
-import { ChevronLeft, Plus, Loader2, Trash2, Search, X, Check } from 'lucide-react'
+import { ChevronLeft, Plus, Trash2, Search, X, Check } from 'lucide-react'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
 
 // ─── Avatar helpers ────────────────────────────────────────────────────────────
 
@@ -264,27 +266,46 @@ export default function ProjectSettingsPage() {
       const allUsers = eligible.departments.flatMap((d) => d.users)
       const pm = allUsers.find((u) => u.user_id === proj.project_manager_user_id)
       setPmUser(pm ?? { user_id: proj.project_manager_user_id, name: proj.project_manager_user_id.slice(0, 8), role_title: '', role_id: null, department_id: '', department_name: '', active_task_count: 0, frequency_count: 0, is_frequent: false, avatar_url: null })
-    }).catch(() => setError('Failed to load project')).finally(() => setLoading(false))
+    }).catch(() => setError('Could not load the project. Refresh the page to try again.')).finally(() => setLoading(false))
   }, [orgId, id])
 
   useEffect(() => { load() }, [load])
 
+  // Field errors sit under the field that is wrong; focus goes to the first one (kit 11.3, 39.3).
+  type FieldKey = 'name' | 'pm' | 'start' | 'end' | 'reason' | 'budget' | 'spent'
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, string>>>({})
+  const clearErr = (k: FieldKey) => setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
+
   function validate() {
-    if (!name.trim()) { setError('Project name is required'); return false }
-    if (!pmUser) { setError('Project manager is required'); return false }
+    const errs: Partial<Record<FieldKey, string>> = {}
+    if (!name.trim()) errs.name = 'Enter a name for the project.'
+    if (!pmUser) errs.pm = 'Choose the project manager.'
     if (startDate) {
       const y = new Date(startDate).getFullYear()
-      if (y < 2000) { setError('Start date cannot be before year 2000'); return false }
-      if (y > 2100) { setError('Start date year cannot exceed 2100'); return false }
+      if (y < 2000) errs.start = 'Choose a start date in the year 2000 or later.'
+      else if (y > 2100) errs.start = 'Choose a start date before the year 2100.'
     }
     if (endDate) {
       const y = new Date(endDate).getFullYear()
-      if (y > 2100) { setError('End date year cannot exceed 2100'); return false }
-      if (endDate < todayStr) { setError('End date must be today or in the future'); return false }
-      if (startDate && endDate < startDate) { setError('End date cannot be before start date'); return false }
+      if (y > 2100) errs.end = 'Choose an end date before the year 2100.'
+      else if (endDate < todayStr) errs.end = 'Choose an end date that is today or later.'
+      else if (startDate && endDate < startDate) errs.end = 'Choose an end date on or after the start date.'
     }
-    if (plannedBudget !== '' && Number(plannedBudget) < 0) { setError('Budget cannot be negative'); return false }
-    if (actualSpent !== '' && Number(actualSpent) < 0) { setError('Actual spent cannot be negative'); return false }
+    if ((status === 'on_hold' || status === 'cancelled') && (status !== project?.status || statusReason !== (project?.status_reason ?? '')) && !statusReason.trim()) {
+      errs.reason = 'Explain why the project is on hold or cancelled.'
+    }
+    if (plannedBudget !== '' && Number(plannedBudget) < 0) errs.budget = 'Enter a budget of zero or more.'
+    if (actualSpent !== '' && Number(actualSpent) < 0) errs.spent = 'Enter an amount of zero or more.'
+    setFieldErrors(errs)
+    const firstBad = (['name', 'pm', 'start', 'end', 'reason', 'budget', 'spent'] as FieldKey[]).find((k) => errs[k])
+    if (firstBad) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(`project-settings-${firstBad}`)
+        ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+      })
+      return false
+    }
+    setError('')
     return true
   }
 
@@ -304,7 +325,7 @@ export default function ProjectSettingsPage() {
       if (status !== project?.status || statusReason !== (project?.status_reason ?? '')) {
         const needsReason = status === 'on_hold' || status === 'cancelled'
         if (needsReason && !statusReason.trim()) {
-          setError('Status reason is required for On Hold / Cancelled')
+          setError('Explain why the project is on hold or cancelled.')
           setSaving(false); return
         }
         await projectsApi.updateStatus(orgId, id, {
@@ -319,10 +340,10 @@ export default function ProjectSettingsPage() {
           currency,
         })
       }
-      setSuccess('Project updated successfully')
+      setSuccess('Project saved')
       load()
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Failed to update project'
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Could not save the project. Try again.'
       setError(msg)
     } finally {
       setSaving(false)
@@ -386,9 +407,9 @@ export default function ProjectSettingsPage() {
     <div className="space-y-6 max-w-2xl">
       <div>
         <Link href={`/dashboard/projects/${id}`} className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3">
-          <ChevronLeft size={15} /> Back to Project
+          <ChevronLeft size={15} /> Back to project
         </Link>
-        <h1 className="text-page-title font-medium text-text-primary leading-tight">Project Settings</h1>
+        <h1 className="text-page-title font-medium text-text-primary leading-tight">Project settings</h1>
         <p className="mt-1 text-body text-text-secondary">{project.name}</p>
       </div>
 
@@ -403,8 +424,9 @@ export default function ProjectSettingsPage() {
       <div className="bg-surface border border-border-light rounded-card p-6 shadow-card space-y-4">
         <h2 className="text-card-heading font-medium text-text-primary">General</h2>
         <div>
-          <Label className="mb-2" required>Project name</Label>
-          <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
+          <Label className="mb-2" htmlFor="project-settings-name" required>Project name</Label>
+          <input id="project-settings-name" value={name} onChange={(e) => { setName(e.target.value); clearErr('name') }} aria-invalid={fieldErrors.name ? true : undefined} className={`${inputCls} max-w-[480px] aria-invalid:border-danger`} />
+          <InlineFieldError>{fieldErrors.name}</InlineFieldError>
         </div>
         <div>
           <Label className="mb-2">Description</Label>
@@ -413,17 +435,22 @@ export default function ProjectSettingsPage() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label className="mb-2">Start date</Label>
-            <DatePicker value={startDate} onChange={(iso) => handleDateChange(iso, setStartDate)} min="2000-01-01" max="2100-12-31" placeholder="Select date" />
+            <Label className="mb-2" htmlFor="project-settings-start">Start date</Label>
+            <DatePicker id="project-settings-start" invalid={!!fieldErrors.start} value={startDate} onChange={(iso) => { handleDateChange(iso, setStartDate); clearErr('start') }} min="2000-01-01" max="2100-12-31" placeholder="Select date" />
+            <InlineFieldError>{fieldErrors.start}</InlineFieldError>
           </div>
           <div>
-            <Label className="mb-2">End date</Label>
-            <DatePicker value={endDate} onChange={(iso) => handleDateChange(iso, setEndDate)} min={endDateMin} max="2100-12-31" placeholder="Select date" />
+            <Label className="mb-2" htmlFor="project-settings-end">End date</Label>
+            <DatePicker id="project-settings-end" invalid={!!fieldErrors.end} value={endDate} onChange={(iso) => { handleDateChange(iso, setEndDate); clearErr('end') }} min={endDateMin} max="2100-12-31" placeholder="Select date" />
+            <InlineFieldError>{fieldErrors.end}</InlineFieldError>
           </div>
         </div>
         <div>
           <Label className="mb-2" required>Project manager</Label>
-          <UserSearchDropdown orgId={orgId} selected={pmUser} onSelect={setPmUser} />
+          <div id="project-settings-pm">
+          <UserSearchDropdown orgId={orgId} selected={pmUser} onSelect={(u) => { setPmUser(u); clearErr('pm') }} />
+          </div>
+          <InlineFieldError>{fieldErrors.pm}</InlineFieldError>
         </div>
         {/* The goals this project serves. Clearing one unlinks just that pair. */}
         <GoalsMultiSelectField orgId={orgId} value={goalIds} onChange={setGoalIds} />
@@ -438,9 +465,10 @@ export default function ProjectSettingsPage() {
         </div>
         {needsReason && (
           <div>
-            <Label className="mb-2" required>Status reason</Label>
-            <input value={statusReason} onChange={(e) => setStatusReason(e.target.value)}
-              placeholder="Explain why the project is being put on hold or cancelled" className={inputCls} />
+            <Label className="mb-2" htmlFor="project-settings-reason" required>Status reason</Label>
+            <input id="project-settings-reason" value={statusReason} onChange={(e) => { setStatusReason(e.target.value); clearErr('reason') }}
+              placeholder="For example, Waiting for budget approval" aria-invalid={fieldErrors.reason ? true : undefined} className={`${inputCls} max-w-[480px] aria-invalid:border-danger`} />
+            <InlineFieldError>{fieldErrors.reason}</InlineFieldError>
           </div>
         )}
       </div>
@@ -450,8 +478,9 @@ export default function ProjectSettingsPage() {
         <h2 className="text-card-heading font-medium text-text-primary">Budget</h2>
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2">
-            <Label className="mb-2">Planned budget</Label>
-            <input type="number" value={plannedBudget} onChange={(e) => setPlannedBudget(e.target.value)} min="0" className={inputCls} />
+            <Label className="mb-2" htmlFor="project-settings-budget">Planned budget</Label>
+            <input id="project-settings-budget" type="number" value={plannedBudget} onChange={(e) => { setPlannedBudget(e.target.value); clearErr('budget') }} min="0" aria-invalid={fieldErrors.budget ? true : undefined} className={`${inputCls} aria-invalid:border-danger`} />
+            <InlineFieldError>{fieldErrors.budget}</InlineFieldError>
           </div>
           <div>
             <Label className="mb-2">Currency</Label>
@@ -463,18 +492,17 @@ export default function ProjectSettingsPage() {
           </div>
         </div>
         <div>
-          <Label className="mb-2">Actual spent</Label>
-          <input type="number" value={actualSpent} onChange={(e) => setActualSpent(e.target.value)} min="0" className={inputCls} />
+          <Label className="mb-2" htmlFor="project-settings-spent">Actual spent</Label>
+          <input id="project-settings-spent" type="number" value={actualSpent} onChange={(e) => { setActualSpent(e.target.value); clearErr('spent') }} min="0" aria-invalid={fieldErrors.spent ? true : undefined} className={`${inputCls} max-w-[480px] aria-invalid:border-danger`} />
+          <InlineFieldError>{fieldErrors.spent}</InlineFieldError>
         </div>
       </div>
 
       {/* Save */}
       <div className="flex justify-end">
-        <button type="button" disabled={saving} onClick={handleSave}
-          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-primary-foreground text-body font-medium disabled:opacity-60 transition-colors flex items-center gap-2">
-          {saving && <Loader2 size={14} className="animate-spin" />}
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
+        <Button type="button" disabled={saving} loading={saving} loadingLabel="Saving" onClick={handleSave}>
+          Save project
+        </Button>
       </div>
 
       {/* Members */}
@@ -498,7 +526,7 @@ export default function ProjectSettingsPage() {
 
       {/* Danger zone */}
       <div className="bg-surface border border-danger-border rounded-[12px] p-6 shadow-card space-y-4">
-        <h2 className="text-card-heading font-medium text-danger">Danger Zone</h2>
+        <h2 className="text-card-heading font-medium text-danger">Danger zone</h2>
         <p className="text-body text-text-secondary">
           Deleting a project is irreversible. All milestones and project task links will be removed.
           Tasks in the tasks system will not be deleted.
@@ -506,22 +534,17 @@ export default function ProjectSettingsPage() {
         {!showDelete ? (
           <button type="button" onClick={() => setShowDelete(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-danger-border text-danger text-body font-medium hover:bg-danger-bg transition-colors">
-            <Trash2 size={14} /> Delete Project
+            <Trash2 size={14} /> Delete project
           </button>
         ) : (
           <div className="space-y-3">
-            <input value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} placeholder="Reason for deletion (required)"
+            <input value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} placeholder="For example, Created by mistake"
               className="w-full h-10 px-3 rounded-[8px] border border-danger-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-danger focus:outline-hidden" />
             <div className="flex gap-2">
-              <button type="button" onClick={() => setShowDelete(false)}
-                className="h-9 px-4 rounded-[8px] border border-border-light text-body font-medium text-text-secondary hover:bg-surface-sunken transition-colors">
-                Cancel
-              </button>
-              <button type="button" disabled={deleting || !deleteReason.trim()} onClick={handleDelete}
-                className="h-9 px-4 rounded-[8px] bg-danger hover:bg-danger-hover text-on-danger text-body font-medium disabled:opacity-60 transition-colors flex items-center gap-1.5">
-                {deleting && <Loader2 size={13} className="animate-spin" />}
-                Confirm Delete
-              </button>
+              <Button type="button" variant="secondary" onClick={() => setShowDelete(false)} disabled={deleting}>Cancel</Button>
+              <Button type="button" variant="danger" disabled={deleting || !deleteReason.trim()} loading={deleting} loadingLabel="Deleting" onClick={handleDelete}>
+                Delete project
+              </Button>
             </div>
           </div>
         )}
