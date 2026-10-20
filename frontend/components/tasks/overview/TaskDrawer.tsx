@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
+import { CommentBox } from '@/components/ui/comment-box'
+import { CommentThread, type ThreadItem } from '@/components/ui/comment-thread'
 import type { Task, TaskStatus, TaskComment, TaskAttachment } from '@/lib/types/tasks'
 import AssigneeAvatars, { type AvatarPerson } from '@/components/tasks/AssigneeAvatars'
 import StyledSelect from '@/components/ui/StyledSelect'
@@ -299,32 +301,21 @@ export default function TaskDrawer({
                   <MessageSquare size={14} className="text-text-secondary" />
                   Comments
                 </p>
-                {comments.length === 0 ? (
-                  <p className="text-body text-text-muted">No comments yet. Start the conversation below.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {comments.map((c) => (
-                      <div key={c.id} className="flex gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-meta font-medium flex items-center justify-center shrink-0">
-                          {(c.user_name ?? '?').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-body">
-                            <span className="font-medium text-text-primary">{c.user_name ?? 'Unknown'}</span>
-                            <span className="text-text-muted ml-2 text-meta">{formatWhen(c.created_at)}</span>
-                          </p>
-                          <p className="text-body text-text-primary whitespace-pre-wrap wrap-break-word mt-0.5">{c.body}</p>
-                          {c.attachments && c.attachments.length > 0 && (
-                            <AttachmentChips
-                              attachments={c.attachments}
-                              onDownload={(a) => tasksApi.downloadAttachment(orgId, taskId, a.id)}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <CommentThread
+                  items={comments.map((c): ThreadItem => ({
+                    id: c.id,
+                    who: c.user_name ?? 'Unknown',
+                    when: c.created_at,
+                    text: c.body,
+                    attachments:
+                      c.attachments && c.attachments.length > 0 ? (
+                        <AttachmentChips
+                          attachments={c.attachments}
+                          onDownload={(a) => tasksApi.downloadAttachment(orgId, taskId, a.id)}
+                        />
+                      ) : undefined,
+                  }))}
+                />
               </div>
             </SheetBody>
         )}
@@ -362,27 +353,13 @@ export default function TaskDrawer({
                 </Tooltip>
               </div>
               {/* Comment box */}
-              <div className="flex items-end gap-2">
-                <textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-                  rows={1}
-                  disabled={isFutureTask}
-                  placeholder={isFutureTask ? "Comments are locked on future tasks..." : "Write a comment…"}
-                  className="flex-1 resize-none rounded-lg border border-border bg-surface px-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary max-h-28"
-                />
-                <Button
-                  size="icon"
-                  className="shrink-0"
-                  onClick={send}
-                  disabled={!draft.trim() || isFutureTask}
-                  loading={sending}
-                  aria-label="Send comment"
-                >
-                  <Send size={16} />
-                </Button>
-              </div>
+              <CommentBox
+                value={draft}
+                onChange={setDraft}
+                onSend={send}
+                disabled={isFutureTask || sending}
+                placeholder={isFutureTask ? 'Comments are locked on future tasks...' : 'Write a comment…'}
+              />
               {/* Attach documents to the comment */}
               <FileDropzone onFiles={(fs) => setDraftFiles((prev) => [...prev, ...fs])} disabled={sending || isFutureTask} compact />
               <PendingFileList
