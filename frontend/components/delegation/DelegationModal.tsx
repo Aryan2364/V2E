@@ -195,9 +195,9 @@ export default function DelegationModal({
         {/* Measurable success criteria */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className={`${labelClass} mb-0 flex items-center gap-1.5`}>
+            <Label className="gap-1.5">
               <Target size={14} className="text-primary-text" /> Success criteria
-            </label>
+            </Label>
             <Tooltip label="Add criterion">
             <button
               type="button"

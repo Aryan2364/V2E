@@ -326,23 +326,23 @@ export default function DailyUpdatePage() {
               <div className={`${cardCls} p-6 space-y-4`}>
                 <div>
                   <Label className="mb-2">Where I was stuck today</Label>
-                  <textarea value={stuck} onChange={(e) => setStuck(e.target.value)} rows={2} className={`${inputCls} mt-1.5`} />
+                  <textarea value={stuck} onChange={(e) => setStuck(e.target.value)} rows={2} className={inputCls} />
                 </div>
                 <div>
-                  <label className={`${labelCls} flex items-center gap-1.5`}>
+                  <Label className="mb-2 gap-1.5">
                     <Lightbulb size={14} className="text-warning" /> Decisions I took today
-                  </label>
-                  <textarea value={decisions} onChange={(e) => setDecisions(e.target.value)} rows={2} className={`${inputCls} mt-1.5`} />
+                  </Label>
+                  <textarea value={decisions} onChange={(e) => setDecisions(e.target.value)} rows={2} className={inputCls} />
                 </div>
                 <div>
                   <Label className="mb-2">How the overall day was</Label>
-                  <textarea value={daySummary} onChange={(e) => setDaySummary(e.target.value)} rows={2} className={`${inputCls} mt-1.5`} />
+                  <textarea value={daySummary} onChange={(e) => setDaySummary(e.target.value)} rows={2} className={inputCls} />
                 </div>
                 <div>
-                  <label className={`${labelCls} flex items-center gap-1.5`}>
+                  <Label className="mb-2 gap-1.5">
                     <CalendarClock size={14} className="text-primary-text" /> Planning for tomorrow
-                  </label>
-                  <textarea value={planning} onChange={(e) => setPlanning(e.target.value)} rows={2} className={`${inputCls} mt-1.5`} />
+                  </Label>
+                  <textarea value={planning} onChange={(e) => setPlanning(e.target.value)} rows={2} className={inputCls} />
                 </div>
               </div>
 

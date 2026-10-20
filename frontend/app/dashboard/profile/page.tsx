@@ -14,6 +14,9 @@ import { changePassword } from '@/lib/api/auth'
 import type { EmployeeProfile, KraItem, Role } from '@/lib/types'
 import { formatDate as formatDateToken } from '@/lib/format'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { PasswordInput } from '@/components/ui/password-input'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
 
 const roleLevelLabel: Record<string, string> = { junior: 'Junior', mid: 'Mid', senior: 'Senior', head: 'Head' }
 
@@ -408,15 +411,10 @@ function MyProfileContent() {
               <DatePicker value={marriage} onChange={setMarriage} max={new Date().toISOString().slice(0, 10)} placeholder="Select date" />
             </div>
           </div>
-          <button
-            type="button"
-            onClick={savePersonal}
-            disabled={savingPersonal}
-            className="mt-4 flex items-center gap-2 px-4 py-[10px] text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-          >
-            {savingPersonal ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-            {savingPersonal ? 'Saving…' : 'Save personal details'}
-          </button>
+          <Button type="button" onClick={savePersonal} disabled={savingPersonal} loading={savingPersonal} loadingLabel="Saving" className="mt-4">
+            <Save size={15} />
+            Save personal details
+          </Button>
         </Section>
       )}
 
@@ -424,51 +422,35 @@ function MyProfileContent() {
       <Section title="Change password">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label className="mb-2">New password</Label>
-            <div className="relative">
-              <input
-                type={showNew ? 'text' : 'password'}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="At least 8 characters"
-                autoComplete="new-password"
-                className={`w-full px-3 py-2 pr-8 text-body rounded-lg border ${passwordTooShort ? 'border-danger' : 'border-border'} focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted`}
-              />
-              <button type="button" onClick={() => setShowNew((v) => !v)} aria-label={showNew ? 'Hide password' : 'Show password'}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary">
-                {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            {passwordTooShort && <p className="text-meta text-danger mt-1">Use at least {MIN_PASSWORD} characters.</p>}
+            <Label className="mb-2" htmlFor="profile-new-password" required>New password</Label>
+            <PasswordInput
+              id="profile-new-password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              aria-invalid={passwordTooShort ? true : undefined}
+              autoComplete="new-password"
+              className="max-w-none"
+            />
+            <InlineFieldError>{passwordTooShort ? `Use at least ${MIN_PASSWORD} characters.` : null}</InlineFieldError>
+            {!passwordTooShort && <p className="mt-2 text-meta text-text-muted">Use at least {MIN_PASSWORD} characters.</p>}
           </div>
           <div>
-            <Label className="mb-2">Confirm new password</Label>
-            <div className="relative">
-              <input
-                type={showConfirm ? 'text' : 'password'}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Re-enter the new password"
-                autoComplete="new-password"
-                className={`w-full px-3 py-2 pr-8 text-body rounded-lg border ${passwordMismatch ? 'border-danger' : 'border-border'} focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted`}
-              />
-              <button type="button" onClick={() => setShowConfirm((v) => !v)} aria-label={showConfirm ? 'Hide password' : 'Show password'}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary">
-                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            {passwordMismatch && <p className="text-meta text-danger mt-1">Passwords don&apos;t match.</p>}
+            <Label className="mb-2" htmlFor="profile-confirm-password" required>Confirm new password</Label>
+            <PasswordInput
+              id="profile-confirm-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              aria-invalid={passwordMismatch ? true : undefined}
+              autoComplete="new-password"
+              className="max-w-none"
+            />
+            <InlineFieldError>{passwordMismatch ? 'The two passwords do not match. Enter the same password in both fields.' : null}</InlineFieldError>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={savePassword}
-          disabled={!canChangePassword}
-          className="mt-4 flex items-center gap-2 px-4 py-[10px] text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
-        >
-          {savingPassword ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
-          {savingPassword ? 'Updating…' : 'Update password'}
-        </button>
+        <Button type="button" onClick={savePassword} disabled={!canChangePassword || savingPassword} loading={savingPassword} loadingLabel="Updating" className="mt-4">
+          <ShieldCheck size={15} />
+          Update password
+        </Button>
       </Section>
       </>
       )}
