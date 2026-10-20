@@ -37,6 +37,7 @@ import { isListboxOpen } from '@/components/tasks/InlineTaskTags'
 import { useAuth } from '@/lib/auth/context'
 import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
+import { defaultScheduleEntry, scheduleEntriesError, buildRecurringPayload } from '@/lib/tasks/recurring-payload'
 import { holidaysApi } from '@/lib/api/holidays'
 import type { Task, TaskCategory, TaskPriority, TaskStatus, CompletionMode, ChecklistTemplate, RecurringTemplate } from '@/lib/types/tasks'
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
@@ -55,21 +56,6 @@ import { expandLeaveDays, leaveHorizon } from '@/lib/leave-availability'
 // One-time = a single task with a fixed deadline. Recurring = a template that
 // auto-spawns instances on a schedule (reuses the existing recurring engine).
 type TaskMode = 'one_time' | 'recurring'
-
-function defaultScheduleEntry(): ScheduleEntryDraft {
-  return {
-    schedule_type: 'daily',
-    every: 1,
-    days: [],
-    month_days: [],
-    yearly_dates: [],
-    time: '09:00',
-    start_date: getNow().toISOString().slice(0, 10),
-    end_condition: 'never',
-    end_date: '',
-    end_after: 10,
-  }
-}
 
 interface CreateTaskModalProps {
   isOpen: boolean
@@ -397,53 +383,28 @@ export default function CreateTaskModal({
   async function handleCreateRecurring() {
     if (!title.trim()) { setError('Title is required.'); return }
     if (assignees.filter((a) => !a.is_cc).length === 0) { setError('At least one assignee is required. CC-only tasks are not allowed.'); return }
-    for (const entry of scheduleEntries) {
-      if (entry.schedule_type === 'weekly' && entry.days.length === 0) {
-        setError('Select at least one day of the week for each weekly schedule.'); return
-      }
-      if (entry.schedule_type === 'monthly' && entry.month_days.length === 0) {
-        setError('Select at least one day of the month for each monthly schedule.'); return
-      }
-      if (entry.schedule_type === 'yearly' && entry.yearly_dates.length === 0) {
-        setError('Select at least one date for each yearly schedule.'); return
-      }
-      if (entry.end_condition === 'on_date' && !entry.end_date) {
-        setError('End date is required for schedules ending "On date".'); return
-      }
-    }
+    const scheduleError = scheduleEntriesError(scheduleEntries)
+    if (scheduleError) { setError(scheduleError); return }
     if (reminders.some((r) => r.kind === 'absolute' && !r.date)) { setError('Pick a date for each “on a date” reminder.'); return }
     setSubmitting(true)
     setError(null)
     try {
-      const template = await tasksApi.createRecurring(orgId, {
-        title: title.trim(),
-        description: description.trim() || undefined,
-        category_id: categoryId || undefined,
-        priority_id: priorityId || undefined,
-        ...(tagIds.length > 0 ? { tag_ids: tagIds } : {}),
-        schedule_entries: scheduleEntries.map((en, idx) => ({
-          schedule_type: en.schedule_type,
-          every: en.every,
-          days: en.days,
-          month_days: en.month_days,
-          yearly_dates: en.yearly_dates,
-          time: en.time,
-          start_date: en.start_date,
-          end_condition: en.end_condition,
-          end_date: en.end_condition === 'on_date' ? en.end_date : undefined,
-          end_after: en.end_condition === 'after_n' ? en.end_after : undefined,
-          order_index: idx,
-        })),
-        completion_mode: completionMode,
-        proof_required: proofRequired,
-        proof_allowed_extensions: proofRequired ? proofAllowedExtensions : [],
-        escalation_user_ids: escalationIds.length > 0 ? escalationIds : undefined,
-        linked_goal_id: goalId || undefined,
-        assignee_user_ids: assignees.filter((a) => !a.is_cc).map((a) => a.user_id),
-        cc_user_ids: assignees.filter((a) => a.is_cc).map((a) => a.user_id),
-        checklist_items: buildChecklistItems(checklistGroups),
+      const template = await tasksApi.createRecurring(orgId, buildRecurringPayload({
+        title,
+        description,
+        categoryId,
+        priorityId,
+        tagIds,
+        scheduleEntries,
+        completionMode,
+        proofRequired,
+        proofAllowedExtensions,
+        escalationIds,
+        goalId,
+        assignees,
+        checklistItems: buildChecklistItems(checklistGroups),
         reminders: buildReminderSpecs(reminders, false),
-      })
+      }))
       // Upload the template's attachments — copied into every spawned instance.
       if (attachmentFiles.length > 0) {
         try {
