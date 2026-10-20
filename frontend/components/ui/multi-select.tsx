@@ -168,7 +168,7 @@ function MultiSelect({
         )}
         {/* The trigger carries data-popup-open, so the chevron reads it
             through the group (16.1: up while open). */}
-        <ChevronDownIcon className="pointer-events-none size-4 shrink-0 text-text-secondary transition-transform group-data-popup-open:rotate-180" />
+        <ChevronDownIcon strokeWidth={2.25} className="pointer-events-none size-4 shrink-0 text-primary-text transition-transform group-data-popup-open:rotate-180" />
       </PopoverTrigger>
       {phone ? (
         sheet
