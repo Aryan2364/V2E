@@ -1,9 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Send, Trash2, Link2 } from 'lucide-react'
+import React, { useMemo, useRef, useState } from 'react'
+import { Trash2, Link2, CornerDownRight, X } from 'lucide-react'
 import type { TicketComment } from '@/lib/types/tickets'
-import { formatDate } from '@/lib/format'
+import { Button } from '@/components/ui/button'
+import { CommentBox } from '@/components/ui/comment-box'
+import { CommentThread, type ThreadItem } from '@/components/ui/comment-thread'
+import { Input } from '@/components/ui/input'
 
 interface Props {
   comments: TicketComment[]
@@ -12,97 +15,15 @@ interface Props {
   onDelete: (commentId: string) => Promise<void>
 }
 
-function getInitials(name: string) {
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-}
+/** Delete waits this long behind an Undo before it is sent. */
+const UNDO_MS = 10000
 
-function timeAgo(d: string) {
-  const diff = (Date.now() - new Date(d).getTime()) / 1000
-  if (diff < 60) return 'just now'
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return formatDate(d)
-}
-
-function CommentItem({
-  comment,
-  currentUserId,
-  onDelete,
-  onReply,
-  depth = 0,
-}: {
-  comment: TicketComment
-  currentUserId: string
-  onDelete: (id: string) => Promise<void>
-  onReply: (id: string) => void
-  depth?: number
-}) {
-  const [justDeleted, setJustDeleted] = useState(false)
-  const [undoTimer, setUndoTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
-
-  const isOwn = comment.user_id === currentUserId
-
-  function handleDelete() {
-    setJustDeleted(true)
-    const t = setTimeout(() => { onDelete(comment.id) }, 10000)
-    setUndoTimer(t)
-  }
-
-  function handleUndo() {
-    if (undoTimer) clearTimeout(undoTimer)
-    setJustDeleted(false)
-    setUndoTimer(null)
-  }
-
-  if (justDeleted) {
-    return (
-      <div className="flex items-center gap-2 py-2 px-3 bg-surface-sunken rounded-[8px] text-body text-text-muted">
-        Comment deleted.
-        <button type="button" onClick={handleUndo} className="text-primary-text font-medium hover:underline">Undo</button>
-        <span className="text-meta">(10s)</span>
-      </div>
-    )
-  }
-
-  return (
-    <div className={depth > 0 ? 'ml-8 border-l-2 border-border-light pl-3' : ''}>
-      <div className="flex gap-3 py-2">
-        <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0">
-          {getInitials(comment.user_name ?? comment.user_id.slice(0, 4))}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-body font-medium text-text-primary">{comment.user_name ?? 'User'}</span>
-            <span className="text-meta text-text-muted">{timeAgo(comment.created_at)}</span>
-          </div>
-          <p className="text-body text-text-primary mt-0.5 whitespace-pre-wrap">{comment.body}</p>
-          {(comment.attachment_urls ?? []).length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-1.5">
-              {comment.attachment_urls.map((url, i) => (
-                <a key={i} href={url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-meta text-primary-text hover:underline bg-primary-subtle px-2 py-0.5 rounded-xs border border-primary-border">
-                  <Link2 size={10} /> Attachment {i + 1}
-                </a>
-              ))}
-            </div>
-          )}
-          <div className="flex items-center gap-3 mt-1">
-            {depth === 0 && (
-              <button type="button" onClick={() => onReply(comment.id)} className="text-meta text-text-secondary hover:text-primary-text">Reply</button>
-            )}
-            {isOwn && (
-              <button type="button" onClick={handleDelete} className="text-meta text-text-muted hover:text-danger flex items-center gap-0.5">
-                <Trash2 size={10} /> Delete
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-      {(comment.replies ?? []).map((reply) => (
-        <CommentItem key={reply.id} comment={reply} currentUserId={currentUserId} onDelete={onDelete} onReply={onReply} depth={depth + 1} />
-      ))}
-    </div>
-  )
+/** Replies are nested in the data; the kit thread is one list, oldest first, each reply naming who it answers. */
+function flatten(comments: TicketComment[], parentName?: string): { comment: TicketComment; replyingTo?: string }[] {
+  return comments.flatMap((c) => [
+    { comment: c, replyingTo: parentName },
+    ...flatten(c.replies ?? [], c.user_name ?? 'User'),
+  ])
 }
 
 export default function TicketCommentThread({ comments, currentUserId, onAdd, onDelete }: Props) {
@@ -110,70 +31,135 @@ export default function TicketCommentThread({ comments, currentUserId, onAdd, on
   const [attachmentUrl, setAttachmentUrl] = useState('')
   const [showUrlField, setShowUrlField] = useState(false)
   const [replyingTo, setReplyingTo] = useState<string | undefined>()
-  const [sending, setSending] = useState(false)
+  // Comments deleted but still inside their 10s Undo window.
+  const [pendingDelete, setPendingDelete] = useState<Record<string, ReturnType<typeof setTimeout>>>({})
+  const timers = useRef(pendingDelete)
+  timers.current = pendingDelete
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+
+  function handleDelete(id: string) {
+    const t = setTimeout(() => { onDelete(id) }, UNDO_MS)
+    setPendingDelete((prev) => ({ ...prev, [id]: t }))
+  }
+
+  function handleUndo(id: string) {
+    const t = timers.current[id]
+    if (t) clearTimeout(t)
+    setPendingDelete((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+  }
 
   async function handleSend() {
     if (!body.trim()) return
-    setSending(true)
-    try {
-      await onAdd(body.trim(), replyingTo, attachmentUrl.trim() || undefined)
-      setBody('')
-      setAttachmentUrl('')
-      setShowUrlField(false)
-      setReplyingTo(undefined)
-    } finally {
-      setSending(false)
-    }
+    // Throws on failure: the box keeps the text and shows its error toast.
+    await onAdd(body.trim(), replyingTo, attachmentUrl.trim() || undefined)
+    setBody('')
+    setAttachmentUrl('')
+    setShowUrlField(false)
+    setReplyingTo(undefined)
   }
 
-  return (
-    <div className="flex flex-col gap-0">
-      {comments.length === 0 && (
-        <p className="text-body text-text-muted text-center py-4">No comments yet.</p>
-      )}
-      {comments.map((c) => (
-        <CommentItem key={c.id} comment={c} currentUserId={currentUserId} onDelete={onDelete} onReply={setReplyingTo} />
-      ))}
+  const all = useMemo(() => flatten(comments), [comments])
+  const replyTarget = replyingTo ? all.find((x) => x.comment.id === replyingTo)?.comment : undefined
 
-      {/* Input */}
-      <div className="mt-4 border border-border-light rounded-[10px] p-3 bg-surface">
-        {replyingTo && (
-          <div className="flex items-center gap-2 mb-2 text-meta text-primary-text">
-            Replying to comment
-            <button type="button" onClick={() => setReplyingTo(undefined)} className="text-danger hover:underline">Cancel</button>
+  const items: ThreadItem[] = all.map(({ comment, replyingTo: to }) => {
+    const base = { id: comment.id, who: comment.user_name ?? 'User', when: comment.created_at }
+    if (pendingDelete[comment.id]) {
+      return {
+        ...base,
+        text: 'Comment deleted.',
+        actions: (
+          <>
+            <Button variant="ghost" size="sm" onClick={() => handleUndo(comment.id)}>Undo</Button>
+            <span className="text-meta text-text-muted">(10s)</span>
+          </>
+        ),
+      }
+    }
+    const isOwn = comment.user_id === currentUserId
+    const isTop = !to
+    return {
+      ...base,
+      text: comment.body,
+      replyingTo: to,
+      attachments:
+        (comment.attachment_urls ?? []).length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {comment.attachment_urls.map((url, i) => (
+              <a
+                key={i}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-meta text-primary-text hover:underline bg-primary-subtle px-2 py-0.5 rounded-xs border border-primary-border"
+              >
+                <Link2 size={10} /> Attachment {i + 1}
+              </a>
+            ))}
           </div>
-        )}
-        <textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Add a comment..."
-          rows={2}
-          onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSend() }}
-          className="w-full text-body text-text-primary placeholder:text-text-muted focus:outline-hidden resize-none"
-        />
-        {showUrlField && (
-          <input
-            type="url"
-            value={attachmentUrl}
-            onChange={(e) => setAttachmentUrl(e.target.value)}
-            placeholder="Paste attachment URL..."
-            className="w-full mt-2 px-3 py-1.5 border border-border rounded-[6px] text-body text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden"
-          />
-        )}
-        <div className="flex items-center justify-between mt-2">
-          <button type="button" onClick={() => setShowUrlField(!showUrlField)} className="flex items-center gap-1 text-meta text-text-secondary hover:text-primary-text">
-            <Link2 size={12} /> Attach URL
-          </button>
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={!body.trim() || sending}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-          >
-            <Send size={13} /> {sending ? 'Sending...' : 'Send'}
-          </button>
+        ) : undefined,
+      actions:
+        isTop || isOwn ? (
+          <>
+            {isTop && (
+              <Button variant="ghost" size="sm" onClick={() => { setReplyingTo(comment.id); textareaRef.current?.focus() }}>
+                <CornerDownRight size={12} /> Reply
+              </Button>
+            )}
+            {isOwn && (
+              <Button variant="ghost" size="sm" className="text-text-muted hover:text-danger" onClick={() => handleDelete(comment.id)}>
+                <Trash2 size={12} /> Delete
+              </Button>
+            )}
+          </>
+        ) : undefined,
+    }
+  })
+
+  return (
+    <div className="flex flex-col gap-4">
+      <CommentThread items={items} onWrite={() => textareaRef.current?.focus()} />
+
+      {replyingTo && (
+        <div className="flex items-center gap-2 text-meta text-primary-text">
+          Replying to {replyTarget?.user_name ?? 'comment'}
+          <Button variant="ghost" size="sm" onClick={() => setReplyingTo(undefined)}>
+            <X size={12} /> Cancel
+          </Button>
         </div>
-      </div>
+      )}
+      {showUrlField && (
+        <Input
+          type="url"
+          value={attachmentUrl}
+          onChange={(e) => setAttachmentUrl(e.target.value)}
+          placeholder="Paste attachment URL..."
+          aria-label="Attachment URL"
+        />
+      )}
+      <CommentBox
+        value={body}
+        onChange={setBody}
+        onSend={handleSend}
+        textareaRef={textareaRef}
+        placeholder="Add a comment..."
+        tools={
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Attach URL"
+            aria-pressed={showUrlField}
+            onClick={() => setShowUrlField(!showUrlField)}
+          >
+            <Link2 size={14} />
+          </Button>
+        }
+      />
     </div>
   )
 }
