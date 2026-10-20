@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import Sidebar, { type SidebarRole } from './Sidebar'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -52,26 +54,23 @@ export default function DashboardLayout({
       <main className="ml-0 md:ml-[240px] min-h-screen flex flex-col">
         {/* Mobile top bar with hamburger — sidebar is off-canvas below md */}
         <div className="md:hidden sticky top-0 z-sticky flex items-center gap-2 h-14 px-4 bg-surface border-b border-border-light">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setDrawerOpen((v) => !v)}
             aria-label="Toggle navigation menu"
             aria-expanded={drawerOpen}
-            className="w-11 h-11 -ml-2 flex items-center justify-center rounded-[8px] text-text-secondary hover:text-text-primary hover:bg-surface-control transition-colors"
+            className="-ml-2"
           >
             {drawerOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-          <span className="text-text-primary font-medium text-[18px] tracking-tight select-none">V2E</span>
+          </Button>
+          <span className="text-text-primary font-medium text-section tracking-tight select-none">V2E</span>
         </div>
 
         {title && (
-          <header className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-4">
-            <h1 className="text-page-title font-medium text-text-primary leading-tight">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="mt-1 text-[15px] text-text-secondary">{subtitle}</p>
-            )}
-          </header>
+          <div className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8">
+            <PageHeader title={title} meta={subtitle} />
+          </div>
         )}
 
         <div className="flex-1 px-4 sm:px-6 md:px-8 pb-8">{children}</div>

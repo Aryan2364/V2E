@@ -7,8 +7,10 @@ import type { BulletinBoard } from '@/lib/types/communication'
 import Link from 'next/link'
 import { Layout, Plus, Trash2, MessageSquare, Eye, MessageCircle } from 'lucide-react'
 import StyledSelect from '@/components/ui/StyledSelect'
+import { PageHeader } from '@/components/shell/page-header'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { toast } from '@/components/ui/sonner'
@@ -84,21 +86,18 @@ export default function BulletinBoardsPage() {
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-page-title font-medium text-text-primary">Bulletin Boards</h1>
-            <p className="text-label text-text-secondary mt-0.5">Company and team boards for posts and updates</p>
-          </div>
-          {isHR && (
-            <button
-              onClick={() => setShowCreate(s => !s)}
-              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover transition-colors"
-            >
-              <Plus size={16} />
-              New board
-            </button>
-          )}
-        </div>
+        <PageHeader
+          title="Bulletin boards"
+          meta="Company and team boards for posts and updates"
+          actions={
+            isHR ? (
+              <Button onClick={() => setShowCreate(s => !s)}>
+                <Plus size={16} />
+                New board
+              </Button>
+            ) : undefined
+          }
+        />
 
         {showCreate && (
           <form onSubmit={handleCreate} className="bg-surface border border-border-light rounded-card p-4 mb-6 flex flex-col gap-4">
@@ -168,9 +167,11 @@ export default function BulletinBoardsPage() {
                     {board.description && <p className="text-meta text-text-secondary mt-0.5 line-clamp-2">{board.description}</p>}
                   </div>
                   {isAdmin && (
-                    <button onClick={() => setBoardToDelete(board)} aria-label="Delete board" className="p-1.5 text-text-muted hover:text-danger hover:bg-danger-bg rounded-control transition-colors">
-                      <Trash2 size={14} />
-                    </button>
+                    <Tooltip label="Delete board">
+                      <Button variant="ghost" size="icon" onClick={() => setBoardToDelete(board)} aria-label="Delete board">
+                        <Trash2 size={14} />
+                      </Button>
+                    </Tooltip>
                   )}
                 </div>
                 <div className="flex items-center gap-3 text-meta text-text-muted">

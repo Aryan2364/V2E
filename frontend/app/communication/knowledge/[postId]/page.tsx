@@ -10,7 +10,9 @@ import type { KnowledgePost, KnowledgeComment } from '@/lib/types/communication'
 import { formatDate } from '@/lib/format'
 import Link from 'next/link'
 import { Trash2, MessageSquare } from 'lucide-react'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 const REACTIONS = ['👍', '❤️', '💡', '🎉', '🔥']
 
@@ -89,20 +91,9 @@ export default function KnowledgePostPage() {
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-2xl mx-auto">
-        <Breadcrumb className="mb-4">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink render={<Link href="/communication/knowledge" />}>Knowledge hub</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{post?.title ?? "Post"}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <PageHeader title={post.title} trail={[{ label: 'Knowledge hub', href: '/communication/knowledge' }]} />
 
         <div className="bg-surface border border-border-light rounded-card p-6 mb-4">
-          <h1 className="text-section font-medium text-text-primary mb-2">{post.title}</h1>
           <div className="flex items-center gap-3 text-meta text-text-muted mb-4">
             <span>{post.created_by?.name}</span>
             <span>·</span>
@@ -127,7 +118,8 @@ export default function KnowledgePostPage() {
                 <button
                   key={emoji}
                   onClick={() => handleReact(emoji)}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-label border transition-colors ${mine ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
+                  aria-pressed={!!mine}
+                  className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring flex items-center gap-1 px-2.5 py-1 rounded-full text-label border transition-colors ${mine ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
                 >
                   {emoji} {count > 0 && <span className="text-meta font-medium">{count}</span>}
                 </button>
@@ -139,7 +131,7 @@ export default function KnowledgePostPage() {
         <div className="bg-surface border border-border-light rounded-card p-6">
           <h2 className="text-label font-medium text-text-primary mb-4 flex items-center gap-1.5">
             <MessageSquare size={15} />
-            {post.comments?.length ?? 0} Comments
+            {post.comments?.length ?? 0} comments
           </h2>
 
           <CommentThread
@@ -148,13 +140,11 @@ export default function KnowledgePostPage() {
             items={(post.comments ?? []).flatMap((c): ThreadItem[] => {
               const deleteButton = (x: KnowledgeComment) =>
                 x.created_by_user_id === user?.id || isHR ? (
-                  <button
-                    onClick={() => handleDeleteComment(x.id)}
-                    aria-label="Delete comment"
-                    className="p-1 text-text-muted hover:text-danger rounded-xs transition-colors"
-                  >
-                    <Trash2 size={12} />
-                  </button>
+                  <Tooltip label="Delete comment">
+                    <Button variant="ghost" size="icon" onClick={() => handleDeleteComment(x.id)} aria-label="Delete comment">
+                      <Trash2 size={12} />
+                    </Button>
+                  </Tooltip>
                 ) : undefined
               return [
                 {
@@ -166,7 +156,7 @@ export default function KnowledgePostPage() {
                     <>
                       <button
                         onClick={() => { setReplyTo({ id: c.id, name: c.created_by.name }); commentRef.current?.focus() }}
-                        className="text-meta text-primary-text hover:underline"
+                        className="rounded-xs text-meta text-primary-text hover:underline outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring "
                       >
                         Reply
                       </button>
@@ -189,7 +179,7 @@ export default function KnowledgePostPage() {
           {replyTo && (
             <div className="flex items-center gap-2 mb-2 text-meta text-text-secondary bg-surface-control px-3 py-1.5 rounded-control">
               <span>Replying to <strong>{replyTo.name}</strong></span>
-              <button onClick={() => setReplyTo(null)} aria-label="Cancel reply" className="ml-auto text-text-muted hover:text-text-secondary">✕</button>
+              <Button variant="ghost" size="icon" className="ml-auto" onClick={() => setReplyTo(null)} aria-label="Cancel reply">✕</Button>
             </div>
           )}
 

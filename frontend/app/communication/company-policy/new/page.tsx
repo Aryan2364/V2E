@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { createPolicy } from '@/lib/api/company-policy'
 import PolicyForm from '@/components/company-policy/PolicyForm'
-import { POLICY_BASE, POLICY_REASONS, PolicyBreadcrumb, policyHref, usePolicyPermissions } from '@/components/company-policy/shared'
+import { PageHeader } from '@/components/shell/page-header'
+import { POLICY_BASE, POLICY_REASONS, policyHref, usePolicyPermissions } from '@/components/company-policy/shared'
 
 export default function NewPolicyPage() {
   const { user } = useAuth()
@@ -14,8 +15,7 @@ export default function NewPolicyPage() {
 
   return (
     <div className="max-w-3xl">
-      <PolicyBreadcrumb trail={[{ label: 'Company policy', href: POLICY_BASE }, { label: 'New policy' }]} />
-      <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary mb-6 leading-tight">Create company policy</h1>
+      <PageHeader title="Create company policy" trail={[{ label: 'Company policy', href: POLICY_BASE }]} />
       <PolicyForm
         initial={{ title: '', description: '' }}
         submitLabel="Create policy"

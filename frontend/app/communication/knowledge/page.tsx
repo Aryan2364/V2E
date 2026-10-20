@@ -8,6 +8,9 @@ import { formatDate } from '@/lib/format'
 import Link from 'next/link'
 import { BookOpen, Plus, Pin, Trash2, Search, Tag } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 import {
   Pagination,
   PaginationBar,
@@ -119,19 +122,16 @@ function KnowledgePageInner() {
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-page-title font-medium text-text-primary">Knowledge Hub</h1>
-            <p className="text-label text-text-secondary mt-0.5">Tips, guides and insights shared by the team</p>
-          </div>
-          <Link
-            href="/communication/knowledge/new"
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover transition-colors"
-          >
-            <Plus size={16} />
-            Share
-          </Link>
-        </div>
+        <PageHeader
+          title="Knowledge hub"
+          meta="Tips, guides and insights shared by the team"
+          actions={
+            <Button render={<Link href="/communication/knowledge/new" />}>
+              <Plus size={16} />
+              Share
+            </Button>
+          }
+        />
 
         {/* Search */}
         <div className="relative mb-4">
@@ -151,8 +151,9 @@ function KnowledgePageInner() {
               <button
                 key={tag}
                 onClick={() => setActiveTag(activeTag === tag ? '' : tag)}
+                aria-pressed={activeTag === tag}
                 className={[
-                  'flex items-center gap-1 px-2.5 py-1 rounded-full text-meta font-medium border transition-colors',
+                  'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring flex items-center gap-1 px-2.5 py-1 rounded-full text-meta font-medium border transition-colors',
                   activeTag === tag
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-surface text-text-secondary border-border-light hover:border-primary hover:text-primary-text',
@@ -245,14 +246,18 @@ function KnowledgeCard({ post, userId, isHR, onPin, onDelete, onReact }: {
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {isHR && (
-            <button onClick={() => onPin(post.id)} className={`p-1.5 rounded-control transition-colors ${post.is_pinned ? 'text-primary-text hover:bg-primary-subtle' : 'text-text-muted hover:bg-surface-control'}`}>
-              <Pin size={14} />
-            </button>
+            <Tooltip label={post.is_pinned ? 'Unpin post' : 'Pin post'}>
+              <Button variant="ghost" size="icon" onClick={() => onPin(post.id)} aria-label={post.is_pinned ? 'Unpin post' : 'Pin post'} aria-pressed={!!post.is_pinned} className={post.is_pinned ? 'text-primary-text' : undefined}>
+                <Pin size={14} />
+              </Button>
+            </Tooltip>
           )}
           {(post.created_by_user_id === userId || isHR) && (
-            <button onClick={() => onDelete(post.id)} className="p-1.5 rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
-              <Trash2 size={14} />
-            </button>
+            <Tooltip label="Delete post">
+              <Button variant="ghost" size="icon" onClick={() => onDelete(post.id)} aria-label="Delete post">
+                <Trash2 size={14} />
+              </Button>
+            </Tooltip>
           )}
         </div>
       </div>
@@ -265,7 +270,8 @@ function KnowledgeCard({ post, userId, isHR, onPin, onDelete, onReact }: {
             <button
               key={emoji}
               onClick={() => onReact(post.id, emoji)}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-meta border transition-colors ${mine ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
+              aria-pressed={!!mine}
+              className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring flex items-center gap-1 px-2 py-0.5 rounded-full text-meta border transition-colors ${mine ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
             >
               {emoji} {count > 0 && <span>{count}</span>}
             </button>

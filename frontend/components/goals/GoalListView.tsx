@@ -22,7 +22,6 @@ import CreateGoalModal from './CreateGoalModal'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
 import { Count } from '@/components/ui/badge'
-import { SHOW_MORE_LINK } from '@/components/ui/truncate'
 import { EmptyState } from '@/components/ui/empty-state'
 import {
   CountBadge,
@@ -406,9 +405,9 @@ export default function GoalListView() {
           resultCount={filtered.length}
         />
         {isFiltered && (
-          <button onClick={clearFilters} className={`${SHOW_MORE_LINK} inline-flex items-center gap-1`}>
+          <Button type="button" variant="secondary" size="sm" onClick={clearFilters}>
             <X size={14} /> Clear
-          </button>
+          </Button>
         )}
       </div>
 

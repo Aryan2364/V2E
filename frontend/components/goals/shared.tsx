@@ -178,7 +178,7 @@ export function GoalStatusPicker({
                 aria-selected={isCurrent}
                 disabled={isCheckIn}
                 onClick={() => pick(s)}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-label text-left transition-colors ${
+                className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2 px-3 py-2 text-label text-left transition-colors ${
                   isCheckIn ? 'cursor-default text-text-secondary' : 'text-text-primary hover:bg-surface-control'
                 }`}
               >

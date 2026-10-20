@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Download, Loader2, FileWarning, Lock } from 'lucide-react'
 import type { MaterialViewData } from '@/lib/types/learning'
 import OfficeViewer from './OfficeViewer'
+import { Button } from '@/components/ui/button'
 
 /**
  * In-app document viewer. Renders a material inline — PDF (incl. Office docs
@@ -48,12 +49,9 @@ export default function MaterialViewer({
       {/* Download affordance only when allowed */}
       {!viewOnly && onDownload && (
         <div className="flex justify-end mb-3">
-          <button
-            onClick={onDownload}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
-          >
+          <Button onClick={onDownload}>
             <Download size={15} /> Download
-          </button>
+          </Button>
         </div>
       )}
       {viewOnly && (

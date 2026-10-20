@@ -3,6 +3,8 @@
 import { Trash2 } from 'lucide-react'
 import StyledSelect from '@/components/ui/StyledSelect'
 import type { ProjectMember, ProjectMemberRole, TaskVisibility } from '@/lib/types/projects'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 interface MemberRowProps {
   member: ProjectMember
@@ -48,13 +50,11 @@ export default function MemberRow({ member, currentUserId, canEdit, onRoleChange
               { value: 'all_member_tasks', label: 'All tasks' },
             ]}
           />
-          <button
-            type="button"
-            onClick={() => onRemove(member.user_id)}
-            className="p-1.5 rounded-[6px] hover:bg-danger-bg text-danger transition-colors"
-          >
-            <Trash2 size={14} />
-          </button>
+          <Tooltip label="Remove member">
+            <Button type="button" variant="ghost" size="icon" onClick={() => onRemove(member.user_id)} aria-label="Remove member">
+              <Trash2 size={14} />
+            </Button>
+          </Tooltip>
         </>
       ) : (
         <div className="flex items-center gap-2">

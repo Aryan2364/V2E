@@ -25,7 +25,7 @@ export default function BudgetCard({ planned, actual, currency }: BudgetCardProp
         <span className="font-medium text-text-primary">{planned ? fmt(planned, currency) : '—'}</span>
       </div>
       <div className="flex justify-between text-body mb-3">
-        <span className="text-text-secondary">Actual Spent</span>
+        <span className="text-text-secondary">Actual spent</span>
         <span className={`font-medium ${over ? 'text-danger' : 'text-text-primary'}`}>
           {actual ? fmt(actual, currency) : '—'}
         </span>

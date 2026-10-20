@@ -8,7 +8,7 @@ import Tooltip from '@/components/ui/tooltip'
 
 const STATUS_BADGE: Record<ProjectStatus, { bg: string; text: string; border: string; label: string }> = {
   active:    { bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success-border)', label: 'Active' },
-  on_hold:   { bg: 'var(--warning-bg)', text: 'var(--warning)', border: 'var(--warning-border)', label: 'On Hold' },
+  on_hold:   { bg: 'var(--warning-bg)', text: 'var(--warning)', border: 'var(--warning-border)', label: 'On hold' },
   completed: { bg: 'var(--primary-subtle)', text: 'var(--primary-text)', border: 'var(--primary-border)', label: 'Completed' },
   cancelled: { bg: 'var(--danger-bg)', text: 'var(--danger)', border: 'var(--danger-border)', label: 'Cancelled' },
 }

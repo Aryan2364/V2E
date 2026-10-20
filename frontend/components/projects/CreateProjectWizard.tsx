@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
+import Tooltip from '@/components/ui/tooltip'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -84,13 +85,9 @@ function UserSearchDropdown({
         </div>
         <span className="text-body text-text-primary flex-1 truncate">{selected.name}</span>
         <span className="text-meta text-text-muted truncate">{selected.role_title}</span>
-        <button
-          type="button"
-          onClick={() => onSelect(null)}
-          className="p-0.5 rounded-xs hover:bg-surface-control text-text-muted hover:text-text-primary transition-colors shrink-0"
-        >
+        <Button type="button" variant="in-field" size="icon-sm" onClick={() => onSelect(null)} aria-label="Clear selection" className="shrink-0">
           <X size={13} />
-        </button>
+        </Button>
       </div>
     )
   }
@@ -118,7 +115,7 @@ function UserSearchDropdown({
               key={u.user_id}
               type="button"
               onClick={() => { onSelect(u); setQuery(''); setOpen(false) }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-sunken transition-colors text-left"
+              className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-sunken transition-colors text-left"
             >
               <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0`}>
                 {getInitials(u.name)}
@@ -203,7 +200,7 @@ function MultiUserSearch({
                 type="button"
                 onClick={() => { if (!already) { onAdd(u); setQuery(''); setOpen(false) } }}
                 disabled={already}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${already ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-sunken'}`}
+                className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${already ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-sunken'}`}
               >
                 <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0`}>
                   {getInitials(u.name)}
@@ -529,9 +526,11 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
                       { value: 'all_member_tasks', label: 'All tasks' },
                     ]}
                   />
-                  <button type="button" onClick={() => removeMember(m.user_id)} className="p-1 rounded-xs hover:bg-danger-bg text-danger transition-colors">
-                    <X size={13} />
-                  </button>
+                  <Tooltip label="Remove member">
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removeMember(m.user_id)} aria-label="Remove member">
+                      <X size={13} />
+                    </Button>
+                  </Tooltip>
                 </div>
               ))}
             </div>

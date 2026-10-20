@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth/context'
 import { createKnowledgePost } from '@/lib/api/knowledge'
 import Link from 'next/link'
 import { X } from 'lucide-react'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { PageHeader } from '@/components/shell/page-header'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -72,21 +72,9 @@ export default function NewKnowledgePostPage() {
     <div className="min-h-screen bg-surface-sunken p-6">
       {unsaved.warning}
       <div className="max-w-2xl mx-auto">
-        <Breadcrumb className="mb-4">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink render={<Link href="/communication/knowledge" />}>Knowledge hub</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>New post</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <PageHeader title="Share knowledge" trail={[{ label: 'Knowledge hub', href: '/communication/knowledge' }]} />
 
         <div className="bg-surface border border-border-light rounded-card p-6">
-          <h1 className="text-section font-medium text-text-primary mb-6">Share knowledge</h1>
-
           {err && (
             <div className="mb-4 p-3 bg-danger-bg border border-danger-border rounded-control text-label text-danger">
               {err}
@@ -130,16 +118,16 @@ export default function NewKnowledgePostPage() {
                   placeholder="For example, onboarding"
                   className="flex-1 border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
                 />
-                <button type="button" onClick={addTag} className="bg-surface-control text-text-secondary px-3 py-2 rounded-control text-label font-medium hover:bg-surface-control-pressed transition-colors">
+                <Button type="button" variant="secondary" onClick={addTag}>
                   Add
-                </button>
+                </Button>
               </div>
               {form.tags.length > 0 && (
                 <div className="flex gap-1.5 mt-2 flex-wrap">
                   {form.tags.map(tag => (
                     <span key={tag} className="flex items-center gap-1 text-meta bg-primary-subtle text-primary-text px-2 py-0.5 rounded-full">
                       {tag}
-                      <button type="button" onClick={() => removeTag(tag)} className="hover:text-primary-text">
+                      <button type="button" onClick={() => removeTag(tag)} aria-label={`Remove tag ${tag}`} className="rounded-xs hover:text-primary-text outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring ">
                         <X size={10} />
                       </button>
                     </span>

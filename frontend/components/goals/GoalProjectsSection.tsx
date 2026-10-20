@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowUpRight, FolderKanban, Link2Off, Loader2, Lock, Plus } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import StyledSelect from '@/components/ui/StyledSelect'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/Toast'
@@ -13,6 +13,7 @@ import { goalsApi } from '@/lib/api/goals'
 import type { Goal, GoalCandidateProject, LinkedProject } from '@/lib/types/goals'
 import { CountBadge, formatDate } from './shared'
 import { Label } from '@/components/ui/label'
+import Tooltip from '@/components/ui/tooltip'
 
 const PROJECT_STATUS_META: Record<string, { label: string; bg: string; text: string; border: string }> = {
   active: { label: 'Active', bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success-border)' },
@@ -64,14 +65,11 @@ export default function GoalProjectsSection({
           </p>
         </div>
         {canEdit && (
-          <button
-            onClick={() => setLinkOpen(true)}
-            aria-label="Link a project"
-            title="Link a project to this goal"
-            className="w-7 h-7 shrink-0 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground flex items-center justify-center transition-colors"
-          >
-            <Plus size={16} />
-          </button>
+          <Tooltip label="Link a project to this goal">
+            <Button variant="secondary" size="icon" onClick={() => setLinkOpen(true)} aria-label="Link a project" className="shrink-0">
+              <Plus size={16} />
+            </Button>
+          </Tooltip>
         )}
       </header>
 
@@ -190,14 +188,11 @@ function ProjectRow({
       </Link>
 
       {canEdit && (
-        <button
-          onClick={() => setUnlinkOpen(true)}
-          title="Unlink from this goal"
-          aria-label="Unlink project"
-          className="w-6 h-6 shrink-0 rounded-control flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
-        >
-          <Link2Off size={13} />
-        </button>
+        <Tooltip label="Unlink from this goal">
+          <Button variant="ghost" size="icon" onClick={() => setUnlinkOpen(true)} aria-label="Unlink project" className="shrink-0">
+            <Link2Off size={13} />
+          </Button>
+        </Tooltip>
       )}
 
       <ConfirmDialog
@@ -299,16 +294,11 @@ function LinkProjectModal({
         )}
 
         <div className="flex items-center justify-between gap-3 pt-4 border-t border-border-light">
-          <button
-            type="button"
-            onClick={() => router.push('/dashboard/projects/new')}
-            className="text-label font-medium text-primary-text hover:text-primary-text transition-colors"
-          >
+          <Button type="button" variant="secondary" onClick={() => router.push('/dashboard/projects/new')}>
             Create a project in Work
-          </button>
-          <Button type="submit" disabled={saving || !selected}>
-            {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
-            {saving ? 'Linking…' : 'Link project'}
+          </Button>
+          <Button type="submit" disabled={saving || !selected} loading={saving} loadingLabel="Linking">
+            Link project
           </Button>
         </div>
       </form>

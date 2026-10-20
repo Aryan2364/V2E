@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Loader2, RefreshCw } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
@@ -11,6 +10,8 @@ import { PermissionsUnavailable, useGoalPermissions, useGoalRefData } from '@/co
 import CreateGoalModal from '@/components/goals/CreateGoalModal'
 import StrategyMapCanvas from '@/components/goals/StrategyMapCanvas'
 import type { BandKey } from '@/components/goals/strategy-map-layout'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 /**
  * Strategic Map — the whole company's goals on one canvas, laid out the way a
@@ -22,7 +23,6 @@ import type { BandKey } from '@/components/goals/strategy-map-layout'
  * still made on a goal, so the map can never disagree with the goals.
  */
 export default function StrategyMapPage() {
-  const router = useRouter()
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
   const { perms, loading: permsLoading, failed: permsFailed, retry: retryPerms } = useGoalPermissions(orgId)
@@ -65,37 +65,23 @@ export default function StrategyMapPage() {
     // Full-bleed, fixed-height column: the header and band labels stay put and
     // only the canvas scrolls (DESIGN_RULES Part 3 — sticky chrome).
     <div className="flex flex-col gap-3 h-[calc(100dvh-56px)] -mt-6 lg:-mt-8 -mb-6 lg:-mb-8 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-4 pb-4 overflow-hidden">
-      {/* Breadcrumb — the way back out of the canvas, always visible. */}
-      <nav
-        aria-label="Breadcrumb"
-        className="flex items-center gap-1.5 text-label text-text-muted shrink-0"
-      >
-        <button
-          onClick={() => router.push('/goals/list')}
-          className="font-medium text-text-secondary hover:text-primary-text transition-colors rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          Goals
-        </button>
-        <span className="text-muted">›</span>
-        <span className="font-medium text-text-primary" aria-current="page">
-          Strategic Map
-        </span>
-      </nav>
-
-      <div className="shrink-0">
-        <div className="min-w-0">
-          <h1 className="text-page-title font-medium text-text-primary leading-tight">Strategic Map</h1>
-          <p className="text-label text-text-secondary mt-1">
-            Every goal in its band, with a line to the goals it supports.{' '}
-            {!loading && (
-              <span className="text-text-muted">
-                {map.goals.length} goal{map.goals.length === 1 ? '' : 's'} · {linkCount} connection
-                {linkCount === 1 ? '' : 's'}
-                {linkCount > 0 && ' · click a goal to keep its links traced, double-click to open it'}
-              </span>
-            )}
-          </p>
-        </div>
+      <div className="shrink-0 [&>*:last-child]:mb-0">
+        <PageHeader
+          title="Strategic map"
+          trail={[{ label: 'Goals', href: '/goals/list' }]}
+          meta={
+            <>
+              Every goal in its band, with a line to the goals it supports.{' '}
+              {!loading && (
+                <span>
+                  {map.goals.length} goal{map.goals.length === 1 ? '' : 's'} · {linkCount} connection
+                  {linkCount === 1 ? '' : 's'}
+                  {linkCount > 0 && ' · click a goal to keep its links traced, double-click to open it'}
+                </span>
+              )}
+            </>
+          }
+        />
       </div>
 
       {loading ? (
@@ -105,12 +91,9 @@ export default function StrategyMapPage() {
       ) : error ? (
         <div className="flex-1 min-h-0 rounded-card border border-border-light bg-surface flex flex-col items-center justify-center gap-3 text-center px-6">
           <p className="text-label text-text-secondary">The map couldn&apos;t be loaded.</p>
-          <button
-            onClick={() => void load()}
-            className="inline-flex items-center gap-2 h-9 px-4 rounded-control bg-primary text-primary-foreground text-label font-medium hover:bg-primary-hover transition-colors"
-          >
+          <Button onClick={() => void load()}>
             <RefreshCw size={14} /> Try again
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="flex-1 min-h-0">

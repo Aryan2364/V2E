@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Plus, FileText, Search, BookOpen, Users, RefreshCw } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { getPolicies } from '@/lib/api/company-policy'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import { POLICY_BASE, POLICY_REASONS, policyHref, usePolicyPermissions } from '@/components/company-policy/shared'
 import type { CompanyPolicy, PolicyStatus } from '@/lib/types/company-policy'
@@ -84,46 +86,35 @@ export default function CompanyPolicyPage() {
   const filtering = !!search || filter !== 'all'
 
   const newPolicy = (variant: 'primary' | 'secondary') => {
-    const cls =
-      variant === 'primary'
-        ? 'flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground text-label font-medium px-4 py-2.5 min-h-[44px] sm:min-h-0 rounded-control transition-colors'
-        : 'flex items-center justify-center gap-2 bg-surface text-primary-text border-2 border-primary hover:bg-primary-subtle text-label font-medium px-4 py-2 rounded-control transition-colors'
     if (canWrite === true) {
       return (
-        <Link href={`${POLICY_BASE}/new`} className={cls}>
+        <Button variant={variant} render={<Link href={`${POLICY_BASE}/new`} />}>
           <Plus size={16} />
-          New Policy
-        </Link>
+          New policy
+        </Button>
       )
     }
     return (
       <PermissionTooltip allowed={canWrite} reason={POLICY_REASONS.create}>
-        <button
-          type="button"
-          disabled
-          className="flex items-center justify-center gap-2 bg-surface-control-pressed text-text-muted text-label font-medium px-4 py-2.5 min-h-[44px] sm:min-h-0 rounded-control cursor-not-allowed"
-        >
+        <Button type="button" disabled>
           <Plus size={16} />
-          New Policy
-        </button>
+          New policy
+        </Button>
       </PermissionTooltip>
     )
   }
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-start sm:items-center justify-between gap-3 mb-6 flex-wrap">
-        <div className="min-w-0">
-          <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary leading-tight">Company Policy</h1>
-          <p className="text-label text-text-secondary mt-0.5">
-            {status === 'ready'
-              ? `${policies.length} polic${policies.length !== 1 ? 'ies' : 'y'}`
-              : 'Policies your organization asks everyone to read'}
-          </p>
-        </div>
-        {newPolicy('primary')}
-      </div>
+      <PageHeader
+        title="Company policy"
+        meta={
+          status === 'ready'
+            ? `${policies.length} polic${policies.length !== 1 ? 'ies' : 'y'}`
+            : 'Policies your organization asks everyone to read'
+        }
+        actions={newPolicy('primary')}
+      />
 
       {/* Filters */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
@@ -141,9 +132,11 @@ export default function CompanyPolicyPage() {
         {(['all', 'draft', 'published', 'archived'] as const).map((s) => (
           <button
             key={s}
+            type="button"
+            aria-pressed={filter === s}
             onClick={() => setFilter(s)}
             className={[
-              'px-3 py-1.5 min-h-[36px] rounded-control text-meta font-medium capitalize transition-colors',
+              'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring px-3 py-1.5 min-h-[36px] rounded-control text-meta font-medium capitalize transition-colors',
               filter === s
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-surface text-text-secondary border border-border-light hover:border-primary hover:text-primary-text',
@@ -165,13 +158,9 @@ export default function CompanyPolicyPage() {
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <h3 className="text-card-heading font-medium text-text-primary mb-1">Policies could not be loaded</h3>
           <p className="text-label text-text-secondary mb-4">Check your connection and try again.</p>
-          <button
-            type="button"
-            onClick={load}
-            className="flex items-center gap-2 bg-surface text-primary-text border-2 border-primary hover:bg-primary-subtle text-label font-medium px-4 py-2 rounded-control transition-colors"
-          >
+          <Button type="button" variant="secondary" onClick={load}>
             <RefreshCw size={14} /> Retry
-          </button>
+          </Button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -182,13 +171,9 @@ export default function CompanyPolicyPage() {
             <>
               <h3 className="text-card-heading font-medium text-text-primary mb-1">No policies match</h3>
               <p className="text-label text-text-secondary mb-4">Nothing matches your search and filter.</p>
-              <button
-                type="button"
-                onClick={() => { setSearch(''); setFilter('all') }}
-                className="bg-surface text-primary-text border-2 border-primary hover:bg-primary-subtle text-label font-medium px-4 py-2 rounded-control transition-colors"
-              >
+              <Button type="button" variant="secondary" onClick={() => { setSearch(''); setFilter('all') }}>
                 Clear filters
-              </button>
+              </Button>
             </>
           ) : (
             <>

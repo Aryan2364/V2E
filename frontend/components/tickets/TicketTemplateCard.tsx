@@ -14,8 +14,9 @@ export default function TicketTemplateCard({ template, selected, onSelect }: Pro
     <button
       type="button"
       onClick={onSelect}
+      aria-pressed={selected}
       className={[
-        'w-full text-left p-4 rounded-[12px] border-2 transition-all',
+        'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full text-left p-4 rounded-[12px] border-2 transition-all',
         selected
           ? 'border-primary bg-primary-subtle'
           : 'border-border-light bg-surface hover:border-primary-border hover:shadow-xs',

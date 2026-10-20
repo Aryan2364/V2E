@@ -9,7 +9,6 @@ import {
   Link2Off,
   Pencil,
   Plus,
-  Loader2,
   X,
   Check,
 } from 'lucide-react'
@@ -20,6 +19,8 @@ import { formatValue, type Goal, type GoalLink } from '@/lib/types/goals'
 import LinkGoalModal, { type LinkDirection } from './LinkGoalModal'
 import { CountBadge, GoalStatusBadge, formatDate } from './shared'
 import { inputClass, type EmployeeOption } from './GoalFormFields'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 /**
  * The web, on one goal's page — both directions, both editable from here.
@@ -121,14 +122,11 @@ function LinkList({
           <p className="text-meta text-text-secondary mt-0.5">{hint}</p>
         </div>
         {canEdit && (
-          <button
-            onClick={onAdd}
-            aria-label={heading}
-            title={`Add to “${heading}”`}
-            className="w-7 h-7 shrink-0 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground flex items-center justify-center transition-colors"
-          >
-            <Plus size={16} />
-          </button>
+          <Tooltip label={`Add to “${heading}”`}>
+            <Button variant="secondary" size="icon" onClick={onAdd} aria-label={heading} className="shrink-0">
+              <Plus size={16} />
+            </Button>
+          </Tooltip>
         )}
       </header>
 
@@ -213,7 +211,7 @@ function LinkRow({
         <div className="flex items-start justify-between gap-2">
           <button
             onClick={() => router.push(`/goals/${g.id}`)}
-            className="group text-left min-w-0 flex-1"
+            className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring rounded-xs group text-left min-w-0 flex-1"
           >
             <span className="flex items-center gap-1.5">
               <span className="text-body font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
@@ -227,22 +225,16 @@ function LinkRow({
           </button>
           {canEdit && (
             <div className="flex items-center gap-0.5 shrink-0">
-              <button
-                onClick={() => setEditingNote((v) => !v)}
-                title={link.note ? 'Edit why' : 'Say why this link exists'}
-                aria-label="Edit link note"
-                className="w-6 h-6 rounded-control flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-control transition-colors"
-              >
-                <Pencil size={13} />
-              </button>
-              <button
-                onClick={() => setUnlinkOpen(true)}
-                title="Unlink"
-                aria-label="Unlink goal"
-                className="w-6 h-6 rounded-control flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
-              >
-                <Link2Off size={13} />
-              </button>
+              <Tooltip label={link.note ? 'Edit why' : 'Say why this link exists'}>
+                <Button variant="ghost" size="icon" onClick={() => setEditingNote((v) => !v)} aria-label="Edit link note">
+                  <Pencil size={13} />
+                </Button>
+              </Tooltip>
+              <Tooltip label="Unlink">
+                <Button variant="ghost" size="icon" onClick={() => setUnlinkOpen(true)} aria-label="Unlink goal">
+                  <Link2Off size={13} />
+                </Button>
+              </Tooltip>
             </div>
           )}
         </div>
@@ -268,7 +260,7 @@ function LinkRow({
         {beyond > 0 && (
           <button
             onClick={() => router.push(`/goals/${g.id}`)}
-            className="inline-flex items-center gap-1 mt-1.5 text-meta text-primary-text hover:text-primary-text transition-colors"
+            className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring rounded-xs inline-flex items-center gap-1 mt-1.5 text-meta text-primary-text hover:underline transition-colors"
           >
             <CornerDownRight size={11} />
             {beyond} more {beyond === 1 ? 'goal' : 'goals'} behind this
@@ -298,24 +290,21 @@ function LinkRow({
               autoFocus
             />
             <div className="flex items-center gap-2 mt-1.5">
-              <button
-                onClick={saveNote}
-                disabled={savingNote}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-control bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted text-primary-foreground text-meta font-medium transition-colors"
-              >
-                {savingNote ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+              <Button size="sm" onClick={saveNote} disabled={savingNote} loading={savingNote} loadingLabel="Saving">
+                <Check size={12} />
                 Save
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   setNote(link.note ?? '')
                   setEditingNote(false)
                 }}
                 disabled={savingNote}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-control text-text-secondary hover:bg-surface-control text-meta font-medium transition-colors"
               >
                 <X size={12} /> Cancel
-              </button>
+              </Button>
             </div>
           </div>
         ) : (

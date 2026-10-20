@@ -15,6 +15,7 @@ import {
   type BandKey,
   type MapEdge,
 } from './strategy-map-layout'
+import { Button } from '@/components/ui/button'
 
 /** Palette per band. The four focus areas reuse the Balanced-Scorecard colours
  *  so a goal's colour means the same thing here as on the scorecard; the
@@ -194,19 +195,18 @@ export default function StrategyMapCanvas({ map, canCreate, onAddInBand }: Props
                   </div>
                   {canCreate && band.key !== 'untagged' && (
                     <Tooltip label={`New ${m.label} goal`}>
-                      <button
+                      <Button
+                        variant="secondary"
+                        size="icon"
                         onClick={(e) => {
                           e.stopPropagation()
                           onAddInBand(band.key)
                         }}
                         aria-label={`New ${m.label} goal`}
-                        className="w-7 h-7 shrink-0 rounded-control text-primary-foreground flex items-center justify-center transition-[filter] duration-200"
-                        style={{ backgroundColor: m.dot }}
-                        onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(0.9)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.filter = 'none')}
+                        className="shrink-0"
                       >
                         <Plus size={16} />
-                      </button>
+                      </Button>
                     </Tooltip>
                   )}
                 </div>

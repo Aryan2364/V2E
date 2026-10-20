@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Star } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   onSubmit: (rating: number, comment: string) => void
@@ -38,7 +39,9 @@ export default function RatingWidget({ onSubmit, submitting, existingRating, exi
             onClick={() => setRating(n)}
             onMouseEnter={() => setHovered(n)}
             onMouseLeave={() => setHovered(0)}
-            className="p-0.5"
+            aria-label={`${n} ${n === 1 ? 'star' : 'stars'}`}
+            aria-pressed={rating === n}
+            className="rounded-xs p-0.5 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring "
           >
             <Star
               size={24}
@@ -54,14 +57,16 @@ export default function RatingWidget({ onSubmit, submitting, existingRating, exi
         rows={2}
         className="w-full px-3 py-2 border border-border rounded-[8px] text-body text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden resize-none"
       />
-      <button
+      <Button
         type="button"
         onClick={() => rating > 0 && onSubmit(rating, comment)}
         disabled={rating === 0 || submitting}
-        className="self-start flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
+        loading={submitting}
+        loadingLabel="Submitting"
+        className="self-start"
       >
-        {submitting ? 'Submitting...' : 'Submit Rating'}
-      </button>
+        Submit rating
+      </Button>
     </div>
   )
 }

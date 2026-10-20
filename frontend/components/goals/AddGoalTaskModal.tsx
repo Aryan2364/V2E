@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
 import EmployeePicker from '@/components/ui/EmployeePicker'
 import { useToast } from '@/components/ui/Toast'
@@ -114,7 +114,7 @@ export default function AddGoalTaskModal({ isOpen, onClose, orgId, goalId, emplo
           <Button variant="secondary" type="button" onClick={guarded.requestClose}>
             Cancel
           </Button>
-          <Button variant="primary" type="submit" isLoading={saving} disabled={saving}>
+          <Button variant="primary" type="submit" loading={saving}>
             Add task
           </Button>
         </div>

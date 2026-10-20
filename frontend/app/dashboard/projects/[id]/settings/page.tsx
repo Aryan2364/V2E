@@ -14,10 +14,22 @@ import MemberRow from '@/components/projects/MemberRow'
 import DatePicker from '@/components/ui/DatePicker'
 import StyledSelect from '@/components/ui/StyledSelect'
 import GoalsMultiSelectField from '@/components/projects/GoalsMultiSelectField'
-import { ChevronLeft, Plus, Trash2, Search, X, Check } from 'lucide-react'
+import { Plus, Trash2, Search, X, Check } from 'lucide-react'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { PageHeader } from '@/components/shell/page-header'
 
 // ─── Avatar helpers ────────────────────────────────────────────────────────────
 
@@ -75,9 +87,9 @@ function UserSearchDropdown({ orgId, selected, onSelect, excludeIds = [] }: {
         </div>
         <span className="text-body text-text-primary flex-1 truncate">{selected.name}</span>
         <span className="text-meta text-text-muted truncate">{selected.role_title}</span>
-        <button type="button" onClick={() => onSelect(null)} className="p-0.5 rounded-xs hover:bg-surface-control text-text-muted hover:text-text-primary transition-colors shrink-0">
+        <Button type="button" variant="in-field" size="icon-sm" onClick={() => onSelect(null)} aria-label="Clear selection" className="shrink-0">
           <X size={13} />
-        </button>
+        </Button>
       </div>
     )
   }
@@ -95,7 +107,7 @@ function UserSearchDropdown({ orgId, selected, onSelect, excludeIds = [] }: {
             : results.length === 0 ? <div className="px-4 py-3 text-body text-text-muted">No users found</div>
             : results.map((u) => (
               <button key={u.user_id} type="button" onClick={() => { onSelect(u); setQuery(''); setOpen(false) }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-sunken transition-colors text-left">
+                className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-sunken transition-colors text-left">
                 <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0`}>
                   {getInitials(u.name)}
                 </div>
@@ -162,7 +174,7 @@ function MultiUserSearch({ orgId, excludeIds, onAdd }: {
               const already = excludeIds.includes(u.user_id)
               return (
                 <button key={u.user_id} type="button" onClick={() => { if (!already) { onAdd(u); setQuery(''); setOpen(false) } }} disabled={already}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${already ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-sunken'}`}>
+                  className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${already ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-sunken'}`}>
                   <div className={`w-7 h-7 rounded-full ${avatarColor(u.name)} flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0`}>
                     {getInitials(u.name)}
                   </div>
@@ -184,7 +196,7 @@ function MultiUserSearch({ orgId, excludeIds, onAdd }: {
 
 const STATUS_OPTS = [
   { value: 'active', label: 'Active' },
-  { value: 'on_hold', label: 'On Hold' },
+  { value: 'on_hold', label: 'On hold' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
 ]
@@ -221,6 +233,7 @@ export default function ProjectSettingsPage() {
   const [deleteReason, setDeleteReason] = useState('')
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -371,14 +384,15 @@ export default function ProjectSettingsPage() {
   }
 
   async function handleDelete() {
-    if (!deleteReason.trim()) { setError('Deletion reason is required'); return }
+    if (!deleteReason.trim()) { setDeleteError('Enter a reason for deleting this project.'); return }
+    setDeleteError('')
     setDeleting(true)
     try {
       await projectsApi.delete(orgId, id, deleteReason.trim())
       router.push('/dashboard/projects')
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Failed to delete project'
-      setError(msg)
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Could not delete the project. Try again.'
+      setDeleteError(msg)
       setDeleting(false)
     }
   }
@@ -398,20 +412,21 @@ export default function ProjectSettingsPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <p className="font-medium text-text-primary">Project not found</p>
-        <Link href="/dashboard/projects" className="mt-2 text-body text-primary-text hover:underline">Back to Projects</Link>
+        <Button variant="secondary" className="mt-2" render={<Link href="/dashboard/projects" />}>Back to projects</Button>
       </div>
     )
   }
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div>
-        <Link href={`/dashboard/projects/${id}`} className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3">
-          <ChevronLeft size={15} /> Back to project
-        </Link>
-        <h1 className="text-page-title font-medium text-text-primary leading-tight">Project settings</h1>
-        <p className="mt-1 text-body text-text-secondary">{project.name}</p>
-      </div>
+      <PageHeader
+        title="Project settings"
+        meta={project.name}
+        trail={[
+          { label: 'Projects', href: '/dashboard/projects' },
+          { label: project.name, href: `/dashboard/projects/${id}` },
+        ]}
+      />
 
       {error && (
         <div className="px-4 py-3 rounded-[8px] border border-danger-border bg-danger-bg text-body text-danger">{error}</div>
@@ -531,23 +546,37 @@ export default function ProjectSettingsPage() {
           Deleting a project is irreversible. All milestones and project task links will be removed.
           Tasks in the tasks system will not be deleted.
         </p>
-        {!showDelete ? (
-          <button type="button" onClick={() => setShowDelete(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-[8px] border border-danger-border text-danger text-body font-medium hover:bg-danger-bg transition-colors">
-            <Trash2 size={14} /> Delete project
-          </button>
-        ) : (
-          <div className="space-y-3">
-            <input value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} placeholder="For example, Created by mistake"
-              className="w-full h-10 px-3 rounded-[8px] border border-danger-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-danger focus:outline-hidden" />
-            <div className="flex gap-2">
-              <Button type="button" variant="secondary" onClick={() => setShowDelete(false)} disabled={deleting}>Cancel</Button>
-              <Button type="button" variant="danger" disabled={deleting || !deleteReason.trim()} loading={deleting} loadingLabel="Deleting" onClick={handleDelete}>
-                Delete project
-              </Button>
+        <Button type="button" variant="secondary" onClick={() => { setDeleteError(''); setShowDelete(true) }} className="text-danger">
+          <Trash2 size={14} /> Delete project
+        </Button>
+        <AlertDialog open={showDelete} onOpenChange={(o) => { if (!deleting) { setShowDelete(o); if (!o) { setDeleteError(''); setDeleteReason('') } } }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this project?</AlertDialogTitle>
+              <AlertDialogDescription>
+                All milestones and project task links will be removed. Tasks in the tasks system will not be deleted. This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div>
+              <Label className="mb-2" htmlFor="delete-reason" required>Reason for deleting</Label>
+              <Textarea
+                id="delete-reason"
+                value={deleteReason}
+                onChange={(e) => { setDeleteReason(e.target.value); if (deleteError) setDeleteError('') }}
+                placeholder="For example, Created by mistake"
+                aria-invalid={deleteError ? true : undefined}
+                disabled={deleting}
+              />
+              <InlineFieldError>{deleteError}</InlineFieldError>
             </div>
-          </div>
-        )}
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} disabled={deleting} loading={deleting} loadingLabel="Deleting">
+                Delete project
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )

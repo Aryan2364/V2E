@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Ban, Loader2 } from 'lucide-react'
+import { Ban } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
 import { goalsApi } from '@/lib/api/goals'
 import { formatValue, type Goal, type GoalCheckIn } from '@/lib/types/goals'
@@ -89,13 +89,9 @@ export default function CheckInHistory({
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-meta text-text-secondary">{c.created_by?.name ?? '—'}</span>
                 {canEdit && !c.is_voided && (
-                  <button
-                    onClick={() => setVoiding(c)}
-                    title="Void this check-in"
-                    className="inline-flex items-center gap-1 text-meta font-medium text-text-secondary hover:text-danger transition-colors"
-                  >
+                  <Button variant="secondary" size="sm" onClick={() => setVoiding(c)}>
                     <Ban size={12} /> Void
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -201,9 +197,8 @@ function VoidModal({
         </div>
 
         <div className="flex justify-end pt-4 border-t border-border-light">
-          <Button type="submit" variant="danger" disabled={saving}>
-            {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
-            {saving ? 'Voiding…' : 'Void check-in'}
+          <Button type="submit" variant="danger" disabled={saving} loading={saving} loadingLabel="Voiding">
+            Void check-in
           </Button>
         </div>
       </form>

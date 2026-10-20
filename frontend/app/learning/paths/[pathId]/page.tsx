@@ -247,9 +247,10 @@ export default function ManagePathPage() {
         {(['materials', 'assignments', 'engagement'] as const).map((t) => (
           <button
             key={t}
+            type="button"
             onClick={() => setTab(t)}
             className={[
-              'px-4 py-2.5 text-label font-medium capitalize transition-colors border-b-2 -mb-px',
+              'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring px-4 py-2.5 text-label font-medium capitalize transition-colors border-b-2 -mb-px',
               tab === t
                 ? 'border-primary text-primary-text'
                 : 'border-transparent text-text-secondary hover:text-text-primary',
@@ -273,19 +274,13 @@ export default function ManagePathPage() {
         {tab !== 'engagement' && (
           <div className="pb-2 shrink-0">
             {tab === 'materials' ? (
-              <Link
-                href={`/learning/paths/builder?id=${pathId}`}
-                className="inline-flex items-center gap-1.5 text-label font-medium text-primary-text hover:text-primary-text transition-colors"
-              >
+              <Button variant="secondary" render={<Link href={`/learning/paths/builder?id=${pathId}`} />}>
                 <Pencil size={14} /> Edit materials
-              </Link>
+              </Button>
             ) : (
-              <button
-                onClick={openAssignModal}
-                className="inline-flex items-center gap-1.5 text-label font-medium text-primary-text hover:text-primary-text transition-colors"
-              >
-                <Users size={14} /> Assign Employees
-              </button>
+              <Button variant="secondary" onClick={openAssignModal}>
+                <Users size={14} /> Assign employees
+              </Button>
             )}
           </div>
         )}
@@ -304,7 +299,7 @@ export default function ManagePathPage() {
                 <button
                   type="button"
                   onClick={() => setPreviewItem(item)}
-                  className="group text-left w-full bg-surface border border-border-light rounded-card px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:border-primary hover:bg-surface-sunken transition-colors"
+                  className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring group text-left w-full bg-surface border border-border-light rounded-card px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:border-primary hover:bg-surface-sunken transition-colors"
                 >
                   <span className="text-meta text-text-muted w-5 text-center shrink-0">{idx + 1}</span>
                   <div className="w-8 h-8 rounded-control bg-surface-sunken group-hover:bg-primary-subtle flex items-center justify-center shrink-0 transition-colors">

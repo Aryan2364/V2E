@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ExternalLink, Loader2, RotateCcw } from 'lucide-react'
 import { toEmbeddableVideoUrl, toEmbeddablePageUrl } from '@/lib/learning/video-embed'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 
 /**
  * Shows a link inline automatically — no creator toggle. It tries to embed the page
@@ -67,21 +68,12 @@ export default function LinkEmbed({
           This page can’t be shown inside the app — open it in a new tab to view it.
         </p>
         <div className="flex items-center gap-3">
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={onOpen}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
-          >
-            <ExternalLink size={15} /> Open Link
-          </a>
-          <button
-            onClick={reload}
-            className="inline-flex items-center gap-1.5 text-label font-medium text-text-secondary hover:text-primary-text transition-colors"
-          >
+          <Button render={<a href={url} target="_blank" rel="noopener noreferrer" onClick={onOpen} />}>
+            <ExternalLink size={15} /> Open link
+          </Button>
+          <Button variant="secondary" onClick={reload}>
             <RotateCcw size={14} /> Try again
-          </button>
+          </Button>
         </div>
       </div>
     )
@@ -91,12 +83,9 @@ export default function LinkEmbed({
     <div>
       <div className="flex items-center justify-end gap-2 mb-2">
         <Tooltip label="Reload / back to start">
-          <button
-            onClick={reload}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-meta font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:text-primary-text hover:border-primary transition-colors"
-          >
+          <Button variant="secondary" size="sm" onClick={reload}>
             <RotateCcw size={14} /> Reload
-          </button>
+          </Button>
         </Tooltip>
         {openTab}
       </div>

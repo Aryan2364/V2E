@@ -17,7 +17,9 @@ import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { POLICY_BASE, POLICY_REASONS, PolicyBreadcrumb, policyHref, usePolicyPermissions } from '@/components/company-policy/shared'
+import { PageHeader } from '@/components/shell/page-header'
+import Tooltip from '@/components/ui/tooltip'
+import { POLICY_BASE, POLICY_REASONS, policyHref, usePolicyPermissions } from '@/components/company-policy/shared'
 import {
   getPolicy, publishPolicy, archivePolicy, deletePolicy,
   addItem, updateItem, deleteItem,
@@ -53,7 +55,7 @@ const TYPE_COLORS: Record<PolicyContentType, string> = {
 }
 
 const ASSIGN_STATUS: Record<string, { bg: string; text: string; label: string }> = {
-  not_started: { bg: 'bg-surface-control', text: 'text-text-secondary', label: 'Not Started' },
+  not_started: { bg: 'bg-surface-control', text: 'text-text-secondary', label: 'Not started' },
   acknowledged: { bg: 'bg-success-bg', text: 'text-success', label: 'Acknowledged' },
 }
 
@@ -214,7 +216,8 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
                     key={type}
                     type="button"
                     onClick={() => set('content_type', type)}
-                    className={['flex items-center gap-2 px-3 py-2.5 rounded-control border-2 text-label font-medium transition-all', active ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary hover:border-border'].join(' ')}
+                    aria-pressed={active}
+                    className={['outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring flex items-center gap-2 px-3 py-2.5 rounded-control border-2 text-label font-medium transition-all', active ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary hover:border-border'].join(' ')}
                   >
                     <Icon size={15} />
                     {TYPE_LABELS[type]}
@@ -309,7 +312,7 @@ function AssignModal({ policyId, orgId, onClose, onAssigned }: { policyId: strin
                   key={emp.id}
                   type="button"
                   onClick={() => toggle(emp.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-control hover:bg-surface-sunken transition-colors text-left"
+                  className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-3 px-3 py-2.5 rounded-control hover:bg-surface-sunken transition-colors text-left"
                 >
                   <Checkbox checked={checked} onCheckedChange={() => toggle(emp.id)} tabIndex={-1} />
                   <div className="flex-1 min-w-0">
@@ -455,13 +458,13 @@ export default function ManagePolicyPage() {
   if (status === 'failed' || !policy) {
     return (
       <div>
-        <PolicyBreadcrumb trail={[{ label: 'Company Policy', href: POLICY_BASE }, { label: 'Policy' }]} />
+        <PageHeader title="Policy" trail={[{ label: 'Company policy', href: POLICY_BASE }]} />
         <div className="bg-surface border border-border-light rounded-card shadow-card p-8 flex flex-col items-center text-center gap-2">
           <p className="text-label font-medium text-text-primary">This policy could not be loaded</p>
           <p className="text-label text-text-secondary">It may have been deleted, or the connection dropped.</p>
           <div className="flex gap-3 mt-2">
-            <button type="button" onClick={load} className="px-4 py-2 text-label font-medium text-primary-text border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">Retry</button>
-            <Link href={POLICY_BASE} className="px-4 py-2 text-label font-medium text-text-secondary hover:text-text-primary transition-colors">All policies</Link>
+            <Button type="button" variant="secondary" onClick={load}>Retry</Button>
+            <Button variant="secondary" render={<Link href={POLICY_BASE} />}>All policies</Button>
           </div>
         </div>
       </div>
@@ -477,36 +480,23 @@ export default function ManagePolicyPage() {
         ? `"${pendingDelete.item.title}" will be removed from this policy. This cannot be undone.`
         : undefined
 
-  const outlineBtn = 'flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-label font-medium rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:border-border-light disabled:cursor-not-allowed'
-
   return (
     <div className="w-full max-w-[1280px]">
-      <PolicyBreadcrumb trail={[{ label: 'Company Policy', href: POLICY_BASE }, { label: policy.title }]} />
-
-      {/* Header card */}
-      <div className="bg-surface border border-border-light rounded-card shadow-card p-6 mb-4">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary leading-snug wrap-break-word">{policy.title}</h1>
-            <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
-              <StatusBadge status={policy.status} />
-            </div>
-            {policy.description && <p className="text-body text-text-secondary mt-2 leading-relaxed wrap-break-word">{policy.description}</p>}
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap shrink-0">
+      <PageHeader
+        title={policy.title}
+        trail={[{ label: 'Company policy', href: POLICY_BASE }]}
+        meta={<StatusBadge status={policy.status} />}
+        actions={
+          <>
             {canEdit === true ? (
-              <Link
-                href={`${policyHref(policyId)}/edit`}
-                className={`${outlineBtn} text-text-secondary bg-surface border border-border hover:border-primary hover:text-primary-text`}
-              >
+              <Button variant="secondary" render={<Link href={`${policyHref(policyId)}/edit`} />}>
                 <Pencil size={14} /> Edit
-              </Link>
+              </Button>
             ) : (
               <PermissionTooltip allowed={canEdit} reason={POLICY_REASONS.edit}>
-                <button type="button" disabled className={`${outlineBtn} border border-border-light`}>
+                <Button type="button" variant="secondary" disabled>
                   <Pencil size={14} /> Edit
-                </button>
+                </Button>
               </PermissionTooltip>
             )}
             {policy.status === 'draft' && (
@@ -514,41 +504,47 @@ export default function ManagePolicyPage() {
                 allowed={canWrite === true && itemCount === 0 ? false : canWrite}
                 reason={canWrite === true ? 'Add at least one item before publishing.' : POLICY_REASONS.create}
               >
-                <button
+                <Button
                   onClick={handlePublish}
                   disabled={publishing || canWrite !== true || itemCount === 0}
-                  className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-label font-medium text-primary-foreground bg-success hover:bg-success rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
+                  loading={publishing}
+                  loadingLabel="Publishing"
                 >
-                  {publishing && <Loader2 size={13} className="animate-spin" />}
                   Publish
-                </button>
+                </Button>
               </PermissionTooltip>
             )}
             {policy.status === 'published' && (
               <PermissionTooltip allowed={canWrite} reason={POLICY_REASONS.create}>
-                <button
+                <Button
+                  variant="secondary"
                   onClick={handleArchive}
                   disabled={archiving || canWrite !== true}
-                  className={`${outlineBtn} text-warning bg-warning-bg border border-warning-border hover:bg-warning-bg`}
+                  loading={archiving}
+                  loadingLabel="Archiving"
                 >
-                  {archiving && <Loader2 size={13} className="animate-spin" />}
                   Archive
-                </button>
+                </Button>
               </PermissionTooltip>
             )}
             <PermissionTooltip allowed={canDeletePolicy} reason={POLICY_REASONS.deletePolicy}>
-              <button
-                onClick={() => { setDeleteError(null); setPendingDelete({ kind: 'policy' }) }}
-                disabled={canDeletePolicy !== true}
-                aria-label="Delete policy"
-                className="w-10 h-10 flex items-center justify-center text-danger bg-surface border border-border-light rounded-control hover:bg-danger-bg hover:border-danger-border transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
-              >
-                <Trash2 size={15} />
-              </button>
+              <Tooltip label="Delete policy">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => { setDeleteError(null); setPendingDelete({ kind: 'policy' }) }}
+                  disabled={canDeletePolicy !== true}
+                  aria-label="Delete policy"
+                  className="text-danger"
+                >
+                  <Trash2 size={15} />
+                </Button>
+              </Tooltip>
             </PermissionTooltip>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
+      {policy.description && <p className="text-body text-text-secondary -mt-3 mb-4 leading-relaxed wrap-break-word">{policy.description}</p>}
 
       {/* Tabs — with the tab's own action on the right of the bar */}
       <div className="flex items-end justify-between gap-3 border-b border-border-light mb-6 flex-wrap">
@@ -557,7 +553,7 @@ export default function ManagePolicyPage() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={['-mb-px px-4 py-2.5 min-h-[44px] text-label font-medium capitalize border-b-2 transition-colors', activeTab === t ? 'border-primary text-primary-text' : 'border-transparent text-text-secondary hover:text-text-primary'].join(' ')}
+              className={['outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring -mb-px px-4 py-2.5 min-h-[44px] text-label font-medium capitalize border-b-2 transition-colors', activeTab === t ? 'border-primary text-primary-text' : 'border-transparent text-text-secondary hover:text-text-primary'].join(' ')}
             >
               {t}
             </button>
@@ -566,26 +562,26 @@ export default function ManagePolicyPage() {
         <div className="pb-2">
           {activeTab === 'items' ? (
             <PermissionTooltip allowed={canWrite} reason={POLICY_REASONS.create}>
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => { setEditingItem(null); setShowItemModal(true) }}
                 disabled={canWrite !== true}
-                className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground text-label font-medium px-4 py-2 rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
-                <Plus size={15} /> Add Item
-              </button>
+                <Plus size={15} /> Add item
+              </Button>
             </PermissionTooltip>
           ) : (
             <PermissionTooltip
               allowed={canWrite === true && policy.status !== 'published' ? false : canWrite}
               reason={canWrite === true ? 'Publish this policy before assigning it.' : POLICY_REASONS.create}
             >
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => setShowAssignModal(true)}
                 disabled={canWrite !== true || policy.status !== 'published'}
-                className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground text-label font-medium px-4 py-2 rounded-control transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
               >
-                <Users size={15} /> Assign Employees
-              </button>
+                <Users size={15} /> Assign employees
+              </Button>
             </PermissionTooltip>
           )}
         </div>
@@ -619,24 +615,30 @@ export default function ManagePolicyPage() {
                     <span className="hidden sm:inline-flex"><TypeBadge type={item.content_type} /></span>
                     <div className="flex items-center gap-1 shrink-0">
                       <PermissionTooltip allowed={canEdit} reason={POLICY_REASONS.edit}>
-                        <button
-                          onClick={() => { setEditingItem(item); setShowItemModal(true) }}
-                          disabled={canEdit !== true}
-                          aria-label={`Edit ${item.title}`}
-                          className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-primary-text hover:bg-primary-subtle rounded-control transition-colors disabled:text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed"
-                        >
-                          <Pencil size={14} />
-                        </button>
+                        <Tooltip label="Edit item">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => { setEditingItem(item); setShowItemModal(true) }}
+                            disabled={canEdit !== true}
+                            aria-label={`Edit ${item.title}`}
+                          >
+                            <Pencil size={14} />
+                          </Button>
+                        </Tooltip>
                       </PermissionTooltip>
                       <PermissionTooltip allowed={canDeleteItem} reason={POLICY_REASONS.deleteItem}>
-                        <button
-                          onClick={() => { setDeleteError(null); setPendingDelete({ kind: 'item', item }) }}
-                          disabled={canDeleteItem !== true}
-                          aria-label={`Remove ${item.title}`}
-                          className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger-bg rounded-control transition-colors disabled:text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <Tooltip label="Remove item">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => { setDeleteError(null); setPendingDelete({ kind: 'item', item }) }}
+                            disabled={canDeleteItem !== true}
+                            aria-label={`Remove ${item.title}`}
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </Tooltip>
                       </PermissionTooltip>
                     </div>
                   </div>
@@ -654,7 +656,7 @@ export default function ManagePolicyPage() {
             <div className="text-center py-12 bg-surface border border-border-light rounded-card shadow-card px-4">
               <p className="text-label font-medium text-text-primary">Assignments could not be loaded</p>
               <p className="text-meta text-text-secondary mt-1 mb-3">Check your connection and try again.</p>
-              <button type="button" onClick={() => setAssignmentsLoaded(false)} className="px-4 py-2 text-label font-medium text-primary-text border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">Retry</button>
+              <Button type="button" variant="secondary" onClick={() => setAssignmentsLoaded(false)}>Retry</Button>
             </div>
           ) : !assignmentsLoaded ? (
             <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>

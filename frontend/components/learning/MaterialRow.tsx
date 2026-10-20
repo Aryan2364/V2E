@@ -14,6 +14,7 @@ import { ACCEPT_ATTR, validateFile, formatBytes, fileKindLabel, extensionOf } fr
 import type { ContentType, LearningItem, MaterialViewData } from '@/lib/types/learning'
 import MaterialViewer from './MaterialViewer'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 
 const TYPE_META: Record<ContentType, { icon: any; label: string }> = {
   file: { icon: FileText, label: 'File' },
@@ -126,7 +127,7 @@ export default function MaterialRow({
               type="button"
               onPointerDown={onGripPointerDown}
               aria-label="Drag to reorder"
-              className="shrink-0 mt-1.5 p-0.5 -ml-1 text-muted hover:text-text-muted cursor-grab active:cursor-grabbing touch-none"
+              className="rounded-xs outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring shrink-0 mt-1.5 p-0.5 -ml-1 text-muted hover:text-text-muted cursor-grab active:cursor-grabbing touch-none"
             >
               <GripVertical size={16} />
             </button>
@@ -200,8 +201,9 @@ export default function MaterialRow({
                   <button
                     type="button"
                     onClick={() => save({ allow_download: !(item.allow_download ?? true) })}
+                    aria-pressed={item.allow_download ?? true}
                     className={[
-                      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors',
+                      'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors',
                       item.allow_download ?? true
                         ? 'bg-success-bg text-success border border-success-border'
                         : 'bg-warning-bg text-warning border border-warning-border',
@@ -230,14 +232,9 @@ export default function MaterialRow({
           {item.content_type === 'file' && item.file_name && (
             <>
               <Tooltip label="Preview">
-                <button
-                  onClick={openPreview}
-                  disabled={previewLoading}
-                  aria-label="Preview"
-                  className="p-1.5 text-text-muted hover:text-primary-text hover:bg-primary-subtle rounded-control transition-colors"
-                >
+                <Button variant="ghost" size="icon" onClick={openPreview} disabled={previewLoading} aria-label="Preview">
                   {previewLoading ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
-                </button>
+                </Button>
               </Tooltip>
               <Tooltip label="Replace file">
                 <label
@@ -252,13 +249,9 @@ export default function MaterialRow({
             </>
           )}
           <Tooltip label="Remove">
-            <button
-              onClick={handleDelete}
-              aria-label="Remove"
-              className="p-1.5 text-text-muted hover:text-danger hover:bg-danger-bg rounded-control transition-colors"
-            >
+            <Button variant="ghost" size="icon" onClick={handleDelete} aria-label="Remove">
               <Trash2 size={14} />
-            </button>
+            </Button>
           </Tooltip>
         </div>
       </div>

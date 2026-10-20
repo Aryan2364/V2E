@@ -14,7 +14,7 @@ interface ProjectTab {
 
 const PROJECT_TABS: ProjectTab[] = [
   { label: 'Overview', href: '/dashboard/projects' },
-  { label: 'My Projects', href: '/dashboard/projects/my' },
+  { label: 'My projects', href: '/dashboard/projects/my' },
   { label: 'Managing', href: '/dashboard/projects/managing' },
   { label: 'Templates', href: '/dashboard/projects/templates', adminOnly: true },
 ]

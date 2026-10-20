@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Tooltip from '@/components/ui/tooltip'
 import { Count } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 
 /**
  * The single sidebar implementation shared by every module sidebar
@@ -102,13 +103,15 @@ export default function ModuleSidebar({
           {title}
         </span>
         <Tooltip label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
-          <button
+          <Button
+            variant="on-brand"
+            size="icon-sm"
             onClick={toggleCollapsed}
-            className="w-8 h-8 rounded-[8px] flex items-center justify-center text-on-brand-muted hover:text-on-brand hover:bg-primary-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary-ring transition-[background-color] duration-fast shrink-0"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="shrink-0"
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
+          </Button>
         </Tooltip>
       </div>
 

@@ -65,8 +65,8 @@ const NAV_GROUPS: NavGroup[] = [
     module: 'tasks',
     items: [
       { label: 'Overview', href: '/dashboard/tasks', Icon: LayoutDashboard },
-      { label: 'My Tasks', href: '/dashboard/tasks/my', Icon: CheckSquare },
-      { label: 'Assigned by Me', href: '/dashboard/tasks/assigned', Icon: UserCheck },
+      { label: 'My tasks', href: '/dashboard/tasks/my', Icon: CheckSquare },
+      { label: 'Assigned by me', href: '/dashboard/tasks/assigned', Icon: UserCheck },
       { label: 'Recurring', href: '/dashboard/tasks/recurring', Icon: RotateCcw },
       { label: 'Escalated', href: '/dashboard/tasks/escalated', Icon: AlertTriangle },
       { label: "CC'd Tasks", href: '/dashboard/tasks/cc', Icon: Eye },
@@ -81,7 +81,7 @@ const NAV_GROUPS: NavGroup[] = [
     module: 'projects',
     items: [
       { label: 'Projects', href: '/dashboard/projects', Icon: Briefcase },
-      { label: 'My Projects', href: '/dashboard/projects/my', Icon: Briefcase },
+      { label: 'My projects', href: '/dashboard/projects/my', Icon: Briefcase },
     ],
   },
   {
@@ -96,8 +96,8 @@ const NAV_GROUPS: NavGroup[] = [
     module: 'tickets',
     items: [
       { label: 'Tickets', href: '/dashboard/tasks/tickets', Icon: Ticket },
-      { label: 'My Tickets', href: '/dashboard/tasks/tickets/my', Icon: Ticket },
-      { label: 'Assigned to Me', href: '/dashboard/tasks/tickets/assigned', Icon: Ticket },
+      { label: 'My tickets', href: '/dashboard/tasks/tickets/my', Icon: Ticket },
+      { label: 'Assigned to me', href: '/dashboard/tasks/tickets/assigned', Icon: Ticket },
       { label: 'Archive', href: '/dashboard/tasks/tickets/archive', Icon: Archive },
       { label: 'Reports', href: '/dashboard/tasks/tickets/reports', Icon: BarChart2 },
     ],
@@ -117,14 +117,14 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Leave',
     module: 'ecs',
     items: [
-      { label: 'Leave Approvals', href: '/dashboard/tasks/leave-approvals', Icon: CalendarCheck, leaveApproverOnly: true },
+      { label: 'Leave approvals', href: '/dashboard/tasks/leave-approvals', Icon: CalendarCheck, leaveApproverOnly: true },
     ],
   },
   {
     label: 'Config',
     module: 'tasks',
     items: [
-      { label: 'Work Settings', href: '/dashboard/tasks/masters', Icon: Settings2, taskConfigGated: true },
+      { label: 'Work settings', href: '/dashboard/tasks/masters', Icon: Settings2, taskConfigGated: true },
     ],
   },
 ]

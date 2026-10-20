@@ -125,7 +125,6 @@ export default function TimeTravelBar() {
   })
 
   const inputCls = 'w-full px-3 py-2 rounded-lg border border-border text-body text-text-primary bg-surface focus:border-2 focus:border-primary focus:outline-hidden'
-  const arrowCls = 'shrink-0 size-9 flex items-center justify-center rounded-lg bg-surface border border-warning-border text-warning hover:bg-warning-bg transition-colors'
 
   return (
     <div ref={containerRef} className="fixed bottom-6 right-6 z-toast flex flex-col items-end gap-3">
@@ -135,16 +134,11 @@ export default function TimeTravelBar() {
           {/* Header */}
           <div className="flex items-center justify-between gap-2 border-b-2 border-warning bg-warning-bg px-4 py-3">
             <span className="inline-flex items-center gap-1 rounded-full bg-warning px-3 py-1 text-meta font-medium text-primary-foreground">
-              <FlaskConical size={13} /> TEST CLOCK
+              <FlaskConical size={13} /> Test clock
             </span>
-            <button
-              type="button"
-              onClick={() => setExpanded(false)}
-              aria-label="Collapse"
-              className="flex size-8 items-center justify-center rounded-md text-warning hover:bg-warning-bg transition-colors"
-            >
+            <Button type="button" variant="ghost" size="icon" onClick={() => setExpanded(false)} aria-label="Collapse" className="text-warning">
               <X size={18} />
-            </button>
+            </Button>
           </div>
 
           <div className="flex flex-col gap-4 px-4 py-4">
@@ -158,9 +152,9 @@ export default function TimeTravelBar() {
               <label className="mb-2 block text-label text-text-secondary">Simulated time</label>
               <div className="flex items-center gap-2">
                 <Tooltip label="−1 day">
-                <button type="button" onClick={() => nudgeDays(-1)} aria-label="−1 day" className={arrowCls}>
+                <Button type="button" variant="secondary" size="icon" onClick={() => nudgeDays(-1)} aria-label="−1 day" className="shrink-0">
                   <ChevronLeft size={16} />
-                </button>
+                </Button>
                 </Tooltip>
                 <input
                   type="datetime-local"
@@ -169,9 +163,9 @@ export default function TimeTravelBar() {
                   className={inputCls}
                 />
                 <Tooltip label="+1 day">
-                <button type="button" onClick={() => nudgeDays(1)} aria-label="+1 day" className={arrowCls}>
+                <Button type="button" variant="secondary" size="icon" onClick={() => nudgeDays(1)} aria-label="+1 day" className="shrink-0">
                   <ChevronRight size={16} />
-                </button>
+                </Button>
                 </Tooltip>
               </div>
               <div className="mt-2 flex items-center gap-2">
@@ -218,7 +212,7 @@ export default function TimeTravelBar() {
         onClick={() => setExpanded((v) => !v)}
         aria-label={expanded ? 'Collapse test clock' : 'Open test clock'}
         aria-expanded={expanded}
-        className="flex h-10 items-center gap-2 rounded-full bg-warning px-4 text-meta font-medium text-primary-foreground shadow-menu transition-colors cursor-pointer"
+        className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring flex h-10 items-center gap-2 rounded-full bg-warning px-4 text-meta font-medium text-primary-foreground shadow-menu transition-colors cursor-pointer"
       >
         <FlaskConical size={14} className="animate-pulse shrink-0" />
         <span className="font-medium">{compactLabel}</span>

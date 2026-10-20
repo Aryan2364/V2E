@@ -13,6 +13,7 @@ import { useToast } from '@/components/ui/Toast'
 import { enablePush, disablePush, getPushStatus, PUSH_ERROR_MESSAGES, type PushStatus } from '@/lib/push'
 import type { AppNotification } from '@/lib/api/notifications'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 
 const MODULE_COLORS: Record<string, string> = {
   tasks: 'bg-primary-subtle text-primary-text',
@@ -118,10 +119,12 @@ export default function NotificationBell() {
   return (
     <div className="relative shrink-0" ref={ref}>
       <Tooltip label="Notifications">
-        <button
+        <Button
+          variant="on-brand"
+          size="icon"
           onClick={openPanel}
           aria-label="Notifications"
-          className="relative w-10 h-10 rounded-[8px] flex items-center justify-center text-on-brand hover:bg-on-brand-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-on-brand transition-[background-color] duration-fast"
+          className="relative"
         >
           {unreadCount > 0 ? <BellRing size={18} /> : <Bell size={18} />}
           {unreadCount > 0 && (
@@ -129,7 +132,7 @@ export default function NotificationBell() {
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
-        </button>
+        </Button>
       </Tooltip>
 
       {open && (
@@ -138,12 +141,9 @@ export default function NotificationBell() {
           <div className="flex items-center justify-between px-4 py-3 bg-primary">
             <p className="text-body font-medium text-on-brand">Notifications</p>
             {unreadCount > 0 && (
-              <button
-                onClick={() => markAllRead()}
-                className="flex items-center gap-1 text-label font-medium text-on-brand hover:text-on-brand-muted"
-              >
+              <Button variant="on-brand" size="sm" onClick={() => markAllRead()}>
                 <CheckCheck size={13} /> Mark all as read
-              </button>
+              </Button>
             )}
           </div>
 
@@ -160,7 +160,7 @@ export default function NotificationBell() {
                   key={n.id}
                   onClick={() => handleItemClick(n)}
                   className={[
-                    'w-full text-left px-4 py-3 border-b border-border-light transition-colors hover:bg-surface-sunken',
+                    'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full text-left px-4 py-3 border-b border-border-light transition-colors hover:bg-surface-sunken',
                     n.is_read ? '' : 'bg-primary-subtle/40',
                   ].join(' ')}
                 >
@@ -201,19 +201,15 @@ export default function NotificationBell() {
               <div className="flex items-center gap-2 px-4 py-2.5 text-xs">
                 <CheckCircle2 size={14} className="shrink-0 text-success" />
                 <span className="flex-1 font-medium text-success">Device notifications on</span>
-                <button
-                  onClick={togglePush}
-                  disabled={pushBusy}
-                  className="shrink-0 font-medium text-text-muted hover:text-danger disabled:opacity-60 transition-colors"
-                >
+                <Button variant="secondary" size="sm" onClick={togglePush} disabled={pushBusy} className="shrink-0">
                   {pushBusy ? 'Disabling…' : 'Disable'}
-                </button>
+                </Button>
               </div>
             ) : pushStatus !== 'unsupported' ? (
               <button
                 onClick={togglePush}
                 disabled={pushBusy || pushStatus === 'denied'}
-                className="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-text-muted hover:bg-surface-sunken disabled:opacity-60 transition-colors"
+                className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2 px-4 py-2.5 text-xs text-text-muted hover:bg-surface-sunken disabled:opacity-60 transition-colors"
               >
                 <Monitor size={13} />
                 {pushStatus === 'denied'
@@ -228,7 +224,7 @@ export default function NotificationBell() {
                 setOpen(false)
                 router.push('/dashboard/notifications')
               }}
-              className="w-full px-4 py-2.5 text-center text-sm font-medium text-primary-text hover:bg-primary-subtle border-t border-border-light transition-colors"
+              className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full px-4 py-2.5 text-center text-sm font-medium text-primary-text hover:bg-primary-subtle border-t border-border-light transition-colors"
             >
               View all notifications
             </button>

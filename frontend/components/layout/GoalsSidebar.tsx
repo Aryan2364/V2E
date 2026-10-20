@@ -16,8 +16,8 @@ import ModuleSidebar from './ModuleSidebar'
 const NAV_ITEMS = [
   { key: 'list', label: 'Goals', href: '/goals/list', Icon: Target },
   { key: 'checkins', label: 'My check-ins', href: '/goals/my-check-ins', Icon: CheckCircle2 },
-  { key: 'scorecard', label: 'Balance Scorecard', href: '/goals/scorecard', Icon: LayoutGrid },
-  { key: 'strategy-map', label: 'Strategic Map', href: '/goals/strategy-map', Icon: Network },
+  { key: 'scorecard', label: 'Balance scorecard', href: '/goals/scorecard', Icon: LayoutGrid },
+  { key: 'strategy-map', label: 'Strategic map', href: '/goals/strategy-map', Icon: Network },
   { key: 'dashboard', label: 'Dashboard', href: '/goals/dashboard', Icon: LayoutDashboard },
 ]
 

@@ -8,6 +8,7 @@ import { getOrgProgress } from '@/lib/api/learning'
 import type { OrgProgressSummary } from '@/lib/types/learning'
 import ProgressBar from '@/components/learning/ProgressBar'
 import PathStatusBadge from '@/components/learning/PathStatusBadge'
+import { PageHeader } from '@/components/shell/page-header'
 
 function StatCard({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: any; color: string }) {
   return (
@@ -44,21 +45,18 @@ export default function ProgressPage() {
 
   return (
     <div className="px-8 py-8 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-page-title font-medium text-text-primary">Learning Progress</h1>
-        <p className="text-label text-text-secondary mt-1">Organisation-wide learning progress overview</p>
-      </div>
+      <PageHeader title="Learning progress" meta="Organisation-wide learning progress overview" />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
-          label="Total Paths"
+          label="Total paths"
           value={summary.total_paths}
           icon={BarChart2}
           color="bg-primary-subtle text-primary-text"
         />
         <StatCard
-          label="Total Assignments"
+          label="Total assignments"
           value={summary.total_assignments}
           icon={Users}
           color="bg-success-bg text-success"
@@ -70,7 +68,7 @@ export default function ProgressPage() {
           color="bg-success-bg text-success"
         />
         <StatCard
-          label="Avg Progress"
+          label="Average progress"
           value={`${summary.avg_progress_percent}%`}
           icon={TrendingUp}
           color="bg-warning-bg text-warning"
@@ -87,7 +85,7 @@ export default function ProgressPage() {
       ) : (
         <div className="bg-surface border border-border-light rounded-card overflow-hidden">
           <div className="px-4 py-3.5 border-b border-border-light bg-surface-sunken">
-            <h2 className="text-label font-medium text-text-primary">Path Progress Breakdown</h2>
+            <h2 className="text-label font-medium text-text-primary">Path progress breakdown</h2>
           </div>
           <div className="divide-y divide-surface-control">
             {summary.paths.map((p) => (

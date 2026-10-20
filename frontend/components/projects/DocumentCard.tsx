@@ -3,6 +3,8 @@
 import { ExternalLink, Trash2, FileText, Link2, Image } from 'lucide-react'
 import type { ProjectDocument } from '@/lib/types/projects'
 import { formatDate } from '@/lib/format'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 function typeIcon(type?: string) {
   if (!type) return <Link2 size={18} className="text-text-secondary" />
@@ -42,13 +44,11 @@ export default function DocumentCard({ doc, canDelete, onDelete }: DocumentCardP
           <ExternalLink size={14} />
         </a>
         {canDelete && (
-          <button
-            type="button"
-            onClick={() => onDelete(doc.id)}
-            className="p-1.5 rounded-[6px] hover:bg-danger-bg text-danger transition-colors"
-          >
-            <Trash2 size={14} />
-          </button>
+          <Tooltip label="Delete document">
+            <Button type="button" variant="ghost" size="icon" onClick={() => onDelete(doc.id)} aria-label="Delete document">
+              <Trash2 size={14} />
+            </Button>
+          </Tooltip>
         )}
       </div>
     </div>

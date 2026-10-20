@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
 import { goalsApi } from '@/lib/api/goals'
 import type { Goal } from '@/lib/types/goals'
@@ -152,22 +152,16 @@ export default function EditGoalModal({
         <div className="flex items-center justify-between pt-4 mt-4 border-t border-border-light">
           {/* Destructive action on the left, opposite the primary — DESIGN_RULES Part 4. */}
           {canDelete && onRequestDelete ? (
-            <button
-              type="button"
-              onClick={onRequestDelete}
-              disabled={saving}
-              className="inline-flex items-center gap-1.5 text-label font-medium text-danger hover:text-danger disabled:text-text-muted transition-colors"
-            >
+            <Button type="button" variant="secondary" onClick={onRequestDelete} disabled={saving} className="text-danger">
               <Trash2 size={15} /> Delete goal
-            </button>
+            </Button>
           ) : (
             <span />
           )}
           <div className="flex items-center gap-2">
             <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
-            <Button type="submit" disabled={saving}>
-              {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
-              {saving ? 'Saving…' : 'Save goal'}
+            <Button type="submit" disabled={saving} loading={saving} loadingLabel="Saving">
+              Save goal
             </Button>
           </div>
         </div>

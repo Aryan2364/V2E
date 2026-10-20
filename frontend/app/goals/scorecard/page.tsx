@@ -21,6 +21,9 @@ import {
   useGoalRefData,
 } from '@/components/goals/shared'
 import CreateGoalModal from '@/components/goals/CreateGoalModal'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 /**
  * Balance Scorecard — the four Balanced-Scorecard perspectives (Finance,
@@ -69,12 +72,10 @@ export default function BalanceScorecardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-page-title font-medium text-text-primary leading-tight">Balance Scorecard</h1>
-        <p className="text-label text-text-secondary mt-1">
-          Every goal, grouped by which part of the business it moves.
-        </p>
-      </div>
+      <PageHeader
+        title="Balance scorecard"
+        meta="Every goal, grouped by which part of the business it moves."
+      />
 
       {loading ? (
         <div className="flex items-center gap-2 text-label text-text-secondary py-12 justify-center">
@@ -143,17 +144,11 @@ function PerspectiveCard({
           </span>
         </div>
         {canCreate && (
-          <button
-            onClick={onAdd}
-            aria-label={`New ${m.label} goal`}
-            title={`New ${m.label} goal`}
-            className="w-7 h-7 shrink-0 rounded-control text-primary-foreground flex items-center justify-center transition-colors"
-            style={{ backgroundColor: m.dot }}
-            onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(0.9)')}
-            onMouseLeave={(e) => (e.currentTarget.style.filter = 'none')}
-          >
-            <Plus size={16} />
-          </button>
+          <Tooltip label={`New ${m.label} goal`}>
+            <Button variant="secondary" size="icon" onClick={onAdd} aria-label={`New ${m.label} goal`} className="shrink-0">
+              <Plus size={16} />
+            </Button>
+          </Tooltip>
         )}
       </header>
       <div className="table-scroll flex-1 overflow-y-auto px-4 py-2">
@@ -166,7 +161,7 @@ function PerspectiveCard({
           <ul className="divide-y divide-surface-control-pressed">
             {goals.map((g) => (
               <li key={g.id}>
-                <button onClick={() => router.push(`/goals/${g.id}`)} className="w-full text-left py-3 group">
+                <button onClick={() => router.push(`/goals/${g.id}`)} className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring rounded-xs w-full text-left py-3 group">
                   <p className="text-body font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
                     {g.title}
                   </p>

@@ -4,6 +4,8 @@ import { useState, useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import GanttBar from './GanttBar'
 import type { Project, ProjectMilestone, ProjectTask } from '@/lib/types/projects'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 type ZoomLevel = 'week' | 'month' | 'quarter'
 
@@ -125,15 +127,19 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
       {/* Controls */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-border-light bg-surface-sunken">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => navigate(-1)} className="p-1.5 rounded-xs hover:bg-surface-control-pressed text-text-secondary transition-colors">
-            <ChevronLeft size={16} />
-          </button>
+          <Tooltip label="Previous period">
+            <Button type="button" variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Previous period">
+              <ChevronLeft size={16} />
+            </Button>
+          </Tooltip>
           <span className="text-body font-medium text-text-primary">
             {fmtDateLabel(windowStart)} — {fmtDateLabel(windowEnd)}
           </span>
-          <button type="button" onClick={() => navigate(1)} className="p-1.5 rounded-xs hover:bg-surface-control-pressed text-text-secondary transition-colors">
-            <ChevronRight size={16} />
-          </button>
+          <Tooltip label="Next period">
+            <Button type="button" variant="ghost" size="icon" onClick={() => navigate(1)} aria-label="Next period">
+              <ChevronRight size={16} />
+            </Button>
+          </Tooltip>
         </div>
         <div className="flex items-center gap-1 bg-surface-control-pressed rounded-[8px] p-0.5">
           {(['week', 'month', 'quarter'] as ZoomLevel[]).map((z) => (
@@ -141,8 +147,9 @@ export default function GanttChart({ project, milestones, tasks }: GanttChartPro
               key={z}
               type="button"
               onClick={() => setZoom(z)}
+              aria-pressed={zoom === z}
               className={[
-                'px-3 py-1 rounded-[6px] text-meta font-medium transition-colors capitalize',
+                'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring px-3 py-1 rounded-[6px] text-meta font-medium transition-colors capitalize',
                 zoom === z ? 'bg-surface text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary',
               ].join(' ')}
             >

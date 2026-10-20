@@ -15,6 +15,7 @@ import { refreshAccessToken } from '@/lib/api/refresh'
 import Tooltip from '@/components/ui/tooltip'
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001'
 
@@ -234,22 +235,19 @@ export default function MessagesPage() {
   )
 
   return (
-    <div className="flex h-[calc(100vh-56px)] bg-surface-sunken">
+    <div className="flex h-[calc(100vh-56px)] flex-col bg-surface-sunken px-6 pt-6 pb-4">
+      <PageHeader
+        title="Messages"
+        actions={
+          <Button onClick={() => setShowNewConv(true)}>
+            <Plus size={16} />
+            New conversation
+          </Button>
+        }
+      />
+      <div className="flex min-h-0 flex-1 overflow-hidden rounded-card border border-border-light">
       {/* Sidebar */}
       <div className="w-72 bg-surface border-r border-border-light flex flex-col shrink-0">
-        <div className="p-4 border-b border-border-light flex items-center justify-between">
-          <h2 className="text-label font-medium text-text-primary">Messages</h2>
-          <Tooltip label="New conversation">
-          <button
-            onClick={() => setShowNewConv(true)}
-            aria-label="New conversation"
-            className="w-8 h-8 rounded-control bg-primary-subtle text-primary-text flex items-center justify-center hover:bg-primary-subtle transition-colors"
-          >
-            <Plus size={16} />
-          </button>
-          </Tooltip>
-        </div>
-
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
@@ -263,8 +261,9 @@ export default function MessagesPage() {
                 <button
                   key={conv.id}
                   onClick={() => setActiveConvId(conv.id)}
+                  aria-current={isActive ? 'true' : undefined}
                   className={[
-                    'w-full text-left px-4 py-3 border-b border-border-light hover:bg-surface-sunken transition-colors flex gap-3 items-start',
+                    'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full text-left px-4 py-3 border-b border-border-light hover:bg-surface-sunken transition-colors flex gap-3 items-start',
                     isActive ? 'bg-primary-subtle' : '',
                   ].join(' ')}
                 >
@@ -358,13 +357,17 @@ export default function MessagesPage() {
               className="flex-1 border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-none"
               style={{ maxHeight: 120, overflowY: 'auto' }}
             />
-            <button
-              onClick={handleSend}
-              disabled={!messageInput.trim() || sending}
-              className="w-9 h-9 rounded-control bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
-            >
-              <Send size={16} />
-            </button>
+            <Tooltip label="Send message">
+              <Button
+                size="icon"
+                onClick={handleSend}
+                disabled={!messageInput.trim() || sending}
+                aria-label="Send message"
+                className="shrink-0"
+              >
+                <Send size={16} />
+              </Button>
+            </Tooltip>
           </div>
         </div>
       ) : (
@@ -377,7 +380,9 @@ export default function MessagesPage() {
         </div>
       )}
 
-      {/* New Conversation Modal */}
+      </div>
+
+      {/* New conversation dialog */}
       <Dialog
         open={showNewConv}
         onOpenChange={(next) => { if (!next) { setShowNewConv(false); setSelectedUsers([]); setEmpSearch('') } }}
@@ -391,10 +396,12 @@ export default function MessagesPage() {
               {(['direct', 'group'] as const).map(t => (
                 <button
                   key={t}
+                  type="button"
+                  aria-pressed={convType === t}
                   onClick={() => { setConvType(t); setSelectedUsers([]) }}
-                  className={`flex-1 py-2 rounded-control text-label font-medium transition-colors ${convType === t ? 'bg-primary text-primary-foreground' : 'bg-surface-control text-text-secondary hover:bg-surface-control-pressed'}`}
+                  className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring flex-1 py-2 rounded-control text-label font-medium transition-colors ${convType === t ? 'bg-primary text-primary-foreground' : 'bg-surface-control text-text-secondary hover:bg-surface-control-pressed'}`}
                 >
-                  {t === 'direct' ? 'Direct Message' : 'Group Chat'}
+                  {t === 'direct' ? 'Direct message' : 'Group chat'}
                 </button>
               ))}
             </div>
@@ -426,6 +433,7 @@ export default function MessagesPage() {
                 return (
                   <button
                     key={uid}
+                    type="button"
                     disabled={disabled}
                     onClick={() => {
                       if (convType === 'direct') {
@@ -435,7 +443,7 @@ export default function MessagesPage() {
                       }
                     }}
                     className={[
-                      'w-full text-left px-3 py-2.5 flex items-center gap-2.5 border-b border-border-light last:border-0 transition-colors',
+                      'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full text-left px-3 py-2.5 flex items-center gap-2.5 border-b border-border-light last:border-0 transition-colors',
                       selected ? 'bg-primary-subtle' : 'hover:bg-surface-sunken',
                       disabled ? 'opacity-40 cursor-not-allowed' : '',
                     ].join(' ')}

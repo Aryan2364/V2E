@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { useToast } from '@/components/ui/Toast'
 import { goalsApi } from '@/lib/api/goals'
@@ -161,17 +161,11 @@ export default function LinkGoalModal({
           </div>
 
           <div className="flex items-center justify-between gap-3 pt-4 border-t border-border-light">
-            <button
-              type="button"
-              onClick={() => setCreateOpen(true)}
-              disabled={saving}
-              className="text-label font-medium text-primary-text hover:text-primary-text disabled:text-text-muted transition-colors"
-            >
+            <Button type="button" variant="secondary" onClick={() => setCreateOpen(true)} disabled={saving}>
               Create a new goal instead
-            </button>
-            <Button type="submit" disabled={saving || !selected}>
-              {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
-              {saving ? 'Linking…' : 'Link goal'}
+            </Button>
+            <Button type="submit" disabled={saving || !selected} loading={saving} loadingLabel="Linking">
+              Link goal
             </Button>
           </div>
         </form>

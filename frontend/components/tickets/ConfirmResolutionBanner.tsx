@@ -1,6 +1,7 @@
 'use client'
 
 import { CheckCircle2, XCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   ticketNumber: string
@@ -19,22 +20,12 @@ export default function ConfirmResolutionBanner({ ticketNumber, onConfirm, onClo
           The assignee has marked {ticketNumber} as resolved. Please confirm if your issue is resolved.
         </p>
         <div className="flex items-center gap-2 mt-3">
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-body font-medium text-primary-foreground bg-success hover:bg-success disabled:opacity-60 transition-colors"
-          >
-            <CheckCircle2 size={14} /> Confirm Resolved
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-body font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
-          >
-            <XCircle size={14} /> Not Resolved
-          </button>
+          <Button type="button" onClick={onConfirm} disabled={loading}>
+            <CheckCircle2 size={14} /> Confirm resolved
+          </Button>
+          <Button type="button" variant="secondary" onClick={onClose} disabled={loading} className="text-danger">
+            <XCircle size={14} /> Not resolved
+          </Button>
         </div>
       </div>
     </div>

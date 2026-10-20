@@ -12,6 +12,7 @@ import type { OrgMembership } from '@/lib/types'
 import NotificationBell from './NotificationBell'
 import { useSetupProgress } from '@/lib/hooks/useSetupProgress'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 
 // `module` maps a nav item to its entitlement key. Items with no module are always
 // shown (Dashboard). An `off` module is hidden; `preview` is shown with a badge.
@@ -138,7 +139,7 @@ export default function TopNav() {
   // so a super-admin who is also a firm admin gets the normal firm chrome + settings.
   const inSuperAdminPortal = pathname.startsWith('/super-admin')
   const roleLabel = inSuperAdminPortal
-    ? 'Super Admin'
+    ? 'Super admin'
     : user?.is_admin
       ? 'Administrator'
       : 'Member'
@@ -177,14 +178,16 @@ export default function TopNav() {
   return (
     <header className="fixed top-0 left-0 right-0 h-14 bg-primary border-b border-primary-hover flex items-center z-shell">
       {/* Hamburger — only below lg, where the horizontal nav is collapsed */}
-      <button
+      <Button
+        variant="on-brand"
+        size="icon"
         onClick={() => setDrawerOpen((v) => !v)}
         aria-label="Toggle navigation menu"
         aria-expanded={drawerOpen}
-        className="lg:hidden shrink-0 ml-2 w-11 h-11 flex items-center justify-center rounded-[8px] text-on-brand hover:bg-on-brand-hover transition-[background-color] duration-fast"
+        className="lg:hidden shrink-0 ml-2"
       >
         {drawerOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
+      </Button>
 
       {/* Brand */}
       <Link href="/dashboard" className="shrink-0 px-3 sm:px-4 lg:pl-5 lg:pr-3">
@@ -260,25 +263,17 @@ export default function TopNav() {
                 <div className="absolute right-3.5 -top-1.5 w-3 h-3 bg-surface border-t border-l border-border-light rotate-45" />
 
                 <div className="flex flex-col gap-2">
-                  <p className="text-body font-medium text-text-primary">Configure Workspace</p>
+                  <p className="text-body font-medium text-text-primary">Configure workspace</p>
                   <p className="text-xs text-text-secondary leading-relaxed">
                     Welcome, <span className="font-medium text-text-primary">{user?.name ? user.name.split(' ')[0] : 'Admin'}</span>! Let&apos;s get your workspace configured. Click the Settings icon to define your vision, departments, and add employees.
                   </p>
                   <div className="flex items-center gap-2 mt-3 justify-end">
-                    <button
-                      type="button"
-                      onClick={handleDismiss}
-                      className="text-xs font-medium text-text-muted hover:text-text-primary px-3 py-1.5 rounded-[6px] hover:bg-surface-control transition-colors"
-                    >
+                    <Button type="button" variant="secondary" size="sm" onClick={handleDismiss}>
                       Dismiss
-                    </button>
-                    <Link
-                      href="/settings/organization/company"
-                      onClick={handleDismiss}
-                      className="text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover px-3.5 py-1.5 rounded-[6px] transition-colors"
-                    >
-                      Start Setup
-                    </Link>
+                    </Button>
+                    <Button size="sm" render={<Link href="/settings/organization/company" onClick={handleDismiss} />}>
+                      Start setup
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -298,7 +293,7 @@ export default function TopNav() {
                 onClick={() => setOpen((v) => !v)}
                 aria-label={`Account menu — ${identityLine}`}
                 aria-expanded={open}
-                className="flex items-center gap-1 rounded-[8px] pl-1 pr-0.5 py-1 hover:bg-on-brand-hover transition-[background-color] duration-fast"
+                className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-0 focus-visible:outline-on-brand flex items-center gap-1 rounded-[8px] pl-1 pr-0.5 py-1 hover:bg-on-brand-hover transition-[background-color] duration-fast"
               >
                 <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center text-primary-text text-label font-medium shrink-0">
                   {initials}
@@ -362,7 +357,7 @@ export default function TopNav() {
                     {/* Current org */}
                     <div className="px-4 pt-3 pb-1">
                       <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1.5">
-                        Current Organization
+                        Current organization
                       </p>
                       {orgs === null ? (
                         <div className="flex items-center gap-2 py-1.5">
@@ -406,7 +401,7 @@ export default function TopNav() {
                     {otherOrgs.length > 0 && (
                       <div className="px-4 pt-2 pb-1 border-t border-border-light mt-1">
                         <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1.5">
-                          Switch To
+                          Switch to
                         </p>
                         {otherOrgs.map((m) => {
                           const isLoading = switching === m.organization_id
@@ -415,7 +410,7 @@ export default function TopNav() {
                               key={m.organization_id}
                               onClick={() => handleSwitch(m.organization_id)}
                               disabled={!!switching}
-                              className="w-full flex items-center gap-2.5 py-2 rounded-[6px] hover:bg-surface-sunken disabled:opacity-50 transition-colors text-left px-1"
+                              className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2.5 py-2 rounded-[6px] hover:bg-surface-sunken disabled:opacity-50 transition-colors text-left px-1"
                             >
                               <div className="w-6 h-6 rounded-[5px] bg-surface-control flex items-center justify-center shrink-0">
                                 <Building2 size={13} className="text-text-muted" />
@@ -443,7 +438,7 @@ export default function TopNav() {
                 <div className="border-t border-border-light p-2">
                   <button
                     onClick={logout}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-[6px] text-sm text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"
+                    className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2.5 px-3 py-2 rounded-[6px] text-sm text-text-muted hover:text-danger hover:bg-danger-bg transition-colors"
                   >
                     <LogOut size={14} />
                     Sign out

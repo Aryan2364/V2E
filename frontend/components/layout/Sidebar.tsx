@@ -135,7 +135,7 @@ export default function Sidebar({ role, mobileOpen = false, onMobileClose }: Sid
         <div className="shrink-0 border-t border-primary-hover">
           <button
             onClick={handleOrgSwitcherOpen}
-            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-primary-hover transition-[background-color] duration-fast"
+            className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-0 focus-visible:outline-on-brand w-full flex items-center gap-3 px-4 py-3 hover:bg-primary-hover transition-[background-color] duration-fast"
           >
             <div className="w-7 h-7 rounded-[8px] bg-surface flex items-center justify-center shrink-0">
               <Building2 size={14} className="text-primary-text" />
@@ -170,7 +170,7 @@ export default function Sidebar({ role, mobileOpen = false, onMobileClose }: Sid
                       key={m.organization_id}
                       onClick={() => handleOrgSwitch(m.organization_id)}
                       disabled={!!switching}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-surface-sunken transition-[background-color] duration-fast disabled:opacity-60"
+                      className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-surface-sunken transition-[background-color] duration-fast disabled:opacity-60"
                     >
                       <div className="w-6 h-6 rounded-[8px] bg-surface-control flex items-center justify-center shrink-0">
                         <Building2 size={12} className="text-text-muted" />
@@ -198,13 +198,13 @@ export default function Sidebar({ role, mobileOpen = false, onMobileClose }: Sid
               {user.name}
             </p>
             <span className="inline-flex self-start items-center rounded-[999px] bg-primary-hover text-on-brand-muted text-meta font-medium px-2 py-0.5">
-              {role === 'super_admin' ? 'Super Admin' : role === 'admin' ? 'Administrator' : 'Member'}
+              {role === 'super_admin' ? 'Super admin' : role === 'admin' ? 'Administrator' : 'Member'}
             </span>
           </div>
         )}
         <button
           onClick={logout}
-          className="flex items-center gap-2 w-full rounded-[8px] px-3 py-2 text-body text-on-brand hover:bg-primary-hover transition-[background-color] duration-fast"
+          className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-0 focus-visible:outline-on-brand flex items-center gap-2 w-full rounded-[8px] px-3 py-2 text-body text-on-brand hover:bg-primary-hover transition-[background-color] duration-fast"
         >
           <LogOut size={16} aria-hidden="true" />
           <span>Sign out</span>

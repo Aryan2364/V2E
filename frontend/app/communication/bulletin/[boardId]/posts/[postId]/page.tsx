@@ -10,7 +10,9 @@ import type { BulletinBoard, BulletinPost } from '@/lib/types/communication'
 import { formatDate } from '@/lib/format'
 import Link from 'next/link'
 import { Trash2 } from 'lucide-react'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 const REACTIONS = ['👍', '❤️', '😂', '🎉', '🔥']
 
@@ -65,20 +67,15 @@ export default function BulletinPostPage() {
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-2xl mx-auto">
-        <Breadcrumb className="mb-4">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink render={<Link href="/communication/bulletin" />}>Bulletin boards</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{post?.title ?? "Post"}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <PageHeader
+          title={post.title}
+          trail={[
+            { label: 'Bulletin boards', href: '/communication/bulletin' },
+            { label: board?.name ?? 'Board', href: `/communication/bulletin/${boardId}` },
+          ]}
+        />
 
         <div className="bg-surface border border-border-light rounded-card p-6 mb-4">
-          <h1 className="text-section font-medium text-text-primary mb-2">{post.title}</h1>
           <div className="flex items-center gap-3 text-meta text-text-muted mb-4">
             <span>{post.created_by?.name}</span>
             <span>·</span>
@@ -95,7 +92,8 @@ export default function BulletinPostPage() {
                   <button
                     key={emoji}
                     onClick={() => handleReact(emoji)}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-label border transition-colors ${myReaction ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
+                    aria-pressed={!!myReaction}
+                    className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring flex items-center gap-1 px-2.5 py-1 rounded-full text-label border transition-colors ${myReaction ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
                   >
                     {emoji} {count > 0 && <span className="text-meta font-medium">{count}</span>}
                   </button>
@@ -106,7 +104,7 @@ export default function BulletinPostPage() {
         </div>
 
         <div className="bg-surface border border-border-light rounded-card p-6">
-          <h2 className="text-label font-medium text-text-primary mb-4">{post.comments?.length ?? 0} Comments</h2>
+          <h2 className="text-label font-medium text-text-primary mb-4">{post.comments?.length ?? 0} comments</h2>
 
           <CommentThread
             className="mb-4"
@@ -117,13 +115,11 @@ export default function BulletinPostPage() {
               text: c.body,
               actions:
                 c.created_by_user_id === user?.id || isHR ? (
-                  <button
-                    onClick={() => handleDeleteComment(c.id)}
-                    aria-label="Delete comment"
-                    className="p-1 text-text-muted hover:text-danger rounded-xs transition-colors"
-                  >
-                    <Trash2 size={12} />
-                  </button>
+                  <Tooltip label="Delete comment">
+                    <Button variant="ghost" size="icon" onClick={() => handleDeleteComment(c.id)} aria-label="Delete comment">
+                      <Trash2 size={12} />
+                    </Button>
+                  </Tooltip>
                 ) : undefined,
             }))}
           />

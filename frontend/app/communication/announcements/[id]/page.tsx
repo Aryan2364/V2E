@@ -8,7 +8,8 @@ import type { Announcement } from '@/lib/types/communication'
 import { formatDate, formatDateTime } from '@/lib/format'
 import Link from 'next/link'
 import { Pin, Users } from 'lucide-react'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 const PRIORITY_BADGE: Record<string, string> = {
   urgent: 'bg-danger-bg text-danger',
@@ -53,17 +54,7 @@ export default function AnnouncementDetailPage() {
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-2xl mx-auto">
-        <Breadcrumb className="mb-4">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink render={<Link href="/communication/announcements" />}>Announcements</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{ann.title}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <PageHeader title={ann.title} trail={[{ label: 'Announcements', href: '/communication/announcements' }]} />
 
         <div className="bg-surface border border-border-light rounded-card p-6">
           <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -74,9 +65,7 @@ export default function AnnouncementDetailPage() {
             {ann.is_pinned && <Pin size={12} className="text-primary-text" />}
           </div>
 
-          <h1 className="text-page-title font-medium text-text-primary mb-2">{ann.title}</h1>
-
-          <div className="flex items-center gap-3 text-meta text-text-muted mb-6">
+          <div className="flex items-center gap-3 text-meta text-text-muted mt-3 mb-6">
             <span>By {ann.created_by?.name}</span>
             <span>·</span>
             <span>{formatDate(ann.published_at ?? ann.created_at)}</span>
@@ -88,13 +77,10 @@ export default function AnnouncementDetailPage() {
 
           {isHR && readStatus && (
             <div className="mt-8 border-t border-border-light pt-4">
-              <button
-                onClick={() => setShowReads(s => !s)}
-                className="flex items-center gap-2 text-label font-medium text-text-secondary hover:text-text-primary transition-colors"
-              >
+              <Button variant="secondary" onClick={() => setShowReads(s => !s)} aria-expanded={showReads}>
                 <Users size={16} />
                 Read by {readStatus.read_count} / {readStatus.total_employees} employees
-              </button>
+              </Button>
               {showReads && (
                 <div className="mt-3 flex flex-col gap-2">
                   {readStatus.reads.map((r: any) => (

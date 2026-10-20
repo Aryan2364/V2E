@@ -55,7 +55,7 @@ export default function LearnPathPage() {
       items={assignment.items ?? []}
       sequential={assignment.path?.mode === 'sequential'}
       backHref="/learning/my"
-      backLabel="My Learning"
+      backLabel="My learning"
       watermark={watermark}
       loadView={(id) => getMyItemViewUrl(orgId, assignmentId, id)}
       loadFile={(id) => getMyItemFile(orgId, assignmentId, id)}

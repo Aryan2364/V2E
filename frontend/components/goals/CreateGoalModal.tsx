@@ -1,9 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Loader2, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { useToast } from '@/components/ui/Toast'
 import { usePermissions } from '@/lib/auth/use-permissions'
@@ -22,6 +22,7 @@ import QuickCreateProjectModal from './QuickCreateProjectModal'
 import { formatDate } from './shared'
 import { Label } from '@/components/ui/label'
 import { useGuardedClose } from '@/lib/use-guarded-close'
+import Tooltip from '@/components/ui/tooltip'
 
 const EMPTY: GoalFormState = {
   title: '',
@@ -292,9 +293,8 @@ export default function CreateGoalModal({
 
           <div className="flex justify-end gap-2 pt-4 mt-4 border-t border-border-light">
             <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
-            <Button type="submit" disabled={saving}>
-              {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
-              {saving ? 'Creating…' : 'Create goal'}
+            <Button type="submit" disabled={saving} loading={saving} loadingLabel="Creating">
+              Create goal
             </Button>
           </div>
         </form>
@@ -349,16 +349,11 @@ function FieldWithAdd({
       <Label className="mb-2">{label}</Label>
       <div className="flex items-start gap-2">
         <div className="flex-1 min-w-0">{children}</div>
-        <button
-          type="button"
-          onClick={onAdd}
-          disabled={disabled}
-          title={addLabel}
-          aria-label={addLabel}
-          className="shrink-0 w-[42px] h-[42px] rounded-control bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted text-primary-foreground flex items-center justify-center transition-colors"
-        >
-          <Plus size={18} />
-        </button>
+        <Tooltip label={addLabel}>
+          <Button type="button" variant="secondary" size="icon" onClick={onAdd} disabled={disabled} aria-label={addLabel} className="shrink-0">
+            <Plus size={18} />
+          </Button>
+        </Tooltip>
       </div>
       <p className="text-meta text-text-secondary mt-1">{hint}</p>
     </div>

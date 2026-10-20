@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import DOMPurify from 'dompurify'
 import { Loader2, FileWarning, Download } from 'lucide-react'
 import type { PreviewKind } from '@/lib/types/learning'
+import { Button } from '@/components/ui/button'
 
 /**
  * Renders Office/text materials IN THE BROWSER from their raw bytes — no server
@@ -77,12 +78,9 @@ export default function OfficeViewer({
         <FileWarning size={24} className="text-text-muted" />
         <p className="text-label font-medium text-text-primary">Couldn’t render this document</p>
         {onDownload && (
-          <button
-            onClick={onDownload}
-            className="inline-flex items-center gap-2 px-4 py-2 text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
-          >
+          <Button onClick={onDownload}>
             <Download size={15} /> Download to open it
-          </button>
+          </Button>
         )}
       </div>
     )

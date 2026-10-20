@@ -22,8 +22,11 @@ import DocumentCard from '@/components/projects/DocumentCard'
 import ProjectActivityFeed from '@/components/projects/ProjectActivityFeed'
 import CreateTaskModal from '@/components/tasks/CreateTaskModal'
 import {
-  ChevronLeft, Settings, Plus, Loader2, FileText, Link2,
+  Settings, Plus, FileText, Link2,
 } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 type Tab = 'overview' | 'milestones' | 'tasks' | 'gantt' | 'comments' | 'documents' | 'activity'
 
@@ -152,9 +155,9 @@ export default function ProjectDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <p className="font-medium text-text-primary">Project not found</p>
-        <Link href="/dashboard/projects" className="mt-2 text-body text-primary-text hover:underline">
-          Back to Projects
-        </Link>
+        <Button variant="secondary" className="mt-2" render={<Link href="/dashboard/projects" />}>
+          Back to projects
+        </Button>
       </div>
     )
   }
@@ -163,45 +166,31 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <Link
-          href="/dashboard/projects"
-          className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3"
-        >
-          <ChevronLeft size={15} />
-          Projects
-        </Link>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-page-title font-medium text-text-primary leading-tight">{project.name}</h1>
-              <StatusBadge status={project.status} />
-            </div>
-            {project.description && (
-              <p className="mt-1 text-body text-text-secondary">{project.description}</p>
-            )}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => openAddTask()}
-              className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-primary-foreground text-body font-medium rounded-[8px] transition-colors"
-            >
-              <Plus size={15} />
-              Add Task
-            </button>
-            <Link
-              href={`/dashboard/projects/${id}/settings`}
-              className="p-2 rounded-[8px] border border-border-light text-text-secondary hover:bg-surface-sunken transition-colors"
-            >
-              <Settings size={16} />
-            </Link>
-          </div>
-        </div>
+        <PageHeader
+          title={project.name}
+          trail={[{ label: 'Projects', href: '/dashboard/projects' }]}
+          meta={<StatusBadge status={project.status} />}
+          actions={
+            <>
+              <Button type="button" onClick={() => openAddTask()}>
+                <Plus size={15} />
+                Add task
+              </Button>
+              <Tooltip label="Project settings">
+                <Button variant="ghost" size="icon" aria-label="Project settings" render={<Link href={`/dashboard/projects/${id}/settings`} />}>
+                  <Settings size={16} />
+                </Button>
+              </Tooltip>
+            </>
+          }
+        />
+        {project.description && (
+          <p className="-mt-3 mb-4 text-body text-text-secondary">{project.description}</p>
+        )}
 
         {/* Progress bar */}
-        <div className="mt-4">
+        <div>
           <ProjectProgressBar percentage={project.completion_percentage} showLabel />
         </div>
       </div>
@@ -212,9 +201,10 @@ export default function ProjectDetailPage() {
           <button
             key={t.id}
             type="button"
+            aria-current={tab === t.id ? 'page' : undefined}
             onClick={() => setTab(t.id)}
             className={[
-              'px-4 py-2.5 text-body font-medium whitespace-nowrap border-b-2 transition-colors',
+              'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring px-4 py-2.5 text-body font-medium whitespace-nowrap border-b-2 transition-colors',
               tab === t.id
                 ? 'border-primary text-primary-text'
                 : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border',
@@ -231,14 +221,14 @@ export default function ProjectDetailPage() {
           <div className="lg:col-span-2 space-y-4">
             {/* Key info */}
             <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
-              <h2 className="text-body font-medium text-text-primary mb-4">Project Info</h2>
+              <h2 className="text-body font-medium text-text-primary mb-4">Project info</h2>
               <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-body">
                 <div>
-                  <dt className="text-text-muted text-meta font-medium mb-0.5">Start Date</dt>
+                  <dt className="text-text-muted text-meta font-medium mb-0.5">Start date</dt>
                   <dd className="text-text-primary">{project.start_date ?? '—'}</dd>
                 </div>
                 <div>
-                  <dt className="text-text-muted text-meta font-medium mb-0.5">End Date</dt>
+                  <dt className="text-text-muted text-meta font-medium mb-0.5">End date</dt>
                   <dd className="text-text-primary">{project.end_date ?? '—'}</dd>
                 </div>
                 <div>
@@ -329,14 +319,10 @@ export default function ProjectDetailPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-body text-text-secondary">{tasks.length} task{tasks.length !== 1 ? 's' : ''} total · {directTasks.length} direct</p>
-            <button
-              type="button"
-              onClick={() => openAddTask()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium text-primary-text border border-primary-border bg-primary-subtle rounded-[6px] hover:bg-primary-subtle transition-colors"
-            >
+            <Button type="button" variant="secondary" size="sm" onClick={() => openAddTask()}>
               <Plus size={12} />
-              Add Task
-            </button>
+              Add task
+            </Button>
           </div>
           {tasks.length === 0 ? (
             <div className="bg-surface border border-border-light rounded-card p-12 text-center text-body text-text-muted">
@@ -404,19 +390,15 @@ export default function ProjectDetailPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-body text-text-secondary">{documents.length} document{documents.length !== 1 ? 's' : ''}</p>
-            <button
-              type="button"
-              onClick={() => setShowAddDoc((v) => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium text-primary-text border border-primary-border bg-primary-subtle rounded-[6px] hover:bg-primary-subtle transition-colors"
-            >
+            <Button type="button" variant="secondary" size="sm" onClick={() => setShowAddDoc((v) => !v)}>
               <Plus size={12} />
-              Add Document
-            </button>
+              Add document
+            </Button>
           </div>
 
           {showAddDoc && (
             <div className="bg-surface border border-border-light rounded-card p-4 shadow-card space-y-3">
-              <p className="text-body font-medium text-text-primary">Add Document Link</p>
+              <p className="text-body font-medium text-text-primary">Add document link</p>
               <input
                 value={docName}
                 onChange={(e) => setDocName(e.target.value)}
@@ -433,22 +415,23 @@ export default function ProjectDetailPage() {
                 />
               </div>
               <div className="flex gap-2 justify-end">
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="sm"
                   onClick={() => { setShowAddDoc(false); setDocName(''); setDocUrl('') }}
-                  className="h-8 px-3 text-meta font-medium text-text-secondary border border-border-light rounded-[6px] hover:bg-surface-sunken transition-colors"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  size="sm"
                   disabled={docSaving || !docName.trim() || !docUrl.trim()}
+                  loading={docSaving}
                   onClick={handleAddDoc}
-                  className="h-8 px-3 text-meta font-medium bg-primary text-primary-foreground rounded-[6px] hover:bg-primary-hover disabled:opacity-50 transition-colors flex items-center gap-1.5"
                 >
-                  {docSaving && <Loader2 size={12} className="animate-spin" />}
                   Save
-                </button>
+                </Button>
               </div>
             </div>
           )}

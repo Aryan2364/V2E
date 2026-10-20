@@ -16,7 +16,7 @@ export default function TemplatePicker({ templates, selected, onSelect }: Templa
         type="button"
         onClick={() => onSelect(null)}
         className={[
-          'w-full text-left px-4 py-3 rounded-[10px] border-2 transition-colors',
+          'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full text-left px-4 py-3 rounded-[10px] border-2 transition-colors',
           !selected
             ? 'border-primary bg-primary-subtle'
             : 'border-border-light hover:border-border',
@@ -34,7 +34,7 @@ export default function TemplatePicker({ templates, selected, onSelect }: Templa
             type="button"
             onClick={() => onSelect(t.id)}
             className={[
-              'w-full text-left px-4 py-3 rounded-[10px] border-2 transition-colors flex items-start justify-between gap-3',
+              'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full text-left px-4 py-3 rounded-[10px] border-2 transition-colors flex items-start justify-between gap-3',
               active
                 ? 'border-primary bg-primary-subtle'
                 : 'border-border-light hover:border-border',

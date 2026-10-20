@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 interface TemplateTask {
   id: string
@@ -100,9 +102,11 @@ export default function TemplateBuilder({
           <input value={task.title} onChange={(e) => onChange({ title: e.target.value })} aria-label="Task title" placeholder="For example, Draft the project plan" className={inputCls} />
           <input value={task.estimated_days} onChange={(e) => onChange({ estimated_days: e.target.value })} aria-label="Estimated days" placeholder="For example, 3" type="number" min="1" className={inputCls} />
         </div>
-        <button type="button" onClick={onRemove} className="p-1.5 rounded-xs hover:bg-danger-bg text-danger mt-0.5 transition-colors">
-          <Trash2 size={13} />
-        </button>
+        <Tooltip label="Remove task">
+          <Button type="button" variant="ghost" size="icon" onClick={onRemove} aria-label="Remove task" className="mt-0.5">
+            <Trash2 size={13} />
+          </Button>
+        </Tooltip>
       </div>
     )
   }
@@ -126,9 +130,9 @@ export default function TemplateBuilder({
       <div>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-body font-medium text-text-primary">Milestones</h3>
-          <button type="button" onClick={addMilestone} className="flex items-center gap-1.5 text-meta font-medium text-primary-text hover:text-primary-text transition-colors">
+          <Button type="button" variant="secondary" size="sm" onClick={addMilestone}>
             <Plus size={13} /> Add milestone
-          </button>
+          </Button>
         </div>
 
         {milestones.length === 0 && (
@@ -151,13 +155,11 @@ export default function TemplateBuilder({
                   placeholder="For example, Design"
                   className="flex-1 bg-transparent text-body font-medium text-text-primary placeholder:text-text-muted focus:outline-hidden"
                 />
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); removeMilestone(ms.id) }}
-                  className="p-1 rounded-xs hover:bg-danger-bg text-danger transition-colors"
-                >
-                  <Trash2 size={13} />
-                </button>
+                <Tooltip label="Remove milestone">
+                  <Button type="button" variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); removeMilestone(ms.id) }} aria-label="Remove milestone">
+                    <Trash2 size={13} />
+                  </Button>
+                </Tooltip>
               </div>
               {ms.expanded && (
                 <div className="px-4 py-3 space-y-3">
@@ -172,9 +174,9 @@ export default function TemplateBuilder({
                         onRemove={() => removeTaskFromMilestone(ms.id, t.id)}
                       />
                     ))}
-                    <button type="button" onClick={() => addTaskToMilestone(ms.id)} className="flex items-center gap-1 text-meta text-primary-text hover:text-primary-text font-medium transition-colors">
+                    <Button type="button" variant="secondary" size="sm" onClick={() => addTaskToMilestone(ms.id)}>
                       <Plus size={12} /> Add task
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -186,10 +188,10 @@ export default function TemplateBuilder({
       {/* Direct tasks */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-body font-medium text-text-primary">Direct Tasks (No Milestone)</h3>
-          <button type="button" onClick={addDirectTask} className="flex items-center gap-1.5 text-meta font-medium text-primary-text hover:text-primary-text transition-colors">
-            <Plus size={13} /> Add Task
-          </button>
+          <h3 className="text-body font-medium text-text-primary">Direct tasks (no milestone)</h3>
+          <Button type="button" variant="secondary" size="sm" onClick={addDirectTask}>
+            <Plus size={13} /> Add task
+          </Button>
         </div>
         {directTasks.length === 0 && (
           <p className="text-body text-text-muted">No direct tasks.</p>

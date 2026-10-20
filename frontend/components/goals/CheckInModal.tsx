@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
 import { useToast } from '@/components/ui/Toast'
 import { goalsApi } from '@/lib/api/goals'
@@ -145,7 +144,7 @@ export default function CheckInModal({
                   disabled={saving}
                   aria-pressed={active}
                   className={[
-                    'flex flex-col items-center justify-center gap-1.5 rounded-card border-2 py-3 px-2 min-h-[64px]',
+                    'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring flex flex-col items-center justify-center gap-1.5 rounded-card border-2 py-3 px-2 min-h-[64px]',
                     'text-label font-medium transition-colors',
                     active ? '' : 'border-border-light bg-surface text-text-secondary hover:bg-surface-sunken',
                   ].join(' ')}
@@ -186,9 +185,8 @@ export default function CheckInModal({
         </p>
 
         <div className="flex justify-end pt-4 border-t border-border-light">
-          <Button type="submit" disabled={saving}>
-            {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
-            {saving ? 'Recording…' : 'Record check-in'}
+          <Button type="submit" disabled={saving} loading={saving} loadingLabel="Recording">
+            Record check-in
           </Button>
         </div>
       </form>

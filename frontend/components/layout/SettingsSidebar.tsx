@@ -37,16 +37,16 @@ interface NavGroup {
 const ORGANIZATION_ITEMS: NavItem[] = [
   { label: 'Identity', href: '/settings/organization/company', Icon: Building2 },
   { label: 'Culture', href: '/settings/organization/culture', Icon: Heart },
-  { label: 'Department Structure', href: '/settings/organization/structure', Icon: GitBranch },
-  { label: 'Job Roles', href: '/settings/organization/roles', Icon: Briefcase },
+  { label: 'Department structure', href: '/settings/organization/structure', Icon: GitBranch },
+  { label: 'Job roles', href: '/settings/organization/roles', Icon: Briefcase },
   { label: 'Employees', href: '/settings/organization/employees', Icon: Users },
   { label: 'Holidays', href: '/settings/organization/holidays', Icon: CalendarDays },
 ]
 
 // System Configuration — stays with admin/IT. High blast radius.
 const SYSTEM_ITEMS: NavItem[] = [
-  { label: 'Access Rights', href: '/settings/system/access-rights', Icon: ShieldCheck },
-  { label: 'Audit Logs', href: '/settings/system/audit-logs', Icon: ScrollText },
+  { label: 'Access rights', href: '/settings/system/access-rights', Icon: ShieldCheck },
+  { label: 'Audit logs', href: '/settings/system/audit-logs', Icon: ScrollText },
 ]
 
 export default function SettingsSidebar({
@@ -60,7 +60,7 @@ export default function SettingsSidebar({
   const groups: ModuleSidebarGroup[] = []
   if (showOrganization) {
     groups.push({
-      label: 'Organization Setup',
+      label: 'Organization setup',
       items: ORGANIZATION_ITEMS.map(({ label, href, Icon }) => ({
         label,
         href,
@@ -71,7 +71,7 @@ export default function SettingsSidebar({
   }
   if (showSystem) {
     groups.push({
-      label: 'System Configuration',
+      label: 'System configuration',
       items: SYSTEM_ITEMS.map(({ label, href, Icon }) => ({
         label,
         href,

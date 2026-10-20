@@ -18,9 +18,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/shell/page-header'
 
 const STATUS_OPTS: { value: 'all' | ProjectStatus; label: string }[] = [
-  { value: 'all', label: 'All Statuses' },
+  { value: 'all', label: 'All statuses' },
   { value: 'active', label: 'Active' },
-  { value: 'on_hold', label: 'On Hold' },
+  { value: 'on_hold', label: 'On hold' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
 ]
@@ -100,9 +100,9 @@ export default function ProjectsPage() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <ProjectStatCard label="Total Projects" value={projects.length} color="var(--primary-text)" />
+        <ProjectStatCard label="Total projects" value={projects.length} color="var(--primary-text)" />
         <ProjectStatCard label="Active" value={active} color="var(--success)" />
-        <ProjectStatCard label="On Hold" value={onHold} color="var(--warning)" />
+        <ProjectStatCard label="On hold" value={onHold} color="var(--warning)" />
         <ProjectStatCard label="Avg. Progress" value={`${avgProgress}%`} color="var(--text-secondary)" />
       </div>
 

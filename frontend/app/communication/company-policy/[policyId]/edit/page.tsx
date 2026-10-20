@@ -6,7 +6,9 @@ import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { getPolicy, updatePolicy } from '@/lib/api/company-policy'
 import PolicyForm from '@/components/company-policy/PolicyForm'
-import { POLICY_BASE, POLICY_REASONS, PolicyBreadcrumb, policyHref, usePolicyPermissions } from '@/components/company-policy/shared'
+import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
+import { POLICY_BASE, POLICY_REASONS, policyHref, usePolicyPermissions } from '@/components/company-policy/shared'
 import type { CompanyPolicy } from '@/lib/types/company-policy'
 
 export default function EditPolicyPage() {
@@ -36,13 +38,13 @@ export default function EditPolicyPage() {
   if (status === 'failed' || !policy) {
     return (
       <div className="max-w-3xl">
-        <PolicyBreadcrumb trail={[{ label: 'Company Policy', href: POLICY_BASE }, { label: 'Edit policy' }]} />
+        <PageHeader title="Edit policy" trail={[{ label: 'Company policy', href: POLICY_BASE }]} />
         <div className="bg-surface border border-border-light rounded-card p-8 flex flex-col items-center text-center gap-2">
           <p className="text-label font-medium text-text-primary">This policy could not be loaded</p>
           <p className="text-label text-text-secondary">It may have been deleted, or the connection dropped.</p>
           <div className="flex gap-3 mt-2">
-            <button type="button" onClick={load} className="px-4 py-2 text-label font-medium text-primary-text border-2 border-primary rounded-control hover:bg-primary-subtle transition-colors">Retry</button>
-            <Link href={POLICY_BASE} className="px-4 py-2 text-label font-medium text-text-secondary hover:text-text-primary transition-colors">All policies</Link>
+            <Button type="button" variant="secondary" onClick={load}>Retry</Button>
+            <Button variant="secondary" render={<Link href={POLICY_BASE} />}>All policies</Button>
           </div>
         </div>
       </div>
@@ -51,14 +53,13 @@ export default function EditPolicyPage() {
 
   return (
     <div className="max-w-3xl">
-      <PolicyBreadcrumb
+      <PageHeader
+        title="Edit policy"
         trail={[
           { label: 'Company policy', href: POLICY_BASE },
           { label: policy.title, href: policyHref(policyId) },
-          { label: 'Edit' },
         ]}
       />
-      <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary mb-6 leading-tight">Edit policy</h1>
       <PolicyForm
         initial={{ title: policy.title, description: policy.description ?? '' }}
         submitLabel="Save policy"

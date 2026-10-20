@@ -94,13 +94,9 @@ export default function GoalsFilterPopover({
                       {section.label} <span className="text-text-muted">{section.options.length}</span>
                     </p>
                     {section.selected.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => section.onChange([])}
-                        className="text-label text-primary-text hover:underline"
-                      >
+                      <Button type="button" variant="secondary" size="sm" onClick={() => section.onChange([])}>
                         Reset
-                      </button>
+                      </Button>
                     )}
                   </div>
                   {section.options.length > SEARCH_THRESHOLD && (

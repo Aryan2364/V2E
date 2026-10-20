@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { Search, Check, CheckCheck, X } from 'lucide-react'
 import type { EmployeeProfile } from '@/lib/types'
+import { Button } from '@/components/ui/button'
 
 /**
  * Reusable people multi-select for assigning a course. Search filters by person,
@@ -79,29 +80,24 @@ export default function AssigneeMultiSelect({
           className="flex-1 bg-transparent text-label text-text-primary placeholder:text-text-muted focus:outline-hidden"
         />
         {q && (
-          <button type="button" onClick={() => setQ('')} className="text-text-muted hover:text-text-secondary shrink-0">
+          <Button type="button" variant="in-field" size="icon-sm" onClick={() => setQ('')} aria-label="Clear search" className="shrink-0">
             <X size={14} />
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Select-all + counts */}
       <div className="px-3 py-2 border-b border-border-light flex items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={toggleAllFiltered}
-          disabled={filteredIds.length === 0}
-          className="inline-flex items-center gap-1.5 text-meta font-medium text-primary-text hover:text-primary-text disabled:text-text-muted disabled:cursor-not-allowed"
-        >
+        <Button type="button" variant="secondary" size="sm" onClick={toggleAllFiltered} disabled={filteredIds.length === 0}>
           <CheckCheck size={14} />
           {allFilteredSelected ? 'Deselect' : 'Select'} {q ? 'matching' : 'all'} ({filteredIds.length})
-        </button>
+        </Button>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-meta text-text-muted">{selected.length} selected</span>
           {selected.length > 0 && (
-            <button type="button" onClick={() => onChange([])} className="text-meta font-medium text-text-secondary hover:text-danger">
+            <Button type="button" variant="secondary" size="sm" onClick={() => onChange([])}>
               Clear
-            </button>
+            </Button>
           )}
         </div>
       </div>

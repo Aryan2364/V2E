@@ -18,6 +18,7 @@ import {
 import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/shell/page-header'
+import { Button } from '@/components/ui/button'
 
 /**
  * My check-ins — the screen that keeps this module alive.
@@ -102,7 +103,7 @@ export default function MyCheckInsPage() {
                   <div className="min-w-0 flex-1">
                     <button
                       onClick={() => router.push(`/goals/${g.id}`)}
-                      className="group text-left"
+                      className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring rounded-xs group text-left"
                     >
                       <span className="flex items-center gap-1.5">
                         <span className="text-card-heading font-medium text-text-primary group-hover:text-primary-text transition-colors">
@@ -146,12 +147,9 @@ export default function MyCheckInsPage() {
                   </div>
 
                   {perms.edit && (
-                    <button
-                      onClick={() => setActive(g)}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-control bg-primary hover:bg-primary-hover text-primary-foreground text-label font-medium transition-colors shrink-0 w-full sm:w-auto min-h-[44px]"
-                    >
+                    <Button onClick={() => setActive(g)} className="shrink-0 w-full sm:w-auto">
                       <CheckCircle2 size={16} /> Check in
-                    </button>
+                    </Button>
                   )}
                 </div>
               </li>

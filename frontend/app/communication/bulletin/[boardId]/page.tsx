@@ -8,7 +8,8 @@ import type { BulletinBoard, BulletinPost } from '@/lib/types/communication'
 import { formatDate } from '@/lib/format'
 import Link from 'next/link'
 import { Plus, Pin, Trash2 } from 'lucide-react'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { PageHeader } from '@/components/shell/page-header'
+import Tooltip from '@/components/ui/tooltip'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
@@ -89,17 +90,19 @@ export default function BulletinBoardPage() {
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
       <div className="max-w-3xl mx-auto">
-        <Breadcrumb className="mb-4">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink render={<Link href="/communication/bulletin" />}>Bulletin boards</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{board?.name ?? "Board"}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <PageHeader
+          title={board?.name ?? 'Board'}
+          meta={board?.description || undefined}
+          trail={[{ label: 'Bulletin boards', href: '/communication/bulletin' }]}
+          actions={
+            board && canPost ? (
+              <Button onClick={() => setShowForm(s => !s)}>
+                <Plus size={16} />
+                New post
+              </Button>
+            ) : undefined
+          }
+        />
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -107,22 +110,6 @@ export default function BulletinBoardPage() {
           </div>
         ) : board && (
           <>
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h1 className="text-page-title font-medium text-text-primary">{board.name}</h1>
-                {board.description && <p className="text-label text-text-secondary mt-0.5">{board.description}</p>}
-              </div>
-              {canPost && (
-                <button
-                  onClick={() => setShowForm(s => !s)}
-                  className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover transition-colors"
-                >
-                  <Plus size={16} />
-                  New post
-                </button>
-              )}
-            </div>
-
             {showForm && (
               <form onSubmit={handlePost} className="bg-surface border border-border-light rounded-card p-4 mb-6 flex flex-col gap-4">
                 <div>
@@ -169,14 +156,18 @@ export default function BulletinBoardPage() {
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {isHR && (
-                        <button onClick={() => handlePin(post.id)} className={`p-1.5 rounded-control transition-colors ${post.is_pinned ? 'text-primary-text hover:bg-primary-subtle' : 'text-text-muted hover:bg-surface-control'}`}>
-                          <Pin size={14} />
-                        </button>
+                        <Tooltip label={post.is_pinned ? 'Unpin post' : 'Pin post'}>
+                          <Button variant="ghost" size="icon" onClick={() => handlePin(post.id)} aria-label={post.is_pinned ? 'Unpin post' : 'Pin post'} aria-pressed={!!post.is_pinned} className={post.is_pinned ? 'text-primary-text' : undefined}>
+                            <Pin size={14} />
+                          </Button>
+                        </Tooltip>
                       )}
                       {(post.created_by_user_id === user?.id || isHR) && (
-                        <button onClick={() => setPostToDelete(post)} aria-label="Delete post" className="p-1.5 rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
-                          <Trash2 size={14} />
-                        </button>
+                        <Tooltip label="Delete post">
+                          <Button variant="ghost" size="icon" onClick={() => setPostToDelete(post)} aria-label="Delete post">
+                            <Trash2 size={14} />
+                          </Button>
+                        </Tooltip>
                       )}
                     </div>
                   </div>
@@ -190,7 +181,8 @@ export default function BulletinBoardPage() {
                           <button
                             key={emoji}
                             onClick={() => handleReact(post.id, emoji)}
-                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-meta border transition-colors ${myReaction ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
+                            aria-pressed={!!myReaction}
+                            className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring flex items-center gap-1 px-2 py-0.5 rounded-full text-meta border transition-colors ${myReaction ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface-sunken border-border-light text-text-secondary hover:border-primary'}`}
                           >
                             {emoji} {count > 0 && <span>{count}</span>}
                           </button>

@@ -9,7 +9,7 @@ import { projectsApi } from '@/lib/api/projects'
 import type { ProjectTemplate } from '@/lib/types/projects'
 import TemplateBuilder from '@/components/projects/TemplateBuilder'
 import type { TemplateMilestone, TemplateTask } from '@/components/projects/TemplateBuilder'
-import { ChevronLeft } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
 import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 
@@ -94,26 +94,23 @@ export default function EditTemplatePage() {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <p className="font-medium text-text-primary">Template not found</p>
-        <Link href="/dashboard/projects/templates" className="mt-2 text-body text-primary-text hover:underline">
+        <Button variant="secondary" className="mt-2" render={<Link href="/dashboard/projects/templates" />}>
           Back to templates
-        </Link>
+        </Button>
       </div>
     )
   }
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div>
-        <Link
-          href="/dashboard/projects/templates"
-          className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3"
-        >
-          <ChevronLeft size={15} />
-          Back to templates
-        </Link>
-        <h1 className="text-page-title font-medium text-text-primary leading-tight">Edit template</h1>
-        <p className="mt-1 text-body text-text-secondary">{template.name}</p>
-      </div>
+      <PageHeader
+        title="Edit template"
+        meta={template.name}
+        trail={[
+          { label: 'Projects', href: '/dashboard/projects' },
+          { label: 'Project templates', href: '/dashboard/projects/templates' },
+        ]}
+      />
 
       {error && (
         <div className="px-4 py-3 rounded-[8px] border border-danger-border bg-danger-bg text-body text-danger">

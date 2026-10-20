@@ -96,7 +96,7 @@ export default function GoalsDashboardPage() {
             <button
               key={s}
               onClick={() => router.push(`/goals/list?status=${s}`)}
-              className="bg-surface border border-border-light rounded-card shadow-card p-4 text-left hover:border-border transition-colors"
+              className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring bg-surface border border-border-light rounded-card shadow-card p-4 text-left hover:border-border transition-colors"
             >
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: m.dot }} />
@@ -180,7 +180,7 @@ function GoalPanel({
               <li key={g.id}>
                 <button
                   onClick={() => router.push(`/goals/${g.id}`)}
-                  className="w-full text-left py-2.5 group"
+                  className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring rounded-xs w-full text-left py-2.5 group"
                 >
                   <p className="text-body font-medium text-text-primary group-hover:text-primary-text transition-colors truncate">
                     {g.title}

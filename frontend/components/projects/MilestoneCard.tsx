@@ -6,10 +6,11 @@ import ProjectProgressBar from './ProjectProgressBar'
 import MilestoneTaskRow from './MilestoneTaskRow'
 import type { ProjectMilestone, ProjectTask, DependencyWarning } from '@/lib/types/projects'
 import { formatDate } from '@/lib/format'
+import { Button } from '@/components/ui/button'
 
 const STATUS_BADGE: Record<string, { bg: string; text: string; border: string; label: string }> = {
   pending: { bg: 'var(--surface-sunken)', text: 'var(--text-muted)', border: 'var(--border-light)', label: 'Pending' },
-  in_progress: { bg: 'var(--primary-subtle)', text: 'var(--primary-text)', border: 'var(--primary-border)', label: 'In Progress' },
+  in_progress: { bg: 'var(--primary-subtle)', text: 'var(--primary-text)', border: 'var(--primary-border)', label: 'In progress' },
   achieved: { bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success-border)', label: 'Achieved' },
 }
 
@@ -32,9 +33,9 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
         className="px-6 py-4 flex items-start gap-3 cursor-pointer hover:bg-surface-sunken transition-colors"
         onClick={() => setExpanded((v) => !v)}
       >
-        <button type="button" className="text-text-muted mt-0.5 shrink-0">
+        <Button type="button" variant="ghost" size="icon" className="shrink-0" aria-expanded={expanded} aria-label={expanded ? 'Collapse milestone' : 'Expand milestone'}>
           {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-        </button>
+        </Button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="text-body font-medium text-text-primary">{milestone.name}</h3>
@@ -80,13 +81,9 @@ export default function MilestoneCard({ milestone, tasks, warnings, canEdit, onA
           )}
           {canEdit && (
             <div className="px-6 py-2.5 border-t border-border-light">
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); onAddTask(milestone.id) }}
-                className="flex items-center gap-1.5 text-meta text-primary-text hover:text-primary-text font-medium transition-colors"
-              >
-                <Plus size={13} /> Add Task
-              </button>
+              <Button type="button" variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); onAddTask(milestone.id) }}>
+                <Plus size={13} /> Add task
+              </Button>
             </div>
           )}
         </>

@@ -111,9 +111,11 @@ export default function NotificationsPage() {
         {MODULE_FILTERS.map((m) => (
           <button
             key={m}
+            type="button"
+            aria-pressed={moduleFilter === m}
             onClick={() => setModuleFilter(m)}
             className={[
-              'px-3 py-1.5 rounded-full text-meta font-medium capitalize transition-colors',
+              'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring px-3 py-1.5 rounded-full text-meta font-medium capitalize transition-colors',
               moduleFilter === m
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-surface border border-border-light text-text-secondary hover:border-border',
@@ -140,7 +142,7 @@ export default function NotificationsPage() {
               key={n.id}
               onClick={() => handleClick(n)}
               className={[
-                'w-full text-left px-4 py-4 transition-colors hover:bg-surface-sunken',
+                'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring w-full text-left px-4 py-4 transition-colors hover:bg-surface-sunken',
                 n.is_read ? '' : 'bg-primary-subtle/40',
               ].join(' ')}
             >
@@ -165,13 +167,9 @@ export default function NotificationsPage() {
       )}
 
       {cursor && (
-        <button
-          onClick={loadMore}
-          disabled={loadingMore}
-          className="w-full py-2.5 text-body font-medium text-primary-text bg-surface border border-border-light rounded-xl hover:bg-surface-sunken disabled:opacity-60 transition-colors"
-        >
-          {loadingMore ? 'Loading…' : 'Load older notifications'}
-        </button>
+        <Button variant="secondary" onClick={loadMore} disabled={loadingMore} loading={loadingMore} loadingLabel="Loading" className="w-full">
+          Load older notifications
+        </Button>
       )}
     </div>
   )

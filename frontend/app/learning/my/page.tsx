@@ -7,10 +7,11 @@ import { useAuth } from '@/lib/auth/context'
 import { getMyAssignments } from '@/lib/api/learning'
 import type { LearningPathAssignment } from '@/lib/types/learning'
 import ProgressRing from '@/components/learning/ProgressRing'
+import { PageHeader } from '@/components/shell/page-header'
 
 const STATUS_CONFIG = {
-  not_started: { label: 'Not Started', classes: 'bg-surface-control text-text-muted' },
-  in_progress: { label: 'In Progress', classes: 'bg-primary-subtle text-primary-text' },
+  not_started: { label: 'Not started', classes: 'bg-surface-control text-text-muted' },
+  in_progress: { label: 'In progress', classes: 'bg-primary-subtle text-primary-text' },
   completed: { label: 'Completed', classes: 'bg-success-bg text-success' },
 }
 
@@ -39,10 +40,7 @@ export default function MyLearningPage() {
 
   return (
     <div className="px-8 py-8 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-page-title font-medium text-text-primary">My Learning</h1>
-        <p className="text-label text-text-secondary mt-1">{assignments.length} paths assigned to you</p>
-      </div>
+      <PageHeader title="My learning" meta={`${assignments.length} paths assigned to you`} />
 
       {assignments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -56,7 +54,7 @@ export default function MyLearningPage() {
         <div className="flex flex-col gap-8">
           {inProgress.length > 0 && (
             <section>
-              <h2 className="text-label font-medium text-text-secondary uppercase tracking-wider mb-3">In Progress</h2>
+              <h2 className="text-label font-medium text-text-secondary uppercase tracking-wider mb-3">In progress</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {inProgress.map((a) => <AssignmentCard key={a.id} assignment={a} />)}
               </div>
@@ -64,7 +62,7 @@ export default function MyLearningPage() {
           )}
           {notStarted.length > 0 && (
             <section>
-              <h2 className="text-label font-medium text-text-secondary uppercase tracking-wider mb-3">Not Started</h2>
+              <h2 className="text-label font-medium text-text-secondary uppercase tracking-wider mb-3">Not started</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {notStarted.map((a) => <AssignmentCard key={a.id} assignment={a} />)}
               </div>

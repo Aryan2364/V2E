@@ -5,8 +5,7 @@ import { useAuth } from '@/lib/auth/context'
 import { projectsApi } from '@/lib/api/projects'
 import type { ProjectTemplate } from '@/lib/types/projects'
 import CreateProjectWizard from '@/components/projects/CreateProjectWizard'
-import { ChevronLeft } from 'lucide-react'
-import Link from 'next/link'
+import { PageHeader } from '@/components/shell/page-header'
 
 export default function NewProjectPage() {
   const { user } = useAuth()
@@ -21,17 +20,11 @@ export default function NewProjectPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link
-          href="/dashboard/projects"
-          className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3"
-        >
-          <ChevronLeft size={15} />
-          Back to Projects
-        </Link>
-        <h1 className="text-page-title font-medium text-text-primary leading-tight">New Project</h1>
-        <p className="mt-1 text-body text-text-secondary">Set up a new project for your team.</p>
-      </div>
+      <PageHeader
+        title="New project"
+        meta="Set up a new project for your team."
+        trail={[{ label: 'Projects', href: '/dashboard/projects' }]}
+      />
 
       <CreateProjectWizard templates={templates} />
     </div>

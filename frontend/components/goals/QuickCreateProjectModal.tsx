@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
 import EmployeePicker from '@/components/ui/EmployeePicker'
 import { useToast } from '@/components/ui/Toast'
@@ -164,9 +163,8 @@ export default function QuickCreateProjectModal({
 
         <div className="flex justify-end gap-2 pt-4 border-t border-border-light">
           <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
-          <Button type="submit" disabled={saving}>
-            {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
-            {saving ? 'Creating…' : 'Create and link project'}
+          <Button type="submit" disabled={saving} loading={saving} loadingLabel="Creating">
+            Create and link project
           </Button>
         </div>
       </form>

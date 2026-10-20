@@ -14,12 +14,12 @@ interface NavItem { label: string; href: string; Icon: React.ElementType; exact?
 
 const HR_NAV: NavItem[] = [
   { label: 'Overview', href: '/learning', Icon: LayoutDashboard, exact: true },
-  { label: 'Learning Paths', href: '/learning/paths', Icon: BookOpen },
+  { label: 'Learning paths', href: '/learning/paths', Icon: BookOpen },
   { label: 'Progress', href: '/learning/progress', Icon: BarChart2 },
 ]
 
 const EMP_NAV: NavItem[] = [
-  { label: 'My Learning', href: '/learning/my', Icon: GraduationCap },
+  { label: 'My learning', href: '/learning/my', Icon: GraduationCap },
 ]
 
 // Migrated to the shared ModuleSidebar (FRONTEND_RULES.md §4 rule 2, §12.1 treatment)
