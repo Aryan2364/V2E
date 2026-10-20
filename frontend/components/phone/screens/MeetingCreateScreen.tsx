@@ -15,7 +15,7 @@ import { DraftBanner } from '../DraftBanner'
 import PhoneScreen from '../PhoneScreen'
 import { PhoneButton, cx } from '../primitives'
 import { PhoneDateField, PhoneTimeField } from '../PhoneDateTimeField'
-import { AttendeePickerSheet } from '../AttendeePickerSheet'
+import { PeoplePickerSheet, SelectedPeopleList } from '../PeoplePickerSheet'
 
 /*
  * Create meeting - plan-phone-2026-10-14.md §5.9, grounded in
@@ -228,9 +228,13 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
           </span>
           <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
         </button>
-        {selectedPeople.length > 0 ? (
-          <p className="text-meta text-text-secondary">{selectedPeople.map((p) => p.name).join(', ')}</p>
-        ) : null}
+        <SelectedPeopleList
+          people={selectedPeople}
+          onRemove={(id) => {
+            setAttendeeIds((cur) => cur.filter((x) => x !== id))
+            setOptionalIds((cur) => cur.filter((x) => x !== id))
+          }}
+        />
 
         {agendaOpen ? (
           <Field label="Agenda">
@@ -265,14 +269,16 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
         </PhoneButton>
       </div>
 
-      <AttendeePickerSheet
+      <PeoplePickerSheet
         open={pickerOpen}
         onOpenChange={setPickerOpen}
-        people={people}
-        selected={attendeeIds}
-        optional={optionalIds}
-        onApply={(sel, opt) => {
-          setAttendeeIds(sel)
+        title="Invite"
+        sections={[{ id: 'all', people: [...people].sort((a, b) => a.name.localeCompare(b.name)).map((p) => ({ user_id: p.user_id, name: p.name })) }]}
+        selected={selectedPeople}
+        optionalIds={optionalIds}
+        allowOptional
+        onDone={(sel, opt) => {
+          setAttendeeIds(sel.map((p) => p.user_id))
           setOptionalIds(opt)
         }}
       />

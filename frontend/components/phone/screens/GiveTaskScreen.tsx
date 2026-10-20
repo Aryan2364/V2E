@@ -16,7 +16,8 @@ import { useDraft } from '@/lib/drafts'
 import { DraftBanner } from '../DraftBanner'
 import { shouldOfferPushNow, declinePushOffer } from '@/lib/push'
 import PhoneScreen from '../PhoneScreen'
-import { AssigneePickerSheet } from '../AssigneePickerSheet'
+import { PeoplePickerSheet, SelectedPeopleList, type PickedPerson, type PickerSection } from '../PeoplePickerSheet'
+import { useEligibleAssignees, type AssigneeSortMode } from '@/components/tasks/useEligibleAssignees'
 import { NotificationOfferSheet } from '../NotificationOfferSheet'
 import { RepeatFields, entryForFrequency } from '../RepeatFields'
 import { PhoneButton, ROW, cx } from '../primitives'
@@ -201,15 +202,21 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         </Field>
 
         <Field label="Assignee(s)" error={noAssigneeError}>
-          <button type="button" onClick={() => setAssigneePicker(true)} className={cx(ROW, 'mx-0 rounded-[8px] border border-border-strong bg-surface')}>
-            <span className="min-w-0 flex-1 truncate text-left">
-              {draft.assignees.length === 0 ? (
-                <span className="text-text-secondary">Choose who this is for</span>
-              ) : (
-                draft.assignees.map((a) => a.name).join(', ')
-              )}
-            </span>
-          </button>
+          <div className="flex flex-col gap-[8px]">
+            <button type="button" onClick={() => setAssigneePicker(true)} className={cx(ROW, 'mx-0 rounded-[8px] border border-border-strong bg-surface')}>
+              <span className="min-w-0 flex-1 truncate text-left">
+                {draft.assignees.length === 0 ? (
+                  <span className="text-text-secondary">Choose who this is for</span>
+                ) : (
+                  <span>{draft.assignees.length} chosen</span>
+                )}
+              </span>
+            </button>
+            <SelectedPeopleList
+              people={draft.assignees}
+              onRemove={(id) => setDraft((d) => ({ ...d, assignees: d.assignees.filter((a) => a.user_id !== id) }))}
+            />
+          </div>
         </Field>
 
         {/* When: Repeat first, then either the one-off Due date or the schedule
@@ -307,13 +314,13 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         </PhoneButton>
       </div>
 
-      <AssigneePickerSheet
+      <AssigneePicker
         open={assigneePicker}
         onOpenChange={setAssigneePicker}
         orgId={orgId}
         currentUser={user ? { user_id: user.id, name: user.name } : undefined}
         selected={draft.assignees}
-        onChange={(assignees) => setDraft((d) => ({ ...d, assignees }))}
+        onDone={(assignees) => setDraft((d) => ({ ...d, assignees }))}
       />
 
       <NotificationOfferSheet
@@ -336,5 +343,65 @@ function Field({ label, error, children }: { label: string; error?: string | nul
       {children}
       {error ? <span className="text-meta text-danger">{error}</span> : null}
     </label>
+  )
+}
+
+const ASSIGNEE_SORTS: { key: AssigneeSortMode; label: string }[] = [
+  { key: 'frequency', label: 'Frequent' },
+  { key: 'workload', label: 'Workload' },
+  { key: 'name', label: 'A-Z' },
+]
+
+/* Task assignees: the shared people picker fed by useEligibleAssignees. */
+function AssigneePicker({
+  open,
+  onOpenChange,
+  orgId,
+  currentUser,
+  selected,
+  onDone,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  orgId: string
+  currentUser?: PickedPerson
+  selected: PickedPerson[]
+  onDone: (selected: PickedPerson[]) => void
+}) {
+  const { search, setSearch, sort, setSort, loading, failed, departments, data, reload } = useEligibleAssignees({
+    orgId,
+    open,
+    currentUserId: currentUser?.user_id,
+  })
+  const sections: PickerSection[] = departments.map((d) => ({
+    id: d.department_id,
+    name: d.department_id === 'search' ? undefined : d.department_name,
+    people: d.users.map((u) => ({
+      user_id: u.user_id,
+      name: u.name,
+      role: u.role_title,
+      department: u.department_id === 'search' ? null : u.department_name,
+      note: u.on_leave_today ? 'On leave' : null,
+    })),
+  }))
+  const me = data?.departments.flatMap((d) => d.users).find((u) => u.user_id === currentUser?.user_id)
+  return (
+    <PeoplePickerSheet<AssigneeSortMode>
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Assign to"
+      sections={sections}
+      loading={loading}
+      failed={failed}
+      onRetry={reload}
+      currentUser={currentUser ? { ...currentUser, role: me?.role_title, department: me?.department_name } : undefined}
+      meLabel="Assign to me"
+      selected={selected}
+      onDone={(people) => onDone(people)}
+      search={search}
+      onSearchChange={setSearch}
+      searchPlaceholder="Search by name, role or department"
+      sort={{ value: sort, onChange: setSort, options: ASSIGNEE_SORTS }}
+    />
   )
 }
