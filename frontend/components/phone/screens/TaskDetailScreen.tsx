@@ -4,7 +4,7 @@ import { fmtDateTime, fmtDue } from '@/lib/phone-format'
 import React from 'react'
 import { createPortal } from 'react-dom'
 import { useParams } from 'next/navigation'
-import { MoreVertical, Paperclip, RotateCcw, Send, X } from 'lucide-react'
+import { Ellipsis, Paperclip, RotateCcw, Send, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
@@ -19,7 +19,7 @@ import { shouldOfferPushNow, declinePushOffer } from '@/lib/push'
 import { CommentBox } from '@/components/ui/comment-box'
 import { CommentThread, type ThreadItem } from '@/components/ui/comment-thread'
 import PhoneScreen from '../PhoneScreen'
-import { PhoneEmptyState } from '../PhoneEmptyState'
+import { PhoneFailedState } from '../PhoneEmptyState'
 import { PhoneButton, PhoneLinkButton, ROW, ROW_BLOCK, cx } from '../primitives'
 import { APP_BAR_BUTTON } from '../PhoneAppBar'
 import { PhoneSheet } from '../PhoneSheet'
@@ -73,6 +73,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   const [detailsOpen, setDetailsOpen] = React.useState(false)
   const [offerPush, setOfferPush] = React.useState(false)
   const [comments, setComments] = React.useState<TaskComment[] | null>(null)
+  const [commentsFailed, setCommentsFailed] = React.useState(false)
   const [commentCount, setCommentCount] = React.useState(COMMENTS_PAGE)
   const [commentText, setCommentText] = React.useState('')
   const [commentFiles, setCommentFiles] = React.useState<UploadItem[]>([])
@@ -94,7 +95,8 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
 
   const loadComments = React.useCallback(() => {
     if (!orgId || !taskId) return
-    tasksApi.getComments(orgId, taskId).then(setComments).catch(() => addToast('Comments could not be loaded.', 'error'))
+    setCommentsFailed(false)
+    tasksApi.getComments(orgId, taskId).then(setComments).catch(() => setCommentsFailed(true))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId, taskId])
 
@@ -103,15 +105,10 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   if (error) {
     return (
       <PhoneScreen title="Task" parent={route.parent ?? PHONE_HOME}>
-        <PhoneEmptyState
-          icon={<span aria-hidden>!</span>}
-          heading="This task could not be opened"
-          line="It may have been removed, or you may no longer have access to it."
-        >
-          <PhoneLinkButton href={route.parent ?? PHONE_HOME} fullWidth>
-            Go to My work
-          </PhoneLinkButton>
-        </PhoneEmptyState>
+        <PhoneFailedState what="This task" onRetry={() => { setError(false); load() }} />
+        <PhoneLinkButton href={route.parent ?? PHONE_HOME} fullWidth>
+          Go to home
+        </PhoneLinkButton>
       </PhoneScreen>
     )
   }
@@ -257,11 +254,11 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
 
   return (
     <PhoneScreen
-      title={task.title}
+      title="Task"
       parent={route.parent ?? PHONE_HOME}
       actions={
         <button type="button" aria-label="More options" className={APP_BAR_BUTTON} onClick={() => setDetailsOpen(true)}>
-          <MoreVertical aria-hidden />
+          <Ellipsis aria-hidden />
         </button>
       }
     >
@@ -304,8 +301,8 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
               Reopen task
             </PhoneButton>
           ) : (
-            <PhoneButton type="button" variant="primary" fullWidth disabled={completing} onClick={onTapComplete}>
-              {completing ? 'Completing…' : 'Complete task'}
+            <PhoneButton type="button" variant="primary" fullWidth loading={completing} onClick={onTapComplete}>
+              Complete task
             </PhoneButton>
           )
         ) : null}
@@ -362,6 +359,14 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
           <h2 className="text-label font-medium text-text-secondary">
             Comments{totalCommentCount > 0 ? ` (${totalCommentCount})` : ''}
           </h2>
+          {commentsFailed ? (
+            <div className="flex flex-col items-start gap-[8px]">
+              <p className="text-body text-text-secondary">Comments could not be loaded. Check your connection, then try again.</p>
+              <PhoneButton variant="secondary" onClick={loadComments}>
+                Try again
+              </PhoneButton>
+            </div>
+          ) : (
           <CommentThread
             followLatest={false}
             loading={comments === null}
@@ -381,7 +386,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
                         key={a.id}
                         type="button"
                         onClick={() => tasksApi.downloadAttachment(orgId, task.id, a.id)}
-                        className="inline-flex min-h-[36px] items-center gap-[4px] rounded-[6px] border border-border-light px-[8px] py-[4px] text-meta text-text-secondary"
+                        className="inline-flex min-h-[44px] items-center gap-[4px] rounded-[6px] border border-border-light px-[8px] py-[4px] text-label text-text-secondary"
                       >
                         <Paperclip aria-hidden className="size-[12px]" />
                         <span className="max-w-[160px] truncate">{a.file_name}</span>
@@ -391,6 +396,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
                 ) : undefined,
             }))}
           />
+          )}
         </section>
       </div>
 
@@ -422,7 +428,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
             type="button"
             aria-label="Attach photo or file"
             onClick={() => commentFileInput.current?.click()}
-            className="inline-flex size-[36px] shrink-0 items-center justify-center rounded-full text-text-secondary active:bg-surface-control"
+            className="inline-flex size-[44px] shrink-0 items-center justify-center rounded-full text-text-secondary active:bg-surface-control"
           >
             <Paperclip aria-hidden className="size-[20px]" />
           </button>
@@ -582,13 +588,13 @@ function UploadRows({ items, onRetry, onRemove }: { items: UploadItem[]; onRetry
             <button
               type="button"
               onClick={() => onRetry(u.id)}
-              className="inline-flex min-h-[36px] shrink-0 items-center gap-[4px] rounded-[6px] px-[8px] text-label font-medium text-danger active:bg-danger-bg"
+              className="inline-flex min-h-[44px] shrink-0 items-center gap-[4px] rounded-[6px] px-[8px] text-label font-medium text-danger active:bg-danger-bg"
             >
               <RotateCcw aria-hidden className="size-[14px]" />
               Retry
             </button>
           ) : onRemove ? (
-            <button type="button" aria-label={`Remove ${u.file.name}`} onClick={() => onRemove(u.id)} className="inline-flex size-[36px] shrink-0 items-center justify-center rounded-full active:bg-surface-control">
+            <button type="button" aria-label={`Remove ${u.file.name}`} onClick={() => onRemove(u.id)} className="inline-flex size-[44px] shrink-0 items-center justify-center rounded-full active:bg-surface-control">
               <X aria-hidden className="size-[16px] text-text-secondary" />
             </button>
           ) : null}
