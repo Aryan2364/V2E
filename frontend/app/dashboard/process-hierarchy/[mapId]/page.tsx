@@ -35,6 +35,8 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/shell/page-header'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 // Client-only: keeps ReactFlow + html-to-image out of this route's server/SSR bundle.
@@ -83,7 +85,6 @@ export default function ProcessMapExplorerPage() {
   const [showSaveTpl, setShowSaveTpl] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [showRefPicker, setShowRefPicker] = useState(false)
-  const [showMore, setShowMore] = useState(false)
   const [showDeleteMap, setShowDeleteMap] = useState(false)
   const [deletingMap, setDeletingMap] = useState(false)
   const [showTree, setShowTree] = useState(false) // outline is now a slide-over; opened from the ⋯ menu
@@ -616,7 +617,7 @@ export default function ProcessMapExplorerPage() {
   const addStepControl = canEditHere ? (
     <div className="flex items-center gap-1.5">
       {/* Undo / redo — greyed when there's nothing to step to, or while a restore is in flight. */}
-      <div className="inline-flex items-center rounded-lg border border-border-light bg-surface shadow-xs">
+      <div className="inline-flex items-center rounded-lg border border-border-light bg-surface">
         <Tooltip label="Undo (Ctrl+Z)">
           <Button variant="ghost" size="icon" onClick={history.undo} disabled={!history.canUndo || history.busy} aria-label="Undo (Ctrl+Z)">
             <Undo2 size={16} />
@@ -628,14 +629,11 @@ export default function ProcessMapExplorerPage() {
           </Button>
         </Tooltip>
       </div>
-      <div className="relative">
-      <Button aria-haspopup="menu" aria-expanded={showAdd} onClick={() => { setShowAdd((v) => !v); setAddLanePick(false) }}>
-        <Plus size={16} /> Add step
-      </Button>
-      {showAdd && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => { setShowAdd(false); setAddLanePick(false) }} />
-          <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 max-h-[320px] overflow-y-auto bg-surface border border-border-light rounded-lg shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
+      <Popover open={showAdd} onOpenChange={(open) => { setShowAdd(open); if (!open) setAddLanePick(false) }}>
+        <PopoverTrigger render={<Button />}>
+          <Plus size={16} /> Add step
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-64 max-h-80 gap-0 overflow-y-auto p-1.5">
             {addLanePick ? (
               <div className="p-1">
                 <div className="flex items-center justify-between mb-2">
@@ -705,10 +703,8 @@ export default function ProcessMapExplorerPage() {
                 )}
               </>
             )}
-          </div>
-        </>
-      )}
-      </div>
+        </PopoverContent>
+      </Popover>
     </div>
   ) : null
 
@@ -750,40 +746,35 @@ export default function ProcessMapExplorerPage() {
               )}
 
               {/* Visibility filter */}
-              <div className="relative">
-                <Button variant="secondary" aria-expanded={showFilter} onClick={() => setShowFilter((v) => !v)} className={visible ? 'bg-primary-subtle' : undefined}>
+              <Popover open={showFilter} onOpenChange={setShowFilter}>
+                <PopoverTrigger render={<Button variant="secondary" className={visible ? 'bg-primary-subtle' : undefined} />}>
                   <Filter size={16} /> <span className="hidden md:inline">{visible ? `Showing ${visible.size}` : 'Filter'}</span>
-                </Button>
-                {showFilter && (
-                  <VisibilityPanel flow={flow} visible={visible} onChange={setVisible} onClose={() => setShowFilter(false)} />
-                )}
-              </div>
+                </PopoverTrigger>
+                <VisibilityPanel flow={flow} visible={visible} onChange={setVisible} />
+              </Popover>
 
               {/* More (secondary tools) + Versions popover anchor */}
               <div className="relative">
-                <Button variant="secondary" aria-haspopup="menu" aria-expanded={showMore} onClick={() => setShowMore((v) => !v)}>
-                  <MoreHorizontal size={16} /> <span className="hidden md:inline">More</span>
-                </Button>
-                {showMore && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowMore(false)} />
-                    <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 bg-surface border border-border-light rounded-lg shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
-                      <MenuItem icon={<PanelLeft size={15} />} label="Outline" onClick={() => { setShowMore(false); setShowTree(true) }} />
-                      {flow.nodes.length > 0 && (
-                        <MenuItem icon={<Download size={15} />} label="Export as PNG" onClick={() => { setShowMore(false); exportPngRef.current?.() }} />
-                      )}
-                      <MenuItem icon={<History size={15} />} label="Versions & compare" onClick={() => { setShowMore(false); setShowVersions(true) }} />
-                      {map.can_edit && <MenuItem icon={<FolderOpen size={15} />} label="Document library" onClick={() => { setShowMore(false); setShowDocs(true) }} />}
-                      <MenuItem icon={<Save size={15} />} label="Save as template" onClick={() => { setShowMore(false); setShowSaveTpl(true) }} />
-                      {map.is_owner && (
-                        <>
-                          <div className="my-1 h-px bg-surface-control" />
-                          <MenuItem icon={<Trash2 size={15} />} label="Delete this map" danger onClick={() => { setShowMore(false); setShowDeleteMap(true) }} />
-                        </>
-                      )}
-                    </div>
-                  </>
-                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button variant="secondary" />}>
+                    <MoreHorizontal size={16} /> <span className="hidden md:inline">More</span>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52">
+                    <MenuItem icon={<PanelLeft />} label="Outline" onClick={() => setShowTree(true)} />
+                    {flow.nodes.length > 0 && (
+                      <MenuItem icon={<Download />} label="Export as PNG" onClick={() => exportPngRef.current?.()} />
+                    )}
+                    <MenuItem icon={<History />} label="Versions & compare" onClick={() => setShowVersions(true)} />
+                    {map.can_edit && <MenuItem icon={<FolderOpen />} label="Document library" onClick={() => setShowDocs(true)} />}
+                    <MenuItem icon={<Save />} label="Save as template" onClick={() => setShowSaveTpl(true)} />
+                    {map.is_owner && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <MenuItem icon={<Trash2 />} label="Delete this map" danger onClick={() => setShowDeleteMap(true)} />
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 {showVersions && (
                   <VersionsPanel orgId={orgId} mapId={mapId} canEdit={map.can_edit}
                     onClose={() => setShowVersions(false)} onRestored={() => refresh()} onCompare={runCompare} />
@@ -1054,10 +1045,9 @@ function ReferenceMapModal({ orgId, excludeId, onClose, onPick }: {
 
 function MenuItem({ icon, label, onClick, danger }: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean }) {
   return (
-    <button onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-meta font-medium transition-colors ${FOCUS} ${danger ? 'text-danger hover:bg-danger-bg' : 'text-text-primary hover:bg-surface-control'}`}>
-      <span className={danger ? 'text-danger' : 'text-text-secondary'}>{icon}</span> {label}
-    </button>
+    <DropdownMenuItem variant={danger ? 'danger' : 'default'} onClick={onClick}>
+      {icon} {label}
+    </DropdownMenuItem>
   )
 }
 
@@ -1122,8 +1112,8 @@ function DiffPanel({ diff, onClose, onJump }: {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
   return createPortal(
-    <div className="fixed inset-0 z-60 pointer-events-none">
-      <div className="absolute right-0 top-0 h-full w-full max-w-[400px] bg-surface shadow-xl border-l border-border-light flex flex-col pointer-events-auto animate-[slideInRight_.22s_ease-out]">
+    <div className="fixed inset-0 z-dialog pointer-events-none">
+      <div className="absolute right-0 top-0 h-full w-full max-w-[400px] bg-surface shadow-dialog border-l border-border-light flex flex-col pointer-events-auto animate-[slideInRight_.22s_ease-out]">
         <div className="flex items-center gap-2 px-4 py-4 border-b border-border-light">
           <GitCompare size={16} className="text-primary-text" />
           <span className="text-body font-medium text-text-primary">Changes</span>
@@ -1194,8 +1184,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 // ─── Visibility filter panel ──────────────────────────────────────────────
-function VisibilityPanel({ flow, visible, onChange, onClose }: {
-  flow: FlowLevel; visible: Set<string> | null; onChange: (s: Set<string> | null) => void; onClose: () => void
+function VisibilityPanel({ flow, visible, onChange }: {
+  flow: FlowLevel; visible: Set<string> | null; onChange: (s: Set<string> | null) => void
 }) {
   const allIds = useMemo(() => flow.nodes.map((n) => n.id), [flow.nodes])
   const isShown = (id: string) => !visible || visible.has(id)
@@ -1205,9 +1195,7 @@ function VisibilityPanel({ flow, visible, onChange, onClose }: {
     onChange(base.size === allIds.length ? null : base)
   }
   return (
-    <>
-      <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 bg-surface border border-border-light rounded-lg shadow-lg p-3 animate-[popIn_.12s_ease-out]">
+      <PopoverContent align="end" className="w-72 gap-0">
         <div className="flex items-center justify-between mb-2">
           <span className="text-meta font-medium text-text-primary">Show nodes</span>
           <Button variant="secondary" size="sm" onClick={() => onChange(null)}>View all</Button>
@@ -1225,8 +1213,7 @@ function VisibilityPanel({ flow, visible, onChange, onClose }: {
             </button>
           ))}
         </div>
-      </div>
-    </>
+      </PopoverContent>
   )
 }
 
@@ -1271,8 +1258,10 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
 
   return (
     <>
-      <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-80 bg-surface border border-border-light rounded-lg shadow-lg p-3 animate-[popIn_.12s_ease-out]">
+      <Popover open onOpenChange={(open) => { if (!open && !confirmRestore) onClose() }}>
+        {/* Anchor only: the panel opens from the More menu, so it hangs off the button's wrapper. */}
+        <PopoverTrigger render={<span aria-hidden className="pointer-events-none absolute inset-0" />} />
+        <PopoverContent align="end" className="w-80 gap-0">
         <div className="flex items-center justify-between mb-2">
           <span className="text-meta font-medium text-text-primary">Saved versions</span>
           <Tooltip label="Close"><Button variant="ghost" size="icon" onClick={onClose} aria-label="Close"><X size={16} /></Button></Tooltip>
@@ -1313,7 +1302,7 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
           {snaps === null ? <p className="text-meta text-text-muted py-2">Loading…</p>
             : snaps.length === 0 ? <p className="text-meta text-text-muted py-2">No versions saved yet.</p>
             : snaps.map((s) => (
-              <div key={s.id} className="flex items-center gap-2 bg-surface-sunken border border-border-light rounded-[6px] px-2 py-1.5">
+              <div key={s.id} className="flex items-center gap-2 bg-surface-sunken border border-border-light rounded-lg px-2 py-1.5">
                 <div className="flex-1 min-w-0">
                   <p className="text-meta font-medium text-text-primary truncate">{s.label}</p>
                   <p className="text-meta text-text-muted">{formatDate(s.created_at)}</p>
@@ -1328,7 +1317,8 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
               </div>
             ))}
         </div>
-      </div>
+        </PopoverContent>
+      </Popover>
 
       <ConfirmDialog
         open={!!confirmRestore}

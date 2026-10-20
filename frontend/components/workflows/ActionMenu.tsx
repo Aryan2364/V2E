@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import React from 'react'
 import { MoreHorizontal, type LucideIcon } from 'lucide-react'
 import Tooltip from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
 
 export interface ActionMenuItem {
@@ -21,138 +21,56 @@ export interface ActionMenuItem {
   tip?: string
 }
 
-const MENU_W = 208
-
 /**
- * Three-dot menu. The list renders in a portal to <body> (no ancestor overflow can clip
- * it), above dialogs and the top nav, and closes on a press outside, Escape, scroll or
- * resize. Arrow keys move between items.
+ * Three-dot menu on the kit DropdownMenu: portalled above dialogs and the top nav, closes
+ * on a press outside, Escape or selection, and arrow keys, focus and typeahead are the
+ * kit's. A refused item stays visible, disabled, with its reason on hover, focus and tap.
  */
 export default function ActionMenu({ items, label = 'More actions' }: { items: ActionMenuItem[]; label?: string }) {
-  const [open, setOpen] = useState(false)
-  const [pos, setPos] = useState<{ top: number; left: number; up: boolean } | null>(null)
-  const btnRef = useRef<HTMLButtonElement>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
   const visible = items.filter((i) => !i.hidden)
-
-  const place = useCallback(() => {
-    const r = btnRef.current?.getBoundingClientRect()
-    if (!r) return
-    const estH = visible.length * 44 + 12
-    const up = window.innerHeight - r.bottom < estH + 8 && r.top > estH + 8
-    const left = Math.min(Math.max(8, r.right - MENU_W), window.innerWidth - MENU_W - 8)
-    setPos({ top: up ? r.top - 4 : r.bottom + 4, left, up })
-  }, [visible.length])
-
-  useLayoutEffect(() => {
-    if (open) place()
-  }, [open, place])
-
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: PointerEvent) => {
-      const t = e.target as Node
-      if (menuRef.current?.contains(t) || btnRef.current?.contains(t)) return
-      setOpen(false)
-    }
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(false)
-        btnRef.current?.focus()
-      }
-    }
-    const close = () => setOpen(false)
-    document.addEventListener('pointerdown', onDown, true)
-    document.addEventListener('keydown', onKey)
-    window.addEventListener('scroll', close, true)
-    window.addEventListener('resize', close)
-    // Focus the first enabled item for keyboard users.
-    requestAnimationFrame(() => menuRef.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus())
-    return () => {
-      document.removeEventListener('pointerdown', onDown, true)
-      document.removeEventListener('keydown', onKey)
-      window.removeEventListener('scroll', close, true)
-      window.removeEventListener('resize', close)
-    }
-  }, [open])
-
-  function onMenuKey(e: React.KeyboardEvent) {
-    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
-    e.preventDefault()
-    const btns = Array.from(menuRef.current?.querySelectorAll<HTMLButtonElement>('button:not([disabled])') ?? [])
-    const i = btns.indexOf(document.activeElement as HTMLButtonElement)
-    const next = e.key === 'ArrowDown' ? (i + 1) % btns.length : (i - 1 + btns.length) % btns.length
-    btns[next]?.focus()
-  }
-
   if (!visible.length) return null
 
   return (
-    <>
-      <Tooltip label={open ? '' : label}>
-        <Button
-          ref={btnRef}
-          variant="ghost"
-          size="icon"
-          aria-label={label}
-          aria-haspopup="menu"
-          aria-expanded={open}
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setOpen((v) => !v)
-          }}
-          className="relative z-10"
+    <DropdownMenu>
+      <Tooltip label={label}>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={label}
+              // Never toggles the card or row this menu sits in.
+              onClick={(e) => e.stopPropagation()}
+            />
+          }
         >
           <MoreHorizontal size={18} />
-        </Button>
+        </DropdownMenuTrigger>
       </Tooltip>
-      {open &&
-        pos &&
-        typeof document !== 'undefined' &&
-        createPortal(
-          <div
-            ref={menuRef}
-            role="menu"
-            onKeyDown={onMenuKey}
-            style={{ top: pos.top, left: pos.left, width: MENU_W, transform: pos.up ? 'translateY(-100%)' : undefined }}
-            className="fixed z-(--z-popover) bg-surface border border-border-light rounded-[12px] shadow-menu py-1.5"
-          >
-            {visible.map((item) => {
-              const allowed = item.allowed === undefined && !('allowed' in item) ? true : item.allowed
-              const Icon = item.icon
-              const btn = (
-                <button
-                  type="button"
-                  role="menuitem"
-                  disabled={allowed !== true}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setOpen(false)
-                    item.onSelect()
-                  }}
-                  className={[
-                    'w-full flex items-center gap-2.5 px-3 min-h-[44px] sm:min-h-[38px] text-body text-left transition-colors focus:outline-hidden',
-                    allowed !== true
-                      ? 'text-text-muted cursor-not-allowed'
-                      : item.danger
-                        ? 'text-danger hover:bg-danger-bg focus:bg-danger-bg'
-                        : 'text-text-primary hover:bg-surface-control focus:bg-surface-control',
-                  ].join(' ')}
-                >
-                  <Icon size={16} className="shrink-0" />
-                  <span className="truncate">{item.label}</span>
-                </button>
-              )
-              return (
-                <PermissionTooltip key={item.key} allowed={allowed} reason={item.reason ?? ''} className="flex w-full">
-                  {allowed === true && item.tip ? <Tooltip label={item.tip}>{btn}</Tooltip> : btn}
-                </PermissionTooltip>
-              )
-            })}
-          </div>,
-          document.body,
-        )}
-    </>
+      <DropdownMenuContent align="end" className="w-52">
+        {visible.map((item) => {
+          const allowed = item.allowed === undefined && !('allowed' in item) ? true : item.allowed
+          const Icon = item.icon
+          const row = (
+            <DropdownMenuItem
+              variant={item.danger ? 'danger' : 'default'}
+              disabled={allowed !== true}
+              onClick={(e) => {
+                e.stopPropagation()
+                item.onSelect()
+              }}
+            >
+              <Icon size={16} className="shrink-0" />
+              <span className="truncate">{item.label}</span>
+            </DropdownMenuItem>
+          )
+          return (
+            <PermissionTooltip key={item.key} allowed={allowed} reason={item.reason ?? ''} className="flex w-full">
+              {allowed === true && item.tip ? <Tooltip label={item.tip}>{row}</Tooltip> : row}
+            </PermissionTooltip>
+          )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
