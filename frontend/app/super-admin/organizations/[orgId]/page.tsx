@@ -33,6 +33,8 @@ import ResponsiveTable from '@/components/ui/ResponsiveTable'
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 import { PasswordInput } from '@/components/ui/password-input'
 import { ChoiceRow } from '@/components/ui/choice-row'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -235,22 +237,34 @@ function EditMemberDialog({
   const expectedDigits = nationalDigitsFor(countryCode)
   const phoneDigits = phone.replace(/\D/g, '')
 
+  // Field errors sit under the field that is wrong; focus goes to the first one (kit 11.3, 39.3).
+  type MemberField = 'name' | 'contact' | 'password'
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<MemberField, string>>>({})
+  const clearErr = (k: MemberField) => setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
+  const [savedValues] = useState({
+    name: member.user.name, email: member.user.email, phone: member.user.phone ?? '',
+    countryCode: member.user.country_code || DEFAULT_COUNTRY, password: '', isAdmin: member.is_admin,
+  })
+  const guarded = useGuardedClose({
+    open: true,
+    values: { name, email, phone, countryCode, password, isAdmin },
+    saved: savedValues,
+    noun: 'member',
+    mode: 'edit',
+    onClose,
+  })
+
   const save = async () => {
     setError(null)
-    if (!name.trim()) {
-      setError('Name is required.')
-      return
-    }
-    if (!email.trim() && !phoneDigits) {
-      setError('Enter an email address or a phone number (at least one).')
-      return
-    }
-    if (phoneDigits && phoneDigits.length !== expectedDigits) {
-      setError(`Enter a ${expectedDigits}-digit number for ${countryCode}.`)
-      return
-    }
-    if (password && password.length < 8) {
-      setError('Password must be at least 8 characters.')
+    const errs: Partial<Record<MemberField, string>> = {}
+    if (!name.trim()) errs.name = 'Enter the full name of the member.'
+    if (!email.trim() && !phoneDigits) errs.contact = 'Enter an email address or a phone number. At least one is needed.'
+    else if (phoneDigits && phoneDigits.length !== expectedDigits) errs.contact = `Enter a ${expectedDigits}-digit number for ${countryCode}.`
+    if (password && password.length < 8) errs.password = 'Use at least 8 characters in the password.'
+    setFieldErrors(errs)
+    const firstBad = (['name', 'contact', 'password'] as MemberField[]).find((k) => errs[k])
+    if (firstBad) {
+      requestAnimationFrame(() => document.getElementById(`member-${firstBad === 'contact' ? 'email' : firstBad}`)?.focus())
       return
     }
     setSaving(true)
@@ -279,14 +293,16 @@ function EditMemberDialog({
         is_admin: isAdmin,
       })
     } catch (err: any) {
-      setError(err?.response?.data?.message ?? 'Failed to save changes.')
+      setError(err?.response?.data?.message ?? 'Could not save the member. Try again.')
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
+    <>
+    {guarded.warning}
+    <Dialog open onOpenChange={(next) => { if (!next) guarded.requestClose() }}>
       <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle>Edit member</DialogTitle>
@@ -308,16 +324,17 @@ function EditMemberDialog({
             </Banner>
           )}
           <div>
-            <Label htmlFor="member-name">Full name</Label>
-            <Input id="member-name" value={name} onChange={(e) => setName(e.target.value)} className="mt-2 max-w-none" />
+            <Label htmlFor="member-name" required>Full name</Label>
+            <Input id="member-name" value={name} onChange={(e) => { setName(e.target.value); clearErr('name') }} aria-invalid={fieldErrors.name ? true : undefined} className="mt-2 max-w-none" />
+            <InlineFieldError>{fieldErrors.name}</InlineFieldError>
           </div>
           <div>
             <Label htmlFor="member-email">Email</Label>
-            <Input id="member-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2 max-w-none" />
+            <Input id="member-email" type="email" value={email} onChange={(e) => { setEmail(e.target.value); clearErr('contact') }} aria-invalid={fieldErrors.contact ? true : undefined} className="mt-2 max-w-none" />
           </div>
           <div>
             <Label htmlFor="member-phone">
-              Phone number <span className="font-normal text-text-muted">— used to sign in</span>
+              Phone number
             </Label>
             <div className="mt-2 flex gap-2">
               <CountryCodeSelect
@@ -333,12 +350,13 @@ function EditMemberDialog({
                 type="tel"
                 inputMode="numeric"
                 value={phone}
-                onChange={(e) => setPhone(cleanNationalNumber(e.target.value, countryCode))}
+                onChange={(e) => { setPhone(cleanNationalNumber(e.target.value, countryCode)); clearErr('contact') }}
                 maxLength={expectedDigits}
                 placeholder={`${expectedDigits}-digit number`}
                 className="max-w-none flex-1"
               />
             </div>
+            <InlineFieldError>{fieldErrors.contact}</InlineFieldError>
             <p className="mt-2 text-label text-text-muted">They can sign in with this number. Leave empty to remove phone sign-in.</p>
           </div>
           <div>
@@ -346,10 +364,12 @@ function EditMemberDialog({
             <PasswordInput
               id="member-password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Leave blank to keep current password"
+              onChange={(e) => { setPassword(e.target.value); clearErr('password') }}
+              aria-invalid={fieldErrors.password ? true : undefined}
+              placeholder="Leave blank to keep the current password"
               className="mt-2 max-w-none"
             />
+            <InlineFieldError>{fieldErrors.password}</InlineFieldError>
           </div>
           <ChoiceRow
             control={<Checkbox checked={isAdmin} onCheckedChange={(c) => setIsAdmin(c === true)} />}
@@ -357,11 +377,12 @@ function EditMemberDialog({
           />
         </DialogBody>
         <DialogFooter>
-          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button onClick={save} loading={saving} loadingLabel="Saving">Save changes</Button>
+          <Button variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
+          <Button onClick={save} loading={saving} loadingLabel="Saving">Save member</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   )
 }
 
