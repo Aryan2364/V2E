@@ -7,6 +7,8 @@ import { useAuth } from '@/lib/auth/context'
 import { toast } from '@/components/ui/sonner'
 import { tasksApi } from '@/lib/api/tasks'
 import { getNow } from '@/lib/clock'
+import { CommentBox } from '@/components/ui/comment-box'
+import { CommentThread, type ThreadItem } from '@/components/ui/comment-thread'
 import type { Task, TaskComment, TaskAttachment, TaskActivityLog, TaskCategory, TaskPriority, TaskStatus, TaskMasterConfig } from '@/lib/types/tasks'
 import { TERMINAL_STATUS_PHASES } from '@/lib/types/tasks'
 // import QuadrantBadge from '@/components/tasks/QuadrantBadge'
@@ -173,12 +175,12 @@ function DetailSkeleton() {
 
 // ─── Comment component ────────────────────────────────────────────────────────
 
-function CommentItem({
+/** A comment's files and, when the task asks for proof, the controls to use one of them as proof. */
+function TaskCommentAttachments({
   comment,
   orgId,
   taskId,
   currentUserId,
-  onDeleted,
   canSubmitProof = false,
   proofAllowedExtensions = [],
   onMarkProof,
@@ -188,18 +190,61 @@ function CommentItem({
   orgId: string
   taskId: string
   currentUserId: string
-  onDeleted: () => void
   /** Current user may promote their own comment files to proof (proof required, they're a non-CC assignee, task open). */
   canSubmitProof?: boolean
   proofAllowedExtensions?: string[]
   onMarkProof?: (attachmentId: string) => void
   markingProofId?: string | null
 }) {
+  return (
+    <>
+      {comment.attachments && comment.attachments.length > 0 && (
+        <AttachmentChips
+          attachments={comment.attachments}
+          onDownload={(a) => tasksApi.downloadAttachment(orgId, taskId, a.id)}
+        />
+      )}
+      {/* Promote my own comment files to proof (when the task asks for proof). */}
+      {canSubmitProof && onMarkProof && (comment.attachments ?? []).map((a) => {
+        const mine = (a.uploaded_by_user_id ?? comment.user_id) === currentUserId
+        const extOk = proofAllowedExtensions.length === 0 ||
+          proofAllowedExtensions.includes((a.file_name.split('.').pop() ?? '').toLowerCase())
+        if (!mine || a.is_proof || !extOk) return null
+        return (
+          <Tooltip key={`mp-${a.id}`} label={`Use "${a.file_name}" as your proof of completion`}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="self-start"
+              onClick={() => onMarkProof(a.id)}
+              disabled={markingProofId === a.id}
+            >
+              <ShieldCheck size={12} /> Mark “{a.file_name}” as proof
+            </Button>
+          </Tooltip>
+        )
+      })}
+      {canSubmitProof && (comment.attachments ?? []).some((a) => a.is_proof) && (
+        <p className="text-meta text-success inline-flex items-center gap-1"><ShieldCheck size={12} /> Marked as proof</p>
+      )}
+    </>
+  )
+}
+
+/** Delete control for the current user's own comment, with our own confirmation dialog (no browser confirm). */
+function TaskCommentDelete({
+  comment,
+  orgId,
+  taskId,
+  onDeleted,
+}: {
+  comment: TaskComment
+  orgId: string
+  taskId: string
+  onDeleted: () => void
+}) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  // Long comments are collapsed by default; toggle to read the whole thing.
-  const [expanded, setExpanded] = useState(false)
-  const isLong = comment.body.length > 280
 
   async function confirmDelete() {
     setDeleting(true)
@@ -213,79 +258,18 @@ function CommentItem({
   }
 
   return (
-    <div className="flex gap-3">
-      <div
-        className={[
-          'w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5',
-          comment.user_name
-            ? `${avatarColor(comment.user_name)} text-primary-foreground text-meta font-medium`
-            : 'bg-surface-control-pressed',
-        ].join(' ')}
-      >
-        {comment.user_name ? getInitials(comment.user_name) : <User size={14} className="text-text-muted" />}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2">
-          <span className="text-body font-medium text-text-primary">{comment.user_name}</span>
-          <span className="text-meta text-text-muted">{formatDate(comment.created_at)}</span>
-        </div>
-        <p className={`mt-1 text-body text-text-primary leading-relaxed whitespace-pre-wrap ${isLong && !expanded ? 'line-clamp-4' : ''}`}>
-          {comment.body}
-        </p>
-        {isLong && (
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="mt-0.5 text-meta font-medium text-primary-text hover:text-primary-text outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
-          >
-            {expanded ? 'Show less' : 'Read more'}
-          </button>
-        )}
-        {comment.attachments && comment.attachments.length > 0 && (
-          <AttachmentChips
-            attachments={comment.attachments}
-            onDownload={(a) => tasksApi.downloadAttachment(orgId, taskId, a.id)}
-          />
-        )}
-        {/* Promote my own comment files to proof (when the task asks for proof). */}
-        {canSubmitProof && onMarkProof && (comment.attachments ?? []).map((a) => {
-          const mine = (a.uploaded_by_user_id ?? comment.user_id) === currentUserId
-          const extOk = proofAllowedExtensions.length === 0 ||
-            proofAllowedExtensions.includes((a.file_name.split('.').pop() ?? '').toLowerCase())
-          if (!mine || a.is_proof || !extOk) return null
-          return (
-            <Tooltip key={`mp-${a.id}`} label={`Use "${a.file_name}" as your proof of completion`}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-1 mr-2"
-                onClick={() => onMarkProof(a.id)}
-                disabled={markingProofId === a.id}
-              >
-                <ShieldCheck size={12} /> Mark “{a.file_name}” as proof
-              </Button>
-            </Tooltip>
-          )
-        })}
-        {canSubmitProof && (comment.attachments ?? []).some((a) => a.is_proof) && (
-          <p className="mt-1 text-meta text-success inline-flex items-center gap-1"><ShieldCheck size={12} /> Marked as proof</p>
-        )}
-      </div>
-      {comment.user_id === currentUserId && (
-        <Tooltip label="Delete comment">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Delete comment"
-            onClick={() => setConfirmOpen(true)}
-            className="shrink-0 text-text-muted hover:text-danger"
-          >
-            <Trash2 size={13} />
-          </Button>
-        </Tooltip>
-      )}
-
-      {/* Our own confirmation dialog (no browser confirm) */}
+    <>
+      <Tooltip label="Delete comment">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Delete comment"
+          onClick={() => setConfirmOpen(true)}
+          className="shrink-0 text-text-muted hover:text-danger"
+        >
+          <Trash2 size={13} />
+        </Button>
+      </Tooltip>
       <AlertDialog open={confirmOpen} onOpenChange={(open) => { if (!open && !deleting) setConfirmOpen(false) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -300,7 +284,7 @@ function CommentItem({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   )
 }
 
@@ -431,15 +415,6 @@ export default function TaskDetailPage() {
 
   useEffect(() => { loadTask() }, [loadTask])
 
-  // WhatsApp-style auto-grow comment box: shrinks to a single line when empty,
-  // grows with the text up to a cap, then scrolls internally. Runs on every
-  // change (typing, and reset to empty after send).
-  useEffect(() => {
-    const el = commentTextareaRef.current
-    if (!el) return
-    el.style.height = 'auto' // reset so it can shrink back to the default
-    el.style.height = `${Math.min(el.scrollHeight, 120)}px` // cap ≈ 4 lines, then scroll
-  }, [commentText])
 
 
   // Shared status (any_can_complete) — one status for everyone; any assignee can move it.
@@ -1269,98 +1244,92 @@ export default function TaskDetailPage() {
                     </span>
                   )}
                 </h3>
-                <div className="space-y-4 mb-6">
-                  {comments.length === 0 ? (
-                    <p className="text-body text-text-secondary">No comments yet. Be the first to comment.</p>
-                  ) : (
-                    comments.map((c) => (
-                      <CommentItem
-                        key={c.id}
+                <CommentThread
+                  className="mb-4"
+                  onWrite={() => commentTextareaRef.current?.focus()}
+                  items={comments.map((c): ThreadItem => ({
+                    id: c.id,
+                    who: c.user_name ?? 'Someone',
+                    when: c.created_at,
+                    text: c.body,
+                    attachments: (
+                      <TaskCommentAttachments
                         comment={c}
                         orgId={orgId}
                         taskId={taskId}
                         currentUserId={user?.id ?? ''}
-                        onDeleted={async () => {
-                          setComments((prev) => prev.filter((x) => x.id !== c.id))
-                          // A deleted comment takes its files with it — refresh the attachments
-                          // list, and (if a file was a proof) the proof card + scoreboard, so
-                          // nothing stale keeps counting.
-                          await refreshAllAttachments()
-                          if (task.proof_required) {
-                            const fresh = await tasksApi.getTask(orgId, taskId).catch(() => null)
-                            if (fresh) setTask(fresh)
-                            setProofReloadToken((t) => t + 1)
-                          }
-                        }}
                         canSubmitProof={!!task.proof_required && isAssignee && !isTaskTerminal}
                         proofAllowedExtensions={task.proof_allowed_extensions ?? []}
                         onMarkProof={handleMarkCommentAsProof}
                         markingProofId={actionLoading?.startsWith('mark-proof-') ? actionLoading.replace('mark-proof-', '') : null}
                       />
-                    ))
-                  )}
-                </div>
-                {/* Comment composer — WhatsApp-style: a single write box that holds
-                    the attach (pin) button, the text field, and — once files are
-                    picked — their chips, so attachments feel part of the comment. */}
-                <div className="rounded-card border border-border bg-surface focus-within:border-2 focus-within:border-primary outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors">
-                  {/* Selected-file chips — live inside the write box */}
-                  {commentFiles.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 px-3 pt-3">
-                      {commentFiles.map((f, i) => (
-                        <span
-                          key={`${f.name}-${i}`}
-                          className="inline-flex items-center gap-1.5 max-w-[220px] bg-primary-subtle border border-primary-border text-primary-text text-meta font-medium pl-2 pr-1 py-1 rounded-control"
+                    ),
+                    actions:
+                      c.user_id === user?.id ? (
+                        <TaskCommentDelete
+                          comment={c}
+                          orgId={orgId}
+                          taskId={taskId}
+                          onDeleted={async () => {
+                            setComments((prev) => prev.filter((x) => x.id !== c.id))
+                            // A deleted comment takes its files with it — refresh the attachments
+                            // list, and (if a file was a proof) the proof card + scoreboard, so
+                            // nothing stale keeps counting.
+                            await refreshAllAttachments()
+                            if (task.proof_required) {
+                              const fresh = await tasksApi.getTask(orgId, taskId).catch(() => null)
+                              if (fresh) setTask(fresh)
+                              setProofReloadToken((t) => t + 1)
+                            }
+                          }}
+                        />
+                      ) : undefined,
+                  }))}
+                />
+                <input
+                  ref={commentFileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const picked = Array.from(e.target.files ?? [])
+                    if (picked.length > 0) setCommentFiles((prev) => [...prev, ...picked])
+                    e.target.value = '' // reset so the same file can be re-picked
+                  }}
+                />
+                <CommentBox
+                  value={commentText}
+                  onChange={(text) => setCommentText(text.slice(0, 1000))}
+                  maxLength={1000}
+                  textareaRef={commentTextareaRef}
+                  onSend={handleSendComment}
+                  disabled={sendingComment || isFutureTask}
+                  hasContent={commentFiles.length > 0}
+                  error={commentError}
+                  placeholder={isFutureTask ? 'Comments are locked on future tasks...' : 'Add a comment...'}
+                  attachments={commentFiles.map((f, i) => (
+                    <span
+                      key={`${f.name}-${i}`}
+                      className="inline-flex items-center gap-1.5 max-w-[220px] bg-primary-subtle border border-primary-border text-primary-text text-meta font-medium pl-2 pr-1 py-1 rounded-control"
+                    >
+                      <FileText size={12} className="shrink-0" />
+                      <span className="truncate">{f.name}</span>
+                      <span className="text-text-muted shrink-0">{formatBytes(f.size)}</span>
+                      {/* 16px chip dismiss - smaller than the kit's icon-sm (32px); no kit token fits this size. */}
+                      <Tooltip label="Remove file">
+                        <button
+                          type="button"
+                          onClick={() => setCommentFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                          disabled={sendingComment}
+                          className="shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-primary-text hover:bg-primary-subtle hover:text-primary-text disabled:opacity-50 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
+                          aria-label={`Remove ${f.name}`}
                         >
-                          <FileText size={12} className="shrink-0" />
-                          <span className="truncate">{f.name}</span>
-                          <span className="text-text-muted shrink-0">{formatBytes(f.size)}</span>
-                          {/* 16px chip dismiss — smaller than the kit's icon-sm (32px); no kit token fits this size. */}
-                          <Tooltip label="Remove file">
-                            <button
-                              type="button"
-                              onClick={() => setCommentFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                              disabled={sendingComment}
-                              className="shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-primary-text hover:bg-primary-subtle hover:text-primary-text disabled:opacity-50 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring transition-colors"
-                              aria-label={`Remove ${f.name}`}
-                            >
-                              <X size={11} />
-                            </button>
-                          </Tooltip>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {/* Input row: textarea • attach • send */}
-                  <div className="flex items-end gap-2 p-2">
-                    <input
-                      ref={commentFileInputRef}
-                      type="file"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => {
-                        const picked = Array.from(e.target.files ?? [])
-                        if (picked.length > 0) setCommentFiles((prev) => [...prev, ...picked])
-                        e.target.value = '' // reset so the same file can be re-picked
-                      }}
-                    />
-                    <textarea
-                      ref={commentTextareaRef}
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value.slice(0, 1000))}
-                      maxLength={1000}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault()
-                          handleSendComment()
-                        }
-                      }}
-                      disabled={sendingComment || isFutureTask}
-                      placeholder={isFutureTask ? "Comments are locked on future tasks..." : "Add a comment... (Enter to send, Shift+Enter for new line)"}
-                      rows={1}
-                      className="flex-1 min-w-0 border-0 bg-transparent px-1 py-[6px] text-body text-text-primary placeholder:text-text-muted focus:outline-hidden resize-none max-h-[120px] overflow-y-auto"
-                    />
-                    {/* Attach files — sits right before Send */}
+                          <X size={11} />
+                        </button>
+                      </Tooltip>
+                    </span>
+                  ))}
+                  tools={
                     <Tooltip label="Attach files">
                       <Button
                         type="button"
@@ -1373,23 +1342,8 @@ export default function TaskDetailPage() {
                         <Paperclip size={16} className="-rotate-45" />
                       </Button>
                     </Tooltip>
-                    <Tooltip label="Send">
-                      <Button
-                        size="icon-sm"
-                        onClick={handleSendComment}
-                        disabled={sendingComment || isFutureTask || (!commentText.trim() && commentFiles.length === 0)}
-                        aria-label="Send"
-                      >
-                        <Send size={15} />
-                      </Button>
-                    </Tooltip>
-                  </div>
-                </div>
-                {commentError && (
-                  <p className="mt-2 text-meta text-danger bg-danger-bg border border-danger-border rounded-control px-3 py-2">
-                    {commentError}
-                  </p>
-                )}
+                  }
+                />
               </div>
             )}
           </div>

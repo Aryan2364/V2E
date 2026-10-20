@@ -94,6 +94,12 @@ function CommentBox({
   placeholder,
   disabled = false,
   className,
+  tools,
+  attachments,
+  hasContent = false,
+  maxLength,
+  error,
+  textareaRef,
 }: {
   value: string
   onChange: (text: string) => void
@@ -103,13 +109,27 @@ function CommentBox({
   placeholder?: string
   disabled?: boolean
   className?: string
+  /*
+   * v2e additions (frontend/FRONTEND_RULES.md 4.1.1): a comment that
+   * carries files, a reply, or a length limit.
+   */
+  /** Icon buttons inside the box, left of Send (an "Attach" button). */
+  tools?: React.ReactNode
+  /** Chips for what is attached, in a row right above the box. */
+  attachments?: React.ReactNode
+  /** Something other than text will be sent (a file), so Send is allowed with an empty text. */
+  hasContent?: boolean
+  maxLength?: number
+  /** A failed send the caller reports in the box rather than as a toast. */
+  error?: string | null
+  textareaRef?: React.Ref<HTMLTextAreaElement>
 }) {
   const { layout } = useLayout()
   const phone = layout === "phone"
   const [sending, setSending] = React.useState(false)
   const id = React.useId()
 
-  const canSend = value.trim().length > 0 && !sending && !disabled
+  const canSend = (value.trim().length > 0 || hasContent) && !sending && !disabled
 
   const send = React.useCallback(async () => {
     if (!canSend) return
@@ -139,9 +159,12 @@ function CommentBox({
       <Label htmlFor={id} className="sr-only">
         {label}
       </Label>
+      {attachments ? <div className="mb-2 flex flex-wrap gap-1.5">{attachments}</div> : null}
       <InputGroup className={COMPOSER}>
         <InputGroupTextarea
           id={id}
+          ref={textareaRef}
+          maxLength={maxLength}
           {...fieldKeyboard("longText")}
           className={FIELD}
           value={value}
@@ -151,6 +174,7 @@ function CommentBox({
           onKeyDown={enterSends(send)}
         />
         <InputGroupAddon align="inline-end" className={ADDON}>
+          {tools}
           <Tooltip>
             <TooltipTrigger
               render={
@@ -169,6 +193,11 @@ function CommentBox({
           </Tooltip>
         </InputGroupAddon>
       </InputGroup>
+      {error ? (
+        <p role="alert" className="mt-2 text-meta text-danger">
+          {error}
+        </p>
+      ) : null}
     </form>
   )
 

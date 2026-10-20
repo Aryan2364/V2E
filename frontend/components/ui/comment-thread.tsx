@@ -85,6 +85,16 @@ type ThreadComment = {
   onShowEdits?: () => void
   /** A small badge beside the name: "Client", "Internal". The product's word. */
   tag?: string
+  /*
+   * v2e additions (frontend/FRONTEND_RULES.md 4.1.1): what a record's
+   * comments carry beyond the kit's text.
+   */
+  /** This comment answers another: that person's name, shown as "Replying to Name" above the text. */
+  replyingTo?: string
+  /** Files or links sent with the comment, shown under the text. */
+  attachments?: React.ReactNode
+  /** The comment's own controls (Reply, Delete, ...), on a row under the text. */
+  actions?: React.ReactNode
 }
 
 type ThreadNote = {
@@ -360,7 +370,14 @@ function Entry({ comment, grouped }: { comment: ThreadComment; grouped: boolean 
   ) : null
 
   const text = (
-    <div className="text-body wrap-break-word whitespace-pre-line text-text-primary">{comment.text}</div>
+    <div className="flex min-w-0 flex-col gap-1">
+      {comment.replyingTo ? (
+        <p className="text-meta text-text-secondary">Replying to {comment.replyingTo}</p>
+      ) : null}
+      <div className="text-body wrap-break-word whitespace-pre-line text-text-primary">{comment.text}</div>
+      {comment.attachments}
+      {comment.actions ? <div className="flex flex-wrap items-center gap-2">{comment.actions}</div> : null}
+    </div>
   )
 
   if (grouped) {
