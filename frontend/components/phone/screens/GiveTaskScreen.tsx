@@ -21,7 +21,8 @@ import { PeoplePickerSheet, SelectedPeopleList, type PickedPerson, type PickerSe
 import { useEligibleAssignees, type AssigneeSortMode } from '@/components/tasks/useEligibleAssignees'
 import { NotificationOfferSheet } from '../NotificationOfferSheet'
 import { RepeatFields, entryForFrequency } from '../RepeatFields'
-import { PhoneButton, ROW, cx } from '../primitives'
+import { PhoneButton, PhoneField, GrowTextarea, ROW, PHONE_INPUT, cx, enterMovesNext, focusFirstInvalid } from '../primitives'
+import { PhoneDateField, PhoneTimeField } from '../PhoneDateTimeField'
 
 /*
  * "Give task" - plan-phone-2026-10-14.md §5.4 (slice 4), kit §41.7.
@@ -78,6 +79,8 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   const [saving, setSaving] = React.useState(false)
   const [offerPush, setOfferPush] = React.useState(false)
   const [attempted, setAttempted] = React.useState(false)
+  const [titleTouched, setTitleTouched] = React.useState(false)
+  const formRef = React.useRef<HTMLFormElement>(null)
   const [reminderDays, setReminderDays] = React.useState(1)
   const recurring = React.useRef(false)
 
@@ -96,11 +99,16 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
     tasksApi.getConfig(orgId).then((cfg) => setReminderDays(cfg?.default_reminder_days_before ?? 1)).catch(() => {})
   }, [orgId])
 
-  const titleError = draft.title.length > TITLE_MAX ? `Title must be ${TITLE_MAX} characters or fewer` : null
-  const descriptionError = draft.description.length > DESCRIPTION_MAX ? `Description must be ${DESCRIPTION_MAX} characters or fewer` : null
+  const showTitleErrors = titleTouched || attempted
+  const titleError =
+    draft.title.length > TITLE_MAX
+      ? `Shorten the title to ${TITLE_MAX} characters or fewer.`
+      : showTitleErrors && draft.title.trim().length === 0
+        ? 'Enter a title.'
+        : null
+  const descriptionError = draft.description.length > DESCRIPTION_MAX ? `Shorten the description to ${DESCRIPTION_MAX} characters or fewer.` : null
   const schedule = draft.schedule
-  const noAssigneeError = schedule && attempted && draft.assignees.length === 0 ? 'At least one assignee is required.' : null
-  const canSave = draft.title.trim().length > 0 && !titleError && !descriptionError && !saving
+  const noAssigneeError = attempted && draft.assignees.length === 0 ? 'Choose at least one assignee.' : null
 
   /** Leaves after a save: the recurring list for a template, otherwise back. */
   function leave() {
@@ -109,10 +117,18 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   }
 
   async function onSave() {
-    if (!canSave) return
-    if (schedule) {
-      setAttempted(true)
-      if (draft.assignees.length === 0 || scheduleEntryError(schedule)) return
+    if (saving) return
+    setAttempted(true)
+    const invalid =
+      draft.title.trim().length === 0 ||
+      draft.title.length > TITLE_MAX ||
+      !!descriptionError ||
+      draft.assignees.length === 0 ||
+      (!!schedule && !!scheduleEntryError(schedule))
+    if (invalid) {
+      // The messages render on the next paint; focus the first marked field after it.
+      focusFirstInvalid(formRef.current)
+      return
     }
     setSaving(true)
     try {
@@ -144,11 +160,11 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         title: draft.title.trim(),
         description: draft.description.trim() || undefined,
         priority_id: draft.priorityId || undefined,
-        deadline: draft.deadline ? new Date(draft.deadline).toISOString() : undefined,
+        deadline: draft.deadline ? new Date(draft.deadline.length === 10 ? `${draft.deadline}T23:59` : draft.deadline).toISOString() : undefined,
         assignee_user_ids: draft.assignees.map((a) => a.user_id),
       })
       fileDraft.clear()
-      addToast('Task given', 'success')
+      addToast('Task created', 'success')
       // The first useful moment to ask (plan §9, kit §41.12 rule 4): giving a
       // task is something you'd want to hear back about. Offered at most once
       // until declined/granted/denied; the screen still navigates back either way.
@@ -158,7 +174,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         leave()
       }
     } catch {
-      addToast(schedule ? 'Could not create the recurring task. Try again.' : 'Could not give the task. Try again.', 'error')
+      addToast(schedule ? 'Could not create the recurring task. Check your connection and try again.' : 'Could not create the task. Check your connection and try again.', 'error')
     } finally {
       setSaving(false)
     }
@@ -173,11 +189,11 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   return (
     <PhoneScreen title="Give task" parent={route.parent ?? PHONE_HOME}>
       <form
+        ref={formRef}
+        noValidate
         className="flex flex-col gap-[20px] pb-[80px]"
-        onSubmit={(e) => {
-          e.preventDefault()
-          void onSave()
-        }}
+        onKeyDown={enterMovesNext}
+        onSubmit={(e) => e.preventDefault()}
       >
         <DraftBanner
           draft={fileDraft}
@@ -187,24 +203,33 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           }}
         />
 
-        <Field label="Title" error={titleError}>
+        <PhoneField label="Title" htmlFor="task-title" required error={titleError}>
           <input
+            id="task-title"
             type="text"
             value={draft.title}
             onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-            placeholder="What needs to be done?"
+            onBlur={() => setTitleTouched(true)}
+            placeholder="For example, Send the quarterly report"
             maxLength={TITLE_MAX + 20}
+            enterKeyHint="next"
+            autoComplete="off"
             autoFocus
-            className={cx(
-              'min-h-(--h-control) w-full rounded-[8px] border bg-surface px-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary',
-              titleError ? 'border-danger' : 'border-border-strong',
-            )}
+            aria-invalid={titleError ? true : undefined}
+            className={PHONE_INPUT}
           />
-        </Field>
+        </PhoneField>
 
-        <Field label="Assignee(s)" error={noAssigneeError}>
+        <PhoneField label="Assignee(s)" htmlFor="task-assignees" required error={noAssigneeError}>
           <div className="flex flex-col gap-[8px]">
-            <button type="button" onClick={() => setAssigneePicker(true)} className={cx(ROW, 'mx-0 rounded-[8px] border border-border-strong bg-surface')}>
+            <button
+              id="task-assignees"
+              type="button"
+              data-field
+              aria-invalid={noAssigneeError ? true : undefined}
+              onClick={() => setAssigneePicker(true)}
+              className={cx(ROW, 'mx-0 rounded-[8px] border bg-surface', noAssigneeError ? 'border-danger' : 'border-border-strong')}
+            >
               <span className="min-w-0 flex-1 truncate text-left">
                 {draft.assignees.length === 0 ? (
                   <span className="text-text-secondary">Choose who this is for</span>
@@ -218,11 +243,11 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
               onRemove={(id) => setDraft((d) => ({ ...d, assignees: d.assignees.filter((a) => a.user_id !== id) }))}
             />
           </div>
-        </Field>
+        </PhoneField>
 
         {/* When: Repeat first, then either the one-off Due date or the schedule
             fields in its place - one decision, in one place. */}
-        <Field label="Repeat">
+        <PhoneField label="Repeat">
           <Select
             value={schedule?.schedule_type ?? 'none'}
             items={REPEAT_ITEMS}
@@ -252,24 +277,32 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
               ))}
             </SelectContent>
           </Select>
-        </Field>
+        </PhoneField>
 
         {schedule ? (
           <RepeatFields entry={schedule} onChange={(next) => setDraft((d) => ({ ...d, schedule: next }))} showErrors={attempted} />
         ) : null}
 
         {schedule ? null : (
-        <Field label="Due date">
-          <input
-            type="datetime-local"
-            value={draft.deadline}
-            onChange={(e) => setDraft((d) => ({ ...d, deadline: e.target.value }))}
-            className="min-h-(--h-control) w-full rounded-[8px] border border-border-strong bg-surface px-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary"
-          />
-        </Field>
+          <div className="grid grid-cols-2 gap-[12px]">
+            <PhoneDateField
+              id="task-due-date"
+              label="Due date"
+              value={draft.deadline.slice(0, 10)}
+              onChange={(v) => setDraft((d) => ({ ...d, deadline: v ? `${v}${d.deadline.length >= 16 ? d.deadline.slice(10) : ''}` : '' }))}
+            />
+            <PhoneTimeField
+              id="task-due-time"
+              label="Due time"
+              value={draft.deadline.slice(11, 16)}
+              onChange={(v) =>
+                setDraft((d) => ({ ...d, deadline: d.deadline.length >= 10 ? `${d.deadline.slice(0, 10)}${v ? `T${v}` : ''}` : d.deadline }))
+              }
+            />
+          </div>
         )}
 
-        <Field label="Priority">
+        <PhoneField label="Priority">
           <Select
             value={draft.priorityId || 'none'}
             items={{ none: 'No priority', ...Object.fromEntries(priorities.map((p) => [p.id, p.label])) }}
@@ -287,28 +320,27 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
               ))}
             </SelectContent>
           </Select>
-        </Field>
+        </PhoneField>
 
         {showDescription ? (
-          <Field label="Description" error={descriptionError}>
-            <textarea
+          <PhoneField label="Description" htmlFor="task-description" error={descriptionError}>
+            <GrowTextarea
+              id="task-description"
               value={draft.description}
               onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
               rows={4}
-              className={cx(
-                'w-full resize-none rounded-[8px] border bg-surface px-[12px] py-[10px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary',
-                descriptionError ? 'border-danger' : 'border-border-strong',
-              )}
+              aria-invalid={descriptionError ? true : undefined}
+              className={cx(PHONE_INPUT, 'py-[10px]')}
             />
-          </Field>
+          </PhoneField>
         ) : (
-          <button type="button" onClick={() => setShowDescription(true)} className="self-start text-label font-medium text-primary-text">
-            + Add description
+          <button type="button" onClick={() => setShowDescription(true)} className="flex min-h-[44px] items-center self-start text-label font-medium text-primary-text">
+            Add description
           </button>
         )}
 
         {(draft.title || draft.description) ? (
-          <button type="button" onClick={onDiscard} className="self-start text-label font-medium text-danger">
+          <button type="button" onClick={onDiscard} className="flex min-h-[44px] items-center self-start text-label font-medium text-danger">
             Discard draft
           </button>
         ) : null}
@@ -320,8 +352,8 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           'pb-[calc(12px+var(--safe-bottom))] pl-[max(16px,var(--safe-left))] pr-[max(16px,var(--safe-right))]',
         )}
       >
-        <PhoneButton type="button" variant="primary" fullWidth disabled={!canSave} title={!draft.title.trim() ? 'A title is required' : undefined} onClick={() => void onSave()}>
-          {saving ? 'Saving…' : schedule ? 'Save recurring task' : 'Save'}
+        <PhoneButton type="button" variant="primary" fullWidth loading={saving} onClick={() => void onSave()}>
+          {schedule ? "Save recurring task" : "Save task"}
         </PhoneButton>
       </div>
 
@@ -344,16 +376,6 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         onDeclined={() => declinePushOffer(user?.id)}
       />
     </PhoneScreen>
-  )
-}
-
-function Field({ label, error, children }: { label: string; error?: string | null; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-[6px]">
-      <span className="text-label font-medium text-text-secondary">{label}</span>
-      {children}
-      {error ? <span className="text-meta text-danger">{error}</span> : null}
-    </label>
   )
 }
 

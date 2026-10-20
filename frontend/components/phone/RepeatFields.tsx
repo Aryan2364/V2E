@@ -26,7 +26,7 @@ const FREQUENCIES: { value: RecurringScheduleType; label: string }[] = [
 ]
 const ENDS: { value: RecurringEndCondition; label: string }[] = [
   { value: 'never', label: 'Never' },
-  { value: 'on_date', label: 'On date' },
+  { value: 'on_date', label: 'On a date' },
   { value: 'after_n', label: 'After' },
 ]
 const EVERY_MAX: Record<RecurringScheduleType, number> = { daily: 365, weekly: 52, monthly: 12, yearly: 10 }
@@ -54,21 +54,25 @@ function Chip({
   onClick,
   children,
   className,
+  invalid,
 }: {
   selected: boolean
   onClick: () => void
   children: React.ReactNode
   className?: string
+  invalid?: boolean
 }) {
   return (
     <button
       type="button"
       aria-pressed={selected}
+      aria-invalid={invalid ? true : undefined}
       onClick={onClick}
       className={cx(
         'inline-flex min-h-(--h-control) min-w-[44px] items-center justify-center rounded-[8px] border px-[12px] text-body font-medium',
         'outline-hidden transition-[background-color,border-color] duration-(--duration-fast) focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-ring',
         selected ? 'border-primary bg-primary text-primary-foreground' : 'border-border-strong bg-surface text-text-primary active:bg-surface-control',
+        invalid && 'border-danger',
         className,
       )}
     >
@@ -77,12 +81,26 @@ function Chip({
   )
 }
 
-function Label({ children }: { children: React.ReactNode }) {
-  return <span className="text-label font-medium text-text-secondary">{children}</span>
+/* A group label (chips, not one control): same look as the kit label, asterisk when required. */
+function Label({ children, required = false }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <span className="flex w-fit items-center gap-1 text-label text-text-secondary">
+      {children}
+      {required ? (
+        <span className="text-danger" aria-hidden="true">
+          *
+        </span>
+      ) : null}
+    </span>
+  )
 }
 
 function FieldError({ children }: { children?: React.ReactNode }) {
-  return children ? <span className="text-meta text-danger">{children}</span> : null
+  return children ? (
+    <p role="alert" className="text-label text-danger">
+      {children}
+    </p>
+  ) : null
 }
 
 export function RepeatFields({
@@ -135,7 +153,7 @@ export function RepeatFields({
       </div>
 
       <div className="flex flex-col gap-[6px]">
-        <label htmlFor="repeat-every" className="text-label font-medium text-text-secondary">
+        <label htmlFor="repeat-every" className="flex w-fit text-label text-text-secondary">
           Every how many {EVERY_UNIT[type]}s
         </label>
         <input
@@ -153,12 +171,13 @@ export function RepeatFields({
 
       {type === 'weekly' ? (
         <div className="flex flex-col gap-[6px]">
-          <Label>On</Label>
+          <Label required>On</Label>
           <div className="flex flex-wrap gap-[8px]">
             {DOW.map((label, d) => (
               <Chip
                 key={d}
                 selected={entry.days.includes(d)}
+                invalid={!!daysError && d === 0}
                 onClick={() => patch({ days: entry.days.includes(d) ? entry.days.filter((x) => x !== d) : [...entry.days, d] })}
               >
                 {label}
@@ -171,10 +190,10 @@ export function RepeatFields({
 
       {type === 'monthly' ? (
         <div className="flex flex-col gap-[6px]">
-          <Label>On day(s) of the month</Label>
+          <Label required>Days of the month</Label>
           <div className="grid grid-cols-7 gap-[4px]">
             {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-              <Chip key={d} selected={isDaySelected(d)} onClick={() => toggleMonthDay(d)} className="min-w-0 px-0">
+              <Chip key={d} invalid={!!monthError && d === 1} selected={isDaySelected(d)} onClick={() => toggleMonthDay(d)} className="min-w-0 px-0">
                 {d}
               </Chip>
             ))}
@@ -200,7 +219,7 @@ export function RepeatFields({
       {type === 'yearly' ? (
         <PhoneDateField
           id="repeat-yearly"
-          label="On (day and month)"
+          label="Day and month"
           value={ydValue}
           onChange={(v) => {
             const [, m, d] = v.split('-').map(Number)
@@ -210,7 +229,7 @@ export function RepeatFields({
       ) : null}
 
       <PhoneTimeField id="repeat-time" label="Time" value={entry.time} onChange={(v) => patch({ time: v })} />
-      <PhoneDateField id="repeat-start" label="Starting" value={entry.start_date} onChange={(v) => patch({ start_date: v })} />
+      <PhoneDateField id="repeat-start" label="Start date" value={entry.start_date} onChange={(v) => patch({ start_date: v })} />
 
       <div className="flex flex-col gap-[6px]">
         <Label>Ends</Label>
@@ -223,13 +242,12 @@ export function RepeatFields({
         </div>
         {entry.end_condition === 'on_date' ? (
           <>
-            <PhoneDateField id="repeat-end" label="End date" value={entry.end_date} onChange={(v) => patch({ end_date: v })} />
-            <FieldError>{endError}</FieldError>
+            <PhoneDateField id="repeat-end" label="End date" required value={entry.end_date} onChange={(v) => patch({ end_date: v })} error={endError} />
           </>
         ) : null}
         {entry.end_condition === 'after_n' ? (
           <div className="flex flex-col gap-[6px]">
-            <label htmlFor="repeat-after" className="text-label font-medium text-text-secondary">
+            <label htmlFor="repeat-after" className="flex w-fit text-label text-text-secondary">
               Number of times
             </label>
             <input

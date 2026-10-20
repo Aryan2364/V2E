@@ -2,7 +2,7 @@
 
 import { fmtDate as formatDate, fmtTime as formatTime } from '@/lib/phone-format'
 import React from 'react'
-import { cx } from './primitives'
+import { cx, PhoneField } from './primitives'
 
 /*
  * Date and time fields that open the phone's own picker - kit §41.9 rule 10:
@@ -39,19 +39,18 @@ export function PhoneDateField({
   value,
   onChange,
   required,
+  error,
 }: {
   id: string
   label: string
   value: string
   onChange: (value: string) => void
   required?: boolean
+  error?: string | null
 }) {
   return (
-    <div className="flex flex-col gap-[6px]">
-      <label htmlFor={id} className="text-label font-medium text-text-secondary">
-        {label} {required ? <span aria-hidden>*</span> : null}
-      </label>
-      <div className={FIELD}>
+    <PhoneField label={label} htmlFor={id} required={required} error={error}>
+      <div className={cx(FIELD, error && 'border-danger')}>
         <span className={cx('text-body', value ? 'text-text-primary' : 'text-text-muted')}>
           {value ? fmtDate(value) : 'DD Mon YYYY'}
         </span>
@@ -62,9 +61,10 @@ export function PhoneDateField({
           onChange={(e) => onChange(e.target.value)}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           aria-label={label}
+          aria-invalid={error ? true : undefined}
         />
       </div>
-    </div>
+    </PhoneField>
   )
 }
 
@@ -74,19 +74,18 @@ export function PhoneTimeField({
   value,
   onChange,
   required,
+  error,
 }: {
   id: string
   label: string
   value: string
   onChange: (value: string) => void
   required?: boolean
+  error?: string | null
 }) {
   return (
-    <div className="flex flex-col gap-[6px]">
-      <label htmlFor={id} className="text-label font-medium text-text-secondary">
-        {label} {required ? <span aria-hidden>*</span> : null}
-      </label>
-      <div className={FIELD}>
+    <PhoneField label={label} htmlFor={id} required={required} error={error}>
+      <div className={cx(FIELD, error && 'border-danger')}>
         <span className={cx('text-body', value ? 'text-text-primary' : 'text-text-muted')}>
           {value ? fmtTime(value) : 'h:mm A'}
         </span>
@@ -97,8 +96,9 @@ export function PhoneTimeField({
           onChange={(e) => onChange(e.target.value)}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           aria-label={label}
+          aria-invalid={error ? true : undefined}
         />
       </div>
-    </div>
+    </PhoneField>
   )
 }

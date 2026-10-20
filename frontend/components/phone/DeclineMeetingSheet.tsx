@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { PhoneSheet } from './PhoneSheet'
-import { PhoneButton } from './primitives'
+import { PhoneButton, PhoneField, PHONE_INPUT } from './primitives'
 
 /*
  * Decline reason sheet - plan-phone-2026-10-14.md §5.8, kit §41.6 rule 11.
@@ -43,20 +43,17 @@ export function DeclineMeetingSheet({
         </PhoneButton>
       }
     >
-      <div className="flex flex-col gap-[8px]">
-        <label htmlFor="decline-reason" className="text-label font-medium text-text-secondary">
-          Reason <span aria-hidden>*</span>
-        </label>
+      <PhoneField label="Reason" htmlFor="decline-reason" required>
         <textarea
           id="decline-reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={3}
           maxLength={1000}
-          placeholder="Let the organiser know why you can't make it"
-          className="min-h-[88px] w-full rounded-[8px] border border-border bg-surface px-[12px] py-[10px] text-body text-text-primary outline-hidden focus-visible:border-primary"
+          placeholder="For example, I have a clash with another meeting"
+          className={`${PHONE_INPUT} min-h-[88px] py-[10px]`}
         />
-      </div>
+      </PhoneField>
     </PhoneSheet>
   )
 }

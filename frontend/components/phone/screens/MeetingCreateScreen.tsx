@@ -13,10 +13,9 @@ import { MEETINGS_HREF, type PhoneRoute } from '@/lib/phone-routes'
 import { useDraft } from '@/lib/drafts'
 import { DraftBanner } from '../DraftBanner'
 import PhoneScreen from '../PhoneScreen'
-import { PhoneButton, cx } from '../primitives'
+import { PhoneButton, PhoneField, GrowTextarea, PHONE_INPUT, cx, enterMovesNext, focusFirstInvalid } from '../primitives'
 import { PhoneDateField, PhoneTimeField } from '../PhoneDateTimeField'
 import { PeoplePickerSheet, SelectedPeopleList, type PickerSection } from '../PeoplePickerSheet'
-import { Label } from '@/components/ui/label'
 
 /*
  * Create meeting - plan-phone-2026-10-14.md §5.9, grounded in
@@ -82,6 +81,8 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
 
   const [saving, setSaving] = React.useState(false)
   const [errors, setErrors] = React.useState<Record<string, string>>({})
+  const [titleTouched, setTitleTouched] = React.useState(false)
+  const formRef = React.useRef<HTMLFormElement>(null)
 
   const draftValues: MeetingCreateValues = {
     title,
@@ -135,13 +136,16 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
 
   function validate(): boolean {
     const next: Record<string, string> = {}
-    if (!title.trim()) next.title = 'Title is required.'
+    if (!title.trim()) next.title = 'Enter a title.'
+    if (!date) next.date = 'Choose a date.'
+    if (!startTime) next.startTime = 'Choose a start time.'
     if (date && startTime && endTime) {
       const s = toIso(date, startTime)
       const e = toIso(date, endTime)
       if (s && e && new Date(e).getTime() <= new Date(s).getTime()) next.endTime = 'End time must be after the start time.'
     }
     setErrors(next)
+    if (Object.keys(next).length > 0) focusFirstInvalid(formRef.current)
     return Object.keys(next).length === 0
   }
 
@@ -164,7 +168,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
       addToast('Meeting created', 'success')
       router.replace(`/dashboard/governance/meetings/${meeting.id}`)
     } catch {
-      addToast('Could not create the meeting. Try again.', 'error')
+      addToast('Could not create the meeting. Check your connection and try again.', 'error')
     } finally {
       setSaving(false)
     }
@@ -174,28 +178,33 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
 
   return (
     <PhoneScreen title={route.title} parent={route.parent ?? MEETINGS_HREF}>
-      <div className="flex flex-col gap-[20px] pb-[96px]">
+      <form ref={formRef} noValidate onKeyDown={enterMovesNext} onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-[20px] pb-[96px]">
         <DraftBanner draft={draft} onUse={restoreDraft} />
 
-        <Field label="Title" required error={errors.title}>
+        <PhoneField label="Title" htmlFor="meeting-title" required error={errors.title ?? (titleTouched && !title.trim() ? 'Enter a title.' : null)}>
           <input
+            id="meeting-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => setTitleTouched(true)}
             maxLength={250}
             enterKeyHint="next"
-            placeholder="e.g. Weekly sync"
-            className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-body text-text-primary outline-hidden focus-visible:border-primary"
+            autoComplete="off"
+            autoFocus
+            placeholder="For example, Weekly sync"
+            aria-invalid={errors.title || (titleTouched && !title.trim()) ? true : undefined}
+            className={PHONE_INPUT}
           />
-        </Field>
+        </PhoneField>
 
-        <div className="flex flex-col gap-[6px]">
-          <span className="text-label font-medium text-text-secondary">Type</span>
-          <div className="flex gap-[8px]">
+        <PhoneField label="Type">
+          <div role="group" aria-label="Type" className="flex gap-[8px]">
             {(['online', 'offline'] as const).map((t) => (
               <button
                 key={t}
                 type="button"
+                aria-pressed={type === t}
                 onClick={() => setType(t)}
                 className={cx(
                   'flex-1 min-h-(--h-control) rounded-[8px] border-2 text-body font-medium',
@@ -206,49 +215,57 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
               </button>
             ))}
           </div>
-        </div>
+        </PhoneField>
 
         {type === 'online' ? (
-          <Field label="Meeting link">
+          <PhoneField label="Meeting link" htmlFor="meeting-link">
             <input
+              id="meeting-link"
               type="url"
               value={onlineLink}
               onChange={(e) => setOnlineLink(e.target.value)}
-              placeholder="https://…"
+              placeholder="https://meet.example.com/abc"
+              enterKeyHint="next"
+              autoComplete="off"
               inputMode="url"
-              className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-body text-text-primary outline-hidden focus-visible:border-primary"
+              className={PHONE_INPUT}
             />
-          </Field>
+          </PhoneField>
         ) : (
-          <Field label="Location">
+          <PhoneField label="Location" htmlFor="meeting-location">
             <input
+              id="meeting-location"
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. Conference room 2"
-              className="min-h-(--h-control) w-full rounded-[8px] border border-border bg-surface px-[12px] text-body text-text-primary outline-hidden focus-visible:border-primary"
+              placeholder="For example, Conference room 2"
+              enterKeyHint="next"
+              className={PHONE_INPUT}
             />
-          </Field>
+          </PhoneField>
         )}
 
-        <PhoneDateField id="meeting-date" label="Date" value={date} onChange={setDate} />
+        <PhoneDateField id="meeting-date" label="Date" required value={date} onChange={setDate} error={errors.date} />
 
         <div className="grid grid-cols-2 gap-[12px]">
-          <PhoneTimeField id="meeting-start" label="Start time" value={startTime} onChange={setStartTime} />
-          <PhoneTimeField id="meeting-end" label="End time" value={endTime} onChange={setEndTime} />
+          <PhoneTimeField id="meeting-start" label="Start time" required value={startTime} onChange={setStartTime} error={errors.startTime} />
+          <PhoneTimeField id="meeting-end" label="End time" value={endTime} onChange={setEndTime} error={errors.endTime} />
         </div>
-        {errors.endTime ? <p className="text-meta text-danger">{errors.endTime}</p> : null}
 
-        <button
-          type="button"
-          onClick={() => setPickerOpen(true)}
-          className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-light bg-surface px-[12px] text-left active:bg-surface-control"
-        >
-          <span className="text-body text-text-primary">
-            Attendees{selectedPeople.length > 0 ? ` · ${selectedPeople.length}` : ''}
-          </span>
-          <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
-        </button>
+        <PhoneField label="Attendees" htmlFor="meeting-attendees">
+          <button
+            id="meeting-attendees"
+            type="button"
+            data-field
+            onClick={() => setPickerOpen(true)}
+            className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-strong bg-surface px-[12px] text-left active:bg-surface-control"
+          >
+            <span className={cx('text-body', selectedPeople.length > 0 ? 'text-text-primary' : 'text-text-secondary')}>
+              {selectedPeople.length > 0 ? `${selectedPeople.length} chosen` : 'Choose who is invited'}
+            </span>
+            <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
+          </button>
+        </PhoneField>
         <SelectedPeopleList
           people={selectedPeople}
           onRemove={(id) => {
@@ -258,26 +275,27 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
         />
 
         {agendaOpen ? (
-          <Field label="Agenda">
-            <textarea
+          <PhoneField label="Agenda" htmlFor="meeting-agenda">
+            <GrowTextarea
+              id="meeting-agenda"
               value={agenda}
               onChange={(e) => setAgenda(e.target.value)}
               rows={4}
-              placeholder="What this meeting will cover"
-              className="w-full rounded-[8px] border border-border bg-surface px-[12px] py-[10px] text-body text-text-primary outline-hidden focus-visible:border-primary"
+              placeholder="For example, Review last week's actions"
+              className={cx(PHONE_INPUT, 'py-[10px]')}
             />
-          </Field>
+          </PhoneField>
         ) : (
           <button
             type="button"
             onClick={() => setAgendaOpen(true)}
-            className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-light bg-surface px-[12px] text-left active:bg-surface-control"
+            className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-strong bg-surface px-[12px] text-left active:bg-surface-control"
           >
             <span className="text-body text-text-primary">Add agenda</span>
             <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
           </button>
         )}
-      </div>
+      </form>
 
       <div
         className={cx(
@@ -285,8 +303,8 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
           'pb-[calc(12px+var(--safe-bottom))] pl-[max(16px,var(--safe-left))] pr-[max(16px,var(--safe-right))]',
         )}
       >
-        <PhoneButton variant="primary" fullWidth disabled={saving} onClick={() => void onSave()}>
-          {saving ? 'Creating…' : 'Create meeting'}
+        <PhoneButton variant="primary" fullWidth loading={saving} onClick={() => void onSave()}>
+          Save meeting
         </PhoneButton>
       </div>
 
@@ -304,27 +322,5 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
         }}
       />
     </PhoneScreen>
-  )
-}
-
-function Field({
-  label,
-  required,
-  error,
-  children,
-}: {
-  label: string
-  required?: boolean
-  error?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-[6px]">
-      <Label>
-        {label} {required ? <span aria-hidden>*</span> : null}
-      </Label>
-      {children}
-      {error ? <p className="text-meta text-danger">{error}</p> : null}
-    </div>
   )
 }

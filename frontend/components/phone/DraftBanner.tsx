@@ -59,7 +59,7 @@ export function DraftBanner<T extends DraftValues>({
           type="button"
           aria-label="Close"
           onClick={draft.discard}
-          className="shrink-0 text-text-secondary"
+          className="-my-[10px] -mr-[12px] flex size-[44px] shrink-0 items-center justify-center text-text-secondary"
         >
           <X aria-hidden className="size-[16px]" />
         </button>
