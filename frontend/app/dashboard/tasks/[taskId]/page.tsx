@@ -1245,6 +1245,8 @@ export default function TaskDetailPage() {
                   )}
                 </h3>
                 <CommentThread
+                  ownScroll={false}
+                  followLatest={false}
                   className="mb-4"
                   onWrite={() => commentTextareaRef.current?.focus()}
                   items={comments.map((c): ThreadItem => ({

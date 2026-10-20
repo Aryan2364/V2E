@@ -151,6 +151,7 @@ function CommentThread({
   label = COMMENT_THREAD_TEXT.label,
   className,
   followLatest = true,
+  ownScroll = true,
 }: {
   /** Oldest first. Comments and notes together. */
   items: ThreadItem[]
@@ -172,6 +173,13 @@ function CommentThread({
    * at the top still keep the reader's place.
    */
   followLatest?: boolean
+  /*
+   * v2e addition: false where the page column around the thread already
+   * scrolls (the desktop task page). A feed scrolling inside a scrolling
+   * column traps the wheel: at the thread's end neither moves. The thread
+   * then grows with its comments and the column scrolls them.
+   */
+  ownScroll?: boolean
 }) {
   const { layout } = useLayout()
   const phone = layout === "phone"
@@ -304,12 +312,12 @@ function CommentThread({
 
   return (
     <div
-      ref={scroller}
+      ref={ownScroll ? scroller : undefined}
       data-slot="comment-thread"
       // The browser's own scroll anchoring would move the view when older
       // comments are added at the top, on top of the correction made
       // above; it is off here so only one of the two acts.
-      className={cn("[overflow-anchor:none]", !phone && "max-h-thread-max overflow-y-auto overscroll-y-contain", className)}
+      className={cn("[overflow-anchor:none]", !phone && ownScroll && "max-h-thread-max overflow-y-auto overscroll-y-contain", className)}
     >
       {hasEarlier ? (
         <div className="flex justify-center pb-4">
@@ -408,13 +416,15 @@ function Entry({ comment, grouped }: { comment: ThreadComment; grouped: boolean 
   )
 
   if (grouped) {
+    // v2e: the time sits on the comment's own line, at its end (owner,
+    // 21 Oct 2026), rather than on a line of its own under the text.
     return (
-      <div className="flex min-w-0 flex-col gap-1">
-        {text}
-        <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-start gap-3">
+        <div className="min-w-0 flex-1">{text}</div>
+        <div className="flex shrink-0 items-center gap-2">
           {time}
           {edited}
-          {comment.trailing ? <span className="ml-auto flex shrink-0 items-center">{comment.trailing}</span> : null}
+          {comment.trailing}
         </div>
       </div>
     )
