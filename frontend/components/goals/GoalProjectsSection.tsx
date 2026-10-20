@@ -287,7 +287,7 @@ function LinkProjectModal({
             <StyledSelect
               value={selected}
               onChange={setSelected}
-              placeholder="Choose a project…"
+              placeholder="Select project"
               options={options.map((p) => ({ value: p.id, label: p.name }))}
               disabled={saving}
             />

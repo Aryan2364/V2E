@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, Trash2, Loader2, Target } from 'lucide-react'
+import { Plus, Trash2, Target } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import Tooltip from '@/components/ui/tooltip'
 import DatePicker from '@/components/ui/DatePicker'
@@ -9,6 +9,8 @@ import EmployeePicker from '@/components/ui/EmployeePicker'
 import { useToast } from '@/components/ui/Toast'
 import { delegationsApi, type Delegation, type DelegationInput } from '@/lib/api/delegations'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 // Base has NO width utility — callers add `w-full` (most fields) or a flex sizing
 // (the criteria row) so `w-full` never fights `w-28`/`flex-1` and overflows the row.
@@ -84,10 +86,17 @@ export default function DelegationModal({
     setCriteria((rows) => rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))
 
   const canSubmit = title.trim() && outcome.trim() && ownerId
+  const guarded = useGuardedClose({
+    open: isOpen,
+    values: { title, outcome, ownerId, kra, runningBy, firstCheckIn, criteria },
+    noun: 'delegation',
+    mode: isEdit ? 'edit' : 'create',
+    onClose,
+  })
 
   async function handleSubmit() {
     if (!canSubmit) {
-      addToast('Title, outcome and owner are required.', 'error')
+      addToast('Fill in the title, outcome and owner first.', 'error')
       return
     }
     const payload: DelegationInput = {
@@ -106,18 +115,20 @@ export default function DelegationModal({
       const saved = isEdit
         ? await delegationsApi.update(orgId, existing!.id, payload)
         : await delegationsApi.create(orgId, payload)
-      addToast(isEdit ? 'Delegation updated.' : 'Delegation created.', 'success')
+      addToast(isEdit ? 'Delegation saved' : 'Delegation added', 'success')
       onSaved(saved)
       onClose()
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not save delegation.', 'error')
+      addToast(err?.response?.data?.message ?? 'Could not save the delegation. Try again.', 'error')
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={isEdit ? 'Edit delegation' : 'New delegation'} size="lg" closeOnEscape={false}>
+    <>
+    {guarded.warning}
+    <Modal isOpen={isOpen} onClose={guarded.requestClose} title={isEdit ? 'Edit delegation' : 'New delegation'} size="lg">
       <div className="flex flex-col gap-4">
         {/* Title */}
         <div>
@@ -231,19 +242,14 @@ export default function DelegationModal({
           </div>
         </div>
 
-        {/* Footer — X handles cancel (no duplicate Cancel button per design rules) */}
-        <div className="flex justify-end pt-2 border-t border-border-light">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!canSubmit || saving}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-          >
-            {saving && <Loader2 size={15} className="animate-spin" />}
-            {isEdit ? 'Save changes' : 'Create delegation'}
-          </button>
+        <div className="flex justify-end gap-2 pt-2 border-t border-border-light">
+          <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
+          <Button type="button" onClick={handleSubmit} disabled={!canSubmit || saving} loading={saving} loadingLabel="Saving">
+            {isEdit ? 'Save delegation' : 'Add delegation'}
+          </Button>
         </div>
       </div>
     </Modal>
+    </>
   )
 }

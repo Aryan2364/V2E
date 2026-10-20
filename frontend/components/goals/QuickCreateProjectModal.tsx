@@ -11,6 +11,8 @@ import { projectsApi } from '@/lib/api/projects'
 import type { Project } from '@/lib/types/projects'
 import { inputClass, labelClass, type EmployeeOption } from './GoalFormFields'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 /**
  * Create a project without leaving the goal form.
@@ -42,6 +44,9 @@ export default function QuickCreateProjectModal({
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [saving, setSaving] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; manager?: string; end?: string }>({})
+  const guarded = useGuardedClose({ open: isOpen, values: { name, managerId, startDate, endDate }, noun: 'project', onClose })
+  const clearErr = (k: 'name' | 'manager' | 'end') => setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
 
   useEffect(() => {
     if (!isOpen) return
@@ -53,11 +58,21 @@ export default function QuickCreateProjectModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim()) return addToast('Give the project a name', 'error')
-    if (!managerId) return addToast('Every project needs a manager', 'error')
-    if (startDate && endDate && endDate < startDate) {
-      return addToast('The end date is before the start date', 'error')
+    const errs = {
+      name: name.trim() ? undefined : 'Enter a name for the project.',
+      manager: managerId ? undefined : 'Choose who runs the project.',
+      end: startDate && endDate && endDate < startDate ? 'Choose an end date on or after the start date.' : undefined,
     }
+    if (errs.name || errs.manager || errs.end) {
+      setFieldErrors(errs)
+      const id = errs.name ? 'quick-project-name' : errs.manager ? 'quick-project-manager' : 'quick-project-end'
+      requestAnimationFrame(() => {
+        const el = document.getElementById(id)
+        ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+      })
+      return
+    }
+    setFieldErrors({})
 
     setSaving(true)
     try {
@@ -71,42 +86,50 @@ export default function QuickCreateProjectModal({
       onCreated(project)
       onClose()
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not create the project', 'error')
+      addToast(err?.response?.data?.message ?? 'Could not create the project. Try again.', 'error')
     } finally {
       setSaving(false)
     }
   }
 
   return (
+    <>
+    {guarded.warning}
     <Modal
       isOpen={isOpen}
-      onClose={() => !saving && onClose()}
+      onClose={() => !saving && guarded.requestClose()}
       title="New project"
       size="md"
       elevated
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label className="mb-2" required>Project name</Label>
+          <Label className="mb-2" htmlFor="quick-project-name" required>Project name</Label>
           <input
-            className={inputClass}
+            id="quick-project-name"
+            className={`${inputClass} aria-invalid:border-danger`}
+            aria-invalid={fieldErrors.name ? true : undefined}
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Appoint 40 South-West dealers"
+            onChange={(e) => { setName(e.target.value); clearErr('name') }}
+            placeholder="For example, Appoint 40 South-West dealers"
             disabled={saving}
             autoFocus
           />
+          <InlineFieldError>{fieldErrors.name}</InlineFieldError>
         </div>
 
         <div>
           <Label className="mb-2" required>Project manager</Label>
+          <div id="quick-project-manager">
           <EmployeePicker
             employees={employees}
             value={managerId}
-            onChange={setManagerId}
-            placeholder="Who runs this project?"
+            onChange={(v) => { setManagerId(v); clearErr('manager') }}
+            placeholder="Select project manager"
             disabled={saving}
           />
+          </div>
+          <InlineFieldError>{fieldErrors.manager}</InlineFieldError>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -115,19 +138,22 @@ export default function QuickCreateProjectModal({
             <DatePicker
               value={startDate}
               onChange={setStartDate}
-              placeholder="Optional"
+              placeholder="Select date"
               disabled={saving}
             />
           </div>
           <div>
-            <Label className="mb-2">End date</Label>
+            <Label className="mb-2" htmlFor="quick-project-end">End date</Label>
             <DatePicker
+              id="quick-project-end"
+              invalid={!!fieldErrors.end}
               value={endDate}
-              onChange={setEndDate}
+              onChange={(v) => { setEndDate(v); clearErr('end') }}
               min={startDate || undefined}
-              placeholder="Optional"
+              placeholder="Select date"
               disabled={saving}
             />
+            <InlineFieldError>{fieldErrors.end}</InlineFieldError>
           </div>
         </div>
 
@@ -136,13 +162,15 @@ export default function QuickCreateProjectModal({
           to this goal automatically.
         </p>
 
-        <div className="flex justify-end pt-4 border-t border-border-light">
+        <div className="flex justify-end gap-2 pt-4 border-t border-border-light">
+          <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
           <Button type="submit" disabled={saving}>
             {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
-            {saving ? 'Creating…' : 'Create & link'}
+            {saving ? 'Creating…' : 'Create and link project'}
           </Button>
         </div>
       </form>
     </Modal>
+    </>
   )
 }

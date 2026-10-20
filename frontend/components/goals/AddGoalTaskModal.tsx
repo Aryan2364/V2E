@@ -8,6 +8,8 @@ import EmployeePicker from '@/components/ui/EmployeePicker'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 const inputClass =
   'w-full border border-border rounded-control px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
@@ -34,6 +36,8 @@ export default function AddGoalTaskModal({ isOpen, onClose, orgId, goalId, emplo
   const [assignee, setAssignee] = useState('')
   const [deadline, setDeadline] = useState('')
   const [saving, setSaving] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; assignee?: string }>({})
+  const guarded = useGuardedClose({ open: isOpen, values: { title, assignee, deadline }, noun: 'task', onClose })
 
   useEffect(() => {
     if (isOpen) {
@@ -45,8 +49,18 @@ export default function AddGoalTaskModal({ isOpen, onClose, orgId, goalId, emplo
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!title.trim()) return addToast('Task title is required', 'error')
-    if (!assignee) return addToast('An executor (assignee) is required', 'error')
+    if (!title.trim() || !assignee) {
+      setFieldErrors({
+        title: title.trim() ? undefined : 'Enter a title for the task.',
+        assignee: assignee ? undefined : 'Choose the person who will do the task.',
+      })
+      requestAnimationFrame(() => {
+        const el = document.getElementById(title.trim() ? 'goal-task-assignee' : 'goal-task-title')
+        ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+      })
+      return
+    }
+    setFieldErrors({})
 
     setSaving(true)
     try {
@@ -60,38 +74,44 @@ export default function AddGoalTaskModal({ isOpen, onClose, orgId, goalId, emplo
       onCreated()
       onClose()
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not add the task', 'error')
+      addToast(err?.response?.data?.message ?? 'Could not add the task. Try again.', 'error')
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add a task to this goal" size="md">
+    <>
+    {guarded.warning}
+    <Modal isOpen={isOpen} onClose={guarded.requestClose} title="Add a task to this goal" size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <p className="text-label text-text-secondary -mt-1">
           This creates a real task in the Tasks module, linked to this goal.
         </p>
         <div>
-          <Label className="mb-2" required>Task title</Label>
-          <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="What needs to be done?" autoFocus />
+          <Label className="mb-2" htmlFor="goal-task-title" required>Task title</Label>
+          <input id="goal-task-title" className={`${inputClass} aria-invalid:border-danger`} aria-invalid={fieldErrors.title ? true : undefined} value={title} onChange={(e) => { setTitle(e.target.value); setFieldErrors((p) => (p.title ? { ...p, title: undefined } : p)) }} placeholder="For example, Call the top 10 dealers" autoFocus />
+          <InlineFieldError>{fieldErrors.title}</InlineFieldError>
         </div>
         <div>
-          <Label className="mb-2" required>Executor (assignee)</Label>
+          <Label className="mb-2" required>Assignee</Label>
+          <div id="goal-task-assignee">
           <EmployeePicker
             value={assignee}
-            onChange={setAssignee}
+            onChange={(v) => { setAssignee(v); setFieldErrors((p) => (p.assignee ? { ...p, assignee: undefined } : p)) }}
             employees={employees}
-            title="Select Executor"
-            placeholder="Select executor…"
+            title="Select assignee"
+            placeholder="Select assignee"
           />
+          </div>
+          <InlineFieldError>{fieldErrors.assignee}</InlineFieldError>
         </div>
         <div>
           <Label className="mb-2">Deadline</Label>
           <DatePicker value={deadline} onChange={setDeadline} placeholder="Select date" />
         </div>
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-light">
-          <Button variant="secondary" type="button" onClick={onClose}>
+          <Button variant="secondary" type="button" onClick={guarded.requestClose}>
             Cancel
           </Button>
           <Button variant="primary" type="submit" isLoading={saving} disabled={saving}>
@@ -100,5 +120,6 @@ export default function AddGoalTaskModal({ isOpen, onClose, orgId, goalId, emplo
         </div>
       </form>
     </Modal>
+    </>
   )
 }

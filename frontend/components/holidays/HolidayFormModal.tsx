@@ -9,6 +9,8 @@ import CascadeTargetTree from './CascadeTargetTree'
 import type { HolidayType } from '@/lib/types/holidays'
 import type { Department } from '@/lib/types'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 const HOLIDAY_TYPES: HolidayType[] = ['national', 'company', 'regional', 'team', 'personal', 'leave']
 
@@ -67,6 +69,9 @@ export default function HolidayFormModal({
   const [form, setForm] = useState<HolidayFormData>({ ...DEFAULT, type: defaultType })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  // Field errors sit under the field that is wrong (kit 11.3 rule 6).
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; date?: string; end?: string }>({})
+  const clearErr = (k: 'name' | 'date' | 'end') => setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
 
   const showCascade = !!departments && !!originDeptId && !!originDeptName
 
@@ -78,6 +83,7 @@ export default function HolidayFormModal({
     setForm({ ...DEFAULT, type: defaultType })
     setSpan('single')
     setError('')
+    setFieldErrors({})
   }
 
   function close() {
@@ -87,20 +93,28 @@ export default function HolidayFormModal({
   }
 
   async function submit() {
-    if (!form.name.trim() || !form.date) {
-      setError('Name and date are required.')
+    const errs = {
+      name: form.name.trim() ? undefined : 'Enter a name for the holiday.',
+      date: form.date ? undefined : span === 'range' ? 'Choose the first day of the range.' : 'Choose the date of the holiday.',
+      end:
+        span === 'range'
+          ? !form.end_date
+            ? 'Choose the last day of the range.'
+            : form.date && form.end_date <= form.date
+              ? 'Choose an end date after the start date.'
+              : undefined
+          : undefined,
+    }
+    if (errs.name || errs.date || errs.end) {
+      setFieldErrors(errs)
+      const id = errs.name ? 'holiday-name' : errs.date ? 'holiday-date' : 'holiday-end'
+      requestAnimationFrame(() => {
+        const el = document.getElementById(id)
+        ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+      })
       return
     }
-    if (span === 'range') {
-      if (!form.end_date) {
-        setError('Pick an end date for the range.')
-        return
-      }
-      if (form.end_date <= form.date) {
-        setError('End date must be after the start date.')
-        return
-      }
-    }
+    setFieldErrors({})
     setSaving(true)
     setError('')
     try {
@@ -109,14 +123,18 @@ export default function HolidayFormModal({
       reset()
       onClose()
     } catch {
-      setError('Failed to add holiday. Please try again.')
+      setError('Could not add the holiday. Try again.')
     } finally {
       setSaving(false)
     }
   }
 
+  const guarded = useGuardedClose({ open: isOpen, values: { form, span }, noun: 'holiday', onClose: close })
+
   return (
-    <Modal isOpen={isOpen} onClose={close} title={title} size="md" closeOnEscape={!saving}>
+    <>
+    {guarded.warning}
+    <Modal isOpen={isOpen} onClose={guarded.requestClose} title={title} size="md" closeOnEscape={!saving}>
       <div className="space-y-4">
         {/* Span selector — single day vs range */}
         {allowRange && (
@@ -141,41 +159,51 @@ export default function HolidayFormModal({
         )}
 
         <div>
-          <Label className="mb-2" required>Name</Label>
+          <Label className="mb-2" htmlFor="holiday-name" required>Name</Label>
           <input
+            id="holiday-name"
             value={form.name}
-            onChange={(e) => set('name', e.target.value)}
-            placeholder="e.g. Republic Day"
+            onChange={(e) => { set('name', e.target.value); clearErr('name') }}
+            placeholder="For example, Republic Day"
             autoFocus
-            className="w-full h-[42px] px-3 rounded-lg border border-border bg-surface-sunken text-body text-text-primary placeholder:text-text-muted focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
+            aria-invalid={fieldErrors.name ? true : undefined}
+            className="w-full h-[42px] px-3 rounded-lg border border-border bg-surface-sunken text-body text-text-primary placeholder:text-text-muted focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors aria-invalid:border-danger"
           />
+          <InlineFieldError>{fieldErrors.name}</InlineFieldError>
         </div>
 
         {/* Date(s) */}
         {span === 'single' ? (
           <div>
-            <Label className="mb-2" required>Date</Label>
-            <DatePicker value={form.date} onChange={(iso) => set('date', iso)} placeholder="Select date" />
+            <Label className="mb-2" htmlFor="holiday-date" required>Date</Label>
+            <DatePicker id="holiday-date" invalid={!!fieldErrors.date} value={form.date} onChange={(iso) => { set('date', iso); clearErr('date') }} placeholder="Select date" />
+            <InlineFieldError>{fieldErrors.date}</InlineFieldError>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="mb-2" required>Start date</Label>
+              <Label className="mb-2" htmlFor="holiday-date" required>Start date</Label>
               <DatePicker
+                id="holiday-date"
+                invalid={!!fieldErrors.date}
                 value={form.date}
-                onChange={(iso) => set('date', iso)}
-                placeholder="Start"
+                onChange={(iso) => { set('date', iso); clearErr('date') }}
+                placeholder="Select date"
                 max={form.end_date || undefined}
               />
+              <InlineFieldError>{fieldErrors.date}</InlineFieldError>
             </div>
             <div>
-              <Label className="mb-2" required>End date</Label>
+              <Label className="mb-2" htmlFor="holiday-end" required>End date</Label>
               <DatePicker
+                id="holiday-end"
+                invalid={!!fieldErrors.end}
                 value={form.end_date}
-                onChange={(iso) => set('end_date', iso)}
-                placeholder="End"
+                onChange={(iso) => { set('end_date', iso); clearErr('end') }}
+                placeholder="Select date"
                 min={form.date || undefined}
               />
+              <InlineFieldError>{fieldErrors.end}</InlineFieldError>
             </div>
           </div>
         )}
@@ -203,7 +231,6 @@ export default function HolidayFormModal({
             <input
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
-              placeholder="Optional"
               className="w-full h-[42px] px-3 rounded-lg border border-border bg-surface-sunken text-body text-text-primary placeholder:text-text-muted focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-colors"
             />
           </div>
@@ -229,13 +256,14 @@ export default function HolidayFormModal({
           />
         )}
 
-        {error && <p className="text-meta text-danger">{error}</p>}
+        {error && <p role="alert" className="text-label text-danger">{error}</p>}
 
         <div className="flex gap-2 justify-end pt-1">
-          <Button variant="secondary" onClick={close} disabled={saving}>Cancel</Button>
+          <Button variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
           <Button variant="primary" onClick={submit} isLoading={saving} disabled={saving}>Add holiday</Button>
         </div>
       </div>
     </Modal>
+    </>
   )
 }

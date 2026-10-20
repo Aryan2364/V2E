@@ -133,7 +133,7 @@ export default function LinkGoalModal({
               <StyledSelect
                 value={selected}
                 onChange={setSelected}
-                placeholder="Choose an existing goal…"
+                placeholder="Select goal"
                 options={candidates.map((c) => ({
                   value: c.id,
                   label: `${c.title} — due ${formatDate(c.due_date)}`,
