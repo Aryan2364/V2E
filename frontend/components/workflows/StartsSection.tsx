@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Label } from '@/components/ui/label'
 import { CalendarClock, Check, Hand } from 'lucide-react'
 import ScheduleEntryList from '@/components/tasks/ScheduleEntryList'
 import type { ScheduleEntryDraft } from '@/components/tasks/ScheduleEntryRow'
@@ -167,10 +168,10 @@ export default function StartsSection({
           />
           <Reveal open={value.manual}>
             <div className="pl-1">
-              <span className="block text-body font-medium text-text-secondary mb-2">
-                Who can start it <span className="text-danger">*</span>{' '}
-                <InfoTip label="Who can start it" text="Only the people listed here can run it by hand." />
-              </span>
+              <div className="mb-2 flex items-center gap-1">
+            <Label required>Who can start it</Label>
+            <InfoTip label="Who can start it" text="Only the people listed here can run it by hand." />
+          </div>
               <PeoplePicker
                 orgId={orgId}
                 ids={value.starterIds}

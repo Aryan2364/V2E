@@ -6,6 +6,7 @@ import { Check, GitMerge, Pencil, Plus, Power, RotateCcw, Search, Trash2, X } fr
 import Modal from '@/components/ui/Modal'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import StyledSelect from '@/components/ui/StyledSelect'
 import Tooltip from '@/components/ui/tooltip'
 import TagChip from '@/components/ui/TagChip'
@@ -380,9 +381,7 @@ function TagFormModal({
           {/* Name */}
           <div>
             <div className="mb-1.5 flex items-baseline justify-between gap-2">
-              <label htmlFor={nameId} className="text-body font-medium text-label">
-                Name <span className="text-danger" aria-hidden="true">*</span>
-              </label>
+              <Label htmlFor={nameId} required>Name</Label>
               <span className="text-meta tabular-nums text-helper" aria-hidden="true">
                 {name.length}/{NAME_MAX}
               </span>
@@ -402,7 +401,7 @@ function TagFormModal({
               onBlur={() => {
                 if (name.trim() || nameErr) setNameErr(nameError(name))
               }}
-              placeholder="e.g. Client follow-up"
+              placeholder="For example, Client follow-up"
               aria-invalid={nameInvalid}
               aria-describedby={nameInvalid ? nameErrId : undefined}
               className={`${fieldCls} h-11 lg:h-9 ${nameInvalid ? 'border-danger' : 'border-input hover:border-secondary'}`}
@@ -442,9 +441,7 @@ function TagFormModal({
           {/* Description */}
           <div>
             <div className="mb-1.5 flex items-baseline justify-between gap-2">
-              <label htmlFor={descId} className="text-body font-medium text-label">
-                Description
-              </label>
+              <Label htmlFor={descId}>Description</Label>
               <span className="text-meta tabular-nums text-helper" aria-hidden="true">
                 {description.length}/{DESCRIPTION_MAX}
               </span>
@@ -455,7 +452,7 @@ function TagFormModal({
               maxLength={DESCRIPTION_MAX}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g. Waiting on the client before work can continue"
+              placeholder="For example, Waiting on the client before work can continue"
               className={`${fieldCls} resize-none border-input py-2 hover:border-secondary`}
             />
           </div>
@@ -467,7 +464,7 @@ function TagFormModal({
           </div>
 
           {formErr && (
-            <p role="alert" className="rounded-btn border border-red-200 bg-red-50 px-3 py-2 text-body text-red-800">
+            <p role="alert" className="rounded-btn border border-danger-border bg-danger-bg px-3 py-2 text-body text-danger">
               {formErr}
             </p>
           )}
@@ -525,10 +522,8 @@ function MergePickModal({
           clean up duplicates such as “urgent” and “Urgent!”.
         </p>
         <div>
-          <p className="mb-1.5 text-body font-medium text-label">
-            Merge into <span className="text-danger" aria-hidden="true">*</span>
-          </p>
-          <StyledSelect value={intoId} onChange={setIntoId} options={options} placeholder="Choose a tag" searchPlaceholder="Search tags…" />
+          <Label className="mb-2" required>Merge into</Label>
+          <StyledSelect value={intoId} onChange={setIntoId} options={options} placeholder="Select tag" searchPlaceholder="Search tags…" />
         </div>
         <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
           <Button type="button" variant="secondary" onClick={onCancel}>

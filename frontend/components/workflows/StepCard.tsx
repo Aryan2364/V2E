@@ -668,10 +668,10 @@ export default function StepCard(props: EditProps | CreateProps) {
 
         {/* Assigned to */}
         <div className="lg:col-span-12">
-          <span className={LABEL_CLS}>
-            Assigned to <span className="text-danger">*</span>{' '}
+          <div className="mb-2 flex items-center gap-1">
+            <Label required>Assigned to</Label>
             <InfoTip label="Assigned to" text="Click a badge to switch assignee and CC. CCs only follow along." />
-          </span>
+          </div>
           <fieldset disabled={disabled || creating} className="min-w-0 border-0 p-0 m-0">
             <AssigneeSelector orgId={orgId} value={draft.assignees} onChange={setAssignees} disabled={disabled || creating} currentUser={currentUser} />
           </fieldset>

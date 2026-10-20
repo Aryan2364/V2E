@@ -120,9 +120,10 @@ export default function SendBackDialog({
         </p>
 
         <div>
-          <span className="block text-body font-medium text-text-secondary mb-2">
-            Send back to <span className="text-danger">*</span> <InfoTip label="Send back to" text="Steps in between are not redone." />
-          </span>
+          <div className="mb-2 flex items-center gap-1">
+            <Label required>Send back to</Label>
+            <InfoTip label="Send back to" text="Steps in between are not redone." />
+          </div>
           {loadError ? (
             <div className="flex flex-col gap-2">
               <ErrorBanner message={loadError} />

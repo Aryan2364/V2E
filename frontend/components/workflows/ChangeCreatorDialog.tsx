@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { Label } from '@/components/ui/label'
 import { UserCog } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import StyledSelect from '@/components/ui/StyledSelect'
@@ -78,10 +79,10 @@ export default function ChangeCreatorDialog({
         </p>
 
         <div>
-          <span id="new-creator-label" className="block text-body font-medium text-text-secondary mb-2">
-            New creator <span className="text-danger">*</span>{' '}
+          <div  id="new-creator-label" className="mb-2 flex items-center gap-1">
+            <Label required>New creator</Label>
             <InfoTip label="New creator" text="Only active members can be chosen. The previous creator stays an editor until someone removes them." />
-          </span>
+          </div>
           <div aria-labelledby="new-creator-label">
             <StyledSelect
               value={picked}
