@@ -277,7 +277,7 @@ function PopoverContent({
             data-slot="popover-content"
             className={cn(
               "flex w-72 origin-(--transform-origin) flex-col gap-3",
-              "rounded-xl border border-border-light bg-surface p-4 text-body text-text-primary shadow-menu outline-hidden",
+              "overflow-hidden rounded-xl border border-border-light bg-surface p-4 text-body text-text-primary shadow-menu outline-hidden has-[[data-slot=popover-header]]:border-0",
               // Section 5.6: fade in with a 4px slide away from the trigger,
               // medium; out one step shorter, at fast. animation-duration-*,
               // not duration-*, for the reason given in dialog.tsx.

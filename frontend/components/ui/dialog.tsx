@@ -161,7 +161,7 @@ function DialogContent({
             // is the screen less 16px a side, so a large dialog at 768px
             // is 736px and never touches the edge.
             "fixed top-1/2 left-1/2 z-(--z-dialog) flex max-h-[80dvh] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col",
-            "rounded-xl border border-border-light bg-surface text-body text-text-primary shadow-dialog outline-none",
+            "overflow-hidden rounded-xl border border-border-light bg-surface text-body text-text-primary shadow-dialog outline-none has-[[data-slot=dialog-header]]:border-0",
             "data-[size=sm]:max-w-dialog-sm data-[size=md]:max-w-dialog-md data-[size=lg]:max-w-dialog-lg",
             // Section 5.6: fade with a slight scale from 98%, slow; out at
             // medium. The centring is the `translate` property, which the
