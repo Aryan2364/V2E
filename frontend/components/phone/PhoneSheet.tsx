@@ -44,6 +44,7 @@ export function PhoneSheet({
   title,
   children,
   footer,
+  fullHeight = false,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -51,6 +52,8 @@ export function PhoneSheet({
   children: React.ReactNode
   /** The sheet's buttons; they share the footer's width, primary on the right (rule 6). */
   footer?: React.ReactNode
+  /** Fills the sheet to its tallest (pickers with a search fixed at the top). */
+  fullHeight?: boolean
 }) {
   const id = React.useId()
   const titleId = `${id}-title`
@@ -150,6 +153,7 @@ export function PhoneSheet({
           'absolute inset-x-0 flex flex-col rounded-t-[12px] bg-surface shadow-dialog outline-hidden',
           'bottom-(--keyboard-inset) max-h-[calc(90dvh-var(--safe-top)-var(--keyboard-inset))]',
           'pr-(--safe-right) pl-(--safe-left)',
+          fullHeight && 'h-[calc(90dvh-var(--safe-top)-var(--keyboard-inset))]',
         )}
       >
         <div

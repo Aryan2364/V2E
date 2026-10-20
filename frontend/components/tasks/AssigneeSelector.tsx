@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Search, X, Plus, Check, Zap, Briefcase, UserPlus } from 'lucide-react'
 import Tooltip from '@/components/ui/tooltip'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { tasksApi } from '@/lib/api/tasks'
-import type { EligibleAssigneesResponse, EligibleAssigneeUser, SelectedAssignee } from '@/lib/types/tasks'
+import { useEligibleAssignees, type AssigneeSortMode } from './useEligibleAssignees'
+import type { EligibleAssigneeUser, SelectedAssignee } from '@/lib/types/tasks'
 
 // ─── Avatar helpers ───────────────────────────────────────────────────────────
 
@@ -14,17 +14,17 @@ const avatarColors = [
   'bg-primary', 'bg-text-secondary', 'bg-success',
   'bg-warning', 'bg-danger', 'bg-text-secondary',
 ]
-function avatarColor(name: string): string {
+export function avatarColor(name: string): string {
   let h = 0; for (let i = 0; i < name.length; i++) h += name.charCodeAt(i)
   return avatarColors[h % avatarColors.length]
 }
-function getInitials(name: string): string {
+export function getInitials(name: string): string {
   return name.split(' ').map((n) => n[0] ?? '').join('').toUpperCase().slice(0, 2) || '?'
 }
 
 // ─── Sort type ────────────────────────────────────────────────────────────────
 
-type SortMode = 'frequency' | 'workload' | 'name'
+type SortMode = AssigneeSortMode
 
 // ─── Skeleton row ─────────────────────────────────────────────────────────────
 
@@ -199,46 +199,17 @@ export default function AssigneeSelector({
   hiddenIds,
 }: Props) {
   const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState('')
-  const [sort, setSort] = useState<SortMode>('frequency')
-  const [data, setData] = useState<EligibleAssigneesResponse | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { search, setSearch, sort, setSort, data, loading, departments, visibleTotal } = useEligibleAssignees({
+    orgId,
+    open,
+    currentUserId: currentUser?.user_id,
+    hiddenIds,
+  })
 
   const containerRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const selectedIds = new Set(value.map((a) => a.user_id))
-
-  // ── Fetch eligible assignees ────────────────────────────────────────────────
-
-  const fetchAssignees = useCallback(async (q: string, s: SortMode) => {
-    setLoading(true)
-    try {
-      const result = await tasksApi.getEligibleAssignees(orgId, q || undefined, s)
-      setData(result)
-    } catch {
-      setData({ departments: [], total: 0 })
-    } finally {
-      setLoading(false)
-    }
-  }, [orgId])
-
-  // Fetch when opening, or when sort changes while open
-  useEffect(() => {
-    if (!open) return
-    fetchAssignees(search, sort)
-  }, [open, sort]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Debounced search
-  useEffect(() => {
-    if (!open) return
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      fetchAssignees(search, sort)
-    }, 300)
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-  }, [search]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Escape and backdrop-click are now the kit Dialog's own behaviour.
 
@@ -246,8 +217,6 @@ export default function AssigneeSelector({
   useEffect(() => {
     if (open) {
       setTimeout(() => searchInputRef.current?.focus(), 50)
-    } else {
-      setSearch('')
     }
   }, [open])
 
@@ -268,14 +237,6 @@ export default function AssigneeSelector({
   function removeAssignee(userId: string) {
     onChange(value.filter((a) => a.user_id !== userId))
   }
-
-  // ── Departments for rendering ────────────────────────────────────────────────
-  // The current user is offered via the dedicated "Assign to me" shortcut, so
-  // drop them from the searchable list to avoid showing their own name twice.
-  const departments = (data?.departments ?? [])
-    .map((d) => ({ ...d, users: d.users.filter((u) => u.user_id !== currentUser?.user_id && !hiddenIds?.includes(u.user_id)) }))
-    .filter((d) => d.users.length > 0)
-  const visibleTotal = departments.reduce((n, d) => n + d.users.length, 0)
 
   // ── Render ───────────────────────────────────────────────────────────────────
 

@@ -2,18 +2,17 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 import { useBack } from '@/lib/back'
-import type { EligibleAssigneeUser, TaskPriority } from '@/lib/types/tasks'
+import type { TaskPriority } from '@/lib/types/tasks'
 import { PHONE_HOME, type PhoneRoute } from '@/lib/phone-routes'
 import { useDraft } from '@/lib/drafts'
 import { DraftBanner } from '../DraftBanner'
 import { shouldOfferPushNow, declinePushOffer } from '@/lib/push'
 import PhoneScreen from '../PhoneScreen'
-import { PhoneSheet } from '../PhoneSheet'
+import { AssigneePickerSheet } from '../AssigneePickerSheet'
 import { NotificationOfferSheet } from '../NotificationOfferSheet'
 import { PhoneButton, ROW, cx } from '../primitives'
 
@@ -227,6 +226,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         open={assigneePicker}
         onOpenChange={setAssigneePicker}
         orgId={orgId}
+        currentUser={user ? { user_id: user.id, name: user.name } : undefined}
         selected={draft.assignees}
         onChange={(assignees) => setDraft((d) => ({ ...d, assignees }))}
       />
@@ -251,107 +251,5 @@ function Field({ label, error, children }: { label: string; error?: string | nul
       {children}
       {error ? <span className="text-meta text-danger">{error}</span> : null}
     </label>
-  )
-}
-
-function AssigneePickerSheet({
-  open,
-  onOpenChange,
-  orgId,
-  selected,
-  onChange,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  orgId: string
-  selected: { user_id: string; name: string }[]
-  onChange: (next: { user_id: string; name: string }[]) => void
-}) {
-  const [query, setQuery] = React.useState('')
-  const [users, setUsers] = React.useState<EligibleAssigneeUser[]>([])
-  const [loading, setLoading] = React.useState(false)
-
-  React.useEffect(() => {
-    if (!open || !orgId) return
-    setLoading(true)
-    const t = window.setTimeout(() => {
-      tasksApi
-        .getEligibleAssignees(orgId, query || undefined, 'name')
-        .then((res) => setUsers(res.departments.flatMap((d) => d.users)))
-        .catch(() => setUsers([]))
-        .finally(() => setLoading(false))
-    }, 200)
-    return () => window.clearTimeout(t)
-  }, [open, orgId, query])
-
-  function toggle(u: EligibleAssigneeUser) {
-    const exists = selected.some((s) => s.user_id === u.user_id)
-    onChange(exists ? selected.filter((s) => s.user_id !== u.user_id) : [...selected, { user_id: u.user_id, name: u.name }])
-  }
-
-  return (
-    <PhoneSheet
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Choose assignees"
-      footer={
-        <PhoneButton type="button" variant="primary" fullWidth onClick={() => onOpenChange(false)}>
-          Done{selected.length > 0 ? ` (${selected.length})` : ''}
-        </PhoneButton>
-      }
-    >
-      <div className="flex flex-col gap-[12px]">
-        <div className="relative">
-          <Search aria-hidden className="absolute left-[12px] top-1/2 size-[16px] -translate-y-1/2 text-text-secondary" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search people"
-            className="min-h-(--h-control) w-full rounded-[8px] border border-border-strong bg-surface py-[8px] pl-[36px] pr-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary"
-          />
-          {query ? (
-            <button type="button" aria-label="Clear search" onClick={() => setQuery('')} className="absolute right-[8px] top-1/2 -translate-y-1/2">
-              <X aria-hidden className="size-[16px] text-text-secondary" />
-            </button>
-          ) : null}
-        </div>
-
-        {loading ? (
-          <p className="text-body text-text-secondary">Searching…</p>
-        ) : users.length === 0 ? (
-          <p className="text-body text-text-secondary">No one matches.</p>
-        ) : (
-          <ul className="flex flex-col">
-            {users.map((u) => {
-              const checked = selected.some((s) => s.user_id === u.user_id)
-              return (
-                <li key={u.user_id}>
-                  <button type="button" onClick={() => toggle(u)} className={ROW}>
-                    <span
-                      aria-hidden
-                      className={cx(
-                        'flex size-[20px] shrink-0 items-center justify-center rounded-[4px] border-2',
-                        checked ? 'border-primary bg-primary' : 'border-border-strong',
-                      )}
-                    >
-                      {checked ? (
-                        <svg viewBox="0 0 16 16" className="size-[12px] text-primary-foreground" fill="none">
-                          <path d="M3 8.5L6.2 11.5L13 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      ) : null}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-left">
-                      <span className="block truncate text-body text-text-primary">{u.name}</span>
-                      <span className="block truncate text-meta text-text-secondary">{u.department_name}</span>
-                    </span>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </div>
-    </PhoneSheet>
   )
 }
