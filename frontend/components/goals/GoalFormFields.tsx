@@ -15,6 +15,7 @@ import {
   type GoalStatus,
 } from '@/lib/types/goals'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
 
 export const inputClass =
   'w-full border border-border rounded-control px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
@@ -40,6 +41,18 @@ export interface DeptOption {
   id: string
   name: string
   parent_department_id?: string | null
+}
+
+/** Field errors, keyed by the field they belong under (kit 11.3 rule 6). */
+export type GoalFormErrors = Partial<Record<'title' | 'ownerUserId' | 'dueDate' | 'checkInDate' | 'targetValue', string>>
+
+/** The id of each validated field, so a failed save can focus the first wrong one (kit 39.3). */
+export const GOAL_FIELD_ID: Record<keyof GoalFormErrors, string> = {
+  title: 'goal-field-title',
+  ownerUserId: 'goal-field-owner',
+  dueDate: 'goal-field-due',
+  checkInDate: 'goal-field-checkin',
+  targetValue: 'goal-field-target',
 }
 
 export interface GoalFormState {
@@ -80,6 +93,7 @@ export default function GoalFormFields({
   showStatus = false,
   disabled = false,
   firstCheckInLabel = 'First check-in due',
+  errors = {},
 }: {
   state: GoalFormState
   onChange: (patch: Partial<GoalFormState>) => void
@@ -89,19 +103,23 @@ export default function GoalFormFields({
   disabled?: boolean
   /** "First check-in" when creating; "Next check-in" when editing. */
   firstCheckInLabel?: string
+  errors?: GoalFormErrors
 }) {
   return (
     <div className="space-y-4">
       <div>
-        <Label className="mb-2" required>Goal</Label>
+        <Label className="mb-2" htmlFor={GOAL_FIELD_ID.title} required>Goal</Label>
         <input
-          className={inputClass}
+          id={GOAL_FIELD_ID.title}
+          className={`${inputClass} aria-invalid:border-danger`}
+          aria-invalid={errors.title ? true : undefined}
           value={state.title}
           onChange={(e) => onChange({ title: e.target.value })}
-          placeholder="e.g. Reach ₹50 Cr revenue"
+          placeholder="For example, Reach ₹50 Cr revenue"
           disabled={disabled}
           maxLength={300}
         />
+        <InlineFieldError>{errors.title}</InlineFieldError>
       </div>
 
       <div>
@@ -142,26 +160,32 @@ export default function GoalFormFields({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
         <div>
           <Label className="mb-2" required>Owner</Label>
+          <div id={GOAL_FIELD_ID.ownerUserId}>
           <EmployeePicker
             employees={employees}
             value={state.ownerUserId}
             onChange={(id) => onChange({ ownerUserId: id })}
-            placeholder="Who is accountable for this?"
+            placeholder="Select owner"
             disabled={disabled}
           />
+          </div>
+          <InlineFieldError>{errors.ownerUserId}</InlineFieldError>
           <p className="text-meta text-text-secondary mt-1">
             One accountable person — who gets asked for the check-in. It doesn’t change who can see
             or edit the goal.
           </p>
         </div>
         <div>
-          <Label className="mb-2" required>Deadline</Label>
+          <Label className="mb-2" htmlFor={GOAL_FIELD_ID.dueDate} required>Deadline</Label>
           <DatePicker
+            id={GOAL_FIELD_ID.dueDate}
+            invalid={!!errors.dueDate}
             value={state.dueDate}
             onChange={(iso) => onChange({ dueDate: iso })}
             placeholder="Select a date"
             disabled={disabled}
           />
+          <InlineFieldError>{errors.dueDate}</InlineFieldError>
         </div>
       </div>
 
@@ -193,14 +217,17 @@ export default function GoalFormFields({
         </div>
         {state.cadence !== 'none' && (
           <div>
-            <Label className="mb-2" required>{firstCheckInLabel}</Label>
+            <Label className="mb-2" htmlFor={GOAL_FIELD_ID.checkInDate} required>{firstCheckInLabel}</Label>
             <DatePicker
+              id={GOAL_FIELD_ID.checkInDate}
+              invalid={!!errors.checkInDate}
               value={state.checkInDate}
               onChange={(iso) => onChange({ checkInDate: iso })}
               min={todayISO()}
               placeholder="Select a date"
               disabled={disabled}
             />
+            <InlineFieldError>{errors.checkInDate}</InlineFieldError>
             <p className="text-meta text-text-secondary mt-1">
               After that, the next one falls{' '}
               {CADENCE_META[state.cadence].label.toLowerCase()} from each check-in.
@@ -212,22 +239,25 @@ export default function GoalFormFields({
       {/* Optional target number. A goal with no number is normal — its check-in
           is just the traffic light and the note. */}
       <div className="rounded-card border border-border-light bg-surface-sunken p-4">
-        <p className="text-label font-medium text-text-secondary">Target number (optional)</p>
+        <p className="text-label font-medium text-text-secondary">Target number</p>
         <p className="text-meta text-text-secondary mt-0.5 mb-3">
           Leave blank if this goal isn’t measured by a number. Values are always typed in by a
           person at each check-in — nothing is pulled from anywhere.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label className="mb-2">Target</Label>
+            <Label className="mb-2" htmlFor={GOAL_FIELD_ID.targetValue}>Target</Label>
             <input
-              className={inputClass}
+              id={GOAL_FIELD_ID.targetValue}
+              className={`${inputClass} aria-invalid:border-danger`}
+              aria-invalid={errors.targetValue ? true : undefined}
               value={state.targetValue}
               onChange={(e) => onChange({ targetValue: e.target.value })}
-              placeholder="e.g. 50"
+              placeholder="For example, 50"
               inputMode="decimal"
               disabled={disabled}
             />
+            <InlineFieldError>{errors.targetValue}</InlineFieldError>
           </div>
           <div>
             <Label className="mb-2">Unit</Label>

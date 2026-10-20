@@ -9,9 +9,12 @@ import { goalsApi } from '@/lib/api/goals'
 import type { Goal } from '@/lib/types/goals'
 import GoalFormFields, {
   type EmployeeOption,
+  GOAL_FIELD_ID,
+  type GoalFormErrors,
   type GoalFormState,
 } from './GoalFormFields'
 import { toDateInput } from './shared'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 export default function EditGoalModal({
   isOpen,
@@ -36,6 +39,14 @@ export default function EditGoalModal({
   const { addToast } = useToast()
   const [form, setForm] = useState<GoalFormState | null>(null)
   const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState<GoalFormErrors>({})
+  const guarded = useGuardedClose({
+    open: isOpen && !!form,
+    values: form,
+    noun: 'goal',
+    mode: 'edit',
+    onClose,
+  })
 
   useEffect(() => {
     if (!isOpen) return
@@ -53,21 +64,34 @@ export default function EditGoalModal({
     })
   }, [isOpen, goal])
 
-  const patch = (p: Partial<GoalFormState>) => setForm((f) => (f ? { ...f, ...p } : f))
+  const patch = (p: Partial<GoalFormState>) => {
+    setForm((f) => (f ? { ...f, ...p } : f))
+    setErrors((e) => {
+      const next = { ...e }
+      for (const k of Object.keys(p)) delete next[k as keyof GoalFormErrors]
+      return next
+    })
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form) return
-    if (!form.title.trim()) return addToast('Give the goal a title', 'error')
-    if (!form.ownerUserId) return addToast('Every goal needs one accountable owner', 'error')
-    if (!form.dueDate) return addToast('Set a deadline', 'error')
-    if (form.cadence !== 'none' && !form.checkInDate) {
-      return addToast('Pick when the next check-in is due', 'error')
-    }
 
+    const errs: GoalFormErrors = {}
+    if (!form.title.trim()) errs.title = 'Enter a title for the goal.'
+    if (!form.ownerUserId) errs.ownerUserId = 'Choose the one person accountable for this goal.'
+    if (!form.dueDate) errs.dueDate = 'Choose a deadline for the goal.'
+    if (form.cadence !== 'none' && !form.checkInDate) errs.checkInDate = 'Choose when the next check-in is due.'
     const target = form.targetValue.trim()
-    if (target && isNaN(parseFloat(target.replace(/,/g, '')))) {
-      return addToast('The target must be a number', 'error')
+    if (target && isNaN(parseFloat(target.replace(/,/g, '')))) errs.targetValue = 'Enter the target as a number, like 50.'
+    setErrors(errs)
+    const firstBad = (Object.keys(GOAL_FIELD_ID) as (keyof GoalFormErrors)[]).find((k) => errs[k])
+    if (firstBad) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(GOAL_FIELD_ID[firstBad])
+        ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+      })
+      return
     }
 
     setSaving(true)
@@ -89,11 +113,11 @@ export default function EditGoalModal({
             : new Date(`${form.checkInDate}T00:00:00`).toISOString(),
         status: form.status,
       })
-      addToast('Goal updated', 'success')
+      addToast('Goal saved', 'success')
       onSaved(updated)
       onClose()
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not save the goal', 'error')
+      addToast(err?.response?.data?.message ?? 'Could not save the goal. Try again.', 'error')
     } finally {
       setSaving(false)
     }
@@ -104,7 +128,9 @@ export default function EditGoalModal({
   const clearingTarget = goal.target_value !== null && !form.targetValue.trim()
 
   return (
-    <Modal isOpen={isOpen} onClose={() => !saving && onClose()} title="Edit goal" size="lg">
+    <>
+    {guarded.warning}
+    <Modal isOpen={isOpen} onClose={() => !saving && guarded.requestClose()} title="Edit goal" size="lg">
       <form onSubmit={handleSubmit}>
         <GoalFormFields
           state={form}
@@ -113,6 +139,7 @@ export default function EditGoalModal({
           showStatus
           firstCheckInLabel="Next check-in due"
           disabled={saving}
+          errors={errors}
         />
 
         {clearingTarget && (
@@ -136,12 +163,16 @@ export default function EditGoalModal({
           ) : (
             <span />
           )}
-          <Button type="submit" disabled={saving}>
-            {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
-            {saving ? 'Saving…' : 'Save changes'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
+            <Button type="submit" disabled={saving}>
+              {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
+              {saving ? 'Saving…' : 'Save goal'}
+            </Button>
+          </div>
         </div>
       </form>
     </Modal>
+    </>
   )
 }

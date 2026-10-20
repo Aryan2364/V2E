@@ -14,11 +14,14 @@ import type { Project } from '@/lib/types/projects'
 import GoalFormFields, {
   labelClass,
   type EmployeeOption,
+  GOAL_FIELD_ID,
+  type GoalFormErrors,
   type GoalFormState,
 } from './GoalFormFields'
 import QuickCreateProjectModal from './QuickCreateProjectModal'
 import { formatDate } from './shared'
 import { Label } from '@/components/ui/label'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 const EMPTY: GoalFormState = {
   title: '',
@@ -80,12 +83,20 @@ export default function CreateGoalModal({
 
   const [form, setForm] = useState<GoalFormState>(EMPTY)
   const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState<GoalFormErrors>({})
 
   // Selections + the pools they pick from.
   const [supportingIds, setSupportingIds] = useState<string[]>([])
   const [projectIds, setProjectIds] = useState<string[]>([])
   const [goalOptions, setGoalOptions] = useState<Goal[]>([])
   const [projectOptions, setProjectOptions] = useState<Project[]>([])
+
+  const guarded = useGuardedClose({
+    open: isOpen,
+    values: { form, supportingIds, projectIds },
+    noun: 'goal',
+    onClose,
+  })
 
   // Nested quick-creates.
   const [newGoalOpen, setNewGoalOpen] = useState(false)
@@ -117,7 +128,14 @@ export default function CreateGoalModal({
     loadPools()
   }, [isOpen, defaultOwnerId, defaultFocusArea, loadPools])
 
-  const patch = (p: Partial<GoalFormState>) => setForm((f) => ({ ...f, ...p }))
+  const patch = (p: Partial<GoalFormState>) => {
+    setForm((f) => ({ ...f, ...p }))
+    setErrors((e) => {
+      const next = { ...e }
+      for (const k of Object.keys(p)) delete next[k as keyof GoalFormErrors]
+      return next
+    })
+  }
 
   /** A freshly created supporting goal joins the pool and is selected. */
   function handleGoalCreated(goal: Goal) {
@@ -132,16 +150,22 @@ export default function CreateGoalModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.title.trim()) return addToast('Give the goal a title', 'error')
-    if (!form.ownerUserId) return addToast('Every goal needs one accountable owner', 'error')
-    if (!form.dueDate) return addToast('Set a deadline', 'error')
-    if (form.cadence !== 'none' && !form.checkInDate) {
-      return addToast('Pick when the first check-in is due', 'error')
-    }
 
+    const errs: GoalFormErrors = {}
+    if (!form.title.trim()) errs.title = 'Enter a title for the goal.'
+    if (!form.ownerUserId) errs.ownerUserId = 'Choose the one person accountable for this goal.'
+    if (!form.dueDate) errs.dueDate = 'Choose a deadline for the goal.'
+    if (form.cadence !== 'none' && !form.checkInDate) errs.checkInDate = 'Choose when the first check-in is due.'
     const target = form.targetValue.trim()
-    if (target && isNaN(parseFloat(target.replace(/,/g, '')))) {
-      return addToast('The target must be a number', 'error')
+    if (target && isNaN(parseFloat(target.replace(/,/g, '')))) errs.targetValue = 'Enter the target as a number, like 50.'
+    setErrors(errs)
+    const firstBad = (Object.keys(GOAL_FIELD_ID) as (keyof GoalFormErrors)[]).find((k) => errs[k])
+    if (firstBad) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(GOAL_FIELD_ID[firstBad])
+        ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+      })
+      return
     }
 
     setSaving(true)
@@ -191,7 +215,7 @@ export default function CreateGoalModal({
       onCreated(goal)
       onClose()
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Could not create the goal', 'error')
+      addToast(err?.response?.data?.message ?? 'Could not create the goal. Try again.', 'error')
     } finally {
       setSaving(false)
     }
@@ -199,13 +223,15 @@ export default function CreateGoalModal({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={() => !saving && onClose()} title="New goal" size="lg">
+      {guarded.warning}
+      <Modal isOpen={isOpen} onClose={() => !saving && guarded.requestClose()} title="New goal" size="lg">
         <form onSubmit={handleSubmit}>
           <GoalFormFields
             state={form}
             onChange={patch}
             employees={employees}
             disabled={saving}
+            errors={errors}
           />
 
           {allowLinking && (
@@ -264,8 +290,8 @@ export default function CreateGoalModal({
             </div>
           )}
 
-          {/* Header X is the dismiss, so the footer carries only the primary action. */}
-          <div className="flex justify-end pt-4 mt-4 border-t border-border-light">
+          <div className="flex justify-end gap-2 pt-4 mt-4 border-t border-border-light">
+            <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
             <Button type="submit" disabled={saving}>
               {saving && <Loader2 size={15} className="animate-spin mr-1.5" />}
               {saving ? 'Creating…' : 'Create goal'}
