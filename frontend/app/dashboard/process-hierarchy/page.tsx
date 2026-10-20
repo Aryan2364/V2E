@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { PageHeader } from '@/components/shell/page-header'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 import { processHierarchyApi, type ProcessMapSummary, type ProcessTemplateSummary } from '@/lib/api/process-hierarchy'
 import { Workflow, Plus, ChevronRight, X, Loader2, Layers, Trash2, Search, Star, FolderPlus } from 'lucide-react'
 
@@ -431,15 +432,16 @@ function NameModal({ title, label, initial, confirmLabel, busy, onCancel, onSubm
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <DialogBody>
-          <Label htmlFor="name-modal-input">{label}</Label>
+          <Label htmlFor="name-modal-input" required>{label}</Label>
           <Input
             id="name-modal-input"
             autoFocus value={name} onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && submit()}
-            className="mt-1 max-w-none"
+            className="mt-2 max-w-none"
           />
         </DialogBody>
         <DialogFooter>
+          <Button variant="secondary" onClick={onCancel} disabled={!!busy}>Cancel</Button>
           <Button variant="primary" onClick={submit} disabled={!name.trim() || !!busy} loading={!!busy}>
             {confirmLabel}
           </Button>
@@ -454,7 +456,7 @@ function CreateMapModal({ orgId, parentId, onClose, onCreated }: { orgId: string
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [saving, setSaving] = useState(false)
-  useEscape(onClose)
+  const guarded = useGuardedClose({ open: true, values: { name, description }, noun: 'process map', onClose })
 
   async function submit() {
     if (!name.trim() || saving) return
@@ -463,53 +465,51 @@ function CreateMapModal({ orgId, parentId, onClose, onCreated }: { orgId: string
       const map = await processHierarchyApi.createMap(orgId, { name: name.trim(), description: description.trim() || undefined, parent_map_id: parentId ?? null })
       onCreated(map.id)
     } catch {
-      addToast('Could not create the map. Please try again.', 'error')
+      addToast('Could not create the map. Try again.', 'error')
       setSaving(false)
     }
   }
 
-  return createPortal(
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-surface rounded-card shadow-xl w-full max-w-md p-6 animate-[fadeIn_.15s_ease-out]">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-card-heading font-medium text-text-primary">{parentId ? 'New sub-map' : 'New process map'}</h3>
-          <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors"><X size={18} /></button>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <Label className="mb-2">Name</Label>
-            <input
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && submit()}
-              placeholder="e.g. How Sales Works"
-              className="w-full px-3 py-2.5 text-meta rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted"
-            />
-          </div>
-          <div>
-            <Label className="mb-2">Description</Label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              placeholder="What does this map cover?"
-              className="w-full px-3 py-2.5 text-meta rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted resize-none"
-            />
-          </div>
-        </div>
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={submit}
-            disabled={!name.trim() || saving}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-          >
-            {saving && <Loader2 size={15} className="animate-spin" />} Create Map
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
+  return (
+    <>
+      {guarded.warning}
+      <Dialog open onOpenChange={(next) => { if (!next) guarded.requestClose() }}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle>{parentId ? 'New sub-map' : 'New process map'}</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="flex flex-col gap-4">
+            <div>
+              <Label className="mb-2" htmlFor="create-map-name" required>Name</Label>
+              <Input
+                id="create-map-name"
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && submit()}
+                placeholder="For example, How sales works"
+                className="max-w-none"
+              />
+            </div>
+            <div>
+              <Label className="mb-2" htmlFor="create-map-description">Description</Label>
+              <Textarea
+                id="create-map-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                placeholder="For example, Everything from first enquiry to signed order"
+              />
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
+            <Button onClick={submit} disabled={!name.trim() || saving} loading={saving} loadingLabel="Creating">
+              Create map
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
