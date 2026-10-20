@@ -11,6 +11,8 @@ import {
 import { useAuth } from '@/lib/auth/context'
 import { useToast } from '@/components/ui/Toast'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -147,13 +149,20 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [titleError, setTitleError] = useState('')
+  const guarded = useGuardedClose({ open: true, values: form, noun: 'item', mode: editing ? 'edit' : 'create', onClose })
 
   function set(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }))
   }
 
   async function handleSave() {
-    if (!form.title.trim()) { setError('Title is required'); return }
+    if (!form.title.trim()) {
+      setTitleError('Enter a title for the item.')
+      requestAnimationFrame(() => document.getElementById('policy-item-title')?.focus())
+      return
+    }
+    setTitleError('')
     setSaving(true)
     setError('')
     try {
@@ -179,17 +188,19 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
   }
 
   const inputClass = 'w-full px-3 py-2.5 border border-border rounded-control text-body sm:text-label text-text-primary placeholder:text-text-muted bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
-  const labelClass = 'block text-label font-medium text-text-secondary mb-1.5'
 
   return (
-    <DialogShell title={editing ? 'Edit Item' : 'Add Item'} onClose={onClose} size="lg">
+    <>
+    {guarded.warning}
+    <DialogShell title={editing ? 'Edit item' : 'Add item'} onClose={guarded.requestClose} size="lg">
 
         <DialogBody className="flex flex-col gap-4">
           {error && <div className="text-label text-danger bg-danger-bg border border-danger-border rounded-control px-4 py-3">{error}</div>}
 
           <div>
-            <Label className="mb-2" required>Title</Label>
-            <input type="text" value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="Item title" className={inputClass} />
+            <Label className="mb-2" htmlFor="policy-item-title" required>Title</Label>
+            <input id="policy-item-title" type="text" value={form.title} onChange={(e) => { set('title', e.target.value); if (titleError) setTitleError('') }} placeholder="For example, Leave policy" aria-invalid={titleError ? true : undefined} className={`${inputClass} max-w-[480px] aria-invalid:border-danger`} />
+            <InlineFieldError>{titleError}</InlineFieldError>
           </div>
 
           <div>
@@ -219,31 +230,31 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
               <textarea
                 value={form.content_body}
                 onChange={(e) => set('content_body', e.target.value)}
-                placeholder="Write article content here…"
-                rows={5}
+                                rows={5}
                 className={`${inputClass} resize-none`}
               />
             </div>
           ) : (
             <div>
               <Label className="mb-2">{TYPE_LABELS[form.content_type]} URL</Label>
-              <input type="url" value={form.content_url} onChange={(e) => set('content_url', e.target.value)} placeholder="https://" className={inputClass} />
+              <input type="url" value={form.content_url} onChange={(e) => set('content_url', e.target.value)} placeholder="For example, https://example.com/policy" className={inputClass} />
             </div>
           )}
 
           <div>
             <Label className="mb-2">Description</Label>
-            <textarea value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="Short description…" rows={2} className={`${inputClass} resize-none`} />
+            <textarea value={form.description} onChange={(e) => set('description', e.target.value)} rows={2} className={`${inputClass} resize-none`} />
           </div>
         </DialogBody>
 
         <DialogFooter>
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving} loading={saving}>
-            {editing ? 'Save changes' : 'Add item'}
+          <Button variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving} loading={saving} loadingLabel="Saving">
+            {editing ? 'Save item' : 'Add item'}
           </Button>
         </DialogFooter>
     </DialogShell>
+    </>
   )
 }
 

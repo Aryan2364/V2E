@@ -53,15 +53,15 @@ export default function EditPolicyPage() {
     <div className="max-w-3xl">
       <PolicyBreadcrumb
         trail={[
-          { label: 'Company Policy', href: POLICY_BASE },
+          { label: 'Company policy', href: POLICY_BASE },
           { label: policy.title, href: policyHref(policyId) },
           { label: 'Edit' },
         ]}
       />
-      <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary mb-6 leading-tight">Edit Policy</h1>
+      <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary mb-6 leading-tight">Edit policy</h1>
       <PolicyForm
         initial={{ title: policy.title, description: policy.description ?? '' }}
-        submitLabel="Save changes"
+        submitLabel="Save policy"
         cancelHref={policyHref(policyId)}
         allowed={canEdit}
         deniedReason={POLICY_REASONS.edit}

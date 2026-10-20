@@ -2,8 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Loader2, Lock } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Lock } from 'lucide-react'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { isChanged, useUnsavedChanges } from '@/components/ui/unsaved-changes'
 
 export interface PolicyFormValues {
   title: string
@@ -33,10 +37,23 @@ export default function PolicyForm({
   const [form, setForm] = useState<PolicyFormValues>(initial)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [titleError, setTitleError] = useState('')
+  const router = useRouter()
+  // Leaving with edits asks first, in the create or edit words (kit 11.3 rule 10).
+  const unsaved = useUnsavedChanges({
+    changed: !saving && isChanged(form, initial),
+    noun: 'policy',
+    mode: initial.title ? 'edit' : 'create',
+  })
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.title.trim()) { setError('Title is required'); return }
+    if (!form.title.trim()) {
+      setTitleError('Enter a title for the policy.')
+      requestAnimationFrame(() => document.getElementById('policy-title')?.focus())
+      return
+    }
+    setTitleError('')
     setSaving(true)
     setError('')
     try {
@@ -63,10 +80,10 @@ export default function PolicyForm({
 
   const inputClass =
     'w-full px-3 py-2.5 border border-border rounded-lg text-card-heading sm:text-body text-text-primary placeholder:text-text-muted bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
-  const labelClass = 'block text-body font-medium text-text-secondary mb-1.5'
 
   return (
     <form onSubmit={handleSubmit} className="bg-surface border border-border-light rounded-card shadow-card p-6 flex flex-col gap-4">
+      {unsaved.warning}
       {error && (
         <div className="text-body text-danger bg-danger-bg border border-danger-border rounded-lg px-4 py-3">{error}</div>
       )}
@@ -79,10 +96,12 @@ export default function PolicyForm({
           id="policy-title"
           type="text"
           value={form.title}
-          onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-          placeholder="e.g. Code of Conduct"
-          className={inputClass}
+          onChange={(e) => { setForm((f) => ({ ...f, title: e.target.value })); if (titleError) setTitleError('') }}
+          placeholder="For example, Code of conduct"
+          aria-invalid={titleError ? true : undefined}
+          className={`${inputClass} max-w-[480px] aria-invalid:border-danger`}
         />
+        <InlineFieldError>{titleError}</InlineFieldError>
       </div>
 
       <div>
@@ -91,27 +110,19 @@ export default function PolicyForm({
           id="policy-description"
           value={form.description}
           onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-          placeholder="Brief description of this policy…"
+          placeholder="For example, How we expect everyone to work together"
           rows={3}
           className={`${inputClass} resize-none`}
         />
       </div>
 
       <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
-        <Link
-          href={cancelHref}
-          className="text-center px-4 py-2.5 text-body font-medium text-primary-text bg-surface border-2 border-primary rounded-lg hover:bg-primary-subtle transition-colors"
-        >
+        <Button type="button" variant="secondary" data-leaves-page onClick={() => router.push(cancelHref)} disabled={saving}>
           Cancel
-        </Link>
-        <button
-          type="submit"
-          disabled={saving || allowed !== true}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] sm:min-h-0 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
-        >
-          {saving && <Loader2 size={15} className="animate-spin" />}
+        </Button>
+        <Button type="submit" disabled={saving || allowed !== true} loading={saving} loadingLabel="Saving">
           {submitLabel}
-        </button>
+        </Button>
       </div>
     </form>
   )

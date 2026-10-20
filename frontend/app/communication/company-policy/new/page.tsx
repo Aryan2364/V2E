@@ -14,8 +14,8 @@ export default function NewPolicyPage() {
 
   return (
     <div className="max-w-3xl">
-      <PolicyBreadcrumb trail={[{ label: 'Company Policy', href: POLICY_BASE }, { label: 'New policy' }]} />
-      <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary mb-6 leading-tight">Create Company Policy</h1>
+      <PolicyBreadcrumb trail={[{ label: 'Company policy', href: POLICY_BASE }, { label: 'New policy' }]} />
+      <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary mb-6 leading-tight">Create company policy</h1>
       <PolicyForm
         initial={{ title: '', description: '' }}
         submitLabel="Create policy"
