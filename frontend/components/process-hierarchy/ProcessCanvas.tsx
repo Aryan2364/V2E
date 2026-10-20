@@ -35,6 +35,8 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Tooltip from '@/components/ui/tooltip'
 import { useFlowNav, useIsTouchDevice, CanvasScrollbars, FlowNavStyles } from '@/components/ui/flow-nav'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const edgeTypes = { floating: FloatingEdge, floatingStep: FloatingStepEdge }
 import type { FlowLevel, ProcessConditionKind, ProcessConnection, DiffChangeKind, ProcessPool } from '@/lib/api/process-hierarchy'
@@ -621,24 +623,23 @@ function Inner({
           behind the top-right toolbar; raised z-index keeps it above any panel overlap. */}
       {canEdit && selectedIds.length >= 2 && (
         <Panel position="bottom-center" style={{ zIndex: 20 }}>
-          <div className="flex items-center gap-2 rounded-lg bg-text-primary text-primary-foreground shadow-lg px-3 py-1.5 text-meta">
+          <div className="flex items-center gap-2 rounded-lg border border-border-light bg-surface text-text-primary shadow-menu px-3 py-1.5 text-meta">
             <span className="font-medium">{selectedIds.length} selected</span>
-            <span className="text-primary-foreground/40">·</span>
-            <span className="text-primary-foreground/70">drag to move</span>
+            <span className="text-text-muted">·</span>
+            <span className="text-text-secondary">drag to move</span>
             {onCopyNodes && (
-              <button onClick={() => onCopyNodes(selectedIds)}
-                className="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-[6px] bg-surface/10 hover:bg-surface/20 font-medium transition-colors">
-                <Copy size={12} /> Copy
-              </button>
+              <Button variant="secondary" size="sm" onClick={() => onCopyNodes(selectedIds)} className="ml-1">
+                <Copy size={16} /> Copy
+              </Button>
             )}
             {canEdit && onDeleteNodes && (
-              <button onClick={() => setConfirmDelMany(true)}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-[6px] bg-danger hover:bg-danger-hover font-medium transition-colors">
-                <Trash2 size={12} /> Delete
-              </button>
+              <Button variant="danger" size="sm" onClick={() => setConfirmDelMany(true)}>
+                <Trash2 size={16} /> Delete
+              </Button>
             )}
-            <button onClick={clearSelection} aria-label="Clear selection"
-              className="inline-flex items-center px-1.5 py-1 rounded-[6px] hover:bg-surface/10 text-primary-foreground/80"><X size={13} /></button>
+            <Tooltip label="Clear selection">
+              <Button variant="ghost" size="icon" onClick={clearSelection} aria-label="Clear selection"><X size={16} /></Button>
+            </Tooltip>
           </div>
         </Panel>
       )}
@@ -650,10 +651,10 @@ function Inner({
         <div className="flex items-center gap-1.5">
           {!swimlane && topAreas.length > 0 && (
             <Tooltip label={anyExpanded ? 'Collapse all areas' : 'Unfold all areas in place'}>
-              <button onClick={toggleAll} aria-pressed={anyExpanded}
-                className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-meta font-medium rounded-lg border shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${anyExpanded ? 'bg-primary-subtle border-primary text-primary-text' : 'bg-surface border-border-light text-text-secondary hover:text-text-primary hover:border-border'}`}>
-                {anyExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />} <span className="hidden md:inline">{anyExpanded ? 'Grouped' : 'Whole'}</span>
-              </button>
+              <Button variant="secondary" onClick={toggleAll} aria-pressed={anyExpanded}
+                className={`hidden sm:inline-flex ${anyExpanded ? 'bg-primary-subtle' : ''}`}>
+                {anyExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />} <span className="hidden md:inline">{anyExpanded ? 'Grouped' : 'Whole'}</span>
+              </Button>
             </Tooltip>
           )}
           {topRightExtra}
@@ -668,14 +669,15 @@ function Inner({
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-meta font-medium text-text-primary">Connection</span>
-            <button onClick={() => setEdgeEdit(null)} aria-label="Close" className="text-text-muted hover:text-text-primary"><X size={14} /></button>
+            <Tooltip label="Close"><Button variant="ghost" size="icon" onClick={() => setEdgeEdit(null)} aria-label="Close"><X size={16} /></Button></Tooltip>
           </div>
           <Label className="mb-2">Label</Label>
-          <input
+          <Input
             value={edgeEdit.label}
             onChange={(e) => setEdgeEdit({ ...edgeEdit, label: e.target.value })}
-            placeholder="e.g. Approved"
-            className="w-full px-2.5 py-1.5 text-meta rounded-lg border border-border focus:border-primary focus:outline-hidden mb-2"
+            placeholder="For example, approved"
+            aria-label="Label"
+            className="mb-2"
           />
           {edgeFromDecision && (
             <div className="mb-2">
@@ -699,22 +701,25 @@ function Inner({
             </div>
           )}
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={() => {
                 onUpdateConnection?.(edgeEdit.conn.id, { label: edgeEdit.label.trim(), condition_kind: edgeEdit.conn.condition_kind })
                 setEdgeEdit(null)
               }}
-              className="flex-1 inline-flex items-center justify-center px-3 py-1.5 text-meta font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover"
+              className="flex-1"
             >
               Save
-            </button>
-            <button
-              onClick={() => { onDeleteConnection?.(edgeEdit.conn.id); setEdgeEdit(null) }}
-              aria-label="Delete connection"
-              className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg border border-danger-border text-danger hover:bg-danger-bg"
-            >
-              <Trash2 size={14} />
-            </button>
+            </Button>
+            <Tooltip label="Delete connection">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => { onDeleteConnection?.(edgeEdit.conn.id); setEdgeEdit(null) }}
+                aria-label="Delete connection"
+              >
+                <Trash2 size={16} />
+              </Button>
+            </Tooltip>
           </div>
         </div>
       )}

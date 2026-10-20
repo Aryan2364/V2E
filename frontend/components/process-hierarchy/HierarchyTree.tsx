@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from 'react'
 import { ChevronRight, Search, X, Workflow } from 'lucide-react'
 import { KIND_META } from './kind-meta'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import type { TreeNode } from '@/lib/api/process-hierarchy'
 
 const CONTAINER_KINDS = new Set(['container', 'subprocess'])
@@ -89,15 +90,17 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
         >
           <button
             onClick={(e) => { e.stopPropagation(); if (hasKids) toggle(n.id) }}
-            className={`shrink-0 w-4 h-4 flex items-center justify-center rounded-xs ${hasKids ? 'text-text-muted hover:bg-surface-control-pressed' : 'opacity-0 pointer-events-none'}`}
+            className={`shrink-0 w-4 h-4 flex items-center justify-center rounded-xs outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring ${hasKids ? 'text-text-muted hover:bg-surface-control-pressed' : 'opacity-0 pointer-events-none'}`}
             aria-label={isOpen ? 'Collapse' : 'Expand'}
+            aria-expanded={hasKids ? isOpen : undefined}
+            tabIndex={hasKids ? undefined : -1}
           >
             <ChevronRight size={13} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
           </button>
           <Tooltip label={n.name}>
             <button
               onClick={() => activate(n)}
-              className="flex-1 min-w-0 flex items-center gap-1.5 text-left"
+              className="flex-1 min-w-0 flex items-center gap-1.5 text-left rounded-xs outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
             >
               <span className="shrink-0 text-primary-text">{KIND_META[n.kind].icon}</span>
               <span className={`flex-1 min-w-0 truncate text-meta ${isSelected || isCurrent ? 'text-primary-text font-medium' : 'text-text-primary'}`}>{n.name}</span>
@@ -123,9 +126,9 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
             className="w-full pl-8 pr-8 py-1.5 text-meta rounded-[8px] border border-border bg-surface-sunken focus:bg-surface focus:border-primary focus:outline-hidden text-text-primary placeholder:text-text-muted"
           />
           {query && (
-            <button onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary">
-              <X size={14} />
-            </button>
+            <Button variant="in-field" size="icon-sm" onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-1 top-1/2 -translate-y-1/2">
+              <X size={16} />
+            </Button>
           )}
         </div>
       </div>
@@ -138,7 +141,7 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
             <div className="space-y-0.5">
               {results.map(({ node, path }) => (
                 <button key={node.id} onClick={() => activate(node)}
-                  className="w-full text-left rounded-[6px] px-2 py-1.5 hover:bg-surface-control transition-colors">
+                  className="w-full text-left rounded-lg px-2 py-1.5 hover:bg-surface-control transition-colors outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring">
                   <div className="flex items-center gap-1.5">
                     <span className="shrink-0 text-primary-text">{KIND_META[node.kind].icon}</span>
                     <span className="flex-1 min-w-0 truncate text-meta text-text-primary font-medium">{node.name}</span>
@@ -154,7 +157,7 @@ export default function HierarchyTree({ tree, mapName, currentParentId, selected
           <>
             <button
               onClick={() => onOpenLevel(null)}
-              className={`w-full flex items-center gap-1.5 rounded-[6px] px-2 py-1.5 mb-0.5 text-left transition-colors ${
+              className={`w-full flex items-center gap-1.5 rounded-lg px-2 py-1.5 mb-0.5 text-left transition-colors outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring ${
                 currentParentId === null ? 'bg-primary-subtle' : 'hover:bg-surface-control'
               }`}
             >

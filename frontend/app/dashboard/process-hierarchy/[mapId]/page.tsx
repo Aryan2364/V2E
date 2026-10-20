@@ -32,6 +32,10 @@ import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import { getDepartments } from '@/lib/api/departments'
 import type { Department } from '@/lib/types'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 // Client-only: keeps ReactFlow + html-to-image out of this route's server/SSR bundle.
 const ProcessCanvas = dynamic(() => import('@/components/process-hierarchy/ProcessCanvas'), {
@@ -49,6 +53,9 @@ import {
   Undo2, Redo2,
 } from 'lucide-react'
 import { useMapHistory } from '@/components/process-hierarchy/useMapHistory'
+
+/** Keyboard focus ring for the rows and chips here that stay raw (whole-row menu items, list rows). */
+const FOCUS = 'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring'
 
 const ADD_KINDS: ProcessNodeKind[] = ['task', 'decision', 'subprocess', 'container', 'start_event', 'end_event']
 // Inside a swimlane there are no containers (folders) — a lane holds flow steps and
@@ -609,26 +616,22 @@ export default function ProcessMapExplorerPage() {
   const addStepControl = canEditHere ? (
     <div className="flex items-center gap-1.5">
       {/* Undo / redo — greyed when there's nothing to step to, or while a restore is in flight. */}
-      <div className="inline-flex h-[30px] rounded-lg border border-border-light bg-surface overflow-hidden shadow-xs">
+      <div className="inline-flex items-center rounded-lg border border-border-light bg-surface shadow-xs">
         <Tooltip label="Undo (Ctrl+Z)">
-          <button onClick={history.undo} disabled={!history.canUndo || history.busy} aria-label="Undo (Ctrl+Z)"
-            className="inline-flex items-center px-2 text-text-secondary hover:bg-surface-control disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-            <Undo2 size={15} />
-          </button>
+          <Button variant="ghost" size="icon" onClick={history.undo} disabled={!history.canUndo || history.busy} aria-label="Undo (Ctrl+Z)">
+            <Undo2 size={16} />
+          </Button>
         </Tooltip>
-        <span className="w-px bg-surface-control-pressed" />
         <Tooltip label="Redo (Ctrl+Y)">
-          <button onClick={history.redo} disabled={!history.canRedo || history.busy} aria-label="Redo (Ctrl+Y)"
-            className="inline-flex items-center px-2 text-text-secondary hover:bg-surface-control disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-            <Redo2 size={15} />
-          </button>
+          <Button variant="ghost" size="icon" onClick={history.redo} disabled={!history.canRedo || history.busy} aria-label="Redo (Ctrl+Y)">
+            <Redo2 size={16} />
+          </Button>
         </Tooltip>
       </div>
       <div className="relative">
-      <button onClick={() => { setShowAdd((v) => !v); setAddLanePick(false) }}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover shadow-xs transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1">
-        <Plus size={14} /> Add step
-      </button>
+      <Button aria-haspopup="menu" aria-expanded={showAdd} onClick={() => { setShowAdd((v) => !v); setAddLanePick(false) }}>
+        <Plus size={16} /> Add step
+      </Button>
       {showAdd && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => { setShowAdd(false); setAddLanePick(false) }} />
@@ -637,7 +640,7 @@ export default function ProcessMapExplorerPage() {
               <div className="p-1">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-meta font-medium text-text-primary">New swimlane</span>
-                  <button onClick={() => setAddLanePick(false)} className="text-meta font-medium text-primary-text hover:underline">‹ Back</button>
+                  <Button variant="secondary" size="sm" onClick={() => setAddLanePick(false)}>Back</Button>
                 </div>
                 <DepartmentSelect
                   inline value="" departments={departments} onChange={createLane}
@@ -650,7 +653,7 @@ export default function ProcessMapExplorerPage() {
               <>
                 {ADD_KINDS.map((k) => (
                   <button key={k} onClick={() => addNode(k)}
-                    className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors">
+                    className={`w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors ${FOCUS}`}>
                     <span className="text-primary-text mt-0.5">{KIND_META[k].icon}</span>
                     <span className="min-w-0">
                       <span className="block text-meta font-medium text-text-primary">{KIND_META[k].label}</span>
@@ -664,7 +667,7 @@ export default function ProcessMapExplorerPage() {
                   <>
                     <div className="my-1 border-t border-border-light" />
                     <button onClick={() => setAddLanePick(true)}
-                      className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors">
+                      className={`w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors ${FOCUS}`}>
                       <span className="text-primary-text mt-0.5"><Rows3 size={14} /></span>
                       <span className="min-w-0">
                         <span className="block text-meta font-medium text-text-primary">New swimlane</span>
@@ -675,7 +678,7 @@ export default function ProcessMapExplorerPage() {
                 )}
                 <div className="my-1 border-t border-border-light" />
                 <button onClick={() => { setShowAdd(false); setShowRefPicker(true) }}
-                  className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors">
+                  className={`w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors ${FOCUS}`}>
                   <span className="text-primary-text mt-0.5"><LinkIcon size={14} /></span>
                   <span className="min-w-0">
                     <span className="block text-meta font-medium text-text-primary">Reference a map</span>
@@ -683,7 +686,7 @@ export default function ProcessMapExplorerPage() {
                   </span>
                 </button>
                 <button onClick={() => addNode('note')}
-                  className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors">
+                  className={`w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors ${FOCUS}`}>
                   <span className="text-warning mt-0.5">{KIND_META.note.icon}</span>
                   <span className="min-w-0">
                     <span className="block text-meta font-medium text-text-primary">Note</span>
@@ -692,7 +695,7 @@ export default function ProcessMapExplorerPage() {
                 </button>
                 {clipboard && (
                   <button onClick={pasteClipboard}
-                    className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors">
+                    className={`w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors ${FOCUS}`}>
                     <span className="text-primary-text mt-0.5"><ClipboardPaste size={14} /></span>
                     <span className="min-w-0">
                       <span className="block text-meta font-medium text-text-primary">Paste {clipboard.nodeIds.length} item{clipboard.nodeIds.length !== 1 ? 's' : ''}</span>
@@ -715,96 +718,80 @@ export default function ProcessMapExplorerPage() {
     // see app/dashboard/layout.tsx — then we re-add tight gutters. Canvas pans; the
     // page itself never scrolls.
     <div className="flex flex-col overflow-hidden h-[calc(100dvh-56px)] -mt-6 lg:-mt-8 -mb-6 lg:-mb-8 -mx-4 sm:-mx-6 lg:-mx-8 px-3 lg:px-4 pt-2 pb-2">
-      {/* Single header bar — breadcrumb (left) + working controls (right). ~44px; may wrap on mobile. */}
-      <div className="flex flex-wrap items-center gap-2 min-h-[44px] shrink-0">
-        {/* Breadcrumb — the last crumb is the title. Scrolls horizontally, never wraps. */}
-        <nav aria-label="Breadcrumb"
-          className="flex items-center gap-1.5 min-w-0 flex-1 text-meta text-text-muted overflow-x-auto whitespace-nowrap scrollbar-none">
-          <button onClick={() => router.push('/dashboard/process-hierarchy')}
-            className="inline-flex items-center shrink-0 font-medium text-text-secondary hover:text-primary-text rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary">
-            All maps
-          </button>
-          <span className="text-text-muted">›</span>
-          <button onClick={() => goTo(null)}
-            className={`shrink-0 font-medium hover:text-primary-text max-w-[180px] truncate rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary ${parentId === null && flow.breadcrumb.length === 0 ? 'text-text-primary font-medium' : ''}`}>
-            {map.name}
-          </button>
-          {flow.breadcrumb.map((c, i) => (
-            <span key={c.id} className="flex items-center gap-1.5 shrink-0">
-              <span className="text-text-muted">›</span>
-              {i < flow.breadcrumb.length - 1
-                ? <button onClick={() => goTo(c.id)} className="font-medium hover:text-primary-text max-w-[160px] truncate rounded-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary">{c.name}</button>
-                : <span className="font-medium text-text-primary max-w-[220px] truncate" aria-current="page">{c.name}</span>}
-            </span>
-          ))}
-        </nav>
-
-        {/* Right controls */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {map.can_edit && (
-            <div className="inline-flex h-8 rounded-lg border border-border-light overflow-hidden">
-              <Tooltip label="View">
-                <button onClick={() => setMode('view')}
-                  className={`inline-flex items-center gap-1.5 px-2.5 text-meta font-medium focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${mode === 'view' ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-control'}`}>
-                  <Eye size={14} /> <span className="hidden md:inline">View</span>
-                </button>
-              </Tooltip>
-              <Tooltip label="Edit">
-                <button onClick={() => setMode('edit')}
-                  className={`inline-flex items-center gap-1.5 px-2.5 text-meta font-medium focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${mode === 'edit' ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-control'}`}>
-                  <Pencil size={14} /> <span className="hidden md:inline">Edit</span>
-                </button>
-              </Tooltip>
-            </div>
-          )}
-
-          {/* Visibility filter */}
-          <div className="relative">
-            <Tooltip label={visible ? `Showing ${visible.size}` : 'View all'}>
-              <button onClick={() => setShowFilter((v) => !v)}
-                className={`inline-flex items-center gap-1.5 h-8 px-2.5 text-meta font-medium rounded-lg border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${visible ? 'border-primary text-primary-text bg-primary-subtle' : 'border-border-light text-text-secondary bg-surface hover:bg-surface-control'}`}>
-                <Filter size={14} /> <span className="hidden md:inline">{visible ? `Showing ${visible.size}` : 'Filter'}</span>
-              </button>
-            </Tooltip>
-            {showFilter && (
-              <VisibilityPanel flow={flow} visible={visible} onChange={setVisible} onClose={() => setShowFilter(false)} />
-            )}
-          </div>
-
-          {/* More (secondary tools) + Versions popover anchor */}
-          <div className="relative">
-            <Tooltip label="More">
-              <button onClick={() => setShowMore((v) => !v)}
-                className="inline-flex items-center gap-1.5 h-8 px-2.5 text-meta font-medium rounded-lg border border-border-light text-text-secondary bg-surface hover:bg-surface-control focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1">
-                <MoreHorizontal size={14} /> <span className="hidden md:inline">More</span>
-              </button>
-            </Tooltip>
-            {showMore && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowMore(false)} />
-                <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 bg-surface border border-border-light rounded-lg shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
-                  <MenuItem icon={<PanelLeft size={15} />} label="Outline" onClick={() => { setShowMore(false); setShowTree(true) }} />
-                  {flow.nodes.length > 0 && (
-                    <MenuItem icon={<Download size={15} />} label="Export as PNG" onClick={() => { setShowMore(false); exportPngRef.current?.() }} />
-                  )}
-                  <MenuItem icon={<History size={15} />} label="Versions & compare" onClick={() => { setShowMore(false); setShowVersions(true) }} />
-                  {map.can_edit && <MenuItem icon={<FolderOpen size={15} />} label="Document library" onClick={() => { setShowMore(false); setShowDocs(true) }} />}
-                  <MenuItem icon={<Save size={15} />} label="Save as template" onClick={() => { setShowMore(false); setShowSaveTpl(true) }} />
-                  {map.is_owner && (
-                    <>
-                      <div className="my-1 h-px bg-surface-control" />
-                      <MenuItem icon={<Trash2 size={15} />} label="Delete this map" danger onClick={() => { setShowMore(false); setShowDeleteMap(true) }} />
-                    </>
-                  )}
+      {/* Page header — map / level title, the way back (trail), and the working controls. */}
+      <div className="shrink-0 [&>nav]:mb-2 [&>div]:mb-2">
+        <PageHeader
+          title={flow.breadcrumb.length > 0 ? flow.breadcrumb[flow.breadcrumb.length - 1].name : map.name}
+          trail={[{ label: 'All maps', href: '/dashboard/process-hierarchy' }]}
+          meta={
+            flow.breadcrumb.length > 0 ? (
+              <span className="inline-flex flex-wrap items-center gap-1.5">
+                <button onClick={() => goTo(null)} className={`max-w-[180px] truncate rounded-xs text-primary-text underline ${FOCUS}`}>{map.name}</button>
+                {flow.breadcrumb.slice(0, -1).map((c) => (
+                  <span key={c.id} className="inline-flex items-center gap-1.5">
+                    <span aria-hidden>›</span>
+                    <button onClick={() => goTo(c.id)} className={`max-w-[160px] truncate rounded-xs text-primary-text underline ${FOCUS}`}>{c.name}</button>
+                  </span>
+                ))}
+              </span>
+            ) : undefined
+          }
+          actions={
+            <>
+              {map.can_edit && (
+                <div className="inline-flex items-center gap-1" role="group" aria-label="Mode">
+                  <Button variant="secondary" aria-pressed={mode === 'view'} onClick={() => setMode('view')} className={mode === 'view' ? 'bg-primary-subtle' : undefined}>
+                    <Eye size={16} /> <span className="hidden md:inline">View</span>
+                  </Button>
+                  <Button variant="secondary" aria-pressed={mode === 'edit'} onClick={() => setMode('edit')} className={mode === 'edit' ? 'bg-primary-subtle' : undefined}>
+                    <Pencil size={16} /> <span className="hidden md:inline">Edit</span>
+                  </Button>
                 </div>
-              </>
-            )}
-            {showVersions && (
-              <VersionsPanel orgId={orgId} mapId={mapId} canEdit={map.can_edit}
-                onClose={() => setShowVersions(false)} onRestored={() => refresh()} onCompare={runCompare} />
-            )}
-          </div>
-        </div>
+              )}
+
+              {/* Visibility filter */}
+              <div className="relative">
+                <Button variant="secondary" aria-expanded={showFilter} onClick={() => setShowFilter((v) => !v)} className={visible ? 'bg-primary-subtle' : undefined}>
+                  <Filter size={16} /> <span className="hidden md:inline">{visible ? `Showing ${visible.size}` : 'Filter'}</span>
+                </Button>
+                {showFilter && (
+                  <VisibilityPanel flow={flow} visible={visible} onChange={setVisible} onClose={() => setShowFilter(false)} />
+                )}
+              </div>
+
+              {/* More (secondary tools) + Versions popover anchor */}
+              <div className="relative">
+                <Button variant="secondary" aria-haspopup="menu" aria-expanded={showMore} onClick={() => setShowMore((v) => !v)}>
+                  <MoreHorizontal size={16} /> <span className="hidden md:inline">More</span>
+                </Button>
+                {showMore && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowMore(false)} />
+                    <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-52 bg-surface border border-border-light rounded-lg shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
+                      <MenuItem icon={<PanelLeft size={15} />} label="Outline" onClick={() => { setShowMore(false); setShowTree(true) }} />
+                      {flow.nodes.length > 0 && (
+                        <MenuItem icon={<Download size={15} />} label="Export as PNG" onClick={() => { setShowMore(false); exportPngRef.current?.() }} />
+                      )}
+                      <MenuItem icon={<History size={15} />} label="Versions & compare" onClick={() => { setShowMore(false); setShowVersions(true) }} />
+                      {map.can_edit && <MenuItem icon={<FolderOpen size={15} />} label="Document library" onClick={() => { setShowMore(false); setShowDocs(true) }} />}
+                      <MenuItem icon={<Save size={15} />} label="Save as template" onClick={() => { setShowMore(false); setShowSaveTpl(true) }} />
+                      {map.is_owner && (
+                        <>
+                          <div className="my-1 h-px bg-surface-control" />
+                          <MenuItem icon={<Trash2 size={15} />} label="Delete this map" danger onClick={() => { setShowMore(false); setShowDeleteMap(true) }} />
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+                {showVersions && (
+                  <VersionsPanel orgId={orgId} mapId={mapId} canEdit={map.can_edit}
+                    onClose={() => setShowVersions(false)} onRestored={() => refresh()} onCompare={runCompare} />
+                )}
+              </div>
+            </>
+          }
+        />
       </div>
 
       {/* Compare banner */}
@@ -820,9 +807,9 @@ export default function ProcessMapExplorerPage() {
             <span className="inline-flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-warning" /> changed</span>
             <span className="inline-flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-danger" /> removed</span>
           </span>
-          <button onClick={exitCompare} className="ml-auto inline-flex items-center gap-1 text-meta font-medium text-primary-foreground/90 hover:text-primary-foreground">
-            <X size={14} /> Exit compare
-          </button>
+          <Button variant="secondary" size="sm" onClick={exitCompare} className="ml-auto">
+            <X size={16} /> Exit compare
+          </Button>
         </div>
       )}
 
@@ -936,77 +923,66 @@ export default function ProcessMapExplorerPage() {
       )}
 
       {/* Decision branch chooser — "what does this connection mean?" Cancel breaks the connection. */}
-      {branchPick && createPortal(
-        <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={cancelBranch} />
-          <div className="relative bg-surface rounded-card shadow-xl w-full max-w-xs p-4 animate-[fadeIn_.15s_ease-out]">
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="text-body font-medium text-text-primary">What does this branch mean?</h3>
-              <button onClick={cancelBranch} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
-            </div>
-            <p className="text-meta text-text-muted mb-3">Pick the outcome for this route out of the decision.</p>
-            <div className="flex gap-2">
-              <button onClick={() => chooseBranch('yes')}
-                className="flex-1 px-3 py-2 rounded-lg text-body font-medium text-primary-foreground bg-success hover:bg-success">Yes</button>
-              <button onClick={() => chooseBranch('no')}
-                className="flex-1 px-3 py-2 rounded-lg text-body font-medium text-primary-foreground bg-danger hover:bg-danger-hover">No</button>
-            </div>
-          </div>
-        </div>,
-        document.body,
+      {branchPick && (
+        <Dialog open onOpenChange={(next) => { if (!next) cancelBranch() }}>
+          <DialogContent size="sm">
+            <DialogHeader>
+              <DialogTitle>What does this branch mean?</DialogTitle>
+            </DialogHeader>
+            <DialogBody>
+              <p className="text-label text-text-secondary">Pick the outcome for this route out of the decision.</p>
+            </DialogBody>
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => chooseBranch('no')}>No</Button>
+              <Button onClick={() => chooseBranch('yes')}>Yes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Change a lane's department — clicking the lane name. Warns how many steps move with it. */}
-      {laneRename && createPortal(
-        <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setLaneRename(null)} />
-          <div className="relative bg-surface rounded-card shadow-xl w-full max-w-sm p-4 animate-[fadeIn_.15s_ease-out]">
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="text-body font-medium text-text-primary">Change lane&rsquo;s department</h3>
-              <button onClick={() => setLaneRename(null)} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
-            </div>
-            {(() => {
-              const count = flow?.nodes.filter((n) => n.pool === 'company' && n.department_id === laneRename.deptId).length ?? 0
-              return (
-                <>
-                  <p className="text-meta text-text-muted mb-2.5">
-                    Re-point <span className="font-medium text-text-primary">{laneRename.name}</span> at another department.{' '}
-                    {count > 0
-                      ? <>All <span className="font-medium text-warning">{count} step{count !== 1 ? 's' : ''}</span> in this lane will move to it.</>
-                      : <>This lane is empty.</>}
-                  </p>
-                  <DepartmentSelect
-                    inline value="" departments={departments} onChange={applyLaneRename}
-                    placeholder="Move to which department"
-                    lockedReason={(id) => (id === laneRename.deptId ? 'Current lane' : null)}
-                  />
-                  {count === 0 && (
-                    <button onClick={removeLane}
-                      className="mt-3 w-full px-3 py-2 rounded-lg text-meta font-medium text-danger border border-danger-border hover:bg-danger-bg transition-colors">
-                      Remove this empty lane
-                    </button>
-                  )}
-                </>
-              )
-            })()}
-          </div>
-        </div>,
-        document.body,
-      )}
+      {laneRename && (() => {
+        const count = flow?.nodes.filter((n) => n.pool === 'company' && n.department_id === laneRename.deptId).length ?? 0
+        return (
+          <Dialog open onOpenChange={(next) => { if (!next) setLaneRename(null) }}>
+            <DialogContent size="sm">
+              <DialogHeader>
+                <DialogTitle>Change lane&rsquo;s department</DialogTitle>
+              </DialogHeader>
+              <DialogBody>
+                <p className="text-label text-text-secondary mb-3">
+                  Re-point <span className="font-medium text-text-primary">{laneRename.name}</span> at another department.{' '}
+                  {count > 0
+                    ? <>All <span className="font-medium text-warning">{count} step{count !== 1 ? 's' : ''}</span> in this lane will move to it.</>
+                    : <>This lane is empty.</>}
+                </p>
+                <DepartmentSelect
+                  inline value="" departments={departments} onChange={applyLaneRename}
+                  placeholder="Move to which department"
+                  lockedReason={(id) => (id === laneRename.deptId ? 'Current lane' : null)}
+                />
+              </DialogBody>
+              {count === 0 && (
+                <DialogFooter>
+                  <Button variant="danger" onClick={removeLane}>Remove this empty lane</Button>
+                </DialogFooter>
+              )}
+            </DialogContent>
+          </Dialog>
+        )
+      })()}
 
       {/* Lane "+" picker — choose what kind of step to drop into the chosen lane. */}
-      {laneAdd && createPortal(
-        <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setLaneAdd(null)} />
-          <div className="relative bg-surface rounded-card shadow-xl w-full max-w-xs p-4 animate-[fadeIn_.15s_ease-out]">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-body font-medium text-text-primary">Add to this lane</h3>
-              <button onClick={() => setLaneAdd(null)} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
-            </div>
-            <div className="space-y-0.5">
+      {laneAdd && (
+        <Dialog open onOpenChange={(next) => { if (!next) setLaneAdd(null) }}>
+          <DialogContent size="sm">
+            <DialogHeader>
+              <DialogTitle>Add to this lane</DialogTitle>
+            </DialogHeader>
+            <DialogBody className="space-y-0.5">
               {LANE_ADD_KINDS.map((k) => (
                 <button key={k} onClick={() => addLaneKind(k)}
-                  className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors">
+                  className={`w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors ${FOCUS}`}>
                   <span className="text-primary-text mt-0.5">{KIND_META[k].icon}</span>
                   <span className="min-w-0">
                     <span className="block text-meta font-medium text-text-primary">{KIND_META[k].label}</span>
@@ -1014,10 +990,9 @@ export default function ProcessMapExplorerPage() {
                   </span>
                 </button>
               ))}
-            </div>
-          </div>
-        </div>,
-        document.body,
+            </DialogBody>
+          </DialogContent>
+        </Dialog>
       )}
 
       <ConfirmDialog
@@ -1040,60 +1015,47 @@ function ReferenceMapModal({ orgId, excludeId, onClose, onPick }: {
 }) {
   const [maps, setMaps] = useState<ProcessMapSummary[] | null>(null)
   const [q, setQ] = useState('')
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
   useEffect(() => { processHierarchyApi.listMaps(orgId).then(setMaps).catch(() => setMaps([])) }, [orgId])
   const query = q.trim().toLowerCase()
   const filtered = (maps ?? []).filter((m) => m.id !== excludeId && m.name.toLowerCase().includes(query))
-  return createPortal(
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-surface rounded-card shadow-xl w-full max-w-md max-h-[80vh] flex flex-col animate-[fadeIn_.15s_ease-out]">
-        <div className="flex items-center gap-2 px-4 py-4 border-b border-border-light">
-          <LinkIcon size={16} className="text-primary-text" />
-          <h3 className="text-card-heading font-medium text-text-primary">Reference a map</h3>
-          <button onClick={onClose} className="ml-auto text-text-muted hover:text-text-primary"><X size={18} /></button>
-        </div>
-        <div className="px-4 pt-3 pb-2">
-          <div className="relative">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
-            <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search maps…"
-              className="w-full pl-8 pr-3 py-2 text-meta rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary" />
+  return (
+    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
+      <DialogContent size="md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><LinkIcon size={16} /> Reference a map</DialogTitle>
+        </DialogHeader>
+        <DialogBody className="flex flex-col gap-3">
+          <Input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search maps…" aria-label="Search maps" className="max-w-none" />
+          <div>
+            {maps === null ? (
+              <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-primary-text" /></div>
+            ) : filtered.length === 0 ? (
+              <p className="text-meta text-text-muted text-center py-8">No other maps{q ? ' match' : ' yet'}.</p>
+            ) : (
+              <div className="space-y-0.5">
+                {filtered.map((m) => (
+                  <button key={m.id} onClick={() => onPick({ id: m.id, name: m.name })}
+                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors ${FOCUS}`}>
+                    <Workflow size={16} className="shrink-0 text-primary-text" />
+                    <span className="truncate text-meta text-text-primary">{m.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-        <div className="flex-1 overflow-y-auto px-3 pb-3">
-          {maps === null ? (
-            <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-primary-text" /></div>
-          ) : filtered.length === 0 ? (
-            <p className="text-meta text-text-muted text-center py-8">No other maps{q ? ' match' : ' yet'}.</p>
-          ) : (
-            <div className="space-y-0.5">
-              {filtered.map((m) => (
-                <button key={m.id} onClick={() => onPick({ id: m.id, name: m.name })}
-                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-surface-control text-left transition-colors">
-                  <Workflow size={15} className="shrink-0 text-primary-text" />
-                  <span className="truncate text-meta text-text-primary">{m.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        <p className="px-4 py-2.5 border-t border-border-light text-meta text-text-muted">
-          Drops an instance that opens the chosen map. Edits to that map show wherever it’s referenced.
-        </p>
-      </div>
-    </div>,
-    document.body,
+          <p className="text-meta text-text-muted">
+            Drops an instance that opens the chosen map. Edits to that map show wherever it’s referenced.
+          </p>
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
   )
 }
 
 function MenuItem({ icon, label, onClick, danger }: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean }) {
   return (
     <button onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-meta font-medium transition-colors ${danger ? 'text-danger hover:bg-danger-bg' : 'text-text-primary hover:bg-surface-control'}`}>
+      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-meta font-medium transition-colors ${FOCUS} ${danger ? 'text-danger hover:bg-danger-bg' : 'text-text-primary hover:bg-surface-control'}`}>
       <span className={danger ? 'text-danger' : 'text-text-secondary'}>{icon}</span> {label}
     </button>
   )
@@ -1106,44 +1068,37 @@ function SaveTemplateModal({ orgId, mapId, mapName, onClose }: {
   const [name, setName] = useState(`${mapName} template`)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
   async function save() {
     if (!name.trim() || busy) return
     setBusy(true)
     try { await processHierarchyApi.saveAsTemplate(orgId, mapId, { name: name.trim() }); setDone(true); setTimeout(onClose, 900) }
     catch { toast.error('Could not save the template. Please try again.'); setBusy(false) }
   }
-  return createPortal(
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-surface rounded-card shadow-xl w-full max-w-md p-6 animate-[fadeIn_.15s_ease-out]">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-card-heading font-medium text-text-primary">Save as template</h3>
-          <button onClick={onClose} className="text-text-muted hover:text-text-primary"><X size={18} /></button>
-        </div>
+  return (
+    <Dialog open onOpenChange={(next) => { if (!next && !busy) onClose() }}>
+      <DialogContent size="md">
+        <DialogHeader>
+          <DialogTitle>Save as template</DialogTitle>
+        </DialogHeader>
         {done ? (
-          <p className="text-success text-body inline-flex items-center gap-2 py-4"><Check size={16} /> Template saved.</p>
+          <DialogBody>
+            <p className="text-success text-body inline-flex items-center gap-2 py-4"><Check size={16} /> Template saved.</p>
+          </DialogBody>
         ) : (
           <>
-            <Label className="mb-2">Template name</Label>
-            <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && save()}
-              className="w-full px-3 py-2.5 text-meta rounded-lg border border-border focus:border-primary focus:outline-hidden" />
-            <p className="text-meta text-text-muted mt-1.5">Freezes this map’s current structure so you can spin up new maps from it later.</p>
-            <div className="flex justify-end mt-4">
-              <button onClick={save} disabled={!name.trim() || busy}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
-                {busy && <Loader2 size={15} className="animate-spin" />} Save template
-              </button>
-            </div>
+            <DialogBody>
+              <Label className="mb-2" htmlFor="save-template-name" required>Template name</Label>
+              <Input id="save-template-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && save()} className="max-w-none" />
+              <p className="text-meta text-text-muted mt-2">Freezes this map’s current structure so you can spin up new maps from it later.</p>
+            </DialogBody>
+            <DialogFooter>
+              <Button variant="secondary" onClick={onClose} disabled={busy}>Cancel</Button>
+              <Button onClick={save} disabled={!name.trim()} loading={busy} loadingLabel="Saving">Save template</Button>
+            </DialogFooter>
           </>
         )}
-      </div>
-    </div>,
-    document.body,
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -1173,7 +1128,7 @@ function DiffPanel({ diff, onClose, onJump }: {
           <GitCompare size={16} className="text-primary-text" />
           <span className="text-body font-medium text-text-primary">Changes</span>
           <span className="text-meta text-text-muted">{diff.summary.total_changes} total</span>
-          <button onClick={onClose} className="ml-auto text-text-muted hover:text-text-primary"><X size={18} /></button>
+          <Tooltip label="Close"><Button variant="ghost" size="icon" onClick={onClose} aria-label="Close" className="ml-auto"><X size={16} /></Button></Tooltip>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 text-meta">
           {diff.summary.total_changes === 0 && (
@@ -1184,7 +1139,7 @@ function DiffPanel({ diff, onClose, onJump }: {
             <Section title="Nodes">
               {diff.nodes.map((n) => (
                 <button key={n.id} onClick={() => onJump(n.parent_node_id, n.id, n.change === 'removed')}
-                  className="w-full text-left flex items-start gap-2 px-2 py-1.5 rounded-[6px] hover:bg-surface-sunken">
+                  className={`w-full text-left flex items-start gap-2 px-2 py-1.5 rounded-lg hover:bg-surface-sunken ${FOCUS}`}>
                   <span className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: CHANGE_COLOR[n.change] }} />
                   <span className="flex-1 min-w-0">
                     <span className="text-text-primary font-medium">{n.name}</span>
@@ -1202,7 +1157,7 @@ function DiffPanel({ diff, onClose, onJump }: {
             <Section title="Connections">
               {diff.connections.map((c) => (
                 <button key={c.id} onClick={() => onJump(c.parent_node_id, null, false)}
-                  className="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded-[6px] hover:bg-surface-sunken">
+                  className={`w-full text-left flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-surface-sunken ${FOCUS}`}>
                   <span className="w-2 h-2 rounded-full shrink-0" style={{ background: CHANGE_COLOR[c.change] }} />
                   <span className="text-text-secondary capitalize">{c.change} connection</span>
                   {c.fields.length > 0 && <span className="text-meta text-text-muted">({c.fields.map((f) => FIELD_LABEL[f.field] ?? f.field).join(', ')})</span>}
@@ -1232,7 +1187,7 @@ function DiffPanel({ diff, onClose, onJump }: {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-meta font-medium text-text-muted uppercase tracking-wide mb-1">{title}</p>
+      <p className="text-meta font-medium text-text-muted mb-1">{title}</p>
       <div className="space-y-0.5">{children}</div>
     </div>
   )
@@ -1255,12 +1210,13 @@ function VisibilityPanel({ flow, visible, onChange, onClose }: {
       <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 bg-surface border border-border-light rounded-lg shadow-lg p-3 animate-[popIn_.12s_ease-out]">
         <div className="flex items-center justify-between mb-2">
           <span className="text-meta font-medium text-text-primary">Show nodes</span>
-          <button onClick={() => onChange(null)} className="text-meta font-medium text-primary-text hover:underline">View all</button>
+          <Button variant="secondary" size="sm" onClick={() => onChange(null)}>View all</Button>
         </div>
         <div className="max-h-64 overflow-y-auto space-y-0.5">
           {flow.nodes.map((n) => (
             <button key={n.id} onClick={() => toggle(n.id)}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[6px] hover:bg-surface-sunken text-left text-meta">
+              role="checkbox" aria-checked={isShown(n.id)}
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-surface-sunken text-left text-meta ${FOCUS}`}>
               <span className={`w-4 h-4 rounded-xs border flex items-center justify-center shrink-0 ${isShown(n.id) ? 'bg-primary border-primary' : 'border-border'}`}>
                 {isShown(n.id) && <Check size={12} className="text-primary-foreground" />}
               </span>
@@ -1319,12 +1275,12 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
       <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-80 bg-surface border border-border-light rounded-lg shadow-lg p-3 animate-[popIn_.12s_ease-out]">
         <div className="flex items-center justify-between mb-2">
           <span className="text-meta font-medium text-text-primary">Saved versions</span>
-          <button onClick={onClose} className="text-text-muted hover:text-text-primary"><X size={15} /></button>
+          <Tooltip label="Close"><Button variant="ghost" size="icon" onClick={onClose} aria-label="Close"><X size={16} /></Button></Tooltip>
         </div>
 
         {/* Compare */}
         <div className="mb-3 pb-3 border-b border-border-light">
-          <p className="text-meta font-medium text-text-muted uppercase tracking-wide mb-1.5">Compare (as-is → to-be)</p>
+          <p className="text-meta font-medium text-text-muted mb-1.5">Compare (as-is → to-be)</p>
           <div className="flex items-center gap-1.5">
             <div className="flex-1 min-w-0">
               <StyledSelect value={baseRef} onChange={setBaseRef} placeholder="From…"
@@ -1336,21 +1292,21 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
                 options={refOptions} size="sm" />
             </div>
           </div>
-          <button disabled={!canCompare} onClick={() => onCompare(baseRef, targetRef, labelOf(baseRef), labelOf(targetRef))}
-            className="mt-2 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-meta font-medium rounded-lg bg-text-primary text-primary-foreground hover:bg-text-secondary disabled:bg-surface-control-pressed disabled:text-text-muted">
-            <GitCompare size={14} /> Compare
-          </button>
+          <Button variant="secondary" disabled={!canCompare} onClick={() => onCompare(baseRef, targetRef, labelOf(baseRef), labelOf(targetRef))}
+            className="mt-2 w-full">
+            <GitCompare size={16} /> Compare
+          </Button>
         </div>
 
         {canEdit && (
           <div className="flex items-center gap-2 mb-3">
-            <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. As-Is 2026"
-              onKeyDown={(e) => e.key === 'Enter' && create()}
-              className="flex-1 px-2.5 py-1.5 text-meta rounded-lg border border-border focus:border-primary focus:outline-hidden" />
-            <button onClick={create} disabled={!label.trim() || busy} aria-label="Save version"
-              className="shrink-0 w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted">
-              {busy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={15} />}
-            </button>
+            <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="For example, as-is 2026" aria-label="Version name"
+              onKeyDown={(e) => e.key === 'Enter' && create()} className="flex-1" />
+            <Tooltip label="Save version">
+              <Button size="icon" onClick={create} disabled={!label.trim()} loading={busy} aria-label="Save version">
+                <Plus size={16} />
+              </Button>
+            </Tooltip>
           </div>
         )}
         <div className="max-h-64 overflow-y-auto space-y-1">
@@ -1364,10 +1320,9 @@ function VersionsPanel({ orgId, mapId, canEdit, onClose, onRestored, onCompare }
                 </div>
                 {canEdit && (
                   <Tooltip label="Restore this version">
-                    <button onClick={() => setConfirmRestore(s)}
-                      className="text-text-secondary hover:text-primary-text shrink-0 inline-flex items-center gap-1 text-meta font-medium">
-                      <RotateCcw size={13} /> Restore
-                    </button>
+                    <Button variant="secondary" size="sm" onClick={() => setConfirmRestore(s)} className="shrink-0">
+                      <RotateCcw size={16} /> Restore
+                    </Button>
                   </Tooltip>
                 )}
               </div>

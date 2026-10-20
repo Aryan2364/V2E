@@ -22,6 +22,9 @@ import { Workflow, Plus, ChevronRight, X, Loader2, Layers, Trash2, Search, Star,
 
 const LEAF = 'process_hierarchy.map.manage'
 
+/** Keyboard focus ring for the raw (whole-row / chip) buttons that stay raw on this page. */
+const FOCUS = 'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring'
+
 /** Close-on-Escape for a modal/overlay. */
 function useEscape(onEscape: () => void) {
   useEffect(() => {
@@ -98,12 +101,13 @@ export default function ProcessHierarchyListPage() {
     return (
       <div key={m.id}>
         <div className="group flex items-center gap-1 rounded-lg pr-2 hover:bg-surface-control transition-colors" style={{ paddingLeft: 4 + depth * 18 }}>
-          <button onClick={() => kids.length && toggle(m.id)} aria-label={isOpen ? 'Collapse' : 'Expand'}
-            className={`shrink-0 w-5 h-5 flex items-center justify-center rounded-xs ${kids.length ? 'text-text-muted hover:bg-surface-control-pressed' : 'opacity-0 pointer-events-none'}`}>
-            <ChevronRight size={14} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-          </button>
+          <Button variant="ghost" size="icon" onClick={() => kids.length && toggle(m.id)} aria-label={isOpen ? 'Collapse' : 'Expand'}
+            aria-expanded={kids.length ? isOpen : undefined} tabIndex={kids.length ? undefined : -1}
+            className={kids.length ? undefined : 'invisible pointer-events-none'}>
+            <ChevronRight size={16} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+          </Button>
           <Tooltip label={m.name}>
-            <button onClick={() => router.push(`/dashboard/process-hierarchy/${m.id}`)} className="flex-1 min-w-0 flex items-center gap-2 py-2 text-left">
+            <button onClick={() => router.push(`/dashboard/process-hierarchy/${m.id}`)} className={`flex-1 min-w-0 flex items-center gap-2 py-2 text-left rounded-lg ${FOCUS}`}>
               <Workflow size={16} className="shrink-0 text-primary-text" />
               <span className="truncate text-meta font-medium text-text-primary">{m.name}</span>
               {m.node_count > 0 && (
@@ -123,15 +127,14 @@ export default function ProcessHierarchyListPage() {
           </Tooltip>
           <div className="shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
             <Tooltip label={m.is_pinned ? 'Unpin' : 'Pin to top'}>
-              <button onClick={() => togglePin(m)} aria-label="Pin"
-                className={`w-7 h-7 flex items-center justify-center rounded-[6px] hover:bg-surface-control-pressed ${m.is_pinned ? 'text-warning' : 'text-text-muted hover:text-text-primary'}`}>
-                <Star size={14} fill={m.is_pinned ? 'var(--warning)' : 'none'} />
-              </button>
+              <Button variant="ghost" size="icon" onClick={() => togglePin(m)} aria-label={m.is_pinned ? 'Unpin' : 'Pin to top'} aria-pressed={!!m.is_pinned}
+                className={m.is_pinned ? 'text-warning' : undefined}>
+                <Star size={16} fill={m.is_pinned ? 'var(--warning)' : 'none'} />
+              </Button>
             </Tooltip>
             {canCreate && (
               <Tooltip label="Add a sub-map here">
-                <button onClick={() => setCreateParent(m.id)} aria-label="Add sub-map"
-                  className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-primary-text hover:bg-surface-control-pressed"><FolderPlus size={14} /></button>
+                <Button variant="ghost" size="icon" onClick={() => setCreateParent(m.id)} aria-label="Add sub-map"><FolderPlus size={16} /></Button>
               </Tooltip>
             )}
           </div>
@@ -149,15 +152,14 @@ export default function ProcessHierarchyListPage() {
       <div key={m.id} className="group relative flex flex-col bg-surface border border-border-light rounded-card shadow-card hover:border-primary-border hover:shadow-md transition-all">
         <div className="absolute top-2.5 right-2.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
           <Tooltip label={m.is_pinned ? 'Unpin' : 'Pin to top'}>
-            <button onClick={() => togglePin(m)} aria-label="Pin"
-              className={`w-7 h-7 flex items-center justify-center rounded-[6px] hover:bg-surface-control ${m.is_pinned ? 'text-warning' : 'text-text-muted hover:text-text-primary'}`}>
-              <Star size={15} fill={m.is_pinned ? 'var(--warning)' : 'none'} />
-            </button>
+            <Button variant="ghost" size="icon" onClick={() => togglePin(m)} aria-label={m.is_pinned ? 'Unpin' : 'Pin to top'} aria-pressed={!!m.is_pinned}
+              className={m.is_pinned ? 'text-warning' : undefined}>
+              <Star size={16} fill={m.is_pinned ? 'var(--warning)' : 'none'} />
+            </Button>
           </Tooltip>
           {canCreate && (
             <Tooltip label="Add a sub-map here">
-              <button onClick={() => setCreateParent(m.id)} aria-label="Add sub-map"
-                className="w-7 h-7 flex items-center justify-center rounded-[6px] text-text-muted hover:text-primary-text hover:bg-surface-control"><FolderPlus size={15} /></button>
+              <Button variant="ghost" size="icon" onClick={() => setCreateParent(m.id)} aria-label="Add sub-map"><FolderPlus size={16} /></Button>
             </Tooltip>
           )}
         </div>
@@ -165,10 +167,10 @@ export default function ProcessHierarchyListPage() {
             card is the SAME height whether or not it has sub-maps. */}
         <div className="p-4 flex items-start gap-3">
           <button onClick={() => router.push(`/dashboard/process-hierarchy/${m.id}`)} aria-label={`Open ${m.name}`}
-            className="shrink-0 w-10 h-10 rounded-lg bg-primary-subtle flex items-center justify-center hover:bg-primary-subtle transition-colors"><Workflow size={20} className="text-primary-text" /></button>
+            className={`shrink-0 w-10 h-10 rounded-lg bg-primary-subtle flex items-center justify-center transition-colors ${FOCUS}`}><Workflow size={20} className="text-primary-text" /></button>
           <div className="min-w-0 flex-1 pr-8">
             <Tooltip label={m.name}>
-              <button onClick={() => router.push(`/dashboard/process-hierarchy/${m.id}`)} className="block w-full text-left">
+              <button onClick={() => router.push(`/dashboard/process-hierarchy/${m.id}`)} className={`block w-full text-left rounded-xs ${FOCUS}`}>
                 <span className="block text-meta font-medium text-text-primary truncate">{m.name}</span>
               </button>
             </Tooltip>
@@ -182,7 +184,8 @@ export default function ProcessHierarchyListPage() {
               {m.is_owner && <span className="text-meta font-medium rounded-full px-1.5 py-0.5 bg-surface-control text-text-secondary">Owner</span>}
               {kids.length > 0 && (
                 <button onClick={() => toggle(m.id)}
-                  className="inline-flex items-center gap-0.5 text-meta font-medium text-primary-text hover:bg-primary-subtle rounded-full px-1.5 py-0.5 transition-colors">
+                  aria-expanded={isOpen}
+                  className={`inline-flex items-center gap-0.5 text-meta font-medium text-primary-text hover:bg-primary-subtle rounded-full px-1.5 py-0.5 transition-colors ${FOCUS}`}>
                   <ChevronRight size={12} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
                   {kids.length} inside
                 </button>
@@ -221,7 +224,7 @@ export default function ProcessHierarchyListPage() {
                 <Layers size={16} /> From template
               </Button>
               <Button variant="primary" onClick={() => setCreateParent(null)}>
-                <Plus size={16} /> New Map
+                <Plus size={16} /> New map
               </Button>
             </>
           ) : null
@@ -233,7 +236,7 @@ export default function ProcessHierarchyListPage() {
           <EmptyState
             variant="nothing-yet"
             heading="No process maps yet"
-            actionLabel={canCreate ? 'New Map' : undefined}
+            actionLabel={canCreate ? 'New map' : undefined}
             onAction={canCreate ? () => setCreateParent(null) : undefined}
           >
             {canCreate
@@ -248,7 +251,7 @@ export default function ProcessHierarchyListPage() {
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search maps…"
                 className="w-full pl-8 pr-8 py-2.5 text-meta rounded-lg border border-border bg-surface focus:border-primary focus:outline-hidden text-text-primary placeholder:text-text-muted" />
               {query && (
-                <button onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"><X size={15} /></button>
+                <Tooltip label="Clear search"><Button variant="in-field" size="icon-sm" onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-1 top-1/2 -translate-y-1/2"><X size={16} /></Button></Tooltip>
               )}
             </div>
 
@@ -259,7 +262,7 @@ export default function ProcessHierarchyListPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 items-start">
                   {results.map((m) => (
                     <button key={m.id} onClick={() => router.push(`/dashboard/process-hierarchy/${m.id}`)}
-                      className="text-left bg-surface border border-border-light rounded-card shadow-card hover:border-primary-border hover:shadow-md transition-all p-3.5 flex items-start gap-2.5">
+                      className={`text-left bg-surface border border-border-light rounded-card shadow-card hover:border-primary-border hover:shadow-md transition-all p-3.5 flex items-start gap-2.5 ${FOCUS}`}>
                       <span className="shrink-0 w-9 h-9 rounded-[9px] bg-primary-subtle flex items-center justify-center"><Workflow size={17} className="text-primary-text" /></span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-meta font-medium text-text-primary">{m.name}</span>
@@ -276,11 +279,11 @@ export default function ProcessHierarchyListPage() {
                 {/* Pinned = quick-jump shortcuts, not a group — shown as chips. */}
                 {pinned.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-meta font-medium text-text-muted uppercase tracking-wide mb-1.5">Pinned</p>
+                    <p className="text-meta font-medium text-text-muted mb-1.5">Pinned</p>
                     <div className="flex flex-wrap gap-2">
                       {pinned.map((m) => (
                         <button key={m.id} onClick={() => router.push(`/dashboard/process-hierarchy/${m.id}`)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface border border-border-light hover:border-primary text-meta font-medium text-text-primary transition-colors">
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface border border-border-light hover:border-primary text-meta font-medium text-text-primary transition-colors ${FOCUS}`}>
                           <Star size={12} className="text-warning" fill="var(--warning)" /> <span className="truncate max-w-[160px]">{m.name}</span>
                         </button>
                       ))}

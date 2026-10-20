@@ -94,7 +94,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
           <Tooltip label="Expand in place">
             <button type="button" onClick={(e) => { e.stopPropagation(); data.onToggleExpand?.() }}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); data.onToggleExpand?.() } }}
-              className="nodrag absolute top-1 right-7 w-5 h-5 inline-flex items-center justify-center rounded-[6px] text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors"
+              className="nodrag absolute top-1 right-7 w-5 h-5 inline-flex items-center justify-center rounded-[6px] text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
               aria-label="Expand in place">
               <Maximize2 size={11} />
             </button>
@@ -114,7 +114,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
             {!!data.docCount && (
               <Tooltip label={`${data.docCount} document${data.docCount > 1 ? 's' : ''}`}>
                 <button onClick={(e) => { e.stopPropagation(); data.onEdit?.() }}
-                  className="nodrag inline-flex items-center gap-0.5 text-[10px] font-medium text-text-secondary hover:text-primary-text">
+                  className="nodrag inline-flex items-center gap-0.5 text-[10px] font-medium text-text-secondary hover:text-primary-text rounded-xs outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring">
                   <FileText size={11} /> {data.docCount}
                 </button>
               </Tooltip>
@@ -131,7 +131,7 @@ function StepNode({ data }: NodeProps<ProcessNodeData>) {
           <div className="mt-1 border-t border-border-light pt-1">
             <Tooltip label={showChecks ? 'Hide checklist' : 'Show checklist'}>
               <button type="button" onClick={(e) => { e.stopPropagation(); setShowChecks((v) => !v) }}
-                className="nodrag inline-flex items-center gap-1 text-[10px] font-medium text-text-secondary hover:text-primary-text"
+                className="nodrag inline-flex items-center gap-1 text-[10px] font-medium text-text-secondary hover:text-primary-text rounded-xs outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
                 aria-expanded={showChecks}>
                 <ChevronRight size={11} className={`transition-transform ${showChecks ? 'rotate-90' : ''}`} />
                 <ListChecks size={11} /> {checks.length} checklist item{checks.length !== 1 ? 's' : ''}
@@ -214,7 +214,7 @@ function BandNode({ data }: NodeProps<ProcessNodeData>) {
         <span className="flex-1 min-w-0 truncate text-meta font-medium text-text-primary">{data.name}</span>
         <Tooltip label="Collapse">
           <button type="button" onClick={(e) => { e.stopPropagation(); data.onToggleExpand?.() }}
-            className="nodrag shrink-0 w-5 h-5 inline-flex items-center justify-center rounded-xs text-text-muted hover:text-text-primary hover:bg-surface"
+            className="nodrag shrink-0 w-5 h-5 inline-flex items-center justify-center rounded-xs text-text-muted hover:text-text-primary hover:bg-surface outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
             aria-label="Collapse"><Minimize2 size={12} /></button>
         </Tooltip>
       </div>
@@ -349,7 +349,7 @@ function DocNode({ data }: NodeProps<DocNodeData>) {
           type="button"
           onClick={(e) => { e.stopPropagation(); data.onOpen() }}
           style={{ width: DOC_CHIP_W, height: DOC_CHIP_H }}
-          className="nodrag group flex items-center gap-1.5 px-2 rounded-[7px] border border-dashed border-border bg-surface shadow-xs text-left transition-colors hover:border-primary"
+          className="nodrag group flex items-center gap-1.5 px-2 rounded-lg border border-dashed border-border bg-surface shadow-xs text-left transition-colors hover:border-primary outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
         >
           <span className="w-[3px] self-stretch my-1 rounded-full shrink-0" style={{ background: isInput ? 'var(--text-secondary)' : 'var(--text-secondary)' }} />
           <Icon size={13} className="shrink-0" style={{ color: isInput ? 'var(--text-secondary)' : 'var(--text-secondary)' }} />
