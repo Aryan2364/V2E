@@ -545,6 +545,23 @@ html[data-keyboard="open"] {
     font-variant-numeric: tabular-nums;
   }
 
+  /* Text selection - 1 rule 5 (no browser defaults). v2e addition, owner
+     request 20 Oct 2026: the browser's pale default highlight was nearly
+     invisible against the blue brand. On surfaces, selected text is the
+     brand fill with its foreground; on a brand ground (sidebar, top bar,
+     primary buttons, header bands) it inverts so it never vanishes. */
+  ::selection {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .bg-primary::selection,
+  .bg-primary ::selection,
+  [data-slot="header-band"]::selection,
+  [data-slot="header-band"] ::selection {
+    background-color: var(--primary-foreground);
+    color: var(--primary-text);
+  }
+
   /* Autofill - 1 rule 5. */
   input:-webkit-autofill,
   input:-webkit-autofill:hover,

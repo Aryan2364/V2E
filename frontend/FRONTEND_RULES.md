@@ -1434,6 +1434,10 @@ When a screen has uploads:
 
 Nothing outstanding. When a new pattern is needed, agree it and add it to this file before building anything against it.
 
+**Agreed in v2e (not yet in the kit):**
+
+- **Text selection (20 Oct 2026, owner).** The browser's default highlight is never used (section 1 rule 5). Selected text on a surface is primary with primary-foreground; on a brand ground (`.bg-primary`, header bands) it inverts to primary-foreground with primary-text. Defined once in globals.css's base layer. Candidate to offer back to the kit.
+
 ## 31. Data entry grid
 
 In FRONTEND_RULES_VIEWS.md. Read that file before working on this.
