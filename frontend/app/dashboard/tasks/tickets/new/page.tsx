@@ -11,6 +11,9 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import { PageHeader } from '@/components/shell/page-header'
 import { SHOW_MORE_LINK } from '@/components/ui/truncate'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 
 type Step = 'template' | 'form'
 
@@ -40,6 +43,14 @@ export default function NewTicketPage() {
   const [proofRequired, setProofRequired] = useState(false)
   const [checklist, setChecklist] = useState<ChecklistItem[]>([])
   const [newChecklistItem, setNewChecklistItem] = useState('')
+  // Field errors sit under the field that is wrong (kit 11.3 rule 6).
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; type?: string }>({})
+  // Raising a ticket creates a record: leaving a filled-in form asks first (kit 11.3 rule 10).
+  const unsaved = useUnsavedChanges({
+    changed: step === 'form' && !submitting && (title.trim() !== '' || description.trim() !== '' || typeId !== '' || categoryId !== '' || priorityId !== '' || checklist.length > 0),
+    noun: 'ticket',
+    mode: 'create',
+  })
 
   useEffect(() => {
     if (!orgId) return
@@ -92,8 +103,15 @@ export default function NewTicketPage() {
   }, [])
 
   async function handleSubmit() {
-    if (!title.trim()) { setError('Title is required'); return }
-    if (!typeId) { setError('Ticket type is required'); return }
+    if (!title.trim() || !typeId) {
+      setFieldErrors({
+        title: title.trim() ? undefined : 'Enter a title for the ticket.',
+        type: typeId ? undefined : 'Choose a ticket type.',
+      })
+      requestAnimationFrame(() => document.getElementById(title.trim() ? 'raise-ticket-type' : 'raise-ticket-title')?.focus())
+      return
+    }
+    setFieldErrors({})
     setSubmitting(true)
     setError('')
     try {
@@ -109,7 +127,7 @@ export default function NewTicketPage() {
       })
       router.push(`/dashboard/tasks/tickets/${ticket.id}`)
     } catch {
-      setError('Failed to raise ticket. Please try again.')
+      setError('Could not raise the ticket. Try again.')
     } finally {
       setSubmitting(false)
     }
@@ -128,6 +146,7 @@ export default function NewTicketPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
+      {unsaved.warning}
       <PageHeader
         title="Raise ticket"
         trail={[
@@ -204,13 +223,14 @@ export default function NewTicketPage() {
           )}
 
           <div>
-            <Label className="mb-2" required>Title</Label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Briefly describe the issue" className={inputCls} />
+            <Label className="mb-2" htmlFor="raise-ticket-title" required>Title</Label>
+            <input id="raise-ticket-title" type="text" value={title} onChange={(e) => { setTitle(e.target.value); setFieldErrors((p) => (p.title ? { ...p, title: undefined } : p)) }} placeholder="For example, Printer on floor 2 is not working" aria-invalid={fieldErrors.title ? true : undefined} className={`${inputCls} aria-invalid:border-danger`} />
+            <InlineFieldError>{fieldErrors.title}</InlineFieldError>
           </div>
 
           <div>
             <Label className="mb-2">Description</Label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Provide details..." className={`${inputCls} resize-none`} />
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={`${inputCls} resize-none`} />
           </div>
 
           <div>
@@ -219,8 +239,9 @@ export default function NewTicketPage() {
               {types.map((t) => (
                 <button
                   key={t.id}
+                  id={t === types[0] ? 'raise-ticket-type' : undefined}
                   type="button"
-                  onClick={() => { setTypeId(t.id); setCategoryId('') }}
+                  onClick={() => { setTypeId(t.id); setCategoryId(''); setFieldErrors((p) => (p.type ? { ...p, type: undefined } : p)) }}
                   className={`flex items-center gap-2 p-3 rounded-[8px] border-2 text-body font-medium transition-colors ${
                     typeId === t.id ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border-light text-text-secondary hover:bg-surface-sunken'
                   }`}
@@ -229,6 +250,7 @@ export default function NewTicketPage() {
                 </button>
               ))}
             </div>
+            <InlineFieldError>{fieldErrors.type}</InlineFieldError>
           </div>
 
           {filteredCategories.length > 0 && (
@@ -237,9 +259,9 @@ export default function NewTicketPage() {
               <StyledSelect
                 value={categoryId}
                 onChange={(v) => setCategoryId(v)}
-                placeholder="Select category (optional)"
+                placeholder="Select category"
                 options={[
-                  { value: '', label: 'Select category (optional)' },
+                  { value: '', label: 'Select category' },
                   ...filteredCategories.map((c) => ({ value: c.id, label: c.name, color: c.color })),
                 ]}
               />
@@ -253,9 +275,9 @@ export default function NewTicketPage() {
                 value={priorityId}
                 onChange={(v) => setPriorityId(v)}
                 disabled={priorityLocked}
-                placeholder="Select priority (optional)"
+                placeholder="Select priority"
                 options={[
-                  { value: '', label: 'Select priority (optional)' },
+                  { value: '', label: 'Select priority' },
                   ...priorities.map((p) => ({ value: p.id, label: p.label, color: p.color })),
                 ]}
               />
@@ -304,11 +326,9 @@ export default function NewTicketPage() {
             </button>
           </div>
 
-          <div className="flex justify-end pt-2">
-            <button type="button" onClick={handleSubmit} disabled={submitting}
-              className="flex items-center gap-1.5 px-6 py-2.5 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
-              {submitting ? 'Raising...' : 'Raise Ticket'}
-            </button>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="secondary" data-leaves-page onClick={() => router.push("/dashboard/tasks/tickets")} disabled={submitting}>Cancel</Button>
+            <Button type="button" onClick={handleSubmit} disabled={submitting} loading={submitting} loadingLabel="Raising">Raise ticket</Button>
           </div>
         </div>
       )}
