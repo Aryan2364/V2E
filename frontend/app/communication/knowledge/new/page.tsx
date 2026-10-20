@@ -9,6 +9,9 @@ import { X } from 'lucide-react'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 
 export default function NewKnowledgePostPage() {
   const { user } = useAuth()
@@ -17,6 +20,13 @@ export default function NewKnowledgePostPage() {
   const [form, setForm] = useState({ title: '', body: '', scope: 'company_wide', tagInput: '', tags: [] as string[] })
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; body?: string }>({})
+  // A new post exists only once published: leaving a filled-in form asks first (kit 11.3 rule 10).
+  const unsaved = useUnsavedChanges({
+    changed: !saving && (form.title.trim() !== '' || form.body.trim() !== '' || form.tags.length > 0),
+    noun: 'post',
+    mode: 'create',
+  })
 
   function addTag() {
     const tag = form.tagInput.trim().toLowerCase()
@@ -31,10 +41,16 @@ export default function NewKnowledgePostPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!orgId || !form.title.trim() || !form.body.trim()) {
-      setErr('Title and body are required.')
+    if (!orgId) return
+    if (!form.title.trim() || !form.body.trim()) {
+      setFieldErrors({
+        title: form.title.trim() ? undefined : 'Enter a title for the post.',
+        body: form.body.trim() ? undefined : 'Write the content of the post.',
+      })
+      requestAnimationFrame(() => document.getElementById(form.title.trim() ? 'knowledge-body' : 'knowledge-title')?.focus())
       return
     }
+    setFieldErrors({})
     setSaving(true)
     setErr('')
     try {
@@ -46,7 +62,7 @@ export default function NewKnowledgePostPage() {
       } as any)
       router.push('/communication/knowledge')
     } catch {
-      setErr('Failed to create post.')
+      setErr('Could not publish the post. Try again.')
     } finally {
       setSaving(false)
     }
@@ -54,6 +70,7 @@ export default function NewKnowledgePostPage() {
 
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
+      {unsaved.warning}
       <div className="max-w-2xl mx-auto">
         <Breadcrumb className="mb-4">
           <BreadcrumbList>
@@ -68,7 +85,7 @@ export default function NewKnowledgePostPage() {
         </Breadcrumb>
 
         <div className="bg-surface border border-border-light rounded-card p-6">
-          <h1 className="text-section font-medium text-text-primary mb-6">Share Knowledge</h1>
+          <h1 className="text-section font-medium text-text-primary mb-6">Share knowledge</h1>
 
           {err && (
             <div className="mb-4 p-3 bg-danger-bg border border-danger-border rounded-control text-label text-danger">
@@ -78,24 +95,29 @@ export default function NewKnowledgePostPage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <Label className="mb-2">Title</Label>
+              <Label className="mb-2" htmlFor="knowledge-title" required>Title</Label>
               <input
+                id="knowledge-title"
                 value={form.title}
-                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                placeholder="What are you sharing?"
-                className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                onChange={e => { setForm(f => ({ ...f, title: e.target.value })); setFieldErrors((p) => (p.title ? { ...p, title: undefined } : p)) }}
+                placeholder="For example, How we onboard a new dealer"
+                aria-invalid={fieldErrors.title ? true : undefined}
+                className="w-full max-w-[480px] border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary aria-invalid:border-danger"
               />
+              <InlineFieldError>{fieldErrors.title}</InlineFieldError>
             </div>
 
             <div>
-              <Label className="mb-2">Content</Label>
+              <Label className="mb-2" htmlFor="knowledge-body" required>Content</Label>
               <textarea
+                id="knowledge-body"
                 value={form.body}
-                onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
+                onChange={e => { setForm(f => ({ ...f, body: e.target.value })); setFieldErrors((p) => (p.body ? { ...p, body: undefined } : p)) }}
                 rows={8}
-                placeholder="Share tips, processes, learnings, or anything useful…"
-                className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-y"
+                aria-invalid={fieldErrors.body ? true : undefined}
+                className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-y aria-invalid:border-danger"
               />
+              <InlineFieldError>{fieldErrors.body}</InlineFieldError>
             </div>
 
             <div>
@@ -105,7 +127,7 @@ export default function NewKnowledgePostPage() {
                   value={form.tagInput}
                   onChange={e => setForm(f => ({ ...f, tagInput: e.target.value }))}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag() } }}
-                  placeholder="Add a tag and press Enter"
+                  placeholder="For example, onboarding"
                   className="flex-1 border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
                 />
                 <button type="button" onClick={addTag} className="bg-surface-control text-text-secondary px-3 py-2 rounded-control text-label font-medium hover:bg-surface-control-pressed transition-colors">
@@ -138,13 +160,14 @@ export default function NewKnowledgePostPage() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full bg-primary text-primary-foreground px-4 py-2.5 rounded-control text-label font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {saving ? 'Publishing…' : 'Publish Post'}
-            </button>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="secondary" data-leaves-page onClick={() => router.push('/communication/knowledge')} disabled={saving}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving} loading={saving} loadingLabel="Publishing">
+                Publish post
+              </Button>
+            </div>
           </form>
         </div>
       </div>

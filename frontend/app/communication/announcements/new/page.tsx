@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Banner, BannerDescription } from '@/components/ui/banner'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 
 export default function NewAnnouncementPage() {
   const { user } = useAuth()
@@ -26,6 +28,13 @@ export default function NewAnnouncementPage() {
   })
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; body?: string }>({})
+  // A new announcement exists only once saved: leaving a filled-in form asks first (kit 11.3 rule 10).
+  const unsaved = useUnsavedChanges({
+    changed: !saving && (form.title.trim() !== '' || form.body.trim() !== '' || form.expires_at !== ''),
+    noun: 'announcement',
+    mode: 'create',
+  })
 
   function set(k: string, v: string) {
     setForm(f => ({ ...f, [k]: v }))
@@ -34,9 +43,14 @@ export default function NewAnnouncementPage() {
   async function handleSubmit(publish: boolean) {
     if (!orgId) return
     if (!form.title.trim() || !form.body.trim()) {
-      setErr('Title and body are required.')
+      setFieldErrors({
+        title: form.title.trim() ? undefined : 'Enter a title for the announcement.',
+        body: form.body.trim() ? undefined : 'Write the announcement text.',
+      })
+      requestAnimationFrame(() => document.getElementById(form.title.trim() ? 'announcement-body' : 'announcement-title')?.focus())
       return
     }
+    setFieldErrors({})
     setSaving(true)
     setErr('')
     try {
@@ -51,7 +65,7 @@ export default function NewAnnouncementPage() {
       if (publish) await publishAnnouncement(orgId, ann.id)
       router.push('/communication/announcements')
     } catch {
-      setErr('Failed to create announcement.')
+      setErr('Could not save the announcement. Try again.')
     } finally {
       setSaving(false)
     }
@@ -59,6 +73,7 @@ export default function NewAnnouncementPage() {
 
   return (
     <div className="min-h-screen bg-surface-sunken p-6">
+      {unsaved.warning}
       <div className="max-w-2xl mx-auto">
         <PageHeader title="New announcement" trail={[{ label: 'Announcements', href: '/communication/announcements' }]} />
         <div className="bg-surface border border-border-light rounded-card p-6">
@@ -70,28 +85,33 @@ export default function NewAnnouncementPage() {
 
           <div className="flex flex-col gap-4">
             <div>
-              <Label>Title</Label>
+              <Label className="mb-2" htmlFor="announcement-title" required>Title</Label>
               <input
+                id="announcement-title"
                 value={form.title}
-                onChange={e => set('title', e.target.value)}
-                placeholder="Announcement title"
-                className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary"
+                onChange={e => { set('title', e.target.value); setFieldErrors((p) => (p.title ? { ...p, title: undefined } : p)) }}
+                placeholder="For example, Office closed on Diwali"
+                aria-invalid={fieldErrors.title ? true : undefined}
+                className="w-full max-w-[480px] border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary aria-invalid:border-danger"
               />
+              <InlineFieldError>{fieldErrors.title}</InlineFieldError>
             </div>
 
             <div>
-              <Label>Body</Label>
+              <Label className="mb-2" htmlFor="announcement-body" required>Body</Label>
               <Textarea
+                id="announcement-body"
                 value={form.body}
-                onChange={e => set('body', e.target.value)}
+                onChange={e => { set('body', e.target.value); setFieldErrors((p) => (p.body ? { ...p, body: undefined } : p)) }}
                 rows={6}
-                placeholder="Write your announcement..."
+                aria-invalid={fieldErrors.body ? true : undefined}
               />
+              <InlineFieldError>{fieldErrors.body}</InlineFieldError>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Type</Label>
+                <Label className="mb-2">Type</Label>
                 <StyledSelect
                   value={form.type}
                   onChange={(v) => set('type', v)}
@@ -102,7 +122,7 @@ export default function NewAnnouncementPage() {
                 />
               </div>
               <div>
-                <Label>Priority</Label>
+                <Label className="mb-2">Priority</Label>
                 <StyledSelect
                   value={form.priority}
                   onChange={(v) => set('priority', v)}
@@ -116,7 +136,7 @@ export default function NewAnnouncementPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Scope</Label>
+                <Label className="mb-2">Scope</Label>
                 <StyledSelect
                   value={form.scope}
                   onChange={(v) => set('scope', v)}
@@ -127,7 +147,7 @@ export default function NewAnnouncementPage() {
                 />
               </div>
               <div>
-                <Label>Expires at</Label>
+                <Label className="mb-2">Expires on</Label>
                 <DatePicker
                   value={form.expires_at}
                   onChange={(iso) => set('expires_at', iso)}
@@ -136,12 +156,15 @@ export default function NewAnnouncementPage() {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
-              <Button variant="secondary" className="flex-1" onClick={() => handleSubmit(false)} disabled={saving}>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="secondary" data-leaves-page onClick={() => router.push('/communication/announcements')} disabled={saving}>
+                Cancel
+              </Button>
+              <Button variant="secondary" onClick={() => handleSubmit(false)} disabled={saving}>
                 Save draft
               </Button>
-              <Button className="flex-1" onClick={() => handleSubmit(true)} disabled={saving} loading={saving}>
-                Publish now
+              <Button onClick={() => handleSubmit(true)} disabled={saving} loading={saving} loadingLabel="Publishing">
+                Publish announcement
               </Button>
             </div>
           </div>
