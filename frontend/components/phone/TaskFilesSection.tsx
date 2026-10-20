@@ -20,6 +20,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Skeleton } from '@/components/ui/skeleton'
+import { PhoneButton } from './primitives'
 import { FILE_ROW, FileGlyph, RemoveFileButton, StagedFileRow, newStagedFile, type StagedFile } from './FileRows'
 
 /*
@@ -47,6 +49,8 @@ export function TaskFilesSection({
   const { user } = useAuth()
   const { addToast } = useToast()
   const [items, setItems] = React.useState<TaskAttachment[] | null>(null)
+  const [loadFailed, setLoadFailed] = React.useState(false)
+  const [reloadKey, setReloadKey] = React.useState(0)
   const [staged, setStaged] = React.useState<StagedFile[]>([])
   const [viewer, setViewer] = React.useState<TaskAttachment | null>(null)
   const [toRemove, setToRemove] = React.useState<TaskAttachment | null>(null)
@@ -55,6 +59,7 @@ export function TaskFilesSection({
 
   React.useEffect(() => {
     let cancelled = false
+    setLoadFailed(false)
     tasksApi
       .listAllAttachments(orgId, task.id)
       .then((list) => {
@@ -63,14 +68,14 @@ export function TaskFilesSection({
       .catch(() => {
         if (!cancelled) {
           setItems([])
-          addToast('Files could not be loaded.', 'error')
+          setLoadFailed(true)
         }
       })
     return () => {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId, task.id])
+  }, [orgId, task.id, reloadKey])
 
   const refreshTask = () => {
     tasksApi.getTask(orgId, task.id).then(onTaskUpdate).catch(() => {})
@@ -161,9 +166,18 @@ export function TaskFilesSection({
       />
 
       {items === null ? (
-        <p className="text-body text-text-secondary">Loading…</p>
+        <div className="flex flex-col gap-[8px]" aria-hidden>
+          <Skeleton className="h-[56px] w-full" />
+        </div>
+      ) : loadFailed ? (
+        <div className="flex flex-col items-start gap-[8px]">
+          <p className="text-body text-text-secondary">Files could not be loaded. Check your connection, then try again.</p>
+          <PhoneButton variant="secondary" onClick={() => { setItems(null); setReloadKey((k) => k + 1) }}>
+            Try again
+          </PhoneButton>
+        </div>
       ) : empty ? (
-        <p className="text-body text-text-secondary">No files yet.</p>
+        <p className="text-body text-text-secondary">No files yet. Add one with Add file.</p>
       ) : (
         <ul className="flex flex-col gap-[8px]">
           {items.map((a) => {
@@ -254,6 +268,7 @@ async function openNonImageFile(orgId: string, taskId: string, a: TaskAttachment
 /** Full-screen image viewer with pinch-zoom (kit §41.16). */
 function ImageViewer({ attachment, orgId, taskId, onClose }: { attachment: TaskAttachment; orgId: string; taskId: string; onClose: () => void }) {
   const [url, setUrl] = React.useState<string | null>(null)
+  const [failed, setFailed] = React.useState(false)
   React.useEffect(() => {
     let cancelled = false
     tasksApi
@@ -261,15 +276,17 @@ function ImageViewer({ attachment, orgId, taskId, onClose }: { attachment: TaskA
       .then(({ url: resolved }) => {
         if (!cancelled) setUrl(resolved)
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setFailed(true)
+      })
     return () => {
       cancelled = true
     }
   }, [orgId, taskId, attachment.id])
 
   return createPortal(
-    <div className="fixed inset-0 z-90 flex flex-col bg-black">
-      <button type="button" aria-label="Close" onClick={onClose} className="absolute right-[16px] top-[max(16px,var(--safe-top))] z-10 flex size-[44px] items-center justify-center rounded-full bg-black/40 text-white">
+    <div className="fixed inset-0 z-90 flex flex-col bg-text-primary">
+      <button type="button" aria-label="Close" onClick={onClose} className="absolute right-[16px] top-[max(16px,var(--safe-top))] z-10 flex size-[44px] items-center justify-center rounded-full bg-text-primary/40 text-surface">
         <X aria-hidden />
       </button>
       <div className="flex flex-1 items-center justify-center overflow-auto touch-pinch-zoom">
@@ -277,7 +294,7 @@ function ImageViewer({ attachment, orgId, taskId, onClose }: { attachment: TaskA
           // eslint-disable-next-line @next/next/no-img-element
           <img src={url} alt={attachment.file_name} className="max-h-full max-w-full object-contain" />
         ) : (
-          <span className="text-body text-white">Loading…</span>
+          <span className="text-body text-surface">{failed ? 'This image could not be opened. Close it and try again.' : 'Loading image'}</span>
         )}
       </div>
     </div>,

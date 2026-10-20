@@ -64,7 +64,7 @@ export function FinishTaskSheet({
   const blockedReason = proofNeeded && staged.length > 0
     ? (unfinished.length > 0 ? 'Finish the checklist to complete' : null)
     : finishBlockedReason(task, userId)
-  const disabledReason = submitting ? 'Sending proof…' : blockedReason
+  const disabledReason = blockedReason
 
   const accept = acceptFromExtensions(task.proof_allowed_extensions)
 
@@ -141,16 +141,19 @@ export function FinishTaskSheet({
       onOpenChange={guardedOpenChange}
       title="Finish task"
       footer={
-        <PhoneButton
-          type="button"
-          variant="primary"
-          fullWidth
-          disabled={disabledReason !== null}
-          title={disabledReason ?? undefined}
-          onClick={() => void submit()}
-        >
-          {disabledReason ?? 'Complete task'}
-        </PhoneButton>
+        <div className="flex w-full flex-col gap-[8px]">
+          {disabledReason ? <p className="text-label text-text-secondary">{disabledReason}</p> : null}
+          <PhoneButton
+            type="button"
+            variant="primary"
+            fullWidth
+            loading={submitting}
+            disabled={disabledReason !== null}
+            onClick={() => void submit()}
+          >
+            Complete task
+          </PhoneButton>
+        </div>
       }
     >
       <div className="flex flex-col gap-[24px]">
@@ -182,7 +185,7 @@ export function FinishTaskSheet({
 
         {task.proof_required ? (
           <section className="flex flex-col gap-[8px]">
-            <h3 className="text-label font-medium text-text-secondary">Attach proof</h3>
+            <h3 className="text-label font-medium text-text-secondary">Proof</h3>
 
             <PhoneButton
               type="button"
