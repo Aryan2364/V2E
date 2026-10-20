@@ -14,10 +14,11 @@ export default function CommunicationLayout({ children }: { children: React.Reac
       <div
         className={[
           'min-w-0 transition-[margin-left] duration-200 ease-in-out',
-          collapsed ? 'ml-12' : 'ml-12 md:ml-[240px]',
+          collapsed ? 'ml-16' : 'ml-16 md:ml-[240px]',
         ].join(' ')}
       >
-        {children}
+        {/* Section 12.3: pages get a 1600px frame, centred in the room beside the sidebar. */}
+        <div className="mx-auto min-w-0 max-w-[1600px]">{children}</div>
       </div>
     </MainLayout>
   )

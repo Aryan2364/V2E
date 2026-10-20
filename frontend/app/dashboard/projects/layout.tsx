@@ -32,7 +32,7 @@ export default function ProjectsLayout({ children }: { children: React.ReactNode
   }
 
   return (
-    <div className="flex gap-0 min-h-[calc(100vh-56px)] -mx-4 sm:-mx-6 lg:-mx-8 -my-6 lg:-my-8">
+    <div className="flex gap-0 min-h-[calc(100vh-56px)]">
       {/* Same Task Management sidebar as the Tasks module — no menu swap. */}
       <TaskModuleSidebar />
 

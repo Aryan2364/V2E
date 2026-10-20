@@ -166,7 +166,7 @@ export default function TicketDetailPage() {
   const slaTargetDays = ticket.sla_days
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl">
+    <div className="flex flex-col gap-6 max-w-6xl">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

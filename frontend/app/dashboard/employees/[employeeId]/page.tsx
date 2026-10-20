@@ -823,7 +823,7 @@ export default function EmployeeDetailPage() {
     : null
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-6xl">
       <button onClick={handleBack} className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors">
         <ArrowLeft size={15} />
         Back

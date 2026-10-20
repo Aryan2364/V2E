@@ -127,7 +127,7 @@ export default function RoleDetailPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-6xl">
       {/* Back link */}
       <Link
         href="/settings/organization/roles"
