@@ -629,6 +629,19 @@ html[data-keyboard="open"] {
   [class*="animate-[popIn"] { animation: none !important; }
 }
 
+/* Layers - 5.5, as named utilities. Tailwind 4 has no z-index theme
+   namespace, so the bare class names the kit's components use (z-shell,
+   z-popover, z-dialog...) generated no CSS at all: the top bar and its
+   panels had no layer, and any positioned control on the page painted
+   over the notifications panel. These make every one of them real.
+   (Kit defect: KIT-PENDING-z-layer-utilities.md.) */
+@utility z-sticky { z-index: var(--z-sticky); }
+@utility z-shell { z-index: var(--z-shell); }
+@utility z-dialog { z-index: var(--z-dialog); }
+@utility z-popover { z-index: var(--z-popover); }
+@utility z-toast { z-index: var(--z-toast); }
+@utility z-tooltip { z-index: var(--z-tooltip); }
+
 /* Tap area - 9 rule 4. */
 @utility tap-area {
   @media (pointer: coarse) {
