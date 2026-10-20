@@ -193,7 +193,7 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
           </div>
 
           <div>
-            <Label className="mb-2">Content Type</Label>
+            <Label className="mb-2">Content type</Label>
             <div className="grid grid-cols-2 gap-2">
               {(['article', 'video', 'document', 'url'] as PolicyContentType[]).map((type) => {
                 const Icon = TYPE_ICONS[type]
@@ -215,7 +215,7 @@ function ItemModal({ policyId, editing, onClose, onSaved, orgId }: ItemModalProp
 
           {form.content_type === 'article' ? (
             <div>
-              <Label className="mb-2">Article Content</Label>
+              <Label className="mb-2">Article content</Label>
               <textarea
                 value={form.content_body}
                 onChange={(e) => set('content_body', e.target.value)}
@@ -281,7 +281,7 @@ function AssignModal({ policyId, orgId, onClose, onAssigned }: { policyId: strin
   }
 
   return (
-    <DialogShell title="Assign Employees" onClose={onClose} size="md">
+    <DialogShell title="Assign employees" onClose={onClose} size="md">
         <DialogBody>
           {loading ? (
             <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-primary" /></div>

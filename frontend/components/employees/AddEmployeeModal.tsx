@@ -494,7 +494,7 @@ export default function AddEmployeeModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label className="mb-2" required>Job Role</Label>
+                <Label className="mb-2" required>Job role</Label>
                 <RoleSelect
                   value={form.role_id}
                   roles={deptRoles}
@@ -542,7 +542,7 @@ export default function AddEmployeeModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <Label className="mb-2" required>System Role</Label>
+                <Label className="mb-2" required>System role</Label>
                 <StyledSelect
                   value={form.system_role_id}
                   onChange={(v) => set('system_role_id', v)}

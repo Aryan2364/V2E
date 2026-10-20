@@ -233,7 +233,7 @@ export default function HolidayFormModal({
 
         <div className="flex gap-2 justify-end pt-1">
           <Button variant="secondary" onClick={close} disabled={saving}>Cancel</Button>
-          <Button variant="primary" onClick={submit} isLoading={saving} disabled={saving}>Add Holiday</Button>
+          <Button variant="primary" onClick={submit} isLoading={saving} disabled={saving}>Add holiday</Button>
         </div>
       </div>
     </Modal>

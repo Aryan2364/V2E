@@ -105,7 +105,7 @@ export default function IdentityFormDrawer({
     <Sheet open={open} onOpenChange={(next) => { if (!next) onClose() }}>
       <SheetContent side="right" className="sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>Edit Organization Identity</SheetTitle>
+          <SheetTitle>Edit organization identity</SheetTitle>
         </SheetHeader>
 
         <form id="identity-form" onSubmit={handleSubmit(onSubmit)} className="contents">

@@ -474,7 +474,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Job Role — scoped to the selected department */}
             <div>
-              <Label className="mb-2">Job Role</Label>
+              <Label className="mb-2">Job role</Label>
               <StyledSelect
                 value={form.role_id}
                 onChange={(v) => set('role_id', v)}
@@ -488,7 +488,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
             {/* System Role — access-rights bundle (required). StyledSelect (not a native
                 <select>) so it can't be silently scroll-changed to another role. */}
             <div>
-              <Label className="mb-2">System Role</Label>
+              <Label className="mb-2">System role</Label>
               <StyledSelect
                 value={form.system_role_id}
                 onChange={(v) => set('system_role_id', v)}
@@ -502,7 +502,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Employment Type */}
             <div>
-              <Label className="mb-2">Employment Type</Label>
+              <Label className="mb-2">Employment type</Label>
               <StyledSelect
                 value={form.employment_type}
                 onChange={(v) => set('employment_type', v)}
@@ -535,7 +535,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Employee Code */}
             <div>
-              <Label className="mb-2">Employee Code</Label>
+              <Label className="mb-2">Employee code</Label>
               <input
                 type="text"
                 value={form.employee_code}
@@ -547,7 +547,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Date of Joining */}
             <div>
-              <Label className="mb-2">Date of Joining</Label>
+              <Label className="mb-2">Date of joining</Label>
               <DatePicker
                 value={form.date_of_joining}
                 onChange={(iso) => set('date_of_joining', iso)}
@@ -557,7 +557,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Date of Birth */}
             <div>
-              <Label className="mb-2">Date of Birth</Label>
+              <Label className="mb-2">Date of birth</Label>
               <DatePicker
                 value={form.date_of_birth}
                 onChange={(iso) => set('date_of_birth', iso)}
@@ -567,7 +567,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Marriage Date */}
             <div>
-              <Label className="mb-2">Marriage Date</Label>
+              <Label className="mb-2">Marriage date</Label>
               <DatePicker
                 value={form.marriage_date}
                 onChange={(iso) => set('marriage_date', iso)}

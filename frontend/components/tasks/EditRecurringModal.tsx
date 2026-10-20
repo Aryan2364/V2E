@@ -308,7 +308,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
       <DialogContent size="lg" className="max-w-2xl">
         <DialogHeader>
           <div>
-            <DialogTitle>Edit Recurring Template</DialogTitle>
+            <DialogTitle>Edit recurring template</DialogTitle>
             <p className="text-body text-on-brand-muted mt-0.5">Changes apply to future task instances only.</p>
           </div>
         </DialogHeader>
@@ -357,7 +357,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
               </div>
             </div>
             <div>
-              <Label className="mb-2">Assignees & CC</Label>
+              <Label className="mb-2" required>Assignees & CC</Label>
               <AssigneeSelector orgId={orgId} value={assignees} onChange={setAssignees} disabled={!assigneesLoaded} />
               <p className="text-meta text-text-secondary mt-1">
                 {assigneesLoaded
@@ -407,7 +407,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
             </div>
             {primaryAssigneeCount > 1 && (
               <div>
-                <Label className="mb-2">Completion Mode</Label>
+                <Label className="mb-2">Completion mode</Label>
                 <div className="flex gap-4">
                   {(['any_can_complete', 'all_must_complete'] as CompletionMode[]).map((mode) => (
                     <label key={mode} className="flex items-center gap-2 cursor-pointer">

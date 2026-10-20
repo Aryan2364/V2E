@@ -36,7 +36,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
     <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
       <DialogContent size="lg">
         <DialogHeader>
-          <DialogTitle>Archived Task Snapshot</DialogTitle>
+          <DialogTitle>Archived task snapshot</DialogTitle>
           <DialogDescription>Read-only view of deleted task</DialogDescription>
         </DialogHeader>
 

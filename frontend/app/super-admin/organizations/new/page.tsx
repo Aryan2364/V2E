@@ -325,7 +325,7 @@ export default function NewOrganizationPage() {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            <Button type="submit" loading={isSubmitting} loadingLabel="Creating">Create Organization</Button>
+            <Button type="submit" loading={isSubmitting} loadingLabel="Creating">Create organization</Button>
             <Button type="button" variant="secondary" onClick={() => router.push('/super-admin/organizations')} disabled={isSubmitting}>
               Cancel
             </Button>

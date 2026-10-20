@@ -119,7 +119,7 @@ export default function GoogleCalendarConnect({
       <Dialog open={open} onOpenChange={(next) => { if (!busy) setOpen(next) }}>
         <DialogContent size="sm">
           <DialogHeader>
-            <DialogTitle>Google Calendar</DialogTitle>
+            <DialogTitle>Google calendar</DialogTitle>
           </DialogHeader>
           <DialogBody>
             <div className="flex items-start gap-2 mb-3">

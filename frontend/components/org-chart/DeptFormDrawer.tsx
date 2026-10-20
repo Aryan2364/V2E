@@ -170,7 +170,7 @@ export default function DeptFormDrawer({
         <SheetBody className="flex flex-col gap-6">
           <div>
             <Label htmlFor="dept-name" required>
-              Department Name
+              Department name
             </Label>
             <Input
               id="dept-name"
@@ -193,7 +193,7 @@ export default function DeptFormDrawer({
             />
           </div>
           <div>
-            <Label>Parent Department</Label>
+            <Label>Parent department</Label>
             <div className="mt-2">
               <DepartmentSelect
                 value={parentId}
@@ -205,7 +205,7 @@ export default function DeptFormDrawer({
             </div>
           </div>
           <div>
-            <Label>Department Head</Label>
+            <Label>Department head</Label>
             <div className="mt-2">
               <EmployeePicker
                 value={headUserId}
@@ -218,7 +218,7 @@ export default function DeptFormDrawer({
             </div>
           </div>
           <div>
-            <Label>Node Color</Label>
+            <Label>Node color</Label>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <Tooltip label="Default (inherit branch color)">
               <button

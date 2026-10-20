@@ -301,7 +301,7 @@ export default function CultureManagerDrawer({
     <Sheet open={open} onOpenChange={(next) => { if (!next) onClose() }}>
       <SheetContent side="right" className="sm:max-w-2xl">
         <SheetHeader>
-          <SheetTitle>Manage Culture Standards</SheetTitle>
+          <SheetTitle>Manage culture standards</SheetTitle>
         </SheetHeader>
 
         <SheetBody>

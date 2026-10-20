@@ -90,7 +90,7 @@ export default function NewGroupPage() {
           </Card>
 
           <div className="flex items-center gap-3">
-            <Button type="submit" loading={isSubmitting} loadingLabel="Creating">Create Group</Button>
+            <Button type="submit" loading={isSubmitting} loadingLabel="Creating">Create group</Button>
             <Button type="button" variant="secondary" onClick={() => router.push('/super-admin/groups')} disabled={isSubmitting}>
               Cancel
             </Button>

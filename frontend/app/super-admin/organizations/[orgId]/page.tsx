@@ -289,7 +289,7 @@ function EditMemberDialog({
     <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
       <DialogContent size="sm">
         <DialogHeader>
-          <DialogTitle>Edit Member</DialogTitle>
+          <DialogTitle>Edit member</DialogTitle>
         </DialogHeader>
         <DialogBody className="flex flex-col gap-4">
           {error ? (
@@ -626,7 +626,7 @@ export default function OrgDetailPage() {
       <AlertDialog open={showConfirm} onOpenChange={(next) => { if (!next) { setShowConfirm(false); setDeactivateError(null) } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Deactivate Organization</AlertDialogTitle>
+            <AlertDialogTitle>Deactivate organization</AlertDialogTitle>
             <AlertDialogDescription>
               Deactivating <strong>{org.name}</strong> signs out everyone in the firm
               immediately and blocks them from signing in again — their accounts and data
@@ -652,7 +652,7 @@ export default function OrgDetailPage() {
       <AlertDialog open={showReactivate} onOpenChange={(next) => { if (!next) { setShowReactivate(false); setReactivateError(null) } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Reactivate Organization</AlertDialogTitle>
+            <AlertDialogTitle>Reactivate organization</AlertDialogTitle>
             <AlertDialogDescription>
               Reactivating <strong>{org.name}</strong> lets all its users sign in again
               straight away, with the same accounts and passwords they had before.

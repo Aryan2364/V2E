@@ -389,7 +389,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
     >
       <DialogContent size="lg" className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Edit Task</DialogTitle>
+          <DialogTitle>Edit task</DialogTitle>
         </DialogHeader>
 
         {/* Body */}
@@ -518,7 +518,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {/* Completion mode */}
           {assigneeCount > 1 && (
             <div>
-              <Label className="mb-2">Completion Mode</Label>
+              <Label className="mb-2">Completion mode</Label>
               <div className="flex gap-3">
                 {(['any_can_complete', 'all_must_complete'] as CompletionMode[]).map((mode) => (
                   <label key={mode} className="flex items-center gap-2 cursor-pointer">

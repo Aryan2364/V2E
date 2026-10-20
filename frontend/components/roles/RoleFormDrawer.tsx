@@ -252,7 +252,7 @@ export default function RoleFormDrawer({
             {/* Basic info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="mb-2" required>Job Role Title</Label>
+                <Label className="mb-2" required>Job role title</Label>
                 <input
                   {...register('title')}
                   placeholder="e.g. Senior Engineer"
@@ -280,7 +280,7 @@ export default function RoleFormDrawer({
             </div>
 
             <div>
-              <Label className="mb-2">Job Description</Label>
+              <Label className="mb-2">Job description</Label>
               <textarea
                 {...register('job_description')}
                 rows={4}

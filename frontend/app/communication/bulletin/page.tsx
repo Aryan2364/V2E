@@ -79,7 +79,7 @@ export default function BulletinBoardsPage() {
           <form onSubmit={handleCreate} className="bg-surface border border-border-light rounded-card p-4 mb-6 flex flex-col gap-4">
             <h2 className="text-body font-medium text-text-primary">Create Board</h2>
             <div>
-              <Label className="mb-2">Board Name</Label>
+              <Label className="mb-2">Board name</Label>
               <input
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -97,7 +97,7 @@ export default function BulletinBoardsPage() {
               />
             </div>
             <div>
-              <Label className="mb-2">Interaction Mode</Label>
+              <Label className="mb-2">Interaction mode</Label>
               <StyledSelect
                 value={form.interaction_mode}
                 onChange={(v) => setForm(f => ({ ...f, interaction_mode: v }))}

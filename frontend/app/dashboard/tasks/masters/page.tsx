@@ -153,7 +153,7 @@ function ConfigTab({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-6 max-w-xl">
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Default Reminder Days Before">
+        <FormField label="Default reminder days before">
           <input type="number" min={0} value={config.default_reminder_days_before}
             onChange={(e) => setConfig({ ...config, default_reminder_days_before: parseInt(e.target.value) || 0 })}
             className={inputCls} />
@@ -163,7 +163,7 @@ function ConfigTab({ orgId }: { orgId: string }) {
             onChange={(e) => setConfig({ ...config, reopen_window_minutes: parseInt(e.target.value) || 0 })}
             className={inputCls} />
         </FormField>
-        <FormField label="Escalation Levels">
+        <FormField label="Escalation levels">
           <input type="number" min={0} value={config.escalation_levels}
             onChange={(e) => setConfig({ ...config, escalation_levels: parseInt(e.target.value) || 0 })}
             className={inputCls} />
@@ -819,7 +819,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
         <div className="space-y-6">
           {/* Name + items */}
           <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
-            <FormField label="Template Name"><input type="text" autoFocus value={templateName} onChange={(e) => { setTemplateName(e.target.value); if (error) setError(null) }} placeholder="e.g. Onboarding Checklist" className={`${inputCls} max-w-xl`} /></FormField>
+            <FormField label="Template name"><input type="text" autoFocus value={templateName} onChange={(e) => { setTemplateName(e.target.value); if (error) setError(null) }} placeholder="e.g. Onboarding Checklist" className={`${inputCls} max-w-xl`} /></FormField>
 
             <div>
               <Label className="mb-2">Items</Label>
@@ -871,7 +871,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
         <p className="text-body text-text-secondary">{items.length} template{items.length !== 1 ? 's' : ''}</p>
         <div className="flex items-center gap-2">
           <Button variant="secondary" onClick={() => setShowImport(true)}><Upload size={14} /> Import Checklists</Button>
-          <Button onClick={openCreate}><Plus size={14} /> Add Template</Button>
+          <Button onClick={openCreate}><Plus size={14} /> Add template</Button>
         </div>
       </div>
       {items.length === 0 && <div className="text-center py-12 text-text-secondary text-body">No checklist templates yet.</div>}
@@ -954,7 +954,7 @@ function TktConfigTab({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-6 max-w-xl">
-      <FormField label="Reassignment Mode">
+      <FormField label="Reassignment mode">
         <div className="space-y-2">
           {modeOptions.map((opt) => (
             <button key={opt.value} type="button" onClick={() => setConfig({ ...config, reassignment_mode: opt.value })}
@@ -970,12 +970,12 @@ function TktConfigTab({ orgId }: { orgId: string }) {
       </FormField>
 
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Default Escalation Levels">
+        <FormField label="Default escalation levels">
           <input type="number" min={0} max={5} value={config.default_escalation_levels}
             onChange={(e) => setConfig({ ...config, default_escalation_levels: parseInt(e.target.value) || 0 })}
             className={inputCls} />
         </FormField>
-        <FormField label="Escalation Interval (hours)">
+        <FormField label="Escalation interval (hours)">
           <input type="number" min={1} value={config.escalation_interval_hours}
             onChange={(e) => setConfig({ ...config, escalation_interval_hours: parseInt(e.target.value) || 1 })}
             className={inputCls} />
@@ -1072,9 +1072,9 @@ function TktTypesTab({ orgId }: { orgId: string }) {
               <input type="text" value={f.color} onChange={(e) => setF({ ...f, color: e.target.value })} className={inputCls} />
             </div>
           </FormField>
-          <FormField label="Default SLA Days"><input type="number" min={1} value={f.default_sla_days} onChange={(e) => setF({ ...f, default_sla_days: parseInt(e.target.value) || 1 })} className={inputCls} /></FormField>
+          <FormField label="Default SLA days"><input type="number" min={1} value={f.default_sla_days} onChange={(e) => setF({ ...f, default_sla_days: parseInt(e.target.value) || 1 })} className={inputCls} /></FormField>
           <FormField label="Default Response SLA (hours, optional)"><input type="number" min={1} value={f.default_response_sla_hours} onChange={(e) => setF({ ...f, default_response_sla_hours: e.target.value })} placeholder="No response SLA" className={inputCls} /></FormField>
-          <FormField label="Resolver Group (optional)">
+          <FormField label="Resolver group (optional)">
             <StyledSelect
               value={f.resolver_group_id}
               onChange={(v) => setF({ ...f, resolver_group_id: v })}
@@ -1206,7 +1206,7 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
                 <input type="text" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className={inputCls} />
               </div>
             </FormField>
-            <FormField label="Ticket Type (optional)">
+            <FormField label="Ticket type (optional)">
               <StyledSelect
                 value={form.ticket_type_id}
                 onChange={(v) => setForm({ ...form, ticket_type_id: v })}
@@ -1219,7 +1219,7 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
             </FormField>
             <FormField label="SLA Override (days, optional)"><input type="number" min={1} value={form.default_sla_days} onChange={(e) => setForm({ ...form, default_sla_days: e.target.value })} placeholder="Inherits from type" className={inputCls} /></FormField>
             <FormField label="Response SLA (hours, optional)"><input type="number" min={1} value={form.default_response_sla_hours} onChange={(e) => setForm({ ...form, default_response_sla_hours: e.target.value })} placeholder="Inherits from type" className={inputCls} /></FormField>
-            <FormField label="Resolver Group (optional)">
+            <FormField label="Resolver group (optional)">
               <StyledSelect
                 value={form.resolver_group_id}
                 onChange={(v) => setForm({ ...form, resolver_group_id: v })}
@@ -1306,7 +1306,7 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Label"><input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. Critical" className={inputCls} /></FormField>
-            <FormField label="SLA Days (optional)"><input type="number" min={1} value={form.sla_days} onChange={(e) => setForm({ ...form, sla_days: e.target.value })} placeholder="Override SLA" className={inputCls} /></FormField>
+            <FormField label="SLA days (optional)"><input type="number" min={1} value={form.sla_days} onChange={(e) => setForm({ ...form, sla_days: e.target.value })} placeholder="Override SLA" className={inputCls} /></FormField>
             <FormField label="Color">
               <div className="flex gap-2 items-center">
                 <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-[38px] rounded-control border border-border cursor-pointer" />
@@ -1520,7 +1520,7 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
 
         <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField label="Group Name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. IT Support" className={inputCls} /></FormField>
+            <FormField label="Group name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. IT Support" className={inputCls} /></FormField>
             <FormField label="Department (optional)">
               <DepartmentSelect
                 value={form.department_id}
@@ -1533,7 +1533,7 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
           </div>
           <FormField label="Description (optional)"><input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="What this group handles…" className={inputCls} /></FormField>
 
-          <FormField label="Assignment Strategy">
+          <FormField label="Assignment strategy">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               {ASSIGNMENT_STRATEGIES.map((opt) => (
                 <button key={opt.value} type="button" onClick={() => setForm({ ...form, assignment_strategy: opt.value })}
@@ -1593,7 +1593,7 @@ function TktResolverGroupsTab({ orgId }: { orgId: string }) {
       />
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} group{items.length !== 1 ? 's' : ''}</p>
-        <Button onClick={openCreate}><Plus size={14} /> Add Group</Button>
+        <Button onClick={openCreate}><Plus size={14} /> Add group</Button>
       </div>
       {items.length === 0 && <div className="text-center py-12 text-text-secondary text-body">No resolver groups yet. Create one to route tickets to a pool of resolvers.</div>}
       <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
@@ -1793,7 +1793,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
 
         <div className="bg-surface border border-border-light rounded-card shadow-card p-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <FormField label="Template Name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. VPN Access Request" className={inputCls} /></FormField>
+            <FormField label="Template name"><input type="text" autoFocus value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); if (error) setError(null) }} placeholder="e.g. VPN Access Request" className={inputCls} /></FormField>
             <FormField label="Type">
               <div className="flex gap-2">
                 {(['simple', 'full'] as TicketTemplateType[]).map((t) => (
@@ -1801,7 +1801,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
                 ))}
               </div>
             </FormField>
-            <FormField label="Ticket Type (optional)">
+            <FormField label="Ticket type (optional)">
               <StyledSelect
                 value={form.ticket_type_id}
                 onChange={(v) => setForm({ ...form, ticket_type_id: v })}
@@ -1834,7 +1834,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
                 ]}
               />
             </FormField>
-            <FormField label="Resolver Group (optional)">
+            <FormField label="Resolver group (optional)">
               <StyledSelect
                 value={form.resolver_group_id}
                 onChange={(v) => setForm({ ...form, resolver_group_id: v })}
@@ -1845,7 +1845,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
                 ]}
               />
             </FormField>
-            <FormField label="Catalog Department (optional)">
+            <FormField label="Catalog department (optional)">
               <DepartmentSelect
                 value={form.department_id}
                 onChange={(id) => setForm({ ...form, department_id: id })}
@@ -1854,7 +1854,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
                 inline
               />
             </FormField>
-            <FormField label="Group Label (optional)"><input type="text" value={form.group_label} onChange={(e) => setForm({ ...form, group_label: e.target.value })} placeholder="e.g. Access Requests" className={inputCls} /></FormField>
+            <FormField label="Group label (optional)"><input type="text" value={form.group_label} onChange={(e) => setForm({ ...form, group_label: e.target.value })} placeholder="e.g. Access Requests" className={inputCls} /></FormField>
             <FormField label="SLA Override (days, optional)"><input type="number" min={1} value={form.sla_days} onChange={(e) => setForm({ ...form, sla_days: e.target.value })} placeholder="Inherits from type/category" className={inputCls} /></FormField>
             <FormField label="Response SLA (hours, optional)"><input type="number" min={1} value={form.response_sla_hours} onChange={(e) => setForm({ ...form, response_sla_hours: e.target.value })} placeholder="Inherits from type/category" className={inputCls} /></FormField>
           </div>
@@ -1869,12 +1869,12 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
             </div>
           </div>
 
-          <FormField label="Title Template *"><input type="text" value={form.title_template} onChange={(e) => { setForm({ ...form, title_template: e.target.value }); if (error) setError(null) }} placeholder="Pre-filled ticket title" className={inputCls} /></FormField>
-          <FormField label="Description Template (optional)">
+          <FormField label="Title template *"><input type="text" value={form.title_template} onChange={(e) => { setForm({ ...form, title_template: e.target.value }); if (error) setError(null) }} placeholder="Pre-filled ticket title" className={inputCls} /></FormField>
+          <FormField label="Description template (optional)">
             <textarea value={form.description_template} onChange={(e) => setForm({ ...form, description_template: e.target.value })} rows={2} placeholder="Pre-filled description..." className={`${inputCls} resize-none`} />
           </FormField>
           <div>
-            <Label className="mb-2">Checklist Items</Label>
+            <Label className="mb-2">Checklist items</Label>
             {checklistItems.map((item, idx) => (
               <div key={idx} className="flex gap-2 mb-2 max-w-xl">
                 <input type="text" value={item} onChange={(e) => setChecklistItems((prev) => prev.map((v, i) => i === idx ? e.target.value : v))} placeholder={`Item ${idx + 1}`} className={inputCls} />
@@ -1932,7 +1932,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
       />
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} template{items.length !== 1 ? 's' : ''}</p>
-        <Button onClick={openCreate}><Plus size={14} /> Add Template</Button>
+        <Button onClick={openCreate}><Plus size={14} /> Add template</Button>
       </div>
       {items.length === 0 && <div className="text-center py-12 text-text-secondary text-label">No templates yet.</div>}
       {sections.map((section) => (
