@@ -74,7 +74,7 @@ function AttendeeChip({
           <button
             type="button"
             onClick={onToggleOptional}
-            className={`text-meta font-medium rounded-[4px] px-1.5 py-0.5 transition-colors shrink-0 border ${
+            className={`text-meta font-medium rounded-xs px-1.5 py-0.5 transition-colors shrink-0 border outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring ${
               isOptional ? 'bg-surface-control text-text-muted border-border-light' : 'bg-primary-subtle text-primary-text border-primary-border'
             }`}
           >
@@ -82,7 +82,7 @@ function AttendeeChip({
           </button>
         </Tooltip>
       )}
-      <button type="button" onClick={onRemove} className="w-4 h-4 flex items-center justify-center text-text-muted hover:text-danger transition-colors shrink-0" aria-label={`Remove ${person.name}`}>
+      <button type="button" onClick={onRemove} className="w-4 h-4 flex items-center justify-center rounded-xs text-text-muted hover:text-danger transition-colors shrink-0 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring" aria-label={`Remove ${person.name}`}>
         <X size={11} />
       </button>
     </div>
@@ -149,13 +149,9 @@ export default function MeetingAttendeeSelector({
             />
           )
         })}
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-meta font-medium text-primary-text hover:bg-primary-subtle transition-colors"
-        >
+        <Button type="button" variant="secondary" size="sm" onClick={() => setOpen(true)}>
           <Plus size={12} /> {chipValue.length === 0 ? placeholder : 'Add'}
-        </button>
+        </Button>
       </div>
 
       {/* Picker — kit dialog, matching Assignees & CC */}
@@ -220,7 +216,7 @@ export default function MeetingAttendeeSelector({
                       type="button"
                       onClick={() => toggle(p.user_id)}
                       disabled={blocked}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:-outline-offset-2 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring ${
                         blocked ? 'opacity-55 cursor-not-allowed' : selected ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                       }`}
                     >

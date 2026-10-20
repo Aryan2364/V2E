@@ -63,7 +63,7 @@ export function StatusBadge({ status }: { status: MeetingStatus }) {
   const m = MEETING_STATUS_META[status]
   return (
     <span
-      className="inline-flex items-center font-medium text-[12px] rounded-full px-2.5 py-0.5 border whitespace-nowrap"
+      className="inline-flex items-center font-medium text-meta rounded-full px-2.5 py-0.5 border whitespace-nowrap"
       style={{ backgroundColor: m.bg, color: m.text, borderColor: m.border }}
     >
       {m.label}
@@ -74,7 +74,7 @@ export function StatusBadge({ status }: { status: MeetingStatus }) {
 export function ResponseBadge({ response }: { response: MeetingAttendeeResponse }) {
   const m = RESPONSE_META[response]
   return (
-    <span className="inline-flex items-center font-medium text-[12px] rounded-full px-2.5 py-0.5" style={{ backgroundColor: m.bg, color: m.text }}>
+    <span className="inline-flex items-center font-medium text-meta rounded-full px-2.5 py-0.5" style={{ backgroundColor: m.bg, color: m.text }}>
       {m.label}
     </span>
   )
@@ -176,21 +176,21 @@ export function DurationField({
 
   const chip = (active: boolean) =>
     [
-      'px-3 py-1.5 min-h-[36px] text-body rounded-[8px] border transition-colors',
+      'px-3 py-1.5 min-h-[36px] text-body rounded-lg border transition-colors outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring',
       disabled
         ? 'bg-surface-control-pressed text-text-muted border-border-light cursor-not-allowed'
         : active
-          ? 'bg-primary text-primary-foreground border-primary'
-          : 'bg-surface text-text-secondary border-border-light hover:border-border',
+          ? 'bg-primary-subtle font-medium text-primary-text border-primary-border'
+          : 'bg-surface text-text-secondary border-border-light hover:bg-surface-control',
     ].join(' ')
 
   const unitBtn = (active: boolean) =>
     [
-      'px-2.5 min-h-[36px] text-body transition-colors',
+      'px-2.5 min-h-[36px] text-body transition-colors focus-visible:-outline-offset-2 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring',
       disabled
         ? 'bg-surface-control-pressed text-text-muted cursor-not-allowed'
         : active
-          ? 'bg-primary text-primary-foreground font-medium'
+          ? 'bg-primary-subtle font-medium text-primary-text'
           : 'bg-surface text-text-secondary hover:bg-surface-control',
     ].join(' ')
 
@@ -207,6 +207,7 @@ export function DurationField({
             key={d}
             type="button"
             disabled={disabled}
+            aria-pressed={!custom && value === d}
             onClick={() => { setCustom(false); emit(d) }}
             className={chip(!custom && value === d)}
           >
@@ -216,6 +217,7 @@ export function DurationField({
         <button
           type="button"
           disabled={disabled}
+          aria-pressed={custom}
           onClick={() => { setCustom(true); setDraft(toDraft(value, unit)); requestAnimationFrame(() => boxRef.current?.select()) }}
           className={chip(custom)}
         >
@@ -239,8 +241,8 @@ export function DurationField({
             />
             {/* Type it in minutes or in hours — 90 min and 1.5 hrs are the same thing. */}
             <span className="inline-flex rounded-[8px] border border-border overflow-hidden">
-              <button type="button" disabled={disabled} onMouseDown={(e) => e.preventDefault()} onClick={() => switchUnit('min')} className={unitBtn(unit === 'min')}>min</button>
-              <button type="button" disabled={disabled} onMouseDown={(e) => e.preventDefault()} onClick={() => switchUnit('hr')} className={`${unitBtn(unit === 'hr')} border-l border-border`}>hrs</button>
+              <button type="button" disabled={disabled} onMouseDown={(e) => e.preventDefault()} aria-pressed={unit === 'min'} onClick={() => switchUnit('min')} className={unitBtn(unit === 'min')}>min</button>
+              <button type="button" disabled={disabled} onMouseDown={(e) => e.preventDefault()} aria-pressed={unit === 'hr'} onClick={() => switchUnit('hr')} className={`${unitBtn(unit === 'hr')} border-l border-border`}>hrs</button>
             </span>
           </span>
         )}

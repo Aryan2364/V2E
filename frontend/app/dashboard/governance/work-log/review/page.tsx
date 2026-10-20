@@ -9,6 +9,7 @@ import Tooltip from '@/components/ui/tooltip'
 import type { DailyUpdate, ReadableWriter, WorkLogRemark, WorkLogSubmission } from '@/lib/types/workLogs'
 import { format as formatDateFns } from 'date-fns'
 import { PageHeader } from '@/components/shell/page-header'
+import WorkLogTabs from '../WorkLogTabs'
 
 const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
 
@@ -82,7 +83,7 @@ export default function WorkLogReviewPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Review work logs" />
+      <PageHeader title="Work log" tabs={<WorkLogTabs />} />
       <div className="flex flex-col lg:flex-row gap-6">
       {/* Writers */}
       <aside className="lg:w-64 shrink-0">
@@ -101,7 +102,7 @@ export default function WorkLogReviewPage() {
                   <button
                     type="button"
                     onClick={() => loadWriter(w.user_id)}
-                    className={`w-full text-left px-2.5 py-2 rounded-lg transition-colors ${
+                    className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring w-full text-left px-2.5 py-2 rounded-lg transition-colors ${
                       writerId === w.user_id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                     }`}
                   >
@@ -135,7 +136,7 @@ export default function WorkLogReviewPage() {
                       <button
                         type="button"
                         onClick={() => setSelected({ kind: 'daily', daily: d })}
-                        className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-left transition-colors ${
+                        className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-left transition-colors ${
                           selected?.kind === 'daily' && selected.daily.id === d.id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                         }`}
                       >
@@ -157,7 +158,7 @@ export default function WorkLogReviewPage() {
                       <button
                         type="button"
                         onClick={() => setSelected({ kind: 'submission', submission: s })}
-                        className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-left transition-colors ${
+                        className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-left transition-colors ${
                           selected?.kind === 'submission' && selected.submission.id === s.id ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                         }`}
                       >

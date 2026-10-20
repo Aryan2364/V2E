@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { X, RotateCcw, CalendarSearch } from 'lucide-react'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
 import { meetingsApi } from '@/lib/api/meetings'
 import type { Meeting } from '@/lib/types/meetings'
@@ -25,8 +25,8 @@ export default function MeetingScheduleTab({
   return (
     <div className="flex flex-col gap-4">
       <div className="bg-surface border border-border-light rounded-[12px] p-6">
-        <h3 className="text-[16px] font-medium text-text-primary mb-1">Scheduled time</h3>
-        <p className="text-[15px] text-text-primary">{fmtDateTime(meeting.scheduled_start)} – {fmtTime(meeting.scheduled_end)}</p>
+        <h3 className="text-card-heading font-medium text-text-primary mb-1">Scheduled time</h3>
+        <p className="text-body text-text-primary">{fmtDateTime(meeting.scheduled_start)} – {fmtTime(meeting.scheduled_end)}</p>
         <p className="text-meta text-text-muted mt-1">The organiser sets the time. If it changes, everyone on the meeting is notified.</p>
 
         {/* My own response — the only action is to decline (opt-out). */}
@@ -37,9 +37,9 @@ export default function MeetingScheduleTab({
         {/* Organiser can peek at busy times when considering a reschedule (via edit). */}
         {canManage && open && (
           <div className="mt-4 pt-4 border-t border-border-light">
-            <button type="button" onClick={() => setShowBusy((v) => !v)} className="inline-flex items-center gap-1.5 text-body font-medium text-primary-text">
+            <Button type="button" variant="secondary" size="sm" onClick={() => setShowBusy((v) => !v)}>
               <CalendarSearch size={15} /> {showBusy ? 'Hide' : 'Check'} busy times around this meeting
-            </button>
+            </Button>
             {showBusy && meeting.scheduled_start && (
               <div className="mt-2">
                 <BusyTimesPanel
@@ -57,12 +57,12 @@ export default function MeetingScheduleTab({
       </div>
 
       <div className="bg-surface border border-border-light rounded-[12px] p-6">
-        <h3 className="text-[16px] font-medium text-text-primary mb-3">Who’s coming</h3>
+        <h3 className="text-card-heading font-medium text-text-primary mb-3">Who’s coming</h3>
         <div className="flex flex-col gap-2 max-h-[420px] overflow-y-auto">
           {attendees.map((a) => (
             <div key={a.id} className="flex items-center justify-between gap-3 border border-border-light rounded-[8px] px-3 py-2">
               <div className="min-w-0">
-                <span className="text-[15px] text-text-primary">
+                <span className="text-body text-text-primary">
                   {a.user?.name ?? 'Unknown'}
                   {a.is_organizer && <span className="text-meta text-text-muted ml-1">(organizer)</span>}
                   {!a.is_organizer && (
@@ -104,9 +104,9 @@ function MyResponse({ meeting, orgId, onChanged, declined, reason }: { meeting: 
       <div className="mt-4 pt-4 border-t border-border-light">
         <div className="flex items-center justify-between gap-3 bg-danger-bg border border-danger-border rounded-[8px] px-3 py-2">
           <p className="text-body text-danger">You said you can’t make it{reason ? `: “${reason}”` : ''}.</p>
-          <button onClick={() => submit(() => meetingsApi.undoDecline(orgId, meeting.id), 'You’re back on the meeting')} disabled={busy} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-body font-medium text-primary-text bg-surface border border-primary-border rounded-[8px] shrink-0">
+          <Button variant="secondary" size="sm" onClick={() => submit(() => meetingsApi.undoDecline(orgId, meeting.id), 'You’re back on the meeting')} disabled={busy}>
             <RotateCcw size={14} /> I can make it after all
-          </button>
+          </Button>
         </div>
       </div>
     )
@@ -116,9 +116,9 @@ function MyResponse({ meeting, orgId, onChanged, declined, reason }: { meeting: 
     <div className="mt-4 pt-4 border-t border-border-light">
       <p className="text-body font-medium text-text-secondary mb-2">You’re on this meeting.</p>
       {!mode ? (
-        <button onClick={() => setMode(true)} className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-danger border border-danger-border rounded-[8px]">
+        <Button variant="secondary" onClick={() => setMode(true)}>
           <X size={15} /> Can’t make it
-        </button>
+        </Button>
       ) : (
         <div className="flex gap-2">
           <input className={`${inputClass} flex-1`} placeholder="Reason (required)" value={text} onChange={(e) => setText(e.target.value)} autoFocus />

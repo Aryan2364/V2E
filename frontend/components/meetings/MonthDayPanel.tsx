@@ -6,6 +6,8 @@ import { X, Video, MapPin, Crown, CalendarDays, Plus } from 'lucide-react'
 import type { Meeting } from '@/lib/types/meetings'
 import { MEETING_STATUS_META } from '@/lib/types/meetings'
 import { fmtTime } from './shared'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 // ── initials avatar helpers (meeting-flavoured; host + declined aware) ──────────
 const AVATAR_COLORS = ['bg-primary', 'bg-text-secondary', 'bg-success', 'bg-warning', 'bg-danger', 'bg-text-secondary', 'bg-text-secondary']
@@ -129,10 +131,10 @@ export default function MonthDayPanel({
         {/* header */}
         <div className="flex items-start justify-between gap-3 px-4 py-3.5 border-b border-border-light">
           <div>
-            <h3 className="text-[17px] font-medium text-text-primary leading-tight">{dateLabel}</h3>
+            <h3 className="text-card-heading font-medium text-text-primary leading-tight">{dateLabel}</h3>
             <p className="text-body text-text-muted mt-0.5">{meetings.length} meeting{meetings.length === 1 ? '' : 's'}</p>
           </div>
-          <button onClick={close} className="p-1 -mr-1 text-text-muted hover:text-text-secondary"><X size={18} /></button>
+          <Tooltip label="Close"><Button variant="ghost" size="icon" onClick={close} aria-label="Close"><X size={18} /></Button></Tooltip>
         </div>
 
         {/* list */}
@@ -142,12 +144,9 @@ export default function MonthDayPanel({
               <div className="w-12 h-12 rounded-[14px] bg-primary-subtle flex items-center justify-center text-primary-text mb-3"><CalendarDays size={22} /></div>
               <p className="text-body font-medium text-text-primary">No meetings this day</p>
               {onCreate && (
-                <button
-                  onClick={() => { const d = new Date(day); d.setHours(10, 0, 0, 0); onCreate(d.toISOString()) }}
-                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg"
-                >
+                <Button className="mt-3" onClick={() => { const d = new Date(day); d.setHours(10, 0, 0, 0); onCreate(d.toISOString()) }}>
                   <Plus size={14} /> Schedule a meeting
-                </button>
+                </Button>
               )}
             </div>
           ) : (
@@ -160,12 +159,12 @@ export default function MonthDayPanel({
                 <button
                   key={m.id}
                   onClick={() => onSelect(m.id)}
-                  className="w-full text-left rounded-[10px] border border-border-light hover:border-primary hover:shadow-xs transition-all p-3 bg-surface"
+                  className="w-full text-left rounded-xl border border-border-light hover:border-primary hover:shadow-xs transition-all p-3 bg-surface outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
                 >
                   <div className="flex items-start gap-2">
                     <span className="mt-1 w-2.5 h-2.5 rounded-full shrink-0" style={{ background: meta.text }} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-[15px] font-medium text-text-primary leading-snug">{m.title}</p>
+                      <p className="text-body font-medium text-text-primary leading-snug">{m.title}</p>
                       <p className="text-body text-text-secondary mt-0.5 flex items-center gap-1.5">
                         {online ? <Video size={13} className="text-text-muted" /> : <MapPin size={13} className="text-text-muted" />}
                         {m.scheduled_start ? `${fmtTime(m.scheduled_start)}${m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}` : 'No time set'}

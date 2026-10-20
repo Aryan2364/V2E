@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Lock, Check } from 'lucide-react'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
 import { meetingsApi } from '@/lib/api/meetings'
 import RichEditor from '@/components/ui/RichEditor'
@@ -58,7 +58,7 @@ export default function MeetingRecordTab({ orgId, meeting, canEdit, onSaved }: {
       {!locked && (
         <div className="flex justify-end items-center gap-3">
           {saved && <span className="inline-flex items-center gap-1 text-body font-medium text-success"><Check size={15} /> Saved</span>}
-          <Button variant="primary" onClick={save} isLoading={saving} disabled={saving}>Save record</Button>
+          <Button variant="primary" onClick={save} loading={saving} disabled={saving}>Save record</Button>
         </div>
       )}
     </div>

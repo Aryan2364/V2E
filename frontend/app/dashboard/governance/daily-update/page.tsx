@@ -22,6 +22,9 @@ import type { DailyUpdateView, DayContext } from '@/lib/types/workLogs'
 import DatePicker from '@/components/ui/DatePicker'
 import { format as formatDateFns } from 'date-fns'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
+import { PageHeader } from '@/components/shell/page-header'
 
 // Local YYYY-MM-DD (avoids UTC drift from toISOString).
 function localDate(d: Date): string {
@@ -135,33 +138,38 @@ export default function DailyUpdatePage() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-[28px] font-medium text-text-primary">Daily Update</h1>
-          <p className="text-body text-text-secondary mt-0.5">Log your work, blockers, decisions, and tomorrow&apos;s plan.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setDate((d) => shiftDate(d, -1))}
-            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-surface-control"
-            aria-label="Previous day"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <DatePicker value={date} max={today} onChange={(v) => setDate(v || today)} placeholder="Select date" />
-          <button
-            type="button"
-            onClick={() => setDate((d) => (d < today ? shiftDate(d, 1) : d))}
-            disabled={date >= today}
-            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-surface-control disabled:text-muted disabled:cursor-not-allowed"
-            aria-label="Next day"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Daily update"
+        meta="Log your work, blockers, decisions, and tomorrow's plan."
+        actions={
+          <>
+            <Tooltip label="Previous day">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setDate((d) => shiftDate(d, -1))}
+                aria-label="Previous day"
+              >
+                <ChevronLeft size={18} />
+              </Button>
+            </Tooltip>
+            <DatePicker value={date} max={today} onChange={(v) => setDate(v || today)} placeholder="Select date" />
+            <Tooltip label="Next day">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setDate((d) => (d < today ? shiftDate(d, 1) : d))}
+                disabled={date >= today}
+                aria-label="Next day"
+              >
+                <ChevronRight size={18} />
+              </Button>
+            </Tooltip>
+          </>
+        }
+      />
 
       <div className="flex flex-col-reverse lg:flex-row gap-6">
         {/* ─── Sidebar: day context ─── */}
@@ -242,14 +250,15 @@ export default function DailyUpdatePage() {
               {/* Notes */}
               <div className={`${cardCls} p-6`}>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-[18px] font-medium text-text-primary">Work notes</h2>
-                  <button
+                  <h2 className="text-section font-medium text-text-primary">Work notes</h2>
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="sm"
                     onClick={() => setNotes((n) => [...n, { title: '', description: '' }])}
-                    className="flex items-center gap-1.5 text-body font-medium text-primary-text hover:text-primary-text"
                   >
                     <Plus size={15} /> Add note
-                  </button>
+                  </Button>
                 </div>
                 <div className="space-y-4">
                   {notes.map((note, i) => (
@@ -264,14 +273,17 @@ export default function DailyUpdatePage() {
                           className={inputCls}
                         />
                         {notes.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => setNotes((n) => n.filter((_, j) => j !== i))}
-                            className="w-9 h-9 shrink-0 flex items-center justify-center rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg"
-                            aria-label="Remove note"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                          <Tooltip label="Remove note">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setNotes((n) => n.filter((_, j) => j !== i))}
+                              aria-label="Remove note"
+                            >
+                              <Trash2 size={15} />
+                            </Button>
+                          </Tooltip>
                         )}
                       </div>
                       <textarea
@@ -291,7 +303,7 @@ export default function DailyUpdatePage() {
               {/* Folded daily demands */}
               {view && view.folded_demands.length > 0 && (
                 <div className={`${cardCls} p-6`}>
-                  <h2 className="text-[18px] font-medium text-text-primary flex items-center gap-2 mb-1">
+                  <h2 className="text-section font-medium text-text-primary flex items-center gap-2 mb-1">
                     <Inbox size={17} className="text-primary-text" /> Demanded daily logs
                   </h2>
                   <p className="text-body text-text-secondary mb-4">These were demanded from you — submit them with your update.</p>
@@ -349,22 +361,12 @@ export default function DailyUpdatePage() {
               {/* Actions */}
               <div className="flex items-center justify-end gap-3">
                 {savedFlash && <span className="text-body text-success font-medium">Saved</span>}
-                <button
-                  type="button"
-                  onClick={() => save(false)}
-                  disabled={saving}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle disabled:opacity-60"
-                >
+                <Button type="button" variant="secondary" onClick={() => save(false)} disabled={saving}>
                   <Save size={15} /> Save draft
-                </button>
-                <button
-                  type="button"
-                  onClick={() => save(true)}
-                  disabled={saving}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted"
-                >
+                </Button>
+                <Button type="button" variant="primary" onClick={() => save(true)} disabled={saving}>
                   <Send size={15} /> {isSubmitted ? 'Update' : 'Submit'}
-                </button>
+                </Button>
               </div>
             </>
           )}

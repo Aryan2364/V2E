@@ -120,7 +120,7 @@ export default function MeetingCalendarView({
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onBlockSelect?.(b) }}
-                              className="w-full text-left text-meta leading-tight rounded-xs px-1.5 py-1 truncate border border-dashed border-border bg-surface-sunken text-text-muted flex items-center gap-1 hover:brightness-95"
+                              className="w-full text-left text-meta leading-tight rounded-xs px-1.5 py-1 truncate border border-dashed border-border bg-surface-sunken text-text-muted flex items-center gap-1 hover:brightness-95 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
                             >
                               <span className="w-1.5 h-1.5 rounded-full bg-text-muted shrink-0" />
                               <span className="truncate">{b.title}</span>

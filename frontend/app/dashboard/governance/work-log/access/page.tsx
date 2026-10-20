@@ -10,6 +10,9 @@ import { Switch } from '@/components/ui/switch'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import Tooltip from '@/components/ui/tooltip'
+import { PageHeader } from '@/components/shell/page-header'
+import WorkLogTabs from '../WorkLogTabs'
 
 const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
 
@@ -71,18 +74,28 @@ export default function WorkLogAccessPage() {
     await load()
   }
 
-  if (!config) return <p className="text-body text-text-muted">Loading…</p>
+  const header = <PageHeader title="Work log" tabs={<WorkLogTabs />} />
+
+  if (!config)
+    return (
+      <div>
+        {header}
+        <p className="text-body text-text-muted">Loading…</p>
+      </div>
+    )
 
   const writerAllow = new Set(config.settings.writer_user_ids ?? [])
 
   return (
+    <div>
+    {header}
     <div className="space-y-6 max-w-3xl">
       {/* Read access */}
       <div className={`${cardCls} p-6`}>
-        <h2 className="text-[18px] font-medium text-text-primary flex items-center gap-2 mb-1">
+        <h2 className="text-section font-medium text-text-primary flex items-center gap-2 mb-1">
           <ShieldCheck size={17} className="text-primary-text" /> Read access
         </h2>
-        <p className="text-body text-text-secondary mb-4">Control who can read whose Daily Updates and demanded logs.</p>
+        <p className="text-body text-text-secondary mb-4">Control who can read whose daily updates and demanded logs.</p>
 
         <label className="flex items-center justify-between gap-4 py-2">
           <span className="text-body text-text-primary">
@@ -134,14 +147,17 @@ export default function WorkLogAccessPage() {
                     <span className="font-medium">{g.reader_name}</span> can read{' '}
                     <span className="font-medium">{g.writer_name}</span>
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => removeGrant(g.id)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg"
-                    aria-label="Remove grant"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  <Tooltip label="Remove grant">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeGrant(g.id)}
+                      aria-label="Remove grant"
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </Tooltip>
                 </li>
               ))}
             </ul>
@@ -151,11 +167,11 @@ export default function WorkLogAccessPage() {
 
       {/* Write access */}
       <div className={`${cardCls} p-6`}>
-        <h2 className="text-[18px] font-medium text-text-primary mb-1">Write access</h2>
-        <p className="text-body text-text-secondary mb-4">By default everyone has a Daily Update. Restrict it to a specific set if needed.</p>
+        <h2 className="text-section font-medium text-text-primary mb-1">Write access</h2>
+        <p className="text-body text-text-secondary mb-4">By default everyone has a daily update. Restrict it to a specific set if needed.</p>
 
         <label className="flex items-center justify-between gap-4 py-2">
-          <span className="text-body text-text-primary">Restrict who can write Daily Updates</span>
+          <span className="text-body text-text-primary">Restrict who can write daily updates</span>
           <Switch
             checked={restrictWriters}
             onCheckedChange={(checked) => setRestrict(checked)}
@@ -164,7 +180,7 @@ export default function WorkLogAccessPage() {
 
         {restrictWriters && (
           <div className="border-t border-border-light mt-4 pt-4">
-            <p className="text-meta text-text-muted mb-3">Only the selected people will be able to fill a Daily Update.</p>
+            <p className="text-meta text-text-muted mb-3">Only the selected people will be able to fill a daily update.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-72 overflow-y-auto">
               {config.members.map((m) => (
                 <label key={m.user_id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-surface-sunken cursor-pointer">
@@ -179,6 +195,7 @@ export default function WorkLogAccessPage() {
           </div>
         )}
       </div>
+    </div>
     </div>
   )
 }

@@ -11,7 +11,7 @@ import type { MeetingRhythm } from '@/lib/types/meetings'
 import { useMeetingPermissions } from '@/components/meetings/shared'
 import type { PersonOption } from '@/components/meetings/MeetingAttendeeSelector'
 import CreateRhythmModal from '@/components/meetings/CreateRhythmModal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
@@ -106,7 +106,7 @@ export default function RhythmsPage() {
       ) : rhythms.length === 0 ? (
         <div className="bg-surface border border-border-light rounded-xl p-12 text-center">
           <div className="w-14 h-14 rounded-xl bg-surface-control flex items-center justify-center text-text-secondary mx-auto mb-3"><Repeat size={26} /></div>
-          <h3 className="text-[18px] font-medium text-text-primary">No rhythms yet</h3>
+          <h3 className="text-section font-medium text-text-primary">No rhythms yet</h3>
           <p className="text-body text-text-secondary mt-1">Set up a recurring meeting to build a cadence.</p>
         </div>
       ) : (
@@ -114,8 +114,8 @@ export default function RhythmsPage() {
           {rhythms.map((r) => (
             <div key={r.id} className="bg-surface border border-border-light rounded-xl p-4 flex flex-col">
               <div className="flex items-start justify-between gap-2">
-                <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-[16px] font-medium text-text-primary hover:text-primary-text hover:underline">{r.title}</Link>
-                <span className="inline-flex items-center font-medium text-[12px] rounded-full px-2.5 py-0.5 border shrink-0"
+                <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-card-heading font-medium text-text-primary hover:text-primary-text hover:underline">{r.title}</Link>
+                <span className="inline-flex items-center font-medium text-meta rounded-full px-2.5 py-0.5 border shrink-0"
                   style={r.is_active ? { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'var(--success-border)' } : { backgroundColor: 'var(--surface-control)', color: 'var(--text-secondary)', borderColor: 'var(--border-light)' }}>
                   {r.is_active ? 'Active' : 'Paused'}
                 </span>
@@ -129,13 +129,13 @@ export default function RhythmsPage() {
                 <Link href={`/dashboard/governance/meetings/rhythms/${r.id}`} className="text-body font-medium text-primary-text hover:underline">View details &amp; history</Link>
                 {r.can_manage && (
                   <div className="ml-auto flex items-center gap-1">
-                    <Tooltip label="Edit"><button onClick={() => setEditing(r)} aria-label="Edit" className="p-1.5 text-text-secondary hover:bg-surface-control rounded-lg"><Pencil size={16} /></button></Tooltip>
+                    <Tooltip label="Edit"><Button variant="ghost" size="icon" onClick={() => setEditing(r)} aria-label="Edit"><Pencil size={16} /></Button></Tooltip>
                     <Tooltip label={r.is_active ? 'Pause' : 'Resume'}>
-                    <button onClick={() => toggle(r)} aria-label={r.is_active ? 'Pause' : 'Resume'} className="p-1.5 text-text-secondary hover:bg-surface-control rounded-lg">
+                    <Button variant="ghost" size="icon" onClick={() => toggle(r)} aria-label={r.is_active ? 'Pause' : 'Resume'}>
                       {r.is_active ? <Pause size={16} /> : <Play size={16} />}
-                    </button>
+                    </Button>
                     </Tooltip>
-                    <Tooltip label="Stop"><button onClick={() => setStopping(r)} aria-label="Stop" className="p-1.5 text-danger hover:bg-danger-bg rounded-lg"><Square size={16} /></button></Tooltip>
+                    <Tooltip label="Stop"><Button variant="ghost" size="icon" onClick={() => setStopping(r)} aria-label="Stop"><Square size={16} /></Button></Tooltip>
                   </div>
                 )}
               </div>

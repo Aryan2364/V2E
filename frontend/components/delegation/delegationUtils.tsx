@@ -10,7 +10,7 @@ const STATUS_META: Record<DelegationStatus, { label: string; cls: string }> = {
 export function StatusPill({ status }: { status: DelegationStatus }) {
   const m = STATUS_META[status]
   return (
-    <span className={`inline-flex items-center rounded-[999px] border px-2.5 py-0.5 text-[12px] font-medium ${m.cls}`}>
+    <span className={`inline-flex items-center rounded-[999px] border px-2.5 py-0.5 text-meta font-medium ${m.cls}`}>
       {m.label}
     </span>
   )

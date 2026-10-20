@@ -13,7 +13,7 @@ import { PageHeader } from '@/components/shell/page-header'
 function Stat({ label, value, color = 'var(--text-primary)', sub }: { label: string; value: string | number; color?: string; sub?: string }) {
   return (
     <div className="bg-surface border border-border-light rounded-xl p-4">
-      <p className="text-[26px] font-medium leading-none" style={{ color }}>{value}</p>
+      <p className="text-section font-medium leading-none" style={{ color }}>{value}</p>
       <p className="text-body text-text-secondary mt-1">{label}</p>
       {sub && <p className="text-meta text-text-muted mt-0.5">{sub}</p>}
     </div>
@@ -74,7 +74,7 @@ export default function MeetingReportsPage() {
           </div>
 
           <div>
-            <h2 className="text-[18px] font-medium text-text-primary mb-2">Attendance</h2>
+            <h2 className="text-section font-medium text-text-primary mb-2">Attendance</h2>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <Stat label="Attendance rate" value={`${report.attendance.attendance_rate}%`} color="var(--success)" sub="recorded meetings only" />
               <Stat label="No-show rate" value={`${report.attendance.no_show_rate}%`} color={report.attendance.no_show_rate > 0 ? 'var(--danger)' : 'var(--success)'} sub="recorded meetings only" />
@@ -92,7 +92,7 @@ export default function MeetingReportsPage() {
 
           {/* Per-person over the series */}
           <div className="bg-surface border border-border-light rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-border-light"><h2 className="text-[16px] font-medium text-text-primary">Per person</h2></div>
+            <div className="px-4 py-3 border-b border-border-light"><h2 className="text-card-heading font-medium text-text-primary">Per person</h2></div>
             <div className="overflow-x-auto">
               <table className="w-full text-body">
                 <thead>
@@ -126,7 +126,7 @@ export default function MeetingReportsPage() {
 
           {/* Output */}
           <div>
-            <h2 className="text-[18px] font-medium text-text-primary mb-2">Output</h2>
+            <h2 className="text-section font-medium text-text-primary mb-2">Output</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <Stat label="Decisions" value={report.output.decisions_total} />
               <Stat label="Per meeting" value={report.output.decisions_per_meeting} />

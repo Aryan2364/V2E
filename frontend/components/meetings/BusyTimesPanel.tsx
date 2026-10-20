@@ -55,7 +55,7 @@ export default function BusyTimesPanel({
     <div className="border border-border-light rounded-[12px] bg-surface">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border-light">
         <CalendarDays size={16} className="text-primary-text" />
-        <h4 className="text-[15px] font-medium text-text-primary">Busy times</h4>
+        <h4 className="text-body font-medium text-text-primary">Busy times</h4>
         {loading && <Loader2 size={14} className="animate-spin text-text-muted ml-1" />}
       </div>
 
@@ -80,7 +80,7 @@ export default function BusyTimesPanel({
                     type="button"
                     onClick={() => onPick?.(s.start, s.end)}
                     disabled={!onPick}
-                    className="flex items-center justify-between gap-2 text-left border rounded-[8px] px-3 py-2 hover:border-primary disabled:cursor-default"
+                    className="flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2 hover:border-primary disabled:cursor-default outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
                     style={{ borderColor: clean ? 'var(--success-bg)' : 'var(--warning-bg)', backgroundColor: clean ? 'var(--success-bg)' : 'var(--warning-bg)' }}
                   >
                     <span className="text-body text-text-primary">{fmt(s.start)}</span>
@@ -102,7 +102,7 @@ export default function BusyTimesPanel({
           {data?.people.map((p) => (
             <div key={p.user_id} className="border border-border-light rounded-[8px] px-3 py-2">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[15px] text-text-primary">{p.name}</span>
+                <span className="text-body text-text-primary">{p.name}</span>
                 {p.required
                   ? <span className="text-meta font-medium text-primary-text bg-primary-subtle rounded-full px-2 py-0.5">Required</span>
                   : <span className="text-meta font-medium text-text-muted bg-surface-control rounded-full px-2 py-0.5">Optional</span>}

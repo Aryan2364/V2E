@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
 import { meetingsApi, type CreateRhythmInput } from '@/lib/api/meetings'
 import { listEligibleSubjects } from '@/lib/api/permissions'
@@ -18,7 +18,7 @@ import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
 const inputClass =
-  'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  'w-full border border-border rounded-[8px] px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 const labelClass = 'block text-body font-medium text-text-secondary mb-1'
 const todayStr = () => new Date().toISOString().slice(0, 10)
 const freshSched = (): ScheduleEntryDraft => ({
@@ -321,7 +321,7 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-light">
           <Button variant="secondary" type="button" onClick={guarded.requestClose}>Cancel</Button>
-          <Button variant="primary" type="submit" isLoading={saving} disabled={saving}>{isEditing ? 'Save meeting' : 'Add recurring meeting'}</Button>
+          <Button variant="primary" type="submit" loading={saving} disabled={saving}>{isEditing ? 'Save meeting' : 'Add recurring meeting'}</Button>
         </div>
       </form>
     </Modal>

@@ -102,17 +102,14 @@ export default function GoogleCalendarConnect({
     <>
       {renderTrigger && (
         <Tooltip label={connected ? 'Google Calendar — connected' : 'Connect Google Calendar'}>
-        <button
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 px-3 py-2.5 text-body font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken"
-        >
+        <Button variant="secondary" onClick={() => setOpen(true)}>
           <span
             className="w-2 h-2 rounded-full shrink-0"
             style={{ backgroundColor: connected ? 'var(--success)' : 'var(--border)' }}
           />
           <Calendar size={16} />
           <span className="hidden sm:inline">Google Calendar</span>
-        </button>
+        </Button>
         </Tooltip>
       )}
 

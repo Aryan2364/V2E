@@ -20,7 +20,7 @@ const LINK_LABEL: Record<string, string> = { goal: 'Goal', project: 'Project', t
 function Stat({ label, value, color = 'var(--text-primary)', flag }: { label: string; value: string | number; color?: string; flag?: boolean }) {
   return (
     <div className={['bg-surface border rounded-xl p-4', flag ? 'border-danger-border' : 'border-border-light'].join(' ')}>
-      <p className="text-[26px] font-medium leading-none flex items-center gap-1" style={{ color }}>{flag && <AlertTriangle size={18} className="text-danger" />}{value}</p>
+      <p className="text-section font-medium leading-none flex items-center gap-1" style={{ color }}>{flag && <AlertTriangle size={18} className="text-danger" />}{value}</p>
       <p className="text-body text-text-secondary mt-1">{label}</p>
     </div>
   )
@@ -28,7 +28,7 @@ function Stat({ label, value, color = 'var(--text-primary)', flag }: { label: st
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-6">
-      <h2 className="text-[18px] font-medium text-text-primary mb-3">{title}</h2>
+      <h2 className="text-section font-medium text-text-primary mb-3">{title}</h2>
       {children}
     </div>
   )

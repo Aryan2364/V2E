@@ -18,7 +18,7 @@ import { useGuardedClose } from '@/lib/use-guarded-close'
 
 const labelClass = 'block text-body font-medium text-text-secondary mb-1.5'
 const inputClass =
-  'w-full border border-border rounded-[8px] px-3 py-2.5 text-[15px] text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  'w-full border border-border rounded-[8px] px-3 py-2.5 text-body text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 function timeToMin(hhmm: string): number {

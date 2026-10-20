@@ -26,6 +26,9 @@ import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/Responsi
 import Tooltip from '@/components/ui/tooltip'
 import StyledSelect from '@/components/ui/StyledSelect'
 import AccessHiddenState from '@/components/ui/AccessHiddenState'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
 
 const selectClass =
   'border border-border rounded-lg px-3 py-2 text-body text-text-primary bg-surface focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
@@ -70,7 +73,7 @@ const meetingColumns: ResponsiveColumn<Meeting>[] = [
       <>
         <div className="flex items-center gap-2">
           {m.type === 'offline' ? <MapPin size={14} className="text-text-muted" /> : <Video size={14} className="text-text-muted" />}
-          <span className="font-medium text-text-primary text-[15px]">{m.title}</span>
+          <span className="font-medium text-text-primary text-body">{m.title}</span>
         </div>
         <div className="text-meta text-text-muted mt-0.5 flex items-center gap-2">
           <span>{TYPE_LABEL[m.type]}</span>
@@ -113,16 +116,8 @@ export default function MeetingsPage() {
   const [tbOpen, setTbOpen] = useState(false)
   const [tbStart, setTbStart] = useState<string | undefined>(undefined)
   const [editBlock, setEditBlock] = useState<TimeBlock | null>(null)
-  // Header overflow menu (Governance, Google Calendar) + the Google modal it opens.
-  const [menuOpen, setMenuOpen] = useState(false)
+  // Google modal opened from the header overflow menu.
   const [gcalOpen, setGcalOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!menuOpen) return
-    const h = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false) }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [menuOpen])
 
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<MeetingStatus | ''>('')
@@ -244,76 +239,75 @@ export default function MeetingsPage() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <h1 className="text-[26px] font-medium text-text-primary leading-tight">Meetings</h1>
-          <p className="text-body text-text-secondary mt-1">Schedule, run and record meetings — with action items and decisions.</p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Frequent actions grouped as a segmented control; occasional ones live under "More". */}
-          <div className="relative" ref={menuRef}>
-            <div className="inline-flex items-center border border-border-light rounded-lg overflow-hidden">
-              <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-2 px-3 py-2.5 text-body font-medium text-text-secondary hover:bg-surface-sunken">
-                <Repeat size={16} /> Rhythms
-              </Link>
-              <span className="w-px self-stretch bg-surface-control-pressed" aria-hidden />
-              <Tooltip label="Block your time (only you see the name; colleagues see Busy)">
-              <button onClick={() => { setEditBlock(null); setTbStart(undefined); setTbOpen(true) }} className="inline-flex items-center gap-2 px-3 py-2.5 text-body font-medium text-text-secondary hover:bg-surface-sunken">
-                <CalendarClock size={16} /> Time-Block
-              </button>
-              </Tooltip>
-              <span className="w-px self-stretch bg-surface-control-pressed" aria-hidden />
-              <button onClick={() => setMenuOpen((o) => !o)} aria-label="More options" aria-haspopup="menu" aria-expanded={menuOpen} className={`px-2.5 py-2.5 text-text-secondary hover:bg-surface-sunken ${menuOpen ? 'bg-surface-control' : ''}`}>
+      <PageHeader
+        title="Meetings"
+        meta="Schedule, run and record meetings, with action items and decisions."
+        actions={
+          <>
+            <Button variant="secondary" render={<Link href="/dashboard/governance/meetings/rhythms" />}>
+              <Repeat size={16} /> Rhythms
+            </Button>
+            <Tooltip label="Block your time (only you see the name; colleagues see Busy)">
+              <Button
+                variant="secondary"
+                onClick={() => { setEditBlock(null); setTbStart(undefined); setTbOpen(true) }}
+              >
+                <CalendarClock size={16} /> Time block
+              </Button>
+            </Tooltip>
+            {/* Occasional actions live under the overflow menu. */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={<Button variant="secondary" size="icon" aria-label="More options" />}
+              >
                 <MoreHorizontal size={18} />
-              </button>
-            </div>
-            {menuOpen && (
-              <div role="menu" className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border-light rounded-[10px] shadow-lg p-1.5 z-50">
-                <Link href="/dashboard/governance/meetings/reports" onClick={() => setMenuOpen(false)} role="menuitem" className="w-full flex items-center gap-2.5 px-2.5 py-2 text-body text-text-secondary rounded-[6px] hover:bg-surface-control">
-                  <BarChart3 size={16} className="text-text-muted" /> Governance
-                </Link>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem render={<Link href="/dashboard/governance/meetings/reports" />}>
+                  <BarChart3 size={16} /> Governance
+                </DropdownMenuItem>
                 {gcal?.configured && (
-                  <button onClick={() => { setMenuOpen(false); setGcalOpen(true) }} role="menuitem" className="w-full flex items-center gap-2.5 px-2.5 py-2 text-body text-text-secondary rounded-[6px] hover:bg-surface-control">
-                    <Calendar size={16} className="text-text-muted" />
+                  <DropdownMenuItem onClick={() => setGcalOpen(true)}>
+                    <Calendar size={16} />
                     <span className="flex-1 text-left">Google Calendar</span>
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: gcal.connected ? 'var(--success)' : 'var(--border)' }} />
-                  </button>
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${gcal.connected ? 'bg-success' : 'bg-border'}`} />
+                  </DropdownMenuItem>
                 )}
-              </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {perms.write && (
+              <Button onClick={() => openCreate()}>
+                <Plus size={16} /> New meeting
+              </Button>
             )}
-          </div>
-          {perms.write && (
-            <button onClick={() => openCreate()} className="inline-flex items-center gap-2 px-4 py-2.5 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg">
-              <Plus size={16} /> New Meeting
-            </button>
-          )}
-          {/* Google Calendar modal — trigger is the "More" menu item; this only renders the dialog. */}
-          <GoogleCalendarConnect status={gcal} onChanged={refreshGcal} renderTrigger={false} open={gcalOpen} onOpenChange={setGcalOpen} />
-        </div>
-      </div>
+            {/* Google Calendar modal: trigger is the "More" menu item; this only renders the dialog. */}
+            <GoogleCalendarConnect status={gcal} onChanged={refreshGcal} renderTrigger={false} open={gcalOpen} onOpenChange={setGcalOpen} />
+          </>
+        }
+      />
 
       {/* Toolbar: nav + range label (left) · view toggle (right) */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
           {showNav && (
             <>
-              <button aria-label="Previous" onClick={() => navShift(-1)} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control"><ChevronLeft size={20} /></button>
-              <button onClick={() => setAnchor(new Date())} className="px-1.5 text-[16px] font-medium text-text-primary hover:text-primary-text transition-colors">Today</button>
-              <button aria-label="Next" onClick={() => navShift(1)} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control"><ChevronRight size={20} /></button>
-              <span className="text-[16px] font-medium text-text-primary ml-1.5">{rangeLabel(anchor, view, weekDays)}</span>
+              <Tooltip label="Previous">
+                <Button variant="ghost" size="icon" aria-label="Previous" onClick={() => navShift(-1)}><ChevronLeft size={18} /></Button>
+              </Tooltip>
+              <Button variant="secondary" size="sm" onClick={() => setAnchor(new Date())}>Today</Button>
+              <Tooltip label="Next">
+                <Button variant="ghost" size="icon" aria-label="Next" onClick={() => navShift(1)}><ChevronRight size={18} /></Button>
+              </Tooltip>
+              <span className="text-card-heading font-medium text-text-primary ml-1.5">{rangeLabel(anchor, view, weekDays)}</span>
             </>
           )}
         </div>
         <div className="flex items-center gap-2">
           {view === 'week' && (
             <Tooltip label="Toggle work week / full week">
-            <button
-              onClick={() => setWeekDaysPersist(weekDays === 5 ? 7 : 5)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-text-secondary border border-border-light rounded-lg hover:bg-surface-sunken"
-            >
+            <Button variant="secondary" size="sm" onClick={() => setWeekDaysPersist(weekDays === 5 ? 7 : 5)}>
               <Columns3 size={15} /> {weekDays === 5 ? '5-day' : '7-day'}
-            </button>
+            </Button>
             </Tooltip>
           )}
           <div className="flex rounded-lg border border-border-light overflow-hidden">
@@ -322,7 +316,7 @@ export default function MeetingsPage() {
                 key={v.key}
                 onClick={() => setView(v.key)}
                 aria-pressed={view === v.key}
-                className={['px-3 py-2 text-body font-medium', view === v.key ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-sunken'].join(' ')}
+                className={['px-3 py-2 text-body outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring', view === v.key ? 'bg-primary-subtle font-medium text-primary-text' : 'bg-surface text-text-secondary hover:bg-surface-control'].join(' ')}
               >
                 {v.label}
               </button>
@@ -422,7 +416,7 @@ export default function MeetingsPage() {
           emptyState={
             <div className="bg-surface border border-border-light rounded-xl p-12 text-center">
               <div className="w-14 h-14 rounded-xl bg-primary-subtle flex items-center justify-center text-primary-text mx-auto mb-3"><CalendarDays size={26} /></div>
-              <h3 className="text-[18px] font-medium text-text-primary">No meetings</h3>
+              <h3 className="text-section font-medium text-text-primary">No meetings</h3>
               <p className="text-body text-text-secondary mt-1">Create one to get started.</p>
             </div>
           }

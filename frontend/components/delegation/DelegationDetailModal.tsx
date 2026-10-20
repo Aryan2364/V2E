@@ -16,6 +16,9 @@ import {
 import Modal from '@/components/ui/Modal'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import { TextLink } from '@/components/ui/text-link'
+import Link from 'next/link'
 import { useToast } from '@/components/ui/Toast'
 import { delegationsApi, type Delegation } from '@/lib/api/delegations'
 import { StatusPill, fmtDate } from './delegationUtils'
@@ -96,14 +99,14 @@ export default function DelegationDetailModal({
           {/* Outcome */}
           <section>
             <h4 className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Outcome</h4>
-            <p className="text-[15px] text-text-primary whitespace-pre-wrap">{delegation.outcome}</p>
+            <p className="text-body text-text-primary whitespace-pre-wrap">{delegation.outcome}</p>
           </section>
 
           {/* KRA */}
           {delegation.kra && (
             <section>
               <h4 className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">KRA</h4>
-              <p className="text-[15px] text-text-primary whitespace-pre-wrap">{delegation.kra}</p>
+              <p className="text-body text-text-primary whitespace-pre-wrap">{delegation.kra}</p>
             </section>
           )}
 
@@ -138,19 +141,13 @@ export default function DelegationDetailModal({
                 {delegation.criteria.map((c) => (
                   <li key={c.id} className="flex items-start gap-2.5">
                     <Tooltip label={c.is_met ? 'Mark not met' : 'Mark met'}>
-                    <button
-                      type="button"
-                      onClick={() => toggleCriterion(c.id, !c.is_met)}
-                      disabled={!isActive}
-                      aria-label={c.is_met ? 'Mark not met' : 'Mark met'}
-                      className="mt-0.5 shrink-0 disabled:cursor-not-allowed"
-                    >
+                    <Button type="button" variant="ghost" size="icon" onClick={() => toggleCriterion(c.id, !c.is_met)} disabled={!isActive} aria-label={c.is_met ? 'Mark not met' : 'Mark met'} aria-pressed={c.is_met}>
                       {c.is_met ? (
                         <CheckCircle2 size={18} className="text-success" />
                       ) : (
-                        <Circle size={18} className="text-muted" />
+                        <Circle size={18} className="text-text-muted" />
                       )}
-                    </button>
+                    </Button>
                     </Tooltip>
                     <div className="min-w-0">
                       <p className={`text-body ${c.is_met ? 'text-text-muted line-through' : 'text-text-primary'}`}>
@@ -166,49 +163,32 @@ export default function DelegationDetailModal({
 
           {/* Linked review task */}
           {delegation.review_task_id && (
-            <button
-              type="button"
-              onClick={() => router.push(`/dashboard/tasks/${delegation.review_task_id}`)}
-              className="flex items-center gap-2 text-body font-medium text-primary-text hover:text-primary-text transition-colors self-start"
-            >
+            <TextLink className="inline-flex items-center gap-2 self-start" render={<Link href={`/dashboard/tasks/${delegation.review_task_id}`} />}>
               <CheckSquare size={15} /> Open review task <ExternalLink size={13} />
-            </button>
+            </TextLink>
           )}
 
           {/* Actions */}
           <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-border-light">
             {canManage && isActive && (
               <>
-                <button
-                  type="button"
-                  onClick={onEdit}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-body font-medium text-primary-text border-2 border-primary hover:bg-primary-subtle transition-colors"
-                >
+                <Button type="button" variant="secondary" onClick={onEdit}>
                   <Pencil size={14} /> Edit
-                </button>
-                <button
-                  type="button"
-                  disabled={busy === 'complete'}
-                  onClick={() =>
+                </Button>
+                <Button type="button" disabled={busy === 'complete'} onClick={() =>
                     run(() => delegationsApi.complete(orgId, delegation.id), 'complete').then(() =>
                       addToast('Delegation marked complete.', 'success'),
                     )
-                  }
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-body font-medium text-primary-foreground bg-success hover:bg-success disabled:opacity-60 transition-colors"
-                >
+                  }>
                   {busy === 'complete' ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                   Mark complete
-                </button>
+                </Button>
               </>
             )}
             {canDelete && (
-              <button
-                type="button"
-                onClick={() => setConfirm('delete')}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-body font-medium text-danger hover:bg-danger-bg transition-colors ml-auto"
-              >
+              <Button type="button" variant="secondary" className="ml-auto" onClick={() => setConfirm('delete')}>
                 <Trash2 size={14} /> Delete
-              </button>
+              </Button>
             )}
           </div>
         </div>

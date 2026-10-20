@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
 import {
-  ArrowLeft, Repeat, Pause, Play, Square, Clock, Users, CalendarClock, Pencil,
+  Repeat, Pause, Play, Square, Clock, Users, CalendarClock, Pencil,
   CalendarDays, CheckCircle2, CalendarX2, ChevronRight, Video, MapPin,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
@@ -13,10 +12,11 @@ import { getEmployees } from '@/lib/api/employees'
 import type { Meeting, MeetingRhythm } from '@/lib/types/meetings'
 import type { PersonOption } from '@/components/meetings/MeetingAttendeeSelector'
 import CreateRhythmModal from '@/components/meetings/CreateRhythmModal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
 import Tooltip from '@/components/ui/tooltip'
+import { PageHeader } from '@/components/shell/page-header'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -72,7 +72,7 @@ function StatCard({ icon, value, label, tint }: { icon: React.ReactNode; value: 
     <div className="bg-surface border border-border-light rounded-xl p-4 flex items-center gap-3">
       <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ backgroundColor: tint }}>{icon}</div>
       <div className="min-w-0">
-        <div className="text-[20px] font-medium text-text-primary leading-none">{value}</div>
+        <div className="text-section font-medium text-text-primary leading-none">{value}</div>
         <div className="text-meta text-text-muted mt-1 truncate">{label}</div>
       </div>
     </div>
@@ -82,7 +82,7 @@ function StatCard({ icon, value, label, tint }: { icon: React.ReactNode; value: 
 function SidebarCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="bg-surface border border-border-light rounded-xl p-4">
-      <h3 className="text-[13px] font-medium text-text-secondary uppercase tracking-wide mb-3">{title}</h3>
+      <h3 className="text-label font-medium text-text-secondary uppercase tracking-wide mb-3">{title}</h3>
       {children}
     </div>
   )
@@ -173,10 +173,15 @@ export default function RhythmDetailPage() {
   if (notFound || !rhythm) {
     return (
       <div className="max-w-2xl">
-        <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-1.5 text-body font-medium text-text-secondary hover:text-text-primary mb-4"><ArrowLeft size={15} /> Rhythms</Link>
+        <PageHeader
+          title="Rhythm not found"
+          trail={[
+            { label: 'Meetings', href: '/dashboard/governance/meetings' },
+            { label: 'Rhythms', href: '/dashboard/governance/meetings/rhythms' },
+          ]}
+        />
         <div className="bg-surface border border-border-light rounded-xl p-12 text-center">
-          <h3 className="text-[18px] font-medium text-text-primary">Rhythm not found</h3>
-          <p className="text-body text-text-secondary mt-1">It may have been removed, or you don’t have access to it.</p>
+          <p className="text-body text-text-secondary">It may have been removed, or you don’t have access to it.</p>
         </div>
       </div>
     )
@@ -187,34 +192,39 @@ export default function RhythmDetailPage() {
 
   return (
     <div className="max-w-[1200px]">
-      <Link href="/dashboard/governance/meetings/rhythms" className="inline-flex items-center gap-1.5 text-body font-medium text-text-secondary hover:text-text-primary w-fit mb-4"><ArrowLeft size={15} /> Rhythms</Link>
-
-      {/* Sticky header: title + cadence + actions */}
-      <div className="sticky top-0 z-10 bg-surface-sunken -mx-1 px-1 pb-4 mb-1">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="min-w-0">
-            <h1 className="text-[26px] font-medium text-text-primary leading-tight flex items-center gap-2">
-              <Repeat size={22} className="text-text-secondary shrink-0" /> {rhythm.title}
-              <span className="inline-flex items-center font-medium text-[12px] rounded-full px-2.5 py-0.5 border shrink-0"
-                style={rhythm.is_active ? { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'var(--success-border)' } : { backgroundColor: 'var(--surface-control)', color: 'var(--text-secondary)', borderColor: 'var(--border-light)' }}>
-                {rhythm.is_active ? 'Active' : 'Paused'}
-              </span>
-            </h1>
-            <p className="text-body text-text-secondary mt-1 flex items-center gap-1.5"><Clock size={14} /> {cadence(rhythm)}</p>
-          </div>
-          {rhythm.can_manage && (
-            <div className="flex items-center gap-2 shrink-0">
-              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 px-3.5 py-2 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg"><Pencil size={15} /> Edit</button>
+      <PageHeader
+        title={rhythm.title}
+        trail={[
+          { label: 'Meetings', href: '/dashboard/governance/meetings' },
+          { label: 'Rhythms', href: '/dashboard/governance/meetings/rhythms' },
+        ]}
+        meta={
+          <>
+            <span
+              className="inline-flex items-center font-medium text-meta rounded-full px-2.5 py-0.5 border mr-2"
+              style={rhythm.is_active ? { backgroundColor: 'var(--success-bg)', color: 'var(--success)', borderColor: 'var(--success-border)' } : { backgroundColor: 'var(--surface-control)', color: 'var(--text-secondary)', borderColor: 'var(--border-light)' }}
+            >
+              {rhythm.is_active ? 'Active' : 'Paused'}
+            </span>
+            <Clock size={14} className="inline -mt-0.5" /> {cadence(rhythm)}
+          </>
+        }
+        actions={
+          rhythm.can_manage ? (
+            <>
+              <Button onClick={() => setEditing(true)}><Pencil size={15} /> Edit</Button>
               <Tooltip label={rhythm.is_active ? 'Pause' : 'Resume'}>
-              <button onClick={toggleActive} className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-text-secondary border border-border-light hover:bg-surface-control rounded-lg">
-                {rhythm.is_active ? <><Pause size={15} /> Pause</> : <><Play size={15} /> Resume</>}
-              </button>
+                <Button variant="secondary" onClick={toggleActive}>
+                  {rhythm.is_active ? <><Pause size={15} /> Pause</> : <><Play size={15} /> Resume</>}
+                </Button>
               </Tooltip>
-              <Tooltip label="Stop"><button onClick={() => setStopping(true)} className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-danger border border-danger-border hover:bg-danger-bg rounded-lg"><Square size={15} /> Stop</button></Tooltip>
-            </div>
-          )}
-        </div>
-      </div>
+              <Tooltip label="Stop">
+                <Button variant="secondary" onClick={() => setStopping(true)}><Square size={15} /> Stop</Button>
+              </Tooltip>
+            </>
+          ) : undefined
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
@@ -228,11 +238,12 @@ export default function RhythmDetailPage() {
         {/* Instances list */}
         <div className="bg-surface border border-border-light rounded-xl flex flex-col">
           <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border-light flex-wrap">
-            <h2 className="text-[15px] font-medium text-text-primary">Meetings <span className="text-text-muted font-normal">({sorted.length})</span></h2>
+            <h2 className="text-body font-medium text-text-primary">Meetings <span className="text-text-muted font-normal">({sorted.length})</span></h2>
             <div className="flex items-center gap-1 flex-wrap">
               {STATUS_FILTERS.map((f) => (
                 <button key={f.key} onClick={() => setFilter(f.key)}
-                  className={`px-2.5 py-1 text-meta font-medium rounded-[6px] border transition-colors ${filter === f.key ? 'bg-primary text-primary-foreground border-primary' : 'bg-surface text-text-secondary border-border-light hover:border-border'}`}>
+                  aria-pressed={filter === f.key}
+                  className={`px-2.5 py-1 text-meta rounded-lg border transition-colors outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring ${filter === f.key ? 'bg-primary-subtle font-medium text-primary-text border-primary-border' : 'bg-surface text-text-secondary border-border-light hover:bg-surface-control'}`}>
                   {f.label}
                 </button>
               ))}
@@ -251,10 +262,10 @@ export default function RhythmDetailPage() {
                 const meta = BUCKET_META[b]
                 return (
                   <button key={m.id} onClick={() => router.push(`/dashboard/governance/meetings/${m.id}`)}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-surface-sunken transition-colors">
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-surface-sunken transition-colors outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring">
                     <div className="w-11 shrink-0 text-center">
                       <div className="text-meta font-medium text-text-muted uppercase">{m.scheduled_start ? new Date(m.scheduled_start).toLocaleDateString(undefined, { month: 'short' }) : '—'}</div>
-                      <div className="text-[18px] font-medium text-text-primary leading-none">{m.scheduled_start ? new Date(m.scheduled_start).getDate() : '·'}</div>
+                      <div className="text-section font-medium text-text-primary leading-none">{m.scheduled_start ? new Date(m.scheduled_start).getDate() : '·'}</div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-body font-medium text-text-primary truncate">{m.title}</p>

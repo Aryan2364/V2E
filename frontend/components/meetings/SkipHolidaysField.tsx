@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Info } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 import { meetingsApi } from '@/lib/api/meetings'
 import type { ScheduleEntryDraft } from '@/components/tasks/ScheduleEntryRow'
 
@@ -53,9 +55,7 @@ export default function SkipHolidaysField({
       <label className="inline-flex items-center gap-2 text-body font-medium text-text-secondary cursor-pointer select-none">
         <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} className="w-4 h-4 accent-primary" />
         Skip company holidays
-        <button type="button" onClick={() => setShowInfo((v) => !v)} className="text-text-muted hover:text-primary-text" aria-label="What does this do?">
-          <Info size={14} />
-        </button>
+        <Tooltip label="What does this do?"><Button type="button" variant="ghost" size="icon" onClick={() => setShowInfo((v) => !v)} aria-label="What does this do?" aria-expanded={showInfo}><Info size={14} /></Button></Tooltip>
       </label>
 
       {showInfo && (

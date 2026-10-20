@@ -7,6 +7,7 @@ import type { TimeBlock } from '@/lib/api/time-blocks'
 import { getNow } from '@/lib/clock'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { fmtTime } from './shared'
+import { Button } from '@/components/ui/button'
 
 // ── geometry ───────────────────────────────────────────────────────────────────
 const PX_PER_HOUR = 56
@@ -199,13 +200,13 @@ export default function WeekGrid({
             <button
               key={day.toISOString()}
               onClick={() => onSelectDay?.(day)}
-              className="py-2 text-center border-r border-white/20 last:border-r-0 transition-colors hover:bg-surface/10"
+              className="py-2 text-center border-r border-on-brand-muted last:border-r-0 transition-colors hover:bg-on-brand-hover focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-on-brand outline-none"
             >
               <div className="text-meta font-medium uppercase tracking-wide text-primary-foreground">
                 {day.toLocaleDateString(undefined, { weekday: 'short' })}
               </div>
               <div className="mt-0.5 flex items-center justify-center">
-                <span className={['w-8 h-8 flex items-center justify-center rounded-full text-[18px] font-medium leading-none', today ? 'bg-surface text-primary-text' : 'text-primary-foreground'].join(' ')}>
+                <span className={['w-8 h-8 flex items-center justify-center rounded-full text-section font-medium leading-none', today ? 'bg-surface text-primary-text' : 'text-primary-foreground'].join(' ')}>
                   {day.getDate()}
                 </span>
               </div>
@@ -265,10 +266,10 @@ export default function WeekGrid({
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onBlockSelect?.(b) }}
-                              className="absolute rounded-lg overflow-hidden px-1.5 py-1 border-l-[3px] border-dashed text-left cursor-pointer hover:brightness-95"
+                              className="absolute rounded-lg overflow-hidden px-1.5 py-1 border-l-[3px] border-dashed text-left cursor-pointer hover:brightness-95 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
                               style={{ top, height, left: '2px', right: '2px', background: 'repeating-linear-gradient(45deg,var(--surface-sunken),var(--surface-sunken) 6px,var(--border-light) 6px,var(--border-light) 12px)', borderLeftColor: 'var(--text-muted)', color: 'var(--text-secondary)', zIndex: 6 }}
                             >
-                              <div className="text-[12px] font-medium truncate flex items-center gap-1">
+                              <div className="text-meta font-medium truncate flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-text-muted shrink-0" />
                                 <span className="truncate">{b.title}</span>
                               </div>
@@ -303,7 +304,7 @@ export default function WeekGrid({
                           render={
                             <button
                               onClick={(e) => { e.stopPropagation(); setOpenId((id) => (id === m.id ? null : m.id)) }}
-                              className="absolute rounded-[6px] text-left overflow-hidden px-1.5 py-1 border-l-[3px] shadow-xs hover:shadow-md transition-shadow"
+                              className="absolute rounded-lg text-left overflow-hidden px-1.5 py-1 border-l-[3px] shadow-xs hover:shadow-md transition-shadow outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
                               style={{
                                 top,
                                 height,
@@ -318,7 +319,7 @@ export default function WeekGrid({
                               <div className="flex items-center gap-1 min-w-0">
                                 {lk.live && <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />}
                                 {lk.rhythm && <Repeat size={10} className="shrink-0" />}
-                                <span className={['text-[12px] font-medium truncate', lk.strike ? 'line-through' : ''].join(' ')}>{m.title}</span>
+                                <span className={['text-meta font-medium truncate', lk.strike ? 'line-through' : ''].join(' ')}>{m.title}</span>
                               </div>
                               {!compact && (
                                 <div className="text-meta opacity-90 truncate">
@@ -376,9 +377,9 @@ function MeetingPopover({ meeting, onClose, onOpen }: { meeting: Meeting; onClos
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: lk.stripe }} />
-            <h4 className="text-[16px] font-medium text-text-primary leading-tight truncate">{meeting.title}</h4>
+            <h4 className="text-card-heading font-medium text-text-primary leading-tight truncate">{meeting.title}</h4>
           </div>
-          <button onClick={onClose} className="text-text-muted hover:text-text-secondary shrink-0"><X size={16} /></button>
+          <Tooltip><TooltipTrigger render={<Button variant="ghost" size="icon" className="shrink-0" onClick={onClose} aria-label="Close" />}><X size={16} /></TooltipTrigger><TooltipContent>Close</TooltipContent></Tooltip>
         </div>
 
         <div className="text-body text-text-secondary flex items-center gap-2 mb-1">
@@ -399,13 +400,13 @@ function MeetingPopover({ meeting, onClose, onOpen }: { meeting: Meeting; onClos
         </div>
 
         <div className="flex items-center gap-2">
-          <button onClick={onOpen} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg">
+          <Button className="flex-1" onClick={onOpen}>
             <ArrowUpRight size={15} /> Open meeting
-          </button>
+          </Button>
           {online && meeting.online_link && (
-            <a href={meeting.online_link} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-body font-medium text-primary-text border-2 border-primary hover:bg-primary-subtle rounded-lg">
+            <Button variant="secondary" render={<a href={meeting.online_link} target="_blank" rel="noreferrer" />}>
               <ExternalLink size={15} /> Join
-            </a>
+            </Button>
           )}
         </div>
       </div>

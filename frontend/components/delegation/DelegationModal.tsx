@@ -15,7 +15,7 @@ import { useGuardedClose } from '@/lib/use-guarded-close'
 // Base has NO width utility — callers add `w-full` (most fields) or a flex sizing
 // (the criteria row) so `w-full` never fights `w-28`/`flex-1` and overflows the row.
 const fieldBase =
-  'border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  'border border-border rounded-[8px] px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 const inputClass = `w-full ${fieldBase}`
 const labelClass = 'block text-body font-medium text-text-secondary mb-1'
 
@@ -199,14 +199,9 @@ export default function DelegationModal({
               <Target size={14} className="text-primary-text" /> Success criteria
             </Label>
             <Tooltip label="Add criterion">
-            <button
-              type="button"
-              onClick={() => setCriteria((r) => [...r, emptyRow()])}
-              aria-label="Add criterion"
-              className="w-7 h-7 flex items-center justify-center rounded-[8px] bg-primary text-primary-foreground hover:bg-primary-hover transition-colors"
-            >
+            <Button type="button" variant="secondary" size="icon" onClick={() => setCriteria((r) => [...r, emptyRow()])} aria-label="Add criterion">
               <Plus size={15} />
-            </button>
+            </Button>
             </Tooltip>
           </div>
           <p className="text-meta text-text-muted mb-2">What does “done” look like — measurably?</p>
@@ -228,14 +223,9 @@ export default function DelegationModal({
                   maxLength={200}
                 />
                 <Tooltip label="Remove">
-                <button
-                  type="button"
-                  onClick={() => setCriteria((r) => (r.length > 1 ? r.filter((_, idx) => idx !== i) : [emptyRow()]))}
-                  aria-label="Remove"
-                  className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-muted hover:text-danger hover:bg-danger-bg transition-colors shrink-0"
-                >
+                <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => setCriteria((r) => (r.length > 1 ? r.filter((_, idx) => idx !== i) : [emptyRow()]))} aria-label="Remove">
                   <Trash2 size={15} />
-                </button>
+                </Button>
                 </Tooltip>
               </div>
             ))}

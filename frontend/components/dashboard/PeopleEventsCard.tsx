@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Gift, Heart, UserPlus, Award, ArrowRight } from 'lucide-react'
@@ -57,7 +58,7 @@ const TABS: TabConfig[] = [
   {
     key: 'new_hirings',
     eventType: 'new_hiring',
-    label: 'New Hiring',
+    label: 'New hiring',
     icon: <UserPlus size={13} />,
     dot: 'bg-success',
     emptyText: 'No new hires in the last 30 days',
@@ -65,7 +66,7 @@ const TABS: TabConfig[] = [
   {
     key: 'work_anniversaries',
     eventType: 'work_anniversary',
-    label: 'Work Anniv.',
+    label: 'Work anniv.',
     icon: <Award size={13} />,
     dot: 'bg-warning',
     emptyText: 'No upcoming work anniversaries in the next 30 days',
@@ -93,15 +94,10 @@ function EventRow({
         {getInitials(event.name)}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-text-primary truncate">{event.name}</p>
+        <p className="text-label font-medium text-text-primary truncate">{event.name}</p>
         <p className="text-meta text-text-secondary truncate">{event.label}</p>
       </div>
-      <button
-        onClick={() => onWish(event, eventType)}
-        className="shrink-0 px-3 py-1 text-meta font-medium text-primary-text border border-primary rounded-full hover:bg-primary-subtle transition-colors"
-      >
-        Wish
-      </button>
+      <Button variant="secondary" size="sm" className="shrink-0" onClick={() => onWish(event, eventType)}>Wish</Button>
     </div>
   )
 }
@@ -167,7 +163,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
               <Gift size={16} />
             </div>
             <div>
-              <h3 className="text-[15px] font-medium text-text-primary leading-tight">People Events</h3>
+              <h3 className="text-body font-medium text-text-primary leading-tight">People events</h3>
               {totalCount > 0 && (
                 <p className="text-meta text-text-secondary">{totalCount} event{totalCount !== 1 ? 's' : ''} upcoming</p>
               )}
@@ -175,7 +171,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
           </div>
           <Link
             href="/settings/organization/employees"
-            className="flex items-center gap-1 text-[12px] font-medium text-primary-text hover:text-primary-text transition-colors"
+            className="flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text transition-colors"
           >
             View all
             <ArrowRight size={12} />
@@ -192,7 +188,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
                 key={tab.key}
                 onClick={() => handleTabChange(tab.key)}
                 className={[
-                  'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-meta font-medium transition-colors relative',
+                  'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-meta font-medium transition-colors relative focus-visible:-outline-offset-2 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring',
                   isActive
                     ? 'text-primary-text bg-surface'
                     : 'text-text-secondary hover:text-text-primary hover:bg-surface/60',
@@ -224,7 +220,7 @@ export default function PeopleEventsCard({ data }: PeopleEventsCardProps) {
             <div className={`w-8 h-8 rounded-full ${activeConfig.dot} opacity-20 flex items-center justify-center text-primary-foreground mb-2`}>
               {activeConfig.icon}
             </div>
-            <p className="text-[13px] text-text-secondary">{activeConfig.emptyText}</p>
+            <p className="text-label text-text-secondary">{activeConfig.emptyText}</p>
           </div>
         ) : (
           <div

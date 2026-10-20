@@ -8,8 +8,8 @@ import { formatDate } from '@/lib/format'
 const STYLE: Record<EntryDateStatus, { label: string; bg: string; fg: string; border: string }> = {
   completed: { label: 'Completed', bg: 'var(--success-bg)', fg: 'var(--success)', border: 'var(--success-border)' },
   overdue: { label: 'Overdue', bg: 'var(--danger-bg)', fg: 'var(--danger)', border: 'var(--danger-border)' },
-  in_progress: { label: 'In Progress', bg: 'var(--primary-subtle)', fg: 'var(--primary-text)', border: 'var(--primary-border)' },
-  not_yet_due: { label: 'Not Yet Due', bg: 'var(--surface-control)', fg: 'var(--text-muted)', border: 'var(--border-light)' },
+  in_progress: { label: 'In progress', bg: 'var(--primary-subtle)', fg: 'var(--primary-text)', border: 'var(--primary-border)' },
+  not_yet_due: { label: 'Not yet due', bg: 'var(--surface-control)', fg: 'var(--text-muted)', border: 'var(--border-light)' },
   closed: { label: 'Closed', bg: 'var(--surface-control)', fg: 'var(--text-muted)', border: 'var(--border-light)' },
   // Deliberately NOT red. The work left this person; showing it in the overdue colour
   // is what made readers chase the wrong name. Slate = "closed on them, look elsewhere",
@@ -37,7 +37,7 @@ export function DateStatusTag({
     const to = handover.to.length ? handover.to.join(', ') : 'no one'
     return (
       <span
-        className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-medium whitespace-nowrap"
+        className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-meta font-medium whitespace-nowrap"
         style={{ backgroundColor: s.bg, color: s.fg, border: `1px solid ${s.border}` }}
         title={
           `Taken off this person on ${fmt(handover.at)}` +
@@ -55,7 +55,7 @@ export function DateStatusTag({
 
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-medium whitespace-nowrap"
+      className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-meta font-medium whitespace-nowrap"
       style={{ backgroundColor: s.bg, color: s.fg, border: `1px solid ${s.border}` }}
     >
       {s.label}

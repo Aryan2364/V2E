@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Search } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { meetingsApi } from '@/lib/api/meetings'
@@ -12,12 +12,12 @@ import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/Responsi
 import DateRangePicker from '@/components/ui/DateRangePicker'
 import { PageHeader } from '@/components/shell/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
+import { TextLink } from '@/components/ui/text-link'
 
 const inputClass = 'border border-border rounded-lg px-3 py-2 text-body text-text-primary bg-surface focus:outline-hidden focus:border-primary'
 
 export default function DecisionLogPage() {
   const { user } = useAuth()
-  const router = useRouter()
   const orgId = user?.organizationId ?? ''
   const [decisions, setDecisions] = useState<MeetingDecision[]>([])
   const [names, setNames] = useState<Map<string, string>>(new Map())
@@ -43,7 +43,7 @@ export default function DecisionLogPage() {
       primary: true,
       render: (d) => (
         <>
-          <p className="text-[15px] text-text-primary font-medium">{d.decision}</p>
+          <p className="text-body text-text-primary font-medium">{d.decision}</p>
           {d.reason && <p className="text-meta text-text-muted mt-0.5">{d.reason}</p>}
         </>
       ),
@@ -64,12 +64,12 @@ export default function DecisionLogPage() {
       header: 'Meeting',
       render: (d) =>
         d.meeting ? (
-          <button onClick={() => router.push(`/dashboard/governance/meetings/${d.meeting!.id}`)} className="text-body text-primary-text hover:underline">{d.meeting.title}</button>
+          <TextLink render={<Link href={`/dashboard/governance/meetings/${d.meeting!.id}`} />}>{d.meeting.title}</TextLink>
         ) : (
           '—'
         ),
     },
-  ], [names, router])
+  ], [names])
 
   return (
     <div>

@@ -8,6 +8,7 @@ import DemandModal from '@/components/work-logs/DemandModal'
 import type { WorkLogDemand, WorkLogSubmission } from '@/lib/types/workLogs'
 import { format as formatDateFns } from 'date-fns'
 import { PageHeader } from '@/components/shell/page-header'
+import WorkLogTabs from '../WorkLogTabs'
 import { Button } from '@/components/ui/button'
 
 const cardCls = 'bg-surface border border-border-light rounded-xl shadow-card'
@@ -70,10 +71,11 @@ export default function WorkLogDemandsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Work log demands"
+        title="Work log"
+        tabs={<WorkLogTabs />}
         actions={
           <Button onClick={() => setShowModal(true)}>
-            <Plus size={15} /> Demand
+            <Plus size={15} /> Add demand
           </Button>
         }
       />
@@ -125,7 +127,7 @@ export default function WorkLogDemandsPage() {
                   <button
                     type="button"
                     onClick={() => openSeries(d.id)}
-                    className={`w-full text-left ${cardCls} p-4 transition-colors ${selected?.id === d.id ? 'ring-2 ring-primary' : 'hover:bg-surface-sunken'}`}
+                    className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring w-full text-left ${cardCls} p-4 transition-colors ${selected?.id === d.id ? 'ring-2 ring-primary' : 'hover:bg-surface-sunken'}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-body font-medium text-text-primary truncate">{d.title}</span>

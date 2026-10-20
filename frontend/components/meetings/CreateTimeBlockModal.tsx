@@ -189,8 +189,8 @@ export default function CreateTimeBlockModal({
           <div className="flex items-center justify-between gap-3 bg-danger-bg border border-danger-border rounded-[8px] px-3 py-2.5">
             <span className="text-body text-danger">Delete this block? It is also removed from your Google Calendar.</span>
             <div className="flex items-center gap-2 shrink-0">
-              <button type="button" onClick={() => setConfirmDelete(false)} className="px-3 py-1.5 text-body font-medium text-text-secondary border border-border-light rounded-[8px] bg-surface hover:bg-surface-sunken">Cancel</button>
-              <button type="button" onClick={handleDelete} disabled={busy} className="px-3 py-1.5 text-body font-medium text-primary-foreground bg-danger hover:bg-danger-hover rounded-[8px] disabled:opacity-50">Delete</button>
+              <Button type="button" variant="secondary" size="sm" onClick={() => setConfirmDelete(false)}>Cancel</Button>
+              <Button type="button" variant="danger" size="sm" onClick={handleDelete} disabled={busy}>Delete</Button>
             </div>
           </div>
         )}
@@ -198,9 +198,9 @@ export default function CreateTimeBlockModal({
         <div className="flex items-center justify-between gap-2 pt-1">
           <div>
             {isEditing && !confirmDelete && (
-              <button type="button" onClick={() => setConfirmDelete(true)} className="inline-flex items-center gap-1.5 px-3 py-2.5 text-body font-medium text-danger border border-danger-border rounded-[8px] hover:bg-danger-bg">
+              <Button type="button" variant="secondary" onClick={() => setConfirmDelete(true)}>
                 <Trash2 size={15} /> Delete
-              </button>
+              </Button>
             )}
           </div>
           <div className="flex items-center gap-2">

@@ -4,14 +4,14 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode, use } from '
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  ArrowLeft, Play, Square, Lock, Unlock, Trash2, Video, MapPin, Users, CalendarClock,
+  Play, Square, Lock, Unlock, Trash2, Video, MapPin, Users, CalendarClock,
   Plus, CheckCircle2, Circle, Link2, AlertTriangle, Gavel, Copy, Check, X, Eye, EyeOff,
   CalendarSearch, History, BarChart3, RotateCcw, ChevronDown, Clock, ListChecks, KeyRound, Pencil,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { meetingsApi } from '@/lib/api/meetings'
 import { getEmployees } from '@/lib/api/employees'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
 import StyledSelect from '@/components/ui/StyledSelect'
 import Modal from '@/components/ui/Modal'
@@ -19,12 +19,13 @@ import { useToast } from '@/components/ui/Toast'
 import { LINK_TYPE_LABEL, TYPE_LABEL, type Meeting, type MeetingAnalytics, type MeetingRhythm } from '@/lib/types/meetings'
 import { StatusBadge, ResponseBadge, fmtDate, fmtDateTime, fmtTime, useMeetingPermissions } from '@/components/meetings/shared'
 import Tooltip from '@/components/ui/tooltip'
+import { PageHeader } from '@/components/shell/page-header'
 import MeetingRecordTab from '@/components/meetings/MeetingRecordTab'
 import BusyTimesPanel from '@/components/meetings/BusyTimesPanel'
 import EditMeetingModal from '@/components/meetings/EditMeetingModal'
 import CreateRhythmModal from '@/components/meetings/CreateRhythmModal'
 
-const inputClass = 'border border-border rounded-lg px-3 py-2.5 text-[15px] text-text-primary focus:outline-hidden focus:border-primary'
+const inputClass = 'border border-border rounded-lg px-3 py-2.5 text-body text-text-primary focus:outline-hidden focus:border-primary'
 const cardCls = 'bg-surface border border-border-light rounded-xl'
 const SIDE_TINTS: Record<string, string> = {
   blue: 'bg-primary-subtle text-primary-text',
@@ -36,7 +37,7 @@ function SideHeader({ icon, label, tint }: { icon: ReactNode; label: string; tin
   return (
     <div className="flex items-center gap-2">
       <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${SIDE_TINTS[tint]}`}>{icon}</span>
-      <h3 className="text-[15px] font-medium text-text-primary">{label}</h3>
+      <h3 className="text-body font-medium text-text-primary">{label}</h3>
     </div>
   )
 }
@@ -78,9 +79,9 @@ export default function MeetingDetailPage(props: { params: Promise<{ meetingId: 
 
   if (loading) return <div className="p-8 text-center text-body text-text-secondary">Loading…</div>
   if (!meeting) return (
-    <div className="p-12 text-center">
-      <h2 className="text-[18px] font-medium text-text-primary">Meeting not found</h2>
-      <Link href="/dashboard/governance/meetings" className="text-body text-primary-text hover:underline mt-2 inline-block">Back to meetings</Link>
+    <div>
+      <PageHeader title="Meeting not found" trail={[{ label: 'Meetings', href: '/dashboard/governance/meetings' }]} />
+      <p className="text-body text-text-secondary">It may have been removed, or you don’t have access to it.</p>
     </div>
   )
 
@@ -121,53 +122,53 @@ export default function MeetingDetailPage(props: { params: Promise<{ meetingId: 
     }
   }
 
-  const ghostBtn = 'inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-text-secondary border border-border-light rounded-lg hover:bg-surface-sunken'
+  const open = m.status === 'scheduled' || m.status === 'in_progress'
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Back mirrors forward: return to wherever the user came from. */}
-      <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-body font-medium text-text-secondary hover:text-text-primary w-fit"><ArrowLeft size={15} /> Back</button>
+      {/* Header: the single identity + lifecycle actions surface. */}
+      <PageHeader
+        title={m.title}
+        trail={[{ label: 'Meetings', href: '/dashboard/governance/meetings' }]}
+        meta={
+          <>
+            <StatusBadge status={m.status} />
+            <span className="inline-flex items-center gap-1 ml-2 align-middle">{m.type === 'offline' ? <MapPin size={12} /> : <Video size={12} />} {TYPE_LABEL[m.type]}</span>
+            {m.link_type && <span className="text-primary-text bg-primary-subtle rounded-full px-2 py-0.5 ml-2">{LINK_TYPE_LABEL[m.link_type]}</span>}
+            <span className="inline-flex items-center gap-1 ml-3 align-middle"><CalendarClock size={12} /> {fmtDateTime(m.scheduled_start)}{m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}</span>
+            <span className="inline-flex items-center gap-1 ml-3 align-middle"><Users size={12} /> {m.organizer?.name}</span>
+            {m.location && <span className="inline-flex items-center gap-1 ml-3 align-middle"><MapPin size={12} /> {m.location}</span>}
+            {m.type !== 'offline' && m.online_link && <a href={m.online_link} target="_blank" rel="noreferrer" className="ml-3 text-primary-text underline">Join link</a>}
+          </>
+        }
+        actions={
+          <>
+            {canManage && open && <Button variant="secondary" onClick={() => { if (m.rhythm_id) setChoiceOpen(true); else setEditOpen(true) }}><Pencil size={14} /> Edit</Button>}
+            {canManage && m.status === 'scheduled' && <Button onClick={() => act(() => meetingsApi.start(orgId, m.id), 'Meeting started')}><Play size={14} /> Start</Button>}
+            {canManage && m.status === 'in_progress' && <Button variant="secondary" onClick={() => act(() => meetingsApi.end(orgId, m.id), 'Marked ended')}><Square size={14} /> End</Button>}
+            {canManage && open && <Button variant={m.status === 'in_progress' ? 'primary' : 'secondary'} onClick={() => act(() => meetingsApi.close(orgId, m.id), 'Meeting closed')}><Lock size={14} /> Close</Button>}
+            {canManage && m.status === 'closed' && <Button variant="secondary" onClick={() => act(() => meetingsApi.reopen(orgId, m.id), 'Meeting reopened')}><Unlock size={14} /> Reopen</Button>}
+            {perms.delete && (
+              <Tooltip label="Delete meeting">
+                <Button variant="ghost" size="icon" onClick={() => setDeleteOpen(true)} aria-label="Delete meeting"><Trash2 size={16} /></Button>
+              </Tooltip>
+            )}
+          </>
+        }
+      />
 
-      {/* Header — the single identity + lifecycle actions surface. */}
-      <div className={`${cardCls} p-6`}>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <StatusBadge status={m.status} />
-              <span className="inline-flex items-center gap-1 text-meta text-text-muted">{m.type === 'offline' ? <MapPin size={12} /> : <Video size={12} />} {TYPE_LABEL[m.type]}</span>
-              {m.link_type && <span className="text-meta text-primary-text bg-primary-subtle rounded-full px-2 py-0.5">{LINK_TYPE_LABEL[m.link_type]}</span>}
-            </div>
-            <h1 className="text-[24px] font-medium text-text-primary leading-tight">{m.title}</h1>
-            <div className="flex items-center gap-3 text-body text-text-secondary mt-2 flex-wrap">
-              <span className="inline-flex items-center gap-1"><CalendarClock size={14} /> {fmtDateTime(m.scheduled_start)}{m.scheduled_end ? ` – ${fmtTime(m.scheduled_end)}` : ''}</span>
-              <span className="inline-flex items-center gap-1"><Users size={14} /> {m.organizer?.name}</span>
-              {m.type !== 'offline' && m.online_link && <a href={m.online_link} target="_blank" rel="noreferrer" className="text-primary-text hover:underline">Join link</a>}
-              {m.location && <span className="inline-flex items-center gap-1"><MapPin size={14} /> {m.location}</span>}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-            {canManage && (m.status === 'scheduled' || m.status === 'in_progress') && <button onClick={() => { if (m.rhythm_id) setChoiceOpen(true); else setEditOpen(true) }} className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-text-secondary border border-border-light rounded-lg hover:bg-surface-sunken"><Pencil size={14} /> Edit</button>}
-            {canManage && m.status === 'scheduled' && <button onClick={() => act(() => meetingsApi.start(orgId, m.id), 'Meeting started')} className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-primary-foreground bg-success rounded-lg"><Play size={14} /> Start</button>}
-            {canManage && m.status === 'in_progress' && <button onClick={() => act(() => meetingsApi.end(orgId, m.id), 'Marked ended')} className={ghostBtn}><Square size={14} /> End</button>}
-            {canManage && (m.status === 'in_progress' || m.status === 'scheduled') && <button onClick={() => act(() => meetingsApi.close(orgId, m.id), 'Meeting closed')} className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-primary-foreground bg-primary rounded-lg"><Lock size={14} /> Close</button>}
-            {canManage && m.status === 'closed' && <button onClick={() => act(() => meetingsApi.reopen(orgId, m.id), 'Meeting reopened')} className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-warning border border-warning-border rounded-lg"><Unlock size={14} /> Reopen</button>}
-            {perms.delete && <button onClick={() => setDeleteOpen(true)} aria-label="Delete meeting" className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-danger border border-danger-border rounded-lg"><Trash2 size={14} /></button>}
-          </div>
+      {(m.conflicts?.length ?? 0) > 0 && (
+        <div className="flex items-start gap-2 bg-warning-bg border border-warning-border rounded-lg px-3 py-2 text-body text-warning">
+          <AlertTriangle size={15} className="mt-0.5 shrink-0" />
+          <span>Scheduling conflict: {m.conflicts!.map((c) => `${nameOf.get(c.user_id) ?? 'Someone'} (${c.title})`).join(', ')}. Not blocked, attendees decide.</span>
         </div>
+      )}
 
-        {(m.conflicts?.length ?? 0) > 0 && (
-          <div className="mt-4 flex items-start gap-2 bg-warning-bg border border-warning-border rounded-lg px-3 py-2 text-body text-warning">
-            <AlertTriangle size={15} className="mt-0.5 shrink-0" />
-            <span>Scheduling conflict: {m.conflicts!.map((c) => `${nameOf.get(c.user_id) ?? 'Someone'} (${c.title})`).join(', ')}. Not blocked — attendees decide.</span>
-          </div>
-        )}
-
-        {/* Utility row — copy + demoted views (log / insights) as small buttons. */}
-        <div className="mt-4 pt-4 border-t border-border-light flex flex-wrap items-center gap-2">
-          <button onClick={copySummary} className={ghostBtn}><Copy size={14} /> Copy summary</button>
-          <button onClick={() => setLogOpen(true)} className={ghostBtn}><History size={14} /> Edit log</button>
-          <button onClick={() => setInsightsOpen(true)} className={ghostBtn}><BarChart3 size={14} /> Insights</button>
-        </div>
+      {/* Utility row: copy + demoted views (log / insights). */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="secondary" size="sm" onClick={copySummary}><Copy size={14} /> Copy summary</Button>
+        <Button variant="secondary" size="sm" onClick={() => setLogOpen(true)}><History size={14} /> Edit log</Button>
+        <Button variant="secondary" size="sm" onClick={() => setInsightsOpen(true)}><BarChart3 size={14} /> Insights</Button>
       </div>
 
       {/* Body: the record (main) + logistics (sidebar). One page, no tabs. */}
@@ -202,12 +203,12 @@ export default function MeetingDetailPage(props: { params: Promise<{ meetingId: 
       <Modal isOpen={choiceOpen} onClose={() => setChoiceOpen(false)} title="Edit recurring meeting" size="sm">
         <p className="text-body text-text-secondary mb-3">This meeting repeats. What do you want to change?</p>
         <div className="flex flex-col gap-2">
-          <button onClick={() => { setChoiceOpen(false); setEditOpen(true) }} className="text-left border border-border-light rounded-[10px] px-4 py-3 hover:border-primary hover:bg-surface-sunken">
-            <div className="text-[15px] font-medium text-text-primary">This occurrence only</div>
+          <button onClick={() => { setChoiceOpen(false); setEditOpen(true) }} className="text-left border border-border-light rounded-xl px-4 py-3 hover:border-primary hover:bg-surface-sunken outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring">
+            <div className="text-body font-medium text-text-primary">This occurrence only</div>
             <div className="text-meta text-text-muted mt-0.5">Change just this one meeting. The rest of the series stays the same.</div>
           </button>
-          <button onClick={async () => { setChoiceOpen(false); try { const r = await meetingsApi.getRhythm(orgId, m.rhythm_id!); setSeriesRhythm(r); setSeriesOpen(true) } catch { addToast('Could not load the series', 'error') } }} className="text-left border border-border-light rounded-[10px] px-4 py-3 hover:border-primary hover:bg-surface-sunken">
-            <div className="text-[15px] font-medium text-text-primary">Whole series</div>
+          <button onClick={async () => { setChoiceOpen(false); try { const r = await meetingsApi.getRhythm(orgId, m.rhythm_id!); setSeriesRhythm(r); setSeriesOpen(true) } catch { addToast('Could not load the series', 'error') } }} className="text-left border border-border-light rounded-xl px-4 py-3 hover:border-primary hover:bg-surface-sunken outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring">
+            <div className="text-body font-medium text-text-primary">Whole series</div>
             <div className="text-meta text-text-muted mt-0.5">Change the recurring pattern or details for all future occurrences.</div>
           </button>
         </div>
@@ -248,7 +249,7 @@ function RsvpCard({ meeting, orgId, userId, onChanged }: { meeting: Meeting; org
     return (
       <div className="bg-danger-bg border border-danger-border rounded-xl p-4 flex items-center justify-between gap-3">
         <p className="text-body text-danger">You can’t make it{me.reject_reason ? `: “${me.reject_reason}”` : ''}.</p>
-        <button onClick={() => submit(() => meetingsApi.undoDecline(orgId, meeting.id), 'You’re back on the meeting')} disabled={busy} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-body font-medium text-primary-text bg-surface border border-primary-border rounded-lg shrink-0"><RotateCcw size={14} /> I can make it</button>
+        <Button variant="secondary" size="sm" onClick={() => submit(() => meetingsApi.undoDecline(orgId, meeting.id), 'You’re back on the meeting')} disabled={busy}><RotateCcw size={14} /> I can make it</Button>
       </div>
     )
   }
@@ -258,7 +259,7 @@ function RsvpCard({ meeting, orgId, userId, onChanged }: { meeting: Meeting; org
       <p className="text-body font-medium text-text-primary mb-2">You’re on this meeting.</p>
       {!mode ? (
         <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => setMode(true)} className="inline-flex items-center gap-1.5 px-3 py-2 text-body font-medium text-danger border border-danger-border bg-surface rounded-lg"><X size={15} /> Can’t make it</button>
+          <Button variant="secondary" onClick={() => setMode(true)}><X size={15} /> Can’t make it</Button>
           <span className="text-meta text-text-muted">A reason is required.</span>
         </div>
       ) : (
@@ -282,13 +283,13 @@ function WhenCard({ meeting, orgId, canManage }: { meeting: Meeting; orgId: stri
   return (
     <div className={`${cardCls} p-4`}>
       <SideHeader icon={<Clock size={15} />} label="When" tint="blue" />
-      <p className="text-[15px] text-text-primary font-medium mt-1.5">{fmtDateTime(meeting.scheduled_start)}{meeting.scheduled_end ? ` – ${fmtTime(meeting.scheduled_end)}` : ''}</p>
+      <p className="text-body text-text-primary font-medium mt-1.5">{fmtDateTime(meeting.scheduled_start)}{meeting.scheduled_end ? ` – ${fmtTime(meeting.scheduled_end)}` : ''}</p>
       <p className="text-meta text-text-muted mt-1">The organiser sets the time. If it changes, everyone on the meeting is notified.</p>
       {canManage && open && (
         <div className="mt-3 pt-3 border-t border-border-light">
-          <button type="button" onClick={() => setShowBusy((v) => !v)} className="inline-flex items-center gap-1.5 text-body font-medium text-primary-text">
+          <Button type="button" variant="secondary" size="sm" onClick={() => setShowBusy((v) => !v)}>
             <CalendarSearch size={15} /> {showBusy ? 'Hide' : 'Check'} busy times
-          </button>
+          </Button>
           {showBusy && meeting.scheduled_start && (
             <div className="mt-2">
               <BusyTimesPanel
@@ -326,10 +327,10 @@ function PeopleCard({ meeting, orgId, canManage, onChanged, nameOf }: { meeting:
           <div key={a.id} className="flex items-center justify-between gap-2 border border-border-light rounded-lg px-2.5 py-2">
             <div className="flex items-center gap-2 min-w-0">
               {canMarkAttendance ? (
-                <Tooltip label="Mark attended"><button onClick={() => toggleAttended(a.user_id, !a.attended)} className="text-text-secondary shrink-0" aria-label="Toggle attended">{a.attended ? <CheckCircle2 size={17} className="text-success" /> : <Circle size={17} className="text-muted" />}</button></Tooltip>
+                <Tooltip label="Mark attended"><Button variant="ghost" size="icon" onClick={() => toggleAttended(a.user_id, !a.attended)} aria-label="Toggle attended" aria-pressed={a.attended}>{a.attended ? <CheckCircle2 size={17} className="text-success" /> : <Circle size={17} className="text-text-muted" />}</Button></Tooltip>
               ) : a.attended ? <CheckCircle2 size={17} className="text-success shrink-0" /> : null}
               <div className="min-w-0">
-                <span className="text-[14px] text-text-primary">
+                <span className="text-body text-text-primary">
                   {a.user?.name ?? nameOf.get(a.user_id) ?? 'Unknown'}
                   {a.is_organizer && <span className="text-meta text-text-muted ml-1">(organizer)</span>}
                   {!a.is_organizer && !a.is_required && <span className="text-meta font-medium text-text-muted bg-surface-control rounded-full px-1.5 py-0.5 ml-1.5">Optional</span>}
@@ -360,7 +361,7 @@ function AccessCard({ meeting }: { meeting: Meeting }) {
         {meeting.online_password && (
           <span className="inline-flex items-center gap-2 text-text-secondary">
             Password: <code className="bg-surface-control px-2 py-0.5 rounded-xs">{showPw ? meeting.online_password : '••••••••'}</code>
-            <button onClick={() => setShowPw((v) => !v)} className="text-text-muted hover:text-text-secondary" aria-label={showPw ? 'Hide password' : 'Show password'}>{showPw ? <EyeOff size={14} /> : <Eye size={14} />}</button>
+            <Tooltip label={showPw ? 'Hide password' : 'Show password'}><Button variant="ghost" size="icon" onClick={() => setShowPw((v) => !v)} aria-label={showPw ? 'Hide password' : 'Show password'}>{showPw ? <EyeOff size={14} /> : <Eye size={14} />}</Button></Tooltip>
           </span>
         )}
       </div>
@@ -388,7 +389,7 @@ function NotesCard({ orgId, meeting }: { orgId: string; meeting: Meeting }) {
 
   return (
     <div className={`${cardCls} p-4`}>
-      <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-center justify-between gap-2">
+      <button onClick={() => setExpanded((v) => !v)} aria-expanded={expanded} className="w-full flex items-center justify-between gap-2 rounded-lg outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring">
         <SideHeader icon={<Lock size={14} />} label={`Your private notes${hasNote && !expanded ? ' •' : ''}`} tint="amber" />
         <ChevronDown size={16} className={`text-text-muted transition-transform ${expanded ? 'rotate-180' : ''}`} />
       </button>
@@ -398,7 +399,7 @@ function NotesCard({ orgId, meeting }: { orgId: string; meeting: Meeting }) {
           <textarea className="w-full border border-border rounded-lg px-3 py-2 text-body text-text-primary focus:outline-hidden focus:border-primary resize-y" rows={6} value={body} onChange={(e) => setBody(e.target.value)} />
           <div className="flex justify-end items-center gap-3 mt-2">
             {saved && <span className="inline-flex items-center gap-1 text-meta font-medium text-success"><Check size={14} /> Saved</span>}
-            <Button variant="primary" isLoading={saving} disabled={saving} onClick={save}>Save notes</Button>
+            <Button variant="primary" loading={saving} disabled={saving} onClick={save}>Save notes</Button>
           </div>
         </div>
       )}
@@ -422,16 +423,16 @@ function ActionItemsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting
 
   return (
     <div className={`${cardCls} p-6`}>
-      <h3 className="text-[16px] font-medium text-text-primary mb-3 flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-primary-subtle text-primary-text flex items-center justify-center"><ListChecks size={16} /></span> Action items</h3>
+      <h3 className="text-card-heading font-medium text-text-primary mb-3 flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-primary-subtle text-primary-text flex items-center justify-center"><ListChecks size={16} /></span> Action items</h3>
       <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-0.5">
         {items.length === 0 && <p className="text-body text-text-muted">No action items yet.</p>}
         {items.map((it) => (
           <div key={it.id} className="border border-border-light rounded-lg px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
-                <button disabled={locked} onClick={() => run(() => meetingsApi.updateActionItem(orgId, meeting.id, it.id, { is_done: !it.is_done }))}>{it.is_done ? <CheckCircle2 size={18} className="text-success" /> : <Circle size={18} className="text-muted" />}</button>
+                <Tooltip label={it.is_done ? 'Mark not done' : 'Mark done'}><Button variant="ghost" size="icon" disabled={locked} aria-label={it.is_done ? 'Mark not done' : 'Mark done'} aria-pressed={it.is_done} onClick={() => run(() => meetingsApi.updateActionItem(orgId, meeting.id, it.id, { is_done: !it.is_done }))}>{it.is_done ? <CheckCircle2 size={18} className="text-success" /> : <Circle size={18} className="text-text-muted" />}</Button></Tooltip>
                 <div className="min-w-0">
-                  <p className={['text-[15px]', it.is_done ? 'text-text-muted line-through' : 'text-text-primary'].join(' ')}>{it.text}</p>
+                  <p className={['text-body', it.is_done ? 'text-text-muted line-through' : 'text-text-primary'].join(' ')}>{it.text}</p>
                   <p className="text-meta text-text-muted flex items-center gap-1.5 flex-wrap">
                     <span>{it.owner_user_id ? nameOf.get(it.owner_user_id) ?? 'Owner' : 'Unassigned'}{it.due_date ? ` · due ${fmtDate(it.due_date)}` : ''}</span>
                     {it.due_date && !it.is_done && new Date(it.due_date) < new Date() && (
@@ -444,9 +445,9 @@ function ActionItemsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting
                 {it.linked_task_id ? (
                   <span className="inline-flex items-center gap-1 text-meta text-success bg-success-bg rounded-full px-2 py-0.5"><Link2 size={11} /> Task linked</span>
                 ) : (
-                  <button disabled={locked} onClick={() => setLinkingId(linkingId === it.id ? null : it.id)} className="inline-flex items-center gap-1 text-meta font-medium text-primary-text"><Link2 size={12} /> Link task</button>
+                  <Button variant="secondary" size="sm" disabled={locked} onClick={() => setLinkingId(linkingId === it.id ? null : it.id)}><Link2 size={12} /> Link task</Button>
                 )}
-                {!locked && <button onClick={() => run(() => meetingsApi.deleteActionItem(orgId, meeting.id, it.id))} className="text-text-muted hover:text-danger"><Trash2 size={14} /></button>}
+                {!locked && <Tooltip label="Delete action item"><Button variant="ghost" size="icon" aria-label="Delete action item" onClick={() => run(() => meetingsApi.deleteActionItem(orgId, meeting.id, it.id))}><Trash2 size={14} /></Button></Tooltip>}
               </div>
             </div>
             {linkingId === it.id && !it.linked_task_id && (
@@ -461,7 +462,7 @@ function ActionItemsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting
           <input className={`${inputClass} flex-1 min-w-[200px]`} placeholder="New action item…" value={text} onChange={(e) => setText(e.target.value)} />
           <StyledSelect wrapperClassName="w-48" value={owner} onChange={setOwner} placeholder="Owner" searchable searchPlaceholder="Search people…" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
           <DatePicker value={due} onChange={setDue} placeholder="Select date" />
-          <button onClick={() => { if (!text.trim()) return; run(() => meetingsApi.addActionItem(orgId, meeting.id, { text: text.trim(), owner_user_id: owner || undefined, due_date: due ? new Date(due).toISOString() : undefined })); setText(''); setOwner(''); setDue('') }} className="inline-flex items-center gap-1 px-3 py-2 text-body font-medium text-primary-foreground bg-primary rounded-lg"><Plus size={15} /> Add</button>
+          <Button variant="secondary" onClick={() => { if (!text.trim()) return; run(() => meetingsApi.addActionItem(orgId, meeting.id, { text: text.trim(), owner_user_id: owner || undefined, due_date: due ? new Date(due).toISOString() : undefined })); setText(''); setOwner(''); setDue('') }}><Plus size={15} /> Add</Button>
         </div>
       )}
     </div>
@@ -477,11 +478,11 @@ function LinkTaskRow({ item, people, onAttachId, onCreate }: { item: { text: str
       <div className="flex flex-wrap items-end gap-2">
         <input className={`${inputClass} flex-1 min-w-[160px]`} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Task title" />
         <StyledSelect wrapperClassName="w-48" value={assignee} onChange={setAssignee} placeholder="Executor" searchable searchPlaceholder="Search people…" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
-        <button onClick={() => assignee && onCreate(title, assignee, item.due_date ?? undefined)} disabled={!assignee || !title.trim()} className="px-3 py-2 text-body font-medium text-primary-foreground bg-primary rounded-lg disabled:bg-surface-control-pressed disabled:text-text-muted">Create &amp; link</button>
+        <Button variant="secondary" onClick={() => assignee && onCreate(title, assignee, item.due_date ?? undefined)} disabled={!assignee || !title.trim()}>Create &amp; link</Button>
       </div>
       <div className="flex items-center gap-2">
         <input className={`${inputClass} flex-1`} value={taskId} onChange={(e) => setTaskId(e.target.value)} placeholder="…or paste an existing task ID" />
-        <button onClick={() => taskId && onAttachId(taskId)} disabled={!taskId} className="px-3 py-2 text-body font-medium text-primary-text border border-primary rounded-lg disabled:opacity-50">Attach</button>
+        <Button variant="secondary" onClick={() => taskId && onAttachId(taskId)} disabled={!taskId}>Attach</Button>
       </div>
     </div>
   )
@@ -499,16 +500,16 @@ function DecisionsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting: 
 
   return (
     <div className={`${cardCls} p-6`}>
-      <h3 className="text-[16px] font-medium text-text-primary mb-3 flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-primary-subtle text-text-secondary flex items-center justify-center"><Gavel size={16} /></span> Decisions</h3>
+      <h3 className="text-card-heading font-medium text-text-primary mb-3 flex items-center gap-2"><span className="w-7 h-7 rounded-lg bg-primary-subtle text-text-secondary flex items-center justify-center"><Gavel size={16} /></span> Decisions</h3>
       <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-0.5">
         {decisions.length === 0 && <p className="text-body text-text-muted">No decisions logged.</p>}
         {decisions.map((d) => (
           <div key={d.id} className="border border-border-light rounded-lg px-3 py-2 flex items-start justify-between gap-3">
             <div>
-              <p className="text-[15px] text-text-primary font-medium">{d.decision}</p>
+              <p className="text-body text-text-primary font-medium">{d.decision}</p>
               <p className="text-meta text-text-muted mt-0.5">{d.owner_user_id ? nameOf.get(d.owner_user_id) ?? 'Owner' : '—'} · {fmtDate(d.decided_on)}{d.reason ? ` · ${d.reason}` : ''}</p>
             </div>
-            {!locked && <button onClick={() => run(() => meetingsApi.deleteDecision(orgId, meeting.id, d.id))} className="text-text-muted hover:text-danger shrink-0"><Trash2 size={14} /></button>}
+            {!locked && <Tooltip label="Delete decision"><Button variant="ghost" size="icon" className="shrink-0" aria-label="Delete decision" onClick={() => run(() => meetingsApi.deleteDecision(orgId, meeting.id, d.id))}><Trash2 size={14} /></Button></Tooltip>}
           </div>
         ))}
       </div>
@@ -518,7 +519,7 @@ function DecisionsTab({ meeting, orgId, people, nameOf, onChanged }: { meeting: 
           <div className="flex flex-wrap gap-2">
             <StyledSelect wrapperClassName="w-48" value={owner} onChange={setOwner} placeholder="Owner" searchable searchPlaceholder="Search people…" options={people.map((p) => ({ value: p.user_id, label: p.name }))} />
             <input className={`${inputClass} flex-1 min-w-[160px]`} placeholder="One-line reason" value={reason} onChange={(e) => setReason(e.target.value)} />
-            <button onClick={() => { if (!decision.trim()) return; run(() => meetingsApi.addDecision(orgId, meeting.id, { decision: decision.trim(), owner_user_id: owner || undefined, reason: reason || undefined })); setDecision(''); setOwner(''); setReason('') }} className="inline-flex items-center gap-1 px-3 py-2 text-body font-medium text-primary-foreground bg-primary rounded-lg"><Plus size={15} /> Log decision</button>
+            <Button variant="secondary" onClick={() => { if (!decision.trim()) return; run(() => meetingsApi.addDecision(orgId, meeting.id, { decision: decision.trim(), owner_user_id: owner || undefined, reason: reason || undefined })); setDecision(''); setOwner(''); setReason('') }}><Plus size={15} /> Log decision</Button>
           </div>
         </div>
       )}
@@ -556,7 +557,7 @@ function AnalyticsPanel({ orgId, meetingId }: { orgId: string; meetingId: string
   if (!data) return <div className="p-2 text-body text-text-muted">No analytics.</div>
   const stat = (label: string, value: string | number, color = 'var(--text-primary)') => (
     <div className="bg-surface border border-border-light rounded-xl p-4">
-      <p className="text-[24px] font-medium leading-none" style={{ color }}>{value}</p>
+      <p className="text-section font-medium leading-none" style={{ color }}>{value}</p>
       <p className="text-body text-text-secondary mt-1">{label}</p>
     </div>
   )

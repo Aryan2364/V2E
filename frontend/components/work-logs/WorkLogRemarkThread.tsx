@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import React, { useState } from 'react'
 import { Send, Trash2 } from 'lucide-react'
 import type { WorkLogRemark } from '@/lib/types/workLogs'
@@ -58,7 +59,7 @@ function RemarkItem({
     return (
       <div className="flex items-center gap-2 py-2 px-3 bg-surface-sunken rounded-[8px] text-body text-text-muted">
         Remark deleted.
-        <button type="button" onClick={handleUndo} className="text-primary-text font-medium hover:underline">Undo</button>
+        <Button type="button" variant="secondary" size="sm" onClick={handleUndo}>Undo</Button>
         <span className="text-meta">(10s)</span>
       </div>
     )
@@ -78,14 +79,10 @@ function RemarkItem({
           <p className="text-body text-text-primary mt-0.5 whitespace-pre-wrap">{remark.body}</p>
           <div className="flex items-center gap-3 mt-1">
             {depth === 0 && (
-              <button type="button" onClick={() => onReply(remark.id)} className="text-meta text-text-secondary hover:text-primary-text">
-                Reply
-              </button>
+              <Button type="button" variant="secondary" size="sm" onClick={() => onReply(remark.id)}>Reply</Button>
             )}
             {isOwn && (
-              <button type="button" onClick={handleDelete} className="text-meta text-text-muted hover:text-danger flex items-center gap-0.5">
-                <Trash2 size={10} /> Delete
-              </button>
+              <Button type="button" variant="secondary" size="sm" onClick={handleDelete}><Trash2 size={12} /> Delete</Button>
             )}
           </div>
         </div>
@@ -125,7 +122,7 @@ export default function WorkLogRemarkThread({ remarks, currentUserId, onAdd, onD
         {replyingTo && (
           <div className="flex items-center gap-2 mb-2 text-meta text-primary-text">
             Replying to remark
-            <button type="button" onClick={() => setReplyingTo(undefined)} className="text-danger hover:underline">Cancel</button>
+            <Button type="button" variant="secondary" size="sm" onClick={() => setReplyingTo(undefined)}>Cancel</Button>
           </div>
         )}
         <textarea
@@ -137,14 +134,7 @@ export default function WorkLogRemarkThread({ remarks, currentUserId, onAdd, onD
           className="w-full text-body text-text-primary placeholder:text-text-muted focus:outline-hidden resize-none"
         />
         <div className="flex items-center justify-end mt-2">
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={!body.trim() || sending}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-          >
-            <Send size={13} /> {sending ? 'Sending…' : 'Send'}
-          </button>
+          <Button type="button" onClick={handleSend} disabled={!body.trim()} loading={sending} loadingLabel="Sending"><Send size={13} /> Send</Button>
         </div>
       </div>
     </div>

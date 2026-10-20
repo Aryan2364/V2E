@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Sparkles, AlertTriangle, Video, MapPin, Bell, Link2 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import { useToast } from '@/components/ui/Toast'
@@ -23,9 +23,9 @@ import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { useGuardedClose } from '@/lib/use-guarded-close'
 
 const inputClass =
-  'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
+  'w-full border border-border rounded-[8px] px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
 const labelClass = 'block text-body font-medium text-text-secondary mb-1'
-const sectionLabel = 'text-[13px] font-medium text-text-secondary'
+const sectionLabel = 'text-label font-medium text-text-secondary'
 
 interface Props {
   isOpen: boolean
@@ -278,8 +278,8 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
 
   // Segmented control button
   const seg = (active: boolean) =>
-    ['px-3.5 py-1.5 text-body font-medium inline-flex items-center gap-1.5 transition-colors',
-      active ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-sunken'].join(' ')
+    ['px-3.5 py-1.5 text-body inline-flex items-center gap-1.5 transition-colors focus-visible:-outline-offset-2 outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring',
+      active ? 'bg-primary-subtle font-medium text-primary-text' : 'bg-surface text-text-secondary hover:bg-surface-control'].join(' ')
 
   return (
     <>
@@ -299,13 +299,9 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
           <MeetingAttendeeSelector options={people} value={attendees} onChange={setAttendees} optional={optional} onToggleOptional={toggleOptional} placeholder="Add attendees" hostId={hostId} hostLabel="You" ineligibleReasons={ineligibleReasons} />
           <p className="text-meta text-text-muted mt-1.5">You’re the host — always in the meeting. Everyone you add is attending; they can mark “can’t make it” with a reason. Toggle who’s optional.</p>
           {callMode === 'fixed' && recurMode === 'one_time' && attendees.length > 0 && (
-            <button
-              type="button"
-              onClick={openFinder}
-              className="mt-2.5 inline-flex items-center gap-1.5 text-body font-medium text-primary-text hover:text-primary-text"
-            >
+            <Button type="button" variant="secondary" size="sm" className="mt-2.5" onClick={openFinder}>
               <Sparkles size={15} /> Find a time that works for everyone →
-            </button>
+            </Button>
           )}
         </div>
 
@@ -314,8 +310,8 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
           <span className={sectionLabel}>Schedule</span>
 
           <div className="inline-flex w-fit rounded-[8px] border border-border overflow-hidden">
-            <button type="button" onClick={() => setCallMode('fixed')} className={seg(callMode === 'fixed')}>Pick a time</button>
-            <button type="button" onClick={() => setCallMode('log_past')} className={seg(callMode === 'log_past')}>Log a past meeting</button>
+            <button type="button" aria-pressed={callMode === 'fixed'} onClick={() => setCallMode('fixed')} className={seg(callMode === 'fixed')}>Pick a time</button>
+            <button type="button" aria-pressed={callMode === 'log_past'} onClick={() => setCallMode('log_past')} className={seg(callMode === 'log_past')}>Log a past meeting</button>
           </div>
 
           {callMode === 'fixed' && (
@@ -324,8 +320,8 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
 
               {/* One-time vs recurring — recurring reuses the SAME editor as recurring tasks */}
               <div className="inline-flex w-fit rounded-[8px] border border-border overflow-hidden">
-                <button type="button" onClick={() => setRecurring('one_time')} className={seg(recurMode === 'one_time')}>One-time</button>
-                <button type="button" onClick={() => setRecurring('recurring')} className={seg(recurMode === 'recurring')}>Recurring</button>
+                <button type="button" aria-pressed={recurMode === 'one_time'} onClick={() => setRecurring('one_time')} className={seg(recurMode === 'one_time')}>One-time</button>
+                <button type="button" aria-pressed={recurMode === 'recurring'} onClick={() => setRecurring('recurring')} className={seg(recurMode === 'recurring')}>Recurring</button>
               </div>
 
               {recurMode === 'one_time' ? (
@@ -393,8 +389,8 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
         <div className="border-t border-border-light pt-4 flex flex-col gap-3">
           <span className={sectionLabel}>Format</span>
           <div className="inline-flex w-fit rounded-[8px] border border-border overflow-hidden">
-            <button type="button" onClick={() => setType('online')} className={seg(type === 'online')}><Video size={14} /> Online</button>
-            <button type="button" onClick={() => setType('offline')} className={seg(type === 'offline')}><MapPin size={14} /> In person</button>
+            <button type="button" aria-pressed={type === 'online'} onClick={() => setType('online')} className={seg(type === 'online')}><Video size={14} /> Online</button>
+            <button type="button" aria-pressed={type === 'offline'} onClick={() => setType('offline')} className={seg(type === 'offline')}><MapPin size={14} /> In person</button>
           </div>
           {type === 'online' ? (
             <div>
@@ -416,9 +412,9 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
 
         {/* Quiet actions: link (left) · reminder (right) */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <button type="button" onClick={() => setShowLinker((v) => !v)} className="inline-flex items-center gap-1.5 text-meta text-text-secondary hover:text-text-primary">
+          <Button type="button" variant="secondary" size="sm" onClick={() => setShowLinker((v) => !v)}>
             <Link2 size={14} /> Link to a goal, task, or ticket
-          </button>
+          </Button>
           <label className="inline-flex items-center gap-2 text-meta text-text-secondary cursor-pointer select-none">
             <input type="checkbox" checked={remind} onChange={(e) => setRemind(e.target.checked)} className="w-4 h-4 accent-primary" />
             <Bell size={14} /> Remind 15 min before
@@ -464,7 +460,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
         {/* Footer */}
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-light">
           <Button variant="secondary" type="button" onClick={guarded.requestClose}>Cancel</Button>
-          <Button variant="primary" type="submit" isLoading={saving} disabled={saving}>Create meeting</Button>
+          <Button variant="primary" type="submit" loading={saving} disabled={saving}>Create meeting</Button>
         </div>
       </form>
 
