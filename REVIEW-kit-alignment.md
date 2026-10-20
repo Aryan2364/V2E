@@ -25,7 +25,7 @@ first commit (push was blocked for the agents — push it yourself).
 **Decisions for you (also listed per module below under "Kept for owner decision")**
 - Navigation shape (top nav + sub-sidebar) vs kit's single sidebar; Work sidebar has >7 items.
 - Info-blue and decorative hues (violet/cyan/pink chips) became neutral grey, per kit §2.4.
-- Time fields now step in 15 minutes on desktop (kit §20.2) — previously free minutes.
+- Time fields: the old analog clock dialog is BACK on desktop (owner decision, 20 Oct 2026), rebuilt on the kit Dialog and tokens (`components/ui/clock-time-picker.tsx`, via `pickerVariant="clock"` on `time-picker.tsx`). Deliberate deviation from kit §20.2; typing is kept, phone unchanged, any minute can be picked (step 1). Proposed to the kit in `KIT-PENDING-clock-time-picker.md`.
 - `/admin` lost its dark theme (kit has no dark mode).
 - Thin adapters (StyledSelect, DatePicker, DateRangePicker, Modal, ConfirmDialog, ResponsiveTable,
   TimeField) kept rather than rewriting ~150 call sites; they render the kit components.

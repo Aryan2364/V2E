@@ -264,6 +264,7 @@ Rules:
 | text-link.tsx | Text links (section 6.6) |
 | textarea.tsx | Free-form text |
 | time-picker.tsx | Time field (section 20.2) |
+| clock-time-picker.tsx | v2e: the analog clock dialog behind time-picker.tsx (pickerVariant="clock") |
 | tooltip.tsx | Hover label (section 19) |
 | truncate.tsx | Truncate and clamp (section 8) |
 | unsaved-changes.tsx | The leave-without-saving warning (section 11.3 rule 10) |
@@ -1436,6 +1437,7 @@ Nothing outstanding. When a new pattern is needed, agree it and add it to this f
 **Agreed in v2e (not yet in the kit):**
 
 - **Text selection (20 Oct 2026, owner).** The browser's default highlight is never used (section 1 rule 5). Selected text on a surface is primary with primary-foreground; on a brand ground (`.bg-primary`, header bands) it inverts to primary-foreground with primary-text. Defined once in globals.css's base layer. Candidate to offer back to the kit.
+- **Desktop time picker is an analog clock (20 Oct 2026, owner).** Deviation from section 20.2: the in-field clock button opens a clock-face dialog (clock-time-picker.tsx, via time-picker.tsx's `pickerVariant="clock"`) instead of the hour / minute / AM-PM option lists. The field stays typeable (20.2), the phone keeps its own picker (41.9 rule 10), and the dialog may open from inside another dialog (exception to section 24 rule 4). Owner: "option lists are a shitty way to show time." Proposed to the kit in KIT-PENDING-clock-time-picker.md.
 
 ## 31. Data entry grid
 

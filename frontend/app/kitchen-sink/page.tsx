@@ -1249,6 +1249,19 @@ export default function KitchenSinkPage() {
                 <TimePicker id="ks-time-2" value={time} onValueChange={setTime} />
               </div>
             </div>
+            <div className="w-40">
+              <Label htmlFor="ks-time-clock">Time, clock face (v2e)</Label>
+              <div className="mt-2">
+                <TimePicker
+                  id="ks-time-clock"
+                  step={1}
+                  pickerVariant="clock"
+                  pickerLabel="Reminder time"
+                  value={time}
+                  onValueChange={setTime}
+                />
+              </div>
+            </div>
             <div>
               <p className="text-label text-text-secondary">Calendar, on its own</p>
               <div className="mt-2">

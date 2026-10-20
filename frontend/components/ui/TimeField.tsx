@@ -3,15 +3,15 @@
 /**
  * Thin adapter onto the kit's time-picker.tsx. Keeps v2e's original
  * "HH:MM" 24-hour string contract (value/onChange), '' = empty, and prop
- * names, so this file's 9 call sites don't change. See
+ * names, so this file's call sites don't change. See
  * components/ui/ADAPTERS.md.
  *
- * Known deviation (logged in REVIEW-kit-alignment.md): `label` (the old
- * ClockTimePicker dialog's heading) and `compact` (tighter padding) have
- * no kit equivalent and are accepted but unused — the field always
- * renders the kit's one time-picker appearance (an inline popover with
- * hour/minute/AM-PM lists) instead of the old centered analog-clock
- * dialog.
+ * Recorded owner deviation from kit section 20.2 (20 Oct 2026): on desktop
+ * the in-field clock button opens an analog clock-face dialog
+ * (clock-time-picker.tsx) instead of the kit's option lists. Typing in the
+ * field is kept, and the phone still opens its native picker. `label` is
+ * the clock dialog's title again ("Choose a time" when not given).
+ * `compact` has no effect and is kept for call-site compatibility.
  *
  * step={1}: every call site is a free time (deadline, meeting, reminder,
  * schedule, workflow timing), so typed minutes are kept exactly. The old
@@ -24,7 +24,7 @@ interface Props {
   onChange: (v: string) => void;
   disabled?: boolean;
   placeholder?: string;
-  /** No longer has a visual effect; kept for call-site compatibility. */
+  /** The clock dialog's title. */
   label?: string;
   /** No longer has a visual effect; kept for call-site compatibility. */
   compact?: boolean;
@@ -51,10 +51,12 @@ function toHHMM(value: TimeValue | undefined): string {
   return `${String(hour24).padStart(2, "0")}:${String(value.minute).padStart(2, "0")}`
 }
 
-export default function TimeField({ value, onChange, disabled, placeholder }: Props) {
+export default function TimeField({ value, onChange, disabled, placeholder, label }: Props) {
   return (
     <TimePicker
       step={1}
+      pickerVariant="clock"
+      pickerLabel={label}
       value={fromHHMM(value)}
       onValueChange={(next) => onChange(toHHMM(next))}
       disabled={disabled}

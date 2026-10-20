@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button"
 import { NativePickerField } from "@/components/ui/date-picker"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+// v2e deviation (owner, 20 Oct 2026): analog clock dialog, see clock-time-picker.tsx.
+import { ClockTimePicker } from "@/components/ui/clock-time-picker"
 
 /**
  * Section 20.2. There is no ready-made time picker in the component
@@ -207,6 +209,8 @@ function TimePicker({
   placeholder = "9:30 AM",
   step = DEFAULT_STEP,
   className,
+  pickerVariant = "list",
+  pickerLabel,
 }: {
   value?: TimeValue
   onValueChange?: (value: TimeValue | undefined) => void
@@ -222,6 +226,15 @@ function TimePicker({
    */
   step?: number
   className?: string
+  /**
+   * v2e deviation from section 20.2 (owner decision, 20 Oct 2026): "clock"
+   * makes the in-field button open an analog clock dialog
+   * (clock-time-picker.tsx) instead of the hour / minute / AM-PM lists. The
+   * typeable field and the phone branch are unchanged.
+   */
+  pickerVariant?: "list" | "clock"
+  /** The clock dialog's title. Defaults to "Choose a time". */
+  pickerLabel?: string
   /**
    * Called on leaving the field when what was typed cannot be read as a
    * time. The field keeps the text and marks itself invalid; the caller
@@ -328,6 +341,30 @@ function TimePicker({
         }}
         className="pr-11"
       />
+      {pickerVariant === "clock" ? (
+        <>
+          <Button
+            type="button"
+            variant="in-field"
+            size="icon-sm"
+            disabled={disabled}
+            aria-label="Choose a time"
+            aria-haspopup="dialog"
+            onClick={() => setOpen(true)}
+            className="absolute right-1"
+          >
+            <ClockIcon />
+          </Button>
+          <ClockTimePicker
+            open={open}
+            onOpenChange={setOpen}
+            value={value}
+            onValueChange={(next) => onValueChange?.(next)}
+            label={pickerLabel}
+            step={step}
+          />
+        </>
+      ) : (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           render={
@@ -365,6 +402,7 @@ function TimePicker({
           </div>
         </PopoverContent>
       </Popover>
+      )}
     </div>
   )
 }
