@@ -17,8 +17,8 @@ import { RECURRING_TEMPLATES_HREF, type PhoneRoute } from '@/lib/phone-routes'
 /*
  * Given - plan-phone-2026-10-14.md §5.2 (slice 5). Tasks I gave to others
  * (GET tasks/assigned-by-me), open ones by default with a "Done" view one
- * tap away, no completion circle (D7). A pinned "Recurring tasks ›" row at
- * the top is the primary entry point into the Recurring screens (§7/D8);
+ * tap away, no completion circle (D7). A "Recurring tasks" icon button beside
+ * the Open / Done tabs is the primary entry point into the Recurring screens (§7/D8);
  * More carries the secondary one.
  */
 
@@ -75,20 +75,8 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
     <PhoneScreen title={route.title}>
       <PullHint refreshing={refreshing} onRefresh={onRefresh} />
 
-      <Link
-        href={RECURRING_TEMPLATES_HREF}
-        className="mb-[16px] flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-light bg-surface px-[12px] active:bg-surface-control"
-      >
-        <span className="inline-flex items-center gap-[8px] text-body font-medium text-text-primary">
-          <Repeat aria-hidden className="size-[18px] text-text-secondary" />
-          Recurring tasks
-        </span>
-        <span aria-hidden className="text-text-secondary">
-          ›
-        </span>
-      </Link>
-
-      <div className="mb-[16px] flex gap-[8px]" role="tablist" aria-label="Given">
+      <div className="mb-[16px] flex items-center gap-[8px]">
+      <div className="flex min-w-0 flex-1 gap-[8px]" role="tablist" aria-label="Given">
         {(['open', 'done'] as const).map((key) => (
           <button
             key={key}
@@ -106,6 +94,14 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
             {key === 'open' ? `Open${open.length ? ` · ${open.length}` : ''}` : `Done${done.length ? ` · ${done.length}` : ''}`}
           </button>
         ))}
+      </div>
+        <Link
+          href={RECURRING_TEMPLATES_HREF}
+          aria-label="Recurring tasks"
+          className="-my-[4px] inline-flex size-[44px] shrink-0 items-center justify-center rounded-full text-text-secondary outline-hidden active:bg-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-ring"
+        >
+          <Repeat aria-hidden className="size-[22px]" />
+        </Link>
       </div>
 
       {loading ? (
