@@ -83,9 +83,9 @@ interface CreateTaskModalProps {
 
 // const quadrants: { value: TaskQuadrant; label: string; sublabel: string }[] = [
 //   { value: 'Q1', label: 'Q1', sublabel: 'Urgent + Important' },
-//   { value: 'Q2', label: 'Q2', sublabel: 'Not Urgent + Important' },
+//   { value: 'Q2', label: 'Q2', sublabel: 'Not urgent + Important' },
 //   { value: 'Q3', label: 'Q3', sublabel: 'Urgent + Not Important' },
-//   { value: 'Q4', label: 'Q4', sublabel: 'Not Urgent + Not Important' },
+//   { value: 'Q4', label: 'Q4', sublabel: 'Not urgent + Not Important' },
 // ]
 // const quadrantColors: Record<TaskQuadrant, { bg: string; text: string; border: string; activeBg: string }> = {
 //   Q1: { bg: 'bg-danger-bg', text: 'text-danger', border: 'border-danger-border', activeBg: 'bg-danger' },

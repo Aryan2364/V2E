@@ -19,7 +19,7 @@ const quadrantConfig: Record<TaskQuadrant, { bg: string; text: string; border: s
     text: 'text-primary-text',
     border: 'border border-primary-border',
     label: 'Q2',
-    sublabel: 'Not Urgent + Important',
+    sublabel: 'Not urgent + Important',
   },
   Q3: {
     bg: 'bg-warning-bg',
@@ -33,7 +33,7 @@ const quadrantConfig: Record<TaskQuadrant, { bg: string; text: string; border: s
     text: 'text-text-muted',
     border: 'border border-border-light',
     label: 'Q4',
-    sublabel: 'Not Urgent + Not Important',
+    sublabel: 'Not urgent + Not Important',
   },
 }
 

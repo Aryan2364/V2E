@@ -347,7 +347,7 @@ export default function EmployeeAssigneeEditor({
               <div key={g.id}>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-sunken border-b border-border-light sticky top-0">
                   <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorOf(g.id) }} />
-                  <span className="text-meta font-medium text-text-muted uppercase tracking-wide truncate">{g.name}</span>
+                  <span className="text-meta font-medium text-text-muted  truncate">{g.name}</span>
                 </div>
                 {g.users.map((e) => (
                   <button
@@ -487,7 +487,7 @@ export default function EmployeeAssigneeEditor({
               {removedRows.length > 0 && (
                 <div className="border-b border-danger-border bg-danger-bg">
                   <div className="flex items-center justify-between px-3 py-2">
-                    <span className="text-meta font-medium text-danger uppercase tracking-wide">Removed ({removedRows.length})</span>
+                    <span className="text-meta font-medium text-danger ">Removed ({removedRows.length})</span>
                     <Button variant="secondary" size="sm" onClick={resetToRules}>
                       <RotateCcw size={13} /> Restore all
                     </Button>
@@ -520,7 +520,7 @@ export default function EmployeeAssigneeEditor({
                 {memberGroups.map((g) => (
                   <div key={g.department_id}>
                     <div className="px-3 py-1.5 bg-surface-sunken border-b border-border-light">
-                      <span className="text-meta font-medium text-text-muted uppercase tracking-wide">{g.department_name}</span>
+                      <span className="text-meta font-medium text-text-muted ">{g.department_name}</span>
                     </div>
                     {g.users.map((u) => (
                       <Row

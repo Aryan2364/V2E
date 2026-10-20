@@ -123,8 +123,8 @@ export default function TaskTable({
             <tr className="bg-surface-sunken border-b border-border-light">
               <Th>Task</Th>
               <Th>Description</Th>
-              <Th>Assigned To</Th>
-              <Th>Assigned By</Th>
+              <Th>Assigned to</Th>
+              <Th>Assigned by</Th>
               <Th>Department</Th>
               <Th>Category</Th>
               <Th>Tags</Th>

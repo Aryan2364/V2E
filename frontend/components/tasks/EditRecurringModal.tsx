@@ -368,7 +368,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           )}
 
           <div className="space-y-4">
-            <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Task Details</p>
+            <p className="text-meta font-medium text-text-muted ">Task details</p>
             <div>
               <Label className="mb-2" htmlFor="edit-recurring-title" required>Title</Label>
               <div className="relative">
@@ -492,12 +492,12 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           </div>
 
           <div className="space-y-3">
-            <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Schedule</p>
+            <p className="text-meta font-medium text-text-muted ">Schedule</p>
             <ScheduleEntryList entries={scheduleEntries} onChange={setScheduleEntries} />
           </div>
 
           <div className="space-y-3">
-            <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Completion & Alerts</p>
+            <p className="text-meta font-medium text-text-muted ">Completion & Alerts</p>
             <ProofRequirementField
               proofRequired={proofRequired}
               onProofRequiredChange={setProofRequired}
@@ -521,7 +521,7 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           </div>
 
           <div className="space-y-3">
-            <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Repeats On Every Instance</p>
+            <p className="text-meta font-medium text-text-muted ">Repeats on every instance</p>
             <ChecklistBuilderField
               groups={checklistGroups}
               onChange={setChecklistGroups}

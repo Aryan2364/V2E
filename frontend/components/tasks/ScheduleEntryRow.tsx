@@ -139,7 +139,7 @@ export default function ScheduleEntryRow({ entry, index, onUpdate, onDelete, can
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-meta font-medium text-text-muted uppercase tracking-wider">Entry #{index + 1}</span>
+        <span className="text-meta font-medium text-text-muted ">Entry #{index + 1}</span>
         <Tooltip label={canDelete ? 'Remove entry' : 'Cannot remove last entry'}>
           <Button
             type="button"

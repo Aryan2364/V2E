@@ -46,36 +46,36 @@ function SnapshotViewer({ ticket }: { ticket: Ticket }) {
     <div className="mt-3 p-4 bg-surface-sunken border border-border-light rounded-[10px] space-y-3">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-meta">
         <div>
-          <p className="text-text-muted uppercase tracking-wide font-medium mb-0.5">Raised by</p>
+          <p className="text-text-muted  font-medium mb-0.5">Raised by</p>
           <p className="text-text-primary font-medium">{ticket.raised_by_user_id}</p>
         </div>
         <div>
-          <p className="text-text-muted uppercase tracking-wide font-medium mb-0.5">Assigned to</p>
+          <p className="text-text-muted  font-medium mb-0.5">Assigned to</p>
           <p className="text-text-primary font-medium">{ticket.assigned_to_user_id ?? '—'}</p>
         </div>
         <div>
-          <p className="text-text-muted uppercase tracking-wide font-medium mb-0.5">SLA</p>
+          <p className="text-text-muted  font-medium mb-0.5">SLA</p>
           <p className="text-text-primary font-medium">{ticket.sla_days}d · {ticket.sla_breached ? '⚠ Breached' : 'OK'}</p>
         </div>
         <div>
-          <p className="text-text-muted uppercase tracking-wide font-medium mb-0.5">Created</p>
+          <p className="text-text-muted  font-medium mb-0.5">Created</p>
           <p className="text-text-primary font-medium">{formatDate(ticket.created_at)}</p>
         </div>
         {ticket.resolved_at && (
           <div>
-            <p className="text-text-muted uppercase tracking-wide font-medium mb-0.5">Resolved</p>
+            <p className="text-text-muted  font-medium mb-0.5">Resolved</p>
             <p className="text-text-primary font-medium">{formatDate(ticket.resolved_at)}</p>
           </div>
         )}
         {ticket.closed_at && (
           <div>
-            <p className="text-text-muted uppercase tracking-wide font-medium mb-0.5">Closed</p>
+            <p className="text-text-muted  font-medium mb-0.5">Closed</p>
             <p className="text-text-primary font-medium">{formatDate(ticket.closed_at)}</p>
           </div>
         )}
         {ticket.rating && (
           <div>
-            <p className="text-text-muted uppercase tracking-wide font-medium mb-0.5">Rating</p>
+            <p className="text-text-muted  font-medium mb-0.5">Rating</p>
             <p className="text-text-primary font-medium">{'★'.repeat(ticket.rating)}{'☆'.repeat(5 - ticket.rating)} ({ticket.rating}/5)</p>
           </div>
         )}
@@ -83,21 +83,21 @@ function SnapshotViewer({ ticket }: { ticket: Ticket }) {
 
       {ticket.description && (
         <div>
-          <p className="text-text-muted uppercase tracking-wide text-meta font-medium mb-1">Description</p>
+          <p className="text-text-muted  text-meta font-medium mb-1">Description</p>
           <p className="text-meta text-text-secondary whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
         </div>
       )}
 
       {ticket.resolution_note && (
         <div>
-          <p className="text-text-muted uppercase tracking-wide text-meta font-medium mb-1">Resolution Note</p>
+          <p className="text-text-muted  text-meta font-medium mb-1">Resolution note</p>
           <p className="text-meta text-text-secondary whitespace-pre-wrap leading-relaxed">{ticket.resolution_note}</p>
         </div>
       )}
 
       {ticket.checklist && ticket.checklist.length > 0 && (
         <div>
-          <p className="text-text-muted uppercase tracking-wide text-meta font-medium mb-1">Checklist</p>
+          <p className="text-text-muted  text-meta font-medium mb-1">Checklist</p>
           <div className="space-y-1">
             {ticket.checklist.map((item) => (
               <div key={item.id} className="flex items-center gap-2">

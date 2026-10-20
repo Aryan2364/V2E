@@ -28,6 +28,7 @@ import Tooltip from '@/components/ui/tooltip'
 import { AttachmentChips } from '@/components/ui/AttachmentList'
 import { PageHeader } from '@/components/shell/page-header'
 import { Button } from '@/components/ui/button'
+import ReasonDialog from '@/components/tasks/ReasonDialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   DropdownMenu,
@@ -125,7 +126,7 @@ function HoverList({ trigger, heading, items, className = '' }: {
       <span className="underline decoration-dotted decoration-current/40 underline-offset-2">{trigger}</span>
       {show && items.length > 0 && (
         <span className="absolute bottom-full left-0 mb-1.5 z-40 w-max max-w-[240px] rounded-control bg-text-primary px-3 py-2 text-left shadow-dialog pointer-events-none">
-          <span className="block text-meta font-medium uppercase tracking-wider text-text-muted mb-1">{heading}</span>
+          <span className="block text-meta font-medium  text-text-muted mb-1">{heading}</span>
           {items.map((it, i) => (
             <span key={i} className="block text-meta leading-snug text-primary-foreground whitespace-pre-wrap">{it}</span>
           ))}
@@ -351,7 +352,6 @@ export default function TaskDetailPage() {
   const [proofReloadToken, setProofReloadToken] = useState(0)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [selectedStatusId, setSelectedStatusId] = useState('')
-  const [deleteReason, setDeleteReason] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [editingAssignees, setEditingAssignees] = useState(false)
   const [editAssigneesList, setEditAssigneesList] = useState<import('@/lib/types/tasks').SelectedAssignee[]>([])
@@ -362,15 +362,12 @@ export default function TaskDetailPage() {
   const [savingCompletionMode, setSavingCompletionMode] = useState(false)
   const [reopenSecondsLeft, setReopenSecondsLeft] = useState(0)
   const [showReopenModal, setShowReopenModal] = useState(false)
-  const [reopenReason, setReopenReason] = useState('')
   const [showEditModal, setShowEditModal] = useState(false)
   // Marking incomplete: which outcome we're capturing a reason for — the whole task
   // ('task') or only my own part ('my_part', all_must_complete). Null = box closed.
   const [incompleteTarget, setIncompleteTarget] = useState<null | 'task' | 'my_part'>(null)
-  const [incompleteReason, setIncompleteReason] = useState('')
   // Reopening ONE assignee's finished part (all_must_complete): whose, + an optional note.
   const [reopenPartTarget, setReopenPartTarget] = useState<string | null>(null)
-  const [reopenPartReason, setReopenPartReason] = useState('')
   // Owner override: closing the whole all_must task as Complete while some parts are
   // still pending — shows a heads-up first.
   const [confirmCompleteAll, setConfirmCompleteAll] = useState(false)
@@ -475,14 +472,13 @@ export default function TaskDetailPage() {
   }
 
   // Assigner reopens ONE person's finished part for rework (all_must_complete). Others untouched.
-  async function handleReopenAssigneePart(userId: string) {
+  async function handleReopenAssigneePart(userId: string, reason?: string) {
     setActionLoading(`reopen-part-${userId}`)
     try {
-      const updated = await tasksApi.reopenAssigneePart(orgId, taskId, userId, reopenPartReason.trim() || undefined)
+      const updated = await tasksApi.reopenAssigneePart(orgId, taskId, userId, reason?.trim() || undefined)
       setTask(updated)
       setSelectedStatusId(updated.status_id)
       setReopenPartTarget(null)
-      setReopenPartReason('')
     } catch (e) {
       showActionError(e)
     } finally {
@@ -528,7 +524,6 @@ export default function TaskDetailPage() {
       setTask(updated)
       setSelectedStatusId(updated.status_id)
       setShowReopenModal(false)
-      setReopenReason('')
       await loadTask()
     } catch (e) {
       showActionError(e)
@@ -539,15 +534,14 @@ export default function TaskDetailPage() {
 
   // Close the whole task as Incomplete (reason required). Used by any assignee in
   // any_can_complete mode, and by the creator/admin in all_must_complete mode.
-  async function handleMarkIncomplete() {
-    if (!incompleteReason.trim()) return
+  async function handleMarkIncomplete(reason: string) {
+    if (!reason.trim()) return
     setActionLoading('incomplete')
     try {
-      const updated = await tasksApi.markIncomplete(orgId, taskId, incompleteReason.trim())
+      const updated = await tasksApi.markIncomplete(orgId, taskId, reason.trim())
       setTask(updated)
       setSelectedStatusId(updated.status_id)
       setIncompleteTarget(null)
-      setIncompleteReason('')
       await loadTask()
     } catch (e) {
       showActionError(e)
@@ -557,15 +551,14 @@ export default function TaskDetailPage() {
   }
 
   // all_must_complete: flag only my own part as can't-complete (reason required).
-  async function handleFlagMyPart() {
-    if (!incompleteReason.trim()) return
+  async function handleFlagMyPart(reason: string) {
+    if (!reason.trim()) return
     setActionLoading('flag')
     try {
-      const updated = await tasksApi.flagCannotComplete(orgId, taskId, incompleteReason.trim())
+      const updated = await tasksApi.flagCannotComplete(orgId, taskId, reason.trim())
       setTask(updated)
       setSelectedStatusId(updated.status_id)
       setIncompleteTarget(null)
-      setIncompleteReason('')
     } catch (e) {
       showActionError(e)
     } finally {
@@ -573,16 +566,11 @@ export default function TaskDetailPage() {
     }
   }
 
-  async function handleDelete() {
-    // The backend requires a non-blank reason — catch it here so the field's
-    // "(optional)" label never lies and a blank submit doesn't silently no-op.
-    if (!deleteReason.trim()) {
-      toast.warning('A reason is required to delete this task.')
-      return
-    }
+  async function handleDelete(reason: string) {
+    if (!reason.trim()) return
     setActionLoading('delete')
     try {
-      await tasksApi.deleteTask(orgId, taskId, deleteReason.trim())
+      await tasksApi.deleteTask(orgId, taskId, reason.trim())
       router.push('/dashboard/tasks')
     } catch (e) {
       showActionError(e)
@@ -1036,36 +1024,18 @@ export default function TaskDetailPage() {
         />
       )}
 
-      {/* Reopen reason modal (creator only) */}
-      {showReopenModal && (
-        <div className="bg-warning-bg border border-warning-border rounded-card p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          <div className="flex-1">
-            <p className="text-body font-medium text-warning">Reopen this task?</p>
-            <p className="text-meta text-warning mt-0.5">As the task creator, a reason is required.</p>
-            <textarea
-              value={reopenReason}
-              onChange={(e) => setReopenReason(e.target.value)}
-              placeholder="Reason for reopening (required)"
-              rows={2}
-              className="mt-2 w-full border border-warning-border rounded-control px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden bg-surface focus:border-warning resize-none"
-            />
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <Button
-              onClick={() => handleReopen(reopenReason)}
-              disabled={!reopenReason.trim()}
-              loading={actionLoading === 'reopen'}
-              loadingLabel="Reopening"
-              className="bg-warning border-warning text-primary-foreground hover:bg-warning hover:border-warning"
-            >
-              Confirm Reopen
-            </Button>
-            <Button variant="secondary" onClick={() => { setShowReopenModal(false); setReopenReason('') }}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
+      <ReasonDialog
+        open={showReopenModal}
+        onCancel={() => setShowReopenModal(false)}
+        onConfirm={(r) => handleReopen(r)}
+        title="Reopen this task?"
+        description="As the task creator, a reason is required."
+        label="Reason for reopening"
+        placeholder="What needs to change?"
+        confirmLabel="Reopen task"
+        loadingLabel="Reopening"
+        loading={actionLoading === 'reopen'}
+      />
 
       {/* Owner heads-up before force-completing the whole all_must task while some
           parts are still pending. */}
@@ -1096,78 +1066,64 @@ export default function TaskDetailPage() {
         </div>
       )}
 
-      {/* Mark-incomplete reason box — required remark for closing the task (or my part)
+      {/* Mark-incomplete reason — required remark for closing the task (or my part)
           as not-done. Shown for both any_can_complete (whole task) and all_must_complete
           (my_part, or the creator closing the whole task). */}
-      {incompleteTarget && (
-        <div className="bg-danger-bg border border-danger-border rounded-card p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          <div className="flex-1">
-            <p className="text-body font-medium text-danger">
-              {incompleteTarget === 'my_part' ? "Can't complete your part?" : 'Mark this task incomplete?'}
-            </p>
-            <p className="text-meta text-danger mt-0.5">
-              {incompleteTarget === 'my_part'
+      <ReasonDialog
+        open={incompleteTarget !== null}
+        onCancel={() => setIncompleteTarget(null)}
+        onConfirm={(r) => (incompleteTarget === 'my_part' ? handleFlagMyPart(r) : handleMarkIncomplete(r))}
+        title={incompleteTarget === 'my_part' ? "Can't complete your part?" : 'Mark this task incomplete?'}
+        description={
+          incompleteTarget === 'my_part'
                 ? 'Your part will be flagged as not-done. A reason is required — the task creator will decide how to close the task.'
                 : isAllMustComplete && pendingNames.length > 0
                   ? `Heads up — ${pendingNames.slice(0, 3).join(', ')}${pendingNames.length > 3 ? ` +${pendingNames.length - 3} more` : ''} ${pendingNames.length === 1 ? "hasn't" : "haven't"} finished. As the task owner, this closes it as not-done for everyone. A reason is required.`
-                  : 'The task will be closed as not-done. A reason is required.'}
-            </p>
-            <textarea
-              value={incompleteReason}
-              onChange={(e) => setIncompleteReason(e.target.value)}
-              placeholder="Reason (required)"
-              rows={2}
-              autoFocus
-              className="mt-2 w-full border border-danger-border rounded-control px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden bg-surface focus:border-danger resize-none"
-            />
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <Button
-              variant="danger"
-              onClick={incompleteTarget === 'my_part' ? handleFlagMyPart : handleMarkIncomplete}
-              disabled={!incompleteReason.trim()}
-              loading={actionLoading === 'incomplete' || actionLoading === 'flag'}
-              loadingLabel="Saving"
-            >
-              {incompleteTarget === 'my_part' ? "Flag my part" : 'Confirm Incomplete'}
-            </Button>
-            <Button variant="secondary" onClick={() => { setIncompleteTarget(null); setIncompleteReason('') }}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
+                  : 'The task will be closed as not-done. A reason is required.'
+        }
+        label="Reason"
+        placeholder="Why can't this be completed?"
+        confirmLabel={incompleteTarget === 'my_part' ? 'Flag my part' : 'Mark incomplete'}
+        destructive
+        loading={actionLoading === 'incomplete' || actionLoading === 'flag'}
+      />
+
+      {/* Reopen one person's finished part — the note is optional feedback for them. */}
+      {(() => {
+        const target = task.assignees?.find((a) => a.user_id === reopenPartTarget)
+        const targetName = target ? (target.user?.name ?? target.user_name ?? 'this person') : 'this person'
+        return (
+          <ReasonDialog
+            open={reopenPartTarget !== null}
+            onCancel={() => setReopenPartTarget(null)}
+            onConfirm={(r) => reopenPartTarget && handleReopenAssigneePart(reopenPartTarget, r)}
+            title={`Reopen ${targetName}'s part?`}
+            description="Their part goes back to pending. Add a note to tell them what to change."
+            label="Note"
+            placeholder="What would you like them to do?"
+            required={false}
+            confirmLabel="Reopen part"
+            loadingLabel="Reopening"
+            maxLength={500}
+            loading={reopenPartTarget !== null && actionLoading === `reopen-part-${reopenPartTarget}`}
+          />
+        )
+      })()}
 
       {/* Delete confirmation */}
-      {showDeleteConfirm && (
-        <div className="bg-danger-bg border border-danger-border rounded-card p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          <div className="flex-1">
-            <p className="text-body font-medium text-danger">Delete this task?</p>
-            <input
-              type="text"
-              value={deleteReason}
-              onChange={(e) => setDeleteReason(e.target.value)}
-              placeholder="Reason for deletion (required)"
-              autoFocus
-              className="mt-2 w-full border border-danger-border rounded-control px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden bg-surface focus:border-danger"
-            />
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <Button
-              variant="danger"
-              onClick={handleDelete}
-              disabled={!deleteReason.trim()}
-              loading={actionLoading === 'delete'}
-              loadingLabel="Deleting"
-            >
-              Confirm Delete
-            </Button>
-            <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
+      <ReasonDialog
+        open={showDeleteConfirm}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={(r) => handleDelete(r)}
+        title="Delete this task?"
+        description="The task is removed from everyone's lists. A reason is required."
+        label="Reason for deletion"
+        placeholder="Why is this task being deleted?"
+        confirmLabel="Delete task"
+        loadingLabel="Deleting"
+        destructive
+        loading={actionLoading === 'delete'}
+      />
 
       {/* Description — right under the title, no box around it. */}
       {task.description && (
@@ -1357,7 +1313,7 @@ export default function TaskDetailPage() {
             <div className="bg-surface border border-border-light rounded-card shadow-card overflow-visible">
               <div className="flex items-center gap-2 px-4 py-2.5 bg-primary-subtle border-b border-primary-border rounded-t-[12px]">
                 <span className="w-2 h-2 rounded-full bg-primary" />
-                <p className="text-meta font-medium text-primary-text uppercase tracking-widest">Status</p>
+                <p className="text-meta font-medium text-primary-text ">Status</p>
               </div>
               <div className="p-4">
                 {isTaskTerminal && task.status ? (
@@ -1482,7 +1438,7 @@ export default function TaskDetailPage() {
                             variant="ghost"
                             size="sm"
                             className="mt-2 text-danger hover:text-danger"
-                            onClick={() => { setIncompleteReason(''); setIncompleteTarget('task') }}
+                            onClick={() => {  setIncompleteTarget('task') }}
                           >
                             <XCircle size={13} />
                             Mark whole task incomplete
@@ -1495,8 +1451,8 @@ export default function TaskDetailPage() {
                         <StyledSelect
                           value={myTrackId}
                           onChange={(v) => {
-                            if (v === MARK_MY_PART) { setIncompleteReason(''); setIncompleteTarget('my_part') }
-                            else if (v === MARK_TASK) { setIncompleteReason(''); setIncompleteTarget('task') }
+                            if (v === MARK_MY_PART) {  setIncompleteTarget('my_part') }
+                            else if (v === MARK_TASK) {  setIncompleteTarget('task') }
                             else handleMyTrackChange(v)
                           }}
                           options={[
@@ -1550,7 +1506,7 @@ export default function TaskDetailPage() {
                           variant="ghost"
                           size="sm"
                           className="mt-2 text-danger hover:text-danger"
-                          onClick={() => { setIncompleteReason(''); setIncompleteTarget('task') }}
+                          onClick={() => {  setIncompleteTarget('task') }}
                         >
                           <XCircle size={13} />
                           Mark task incomplete
@@ -1585,7 +1541,7 @@ export default function TaskDetailPage() {
                       <StyledSelect
                         value={selectedStatusId}
                         onChange={(v) => {
-                          if (v === MARK_TASK) { setIncompleteReason(''); setIncompleteTarget('task') }
+                          if (v === MARK_TASK) {  setIncompleteTarget('task') }
                           else handleSharedStatusChange(v)
                         }}
                         options={[
@@ -1620,7 +1576,7 @@ export default function TaskDetailPage() {
             <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
               <div className="flex items-center gap-2 px-4 py-2.5 bg-surface-control border-b border-border-light">
                 <span className="w-2 h-2 rounded-full bg-text-secondary" />
-                <p className="text-meta font-medium text-text-secondary uppercase tracking-widest">Details</p>
+                <p className="text-meta font-medium text-text-secondary ">Details</p>
               </div>
               <div className="p-4 space-y-4">
                 {/* Status lives in its own card above — not repeated here. */}
@@ -1640,7 +1596,7 @@ export default function TaskDetailPage() {
                     <Tag size={13} className="text-text-secondary" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-meta font-medium text-text-muted uppercase tracking-wide mb-1">Tags</p>
+                    <p className="text-meta font-medium text-text-muted  mb-1">Tags</p>
                     <InlineTaskTags
                       orgId={orgId}
                       taskId={task.id}
@@ -1660,7 +1616,7 @@ export default function TaskDetailPage() {
                       <Flag size={13} style={{ color: priority.color }} />
                     </div>
                     <div>
-                      <p className="text-meta font-medium text-text-muted uppercase tracking-wide">Priority</p>
+                      <p className="text-meta font-medium text-text-muted ">Priority</p>
                       <p className="text-body font-medium" style={{ color: priority.color }}>{priority.label}</p>
                     </div>
                   </div>
@@ -1672,7 +1628,7 @@ export default function TaskDetailPage() {
                       <Calendar size={13} className="text-warning" />
                     </div>
                     <div>
-                      <p className="text-meta font-medium text-text-muted uppercase tracking-wide">Deadline</p>
+                      <p className="text-meta font-medium text-text-muted ">Deadline</p>
                       <p className={`text-body ${deadlineColor(task.deadline)}`}>{formatDate(task.deadline)}</p>
                       {/* A revised deadline says so, with the date compliance actually
                           grades against — the live date can move, the baseline can't. */}
@@ -1692,7 +1648,7 @@ export default function TaskDetailPage() {
                     <Clock size={13} className="text-text-secondary" />
                   </div>
                   <div>
-                    <p className="text-meta font-medium text-text-muted uppercase tracking-wide">Created</p>
+                    <p className="text-meta font-medium text-text-muted ">Created</p>
                     <p className="text-body text-text-secondary">{formatDate(task.created_at)}</p>
                   </div>
                 </div>
@@ -1709,7 +1665,7 @@ export default function TaskDetailPage() {
                         <User size={13} className="text-text-secondary" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-meta font-medium text-text-muted uppercase tracking-wide">Assigned by</p>
+                        <p className="text-meta font-medium text-text-muted ">Assigned by</p>
                         {wf ? (
                           <>
                             <p className="text-body text-text-primary flex items-center gap-1.5 flex-wrap min-w-0">
@@ -1734,7 +1690,7 @@ export default function TaskDetailPage() {
               <div className="flex items-center justify-between px-4 py-2.5 bg-primary-subtle border-b border-border-light">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-text-secondary" />
-                  <p className="text-meta font-medium text-text-secondary uppercase tracking-widest">Attachments</p>
+                  <p className="text-meta font-medium text-text-secondary ">Attachments</p>
                   {allAttachments.length > 0 && (
                     <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
                       {allAttachments.length}
@@ -1761,7 +1717,7 @@ export default function TaskDetailPage() {
                 {allAttachments.length === 0 ? (
                   <p className="text-body text-text-muted">No attachments</p>
                 ) : (
-                  <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
+                  <div className="space-y-3">
                     {allAttachments.map((a) => (
                       <div key={a.id} className="flex items-start gap-2.5">
                         {/* Download */}
@@ -1839,7 +1795,7 @@ export default function TaskDetailPage() {
               <div className="flex items-center justify-between px-4 py-2.5 bg-success-bg border-b border-success-border">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-success" />
-                  <p className="text-meta font-medium text-success uppercase tracking-widest">Assignees</p>
+                  <p className="text-meta font-medium text-success ">Assignees</p>
                 </div>
                 {/* The creator / admin may change who the work is assigned to; anyone
                     on the task may manage CC (see canManageCc). */}
@@ -1961,7 +1917,7 @@ export default function TaskDetailPage() {
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               {overdue && (
-                                <span className="text-meta font-medium uppercase tracking-wide bg-danger-bg text-danger border border-danger-border rounded-xs px-1.5 py-0.5">
+                                <span className="text-meta font-medium  bg-danger-bg text-danger border border-danger-border rounded-xs px-1.5 py-0.5">
                                   Overdue
                                 </span>
                               )}
@@ -1981,7 +1937,7 @@ export default function TaskDetailPage() {
                                         <Button
                                           variant="ghost"
                                           size="sm"
-                                          onClick={() => { setReopenPartReason(''); setReopenPartTarget(a.user_id) }}
+                                          onClick={() => setReopenPartTarget(a.user_id)}
                                         >
                                           <RotateCcw size={11} /> Reopen
                                         </Button>
@@ -2000,7 +1956,7 @@ export default function TaskDetailPage() {
                                         <Button
                                           variant="ghost"
                                           size="sm"
-                                          onClick={() => { setReopenPartReason(''); setReopenPartTarget(a.user_id) }}
+                                          onClick={() => setReopenPartTarget(a.user_id)}
                                         >
                                           <RotateCcw size={11} /> Reopen
                                         </Button>
@@ -2044,39 +2000,12 @@ export default function TaskDetailPage() {
                             </div>
                           )}
 
-                          {/* Reopen / challenge reason box — optional feedback for the person. */}
-                          {reopenPartTarget === a.user_id && (
-                            <div className="rounded-control border border-primary-border bg-primary-subtle p-2.5">
-                              <p className="text-meta font-medium text-primary-text mb-1.5">Reopen {name}&apos;s part — add a note (optional)</p>
-                              <textarea
-                                value={reopenPartReason}
-                                onChange={(e) => setReopenPartReason(e.target.value.slice(0, 500))}
-                                rows={2}
-                                autoFocus
-                                placeholder="What would you like them to do?"
-                                className="w-full rounded-control border border-border bg-surface px-2.5 py-1.5 text-body text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-hidden resize-none"
-                              />
-                              <div className="mt-2 flex items-center gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleReopenAssigneePart(a.user_id)}
-                                  loading={actionLoading === `reopen-part-${a.user_id}`}
-                                  loadingLabel="Reopening"
-                                >
-                                  <RotateCcw size={12} /> Reopen part
-                                </Button>
-                                <Button variant="ghost" size="sm" onClick={() => setReopenPartTarget(null)}>
-                                  Cancel
-                                </Button>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       )
                     })}
                     {ccUsers.length > 0 && (
                       <>
-                        <p className="text-meta font-medium text-text-muted uppercase tracking-wide pt-1">CC</p>
+                        <p className="text-meta font-medium text-text-muted  pt-1">CC</p>
                         {ccUsers.map((a) => {
                           const name = a.user?.name ?? a.user_name ?? 'Unknown'
                           const email = a.user?.email ?? a.user_email ?? ''
@@ -2101,7 +2030,7 @@ export default function TaskDetailPage() {
                         scorecard. They're excluded from every count and gate above. */}
                     {(task.removed_assignees?.length ?? 0) > 0 && (
                       <>
-                        <p className="text-meta font-medium text-text-muted uppercase tracking-wide pt-1">
+                        <p className="text-meta font-medium text-text-muted  pt-1">
                           Previously on this task
                         </p>
                         {task.removed_assignees!.map((a) => {
@@ -2142,7 +2071,7 @@ export default function TaskDetailPage() {
               <div className="flex items-center justify-between px-4 py-2.5 bg-warning-bg border-b border-warning-border">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-warning" />
-                  <p className="text-meta font-medium text-warning uppercase tracking-widest">Completion Mode</p>
+                  <p className="text-meta font-medium text-warning ">Completion mode</p>
                 </div>
                 {/* Editable only when it matters — 2+ assignees — and the viewer can edit. */}
                 {canEdit && assignees.length > 1 && (!editingCompletionMode ? (
@@ -2232,8 +2161,8 @@ export default function TaskDetailPage() {
                 <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
                   <div className={`flex items-center gap-2 px-4 py-2.5 border-b ${done ? 'bg-success-bg border-success-border' : 'bg-danger-bg border-danger-border'}`}>
                     <span className={`w-2 h-2 rounded-full ${done ? 'bg-success' : 'bg-danger'}`} />
-                    <p className={`text-meta font-medium uppercase tracking-widest ${done ? 'text-success' : 'text-danger'}`}>
-                      Proof Required
+                    <p className={`text-meta font-medium  ${done ? 'text-success' : 'text-danger'}`}>
+                      Proof required
                     </p>
                   </div>
                   <div className="p-4">
@@ -2271,7 +2200,7 @@ export default function TaskDetailPage() {
       <Dialog open={showActivity} onOpenChange={setShowActivity}>
         <DialogContent size="md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><History size={16} /> Activity Log</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><History size={16} /> Activity log</DialogTitle>
           </DialogHeader>
           <DialogBody>
             {activityLogs.length === 0 ? (

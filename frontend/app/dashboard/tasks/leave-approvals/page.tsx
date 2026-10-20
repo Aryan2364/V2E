@@ -197,7 +197,7 @@ export default function LeaveApprovalsPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Leave Approvals"
+        title="Leave approvals"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
         meta="Leave requests waiting for your decision."
       />

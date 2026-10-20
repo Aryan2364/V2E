@@ -58,10 +58,10 @@ function StatBanner({ data }: { data: TaskReportData }) {
   const rate = total > 0 ? Math.round((completed / total) * 100) : 0
 
   const stats = [
-    { label: 'Total Tasks', value: total, icon: <BarChart2 size={20} />, color: 'var(--primary-text)' },
+    { label: 'Total tasks', value: total, icon: <BarChart2 size={20} />, color: 'var(--primary-text)' },
     { label: 'Completed', value: completed, icon: <CheckCircle2 size={20} />, color: 'var(--success)' },
     { label: 'Overdue', value: overdue, icon: <AlertTriangle size={20} />, color: 'var(--danger)' },
-    { label: 'Completion Rate', value: `${rate}%`, icon: <BarChart2 size={20} />, color: 'var(--text-secondary)' },
+    { label: 'Completion rate', value: `${rate}%`, icon: <BarChart2 size={20} />, color: 'var(--text-secondary)' },
   ]
 
   return (
@@ -117,7 +117,7 @@ function UserPerformanceSection({ data }: { data: TaskReportData }) {
 
   return (
     <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
-      <SectionHeader icon={<Users size={16} className="text-primary-text" />} title="User Performance" onExport={handleExport} />
+      <SectionHeader icon={<Users size={16} className="text-primary-text" />} title="User performance" onExport={handleExport} />
 
       {rows.length === 0 ? (
         <p className="text-body text-text-secondary text-center py-8">No user data available for this period.</p>
@@ -228,7 +228,7 @@ function DeptPerformanceSection({ data }: { data: TaskReportData }) {
 
   return (
     <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
-      <SectionHeader icon={<Building2 size={16} className="text-text-secondary" />} title="Department Performance" onExport={handleExport} />
+      <SectionHeader icon={<Building2 size={16} className="text-text-secondary" />} title="Department performance" onExport={handleExport} />
 
       {rows.length === 0 ? (
         <p className="text-body text-text-secondary text-center py-8">No department data available for this period.</p>
@@ -411,7 +411,7 @@ function StatusBreakdownSection({ data }: { data: TaskReportData }) {
 
   return (
     <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
-      <SectionHeader icon={<CheckCircle2 size={16} className="text-success" />} title="Status Distribution" onExport={handleExport} />
+      <SectionHeader icon={<CheckCircle2 size={16} className="text-success" />} title="Status distribution" onExport={handleExport} />
 
       {rows.length === 0 ? (
         <p className="text-body text-text-secondary text-center py-8">No status data available.</p>
@@ -476,7 +476,7 @@ function FrequencySection({ data }: { data: TaskReportData }) {
 
   return (
     <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
-      <SectionHeader icon={<RotateCcw size={16} className="text-warning" />} title="Task Frequency" onExport={handleExport} />
+      <SectionHeader icon={<RotateCcw size={16} className="text-warning" />} title="Task frequency" onExport={handleExport} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="h-48">
@@ -604,13 +604,13 @@ export default function ReportsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <BreakdownSection
               icon={<Tag size={16} className="text-warning" />}
-              title="Priority Breakdown"
+              title="Priority breakdown"
               rows={data.priority_breakdown}
               exportFilename="priority_breakdown.csv"
             />
             <BreakdownSection
               icon={<Tag size={16} className="text-text-secondary" />}
-              title="Category Breakdown"
+              title="Category breakdown"
               rows={data.category_breakdown}
               exportFilename="category_breakdown.csv"
             />

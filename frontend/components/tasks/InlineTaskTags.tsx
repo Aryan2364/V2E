@@ -1,18 +1,16 @@
 'use client'
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import TagChip from '@/components/ui/TagChip'
 import TagPicker from '@/components/tasks/TagPicker'
+import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import { toast } from 'sonner'
 import { tasksApi, tagErrorMessage } from '@/lib/api/tasks'
 import { useTaskTags } from '@/lib/tasks/useTaskTags'
 import type { Task, TaskTagRef } from '@/lib/types/tasks'
-
-// useLayoutEffect warns during server rendering; measure with it only in the browser.
-const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 /**
  * True while a searchable picker (MultiSelect, e.g. the Tags field) has its list open.
@@ -42,17 +40,14 @@ interface InlineTaskTagsProps {
 
 /** A rule about this record (kit §26.2): who may edit the task may change its tags. */
 const EDIT_TAGS_REASON = 'Only people who can edit this task can change its tags.'
-const POPOVER_WIDTH = 320
-const GAP = 6
 const sameIds = (a: string[], b: string[]) => a.length === b.length && a.every((id, i) => id === b[i])
 
 /**
  * A task's tags on its detail page or drawer, editable in place. Tagging is a triage
  * action, so it saves straight away rather than going through the Edit form:
  *
- * - "+ Add tag" opens the shared TagPicker in a small popover (portalled to <body>, so
- *   no card or drawer clips it). It closes on a press outside, Escape (focus returns to
- *   the button), scroll or resize.
+ * - "+ Add tag" opens the shared TagPicker in a small kit Popover (portalled, on
+ *   the kit layers). It closes on a press outside or Escape (focus returns to the button).
  * - Each change — picking, unpicking, creating a tag, or a chip's ✕ — saves the full
  *   list via updateTask({ tag_ids }) optimistically. Saves run one at a time, and only
  *   the latest wanted list is sent, so quick clicks never race.
@@ -146,66 +141,19 @@ export function InlineTaskTags({ orgId, taskId, tags, canEdit, onUpdated, classN
     [ids, flush],
   )
 
-  // ── Popover ──────────────────────────────────────────────────────────────────
+  // ── Popover (kit Popover: portal, layers, Escape and outside press are the kit's) ──
   const [open, setOpen] = useState(false)
-  const [pos, setPos] = useState<{ left: number; top: number } | null>(null)
-  const btnRef = useRef<HTMLButtonElement>(null)
   const popRef = useRef<HTMLDivElement>(null)
-
-  const place = useCallback(() => {
-    const r = btnRef.current?.getBoundingClientRect()
-    if (!r) return
-    const width = Math.min(POPOVER_WIDTH, window.innerWidth - 16)
-    const left = Math.min(Math.max(8, r.left), window.innerWidth - width - 8)
-    setPos({ left, top: r.bottom + GAP })
-  }, [])
-
-  const close = useCallback((refocus = false) => {
-    setOpen(false)
-    if (refocus) btnRef.current?.focus()
-  }, [])
-
-  useIsoLayoutEffect(() => {
-    if (open) place()
-  }, [open, place])
 
   // Open the picker's list straight away — "+ Add tag" means "show me the tags".
   useEffect(() => {
-    if (!open || !pos) return
-    const field = popRef.current?.querySelector<HTMLElement>('[aria-haspopup="listbox"]')
-    if (field && field.getAttribute('aria-expanded') !== 'true') field.click()
-  }, [open, pos])
-
-  useEffect(() => {
     if (!open) return
-    const onDown = (e: PointerEvent) => {
-      const t = e.target as Node
-      if (popRef.current?.contains(t) || btnRef.current?.contains(t)) return
-      close()
-    }
-    // Capture on window: runs before the drawer's / page's own Escape handlers, and
-    // stops them, so Escape closes only this popover.
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
-      e.stopPropagation()
-      close(true)
-    }
-    const onScroll = (e: Event) => {
-      if (popRef.current && e.target instanceof Node && popRef.current.contains(e.target)) return
-      close()
-    }
-    const onResize = () => close()
-    document.addEventListener('pointerdown', onDown, true)
-    window.addEventListener('keydown', onKey, true)
-    window.addEventListener('scroll', onScroll, true)
-    window.addEventListener('resize', onResize)
-    return () => {
-      document.removeEventListener('pointerdown', onDown, true)
-      window.removeEventListener('keydown', onKey, true)
-      window.removeEventListener('scroll', onScroll, true)
-      window.removeEventListener('resize', onResize)
-    }
-  }, [open, close])
+    const id = window.requestAnimationFrame(() => {
+      const field = popRef.current?.querySelector<HTMLElement>('[aria-haspopup="listbox"]')
+      if (field && field.getAttribute('aria-expanded') !== 'true') field.click()
+    })
+    return () => window.cancelAnimationFrame(id)
+  }, [open])
 
   // Lost edit rights while open (e.g. permissions refreshed): close.
   useEffect(() => {
@@ -228,39 +176,28 @@ export function InlineTaskTags({ orgId, taskId, tags, canEdit, onUpdated, classN
       ))}
       {/* Always present, so nothing moves when the permission answer lands (kit §26.1):
           disabled with no reason while it is unknown, disabled with its reason when no. */}
-      <PermissionTooltip allowed={canEdit} reason={EDIT_TAGS_REASON}>
-        <button
-          ref={btnRef}
-          type="button"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          disabled={!editable}
-          onClick={() => setOpen((o) => !o)}
-          // Touch screens get a 44px tap area without the button looking any bigger (kit §9.4).
-          className="relative after:absolute after:inset-[-10px] after:content-[''] pointer-fine:after:hidden inline-flex items-center gap-1 h-6 pl-1.5 pr-2.5 rounded-full border border-dashed border-input bg-surface text-body font-medium text-primary hover:border-primary hover:bg-primary-light focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary transition-colors disabled:pointer-events-none disabled:text-muted disabled:border-border disabled:bg-surface"
-        >
-          <Plus size={13} strokeWidth={2.5} aria-hidden="true" />
-          Add tag
-        </button>
-      </PermissionTooltip>
-      {open &&
-        pos &&
-        typeof document !== 'undefined' &&
-        createPortal(
-          // z-78: above modals and drawers (z-60 / z-75), below Tooltip (z-80). No
-          // overflow clipping here: the picker's list hangs below the field.
-          <div
-            ref={popRef}
-            role="dialog"
-            aria-label="Edit tags"
-            className="fixed z-78 rounded-lg border border-border bg-surface p-3 shadow-menu animate-[popIn_.15s_ease-out]"
-            style={{ left: pos.left, top: pos.top, width: Math.min(POPOVER_WIDTH, window.innerWidth - 16) }}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PermissionTooltip allowed={canEdit} reason={EDIT_TAGS_REASON}>
+          <PopoverTrigger
+            render={
+              <Button
+                variant="secondary"
+                size="sm"
+                aria-haspopup="dialog"
+                aria-expanded={open}
+                disabled={!editable}
+              />
+            }
           >
-            <p className="mb-1.5 text-body font-medium text-label">Tags</p>
-            <TagPicker orgId={orgId} value={ids} onChange={change} knownTags={knownRefs} />
-          </div>,
-          document.body,
-        )}
+            <Plus size={16} aria-hidden="true" />
+            Add tag
+          </PopoverTrigger>
+        </PermissionTooltip>
+        <PopoverContent ref={popRef} align="start" aria-label="Edit tags" className="w-80 max-w-[calc(100vw-1rem)]">
+          <p className="text-label text-text-secondary">Tags</p>
+          <TagPicker orgId={orgId} value={ids} onChange={change} knownTags={knownRefs} />
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }

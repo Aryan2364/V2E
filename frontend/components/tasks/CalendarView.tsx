@@ -98,7 +98,7 @@ export default function CalendarView({ tasks, priorities, onTaskClick }: Props) 
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-border-light">
           {DAYS.map((d) => (
-            <div key={d} className="py-2 text-center text-meta font-medium text-text-muted uppercase tracking-wider">
+            <div key={d} className="py-2 text-center text-meta font-medium text-text-muted ">
               {d}
             </div>
           ))}

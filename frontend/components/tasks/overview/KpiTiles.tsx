@@ -16,12 +16,12 @@ type TileDef = {
 
 const TILES: TileDef[] = [
   { bucket: 'overdue', label: 'Overdue', color: 'var(--danger)', icon: <AlertTriangle size={18} />, key: 'overdue' },
-  { bucket: 'due_today', label: 'Due Today', color: 'var(--warning)', icon: <Calendar size={18} />, key: 'due_today' },
-  { bucket: 'due_week', label: 'Due This Week', color: 'var(--primary-text)', icon: <CalendarDays size={18} />, key: 'due_week' },
+  { bucket: 'due_today', label: 'Due today', color: 'var(--warning)', icon: <Calendar size={18} />, key: 'due_today' },
+  { bucket: 'due_week', label: 'Due this week', color: 'var(--primary-text)', icon: <CalendarDays size={18} />, key: 'due_week' },
   { bucket: 'ongoing', label: 'Ongoing', color: 'var(--text-secondary)', icon: <Activity size={18} />, key: 'ongoing' },
   { bucket: 'completed', label: 'Completed', color: 'var(--success)', icon: <CheckCircle2 size={18} />, key: 'completed' },
   { bucket: 'recurring', label: 'Recurring', color: 'var(--text-secondary)', icon: <Repeat size={18} />, key: 'recurring' },
-  { bucket: null, label: 'All Tasks', color: 'var(--text-secondary)', icon: <LayoutGrid size={18} />, key: 'total' },
+  { bucket: null, label: 'All tasks', color: 'var(--text-secondary)', icon: <LayoutGrid size={18} />, key: 'total' },
 ]
 
 /**

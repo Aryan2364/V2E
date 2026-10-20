@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import React, { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/lib/auth/context'
 import { ticketsApi } from '@/lib/api/tickets'
@@ -47,16 +48,16 @@ type ReportTab =
   | 'by_status' | 'sla' | 'backlog' | 'agent_load' | 'reopen' | 'ratings'
 
 const TABS: { key: ReportTab; label: string; icon: React.ReactNode; adminOnly?: boolean }[] = [
-  { key: 'resolution', label: 'Resolution Time', icon: <Clock size={14} /> },
-  { key: 'first_response', label: 'First Response', icon: <Reply size={14} /> },
-  { key: 'by_type', label: 'By Type', icon: <Tag size={14} /> },
-  { key: 'by_category', label: 'By Category', icon: <Tag size={14} /> },
-  { key: 'by_priority', label: 'By Priority', icon: <BarChart2 size={14} /> },
-  { key: 'by_status', label: 'By Status', icon: <Activity size={14} /> },
+  { key: 'resolution', label: 'Resolution time', icon: <Clock size={14} /> },
+  { key: 'first_response', label: 'First response', icon: <Reply size={14} /> },
+  { key: 'by_type', label: 'By type', icon: <Tag size={14} /> },
+  { key: 'by_category', label: 'By category', icon: <Tag size={14} /> },
+  { key: 'by_priority', label: 'By priority', icon: <BarChart2 size={14} /> },
+  { key: 'by_status', label: 'By status', icon: <Activity size={14} /> },
   { key: 'sla', label: 'SLA Breach', icon: <AlertTriangle size={14} /> },
-  { key: 'backlog', label: 'Backlog Aging', icon: <Layers size={14} /> },
-  { key: 'agent_load', label: 'Agent Load', icon: <Users size={14} /> },
-  { key: 'reopen', label: 'Reopen Rate', icon: <RotateCcw size={14} /> },
+  { key: 'backlog', label: 'Backlog aging', icon: <Layers size={14} /> },
+  { key: 'agent_load', label: 'Agent load', icon: <Users size={14} /> },
+  { key: 'reopen', label: 'Reopen rate', icon: <RotateCcw size={14} /> },
   { key: 'ratings', label: 'Ratings', icon: <Star size={14} /> },
 ]
 
@@ -161,7 +162,7 @@ function BreakdownTab({
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <StatCard label={`Total ${label}`} value={data.length} color="var(--primary-text)" />
-        <StatCard label="Total Tickets" value={total} color="var(--text-secondary)" />
+        <StatCard label="Total tickets" value={total} color="var(--text-secondary)" />
       </div>
 
       {data.length === 0 ? (
@@ -231,9 +232,9 @@ function SlaTab({ orgId, from, to }: { orgId: string; from: string; to: string }
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <StatCard label="Total Tickets" value={data.total} color="var(--primary-text)" />
+        <StatCard label="Total tickets" value={data.total} color="var(--primary-text)" />
         <StatCard label="SLA Breached" value={data.breached} color="var(--danger)" />
-        <StatCard label="Breach Rate" value={`${data.breach_rate.toFixed(1)}%`} color="var(--warning)" />
+        <StatCard label="Breach rate" value={`${data.breach_rate.toFixed(1)}%`} color="var(--warning)" />
       </div>
 
       {data.tickets.length === 0 ? (
@@ -312,8 +313,8 @@ function RatingsTab({ orgId, from, to }: { orgId: string; from: string; to: stri
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <StatCard label="Total Ratings" value={data.total_ratings} color="var(--warning)" />
-        <StatCard label="Avg Rating" value={`${data.avg_rating.toFixed(2)} / 5`} color="var(--primary-text)" />
+        <StatCard label="Total ratings" value={data.total_ratings} color="var(--warning)" />
+        <StatCard label="Avg rating" value={`${data.avg_rating.toFixed(2)} / 5`} color="var(--primary-text)" />
       </div>
 
       {data.total_ratings === 0 ? (
@@ -499,7 +500,7 @@ function BacklogAgingTab({ orgId }: { orgId: string }) {
       <p className="text-meta text-text-secondary -mt-1">Live snapshot of currently open tickets — not affected by the date range.</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <StatCard label="Total Open" value={data.total_open} color="var(--primary-text)" />
+        <StatCard label="Total open" value={data.total_open} color="var(--primary-text)" />
         <StatCard label="Oldest (days)" value={data.oldest.length > 0 ? data.oldest[0].age_days : '—'} color="var(--warning)" />
       </div>
 
@@ -664,10 +665,10 @@ function ReopenRateTab({ orgId, from, to }: { orgId: string; from: string; to: s
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard label="Reopen Rate" value={`${data.reopen_rate.toFixed(1)}%`} color="var(--warning)" />
-        <StatCard label="Reopened Tickets" value={data.reopened_tickets} color="var(--primary-text)" />
-        <StatCard label="Total Tickets" value={data.total_tickets} color="var(--text-secondary)" />
-        <StatCard label="Total Reopens" value={data.total_reopens} color="var(--danger)" />
+        <StatCard label="Reopen rate" value={`${data.reopen_rate.toFixed(1)}%`} color="var(--warning)" />
+        <StatCard label="Reopened tickets" value={data.reopened_tickets} color="var(--primary-text)" />
+        <StatCard label="Total tickets" value={data.total_tickets} color="var(--text-secondary)" />
+        <StatCard label="Total reopens" value={data.total_reopens} color="var(--danger)" />
       </div>
 
       {data.most_reopened.length === 0 ? (
@@ -731,13 +732,10 @@ function Empty() {
 
 function ExportBtn({ onClick }: { onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-1.5 px-3 py-[7px] text-body font-medium text-primary-text border border-primary rounded-[8px] hover:bg-primary-subtle transition-colors"
-    >
-      <Download size={14} />
+    <Button variant="secondary" onClick={onClick}>
+      <Download size={16} />
       Export CSV
-    </button>
+    </Button>
   )
 }
 
@@ -795,7 +793,7 @@ export default function TicketReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div>
-          <h1 className="text-page-title font-medium text-text-primary">Ticket Reports</h1>
+          <h1 className="text-page-title font-medium text-text-primary">Ticket reports</h1>
           <p className="text-body text-text-secondary mt-0.5">Analytics and insights for your ticket system</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">

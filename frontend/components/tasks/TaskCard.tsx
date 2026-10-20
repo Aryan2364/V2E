@@ -167,7 +167,7 @@ export function StatusControl({
               className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-body text-success hover:bg-success-bg transition-colors"
             >
               <CheckCircle2 size={14} className="shrink-0" />
-              <span className="flex-1">Mark Complete</span>
+              <span className="flex-1">Mark complete</span>
             </button>
           )}
           {onMarkIncomplete && (
@@ -177,7 +177,7 @@ export function StatusControl({
               className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-body text-danger hover:bg-danger-bg transition-colors"
             >
               <XCircle size={14} className="shrink-0" />
-              <span className="flex-1">Mark Incomplete</span>
+              <span className="flex-1">Mark incomplete</span>
             </button>
           )}
         </div>

@@ -20,7 +20,7 @@ interface ReportTile {
 const REPORTS: ReportTile[] = [
   {
     key: 'person-scorecard',
-    title: 'Person Scorecard',
+    title: 'Person scorecard',
     blurb:
       'A per-person task compliance scorecard — scope, total entries, completion, on-time rate, delay and an automatic Grade. Open one person or download everyone in your scope.',
     href: '/dashboard/tasks/reports-new/person-scorecard',
@@ -40,7 +40,7 @@ const REPORTS: ReportTile[] = [
   },
   {
     key: 'calendar',
-    title: 'Monthly Task Compliance Calendar',
+    title: 'Monthly task compliance calendar',
     blurb:
       'A month grid, one row per task and person — each day coloured green (on time), amber (late), red (missed) or white (not due yet). Pick any month, filter, and click a square to open the task.',
     href: '/dashboard/tasks/reports-new/calendar',
@@ -88,7 +88,7 @@ export default function ReportsIndexPage() {
                 <div className="flex items-center gap-2">
                   <h2 className="text-card-heading font-medium text-text-primary">{r.title}</h2>
                   {r.badge && (
-                    <span className="text-meta font-medium uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
+                    <span className="text-meta font-medium  text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
                       {r.badge}
                     </span>
                   )}

@@ -68,7 +68,7 @@ export default function AssigneeAvatars({
                 <span className="font-medium text-primary-foreground whitespace-nowrap">{p.name}</span>
                 <span
                   className={[
-                    'inline-flex items-center rounded-full px-1.5 py-0.5 text-meta font-medium uppercase tracking-wide',
+                    'inline-flex items-center rounded-full px-1.5 py-0.5 text-meta font-medium ',
                     p.isCC ? 'bg-on-brand-hover text-on-brand-muted' : 'bg-primary text-primary-foreground',
                   ].join(' ')}
                 >

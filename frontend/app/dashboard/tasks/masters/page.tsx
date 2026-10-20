@@ -243,7 +243,7 @@ function CategoriesTab({ orgId }: { orgId: string }) {
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} categor{items.length !== 1 ? 'ies' : 'y'}</p>
         <Button onClick={() => setCreating(true)}>
-          <Plus size={14} /> Add Category
+          <Plus size={14} /> Add category
         </Button>
       </div>
       {creating && (
@@ -384,7 +384,7 @@ function PrioritiesTab({ orgId }: { orgId: string }) {
           <p className="text-body text-text-secondary">{items.length} priorit{items.length !== 1 ? 'ies' : 'y'}</p>
           {items.length > 1 && <p className="text-meta text-text-muted mt-0.5">Ordered highest → lowest. Drag the handle or use the arrows to rearrange.</p>}
         </div>
-        <Button onClick={() => setCreating(true)} className="shrink-0"><Plus size={14} /> Add Priority</Button>
+        <Button onClick={() => setCreating(true)} className="shrink-0"><Plus size={14} /> Add priority</Button>
       </div>
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
@@ -556,7 +556,7 @@ function StatusesTab({ orgId }: { orgId: string }) {
         <span className="w-[78px] shrink-0 flex items-center">
           {stage
             ? <span className="w-5 h-5 flex items-center justify-center rounded-full bg-primary-subtle text-primary-text text-meta font-medium">{idx + 1}</span>
-            : <span className="text-meta font-medium uppercase tracking-wide text-text-muted">{role}</span>}
+            : <span className="text-meta font-medium  text-text-muted">{role}</span>}
         </span>
         <span className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
         <span className="flex-1 min-w-0 truncate text-body font-medium text-text-primary">{item.label}</span>
@@ -888,7 +888,7 @@ function ChecklistTemplatesTab({ orgId }: { orgId: string }) {
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} template{items.length !== 1 ? 's' : ''}</p>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={() => setShowImport(true)}><Upload size={14} /> Import Checklists</Button>
+          <Button variant="secondary" onClick={() => setShowImport(true)}><Upload size={14} /> Import checklists</Button>
           <Button onClick={openCreate}><Plus size={14} /> Add template</Button>
         </div>
       </div>
@@ -966,8 +966,8 @@ function TktConfigTab({ orgId }: { orgId: string }) {
 
   const modeOptions: { value: TicketReassignmentMode; label: string; desc: string }[] = [
     { value: 'both', label: 'Both', desc: 'Assignee and administrators can reassign' },
-    { value: 'assignee_only', label: 'Assignee Only', desc: 'Only the current assignee can reassign' },
-    { value: 'admin_manager_only', label: 'Administrators Only', desc: 'Only administrators can reassign' },
+    { value: 'assignee_only', label: 'Assignee only', desc: 'Only the current assignee can reassign' },
+    { value: 'admin_manager_only', label: 'Administrators only', desc: 'Only administrators can reassign' },
   ]
 
   return (
@@ -998,7 +998,7 @@ function TktConfigTab({ orgId }: { orgId: string }) {
             onChange={(e) => setConfig({ ...config, escalation_interval_hours: parseInt(e.target.value) || 1 })}
             className={inputCls} />
         </FormField>
-        <FormField label="Default Response SLA (hours, optional)">
+        <FormField label="Default response SLA (hours, optional)">
           <input type="number" min={1} value={config.default_response_sla_hours ?? ''}
             onChange={(e) => setConfig({ ...config, default_response_sla_hours: e.target.value ? parseInt(e.target.value) : null })}
             placeholder="No response SLA" className={inputCls} />
@@ -1093,7 +1093,7 @@ function TktTypesTab({ orgId }: { orgId: string }) {
             </div>
           </FormField>
           <FormField label="Default SLA days"><input type="number" min={1} value={f.default_sla_days} onChange={(e) => setF({ ...f, default_sla_days: parseInt(e.target.value) || 1 })} className={inputCls} /></FormField>
-          <FormField label="Default Response SLA (hours, optional)"><input type="number" min={1} value={f.default_response_sla_hours} onChange={(e) => setF({ ...f, default_response_sla_hours: e.target.value })} placeholder="No response SLA" className={inputCls} /></FormField>
+          <FormField label="Default response SLA (hours, optional)"><input type="number" min={1} value={f.default_response_sla_hours} onChange={(e) => setF({ ...f, default_response_sla_hours: e.target.value })} placeholder="No response SLA" className={inputCls} /></FormField>
           <FormField label="Resolver group (optional)">
             <StyledSelect
               value={f.resolver_group_id}
@@ -1129,7 +1129,7 @@ function TktTypesTab({ orgId }: { orgId: string }) {
       />
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} type{items.length !== 1 ? 's' : ''}</p>
-        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add Type</Button>
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add type</Button>
       </div>
       {creating && <TypeForm f={form} setF={setForm} onSave={handleCreate} onCancel={() => setCreating(false)} label="Create" />}
       {items.length === 0 && !creating && <div className="text-center py-12 text-text-secondary text-label">No ticket types yet. Click "Add Type" to create one.</div>}
@@ -1216,7 +1216,7 @@ function TktCategoriesTab({ orgId }: { orgId: string }) {
       />
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} categor{items.length !== 1 ? 'ies' : 'y'}</p>
-        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add Category</Button>
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add category</Button>
       </div>
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
@@ -1324,7 +1324,7 @@ function TktPrioritiesTab({ orgId }: { orgId: string }) {
       />
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} priorit{items.length !== 1 ? 'ies' : 'y'}</p>
-        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add Priority</Button>
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add priority</Button>
       </div>
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
@@ -1394,7 +1394,7 @@ function TktStatusesTab({ orgId }: { orgId: string }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-body text-text-secondary">{items.length} status{items.length !== 1 ? 'es' : ''}</p>
-        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add Status</Button>
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> Add status</Button>
       </div>
       {creating && (
         <div className="bg-surface-sunken border border-border-light rounded-control p-4 space-y-3">
@@ -1972,7 +1972,7 @@ function TktTemplatesTab({ orgId }: { orgId: string }) {
       {sections.map((section) => (
         <div key={section.label} className="space-y-2">
           <div className="flex items-center gap-2 pt-1">
-            <h3 className="text-meta font-medium uppercase tracking-wide text-text-muted">{section.label}</h3>
+            <h3 className="text-meta font-medium  text-text-muted">{section.label}</h3>
             <CountPill n={section.templates.length} />
           </div>
           {section.templates.map((item) => (
@@ -2097,7 +2097,7 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
       {modules.map((mod) => (
         <div key={mod} className="border border-border-light rounded-control overflow-hidden">
           <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
-            <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">{NOTIF_MODULE_LABELS[mod]}</p>
+            <p className="text-meta font-medium text-text-secondary ">{NOTIF_MODULE_LABELS[mod]}</p>
           </div>
           <div className="divide-y divide-surface-control">
             {(catalog[mod] ?? []).map((event) => (
@@ -2134,8 +2134,8 @@ function NotificationsMasterTab({ orgId }: { orgId: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const taskTabs: { key: TaskMasterTab; label: string; icon: React.ReactNode }[] = [
-  { key: 'assignee_visibility', label: 'Assignee Visibility', icon: <Users size={15} /> },
-  { key: 'checklists', label: 'Checklist Templates', icon: <List size={15} /> },
+  { key: 'assignee_visibility', label: 'Assignee visibility', icon: <Users size={15} /> },
+  { key: 'checklists', label: 'Checklist templates', icon: <List size={15} /> },
   { key: 'categories', label: 'Categories', icon: <Tag size={15} /> },
   { key: 'tags', label: 'Tags', icon: <Tags size={15} /> },
   { key: 'priorities', label: 'Priorities', icon: <BarChart size={15} /> },
@@ -2162,7 +2162,7 @@ const ticketTabs: { key: TicketMasterTab; label: string; icon: React.ReactNode }
   { key: 'categories', label: 'Categories', icon: <Tag size={15} /> },
   { key: 'priorities', label: 'Priorities', icon: <BarChart size={15} /> },
   { key: 'statuses', label: 'Statuses', icon: <Activity size={15} /> },
-  { key: 'resolver-groups', label: 'Resolver Groups', icon: <Users size={15} /> },
+  { key: 'resolver-groups', label: 'Resolver groups', icon: <Users size={15} /> },
   { key: 'templates', label: 'Templates', icon: <CheckSquare size={15} /> },
 ]
 
@@ -2254,14 +2254,14 @@ export default function MastersPage() {
     : (visibleTaskTabs[0]?.key ?? 'config')
 
   const notifTabs: { key: string; label: string; icon: React.ReactNode }[] = [
-    { key: 'config', label: 'Notification Settings', icon: <Bell size={15} /> },
+    { key: 'config', label: 'Notification settings', icon: <Bell size={15} /> },
   ]
   const activeTabs = effectiveSection === 'tasks' ? visibleTaskTabs : effectiveSection === 'tickets' ? ticketTabs : notifTabs
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
       <PageHeader
-        title="Work Settings"
+        title="Work settings"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
         meta="Configure system settings for tasks and tickets."
       />

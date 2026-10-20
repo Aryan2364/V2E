@@ -73,7 +73,7 @@ export default function EmployeeReportPage() {
         <div className="w-14 h-14 rounded-full bg-danger-bg flex items-center justify-center mb-4"><Lock size={24} className="text-danger" /></div>
         <p className="font-medium text-text-primary text-body">This employee is outside your scope</p>
         <p className="text-text-secondary text-body mt-1 max-w-sm">You can only open the work report of people within your visibility scope.</p>
-        <Button variant="secondary" onClick={() => router.push('/dashboard/tasks')} className="mt-4">Back to Overview</Button>
+        <Button variant="secondary" onClick={() => router.push('/dashboard/tasks')} className="mt-4">Back to overview</Button>
       </div>
     )
   }
@@ -89,8 +89,8 @@ export default function EmployeeReportPage() {
       {/* Lens tabs */}
       <div className="inline-flex items-center border border-border-light rounded-control bg-surface p-0.5 gap-0.5">
         {([
-          { key: 'assignee', label: 'Their Work', icon: <Inbox size={15} /> },
-          { key: 'assigner', label: 'Delegated by Them', icon: <Send size={15} /> },
+          { key: 'assignee', label: 'Their work', icon: <Inbox size={15} /> },
+          { key: 'assigner', label: 'Delegated by them', icon: <Send size={15} /> },
         ] as const).map(({ key, label, icon }) => (
           <button
             key={key}

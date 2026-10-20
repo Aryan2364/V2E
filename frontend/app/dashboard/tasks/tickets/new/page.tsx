@@ -187,7 +187,7 @@ export default function NewTicketPage() {
           {groupedTemplates.map((group) => (
             <div key={group.label} className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">{group.label}</p>
+                <p className="text-meta font-medium text-text-secondary ">{group.label}</p>
                 <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium">
                   {group.items.length}
                 </span>

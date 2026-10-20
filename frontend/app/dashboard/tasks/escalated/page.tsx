@@ -106,7 +106,7 @@ export default function EscalatedPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Escalated Tasks"
+        title="Escalated tasks"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
         meta={
           <>

@@ -362,7 +362,7 @@ export default function AssigneeSelector({
                       {/* Department header (hidden for search flat list) */}
                       {dept.department_id !== 'search' && (
                         <div className="px-3 py-1.5 bg-surface-sunken border-b border-border-light">
-                          <span className="text-meta font-medium text-text-muted uppercase tracking-wide">
+                          <span className="text-meta font-medium text-text-muted ">
                             {dept.department_name}
                             <span className="ml-1.5 font-normal normal-case text-text-muted">({dept.users.length})</span>
                           </span>

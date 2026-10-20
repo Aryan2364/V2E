@@ -187,7 +187,7 @@ export default function AssignedByMePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Assigned by Me"
+        title="Assigned by me"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
         meta={
           <>
@@ -223,7 +223,7 @@ export default function AssignedByMePage() {
 
             <Button onClick={() => setShowCreateModal(true)}>
               <Plus size={15} />
-              <span className="hidden sm:inline">Create Task</span>
+              <span className="hidden sm:inline">Create task</span>
             </Button>
           </div>
         }

@@ -52,7 +52,7 @@ export default function CollectivePage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          title="Collective View"
+          title="Collective view"
           trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
           meta="Tasks across all organizations you belong to."
         />
@@ -69,7 +69,7 @@ export default function CollectivePage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          title="Collective View"
+          title="Collective view"
           trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
           meta="Tasks across all organizations you belong to."
         />
@@ -83,7 +83,7 @@ export default function CollectivePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Collective View"
+        title="Collective view"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
         meta="Tasks across all organizations you belong to."
       />
@@ -100,7 +100,7 @@ export default function CollectivePage() {
           }`}
         >
           <Globe size={14} />
-          All Organizations
+          All organizations
           <span className="ml-1 text-meta bg-surface-control text-text-secondary px-1.5 py-0.5 rounded-full font-medium">
             {allTasks.length}
           </span>

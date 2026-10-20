@@ -32,10 +32,10 @@ const STATE_KEY = 'ageing-report-state-v1'
 // untouched. Shared by the Person-wise and Task-wise grids.
 const BAND_COLS: { id: string; label: string; title: string }[] = [
   ...BUCKETS.map((b) => ({ id: b.key, label: b.short, title: b.label })),
-  { id: 'total_pending', label: 'Total', title: 'Total Pending — every open task, including Not Yet Due (Withdrawn excluded)' },
+  { id: 'total_pending', label: 'Total', title: 'Total pending — every open task, including Not Yet Due (Withdrawn excluded)' },
   { id: 'over_month_late', label: '› Month', title: 'More than a Month Late — everything above 30 days (the review column)' },
-  { id: 'oldest_late_days', label: 'Oldest', title: 'Oldest Late Task, in days (Not Yet Due excluded)' },
-  { id: 'avg_late_days', label: 'Avg Late', title: 'Average Days Late (Not Yet Due excluded)' },
+  { id: 'oldest_late_days', label: 'Oldest', title: 'Oldest late task, in days (Not Yet Due excluded)' },
+  { id: 'avg_late_days', label: 'Avg late', title: 'Average days late (Not Yet Due excluded)' },
   {
     id: 'withdrawn',
     label: 'Withdrawn',
@@ -389,13 +389,13 @@ export default function AgeingReportPage() {
               <thead>
                 <tr className="bg-surface-sunken border-b border-border-light text-text-secondary text-left whitespace-nowrap">
                   <SortHead sort={pendingSort} id="title" className="px-4">Task</SortHead>
-                  <SortHead sort={pendingSort} id="assigned_to">Assigned To</SortHead>
-                  <SortHead sort={pendingSort} id="assigned_by">Assigned By</SortHead>
+                  <SortHead sort={pendingSort} id="assigned_to">Assigned to</SortHead>
+                  <SortHead sort={pendingSort} id="assigned_by">Assigned by</SortHead>
                   <SortHead sort={pendingSort} id="department">Department</SortHead>
                   <SortHead sort={pendingSort} id="frequency">Frequency</SortHead>
-                  <SortHead sort={pendingSort} id="due_date">Due Date</SortHead>
-                  <SortHead sort={pendingSort} id="days_late" center>Days Late</SortHead>
-                  <th className="px-3 py-3 font-medium">How Late</th>
+                  <SortHead sort={pendingSort} id="due_date">Due date</SortHead>
+                  <SortHead sort={pendingSort} id="days_late" center>Days late</SortHead>
+                  <th className="px-3 py-3 font-medium">How late</th>
                 </tr>
               </thead>
               <tbody>

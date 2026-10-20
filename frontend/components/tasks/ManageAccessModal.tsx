@@ -172,7 +172,7 @@ export default function ManageAccessModal({
 
               {/* Has access */}
               <div>
-                <p className="text-meta font-medium uppercase tracking-wide text-text-muted mb-2">Has access</p>
+                <p className="text-meta font-medium  text-text-muted mb-2">Has access</p>
                 <div className="space-y-1.5">
                   {panel.rule_viewers.map((p) => (
                     <div key={`rv-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-surface-sunken">
@@ -217,7 +217,7 @@ export default function ManageAccessModal({
               {/* Removed */}
               {panel.revokes.length > 0 && (
                 <div>
-                  <p className="text-meta font-medium uppercase tracking-wide text-text-muted mb-2">Hidden from</p>
+                  <p className="text-meta font-medium  text-text-muted mb-2">Hidden from</p>
                   <div className="space-y-1.5">
                     {panel.revokes.map((p) => (
                       <div key={`rk-${p.user_id}`} className="flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-surface-sunken">

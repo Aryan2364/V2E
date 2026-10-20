@@ -141,7 +141,7 @@ export default function CalendarReportPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Monthly Task Compliance Calendar"
+        title="Monthly task compliance calendar"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }, { label: 'Reports', href: '/dashboard/tasks/reports-new' }]}
         meta={
           <>

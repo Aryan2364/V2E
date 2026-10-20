@@ -103,7 +103,7 @@ function WithdrawnTag({ e }: { e: TaskEntryRow }) {
 function Tile({ label, value, accent = INK, sub }: { label: string; value: React.ReactNode; accent?: string; sub?: string }) {
   return (
     <div className="bg-surface border border-border-light rounded-card shadow-card p-4">
-      <p className="text-meta font-medium text-text-muted uppercase tracking-wide">{label}</p>
+      <p className="text-meta font-medium text-text-muted ">{label}</p>
       <p className="mt-1 text-section font-medium tabular-nums leading-tight" style={{ color: accent }}>{value}</p>
       {sub && <p className="mt-0.5 text-meta text-text-muted">{sub}</p>}
     </div>
@@ -214,7 +214,7 @@ export default function ScorecardDetailPage() {
         trail={[
           { label: 'Tasks', href: '/dashboard/tasks' },
           { label: 'Reports', href: '/dashboard/tasks/reports-new' },
-          { label: 'Person Scorecard', href: '/dashboard/tasks/reports-new/person-scorecard' },
+          { label: 'Person scorecard', href: '/dashboard/tasks/reports-new/person-scorecard' },
         ]}
         meta={
           <>
@@ -463,7 +463,7 @@ export default function ScorecardDetailPage() {
               </div>
             ) : (
               /* ── Flat view ────────────────────────────────────────────────── */
-              <div className="overflow-x-auto max-h-[560px] overflow-y-auto">
+              <div className="overflow-x-auto">
                 <table className="w-full text-body whitespace-nowrap">
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-surface-sunken border-b border-border-light text-text-secondary text-left">

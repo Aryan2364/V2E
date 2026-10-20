@@ -1,5 +1,7 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
+import ReasonDialog from '@/components/tasks/ReasonDialog'
 import React, { useState } from 'react'
 import { CheckSquare, Check, Ban, ShieldCheck, RotateCcw, Users, X, ChevronDown } from 'lucide-react'
 import {
@@ -46,7 +48,6 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [skipItem, setSkipItem] = useState<TaskChecklistItem | null>(null)
-  const [skipReason, setSkipReason] = useState('')
   const [challenge, setChallenge] = useState<{ item: TaskChecklistItem; userId: string; userName: string } | null>(null)
 
   if (items.length === 0) return null
@@ -107,7 +108,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
         </p>
       )}
 
-      <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1">
+      <div className="space-y-4">
         {order.map((key) => {
           const groupItems = byGroup.get(key)!
           return (
@@ -126,40 +127,20 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
       </div>
 
       {/* Skip (can't do) reason dialog */}
-      <AlertDialog open={!!skipItem} onOpenChange={() => { /* Escape/backdrop are no-ops on AlertDialog itself (24.3) */ }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Can’t do this item</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tell everyone why this step can’t be done. It counts toward finishing your part, and stays visible with your reason.
-            </AlertDialogDescription>
-            <textarea
-              value={skipReason}
-              onChange={(e) => setSkipReason(e.target.value)}
-              rows={3}
-              autoFocus
-              placeholder="Reason (required)"
-              className="w-full rounded-lg border border-border focus:border-primary focus:outline-hidden focus:ring-0 px-3 py-2 text-body text-text-primary placeholder:text-text-muted"
-            />
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setSkipItem(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              variant="primary"
-              onClick={() =>
-                skipItem &&
-                run(`skip:${skipItem.id}`, () =>
-                  tasksApi.skipChecklistItem(orgId, taskId, skipItem.id, skipReason.trim()),
-                ).then(() => { setSkipItem(null); setSkipReason('') })
-              }
-              disabled={!skipReason.trim() || busy === `skip:${skipItem?.id}`}
-              loading={busy === `skip:${skipItem?.id}`}
-            >
-              Mark can’t do
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ReasonDialog
+        open={!!skipItem}
+        onCancel={() => setSkipItem(null)}
+        onConfirm={(r) =>
+          skipItem &&
+          run(`skip:${skipItem.id}`, () => tasksApi.skipChecklistItem(orgId, taskId, skipItem.id, r)).then(() => setSkipItem(null))
+        }
+        title="Can’t do this item"
+        description="Tell everyone why this step can’t be done. It counts toward finishing your part, and stays visible with your reason."
+        label="Reason"
+        placeholder="Why can’t this step be done?"
+        confirmLabel="Mark can’t do"
+        loading={busy === `skip:${skipItem?.id}`}
+      />
 
       {/* Challenge confirm — reopens the person's part */}
       <AlertDialog open={!!challenge} onOpenChange={(next) => { if (!next) setChallenge(null) }}>
@@ -199,7 +180,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
     const states = item.states ?? []
     return (
       <div className="mt-1.5 ml-6 mr-2 rounded-lg border border-border-light bg-surface-sunken overflow-hidden">
-        <div className="max-h-[240px] overflow-y-auto divide-y divide-surface-control">
+        <div className="divide-y divide-surface-control">
           {workers.length === 0 && <div className="px-3 py-2 text-meta text-text-muted">No assignees yet</div>}
           {workers.map((a) => {
             const st = states.find((s) => s.user_id === a.user_id)
@@ -285,7 +266,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
             <Tooltip label="Can’t do this">
               <button
                 type="button"
-                onClick={() => { setSkipItem(item); setSkipReason('') }}
+                onClick={() => { setSkipItem(item) }}
                 aria-label="Can’t do this"
                 className="shrink-0 mt-0.5 w-5 h-5 flex items-center justify-center rounded-[6px] text-warning hover:bg-warning-bg transition-colors"
               >
@@ -395,7 +376,7 @@ export default function TaskChecklistCard({ task, orgId, taskId, currentUserId, 
               <Tooltip label="Can’t do this">
                 <button
                   type="button"
-                  onClick={() => { setSkipItem(item); setSkipReason('') }}
+                  onClick={() => { setSkipItem(item) }}
                   aria-label="Can’t do this"
                   className="shrink-0 mt-0.5 w-5 h-5 flex items-center justify-center rounded-[6px] text-warning hover:bg-warning-bg transition-colors"
                 >
@@ -481,13 +462,9 @@ function PersonRow({
       )}
       {canChallenge && (
         <Tooltip label="Reopen this person’s item">
-          <button
-            type="button"
-            onClick={onChallenge}
-            className="ml-1 inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text px-1.5 py-0.5 rounded-[6px] hover:bg-primary-subtle shrink-0"
-          >
-            <RotateCcw size={11} /> Challenge
-          </button>
+          <Button type="button" variant="secondary" size="sm" onClick={onChallenge} className="ml-1 shrink-0">
+            <RotateCcw size={16} /> Challenge
+          </Button>
         </Tooltip>
       )}
     </div>

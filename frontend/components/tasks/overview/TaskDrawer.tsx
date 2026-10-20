@@ -168,7 +168,7 @@ export default function TaskDrawer({
       <SheetContent side="right" className="w-full sm:max-w-[560px] flex flex-col p-0">
         <SheetHeader>
           <div className="min-w-0">
-            <p className="text-meta font-medium uppercase tracking-wide text-on-brand-muted">Task</p>
+            <p className="text-meta font-medium  text-on-brand-muted">Task</p>
             <SheetTitle className="wrap-break-word">
               {loading ? 'Loading…' : task?.title}
             </SheetTitle>

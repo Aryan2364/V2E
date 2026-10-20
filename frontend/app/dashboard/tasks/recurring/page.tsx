@@ -512,14 +512,14 @@ export default function RecurringPage() {
   return (
     <div className="space-y-4 pb-12">
       <PageHeader
-        title="Recurring Tasks"
+        title="Recurring tasks"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
         meta={SCOPE_BLURB[appliedScope]}
         actions={
           <div className="flex items-center gap-2 flex-wrap">
             <ScopeSwitcher maxScope={maxScope} value={appliedScope} onChange={handleScopeChange} />
             <Button onClick={() => setShowCreate(true)} className="shrink-0">
-              <Plus size={16} /> New Recurring Task
+              <Plus size={16} /> New recurring task
             </Button>
           </div>
         }
@@ -590,7 +590,7 @@ export default function RecurringPage() {
             </Button>
           ) : (
             <Button onClick={() => setShowCreate(true)}>
-              <Plus size={16} /> New Recurring Task
+              <Plus size={16} /> New recurring task
             </Button>
           )}
         </div>

@@ -108,7 +108,7 @@ export default function PeopleDeptFilter({
           <span className="text-meta text-text-muted">{allIds.length} {allIds.length === 1 ? 'person' : 'people'}</span>
           <button type="button" onClick={toggleAll} className="flex items-center gap-1.5 group">
             <Tick state={masterState} />
-            <span className="text-meta font-medium uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">All</span>
+            <span className="text-meta font-medium  text-text-muted group-hover:text-text-secondary transition-colors">All</span>
           </button>
         </div>
       </div>
@@ -135,7 +135,7 @@ export default function PeopleDeptFilter({
               className="w-full flex items-center gap-2 px-1 pt-1.5 pb-0.5 group"
             >
               <Tick state={deptState(g.people)} />
-              <span className="flex-1 min-w-0 truncate text-left text-meta font-medium uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">
+              <span className="flex-1 min-w-0 truncate text-left text-meta font-medium  text-text-muted group-hover:text-text-secondary transition-colors">
                 {g.department}
               </span>
               <span className="shrink-0 text-meta text-text-muted tabular-nums">

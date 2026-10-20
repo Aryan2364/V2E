@@ -232,7 +232,7 @@ export default function MyTasksPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="My Tasks"
+        title="My tasks"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
         meta={
           <>
@@ -270,7 +270,7 @@ export default function MyTasksPage() {
 
             <Button onClick={() => setShowCreateModal(true)}>
               <Plus size={15} />
-              <span className="hidden sm:inline">Create Task</span>
+              <span className="hidden sm:inline">Create task</span>
             </Button>
           </div>
         }
@@ -399,7 +399,7 @@ export default function MyTasksPage() {
               loading={incompleteSubmitting}
               loadingLabel="Saving"
             >
-              Mark Incomplete
+              Mark incomplete
             </Button>
           </div>
         </div>

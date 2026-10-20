@@ -381,7 +381,7 @@ export default function ChecklistAccessEditor({
           <div className="bg-surface border border-border-light rounded-xl p-3.5 flex flex-col min-h-[360px]">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-meta font-medium uppercase tracking-wide text-text-muted">Departments</span>
+                <span className="text-meta font-medium  text-text-muted">Departments</span>
                 <CountBadge n={deptRules.length} />
               </div>
               <Tooltip label={hasEmptyDept ? 'Select a department in the blank row first' : 'Add department'}>
@@ -449,7 +449,7 @@ export default function ChecklistAccessEditor({
           <div className="bg-surface border border-border-light rounded-xl p-3.5 flex flex-col h-[360px]">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-meta font-medium uppercase tracking-wide text-text-muted">Roles</span>
+                <span className="text-meta font-medium  text-text-muted">Roles</span>
                 <CountBadge n={inScopeRoles.length} />
               </div>
               <AddPicker label="Add role" options={roleOptions} onPick={addRole} />
@@ -493,7 +493,7 @@ export default function ChecklistAccessEditor({
           <div className="bg-surface border border-border-light rounded-xl p-3.5 flex flex-col h-[360px]">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-meta font-medium uppercase tracking-wide text-text-muted">People with access</span>
+                <span className="text-meta font-medium  text-text-muted">People with access</span>
                 <CountBadge n={effectivePeople.length} />
               </div>
               <AddPicker label="Add person" options={personOptions} onPick={addPerson} />
@@ -525,7 +525,7 @@ export default function ChecklistAccessEditor({
           {removedPeople.length > 0 && (
             <div className="mt-4 space-y-2 rounded-lg border border-warning-border bg-warning-bg p-3">
               <div className="flex items-center gap-1.5">
-                <span className="text-meta font-medium uppercase tracking-wide text-warning">Removed</span>
+                <span className="text-meta font-medium  text-warning">Removed</span>
                 <span className="text-meta text-warning">{removedPeople.length}</span>
               </div>
               <p className="text-meta text-warning">These people match a department or role above but are excluded. Restore to give access back.</p>

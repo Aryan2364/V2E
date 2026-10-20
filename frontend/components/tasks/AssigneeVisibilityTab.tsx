@@ -752,11 +752,11 @@ function BridgeSection({ orgId, view, deptName, onChange, apiError }: { orgId: s
                   <span>{b.from_department_name ?? deptName(b.from_department_id)}</span>
                   {bothWays ? <ArrowLeftRight size={14} className="text-primary-text" /> : <ArrowRight size={14} className="text-text-muted" />}
                   <span>{b.to_department_name ?? deptName(b.to_department_id)}</span>
-                  <span className="text-meta font-medium uppercase tracking-wide text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
+                  <span className="text-meta font-medium  text-primary-text bg-primary-subtle border border-primary-border rounded-full px-2 py-0.5">
                     {b.depth === 'whole_dept' ? 'Whole dept' : 'Head & seniors'}
                   </span>
                   {b.include_sub_departments && (
-                    <span className="text-meta font-medium uppercase tracking-wide text-text-secondary bg-surface-control border border-border-light rounded-full px-2 py-0.5">
+                    <span className="text-meta font-medium  text-text-secondary bg-surface-control border border-border-light rounded-full px-2 py-0.5">
                       + sub-depts
                     </span>
                   )}

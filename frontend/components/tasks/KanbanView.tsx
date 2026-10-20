@@ -3,16 +3,7 @@
 import React, { useState } from 'react'
 import { Lock, CheckCircle2, XCircle, RotateCcw, Hand } from 'lucide-react'
 import { toast } from 'sonner'
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from '@/components/ui/alert-dialog'
+import ReasonDialog from '@/components/tasks/ReasonDialog'
 import type { Task, TaskStatus, TaskPriority, TaskCategory } from '@/lib/types/tasks'
 import {
   kanbanColumnId,
@@ -61,7 +52,6 @@ export default function KanbanView({
   const [dragOverCol, setDragOverCol] = useState<string | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
   const [pending, setPending] = useState<PendingReason | null>(null)
-  const [reason, setReason] = useState('')
   const [savingReason, setSavingReason] = useState(false)
 
   // Use the app's shared amber toast for blocked/failed drops (not a bespoke one).
@@ -95,7 +85,7 @@ export default function KanbanView({
     try {
       const res = await resolveKanbanDrop(task, target, { orgId, perspective }, providedReason)
       if (res.kind === 'blocked') { flash(res.message); return }
-      if (res.kind === 'needsReason') { setReason(''); setPending({ task, target, mode: res.mode }); return }
+      if (res.kind === 'needsReason') { setPending({ task, target, mode: res.mode }); return }
       if (res.kind === 'done') { onChanged(res.task) }
     } catch (e) {
       flash(apiErrorMessage(e, 'Couldn’t move that task — please try again.'))
@@ -117,12 +107,12 @@ export default function KanbanView({
     await runDrop(task, target)
   }
 
-  async function confirmReason() {
+  async function confirmReason(reason: string) {
     if (!pending || !reason.trim()) return
     setSavingReason(true)
     try {
       const res = await resolveKanbanDrop(pending.task, pending.target, { orgId, perspective }, reason.trim())
-      if (res.kind === 'done') { onChanged(res.task); setPending(null); setReason('') }
+      if (res.kind === 'done') { onChanged(res.task); setPending(null) }
       else if (res.kind === 'blocked') { flash(res.message); setPending(null) }
     } catch (e) {
       flash(apiErrorMessage(e, 'Couldn’t save — please try again.'))
@@ -257,40 +247,18 @@ export default function KanbanView({
       })}
 
       {/* Reason dialog for an Incomplete / can't-complete drop */}
-      <AlertDialog
+      <ReasonDialog
         open={!!pending}
-        onOpenChange={(next) => { if (!next && !savingReason) { setPending(null); setReason('') } }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0"><XCircle size={18} className="text-danger" /></div>
-              <div className="min-w-0">
-                <AlertDialogTitle>{pending?.mode === 'flag' ? "Can’t complete your part?" : 'Mark this task incomplete?'}</AlertDialogTitle>
-                <AlertDialogDescription>{pending?.mode === 'flag' ? 'Your part will be flagged as not-done — a reason is required.' : 'The task will be closed as not-done — a reason is required.'}</AlertDialogDescription>
-              </div>
-            </div>
-            <textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Reason (required)"
-              rows={3}
-              autoFocus
-              className="mt-1 w-full border border-border rounded-lg px-3 py-2 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-danger resize-none"
-            />
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={savingReason} onClick={() => { setPending(null); setReason('') }}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmReason}
-              disabled={savingReason || !reason.trim()}
-              loading={savingReason}
-            >
-              {pending?.mode === 'flag' ? 'Flag my part' : 'Confirm Incomplete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onCancel={() => setPending(null)}
+        onConfirm={confirmReason}
+        title={pending?.mode === 'flag' ? "Can’t complete your part?" : 'Mark this task incomplete?'}
+        description={pending?.mode === 'flag' ? 'Your part will be flagged as not-done. A reason is required.' : 'The task will be closed as not-done. A reason is required.'}
+        label="Reason"
+        placeholder="Why can’t this be completed?"
+        confirmLabel={pending?.mode === 'flag' ? 'Flag my part' : 'Mark incomplete'}
+        destructive
+        loading={savingReason}
+      />
       </div>
     </div>
   )

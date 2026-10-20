@@ -49,7 +49,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
 
           {task.description && (
             <div>
-              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Description</p>
+              <p className="text-meta font-medium text-text-muted  mb-1">Description</p>
               <p className="text-body text-text-primary leading-relaxed whitespace-pre-wrap">{task.description}</p>
             </div>
           )}
@@ -57,21 +57,21 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           {/* Meta row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Status</p>
+              <p className="text-meta font-medium text-text-muted  mb-1">Status</p>
               <p className="text-body text-text-primary">{task.status?.label ?? task.status_id}</p>
             </div>
             {task.deadline && (
               <div>
-                <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Deadline</p>
+                <p className="text-meta font-medium text-text-muted  mb-1">Deadline</p>
                 <p className="text-body text-text-primary">{formatDate(task.deadline)}</p>
               </div>
             )}
             <div>
-              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Type</p>
+              <p className="text-meta font-medium text-text-muted  mb-1">Type</p>
               <p className="text-body text-text-primary capitalize">{task.type.replace('_', ' ')}</p>
             </div>
             <div>
-              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-1">Completion Mode</p>
+              <p className="text-meta font-medium text-text-muted  mb-1">Completion mode</p>
               <p className="text-body text-text-primary">
                 {task.completion_mode === 'all_must_complete' ? 'All must complete' : 'Any can complete'}
               </p>
@@ -81,7 +81,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           {/* Assignees */}
           {task.assignees && task.assignees.length > 0 && (
             <div>
-              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-2">Assignees</p>
+              <p className="text-meta font-medium text-text-muted  mb-2">Assignees</p>
               <div className="flex flex-wrap gap-2">
                 {task.assignees.map((a) => (
                   <span
@@ -101,7 +101,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
           {/* Checklist */}
           {task.checklist && task.checklist.length > 0 && (
             <div>
-              <p className="text-meta font-medium text-text-muted uppercase tracking-wider mb-2">Checklist</p>
+              <p className="text-meta font-medium text-text-muted  mb-2">Checklist</p>
               <div className="space-y-1.5">
                 {task.checklist.map((item) => (
                   <div key={item.id} className="flex items-center gap-2">
@@ -123,7 +123,7 @@ function SnapshotModal({ item, onClose }: { item: TaskArchiveItem; onClose: () =
 
           {/* Deletion info */}
           <div className="bg-warning-bg border border-warning-border rounded-control p-4 space-y-1">
-            <p className="text-meta font-medium text-warning uppercase tracking-wider">Deletion Info</p>
+            <p className="text-meta font-medium text-warning ">Deletion info</p>
             <p className="text-body text-text-primary">
               Deleted on <span className="font-medium">{formatDate(item.deleted_at)}</span>
             </p>
@@ -224,7 +224,7 @@ export default function ArchivePage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          title="Task Archive"
+          title="Task archive"
           trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
           meta="Deleted tasks stored for record-keeping."
         />
@@ -240,7 +240,7 @@ export default function ArchivePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Task Archive"
+        title="Task archive"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
         meta="Deleted tasks stored for record-keeping."
       />

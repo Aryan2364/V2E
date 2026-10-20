@@ -8,7 +8,7 @@ const RANK: Record<WorkScope, number> = { own: 0, team: 1, department: 2, org: 3
 
 const OPTIONS: { scope: WorkScope; label: string; icon: React.ReactNode }[] = [
   { scope: 'own', label: 'Mine', icon: <User size={15} /> },
-  { scope: 'team', label: 'My Team', icon: <Users size={15} /> },
+  { scope: 'team', label: 'My team', icon: <Users size={15} /> },
   { scope: 'org', label: 'Organization', icon: <Building2 size={15} /> },
 ]
 

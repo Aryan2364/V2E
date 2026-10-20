@@ -677,7 +677,7 @@ export default function TasksOverviewPage() {
   if (!permsLoading && !can('tasks.task.manage', 'read')) {
     return (
       <div className="space-y-4">
-        <PageHeader title="Work Overview" trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]} />
+        <PageHeader title="Work overview" trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]} />
         <AccessHiddenState orgId={orgId} leaf="tasks.task.manage" moduleLabel="Tasks" />
       </div>
     )
@@ -692,14 +692,14 @@ export default function TasksOverviewPage() {
   return (
     <div className="space-y-4 pb-24">
       <PageHeader
-        title="Work Overview"
+        title="Work overview"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
         meta={SCOPE_BLURB[appliedScope]}
         actions={
           <div className="flex items-center gap-2 shrink-0">
             <ScopeSwitcher maxScope={maxScope} value={appliedScope} onChange={(s) => setRequestedScope(s)} />
             <Button onClick={() => setShowCreate(true)} className="shrink-0">
-              <Plus size={16} /> Create Task
+              <Plus size={16} /> Create task
             </Button>
           </div>
         }

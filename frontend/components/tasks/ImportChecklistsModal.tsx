@@ -365,7 +365,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
                 <div className="flex-1">
                   <p className="text-body font-medium text-text-primary">Step 1 — Download the Excel template</p>
                   <p className="text-body text-text-secondary mt-0.5">
-                    Put <strong>one item per row</strong>. Rows that share the same <strong>Checklist Name</strong> become one
+                    Put <strong>one item per row</strong>. Rows that share the same <strong>Checklist name</strong> become one
                     checklist — so a single file can hold <strong>many checklists</strong>. Imported checklists arrive{' '}
                     <strong>inactive</strong> so you can set who can use each one, then activate it.
                   </p>
@@ -415,7 +415,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
 
               {/* Grouped checklists preview */}
               <div className="space-y-2">
-                <p className="text-meta font-medium uppercase tracking-wide text-text-muted">Checklists to create</p>
+                <p className="text-meta font-medium  text-text-muted">Checklists to create</p>
                 {validation.groups.filter((g) => g.items.length > 0).length === 0 && (
                   <p className="text-body text-text-muted">No valid checklists found. Fix the errors below and re-upload.</p>
                 )}

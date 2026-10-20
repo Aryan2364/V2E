@@ -135,7 +135,7 @@ function PerformanceCard({ stats, onOpenInstance }: { stats: RecurringStats; onO
         <>
           {/* Outcome strip — the last 10 instances at a glance */}
           <div>
-            <p className="text-meta font-medium text-text-muted uppercase tracking-wide mb-2">Last {stats.recent.length} outcomes</p>
+            <p className="text-meta font-medium text-text-muted  mb-2">Last {stats.recent.length} outcomes</p>
             <div className="flex items-center gap-1.5 flex-wrap">
               {stats.recent.map((r) => {
                 const meta = TIMING_META[r.timing]
@@ -166,7 +166,7 @@ function PerformanceCard({ stats, onOpenInstance }: { stats: RecurringStats; onO
 
           {/* Monthly trend — stacked bars, last 6 months */}
           <div>
-            <p className="text-meta font-medium text-text-muted uppercase tracking-wide mb-2">Monthly trend</p>
+            <p className="text-meta font-medium text-text-muted  mb-2">Monthly trend</p>
             <div className="flex items-end gap-2 h-28">
               {stats.trend_monthly.map((m) => {
                 const [y, mo] = m.month.split('-').map(Number)
@@ -203,11 +203,11 @@ function PerformanceCard({ stats, onOpenInstance }: { stats: RecurringStats; onO
           {/* Per-person record */}
           {stats.by_assignee.length > 0 && (
             <div>
-              <p className="text-meta font-medium text-text-muted uppercase tracking-wide mb-2">By person</p>
+              <p className="text-meta font-medium text-text-muted  mb-2">By person</p>
               <div className="overflow-x-auto">
                 <table className="w-full text-body">
                   <thead>
-                    <tr className="text-left text-meta font-medium text-text-muted uppercase tracking-wide border-b border-border-light">
+                    <tr className="text-left text-meta font-medium text-text-muted  border-b border-border-light">
                       <th className="py-1.5 pr-2">Person</th>
                       <th className="py-1.5 px-2 text-right">Assigned</th>
                       <th className="py-1.5 px-2 text-right">Done</th>
@@ -465,8 +465,8 @@ export default function RecurringDetailPage() {
           <div className="flex items-center justify-between border-b border-border-light mb-4 flex-wrap gap-2">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
               <TabsList className="border-b-0">
-                <TabsTrigger value="instances">Task Instances</TabsTrigger>
-                <TabsTrigger value="documents">Instance Documents</TabsTrigger>
+                <TabsTrigger value="instances">Task instances</TabsTrigger>
+                <TabsTrigger value="documents">Instance documents</TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -478,11 +478,11 @@ export default function RecurringDetailPage() {
                   <StyledSelect
                     value={filterStatus}
                     onChange={(v) => setFilterStatus(v)}
-                    placeholder="All Statuses"
+                    placeholder="All statuses"
                     size="sm"
                     wrapperClassName="w-32"
                     options={[
-                      { value: 'all', label: 'All Statuses' },
+                      { value: 'all', label: 'All statuses' },
                       ...statuses.map((s) => ({ value: s.id, label: s.label, color: s.color })),
                     ]}
                   />
@@ -589,7 +589,7 @@ export default function RecurringDetailPage() {
                                     <span className="text-danger font-medium bg-danger-bg px-1 py-0.5 rounded-xs text-meta mr-1.5">Proof</span>
                                   ) : null}
                                   {att.comment_id ? (
-                                    <span className="text-text-secondary text-meta bg-surface-control px-1 py-0.5 rounded-xs mr-1.5">In Comment</span>
+                                    <span className="text-text-secondary text-meta bg-surface-control px-1 py-0.5 rounded-xs mr-1.5">In comment</span>
                                   ) : null}
                                   Uploaded by {att.uploaded_by_name} · {(att.size_bytes / 1024).toFixed(1)} KB
                                 </p>
@@ -615,7 +615,7 @@ export default function RecurringDetailPage() {
             <div className={`flex items-center justify-between px-4 py-2.5 border-b ${template.is_active ? 'bg-success-bg border-success-border' : 'bg-danger-bg border-danger-border'}`}>
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${template.is_active ? 'bg-success' : 'bg-danger'}`} />
-                <p className={`text-meta font-medium uppercase tracking-widest ${template.is_active ? 'text-success' : 'text-danger'}`}>
+                <p className={`text-meta font-medium  ${template.is_active ? 'text-success' : 'text-danger'}`}>
                   Status
                 </p>
               </div>
@@ -625,19 +625,16 @@ export default function RecurringDetailPage() {
                 {template.is_active ? 'Active' : 'Paused'}
               </span>
               {template.can_edit && (
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={handleToggle}
-                  disabled={toggling}
-                  className={[
-                    'flex items-center gap-1.5 px-3 py-1.5 text-meta font-medium rounded-control outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring disabled:opacity-60 transition-colors',
-                    template.is_active
-                      ? 'text-warning bg-warning-bg border border-warning-border hover:bg-warning-bg'
-                      : 'text-success bg-success-bg border border-success-border hover:bg-success-bg',
-                  ].join(' ')}
+                  loading={toggling}
+                  loadingLabel={template.is_active ? 'Pausing' : 'Resuming'}
                 >
-                  {template.is_active ? <Pause size={12} /> : <Play size={12} />}
-                  {toggling ? '...' : template.is_active ? 'Pause' : 'Resume'}
-                </button>
+                  {template.is_active ? <Pause size={16} /> : <Play size={16} />}
+                  {template.is_active ? 'Pause' : 'Resume'}
+                </Button>
               )}
             </div>
           </div>
@@ -646,14 +643,14 @@ export default function RecurringDetailPage() {
           <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-2.5 bg-primary-subtle border-b border-primary-border">
               <span className="w-2 h-2 rounded-full bg-primary" />
-              <p className="text-meta font-medium text-primary-text uppercase tracking-widest">Overview</p>
+              <p className="text-meta font-medium text-primary-text ">Overview</p>
             </div>
             <div className="p-4 space-y-4">
               {/* Total Instances */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ListChecks size={15} className="text-primary-text" />
-                  <span className="text-body font-medium text-text-secondary">Total Instances</span>
+                  <span className="text-body font-medium text-text-secondary">Total instances</span>
                 </div>
                 <span className="text-body font-medium text-text-primary tabular-nums">
                   {stats?.total_instances ?? 0}
@@ -695,7 +692,7 @@ export default function RecurringDetailPage() {
                 <div className="flex items-center gap-2">
                   <Flame size={15} className="text-warning" />
                   <div className="min-w-0">
-                    <span className="text-body font-medium text-text-secondary block">Current Streak</span>
+                    <span className="text-body font-medium text-text-secondary block">Current streak</span>
                     {stats && (
                       <span className="text-meta text-text-muted block">best: {stats.best_streak} in a row</span>
                     )}
@@ -711,7 +708,7 @@ export default function RecurringDetailPage() {
                 <>
                   <div className="border-t border-border-light my-3 pt-3" />
                   <div>
-                    <p className="text-meta font-medium text-text-secondary uppercase tracking-wider mb-1">Performance</p>
+                    <p className="text-meta font-medium text-text-secondary  mb-1">Performance</p>
                     <p className="text-meta text-text-secondary leading-relaxed">
                       No finished instances yet — the track record builds up as scheduled tasks get completed (or missed).
                     </p>
@@ -726,7 +723,7 @@ export default function RecurringDetailPage() {
 
             <div className="flex items-center gap-2 px-4 py-2.5 bg-primary-subtle border-b border-primary-border">
               <span className="w-2 h-2 rounded-full bg-primary" />
-              <p className="text-meta font-medium text-primary-text uppercase tracking-widest">Schedule</p>
+              <p className="text-meta font-medium text-primary-text ">Schedule</p>
             </div>
             <div className="p-4">
               {entries.length === 0 ? (
@@ -767,10 +764,10 @@ export default function RecurringDetailPage() {
             <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
               <div className="flex items-center gap-2 px-4 py-2.5 bg-success-bg border-b border-success-border">
                 <span className="w-2 h-2 rounded-full bg-success" />
-                <p className="text-meta font-medium text-success uppercase tracking-widest">Assignees</p>
+                <p className="text-meta font-medium text-success ">Assignees</p>
               </div>
               <div className="p-4">
-                <div className="space-y-2 max-h-64 overflow-y-auto">
+                <div className="space-y-2">
                   {template.assignee_user_ids.map((uid) => {
                     const name = userMap.get(uid) ?? uid.slice(0, 8)
                     return (
@@ -792,10 +789,10 @@ export default function RecurringDetailPage() {
             <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
               <div className="flex items-center gap-2 px-4 py-2.5 bg-primary-subtle border-b border-primary-border">
                 <span className="w-2 h-2 rounded-full bg-primary" />
-                <p className="text-meta font-medium text-primary-text uppercase tracking-widest">CC</p>
+                <p className="text-meta font-medium text-primary-text ">CC</p>
               </div>
               <div className="p-4">
-                <div className="space-y-2 max-h-64 overflow-y-auto">
+                <div className="space-y-2">
                   {template.cc_user_ids.map((uid, i) => {
                     // Prefer the server-resolved name — a CC'd person needn't be in the
                     // eligible-assignee list that feeds userMap.
@@ -818,7 +815,7 @@ export default function RecurringDetailPage() {
            <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
              <div className="flex items-center gap-2 px-4 py-2.5 bg-warning-bg border-b border-warning-border">
                <span className="w-2 h-2 rounded-full bg-warning" />
-               <p className="text-meta font-medium text-warning uppercase tracking-widest">Completion Mode</p>
+               <p className="text-meta font-medium text-warning ">Completion mode</p>
              </div>
              <div className="p-4">
                <p className="text-body font-medium text-text-primary">
@@ -831,8 +828,8 @@ export default function RecurringDetailPage() {
            <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
              <div className={`flex items-center gap-2 px-4 py-2.5 border-b ${template.proof_required ? 'bg-danger-bg border-danger-border' : 'bg-success-bg border-success-border'}`}>
                <span className={`w-2 h-2 rounded-full ${template.proof_required ? 'bg-danger' : 'bg-success'}`} />
-               <p className={`text-meta font-medium uppercase tracking-widest ${template.proof_required ? 'text-danger' : 'text-success'}`}>
-                 Proof Required
+               <p className={`text-meta font-medium  ${template.proof_required ? 'text-danger' : 'text-success'}`}>
+                 Proof required
                </p>
              </div>
              <div className="p-4">
@@ -847,7 +844,7 @@ export default function RecurringDetailPage() {
              <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
                <div className="flex items-center gap-2 px-4 py-2.5 bg-surface-sunken border-b border-border-light">
                  <span className="w-2 h-2 rounded-full bg-text-muted" />
-                 <p className="text-meta font-medium text-text-muted uppercase tracking-widest">Details</p>
+                 <p className="text-meta font-medium text-text-muted ">Details</p>
                </div>
                <div className="p-4">
                  <div className="space-y-3 text-body">
@@ -870,7 +867,7 @@ export default function RecurringDetailPage() {
                      <div className="flex items-start gap-2">
                        <Target size={14} className="text-text-muted mt-0.5 shrink-0" />
                        <div>
-                         <p className="text-text-secondary text-meta mb-0.5">Linked Goal</p>
+                         <p className="text-text-secondary text-meta mb-0.5">Linked goal</p>
                          <p className="text-text-primary font-medium wrap-break-word">{goalTitle ?? 'Loading…'}</p>
                        </div>
                      </div>
@@ -913,14 +910,14 @@ export default function RecurringDetailPage() {
               <div className="flex items-center justify-between px-4 py-2.5 bg-surface-control border-b border-border-light">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-text-secondary" />
-                  <p className="text-meta font-medium text-text-secondary uppercase tracking-widest">Checklist</p>
+                  <p className="text-meta font-medium text-text-secondary ">Checklist</p>
                 </div>
                 <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-text-secondary text-primary-foreground text-meta font-medium">
                   {checklistItems.length}
                 </span>
               </div>
               <div className="p-4">
-                <div className="space-y-1.5 max-h-56 overflow-y-auto">
+                <div className="space-y-1.5">
                   {[...checklistItems].sort((a, b) => a.order_index - b.order_index).map((item, i, arr) => {
                     const showHeading = !!item.group_title && (i === 0 || arr[i - 1].group_title !== item.group_title)
                     return (
@@ -945,7 +942,7 @@ export default function RecurringDetailPage() {
             <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
               <div className="flex items-center gap-2 px-4 py-2.5 bg-danger-bg border-b border-danger-border">
                 <span className="w-2 h-2 rounded-full bg-danger" />
-                <p className="text-meta font-medium text-danger uppercase tracking-widest">Reminders</p>
+                <p className="text-meta font-medium text-danger ">Reminders</p>
               </div>
               <div className="p-4">
                 <div className="space-y-1.5">
@@ -963,14 +960,14 @@ export default function RecurringDetailPage() {
               <div className="flex items-center justify-between px-4 py-2.5 bg-surface-control border-b border-border-light">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-text-secondary" />
-                  <p className="text-meta font-medium text-text-secondary uppercase tracking-widest">Attachments</p>
+                  <p className="text-meta font-medium text-text-secondary ">Attachments</p>
                 </div>
                 <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-text-secondary text-primary-foreground text-meta font-medium">
                   {attachments.length}
                 </span>
               </div>
               <div className="p-4">
-                <div className="space-y-1.5 max-h-56 overflow-y-auto">
+                <div className="space-y-1.5">
                   {attachments.map((a) => (
                     <Tooltip key={a.id} label="Download">
                       <button

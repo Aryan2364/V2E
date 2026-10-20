@@ -194,40 +194,40 @@ function TicketsPageInner() {
         <StyledSelect
           value={filterType}
           onChange={(v) => setFilter({ typeId: v })}
-          placeholder="All Types"
+          placeholder="All types"
           wrapperClassName="w-40"
           options={[
-            { value: '', label: 'All Types' },
+            { value: '', label: 'All types' },
             ...types.map((t) => ({ value: t.id, label: `${t.icon} ${t.name}`, color: t.color })),
           ]}
         />
         <StyledSelect
           value={filterCategory}
           onChange={(v) => setFilter({ categoryId: v })}
-          placeholder="All Categories"
+          placeholder="All categories"
           wrapperClassName="w-40"
           options={[
-            { value: '', label: 'All Categories' },
+            { value: '', label: 'All categories' },
             ...categories.map((c) => ({ value: c.id, label: c.name, color: c.color })),
           ]}
         />
         <StyledSelect
           value={filterPriority}
           onChange={(v) => setFilter({ priorityId: v })}
-          placeholder="All Priorities"
+          placeholder="All priorities"
           wrapperClassName="w-40"
           options={[
-            { value: '', label: 'All Priorities' },
+            { value: '', label: 'All priorities' },
             ...priorities.map((p) => ({ value: p.id, label: p.label, color: p.color })),
           ]}
         />
         <StyledSelect
           value={filterStatus}
           onChange={(v) => setFilter({ statusId: v })}
-          placeholder="All Statuses"
+          placeholder="All statuses"
           wrapperClassName="w-40"
           options={[
-            { value: '', label: 'All Statuses' },
+            { value: '', label: 'All statuses' },
             ...statuses.map((s) => ({ value: s.id, label: s.label, color: s.color })),
           ]}
         />

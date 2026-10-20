@@ -92,10 +92,10 @@ export default function BreakdownPanel({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-      <BreakdownCard title="By Status" items={data.by_status} activeId={selection.status_id} defaultColor="var(--primary-text)" onToggle={set('status')} />
-      <BreakdownCard title="By Priority" items={data.by_priority} activeId={selection.priority_id} defaultColor="var(--warning)" onToggle={set('priority')} />
-      <BreakdownCard title="By Category" items={data.by_category} activeId={selection.category_id} defaultColor="var(--text-secondary)" onToggle={set('category')} />
-      <BreakdownCard title="By Department" items={data.by_department} activeId={selection.department_id} defaultColor="var(--text-secondary)" onToggle={set('department')} />
+      <BreakdownCard title="By status" items={data.by_status} activeId={selection.status_id} defaultColor="var(--primary-text)" onToggle={set('status')} />
+      <BreakdownCard title="By priority" items={data.by_priority} activeId={selection.priority_id} defaultColor="var(--warning)" onToggle={set('priority')} />
+      <BreakdownCard title="By category" items={data.by_category} activeId={selection.category_id} defaultColor="var(--text-secondary)" onToggle={set('category')} />
+      <BreakdownCard title="By department" items={data.by_department} activeId={selection.department_id} defaultColor="var(--text-secondary)" onToggle={set('department')} />
       <BreakdownCard title="Assigned to (workload)" items={data.by_assignee} activeId={selection.assignee_user_id} defaultColor="var(--primary-text)" onToggle={set('assignee')} />
       <BreakdownCard title="Assigned by (delegation)" items={data.by_assigner} activeId={selection.created_by_user_id} defaultColor="var(--success)" onToggle={set('assigner')} />
     </div>

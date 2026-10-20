@@ -61,12 +61,12 @@ export default function KpiCards({
 }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-      <Card label="Total Tasks" value={kpis.total} icon={<LayoutGrid size={18} />} onClick={onSelectBucket ? () => onSelectBucket(null) : undefined} />
-      <Card label="Completion Rate" value={`${kpis.completion_rate}%`} delta={kpis.delta} icon={<CheckCircle2 size={18} />} onClick={onSelectBucket ? () => onSelectBucket('completed') : undefined} />
+      <Card label="Total tasks" value={kpis.total} icon={<LayoutGrid size={18} />} onClick={onSelectBucket ? () => onSelectBucket(null) : undefined} />
+      <Card label="Completion rate" value={`${kpis.completion_rate}%`} delta={kpis.delta} icon={<CheckCircle2 size={18} />} onClick={onSelectBucket ? () => onSelectBucket('completed') : undefined} />
       <Card label="On-Time Rate" value={`${kpis.on_time_rate}%`} sub="of completed" icon={<Timer size={18} />} />
       <Card label="Overdue (Open)" value={kpis.overdue} tone={kpis.overdue > 0 ? 'alert' : 'plain'} icon={<AlertTriangle size={18} />} onClick={onSelectBucket ? () => onSelectBucket('overdue') : undefined} />
       <Card label="Critical / High Open" value={kpis.critical_high_open} tone={kpis.critical_high_open > 0 ? 'warn' : 'plain'} sub="high-priority, not done" icon={<Flame size={18} />} />
-      <Card label="Recurring Share" value={`${kpis.recurring_share}%`} sub="of all tasks" icon={<Repeat size={18} />} />
+      <Card label="Recurring share" value={`${kpis.recurring_share}%`} sub="of all tasks" icon={<Repeat size={18} />} />
     </div>
   )
 }

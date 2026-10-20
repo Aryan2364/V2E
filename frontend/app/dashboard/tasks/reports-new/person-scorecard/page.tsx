@@ -125,7 +125,7 @@ export default function ScorecardRosterPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Person Scorecard"
+        title="Person scorecard"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }, { label: 'Reports', href: '/dashboard/tasks/reports-new' }]}
         meta="Open a person to see their unique tasks and performance — or download everyone you can see."
         actions={
@@ -183,7 +183,7 @@ export default function ScorecardRosterPage() {
                   <th className="px-3 py-3 font-medium text-center" title="Completed on or before the due date.">On&nbsp;time</th>
                   <th className="px-3 py-3 font-medium text-center" title="On-time tasks ÷ tasks that have a completion date. Pending work is kept out. This is the real score.">On-time&nbsp;rate</th>
                   <th className="px-3 py-3 font-medium text-center" title="Average of (completion date − due date). Minus means finished early.">Avg delay</th>
-                  <th className="px-3 py-3 font-medium text-center" title="The single worst delay for this person.">Longest Delay</th>
+                  <th className="px-3 py-3 font-medium text-center" title="The single worst delay for this person.">Longest delay</th>
                   <th className="px-3 py-3 font-medium">Grade</th>
                   {/* Appended after Grade so the client's signed-off column order is intact. */}
                   <th className="px-3 py-3 font-medium text-center" title="Tasks this person was taken off BEFORE the original due date without finishing. They were released in good standing, so these are left out of every figure above — including Total entries and the Grade — and shown here only so the removal is visible.">Withdrawn</th>

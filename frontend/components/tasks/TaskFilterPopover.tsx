@@ -62,7 +62,7 @@ function CheckToggle({ state, label, onClick }: { state: TickState; label: strin
   return (
     <button type="button" onClick={onClick} className="flex items-center gap-1.5 group">
       <Tick state={state} />
-      <span className="text-meta font-medium uppercase tracking-wide text-text-muted group-hover:text-text-secondary transition-colors">{label}</span>
+      <span className="text-meta font-medium  text-text-muted group-hover:text-text-secondary transition-colors">{label}</span>
     </button>
   )
 }

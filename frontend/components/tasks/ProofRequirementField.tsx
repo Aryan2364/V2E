@@ -64,7 +64,7 @@ export default function ProofRequirementField({
 
       {proofRequired && showTypes && (
         <div className="mt-2 rounded-lg border border-border-light bg-surface-sunken p-3">
-          <p className="text-meta font-medium text-text-muted uppercase tracking-wide mb-2">Allowed proof types</p>
+          <p className="text-meta font-medium text-text-muted  mb-2">Allowed proof types</p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
             {FILE_TYPE_GROUPS.map((g) => (
               <label key={g.key} className="flex items-center gap-2 text-label text-text-secondary cursor-pointer">
