@@ -77,6 +77,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   const [commentText, setCommentText] = React.useState('')
   const [commentFiles, setCommentFiles] = React.useState<UploadItem[]>([])
   const commentFileInput = React.useRef<HTMLInputElement>(null)
+  const commentRef = React.useRef<HTMLTextAreaElement>(null)
   // 'done' while the optimistic complete animation/collapse is running, so
   // the row-style strike-through can play before the task state updates.
   const [completing, setCompleting] = React.useState(false)

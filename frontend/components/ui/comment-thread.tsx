@@ -144,6 +144,7 @@ function CommentThread({
   onWrite,
   label = COMMENT_THREAD_TEXT.label,
   className,
+  followLatest = true,
 }: {
   /** Oldest first. Comments and notes together. */
   items: ThreadItem[]
@@ -158,6 +159,13 @@ function CommentThread({
   /** The list's name for a screen reader. */
   label?: string
   className?: string
+  /*
+   * v2e addition (frontend/FRONTEND_RULES.md 4.1.1): false where the thread
+   * sits inside a record under other content (the phone task), so opening
+   * the record does not jump the page to the comments. Older comments added
+   * at the top still keep the reader's place.
+   */
+  followLatest?: boolean
 }) {
   const { layout } = useLayout()
   const phone = layout === "phone"
@@ -217,10 +225,10 @@ function CommentThread({
 
     if (prev === null) {
       // First draw: the latest, just above the box.
-      scrollTo(size.height)
+      if (followLatest) scrollTo(size.height)
     } else if (last !== prev.lastId && first === prev.firstId) {
       // A new comment at the end: follow it if the person was at the bottom.
-      if (prev.atEnd) scrollTo(size.height)
+      if (followLatest && prev.atEnd) scrollTo(size.height)
     } else if (first !== prev.firstId && last === prev.lastId) {
       // Older ones at the top: the same comments stay under the thumb.
       scrollTo(prev.top + (size.height - prev.height))
@@ -229,7 +237,7 @@ function CommentThread({
     }
 
     before.current = { ...measure(), firstId: first, lastId: last }
-  }, [items, loading, measure, scrollTo])
+  }, [items, loading, measure, scrollTo, followLatest])
 
   // The page or the feed scrolled: remember whether the person is at the
   // bottom. The feed's element exists only once there is something to
