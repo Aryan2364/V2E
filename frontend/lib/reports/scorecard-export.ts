@@ -13,7 +13,7 @@ function frac(v: number | null): number | string {
   return v === null || v === undefined ? '' : v / 100
 }
 
-const HEADER_FILL = 'FF2563EB'
+const HEADER_FILL = 'FF1E40AF'
 const TOTAL_FILL = 'FFEFF6FF'
 
 function styleHeader(row: ExcelJS.Row) {

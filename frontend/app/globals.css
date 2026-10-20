@@ -20,30 +20,31 @@
    Nothing outside this file knows what the brand colour is.
    ============================================================ */
 :root {
-  /* Brand - 2.2. V2E blue, carried over unchanged from the phone-only
-     block built on feat/phone-app (D3: "brand color is ok for now").
+  /* Brand - 2.2. V2E blue #1E40AF (owner, 20 Oct 2026: the earlier
+     #2563EB read too bright on the sidebar and top bar).
      These EIGHT are edited together when the brand changes, with
      --on-brand-accent below them and the three scrollbar colours
      further down (section 0.1). Deliberately explicit, not derived from
      --primary: this colour is dark, so hover goes LIGHTER and pressed
      goes DARKER. Any replacement must measure at least 4.5:1 against its
      foreground. */
-  --primary: #2563eb;
+  --primary: #1e40af;
   --primary-hover: #1d4ed8;
-  --primary-pressed: #1e40af;
+  --primary-pressed: #1e3a8a;
   --primary-ring: #3b82f6;
   --primary-subtle: #eff6ff;
   --primary-border: #bfdbfe;
   --primary-foreground: #ffffff;
   /* The brand used as TEXT on surface: links, secondary buttons, the
-     active tab, accent-band labels. 5.2:1 on surface (--surface below). */
-  --primary-text: #2563eb;
+     active tab, accent-band labels. 8.7:1 on surface (--surface below). */
+  --primary-text: #1e40af;
 
-  /* Sign-in headline highlight - 11.7. primary's hue (218), 45%
-     saturation, 72% lightness because this brand is dark (white
-     foreground). Measures well above the 4.5:1 floor on --primary.
+  /* Sign-in headline highlight - 11.7. primary's hue (226), 45%
+     saturation; lightness raised from 72% to 79% because 72% measured
+     only 3.6:1 on --primary (kit ACCESS 11.7: move it until it passes).
+     #b1bde2 measures 4.7:1 on --primary.
      Used nowhere else. */
-  --on-brand-accent: #97afd8;
+  --on-brand-accent: #b1bde2;
 
   /* On a brand ground - 36.8. Text, icons and control states for a
      section 36 header band and for the sidebar. DERIVED (see the kit's

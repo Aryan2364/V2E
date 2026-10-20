@@ -10,7 +10,7 @@ first commit (push was blocked for the agents — push it yourself).
 
 **What changed everywhere**
 1. Framework moved to the kit's pins: Next 16.3.3, React 19.2.8, Tailwind 4, base-ui 1.8.0, sonner 2.0.8.
-2. The kit's token layer (`frontend/app/globals.css`) with v2e's blue brand (#2563EB family). No
+2. The kit's token layer (`frontend/app/globals.css`) with v2e's blue brand (#1E40AF since 20 Oct; was #2563EB). No
    hard-coded hex left in screens (exceptions: user-chosen data colours, install settings, avatar
    initials). Font is Geist; body text is 14px; only two weights (400/500).
 3. All kit `components/ui` are in the app; old v2e primitives either deleted or reduced to thin

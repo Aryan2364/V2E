@@ -244,3 +244,4 @@ npx next build
   Coordinator verification: `npx tsc --noEmit` clean; `NODE_OPTIONS=--max-old-space-size=8192
   npx next build` green across all routes.
 - 16 Oct 2026 (main session): P1–P4, P5 module passes and the wave-2 Tasks finishing pass done. Build green, tsc clean, unit 69/69. Owner summary at top of REVIEW-kit-alignment.md.
+- 20 Oct 2026: owner changed the brand to #1E40AF (whole brand block, install settings, Excel header fills, tab icon, rules §2.2). Supersedes D3's #2563EB.

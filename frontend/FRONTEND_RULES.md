@@ -1,5 +1,5 @@
 Product: V2E
-Brand colour: #2563EB
+Brand colour: #1E40AF
 
 Both lines are placeholders. Section 0.1 lists everything a new product fills in before its first screen is built.
 
@@ -98,26 +98,26 @@ Changing the brand colour must be a change in one place only: the brand block in
 
 Every value in this section belongs to the current product, not to the system. A new product replaces them in globals.css and rewrites this table to match (section 0.1). If this table and globals.css disagree, globals.css is right and this table is the bug.
 
-V2E's brand is blue, #2563EB, carried over unchanged from the phone-only block built on feat/phone-app (plan-kit-alignment.md decision D3: "brand color is ok for now").
+V2E's brand is blue, #1E40AF (owner decision, 20 Oct 2026: the earlier #2563EB read too bright on the sidebar and top bar).
 
 Eight tokens make up a brand. All eight are set explicitly:
 
 | Token | Value | Used for |
 |---|---|---|
-| primary | #2563EB | Resting state of main buttons, active tabs |
-| primary-hover | #1D4ED8 | Mouse over. Darker, not lighter (this brand hovers DARKER) |
-| primary-pressed | #1E40AF | The instant of click |
+| primary | #1E40AF | Resting state of main buttons, active tabs |
+| primary-hover | #1D4ED8 | Mouse over. Lighter, not darker |
+| primary-pressed | #1E3A8A | The instant of click |
 | primary-ring | #3B82F6 | Keyboard focus outline |
 | primary-subtle | #EFF6FF | Selected rows, highlighted panels |
 | primary-border | #BFDBFE | Borders on primary-subtle surfaces |
 | primary-foreground | #FFFFFF | Text and icons on primary |
-| primary-text | #2563EB | The brand colour used as text or icons on surface: links, secondary buttons, the active tab, labels in an accent band |
+| primary-text | #1E40AF | The brand colour used as text or icons on surface: links, secondary buttons, the active tab, labels in an accent band |
 
 Rules:
 
-- A dark brand hovers lighter and presses darker. A light brand hovers darker and presses darker still. V2E's blue hovers DARKER (#1D4ED8) and presses darker still (#1E40AF) — the opposite direction from the kit's own placeholder teal, which is exactly the point of this section: a formula cannot know which way a brand should hover, so these eight stay explicit.
-- primary-foreground must measure at least 4.5 to 1 against primary, for any brand. White on #2563EB measures about 5.2 to 1.
-- primary-text must measure at least 4.5 to 1 against surface. V2E's primary-text equals primary (#2563EB), at about 5.2 to 1 on white.
+- A dark brand hovers lighter and presses darker. A light brand hovers darker and presses darker still. V2E's #1E40AF is a dark brand: it hovers lighter (#1D4ED8) and presses darker (#1E3A8A).
+- primary-foreground must measure at least 4.5 to 1 against primary, for any brand. White on #1E40AF measures about 8.7 to 1.
+- primary-text must measure at least 4.5 to 1 against surface. V2E's primary-text equals primary (#1E40AF), at about 8.7 to 1 on white.
 - primary-ring must measure at least 3 to 1 against surface, so keyboard focus stays visible.
 - The eight are explicit values, not calculated from primary, because a formula cannot know which way a brand should hover. They are always edited together.
 

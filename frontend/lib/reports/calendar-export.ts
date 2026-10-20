@@ -2,7 +2,7 @@ import ExcelJS from 'exceljs'
 import type { CalendarReport, CalendarRow, DayResult } from '@/lib/types/reports'
 import { RESULT_META } from '@/lib/reports/calendar-format'
 
-const HEADER_FILL = 'FF2563EB'
+const HEADER_FILL = 'FF1E40AF'
 const TOTAL_FILL = 'FFEFF6FF'
 
 const CELL_FILL: Record<DayResult, string> = {

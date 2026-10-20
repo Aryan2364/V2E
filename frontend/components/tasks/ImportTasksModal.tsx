@@ -419,7 +419,7 @@ export default function ImportTasksModal({ orgId, onClose, onImported, embedded 
         const key = COLUMNS[col - 1]
         const required = REQUIRED.includes(key)
         cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: required ? 'FF2563EB' : 'FF475569' } }
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: required ? 'FF1E40AF' : 'FF475569' } }
         cell.alignment = { vertical: 'middle', horizontal: 'left' }
       })
       ws.columns.forEach((c: any) => (c.width = 20))

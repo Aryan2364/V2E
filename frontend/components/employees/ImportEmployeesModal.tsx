@@ -359,7 +359,7 @@ export default function ImportEmployeesModal({
         cell.fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: required ? 'FF2563EB' : 'FF475569' },
+          fgColor: { argb: required ? 'FF1E40AF' : 'FF475569' },
         }
         cell.alignment = { vertical: 'middle', horizontal: 'left' }
       })

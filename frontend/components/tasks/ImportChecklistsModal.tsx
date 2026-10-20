@@ -130,7 +130,7 @@ export default function ImportChecklistsModal({ orgId, onClose, onImported }: Pr
       headerRow.height = 22
       headerRow.eachCell((cell: any) => {
         cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } }
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E40AF' } }
         cell.alignment = { vertical: 'middle', horizontal: 'left' }
       })
       ws.columns = [{ width: 34 }, { width: 52 }]

@@ -9,7 +9,7 @@
  * so they cannot read a token. The colours below are copies, by hand, of
  * tokens in the PHONE BRAND BLOCK of app/globals.css:
  *
- *   theme       = --primary             #2563EB (V2E blue)
+ *   theme       = --primary             #1E40AF (V2E blue)
  *   background  = --surface-sunken      #F8FAFC (the app's page ground,
  *                                        also the splash screen colour)
  *   onTheme     = --primary-foreground  #FFFFFF
@@ -25,7 +25,7 @@ const APP_SHORT_NAME = "V2E"
 
 const INSTALL_COLOURS = {
   /** = --primary in the phone brand block. */
-  theme: "#2563EB",
+  theme: "#1E40AF",
   /** = --surface-sunken in the phone brand block. */
   background: "#F8FAFC",
   /** = --primary-foreground: the mark on the icon's primary ground. */
@@ -35,7 +35,7 @@ const INSTALL_COLOURS = {
 /**
  * 41.13 rule 4: a dark brand uses iPhone's black-translucent status bar,
  * so the primary app bar shows behind the phone's light clock and icons.
- * #2563EB measures 5.2:1 against white, dark enough for light icons.
+ * #1E40AF measures 8.7:1 against white, dark enough for light icons.
  */
 const IPHONE_STATUS_BAR: "black-translucent" | "default" = "black-translucent"
 

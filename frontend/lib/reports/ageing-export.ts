@@ -8,7 +8,7 @@ function fmtDate(iso: string | null): string {
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
-const HEADER_FILL = 'FF2563EB'
+const HEADER_FILL = 'FF1E40AF'
 const TOTAL_FILL = 'FFEFF6FF'
 
 function styleHeader(row: ExcelJS.Row) {
