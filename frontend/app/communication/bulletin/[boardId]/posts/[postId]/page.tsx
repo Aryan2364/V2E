@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { CommentBox } from '@/components/ui/comment-box'
+import { CommentThread, type ThreadItem } from '@/components/ui/comment-thread'
 import { useParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { getBoard, getPost, addComment, deleteComment, toggleReaction } from '@/lib/api/bulletin'
 import type { BulletinBoard, BulletinPost } from '@/lib/types/communication'
-import { formatDate, formatDateTime } from '@/lib/format'
+import { formatDate } from '@/lib/format'
 import Link from 'next/link'
 import { Trash2 } from 'lucide-react'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
@@ -21,7 +23,6 @@ export default function BulletinPostPage() {
   const [post, setPost] = useState<BulletinPost | null>(null)
   const [loading, setLoading] = useState(true)
   const [comment, setComment] = useState('')
-  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     if (!orgId || !boardId || !postId) return
@@ -30,17 +31,11 @@ export default function BulletinPostPage() {
       .finally(() => setLoading(false))
   }, [orgId, boardId, postId])
 
-  async function handleComment(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleComment() {
     if (!orgId || !boardId || !postId || !comment.trim()) return
-    setSubmitting(true)
-    try {
-      const c = await addComment(orgId, boardId, postId, comment.trim())
-      setPost(prev => prev ? { ...prev, comments: [...(prev.comments ?? []), c] } : prev)
-      setComment('')
-    } finally {
-      setSubmitting(false)
-    }
+    const c = await addComment(orgId, boardId, postId, comment.trim())
+    setPost(prev => prev ? { ...prev, comments: [...(prev.comments ?? []), c] } : prev)
+    setComment('')
   }
 
   async function handleDeleteComment(commentId: string) {
@@ -113,46 +108,28 @@ export default function BulletinPostPage() {
         <div className="bg-surface border border-border-light rounded-card p-6">
           <h2 className="text-label font-medium text-text-primary mb-4">{post.comments?.length ?? 0} Comments</h2>
 
-          <div className="flex flex-col gap-4 mb-4">
-            {(post.comments ?? []).map(c => (
-              <div key={c.id} className="flex gap-3">
-                <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0">
-                  {c.created_by?.name?.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <span className="text-label font-medium text-text-primary">{c.created_by?.name}</span>
-                      <span className="text-meta text-text-muted ml-2">{formatDateTime(c.created_at)}</span>
-                    </div>
-                    {(c.created_by_user_id === user?.id || isHR) && (
-                      <button onClick={() => handleDeleteComment(c.id)} className="p-1 text-text-muted hover:text-danger rounded-xs transition-colors">
-                        <Trash2 size={12} />
-                      </button>
-                    )}
-                  </div>
-                  <p className="text-label text-text-primary mt-0.5 whitespace-pre-wrap">{c.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <CommentThread
+            className="mb-4"
+            items={(post.comments ?? []).map((c): ThreadItem => ({
+              id: c.id,
+              who: c.created_by?.name ?? 'Someone',
+              when: c.created_at,
+              text: c.body,
+              actions:
+                c.created_by_user_id === user?.id || isHR ? (
+                  <button
+                    onClick={() => handleDeleteComment(c.id)}
+                    aria-label="Delete comment"
+                    className="p-1 text-text-muted hover:text-danger rounded-xs transition-colors"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                ) : undefined,
+            }))}
+          />
 
           {canComment && (
-            <form onSubmit={handleComment} className="flex gap-2">
-              <input
-                value={comment}
-                onChange={e => setComment(e.target.value)}
-                placeholder="Write a comment…"
-                className="flex-1 border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
-              />
-              <button
-                type="submit"
-                disabled={submitting || !comment.trim()}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Post
-              </button>
-            </form>
+            <CommentBox value={comment} onChange={setComment} onSend={handleComment} placeholder="Write a comment…" />
           )}
         </div>
       </div>
