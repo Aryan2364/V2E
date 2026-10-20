@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 import { TERMINAL_STATUS_PHASES, type Task } from '@/lib/types/tasks'
 import { GivenTaskRow, GivenTaskRowSkeleton } from '../GivenTaskRow'
-import { PhoneEmptyState } from '../PhoneEmptyState'
+import { PhoneEmptyState, PhoneFailedState } from '../PhoneEmptyState'
 import PhoneScreen from '../PhoneScreen'
 import { cx } from '../primitives'
 import { RECURRING_TEMPLATES_HREF, type PhoneRoute } from '@/lib/phone-routes'
@@ -37,6 +37,7 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
 
   const [tasks, setTasks] = React.useState<Task[] | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [failed, setFailed] = React.useState(false)
   const [refreshing, setRefreshing] = React.useState(false)
   const [tab, setTab] = React.useState<Tab>('open')
 
@@ -46,14 +47,18 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
     setTasks(data)
   }, [orgId])
 
-  React.useEffect(() => {
+  const reload = React.useCallback(() => {
     if (!orgId) return
     setLoading(true)
+    setFailed(false)
     load()
-      .catch(() => addToast('Given could not be loaded. Pull down to try again.', 'error'))
+      .catch(() => setFailed(true))
       .finally(() => setLoading(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId])
+  }, [orgId, load])
+
+  React.useEffect(() => {
+    reload()
+  }, [reload])
 
   async function onRefresh() {
     setRefreshing(true)
@@ -85,7 +90,7 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
             aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={cx(
-              'min-h-[36px] rounded-full px-[14px] py-[6px] text-label font-medium',
+              'min-h-(--h-control) rounded-full px-[16px] py-[6px] text-label font-medium',
               tab === key
                 ? 'border border-primary bg-primary-subtle text-primary-text'
                 : 'border border-border bg-surface text-text-secondary',
@@ -110,6 +115,8 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
             <GivenTaskRowSkeleton key={i} />
           ))}
         </div>
+      ) : failed ? (
+        <PhoneFailedState what="Given tasks" onRetry={reload} />
       ) : list.length === 0 ? (
         <PhoneEmptyState
           icon={<UserCheck />}

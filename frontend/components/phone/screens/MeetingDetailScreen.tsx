@@ -11,7 +11,7 @@ import type { Meeting } from '@/lib/types/meetings'
 import { MEETING_STATUS_META } from '@/lib/types/meetings'
 import { PHONE_HOME, MEETINGS_HREF, type PhoneRoute } from '@/lib/phone-routes'
 import PhoneScreen from '../PhoneScreen'
-import { PhoneEmptyState } from '../PhoneEmptyState'
+import { PhoneEmptyState, PhoneFailedState } from '../PhoneEmptyState'
 import { PhoneButton, PhoneLinkButton, cx } from '../primitives'
 import { DeclineMeetingSheet } from '../DeclineMeetingSheet'
 import { AttendeesListSheet } from '../AttendeesListSheet'
@@ -53,15 +53,10 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
   if (error) {
     return (
       <PhoneScreen title="Meeting" parent={route.parent ?? MEETINGS_HREF}>
-        <PhoneEmptyState
-          icon={<span aria-hidden>!</span>}
-          heading="This meeting could not be opened"
-          line="It may have been removed, or you may no longer have access to it."
-        >
-          <PhoneLinkButton href={route.parent ?? MEETINGS_HREF} fullWidth>
-            Go to Meetings
-          </PhoneLinkButton>
-        </PhoneEmptyState>
+        <PhoneFailedState what="This meeting" onRetry={() => { setError(false); load() }} />
+        <PhoneLinkButton href={route.parent ?? MEETINGS_HREF} fullWidth>
+          Go to meetings
+        </PhoneLinkButton>
       </PhoneScreen>
     )
   }
@@ -91,7 +86,7 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
       setDeclineOpen(false)
       addToast('Meeting declined', 'success')
     } catch {
-      addToast('Could not decline. Try again.', 'error')
+      addToast('Could not decline the meeting. Try again.', 'error')
     } finally {
       setBusy(false)
     }
@@ -105,7 +100,7 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
       setMeeting(updated)
       addToast('Decline undone', 'success')
     } catch {
-      addToast('Could not undo. Try again.', 'error')
+      addToast('Could not undo the decline. Try again.', 'error')
     } finally {
       setBusy(false)
     }
@@ -138,7 +133,7 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
   const showDecline = amAttendee && meeting.status !== 'cancelled' && meeting.status !== 'closed'
 
   return (
-    <PhoneScreen title={meeting.title} parent={route.parent ?? MEETINGS_HREF}>
+    <PhoneScreen title="Meeting" parent={route.parent ?? MEETINGS_HREF}>
       <div className="flex flex-col gap-[20px] pb-[16px]">
         <div className="flex flex-col gap-[8px]">
           <h2 className="text-card-heading font-medium text-text-primary">{meeting.title}</h2>
@@ -162,7 +157,7 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
         <button
           type="button"
           onClick={() => setAttendeesOpen(true)}
-          className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-light bg-surface px-[12px] text-left active:bg-surface-control"
+          className="flex min-h-[48px] items-center justify-between rounded-[8px] border border-border-strong bg-surface px-[12px] text-left active:bg-surface-control"
         >
           <span className="text-body text-text-primary">Attendees · {meeting.attendees?.length ?? meeting._count?.attendees ?? 0}</span>
           <ChevronRight aria-hidden className="size-[18px] text-text-secondary" />
@@ -185,12 +180,12 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
         >
           {showDecline ? (
             declined ? (
-              <PhoneButton variant="secondary" className="flex-1" disabled={busy} onClick={() => void doUndoDecline()}>
+              <PhoneButton variant="secondary" className="flex-1" loading={busy} onClick={() => void doUndoDecline()}>
                 Undo decline
               </PhoneButton>
             ) : (
-              <PhoneButton variant="secondary" className="flex-1" disabled={busy} onClick={() => setDeclineOpen(true)}>
-                Decline
+              <PhoneButton variant="secondary" className="flex-1" onClick={() => setDeclineOpen(true)}>
+                Decline meeting
               </PhoneButton>
             )
           ) : null}
@@ -198,11 +193,11 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
             <PhoneButton variant="primary" className="flex-1" onClick={onJoinOrDirections}>
               {meeting.type === 'online' ? (
                 <>
-                  <Video aria-hidden /> Join
+                  <Video aria-hidden /> Join meeting
                 </>
               ) : (
                 <>
-                  <MapPin aria-hidden /> Directions
+                  <MapPin aria-hidden /> Get directions
                 </>
               )}
             </PhoneButton>

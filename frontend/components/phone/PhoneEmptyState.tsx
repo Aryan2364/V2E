@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Monitor } from 'lucide-react'
+import { CircleAlert, Monitor } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { PhoneButton, PhoneLinkButton } from './primitives'
 
@@ -104,6 +104,24 @@ export function DesktopOnlyState({ home }: { home?: string }) {
           Go to home
         </PhoneLinkButton>
       ) : null}
+    </PhoneEmptyState>
+  )
+}
+
+/**
+ * The failed branch (13, 14 rule 3): what went wrong, the way forward, and
+ * "Try again". Never a toast alone: a list that failed to load must say so.
+ */
+export function PhoneFailedState({ what, onRetry }: { what: string; onRetry: () => void }) {
+  return (
+    <PhoneEmptyState
+      icon={<CircleAlert />}
+      heading={`${what} could not be loaded`}
+      line="Check your connection, then try again."
+    >
+      <PhoneButton variant="secondary" fullWidth onClick={onRetry}>
+        Try again
+      </PhoneButton>
     </PhoneEmptyState>
   )
 }

@@ -9,7 +9,7 @@ import { meetingsApi } from '@/lib/api/meetings'
 import { useMeetingPermissions } from '@/components/meetings/shared'
 import type { Meeting } from '@/lib/types/meetings'
 import PhoneScreen from '../PhoneScreen'
-import { PhoneEmptyState } from '../PhoneEmptyState'
+import { PhoneEmptyState, PhoneFailedState } from '../PhoneEmptyState'
 import { MeetingPhoneRow, MeetingPhoneRowSkeleton } from '../MeetingPhoneRow'
 import { cx } from '../primitives'
 import type { PhoneRoute } from '@/lib/phone-routes'
@@ -45,6 +45,7 @@ export default function MeetingsScreen({ route }: { route: PhoneRoute }) {
 
   const [meetings, setMeetings] = React.useState<Meeting[] | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [failed, setFailed] = React.useState(false)
   const [refreshing, setRefreshing] = React.useState(false)
   const [tab, setTab] = React.useState<Tab>('today')
 
@@ -54,14 +55,18 @@ export default function MeetingsScreen({ route }: { route: PhoneRoute }) {
     setMeetings(data)
   }, [orgId])
 
-  React.useEffect(() => {
+  const reload = React.useCallback(() => {
     if (!orgId) return
     setLoading(true)
+    setFailed(false)
     load()
-      .catch(() => addToast('Meetings could not be loaded. Pull down to try again.', 'error'))
+      .catch(() => setFailed(true))
       .finally(() => setLoading(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId])
+  }, [orgId, load])
+
+  React.useEffect(() => {
+    reload()
+  }, [reload])
 
   async function onRefresh() {
     setRefreshing(true)
@@ -97,7 +102,7 @@ export default function MeetingsScreen({ route }: { route: PhoneRoute }) {
             aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={cx(
-              'min-h-[36px] rounded-full px-[14px] py-[6px] text-label font-medium',
+              'min-h-(--h-control) rounded-full px-[16px] py-[6px] text-label font-medium',
               tab === key
                 ? 'border border-primary bg-primary-subtle text-primary-text'
                 : 'border border-border bg-surface text-text-secondary',
@@ -114,6 +119,8 @@ export default function MeetingsScreen({ route }: { route: PhoneRoute }) {
             <MeetingPhoneRowSkeleton key={i} />
           ))}
         </div>
+      ) : failed ? (
+        <PhoneFailedState what="Meetings" onRetry={reload} />
       ) : list.length === 0 ? (
         <PhoneEmptyState
           icon={<CalendarDays />}

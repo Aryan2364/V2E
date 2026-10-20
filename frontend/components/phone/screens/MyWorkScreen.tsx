@@ -11,7 +11,7 @@ import type { MyGroupedTasks, Task } from '@/lib/types/tasks'
 import { canQuickComplete } from '@/lib/tasks/finish-rules'
 import { COMPLETED_UNDO_MESSAGE, completeForMe, undoCompleteForMe } from '@/lib/tasks/complete-for-me'
 import PhoneScreen from '../PhoneScreen'
-import { PhoneEmptyState } from '../PhoneEmptyState'
+import { PhoneEmptyState, PhoneFailedState } from '../PhoneEmptyState'
 import { TaskPhoneRow, TaskPhoneRowSkeleton, type RowPhase } from '../TaskPhoneRow'
 import { FinishTaskSheet } from '../FinishTaskSheet'
 import { useUndoToast } from '../UndoToast'
@@ -49,6 +49,7 @@ export default function MyWorkScreen({ route }: { route: PhoneRoute }) {
 
   const [grouped, setGrouped] = React.useState<MyGroupedTasks | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [failed, setFailed] = React.useState(false)
   const [refreshing, setRefreshing] = React.useState(false)
   const [rowStates, setRowStates] = React.useState<Record<string, RowState>>({})
   const [sheetTaskId, setSheetTaskId] = React.useState<string | null>(null)
@@ -59,14 +60,18 @@ export default function MyWorkScreen({ route }: { route: PhoneRoute }) {
     setGrouped(data)
   }, [orgId])
 
-  React.useEffect(() => {
+  const reload = React.useCallback(() => {
     if (!orgId) return
     setLoading(true)
+    setFailed(false)
     load()
-      .catch(() => addToast('My work could not be loaded. Pull down to try again.', 'error'))
+      .catch(() => setFailed(true))
       .finally(() => setLoading(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId])
+  }, [orgId, load])
+
+  React.useEffect(() => {
+    reload()
+  }, [reload])
 
   async function onRefresh() {
     setRefreshing(true)
@@ -205,6 +210,8 @@ export default function MyWorkScreen({ route }: { route: PhoneRoute }) {
             <TaskPhoneRowSkeleton key={i} />
           ))}
         </div>
+      ) : failed ? (
+        <PhoneFailedState what="My work" onRetry={reload} />
       ) : !anyTasks ? (
         <PhoneEmptyState
           icon={<CheckCircle2 />}
