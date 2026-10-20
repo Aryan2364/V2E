@@ -261,16 +261,16 @@ export default function IndividualsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col gap-6">
       <div>
         <h1 className="text-page-title font-medium text-text-primary">Individual Calendars</h1>
         <p className="text-body text-text-secondary mt-1">Set custom working days and personal holidays per employee.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6">
-        {/* Employee search list */}
-        <div className="bg-surface border border-border-light rounded-card overflow-hidden shadow-card">
-          <div className="px-4 py-3 border-b border-border-light">
+      <div className="grid grid-cols-1 gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-[240px_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
+        {/* Employee search list: the data area, so it scrolls itself */}
+        <div className="bg-surface border border-border-light rounded-card overflow-hidden shadow-card flex flex-col lg:min-h-0">
+          <div className="px-4 py-3 border-b border-border-light shrink-0">
             <div className="flex items-center gap-2 px-2 py-1.5 bg-surface-sunken rounded-lg border border-border-light">
               <Search size={13} className="text-text-muted shrink-0" />
               <input
@@ -281,7 +281,7 @@ export default function IndividualsPage() {
               />
             </div>
           </div>
-          <div className="divide-y divide-surface-control-pressed max-h-[calc(100vh-260px)] overflow-y-auto">
+          <div className="divide-y divide-surface-control-pressed lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
             {filtered.length === 0 && (
               <p className="px-4 py-4 text-body text-text-muted text-center">No employees found.</p>
             )}
@@ -318,7 +318,7 @@ export default function IndividualsPage() {
               <Loader2 size={20} className="animate-spin text-text-muted" />
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="min-w-0 space-y-4 lg:min-h-0 lg:overflow-y-auto">
               <div>
                 <h3 className="text-section font-medium text-text-primary">{selected.user?.name ?? 'Employee'}</h3>
                 <p className="text-body text-text-secondary mt-0.5">
@@ -377,7 +377,7 @@ export default function IndividualsPage() {
                     </div>
                   )}
 
-                  <div className="flex-1 min-h-0 overflow-y-auto lg:max-h-[360px]">
+                  <div className="flex-1 min-h-0 overflow-y-auto">
                     <OrgHolidayList
                       holidays={holidays}
                       onDelete={deleteHoliday}

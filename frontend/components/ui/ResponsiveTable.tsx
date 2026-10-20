@@ -41,6 +41,14 @@ interface ResponsiveTableProps<T> {
    * growing the page. Accepts a number (px) or any CSS length, e.g. 'min(60vh,560px)'.
    */
   maxBodyHeight?: number | string
+  /**
+   * Fill the height the parent gives it and scroll the rows inside (section 10, scroll
+   * ownership): the parent is a flex column with a definite height, and this table is the
+   * data area. Header and the page's other zones stay put; only the rows scroll. In a parent
+   * with no set height it simply takes its natural height, so the page scrolls instead.
+   * Use instead of maxBodyHeight, never with it.
+   */
+  fill?: boolean
   /** Ref to the desktop scroll container — lets callers persist/restore its scroll position. */
   scrollContainerRef?: React.Ref<HTMLDivElement>
   /** Override the header row (thead) styling — e.g. a coloured header band. Defaults to the kit band. */
@@ -92,6 +100,7 @@ export default function ResponsiveTable<T>({
   isExpanded,
   renderExpanded,
   maxBodyHeight,
+  fill = false,
   scrollContainerRef,
   headerRowClassName,
   headerCellClassName,
@@ -113,7 +122,7 @@ export default function ResponsiveTable<T>({
   }
 
   return (
-    <div className={cn(card, className)}>
+    <div className={cn(card, fill && 'flex min-h-0 flex-1 flex-col', className)}>
       {toolbar && (
         <div className="flex items-center justify-between gap-3 px-4 md:px-5 py-3 border-b border-border-light">
           {toolbar}
@@ -123,7 +132,10 @@ export default function ResponsiveTable<T>({
       {/* Desktop / tablet: the kit's table (md+) */}
       <div
         ref={scrollContainerRef}
-        className={cn('table-scroll hidden md:block', bodyMaxHeight ? 'overflow-auto' : 'overflow-x-auto')}
+        className={cn(
+          'table-scroll hidden md:block',
+          fill ? 'min-h-0 flex-1 overflow-auto' : bodyMaxHeight ? 'overflow-auto' : 'overflow-x-auto',
+        )}
         style={bodyMaxHeight ? { maxHeight: bodyMaxHeight } : undefined}
       >
         <Table
@@ -205,7 +217,10 @@ export default function ResponsiveTable<T>({
           kit's table has no equivalent, so this stays plain kit-token markup
           driven by the same breakpoint as the desktop table above. */}
       <div
-        className={cn('md:hidden divide-y divide-border-light', bodyMaxHeight ? 'overflow-auto' : '')}
+        className={cn(
+          'md:hidden divide-y divide-border-light',
+          fill ? 'min-h-0 flex-1 overflow-auto' : bodyMaxHeight ? 'overflow-auto' : '',
+        )}
         style={bodyMaxHeight ? { maxHeight: bodyMaxHeight } : undefined}
       >
         {loading

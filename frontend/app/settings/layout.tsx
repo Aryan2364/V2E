@@ -24,18 +24,23 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
   return (
     <MainLayout>
-      <div className="flex min-h-[calc(100vh-56px)]">
+      <div className="flex h-[calc(100vh-56px)]">
         <SettingsSidebar
           collapsed={collapsed}
           onToggle={() => setCollapsed((c) => !c)}
           showOrganization={showOrganization}
           showSystem={showSystem}
         />
+        {/* Scroll ownership (section 10, 11.5): this <main> is the window-height frame and
+            the only scroller for a section of form cards. A section that holds a list or
+            table gives its page root h-full (a flex column) and lets the table's data area
+            scroll instead, so nothing scrolls twice. Each page root is the section 12.3
+            content area: 1600px at most, centred. min-w-0 lets wide tables shrink. */}
         <main
-          className="flex-1 min-h-full transition-[margin] duration-200 ease-in-out"
+          className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-8 py-8 scrollbar-gutter-stable transition-[margin] duration-200 ease-in-out [&>*]:mx-auto [&>*]:max-w-[1600px]"
           style={{ marginLeft: collapsed ? 64 : 240 }}
         >
-          <div className="px-8 py-8">{children}</div>
+          {children}
         </main>
       </div>
     </MainLayout>

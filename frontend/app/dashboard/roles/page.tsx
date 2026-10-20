@@ -100,7 +100,7 @@ export default function RolesPage() {
   const noDepartments = departments.length === 0
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col gap-6">
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
@@ -176,15 +176,17 @@ export default function RolesPage() {
               onEdit={openEdit}
             />
           ) : (
-            <RolesTreeView
-              roles={roles}
-              departments={departments}
-              query={query}
-              canEdit={canEdit}
-              onSelect={setSelected}
-              onEdit={openEdit}
-              onAddRole={(deptId) => setFormTarget({ mode: 'create', deptId })}
-            />
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <RolesTreeView
+                roles={roles}
+                departments={departments}
+                query={query}
+                canEdit={canEdit}
+                onSelect={setSelected}
+                onEdit={openEdit}
+                onAddRole={(deptId) => setFormTarget({ mode: 'create', deptId })}
+              />
+            </div>
           )}
         </>
       )}

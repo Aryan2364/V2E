@@ -34,8 +34,8 @@ export default function HolidaysLayout({ children }: { children: React.ReactNode
   }
 
   return (
-    <div>
-      <div className="flex items-center gap-0 border-b border-border-light overflow-x-auto mb-6">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="mb-6 flex shrink-0 items-center gap-0 overflow-x-auto border-b border-border-light">
         {HOLIDAY_TABS.map((t) => {
           if (t.adminOnly && !isAdminOrHR) return null
           const active = isActive(t.href)
@@ -56,7 +56,9 @@ export default function HolidaysLayout({ children }: { children: React.ReactNode
         })}
       </div>
 
-      {children}
+      {/* The frame keeps the window's height (section 10). A tab of form cards scrolls
+          here; a tab that holds a list gives its root h-full and scrolls the list. */}
+      <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
     </div>
   )
 }

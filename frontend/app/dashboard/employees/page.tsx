@@ -400,7 +400,7 @@ export default function EmployeesPage() {
   const hasProfile = employees.some((e) => e.user_id === user?.id)
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col gap-6">
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
@@ -495,16 +495,18 @@ export default function EmployeesPage() {
           rowKey={(emp) => emp.id}
           onRowClick={(emp) => openEmployee(emp.id)}
           emptyState={<EmptyState filtered={isFiltered} />}
-          maxBodyHeight="min(60vh, 560px)"
+          fill
           scrollContainerRef={tableScrollRef}
         />
       ) : (
-        <EmployeeTreeView
-          employees={filtered}
-          allEmployees={employees}
-          departments={departments}
-          onOpenEmployee={openEmployee}
-        />
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <EmployeeTreeView
+            employees={filtered}
+            allEmployees={employees}
+            departments={departments}
+            onOpenEmployee={openEmployee}
+          />
+        </div>
       )}
 
       {/* Add / Import modals */}

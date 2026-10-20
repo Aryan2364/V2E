@@ -154,6 +154,7 @@ export default function RolesTableView({
       columns={columns}
       rows={rows}
       rowKey={(r) => r.id}
+      fill
       onRowClick={(r) => onSelect(r)}
       emptyState={
         <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12 text-center">

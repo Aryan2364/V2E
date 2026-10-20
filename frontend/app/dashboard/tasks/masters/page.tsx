@@ -2224,7 +2224,7 @@ export default function MastersPage() {
   const activeTabs = effectiveSection === 'tasks' ? visibleTaskTabs : effectiveSection === 'tickets' ? ticketTabs : notifTabs
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex h-full min-h-0 flex-col gap-4">
       <PageHeader
         title="Work Settings"
         trail={[{ label: 'Tasks', href: '/dashboard/tasks' }]}
@@ -2232,7 +2232,7 @@ export default function MastersPage() {
       />
 
       {/* Top-level switcher */}
-      <div className="flex gap-2 p-1 bg-surface-control rounded-control w-fit">
+      <div className="flex shrink-0 gap-2 p-1 bg-surface-control rounded-control w-fit">
         {availableSections.map(([key, label]) => (
           <button
             key={key}
@@ -2251,7 +2251,7 @@ export default function MastersPage() {
         ))}
       </div>
 
-      <div className="flex flex-col min-h-[calc(100vh-17rem)] bg-surface border border-border-light rounded-card shadow-card">
+      <div className="flex min-h-0 flex-1 flex-col bg-surface border border-border-light rounded-card shadow-card">
         {/* Tab bar */}
         <div className="flex-none flex border-b border-border-light overflow-x-auto">
           {activeTabs.map((t) => (
@@ -2279,8 +2279,9 @@ export default function MastersPage() {
           ))}
         </div>
 
-        {/* Content — card grows with content; the page scrolls when it overflows */}
-        <div className="flex-1 p-6">
+        {/* Content: the frame keeps the window's height (section 10); the tab bar stays
+            put and this area is what scrolls, so the page itself never does. */}
+        <div className="min-h-0 flex-1 overflow-y-auto p-6">
           {effectiveSection === 'tasks' && (
             <>
               {effectiveTaskTab === 'config' && <ConfigTab orgId={orgId} />}

@@ -235,8 +235,8 @@ function AuditLogsPageInner() {
     )
 
   return (
-    <div>
-      <div className="mb-4">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="mb-4 shrink-0">
         <h1 className="flex items-center gap-2 text-page-title font-medium text-text-primary leading-tight">
           <ScrollText size={24} className="text-primary-text" /> Audit Logs
         </h1>
@@ -246,7 +246,7 @@ function AuditLogsPageInner() {
       </div>
 
       {/* Filters — search spans the full width; controls sit in an even row below */}
-      <div className="mb-4 space-y-2">
+      <div className="mb-4 shrink-0 space-y-2">
         <div className="relative w-full">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
@@ -377,6 +377,7 @@ function AuditLogsPageInner() {
         columns={columns}
         rows={items}
         rowKey={(e) => e.id}
+        fill
         loading={loading}
         onRowClick={toggleRow}
         isExpanded={(e) => expanded === e.id && hasChanges(e)}
@@ -388,7 +389,7 @@ function AuditLogsPageInner() {
         }
       />
       {!loading && items.length > 0 && (
-        <PaginationBar className="rounded-card">
+        <PaginationBar className="shrink-0 rounded-card">
           <PaginationCount>{rangeStart}–{rangeEnd} of {total}</PaginationCount>
           <Pagination>
             <PaginationContent>

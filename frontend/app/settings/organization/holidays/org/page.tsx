@@ -75,7 +75,7 @@ export default function OrgCalendarPage() {
   }
 
   return (
-    <div className="space-y-4 pb-12">
+    <div className="flex h-full min-h-0 flex-col gap-4">
       <div>
         <h1 className="text-page-title font-medium text-text-primary">Org Calendar</h1>
         <p className="text-body text-text-secondary mt-1">Set your working days and holidays. They drive deadlines, leave, and reports.</p>
@@ -85,9 +85,9 @@ export default function OrgCalendarPage() {
       <WorkingWeekStrip value={localDays} onSave={saveWorkingDays} disabled={!isAdmin} />
 
       {/* Holidays + calendar, side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 items-start lg:items-stretch">
-        {/* Holidays list */}
-        <div className="bg-surface border border-border-light rounded-card p-4 shadow-card flex flex-col">
+      <div className="grid grid-cols-1 items-start gap-6 lg:min-h-[420px] lg:flex-1 lg:grid-cols-[minmax(0,1fr)_280px] lg:grid-rows-[minmax(0,1fr)] lg:items-stretch">
+        {/* Holidays list: the data area, so it takes the height left and scrolls itself */}
+        <div className="bg-surface border border-border-light rounded-card p-4 shadow-card flex flex-col min-h-0">
           <div className="flex items-center justify-between gap-3 flex-wrap mb-4 shrink-0">
             <div className="flex items-center gap-3">
               <h2 className="text-section font-medium text-text-primary">Holidays</h2>
@@ -138,7 +138,7 @@ export default function OrgCalendarPage() {
           {loading ? (
             <div className="flex items-center justify-center h-16"><Loader2 size={18} className="animate-spin text-text-muted" /></div>
           ) : (
-            <div className="flex-1 min-h-0 overflow-y-auto lg:max-h-[360px]">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               <OrgHolidayList
                 holidays={holidays}
                 onDelete={deleteHoliday}

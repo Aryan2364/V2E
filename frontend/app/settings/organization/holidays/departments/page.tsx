@@ -33,7 +33,7 @@ export default function DepartmentsPage() {
   }, [orgId])
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col gap-6">
       <PageHeader
         title="Department calendars"
         meta="Override working days and add department-specific holidays."
@@ -49,13 +49,13 @@ export default function DepartmentsPage() {
           Create departments first in Org Chart.
         </EmptyState>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
-          {/* Dept list */}
-          <div className="bg-surface border border-border-light rounded-card overflow-hidden shadow-card">
-            <div className="px-4 py-3 border-b border-border-light bg-surface-sunken">
+        <div className="grid grid-cols-1 gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-[220px_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
+          {/* Dept list: the data area, so it scrolls itself */}
+          <div className="bg-surface border border-border-light rounded-card overflow-hidden shadow-card flex flex-col lg:min-h-0">
+            <div className="px-4 py-3 border-b border-border-light bg-surface-sunken shrink-0">
               <p className="text-meta font-medium text-text-secondary uppercase tracking-wide">Departments</p>
             </div>
-            <div className="divide-y divide-surface-control-pressed max-h-[calc(100vh-260px)] overflow-y-auto">
+            <div className="divide-y divide-surface-control-pressed lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
               {flat.map(({ dept, depth }) => (
                 <button
                   key={dept.id}
@@ -84,12 +84,14 @@ export default function DepartmentsPage() {
 
           {/* Panel */}
           {selected && (
-            <DepartmentCalendarPanel
-              key={selected.id}
-              orgId={orgId}
-              deptId={selected.id}
-              deptName={selected.name}
-            />
+            <div className="min-w-0 lg:min-h-0 lg:overflow-y-auto">
+              <DepartmentCalendarPanel
+                key={selected.id}
+                orgId={orgId}
+                deptId={selected.id}
+                deptName={selected.name}
+              />
+            </div>
           )}
         </div>
       )}
