@@ -135,7 +135,7 @@ export function PhoneSheet({
   if (!open || !mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-70">
+    <div className="fixed inset-0 z-(--z-dialog)">
       <div
         data-slot="phone-sheet-backdrop"
         aria-hidden

@@ -107,20 +107,6 @@ export function PeoplePickerSheet<K extends string = string>({
     }
   }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // The kit's menu sheet opens at --z-dialog, below this picker; lift it
-  // while the picker is open so the Sort sheet shows on top.
-  const hasSort = !!sort
-  React.useEffect(() => {
-    if (!open || !hasSort) return
-    const root = document.documentElement
-    const before = root.style.getPropertyValue('--z-dialog')
-    root.style.setProperty('--z-dialog', '80')
-    return () => {
-      if (before) root.style.setProperty('--z-dialog', before)
-      else root.style.removeProperty('--z-dialog')
-    }
-  }, [open, hasSort])
-
   const pickedIds = new Set(draft.map((p) => p.user_id))
 
   function toggle(p: PickerPerson) {

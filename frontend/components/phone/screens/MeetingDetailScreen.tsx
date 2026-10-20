@@ -179,7 +179,7 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
       {canJoin || showDecline ? (
         <div
           className={cx(
-            'fixed inset-x-0 bottom-0 z-30 flex gap-[8px] border-t border-border-light bg-surface px-[16px] py-[12px]',
+            'fixed inset-x-0 bottom-0 z-(--z-shell) flex gap-[8px] border-t border-border-light bg-surface px-[16px] py-[12px]',
             'pb-[calc(12px+var(--safe-bottom))] pl-[max(16px,var(--safe-left))] pr-[max(16px,var(--safe-right))]',
           )}
         >

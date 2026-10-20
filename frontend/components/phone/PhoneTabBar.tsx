@@ -84,7 +84,7 @@ export default function PhoneTabBar() {
       data-slot="phone-tab-bar"
       data-fixed-bottom="tab-bar"
       className={cx(
-        'fixed inset-x-0 bottom-0 z-40 flex border-t border-border-light bg-surface',
+        'fixed inset-x-0 bottom-0 z-(--z-shell) flex border-t border-border-light bg-surface',
         'h-[calc(var(--h-tab-bar)+var(--safe-bottom))] pb-(--safe-bottom) pl-(--safe-left) pr-(--safe-right)',
       )}
     >

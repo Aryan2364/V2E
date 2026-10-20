@@ -129,7 +129,7 @@ export default function GivenScreen({ route }: { route: PhoneRoute }) {
           href="/dashboard/tasks/new"
           aria-label="Give task"
           className={cx(
-            'fixed z-30 flex size-[56px] items-center justify-center rounded-full bg-primary text-primary-foreground shadow-dialog active:bg-primary-pressed',
+            'fixed z-(--z-shell) flex size-[56px] items-center justify-center rounded-full bg-primary text-primary-foreground shadow-dialog active:bg-primary-pressed',
             'right-[max(16px,var(--safe-right))] bottom-[calc(var(--bottom-bar)+var(--safe-bottom)+16px)]',
           )}
         >

@@ -54,7 +54,7 @@ export function PhoneAppBar({
       data-slot="phone-app-bar"
       data-below-top={belowTop ? '' : undefined}
       className={cx(
-        'sticky top-0 z-40 shrink-0 bg-primary text-on-brand',
+        'sticky top-0 z-(--z-shell) shrink-0 bg-primary text-on-brand',
         'pt-(--safe-top) pr-(--safe-right) pl-(--safe-left)',
       )}
     >
