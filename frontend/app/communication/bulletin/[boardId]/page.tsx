@@ -10,6 +10,10 @@ import Link from 'next/link'
 import { Plus, Pin, Trash2 } from 'lucide-react'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { toast } from '@/components/ui/sonner'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 const REACTIONS = ['👍', '❤️', '😂', '🎉', '🔥']
 
@@ -24,6 +28,8 @@ export default function BulletinBoardPage() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ title: '', body: '' })
   const [posting, setPosting] = useState(false)
+  const [postToDelete, setPostToDelete] = useState<BulletinPost | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; body?: string }>({})
 
   useEffect(() => {
     if (!orgId || !boardId) return
@@ -34,13 +40,25 @@ export default function BulletinBoardPage() {
 
   async function handlePost(e: React.FormEvent) {
     e.preventDefault()
-    if (!orgId || !boardId || !form.title.trim() || !form.body.trim()) return
+    if (!orgId || !boardId) return
+    if (!form.title.trim() || !form.body.trim()) {
+      setFieldErrors({
+        title: form.title.trim() ? undefined : 'Enter a title for the post.',
+        body: form.body.trim() ? undefined : 'Write the content of the post.',
+      })
+      requestAnimationFrame(() => document.getElementById(form.title.trim() ? 'board-post-body' : 'board-post-title')?.focus())
+      return
+    }
+    setFieldErrors({})
     setPosting(true)
     try {
       const post = await createPost(orgId, boardId, { title: form.title.trim(), body: form.body.trim() } as any)
       setPosts(prev => [post, ...prev])
       setForm({ title: '', body: '' })
       setShowForm(false)
+      toast.success('Post added')
+    } catch {
+      toast.error('Could not add the post. Try again.')
     } finally {
       setPosting(false)
     }
@@ -100,7 +118,7 @@ export default function BulletinBoardPage() {
                   className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover transition-colors"
                 >
                   <Plus size={16} />
-                  New Post
+                  New post
                 </button>
               )}
             </div>
@@ -108,29 +126,32 @@ export default function BulletinBoardPage() {
             {showForm && (
               <form onSubmit={handlePost} className="bg-surface border border-border-light rounded-card p-4 mb-6 flex flex-col gap-4">
                 <div>
-                  <Label className="mb-2">Title</Label>
+                  <Label className="mb-2" htmlFor="board-post-title" required>Title</Label>
                   <input
+                    id="board-post-title"
                     value={form.title}
-                    onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                    placeholder="Post title"
-                    className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                    onChange={e => { setForm(f => ({ ...f, title: e.target.value })); setFieldErrors((p) => (p.title ? { ...p, title: undefined } : p)) }}
+                    placeholder="For example, Holiday schedule for October"
+                    aria-invalid={fieldErrors.title ? true : undefined}
+                    className="w-full max-w-[480px] border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary aria-invalid:border-danger"
                   />
+                  <InlineFieldError>{fieldErrors.title}</InlineFieldError>
                 </div>
                 <div>
-                  <Label className="mb-2">Content</Label>
+                  <Label className="mb-2" htmlFor="board-post-body" required>Content</Label>
                   <textarea
+                    id="board-post-body"
                     value={form.body}
-                    onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
+                    onChange={e => { setForm(f => ({ ...f, body: e.target.value })); setFieldErrors((p) => (p.body ? { ...p, body: undefined } : p)) }}
                     rows={4}
-                    placeholder="Write something..."
-                    className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-y"
+                    aria-invalid={fieldErrors.body ? true : undefined}
+                    className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary resize-y aria-invalid:border-danger"
                   />
+                  <InlineFieldError>{fieldErrors.body}</InlineFieldError>
                 </div>
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => setShowForm(false)} className="flex-1 border border-border-light text-text-secondary px-4 py-2 rounded-control text-label font-medium hover:bg-surface-sunken">Cancel</button>
-                  <button type="submit" disabled={posting} className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed">
-                    {posting ? 'Posting…' : 'Post'}
-                  </button>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="secondary" onClick={() => { setShowForm(false); setFieldErrors({}) }} disabled={posting}>Cancel</Button>
+                  <Button type="submit" disabled={posting} loading={posting} loadingLabel="Posting">Add post</Button>
                 </div>
               </form>
             )}
@@ -153,7 +174,7 @@ export default function BulletinBoardPage() {
                         </button>
                       )}
                       {(post.created_by_user_id === user?.id || isHR) && (
-                        <button onClick={() => handleDelete(post.id)} className="p-1.5 rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
+                        <button onClick={() => setPostToDelete(post)} aria-label="Delete post" className="p-1.5 rounded-control text-text-muted hover:text-danger hover:bg-danger-bg transition-colors">
                           <Trash2 size={14} />
                         </button>
                       )}
@@ -191,6 +212,20 @@ export default function BulletinBoardPage() {
           </>
         )}
       </div>
+      <ConfirmDialog
+        open={!!postToDelete}
+        title="Delete this post?"
+        message="This removes the post and its reactions. This cannot be undone."
+        confirmLabel="Delete post"
+        danger
+        onConfirm={async () => {
+          if (!postToDelete) return
+          const id = postToDelete.id
+          setPostToDelete(null)
+          try { await handleDelete(id); toast.success('Post deleted') } catch { toast.error('Could not delete the post. Try again.') }
+        }}
+        onCancel={() => setPostToDelete(null)}
+      />
     </div>
   )
 }

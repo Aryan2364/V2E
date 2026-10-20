@@ -8,11 +8,15 @@ import Link from 'next/link'
 import { Layout, Plus, Trash2, MessageSquare, Eye, MessageCircle } from 'lucide-react'
 import StyledSelect from '@/components/ui/StyledSelect'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { toast } from '@/components/ui/sonner'
 
 const MODE_LABEL: Record<string, string> = {
-  read_only: 'Read Only',
+  read_only: 'Read only',
   comments_only: 'Comments',
-  comments_and_reactions: 'Comments & Reactions',
+  comments_and_reactions: 'Comments and reactions',
 }
 
 export default function BulletinBoardsPage() {
@@ -25,6 +29,9 @@ export default function BulletinBoardsPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState({ name: '', description: '', interaction_mode: 'comments_and_reactions' })
   const [creating, setCreating] = useState(false)
+  const [nameError, setNameError] = useState('')
+  const [boardToDelete, setBoardToDelete] = useState<BulletinBoard | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (!orgId) return
@@ -33,7 +40,13 @@ export default function BulletinBoardsPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    if (!orgId || !form.name.trim()) return
+    if (!orgId) return
+    if (!form.name.trim()) {
+      setNameError('Enter a name for the board.')
+      requestAnimationFrame(() => document.getElementById('board-name')?.focus())
+      return
+    }
+    setNameError('')
     setCreating(true)
     try {
       const board = await createBoard(orgId, {
@@ -45,6 +58,9 @@ export default function BulletinBoardsPage() {
       setBoards(prev => [board, ...prev])
       setForm({ name: '', description: '', interaction_mode: 'comments_and_reactions' })
       setShowCreate(false)
+      toast.success('Board added')
+    } catch {
+      toast.error('Could not add the board. Try again.')
     } finally {
       setCreating(false)
     }
@@ -52,8 +68,17 @@ export default function BulletinBoardsPage() {
 
   async function handleDelete(id: string) {
     if (!orgId) return
-    await deleteBoard(orgId, id)
-    setBoards(prev => prev.filter(b => b.id !== id))
+    setDeleting(true)
+    try {
+      await deleteBoard(orgId, id)
+      setBoards(prev => prev.filter(b => b.id !== id))
+      toast.success('Board deleted')
+    } catch {
+      toast.error('Could not delete the board. Try again.')
+    } finally {
+      setDeleting(false)
+      setBoardToDelete(null)
+    }
   }
 
   return (
@@ -70,29 +95,32 @@ export default function BulletinBoardsPage() {
               className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover transition-colors"
             >
               <Plus size={16} />
-              New Board
+              New board
             </button>
           )}
         </div>
 
         {showCreate && (
           <form onSubmit={handleCreate} className="bg-surface border border-border-light rounded-card p-4 mb-6 flex flex-col gap-4">
-            <h2 className="text-body font-medium text-text-primary">Create Board</h2>
+            <h2 className="text-body font-medium text-text-primary">New board</h2>
             <div>
-              <Label className="mb-2">Board name</Label>
+              <Label className="mb-2" htmlFor="board-name" required>Board name</Label>
               <input
+                id="board-name"
                 value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="e.g. General, Engineering, HR"
-                className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
+                onChange={e => { setForm(f => ({ ...f, name: e.target.value })); if (nameError) setNameError('') }}
+                placeholder="For example, Engineering"
+                aria-invalid={nameError ? true : undefined}
+                className="w-full max-w-[480px] border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary aria-invalid:border-danger"
               />
+              <InlineFieldError>{nameError}</InlineFieldError>
             </div>
             <div>
               <Label className="mb-2">Description</Label>
               <input
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                placeholder="What is this board for?"
+                placeholder="For example, Announcements and updates for the team"
                 className="w-full border border-border rounded-control px-3 py-2 text-label text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary"
               />
             </div>
@@ -102,19 +130,19 @@ export default function BulletinBoardsPage() {
                 value={form.interaction_mode}
                 onChange={(v) => setForm(f => ({ ...f, interaction_mode: v }))}
                 options={[
-                  { value: 'read_only', label: 'Read Only' },
-                  { value: 'comments_only', label: 'Comments Only' },
-                  { value: 'comments_and_reactions', label: 'Comments & Reactions' },
+                  { value: 'read_only', label: 'Read only' },
+                  { value: 'comments_only', label: 'Comments only' },
+                  { value: 'comments_and_reactions', label: 'Comments and reactions' },
                 ]}
               />
             </div>
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setShowCreate(false)} className="flex-1 border border-border-light text-text-secondary px-4 py-2 rounded-control text-label font-medium hover:bg-surface-sunken transition-colors">
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="secondary" onClick={() => { setShowCreate(false); setNameError('') }} disabled={creating}>
                 Cancel
-              </button>
-              <button type="submit" disabled={creating} className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-control text-label font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                {creating ? 'Creating…' : 'Create'}
-              </button>
+              </Button>
+              <Button type="submit" disabled={creating} loading={creating} loadingLabel="Adding">
+                Add board
+              </Button>
             </div>
           </form>
         )}
@@ -140,7 +168,7 @@ export default function BulletinBoardsPage() {
                     {board.description && <p className="text-meta text-text-secondary mt-0.5 line-clamp-2">{board.description}</p>}
                   </div>
                   {isAdmin && (
-                    <button onClick={() => handleDelete(board.id)} className="p-1.5 text-text-muted hover:text-danger hover:bg-danger-bg rounded-control transition-colors">
+                    <button onClick={() => setBoardToDelete(board)} aria-label="Delete board" className="p-1.5 text-text-muted hover:text-danger hover:bg-danger-bg rounded-control transition-colors">
                       <Trash2 size={14} />
                     </button>
                   )}
@@ -161,6 +189,16 @@ export default function BulletinBoardsPage() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={!!boardToDelete}
+        title={`Delete ${boardToDelete?.name ?? 'board'}?`}
+        message="This removes the board and every post and comment on it. This cannot be undone."
+        confirmLabel="Delete board"
+        danger
+        loading={deleting}
+        onConfirm={() => boardToDelete && handleDelete(boardToDelete.id)}
+        onCancel={() => setBoardToDelete(null)}
+      />
     </div>
   )
 }
