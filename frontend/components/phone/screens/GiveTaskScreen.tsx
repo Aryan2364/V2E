@@ -7,13 +7,18 @@ import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 import { useBack } from '@/lib/back'
 import type { TaskPriority } from '@/lib/types/tasks'
-import { PHONE_HOME, type PhoneRoute } from '@/lib/phone-routes'
+import { PHONE_HOME, RECURRING_TEMPLATES_HREF, type PhoneRoute } from '@/lib/phone-routes'
+import type { ScheduleEntryDraft } from '@/components/tasks/ScheduleEntryRow'
+import { makeReminderRow, buildReminderSpecs } from '@/components/tasks/RemindersField'
+import { buildRecurringPayload, scheduleEntryError } from '@/lib/tasks/recurring-payload'
+import type { RecurringScheduleType } from '@/lib/types/tasks'
 import { useDraft } from '@/lib/drafts'
 import { DraftBanner } from '../DraftBanner'
 import { shouldOfferPushNow, declinePushOffer } from '@/lib/push'
 import PhoneScreen from '../PhoneScreen'
 import { AssigneePickerSheet } from '../AssigneePickerSheet'
 import { NotificationOfferSheet } from '../NotificationOfferSheet'
+import { RepeatFields, entryForFrequency } from '../RepeatFields'
 import { PhoneButton, ROW, cx } from '../primitives'
 
 /*
@@ -29,9 +34,13 @@ import { PhoneButton, ROW, cx } from '../primitives'
  *     draft from ...") - never restored silently. Cleared on save and on
  *     Discard draft; also cleared for everyone on sign-out (lib/auth's
  *     logout calls clearDrafts).
- *   - Repeat (Daily/Weekly/Monthly): the plan does not call this feasible
- *     for slice 4 (recurring templates are their own, heavier object with
- *     schedule entries) - DEFERRED, not built here.
+ *   - Repeat (Daily/Weekly/Monthly/Yearly): choosing one swaps the Due date
+ *     for the schedule fields (components/phone/RepeatFields.tsx) and Save
+ *     creates a recurring TEMPLATE with the desktop's own payload builder
+ *     (lib/tasks/recurring-payload.ts). Everything the phone form does not
+ *     show takes the desktop's default (any assignee completes, no proof, no
+ *     escalation, no goal, one reminder from the org's default days before).
+ *     Then the recurring list opens.
  *   - After saving: back to the previous list with a toast. The task only
  *     shows on My work if the current user is actually one of its
  *     assignees - that's the backend's own grouping, not something this
@@ -47,9 +56,11 @@ type GiveTaskValues = {
   deadline: string
   priorityId: string
   assignees: { user_id: string; name: string }[]
+  /** null = does not repeat. */
+  schedule: ScheduleEntryDraft | null
 }
 
-const EMPTY_DRAFT: GiveTaskValues = { title: '', description: '', deadline: '', priorityId: '', assignees: [] }
+const EMPTY_DRAFT: GiveTaskValues = { title: '', description: '', deadline: '', priorityId: '', assignees: [], schedule: null }
 
 export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   const { user } = useAuth()
@@ -64,6 +75,9 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   const [assigneePicker, setAssigneePicker] = React.useState(false)
   const [saving, setSaving] = React.useState(false)
   const [offerPush, setOfferPush] = React.useState(false)
+  const [attempted, setAttempted] = React.useState(false)
+  const [reminderDays, setReminderDays] = React.useState(1)
+  const recurring = React.useRef(false)
 
   const draft = draftValues
   const fileDraft = useDraft<GiveTaskValues>({
@@ -76,16 +90,54 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   React.useEffect(() => {
     if (!orgId) return
     tasksApi.getPriorities(orgId).then(setPriorities).catch(() => {})
+    // The desktop seeds one reminder from this default on a new task.
+    tasksApi.getConfig(orgId).then((cfg) => setReminderDays(cfg?.default_reminder_days_before ?? 1)).catch(() => {})
   }, [orgId])
 
   const titleError = draft.title.length > TITLE_MAX ? `Title must be ${TITLE_MAX} characters or fewer` : null
   const descriptionError = draft.description.length > DESCRIPTION_MAX ? `Description must be ${DESCRIPTION_MAX} characters or fewer` : null
+  const schedule = draft.schedule
+  const noAssigneeError = schedule && attempted && draft.assignees.length === 0 ? 'At least one assignee is required.' : null
   const canSave = draft.title.trim().length > 0 && !titleError && !descriptionError && !saving
+
+  /** Leaves after a save: the recurring list for a template, otherwise back. */
+  function leave() {
+    if (recurring.current) router.replace(RECURRING_TEMPLATES_HREF)
+    else back()
+  }
 
   async function onSave() {
     if (!canSave) return
+    if (schedule) {
+      setAttempted(true)
+      if (draft.assignees.length === 0 || scheduleEntryError(schedule)) return
+    }
     setSaving(true)
     try {
+      if (schedule) {
+        await tasksApi.createRecurring(
+          orgId,
+          buildRecurringPayload({
+            title: draft.title,
+            description: draft.description,
+            priorityId: draft.priorityId,
+            scheduleEntries: [schedule],
+            completionMode: 'any_can_complete',
+            proofRequired: false,
+            proofAllowedExtensions: [],
+            escalationIds: [],
+            assignees: draft.assignees,
+            checklistItems: undefined,
+            reminders: buildReminderSpecs([makeReminderRow({ offsetDays: reminderDays })], false),
+          }),
+        )
+        recurring.current = true
+        fileDraft.clear()
+        addToast('Recurring task created', 'success')
+        if (shouldOfferPushNow(user?.id)) setOfferPush(true)
+        else leave()
+        return
+      }
       await tasksApi.createTask(orgId, {
         title: draft.title.trim(),
         description: draft.description.trim() || undefined,
@@ -101,10 +153,10 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
       if (shouldOfferPushNow(user?.id)) {
         setOfferPush(true)
       } else {
-        back()
+        leave()
       }
     } catch {
-      addToast('Could not give the task. Try again.', 'error')
+      addToast(schedule ? 'Could not create the recurring task. Try again.' : 'Could not give the task. Try again.', 'error')
     } finally {
       setSaving(false)
     }
@@ -148,7 +200,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           />
         </Field>
 
-        <Field label="Assignee(s)">
+        <Field label="Assignee(s)" error={noAssigneeError}>
           <button type="button" onClick={() => setAssigneePicker(true)} className={cx(ROW, 'mx-0 rounded-[8px] border border-border-strong bg-surface')}>
             <span className="min-w-0 flex-1 truncate text-left">
               {draft.assignees.length === 0 ? (
@@ -160,6 +212,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           </button>
         </Field>
 
+        {schedule ? null : (
         <Field label="Due date">
           <input
             type="datetime-local"
@@ -168,6 +221,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
             className="min-h-(--h-control) w-full rounded-[8px] border border-border-strong bg-surface px-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary"
           />
         </Field>
+        )}
 
         <Field label="Priority">
           <select
@@ -202,7 +256,26 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           </button>
         )}
 
-        <p className="text-meta text-text-secondary">Repeat (daily/weekly/monthly) isn&apos;t available from the phone yet - set it up on a computer.</p>
+        <Field label="Repeat">
+          <select
+            value={schedule?.schedule_type ?? ''}
+            onChange={(e) => {
+              setAttempted(false)
+              setDraft((d) => ({ ...d, schedule: e.target.value ? entryForFrequency(d.schedule, e.target.value as RecurringScheduleType) : null }))
+            }}
+            className="min-h-(--h-control) w-full rounded-[8px] border border-border-strong bg-surface px-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary"
+          >
+            <option value="">Does not repeat</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </Field>
+
+        {schedule ? (
+          <RepeatFields entry={schedule} onChange={(next) => setDraft((d) => ({ ...d, schedule: next }))} showErrors={attempted} />
+        ) : null}
 
         {(draft.title || draft.description) ? (
           <button type="button" onClick={onDiscard} className="self-start text-label font-medium text-danger">
@@ -218,7 +291,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         )}
       >
         <PhoneButton type="button" variant="primary" fullWidth disabled={!canSave} title={!draft.title.trim() ? 'A title is required' : undefined} onClick={() => void onSave()}>
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? 'Saving…' : schedule ? 'Save recurring task' : 'Save'}
         </PhoneButton>
       </div>
 
@@ -236,7 +309,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         open={offerPush}
         onOpenChange={(open) => {
           setOfferPush(open)
-          if (!open) back()
+          if (!open) leave()
         }}
         onDeclined={() => declinePushOffer(user?.id)}
       />
