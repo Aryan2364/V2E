@@ -16,6 +16,7 @@ import { useDraft } from '@/lib/drafts'
 import { DraftBanner } from '../DraftBanner'
 import { shouldOfferPushNow, declinePushOffer } from '@/lib/push'
 import PhoneScreen from '../PhoneScreen'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PeoplePickerSheet, SelectedPeopleList, type PickedPerson, type PickerSection } from '../PeoplePickerSheet'
 import { useEligibleAssignees, type AssigneeSortMode } from '@/components/tasks/useEligibleAssignees'
 import { NotificationOfferSheet } from '../NotificationOfferSheet'
@@ -222,13 +223,14 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         {/* When: Repeat first, then either the one-off Due date or the schedule
             fields in its place - one decision, in one place. */}
         <Field label="Repeat">
-          <select
-            value={schedule?.schedule_type ?? ''}
-            onChange={(e) => {
+          <Select
+            value={schedule?.schedule_type ?? 'none'}
+            items={REPEAT_ITEMS}
+            onValueChange={(value) => {
               setAttempted(false)
               setDraft((d) => {
-                if (!e.target.value) return { ...d, schedule: null }
-                const next = entryForFrequency(d.schedule, e.target.value as RecurringScheduleType)
+                if (!value || value === 'none') return { ...d, schedule: null }
+                const next = entryForFrequency(d.schedule, value as RecurringScheduleType)
                 // Switching from a one-off due date: carry its date and time over as the
                 // schedule's start, so what the user already picked is not thrown away.
                 if (!d.schedule && d.deadline) {
@@ -238,14 +240,18 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
                 return { ...d, schedule: next }
               })
             }}
-            className="min-h-(--h-control) w-full rounded-[8px] border border-border-strong bg-surface px-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary"
           >
-            <option value="">Does not repeat</option>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="yearly">Yearly</option>
-          </select>
+            <SelectTrigger aria-label="Repeat">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(REPEAT_ITEMS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Field>
 
         {schedule ? (
@@ -264,18 +270,23 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         )}
 
         <Field label="Priority">
-          <select
-            value={draft.priorityId}
-            onChange={(e) => setDraft((d) => ({ ...d, priorityId: e.target.value }))}
-            className="min-h-(--h-control) w-full rounded-[8px] border border-border-strong bg-surface px-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary"
+          <Select
+            value={draft.priorityId || 'none'}
+            items={{ none: 'No priority', ...Object.fromEntries(priorities.map((p) => [p.id, p.label])) }}
+            onValueChange={(value) => setDraft((d) => ({ ...d, priorityId: !value || value === 'none' ? '' : String(value) }))}
           >
-            <option value="">No priority</option>
-            {priorities.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger aria-label="Priority">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No priority</SelectItem>
+              {priorities.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Field>
 
         {showDescription ? (
@@ -305,7 +316,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
 
       <div
         className={cx(
-          'fixed inset-x-0 bottom-0 z-30 flex gap-[8px] border-t border-border-light bg-surface px-[16px] pt-[12px]',
+          'fixed inset-x-0 bottom-0 z-(--z-shell) flex gap-[8px] border-t border-border-light bg-surface px-[16px] pt-[12px]',
           'pb-[calc(12px+var(--safe-bottom))] pl-[max(16px,var(--safe-left))] pr-[max(16px,var(--safe-right))]',
         )}
       >
@@ -344,6 +355,14 @@ function Field({ label, error, children }: { label: string; error?: string | nul
       {error ? <span className="text-meta text-danger">{error}</span> : null}
     </label>
   )
+}
+
+const REPEAT_ITEMS: Record<string, string> = {
+  none: 'Does not repeat',
+  daily: 'Daily',
+  weekly: 'Weekly',
+  monthly: 'Monthly',
+  yearly: 'Yearly',
 }
 
 const ASSIGNEE_SORTS: { key: AssigneeSortMode; label: string }[] = [

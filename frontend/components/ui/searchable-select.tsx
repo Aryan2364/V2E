@@ -148,7 +148,7 @@ function SearchableSelect({
         <span className="flex-1 truncate text-left">
           {current ? current.label : placeholder}
         </span>
-        <ChevronDownIcon className="pointer-events-none size-4 shrink-0 text-text-secondary transition-transform data-popup-open:rotate-180" />
+        <ChevronDownIcon strokeWidth={2.25} className="pointer-events-none size-4 shrink-0 text-text-secondary transition-transform data-popup-open:rotate-180" />
       </PopoverTrigger>
       {phone ? (
         sheet

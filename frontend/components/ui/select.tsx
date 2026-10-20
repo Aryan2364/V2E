@@ -826,7 +826,7 @@ function SelectTrigger({
       {children}
       <SelectPrimitive.Icon
         render={
-          <ChevronDownIcon className="pointer-events-none size-4 shrink-0 text-text-secondary transition-transform group-data-popup-open:rotate-180 data-popup-open:rotate-180" />
+          <ChevronDownIcon strokeWidth={2.25} className="pointer-events-none size-4 shrink-0 text-text-secondary transition-transform group-data-popup-open:rotate-180 data-popup-open:rotate-180" />
         }
       />
     </SelectPrimitive.Trigger>
