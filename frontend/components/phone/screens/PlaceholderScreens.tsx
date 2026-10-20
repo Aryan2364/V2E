@@ -19,11 +19,11 @@ import { PhoneButton, PhoneLinkButton } from '../primitives'
 const COMING_NEXT: Record<'my-work' | 'given' | 'meetings', { icon: React.ReactNode; line: string }> = {
   'my-work': {
     icon: <CheckSquare />,
-    line: 'Tasks waiting on you will be listed here in the next update. Until then, open My Tasks on a computer.',
+    line: 'Tasks waiting on you will be listed here in the next update. Until then, open My tasks on a computer.',
   },
   given: {
     icon: <UserCheck />,
-    line: 'Tasks you have given to others will be listed here in the next update. Until then, open Assigned by Me on a computer.',
+    line: 'Tasks you have given to others will be listed here in the next update. Until then, open Assigned by me on a computer.',
   },
   meetings: {
     icon: <CalendarDays />,
@@ -60,7 +60,7 @@ export function RecordComingNextScreen({ route }: { route: PhoneRoute }) {
         <ShareLinkButton />
         {route.parent ? (
           <PhoneLinkButton href={route.parent} fullWidth>
-            {noun === 'task' ? 'Go to My work' : 'Go to Meetings'}
+            {noun === 'task' ? 'Go to my work' : 'Go to meetings'}
           </PhoneLinkButton>
         ) : null}
       </PhoneEmptyState>
@@ -109,7 +109,7 @@ export function ModuleOffScreen({ route }: { route: PhoneRoute }) {
         line="This is not part of your organisation's plan. Contact your administrator if you think this is a mistake."
       >
         <PhoneLinkButton href="/dashboard/notifications" fullWidth>
-          Go to Notifications
+          Go to notifications
         </PhoneLinkButton>
       </PhoneEmptyState>
     </PhoneScreen>

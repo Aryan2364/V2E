@@ -3,6 +3,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, Ellipsis, RefreshCw } from 'lucide-react'
+import { fmtDateTime } from '@/lib/phone-format'
 import { useAuth } from '@/lib/auth/context'
 import { notificationsApi, type AppNotification } from '@/lib/api/notifications'
 import { useNotifications } from '@/lib/notifications/NotificationsProvider'
@@ -37,18 +38,8 @@ import { PhoneButton, ROW, ROW_BLOCK, cx } from '../primitives'
 const PAGE = 25
 const MAX_ROWS = 200
 
-const WHEN = new Intl.DateTimeFormat('en-IN', {
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-  hour: 'numeric',
-  minute: '2-digit',
-  hour12: true,
-})
-
 function formatWhen(iso: string): string {
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime()) ? '' : WHEN.format(d)
+  return fmtDateTime(iso)
 }
 
 type LoadState = 'loading' | 'ready' | 'failed'

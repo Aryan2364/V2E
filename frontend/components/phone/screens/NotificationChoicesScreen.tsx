@@ -158,8 +158,8 @@ export default function NotificationChoicesScreen({ route }: { route: PhoneRoute
     case 'on':
       line = 'Phone notifications are on. You get one when something needs you, even when V2E is closed.'
       next = (
-        <PhoneButton fullWidth disabled={busy} onClick={() => void turnOff()}>
-          {busy ? 'Turning off' : 'Turn off on this phone'}
+        <PhoneButton fullWidth loading={busy} onClick={() => void turnOff()}>
+          Turn off on this phone
         </PhoneButton>
       )
       break
@@ -189,8 +189,8 @@ export default function NotificationChoicesScreen({ route }: { route: PhoneRoute
             <PhoneButton disabled={busy} onClick={() => setSheetOpen(false)}>
               Skip for now
             </PhoneButton>
-            <PhoneButton variant="primary" disabled={busy} onClick={() => void turnOn()}>
-              {busy ? 'Turning on' : 'Turn on'}
+            <PhoneButton variant="primary" loading={busy} onClick={() => void turnOn()}>
+              Turn on
             </PhoneButton>
           </>
         }

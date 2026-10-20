@@ -6,10 +6,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { CalendarClock } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
-import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 import type { Task } from '@/lib/types/tasks'
-import { PhoneEmptyState } from '../PhoneEmptyState'
+import { PhoneEmptyState, PhoneFailedState } from '../PhoneEmptyState'
 import PhoneScreen from '../PhoneScreen'
 import { RECURRING_TEMPLATES_HREF, type PhoneRoute } from '@/lib/phone-routes'
 
@@ -27,23 +26,28 @@ function statusBadge(task: Task): { label: string; bg: string; text: string } {
 
 export default function RecurringInstancesScreen({ route }: { route: PhoneRoute }) {
   const { user } = useAuth()
-  const { addToast } = useToast()
   const pathname = usePathname()
   const orgId = user?.organizationId ?? ''
   const templateId = pathname.split('/').filter(Boolean).pop() ?? ''
 
   const [instances, setInstances] = React.useState<Task[] | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [failed, setFailed] = React.useState(false)
 
-  React.useEffect(() => {
+  const reload = React.useCallback(() => {
     if (!orgId || !templateId) return
     setLoading(true)
+    setFailed(false)
     tasksApi
       .getRecurringInstances(orgId, templateId)
       .then((list) => setInstances([...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())))
-      .catch(() => addToast('This recurring task could not be loaded.', 'error'))
+      .catch(() => setFailed(true))
       .finally(() => setLoading(false))
-  }, [orgId, templateId, addToast])
+  }, [orgId, templateId])
+
+  React.useEffect(() => {
+    reload()
+  }, [reload])
 
   return (
     <PhoneScreen title={route.title} parent={route.parent ?? RECURRING_TEMPLATES_HREF}>
@@ -56,11 +60,13 @@ export default function RecurringInstancesScreen({ route }: { route: PhoneRoute 
             </div>
           ))}
         </div>
+      ) : failed ? (
+        <PhoneFailedState what="This recurring task" onRetry={reload} />
       ) : !instances || instances.length === 0 ? (
         <PhoneEmptyState
           icon={<CalendarClock />}
-          heading="No instances yet"
-          line="This recurring task hasn't created any instances yet. They'll show up here as they're spawned."
+          heading="No tasks created yet"
+          line="This recurring task has not created any tasks yet. They will show up here as they are created."
         />
       ) : (
         <ul className="mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface">

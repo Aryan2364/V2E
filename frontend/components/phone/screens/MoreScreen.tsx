@@ -79,14 +79,14 @@ export default function MoreScreen({ route }: { route: PhoneRoute }) {
           <InstallButton />
           <PhoneButton
             fullWidth
-            disabled={signingOut}
+            loading={signingOut}
             onClick={() => {
               setSigningOut(true)
               void logout()
             }}
           >
             <LogOut aria-hidden />
-            {signingOut ? 'Signing out' : 'Sign out'}
+            Sign out
           </PhoneButton>
         </div>
       </div>

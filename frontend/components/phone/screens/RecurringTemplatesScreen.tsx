@@ -3,13 +3,13 @@
 import React from 'react'
 import { ChevronRight, Repeat } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
-import { useToast } from '@/components/ui/Toast'
 import { tasksApi } from '@/lib/api/tasks'
 import type { RecurringTemplate } from '@/lib/types/tasks'
 import { templateScheduleSummary } from '@/lib/tasks/recurring-schedule'
-import { PhoneEmptyState } from '../PhoneEmptyState'
+import Link from 'next/link'
+import { PhoneEmptyState, PhoneFailedState } from '../PhoneEmptyState'
 import PhoneScreen from '../PhoneScreen'
-import { ROW, cx } from '../primitives'
+import { PhoneLinkButton, ROW, cx } from '../primitives'
 import { GIVEN_HREF, recurringInstancesHref, type PhoneRoute } from '@/lib/phone-routes'
 
 /*
@@ -27,21 +27,26 @@ function assigneeLine(t: RecurringTemplate): string {
 
 export default function RecurringTemplatesScreen({ route }: { route: PhoneRoute }) {
   const { user } = useAuth()
-  const { addToast } = useToast()
   const orgId = user?.organizationId ?? ''
 
   const [templates, setTemplates] = React.useState<RecurringTemplate[] | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [failed, setFailed] = React.useState(false)
 
-  React.useEffect(() => {
+  const reload = React.useCallback(() => {
     if (!orgId) return
     setLoading(true)
+    setFailed(false)
     tasksApi
       .getRecurringTemplates(orgId)
       .then(setTemplates)
-      .catch(() => addToast('Recurring tasks could not be loaded.', 'error'))
+      .catch(() => setFailed(true))
       .finally(() => setLoading(false))
-  }, [orgId, addToast])
+  }, [orgId])
+
+  React.useEffect(() => {
+    reload()
+  }, [reload])
 
   return (
     <PhoneScreen title={route.title} parent={route.parent ?? GIVEN_HREF}>
@@ -54,27 +59,33 @@ export default function RecurringTemplatesScreen({ route }: { route: PhoneRoute 
             </div>
           ))}
         </div>
+      ) : failed ? (
+        <PhoneFailedState what="Recurring tasks" onRetry={reload} />
       ) : !templates || templates.length === 0 ? (
         <PhoneEmptyState
           icon={<Repeat />}
           heading="No recurring tasks"
           line="Tasks set to repeat (daily, weekly or monthly) will show up here. Set one up from Give task, or on a computer for more options."
-        />
+        >
+          <PhoneLinkButton href="/dashboard/tasks/new" fullWidth>
+            Give task
+          </PhoneLinkButton>
+        </PhoneEmptyState>
       ) : (
         <ul className="mx-[-16px] divide-y divide-border-light border-y border-border-light bg-surface">
           {templates.map((t) => (
             <li key={t.id}>
-              <a href={recurringInstancesHref(t.id)} className={cx(ROW, 'min-h-[64px] items-start py-[12px]')}>
+              <Link href={recurringInstancesHref(t.id)} className={cx(ROW, 'min-h-[64px] items-start py-[12px]')}>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-body font-medium text-text-primary">
                     {t.title}
-                    {!t.is_active ? <span className="ml-[8px] text-meta font-normal text-text-secondary">(paused)</span> : null}
+                    {!t.is_active ? <span className="ml-[8px] text-meta font-normal text-text-secondary">Paused</span> : null}
                   </span>
                   <span className="block truncate text-label text-text-secondary">{templateScheduleSummary(t.schedule_entries)}</span>
                   <span className="block truncate text-meta text-text-secondary">{assigneeLine(t)}</span>
                 </span>
                 <ChevronRight aria-hidden className="mt-[4px] size-[18px] shrink-0 text-text-secondary" />
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
