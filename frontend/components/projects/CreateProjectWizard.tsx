@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Loader2, ChevronLeft, X, Search, Check } from 'lucide-react'
+import { ChevronLeft, X, Search, Check } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/context'
 import { projectsApi } from '@/lib/api/projects'
@@ -14,6 +14,9 @@ import GoalsMultiSelectField from './GoalsMultiSelectField'
 import type { ProjectTemplate } from '@/lib/types/projects'
 import type { EligibleAssigneeUser } from '@/lib/types/tasks'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -254,6 +257,16 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
   const [currency, setCurrency] = useState('INR')
   const [templateId, setTemplateId] = useState<string | null>(null)
   const [goalIds, setGoalIds] = useState<string[]>([])
+  // Field errors sit under the field that is wrong; focus goes to the first one (kit 11.3, 39.3).
+  type FieldKey = 'name' | 'pm' | 'start' | 'end' | 'budget'
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, string>>>({})
+  const clearErr = (k: FieldKey) => setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
+  // A new project exists only once created: leaving a filled-in wizard asks first (kit 11.3 rule 10).
+  const unsaved = useUnsavedChanges({
+    changed: !saving && (name.trim() !== '' || description.trim() !== '' || startDate !== '' || endDate !== '' || pmUser !== null || budget !== '' || templateId !== null || goalIds.length > 0),
+    noun: 'project',
+    mode: 'create',
+  })
 
   // Step 2 fields
   const [members, setMembers] = useState<WizardMember[]>([])
@@ -268,10 +281,8 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
     const year = parseInt(val.split('-')[0], 10)
     if (isNaN(year) || year < 2000 || year > 2100) {
       setter('')
-      setError(`Year must be between 2000 and 2100`)
       return
     }
-    setError('')
     setter(val)
   }
   // End date must be >= today and >= startDate (whichever is later)
@@ -285,16 +296,26 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
   ]
 
   function validateStep1() {
-    if (!name.trim()) { setError('Project name is required'); return false }
-    if (!pmUser) { setError('Project manager is required'); return false }
-    if (startDate && new Date(startDate).getFullYear() < 2000) { setError('Start date cannot be before year 2000'); return false }
-    if (startDate && new Date(startDate).getFullYear() > 2100) { setError('Start date year cannot exceed 2100'); return false }
+    const errs: Partial<Record<FieldKey, string>> = {}
+    if (!name.trim()) errs.name = 'Enter a name for the project.'
+    if (!pmUser) errs.pm = 'Choose the project manager.'
+    if (startDate && new Date(startDate).getFullYear() < 2000) errs.start = 'Choose a start date in the year 2000 or later.'
+    else if (startDate && new Date(startDate).getFullYear() > 2100) errs.start = 'Choose a start date before the year 2100.'
     if (endDate) {
-      if (new Date(endDate).getFullYear() > 2100) { setError('End date year cannot exceed 2100'); return false }
-      if (endDate < todayStr) { setError('End date must be today or in the future'); return false }
-      if (startDate && endDate < startDate) { setError('End date cannot be before start date'); return false }
+      if (new Date(endDate).getFullYear() > 2100) errs.end = 'Choose an end date before the year 2100.'
+      else if (endDate < todayStr) errs.end = 'Choose an end date that is today or later.'
+      else if (startDate && endDate < startDate) errs.end = 'Choose an end date on or after the start date.'
     }
-    if (budget !== '' && Number(budget) < 0) { setError('Budget cannot be negative'); return false }
+    if (budget !== '' && Number(budget) < 0) errs.budget = 'Enter a budget of zero or more.'
+    setFieldErrors(errs)
+    const firstBad = (['name', 'pm', 'start', 'end', 'budget'] as FieldKey[]).find((k) => errs[k])
+    if (firstBad) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(`project-${firstBad}`)
+        ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+      })
+      return false
+    }
     setError(''); return true
   }
 
@@ -339,7 +360,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
 
       router.push(`/dashboard/projects/${project.id}`)
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Failed to create project'
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Could not create the project. Try again.'
       setError(msg)
     } finally {
       setSaving(false)
@@ -348,6 +369,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
 
   return (
     <div className="max-w-2xl">
+      {unsaved.warning}
       {/* Steps indicator */}
       <div className="flex items-center gap-3 mb-8">
         {[1, 2].map((s) => (
@@ -356,7 +378,7 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
               {s}
             </div>
             <span className={`text-body font-medium ${s === step ? 'text-text-primary' : 'text-text-muted'}`}>
-              {s === 1 ? 'Project Setup' : 'Add Members'}
+              {s === 1 ? 'Project setup' : 'Add members'}
             </span>
             {s < 2 && <div className="w-8 h-px bg-surface-control-pressed" />}
           </div>
@@ -370,37 +392,44 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
       {step === 1 && (
         <div className="bg-surface border border-border-light rounded-card p-6 shadow-card space-y-4">
           <div>
-            <Label className="mb-2" required>Project name</Label>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Website Redesign Q3" className={inputCls} />
+            <Label className="mb-2" htmlFor="project-name" required>Project name</Label>
+            <input id="project-name" value={name} onChange={(e) => { setName(e.target.value); clearErr('name') }} placeholder="For example, Website redesign Q3" aria-invalid={fieldErrors.name ? true : undefined} className={`${inputCls} max-w-[480px] aria-invalid:border-danger`} />
+            <InlineFieldError>{fieldErrors.name}</InlineFieldError>
           </div>
           <div>
             <Label className="mb-2">Description</Label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description..." rows={3} className="w-full px-3 py-2 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden resize-none" />
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full px-3 py-2 rounded-[8px] border border-border text-body text-text-primary placeholder:text-text-muted bg-surface focus:border-primary focus:outline-hidden resize-none" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="mb-2">Start date</Label>
-              <DatePicker value={startDate} onChange={(iso) => handleDateChange(iso, setStartDate)} min="2000-01-01" max="2100-12-31" placeholder="Select date" />
+              <Label className="mb-2" htmlFor="project-start">Start date</Label>
+              <DatePicker id="project-start" invalid={!!fieldErrors.start} value={startDate} onChange={(iso) => { handleDateChange(iso, setStartDate); clearErr('start') }} min="2000-01-01" max="2100-12-31" placeholder="Select date" />
+              <InlineFieldError>{fieldErrors.start}</InlineFieldError>
             </div>
             <div>
-              <Label className="mb-2">End date</Label>
-              <DatePicker value={endDate} onChange={(iso) => handleDateChange(iso, setEndDate)} min={endDateMin} max="2100-12-31" placeholder="Select date" />
+              <Label className="mb-2" htmlFor="project-end">End date</Label>
+              <DatePicker id="project-end" invalid={!!fieldErrors.end} value={endDate} onChange={(iso) => { handleDateChange(iso, setEndDate); clearErr('end') }} min={endDateMin} max="2100-12-31" placeholder="Select date" />
+              <InlineFieldError>{fieldErrors.end}</InlineFieldError>
             </div>
           </div>
           <div>
             <Label className="mb-2" required>Project manager</Label>
+            <div id="project-pm">
             <UserSearchDropdown
               orgId={orgId}
-              placeholder="Search by name…"
+              placeholder="Search by name"
               selected={pmUser}
-              onSelect={setPmUser}
+              onSelect={(u) => { setPmUser(u); clearErr('pm') }}
               excludeIds={user?.id ? [user.id] : []}
             />
+            </div>
+            <InlineFieldError>{fieldErrors.pm}</InlineFieldError>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="mb-2">Planned budget</Label>
-              <input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="0" min="0" className={inputCls} />
+              <Label className="mb-2" htmlFor="project-budget">Planned budget</Label>
+              <input id="project-budget" type="number" value={budget} onChange={(e) => { setBudget(e.target.value); clearErr('budget') }} placeholder="For example, 500000" min="0" aria-invalid={fieldErrors.budget ? true : undefined} className={`${inputCls} aria-invalid:border-danger`} />
+              <InlineFieldError>{fieldErrors.budget}</InlineFieldError>
             </div>
             <div>
               <Label className="mb-2">Currency</Label>
@@ -417,10 +446,11 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
           </div>
           {/* The goals this project exists to move — it can serve several. */}
           <GoalsMultiSelectField orgId={orgId} value={goalIds} onChange={setGoalIds} />
-          <div className="flex justify-end pt-2">
-            <button type="button" onClick={() => { if (validateStep1()) setStep(2) }} className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-primary-foreground text-body font-medium transition-colors">
-              Next: Add Members
-            </button>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="secondary" data-leaves-page onClick={() => router.push('/dashboard/projects')}>Cancel</Button>
+            <Button type="button" onClick={() => { if (validateStep1()) setStep(2) }}>
+              Next: add members
+            </Button>
           </div>
         </div>
       )}
@@ -508,18 +538,12 @@ export default function CreateProjectWizard({ templates }: CreateProjectWizardPr
           )}
 
           <div className="flex justify-between">
-            <button type="button" onClick={() => setStep(1)} className="h-10 px-4 rounded-[8px] border-2 border-primary text-primary-text text-body font-medium hover:bg-primary-subtle transition-colors flex items-center gap-1.5">
+            <Button type="button" variant="secondary" onClick={() => setStep(1)} disabled={saving}>
               <ChevronLeft size={16} /> Back
-            </button>
-            <button
-              type="button"
-              disabled={saving}
-              onClick={handleCreate}
-              className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-primary-foreground text-body font-medium disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
-            >
-              {saving && <Loader2 size={14} className="animate-spin" />}
-              {saving ? 'Creating...' : 'Create Project'}
-            </button>
+            </Button>
+            <Button type="button" disabled={saving} loading={saving} loadingLabel="Creating" onClick={handleCreate}>
+              Create project
+            </Button>
           </div>
         </div>
       )}
