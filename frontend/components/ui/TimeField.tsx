@@ -12,6 +12,10 @@
  * renders the kit's one time-picker appearance (an inline popover with
  * hour/minute/AM-PM lists) instead of the old centered analog-clock
  * dialog.
+ *
+ * step={1}: every call site is a free time (deadline, meeting, reminder,
+ * schedule, workflow timing), so typed minutes are kept exactly. The old
+ * clock never snapped to 15. No call site is a slot picker.
  */
 import { TimePicker, type TimeValue } from "@/components/ui/time-picker";
 
@@ -50,6 +54,7 @@ function toHHMM(value: TimeValue | undefined): string {
 export default function TimeField({ value, onChange, disabled, placeholder }: Props) {
   return (
     <TimePicker
+      step={1}
       value={fromHHMM(value)}
       onValueChange={(next) => onChange(toHHMM(next))}
       disabled={disabled}

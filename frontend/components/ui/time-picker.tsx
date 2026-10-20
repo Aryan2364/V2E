@@ -18,7 +18,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
  *   - 12-hour format with AM and PM, matching the date and time format
  *     in section 18.
  *   - Separate hour and minute controls, both typeable and selectable.
- *   - Minutes step in 15-minute intervals.
+ *   - Minutes step in 15-minute intervals by default. A screen that needs
+ *     free times, such as a meeting at 3:20 PM, passes step={1}: typed
+ *     minutes are kept exactly as typed, and the list still suggests every
+ *     15 minutes.
  *   - No seconds.
  *   - Field width: 3 columns (section 17).
  *
@@ -29,11 +32,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
  * ON PHONE (41.9 rule 10, 41.7 rule 8) the field opens the phone's own
  * time picker instead, through NativePickerField in date-picker.tsx. The
  * field still shows h:mm A; the picker follows the phone's language and
- * its 12 or 24-hour clock. Neither typed entry nor the 15-minute step
- * applies there, so a phone may give any minute.
+ * its 12 or 24-hour clock. Neither typed entry nor the step applies
+ * there, so a phone may give any minute.
  */
 const HOURS = ["12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]
 const MINUTES = ["00", "15", "30", "45"]
+const DEFAULT_STEP = 15
 const MERIDIEMS = ["AM", "PM"] as const
 
 type Meridiem = (typeof MERIDIEMS)[number]
@@ -42,9 +46,10 @@ export type TimeValue = {
   /** 1 to 12, as displayed. */
   hour: number
   /**
-   * 0 to 59. The desktop picker only ever gives 0, 15, 30 or 45 (section
-   * 20.2); the phone's own picker gives any minute (41.9 rule 10), so code
-   * reading a TimeValue never assumes a 15-minute step.
+   * 0 to 59. The desktop picker gives a multiple of its step, 15 unless the
+   * screen passes another (section 20.2); the phone's own picker gives any
+   * minute (41.9 rule 10), so code reading a TimeValue never assumes a
+   * 15-minute step.
    */
   minute: number
   meridiem: Meridiem
@@ -98,7 +103,7 @@ function fromNativeTime(raw: string): TimeValue | undefined {
  * text typed on desktop and not yet committed when a foldable switched
  * layout, and is read the way leaving the field would have read it.
  */
-function readShownTime(text: string): TimeValue | undefined {
+function readShownTime(text: string, step: number): TimeValue | undefined {
   const match = text.trim().match(/^(\d{1,2}):(\d{2}) (AM|PM)$/)
   if (match) {
     const hour = Number(match[1])
@@ -107,11 +112,15 @@ function readShownTime(text: string): TimeValue | undefined {
       return { hour, minute, meridiem: match[3] as Meridiem }
     }
   }
-  return parseTime(text)
+  return parseTime(text, step)
 }
 
-/** Accepts 9, 9:30, 9:30 pm, 0930pm and similar. Returns undefined if it cannot. */
-function parseTime(text: string): TimeValue | undefined {
+/**
+ * Accepts 9, 9:30, 9:30 pm, 0930pm and similar. Returns undefined if it cannot.
+ * Minutes snap to the nearest multiple of step (default 15); step 1 keeps
+ * the minutes exactly as typed.
+ */
+function parseTime(text: string, step = DEFAULT_STEP): TimeValue | undefined {
   const cleaned = text.trim().toLowerCase().replace(/\s+/g, "")
   if (!cleaned) return undefined
   const match = cleaned.match(/^(\d{1,2})[:.]?(\d{2})?(am|pm)?$/)
@@ -135,16 +144,18 @@ function parseTime(text: string): TimeValue | undefined {
     meridiem = meridiem ?? "AM"
   }
 
-  // Minutes step in 15s; anything typed is snapped to the nearest step
-  // rather than rejected, which is kinder than an error for "9:20".
-  const snapped = (Math.round(minute / 15) * 15) % 60
-  const rolled = Math.round(minute / 15) === 4
-
-  return {
-    hour: rolled ? (hour === 12 ? 1 : hour + 1) : hour,
-    minute: snapped,
-    meridiem,
+  // Minutes snap to the step rather than being rejected, which is kinder
+  // than an error for "9:20" at a 15-minute step. A snap up to 60 carries
+  // into the next hour, and 11:xx into the other half of the day.
+  const size = Math.max(1, Math.round(step))
+  let snapped = Math.round(minute / size) * size
+  if (snapped >= 60) {
+    snapped = 0
+    if (hour === 11) meridiem = meridiem === "AM" ? "PM" : "AM"
+    hour = hour === 12 ? 1 : hour + 1
   }
+
+  return { hour, minute: snapped, meridiem }
 }
 
 function OptionList({
@@ -194,6 +205,7 @@ function TimePicker({
   invalid,
   onInvalidEntry,
   placeholder = "9:30 AM",
+  step = DEFAULT_STEP,
   className,
 }: {
   value?: TimeValue
@@ -202,6 +214,13 @@ function TimePicker({
   disabled?: boolean
   invalid?: boolean
   placeholder?: string
+  /**
+   * Minutes. Typed minutes snap to a multiple of it. The default, 15, is
+   * section 20.2's; pass 1 where free times are needed, such as a meeting at
+   * 3:20 PM. The list beside the field always suggests every 15 minutes.
+   * Desktop only: the phone's own picker gives any minute.
+   */
+  step?: number
   className?: string
   /**
    * Called on leaving the field when what was typed cannot be read as a
@@ -241,7 +260,7 @@ function TimePicker({
       onValueChange?.(undefined)
       return
     }
-    const parsed = parseTime(text)
+    const parsed = parseTime(text, step)
     if (parsed) {
       setUnreadable(false)
       onValueChange?.(parsed)
@@ -264,7 +283,7 @@ function TimePicker({
    * the same branch in date-picker.tsx.
    */
   if (phone) {
-    const read = readShownTime(text)
+    const read = readShownTime(text, step)
     return (
       <NativePickerField
         type="time"
