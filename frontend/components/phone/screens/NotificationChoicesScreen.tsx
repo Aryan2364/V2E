@@ -135,7 +135,7 @@ export default function NotificationChoicesScreen({ route }: { route: PhoneRoute
       next = (
         <Link
           href={MORE_HREF}
-          className="text-body font-semibold text-primary-text underline underline-offset-2 outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-ring"
+          className="text-body font-medium text-primary-text underline underline-offset-2 outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-ring"
         >
           Go to More to install the app
         </Link>
@@ -169,7 +169,7 @@ export default function NotificationChoicesScreen({ route }: { route: PhoneRoute
     <PhoneScreen title={route.title} parent={route.parent}>
       {view.kind === 'loading' ? null : (
         <section aria-labelledby="phone-notifications-heading" className="flex flex-col gap-[8px]">
-          <h2 id="phone-notifications-heading" className="text-card-heading font-semibold text-text-primary">
+          <h2 id="phone-notifications-heading" className="text-card-heading font-medium text-text-primary">
             Phone notifications
           </h2>
           {/* An instruction, so body text, never the muted colour. */}

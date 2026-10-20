@@ -43,7 +43,7 @@ const VARIANTS: Record<Variant, string> = {
 
 const BUTTON = cx(
   'inline-flex min-h-(--h-control) items-center justify-center gap-[8px] rounded-[8px] px-[16px] py-[8px]',
-  'text-body font-semibold text-center',
+  'text-body font-medium text-center',
   'transition-[background-color,border-color] duration-(--duration-fast)',
   'disabled:bg-surface-control-pressed disabled:border-surface-control-pressed disabled:text-text-secondary disabled:cursor-not-allowed',
   '[&_svg]:size-[18px] [&_svg]:shrink-0',

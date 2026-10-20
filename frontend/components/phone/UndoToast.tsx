@@ -94,7 +94,7 @@ export function UndoToastProvider({ children }: { children: React.ReactNode }) {
                 <span className="min-w-0 flex-1 text-body text-white">{state.message}</span>
                 <button
                   type="button"
-                  className="shrink-0 rounded-[6px] px-[8px] py-[4px] text-body font-semibold text-primary-border active:bg-white/10"
+                  className="shrink-0 rounded-[6px] px-[8px] py-[4px] text-body font-medium text-primary-border active:bg-white/10"
                   onClick={() => {
                     const toUndo = state.onUndo
                     clear()

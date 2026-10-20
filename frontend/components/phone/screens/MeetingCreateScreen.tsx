@@ -177,7 +177,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
                 type="button"
                 onClick={() => setType(t)}
                 className={cx(
-                  'flex-1 min-h-(--h-control) rounded-[8px] border-2 text-body font-semibold',
+                  'flex-1 min-h-(--h-control) rounded-[8px] border-2 text-body font-medium',
                   type === t ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border bg-surface text-text-secondary',
                 )}
               >

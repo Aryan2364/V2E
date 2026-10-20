@@ -230,7 +230,7 @@ export function FinishTaskSheet({
                         onClick={() => retry(u.id)}
                         className={cx(
                           'inline-flex items-center gap-[4px] rounded-[6px] px-[8px] py-[4px]',
-                          'text-label font-semibold text-danger active:bg-danger-bg',
+                          'text-label font-medium text-danger active:bg-danger-bg',
                         )}
                       >
                         <RotateCcw aria-hidden className="size-[14px]" />

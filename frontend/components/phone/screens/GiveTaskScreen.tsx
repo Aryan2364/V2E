@@ -198,7 +198,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
             />
           </Field>
         ) : (
-          <button type="button" onClick={() => setShowDescription(true)} className="self-start text-label font-semibold text-primary-text">
+          <button type="button" onClick={() => setShowDescription(true)} className="self-start text-label font-medium text-primary-text">
             + Add description
           </button>
         )}
@@ -206,7 +206,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         <p className="text-meta text-text-secondary">Repeat (daily/weekly/monthly) isn&apos;t available from the phone yet - set it up on a computer.</p>
 
         {(draft.title || draft.description) ? (
-          <button type="button" onClick={onDiscard} className="self-start text-label font-semibold text-danger">
+          <button type="button" onClick={onDiscard} className="self-start text-label font-medium text-danger">
             Discard draft
           </button>
         ) : null}

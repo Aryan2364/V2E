@@ -141,9 +141,9 @@ export default function MeetingDetailScreen({ route }: { route: PhoneRoute }) {
     <PhoneScreen title={meeting.title} parent={route.parent ?? MEETINGS_HREF}>
       <div className="flex flex-col gap-[20px] pb-[16px]">
         <div className="flex flex-col gap-[8px]">
-          <h2 className="text-card-heading font-semibold text-text-primary">{meeting.title}</h2>
+          <h2 className="text-card-heading font-medium text-text-primary">{meeting.title}</h2>
           <span
-            className="inline-flex w-fit items-center rounded-full px-[10px] py-[2px] text-label font-semibold"
+            className="inline-flex w-fit items-center rounded-full px-[10px] py-[2px] text-label font-medium"
             style={{ backgroundColor: statusMeta.bg, color: statusMeta.text }}
           >
             {statusMeta.label}

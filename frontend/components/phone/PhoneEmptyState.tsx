@@ -33,7 +33,7 @@ export function PhoneEmptyState({
       >
         {icon}
       </span>
-      <Heading className="text-section font-semibold text-text-primary">{heading}</Heading>
+      <Heading className="text-section font-medium text-text-primary">{heading}</Heading>
       <p className="mt-[8px] max-w-[420px] text-body text-text-secondary">{line}</p>
       {children ? <div className="mt-[24px] flex w-full max-w-[420px] flex-col gap-[8px]">{children}</div> : null}
     </div>

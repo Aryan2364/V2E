@@ -54,7 +54,7 @@ export default function MoreScreen({ route }: { route: PhoneRoute }) {
       <div className="flex flex-col gap-[24px]">
         {user ? (
           <div className="flex min-w-0 flex-col">
-            <p className="wrap-break-word text-card-heading font-semibold text-text-primary">{user.name}</p>
+            <p className="wrap-break-word text-card-heading font-medium text-text-primary">{user.name}</p>
             {detail ? <p className="wrap-break-word text-label text-text-secondary">{detail}</p> : null}
           </div>
         ) : null}

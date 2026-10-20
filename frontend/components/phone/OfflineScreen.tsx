@@ -43,14 +43,14 @@ export default function OfflineScreen() {
         >
           <WifiOff className="size-[26px]" />
         </span>
-        <h2 className="text-[1.125rem] font-semibold text-text-primary">This screen needs a connection</h2>
+        <h2 className="text-[1.125rem] font-medium text-text-primary">This screen needs a connection</h2>
         <p className="mt-[8px] max-w-[420px] text-[1rem] text-text-secondary">
           Check your mobile data or Wi-Fi, then try again.
         </p>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="mt-[24px] inline-flex min-h-11 w-full max-w-[420px] items-center justify-center gap-[8px] rounded-[8px] border-2 border-primary bg-primary px-[16px] py-[8px] text-[1rem] font-semibold text-white active:bg-primary-pressed outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ring"
+          className="mt-[24px] inline-flex min-h-11 w-full max-w-[420px] items-center justify-center gap-[8px] rounded-[8px] border-2 border-primary bg-primary px-[16px] py-[8px] text-[1rem] font-medium text-white active:bg-primary-pressed outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ring"
         >
           <RefreshCw aria-hidden className="size-[18px]" />
           Try again

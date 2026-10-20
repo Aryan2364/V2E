@@ -136,7 +136,7 @@ export function PhoneSheet({
       <div
         data-slot="phone-sheet-backdrop"
         aria-hidden
-        className="absolute inset-0 bg-backdrop"
+        className="absolute inset-0 bg-(--backdrop)"
         onClick={() => onOpenChange(false)}
       />
       <div
@@ -163,7 +163,7 @@ export function PhoneSheet({
             <span className="h-[4px] w-[32px] rounded-full bg-border" />
           </div>
           <div className="flex items-center gap-[8px] pb-[8px] pl-[16px] pr-[4px] pt-[4px]">
-            <h2 id={titleId} className="min-w-0 flex-1 text-card-heading font-semibold text-text-primary">
+            <h2 id={titleId} className="min-w-0 flex-1 text-card-heading font-medium text-text-primary">
               {title}
             </h2>
             <button

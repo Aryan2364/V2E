@@ -33,7 +33,7 @@ export function GivenTaskRow({ task, href }: { task: Task; href: string }) {
       className="flex min-h-[64px] w-full flex-col justify-center gap-[2px] px-[16px] py-[10px] text-left active:bg-surface-control"
     >
       <span className="flex items-center gap-[8px]">
-        <span className="min-w-0 flex-1 truncate text-body font-semibold text-text-primary">{task.title}</span>
+        <span className="min-w-0 flex-1 truncate text-body font-medium text-text-primary">{task.title}</span>
         {due ? (
           <span
             className={

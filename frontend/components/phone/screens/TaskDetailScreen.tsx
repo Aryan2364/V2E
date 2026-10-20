@@ -222,14 +222,14 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
       <div className="flex flex-col gap-[20px] pb-[80px]">
         {task.status ? (
           <span
-            className="inline-flex w-fit items-center rounded-full px-[10px] py-[2px] text-label font-semibold"
+            className="inline-flex w-fit items-center rounded-full px-[10px] py-[2px] text-label font-medium"
             style={{ backgroundColor: `${task.status.color}22`, color: task.status.color }}
           >
             {task.status.label}
           </span>
         ) : null}
 
-        <h1 className="whitespace-pre-wrap text-page-title font-semibold text-text-primary">{task.title}</h1>
+        <h1 className="whitespace-pre-wrap text-page-title font-medium text-text-primary">{task.title}</h1>
 
         <dl className="grid grid-cols-2 gap-y-[12px] gap-x-[12px]">
           {facts.map((f) => (
@@ -293,7 +293,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
             <button
               type="button"
               onClick={() => setPanel('files')}
-              className="flex min-h-[44px] items-center gap-[8px] self-start text-body font-semibold text-primary-text"
+              className="flex min-h-[44px] items-center gap-[8px] self-start text-body font-medium text-primary-text"
             >
               <Paperclip aria-hidden className="size-[18px] shrink-0" />
               Add file or proof
@@ -314,7 +314,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
             <h2 className="text-label font-medium text-text-secondary">
               Comments{totalCommentCount > 0 ? ` (${totalCommentCount})` : ''}
             </h2>
-            <button type="button" onClick={() => setPanel('comments')} className="text-label font-semibold text-primary-text">
+            <button type="button" onClick={() => setPanel('comments')} className="text-label font-medium text-primary-text">
               Add comment
             </button>
           </div>
@@ -332,7 +332,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
                   .map((c) => (
                     <li key={c.id} className="flex flex-col gap-[4px] px-[16px] py-[10px]">
                       <div className="flex items-baseline justify-between gap-[8px]">
-                        <span className="truncate text-label font-semibold text-text-primary">{c.user_name}</span>
+                        <span className="truncate text-label font-medium text-text-primary">{c.user_name}</span>
                         <span className="shrink-0 text-meta text-text-secondary">{fmtDateTime(c.created_at)}</span>
                       </div>
                       <p className="whitespace-pre-wrap text-body text-text-primary">{c.body}</p>
@@ -358,7 +358,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
                 <button
                   type="button"
                   onClick={() => setCommentCount((n) => n + COMMENTS_PAGE)}
-                  className="self-center text-label font-semibold text-primary-text"
+                  className="self-center text-label font-medium text-primary-text"
                 >
                   Show more
                 </button>
@@ -580,7 +580,7 @@ function UploadRows({ items, onRetry, onRemove }: { items: UploadItem[]; onRetry
             <button
               type="button"
               onClick={() => onRetry(u.id)}
-              className="inline-flex min-h-[36px] shrink-0 items-center gap-[4px] rounded-[6px] px-[8px] text-label font-semibold text-danger active:bg-danger-bg"
+              className="inline-flex min-h-[36px] shrink-0 items-center gap-[4px] rounded-[6px] px-[8px] text-label font-medium text-danger active:bg-danger-bg"
             >
               <RotateCcw aria-hidden className="size-[14px]" />
               Retry
@@ -904,7 +904,7 @@ function FilesProofOverlay({ orgId, task, onClose, onTaskUpdate }: { orgId: stri
                   <Paperclip aria-hidden className="size-[18px] shrink-0 text-text-secondary" />
                   <span className="min-w-0 flex-1 truncate">{a.file_name}</span>
                   {a.is_proof ? (
-                    <span className="shrink-0 rounded-full bg-success-bg px-[8px] py-[2px] text-meta font-semibold text-success">Proof</span>
+                    <span className="shrink-0 rounded-full bg-success-bg px-[8px] py-[2px] text-meta font-medium text-success">Proof</span>
                   ) : null}
                 </button>
               </li>

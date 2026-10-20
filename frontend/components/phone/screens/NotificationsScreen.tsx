@@ -412,7 +412,7 @@ function NotificationRow({
           <span
             className={cx(
               'line-clamp-2 text-body text-text-primary',
-              n.is_read ? 'font-normal' : 'font-semibold',
+              n.is_read ? 'font-normal' : 'font-medium',
             )}
           >
             {n.title}

@@ -66,7 +66,7 @@ export default function RecurringTemplatesScreen({ route }: { route: PhoneRoute 
             <li key={t.id}>
               <a href={recurringInstancesHref(t.id)} className={cx(ROW, 'min-h-[64px] items-start py-[12px]')}>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-body font-semibold text-text-primary">
+                  <span className="block truncate text-body font-medium text-text-primary">
                     {t.title}
                     {!t.is_active ? <span className="ml-[8px] text-meta font-normal text-text-secondary">(paused)</span> : null}
                   </span>

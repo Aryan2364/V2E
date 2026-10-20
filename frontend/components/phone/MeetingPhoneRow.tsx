@@ -46,9 +46,9 @@ export function MeetingPhoneRow({ meeting, href }: { meeting: Meeting; href: str
   return (
     <Link href={href} className="flex min-h-[64px] w-full flex-col gap-[4px] px-[16px] py-[12px] text-left active:bg-surface-control">
       <span className="flex items-start justify-between gap-[8px]">
-        <span className="min-w-0 flex-1 text-body font-semibold text-text-primary line-clamp-2">{meeting.title}</span>
+        <span className="min-w-0 flex-1 text-body font-medium text-text-primary line-clamp-2">{meeting.title}</span>
         <span
-          className="inline-flex shrink-0 items-center rounded-full px-[8px] py-[2px] text-meta font-semibold"
+          className="inline-flex shrink-0 items-center rounded-full px-[8px] py-[2px] text-meta font-medium"
           style={{ backgroundColor: statusMeta.bg, color: statusMeta.text }}
         >
           {statusMeta.label}

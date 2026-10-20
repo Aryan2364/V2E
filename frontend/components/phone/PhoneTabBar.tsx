@@ -115,7 +115,7 @@ export default function PhoneTabBar() {
               {count !== null ? (
                 <span
                   aria-hidden
-                  className="absolute top-[-8px] left-[12px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-[5px] text-[11px] font-semibold leading-none text-primary-foreground"
+                  className="absolute top-[-8px] left-[12px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-[5px] text-[11px] font-medium leading-none text-primary-foreground"
                 >
                   {count > 99 ? '99+' : count}
                 </span>

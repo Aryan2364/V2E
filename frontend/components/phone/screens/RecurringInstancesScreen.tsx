@@ -78,7 +78,7 @@ export default function RecurringInstancesScreen({ route }: { route: PhoneRoute 
                     </span>
                   </span>
                   <span
-                    className="inline-flex shrink-0 items-center rounded-full px-[8px] py-[2px] text-meta font-semibold"
+                    className="inline-flex shrink-0 items-center rounded-full px-[8px] py-[2px] text-meta font-medium"
                     style={{ backgroundColor: badge.bg, color: badge.text }}
                   >
                     {badge.label}
