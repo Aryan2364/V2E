@@ -1,17 +1,19 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { createPortal } from 'react-dom'
 import { useForm, useFieldArray, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { X, Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { createRole, updateRole, deleteRole } from '@/lib/api/roles'
-import Button from '@/components/ui/button'
+import Button, { Button as KitButton } from '@/components/ui/button'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import LevelSelect from './LevelSelect'
 import type { Department, Role, RoleLevel } from '@/lib/types'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetBody, SheetFooter } from '@/components/ui/sheet'
 
 export type RoleFormTarget =
   | { mode: 'create'; deptId?: string }
@@ -35,8 +37,8 @@ interface RoleFormDrawerProps {
 // ─── Schema (mirrors setup wizard step-4) ───────────────────────────────────────
 
 const roleSchema = z.object({
-  department_id: z.string().min(1, 'Please choose a department for this job role.'),
-  title: z.string().min(1, 'Job role title is required'),
+  department_id: z.string().min(1, 'Choose a department for this job role.'),
+  title: z.string().min(1, 'Enter a title for the job role.'),
   level: z.enum(['junior', 'mid', 'senior', 'head'] as const),
   job_description: z.string().optional(),
   kra: z.array(z.object({ title: z.string(), description: z.string() })).default([]),
@@ -97,12 +99,19 @@ export default function RoleFormDrawer({
     control,
     reset,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<RoleFormValues>({
+    shouldFocusError: true,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(roleSchema) as any,
     defaultValues: EMPTY,
   })
+
+  // Leaving with unsaved changes asks first, in the create or edit words (kit 11.3 rule 10).
+  const unsaved = useUnsavedChanges({ changed: open && isDirty && !isSubmitting, noun: 'job role', mode: isEdit ? 'edit' : 'create' })
+  function requestClose() {
+    unsaved.guard((next) => { if (!next) onClose() })(false)
+  }
 
   const kraArray = useFieldArray({ control, name: 'kra' })
   const kpiArray = useFieldArray({ control, name: 'kpi' })
@@ -169,7 +178,7 @@ export default function RoleFormDrawer({
       } else if (target?.mode === 'create') {
         const department_id = pickedDept ?? target.deptId
         if (!department_id) {
-          setFormError('Please choose a department for this job role.')
+          setFormError('Choose a department for this job role.')
           return
         }
         saved = await createRole(orgId, { ...payload, department_id })
@@ -180,7 +189,7 @@ export default function RoleFormDrawer({
     } catch (err: unknown) {
       const raw = (err as { response?: { data?: { message?: string | string[] } } })?.response?.data
         ?.message
-      setFormError(Array.isArray(raw) ? raw[0] : raw ?? 'Failed to save job role.')
+      setFormError(Array.isArray(raw) ? raw[0] : raw ?? 'Could not save the job role. Try again.')
     }
   }
 
@@ -194,7 +203,7 @@ export default function RoleFormDrawer({
     } catch (err: unknown) {
       const raw = (err as { response?: { data?: { message?: string | string[] } } })?.response?.data
         ?.message
-      setFormError(Array.isArray(raw) ? raw[0] : raw ?? 'Failed to delete job role.')
+      setFormError(Array.isArray(raw) ? raw[0] : raw ?? 'Could not delete the job role. Try again.')
       setConfirmDelete(false)
     } finally {
       setDeleting(false)
@@ -203,31 +212,17 @@ export default function RoleFormDrawer({
 
   if (!mounted) return null
 
-  return createPortal(
+  return (
     <>
-      {open && <div className="fixed inset-0 bg-backdrop z-60" onClick={onClose} />}
-
-      <div
-        className={`fixed inset-y-0 right-0 z-70 w-full max-w-lg bg-surface border-l border-border-light shadow-menu flex flex-col transition-transform duration-300 ease-in-out ${
-          open ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between px-4 py-4 border-b border-border-light">
-          <h3 className="font-medium text-text-primary">{isEdit ? 'Edit Job Role' : 'Add Job Role'}</h3>
-          <button
-            onClick={onClose}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
-            aria-label="Close"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex-1 overflow-y-auto min-h-0"
-        >
-          <div className="px-4 py-4 flex flex-col gap-4">
+      {unsaved.warning}
+      <Sheet open={open} onOpenChange={(next) => { if (!next) requestClose() }}>
+        <SheetContent side="right">
+          <SheetHeader>
+            <SheetTitle>{isEdit ? 'Edit job role' : 'Add job role'}</SheetTitle>
+          </SheetHeader>
+          <SheetBody>
+        <form id="role-form" onSubmit={handleSubmit(onSubmit)}>
+          <div className="flex flex-col gap-4">
             {/* Department picker (page-level create / move) */}
             {departments && departments.length > 0 && (
               <div>
@@ -243,25 +238,23 @@ export default function RoleFormDrawer({
                     />
                   )}
                 />
-                {errors.department_id && (
-                  <p className="text-meta text-danger mt-1">{errors.department_id.message}</p>
-                )}
+                <InlineFieldError>{errors.department_id?.message}</InlineFieldError>
               </div>
             )}
 
             {/* Basic info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="mb-2" required>Job role title</Label>
+                <Label className="mb-2" htmlFor="role-title" required>Job role title</Label>
                 <input
+                  id="role-title"
                   {...register('title')}
-                  placeholder="e.g. Senior Engineer"
-                  className={inputCls}
+                  placeholder="For example, Senior engineer"
+                  aria-invalid={errors.title ? true : undefined}
+                  className={`${inputCls} aria-invalid:border-danger`}
                   autoFocus
                 />
-                {errors.title && (
-                  <p className="text-meta text-danger mt-1">{errors.title.message}</p>
-                )}
+                <InlineFieldError>{errors.title?.message}</InlineFieldError>
               </div>
               <div>
                 <Label className="mb-2" required>Level</Label>
@@ -284,7 +277,7 @@ export default function RoleFormDrawer({
               <textarea
                 {...register('job_description')}
                 rows={4}
-                placeholder="Describe the role's responsibilities, scope, and expected outcomes…"
+                placeholder="For example, Owns delivery of the dealer onboarding programme"
                 className={textareaCls}
               />
             </div>
@@ -292,7 +285,7 @@ export default function RoleFormDrawer({
             {/* KRA builder */}
             <div className="bg-surface-sunken border border-border-light rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-body font-medium text-text-primary">Key Result Areas (KRA)</h4>
+                <h4 className="text-body font-medium text-text-primary">Key result areas (KRA)</h4>
                 <button
                   type="button"
                   onClick={() => kraArray.append({ title: '', description: '' })}
@@ -316,13 +309,13 @@ export default function RoleFormDrawer({
                     <div className="flex-1 flex flex-col gap-2">
                       <input
                         {...register(`kra.${i}.title`)}
-                        placeholder="KRA title — e.g. Code quality"
+                        aria-label="KRA title" placeholder="For example, Code quality"
                         className={inputCls}
                       />
                       <textarea
                         {...register(`kra.${i}.description`)}
                         rows={2}
-                        placeholder="What does success in this area look like?"
+                        aria-label="KRA description" placeholder="For example, Fewer than 2 bugs per release"
                         className={textareaCls}
                       />
                     </div>
@@ -342,7 +335,7 @@ export default function RoleFormDrawer({
             {/* KPI builder */}
             <div className="bg-surface-sunken border border-border-light rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-body font-medium text-text-primary">Key Performance Indicators (KPI)</h4>
+                <h4 className="text-body font-medium text-text-primary">Key performance indicators (KPI)</h4>
                 <button
                   type="button"
                   onClick={() => kpiArray.append({ title: '', metric: '', target: '', unit: '' })}
@@ -365,7 +358,7 @@ export default function RoleFormDrawer({
                     </span>
                     <div className="flex-1 flex flex-col gap-2.5">
                       <div>
-                        <label className={fieldLabelCls}>Indicator</label>
+                        <Label className="mb-1">Indicator</Label>
                         <input
                           {...register(`kpi.${i}.title`)}
                           placeholder="e.g. On-time delivery"
@@ -373,7 +366,7 @@ export default function RoleFormDrawer({
                         />
                       </div>
                       <div>
-                        <label className={fieldLabelCls}>Measured by</label>
+                        <Label className="mb-1">Measured by</Label>
                         <input
                           {...register(`kpi.${i}.metric`)}
                           placeholder="e.g. Sprints shipped on schedule"
@@ -382,7 +375,7 @@ export default function RoleFormDrawer({
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className={fieldLabelCls}>Target</label>
+                          <Label className="mb-1">Target</Label>
                           <input
                             {...register(`kpi.${i}.target`)}
                             placeholder="e.g. 95"
@@ -390,7 +383,7 @@ export default function RoleFormDrawer({
                           />
                         </div>
                         <div>
-                          <label className={fieldLabelCls}>Unit</label>
+                          <Label className="mb-1">Unit</Label>
                           <input
                             {...register(`kpi.${i}.unit`)}
                             placeholder="e.g. %, count, hrs"
@@ -449,17 +442,18 @@ export default function RoleFormDrawer({
             )}
           </div>
 
-          <div className="px-4 pt-4 pb-12 border-t border-border-light flex gap-3">
-            <Button type="submit" variant="primary" isLoading={isSubmitting}>
-              {isEdit ? 'Save' : 'Add Job Role'}
-            </Button>
-            <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
+        </form>
+          </SheetBody>
+          <SheetFooter>
+            <Button type="button" variant="secondary" onClick={requestClose} disabled={isSubmitting}>
               Cancel
             </Button>
-          </div>
-        </form>
-      </div>
-    </>,
-    document.body,
+            <KitButton type="submit" form="role-form" loading={isSubmitting} loadingLabel="Saving">
+              {isEdit ? 'Save job role' : 'Add job role'}
+            </KitButton>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    </>
   )
 }

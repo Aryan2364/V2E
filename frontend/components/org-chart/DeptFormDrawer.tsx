@@ -8,6 +8,8 @@ import { BRANCH_PALETTE } from '@/lib/org-chart-colors'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 import { Textarea } from '@/components/ui/textarea'
 import EmployeePicker from '@/components/ui/EmployeePicker'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
@@ -63,6 +65,7 @@ export default function DeptFormDrawer({
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [nameError, setNameError] = useState('')
 
   // Hydrate when the target changes.
   useEffect(() => {
@@ -81,6 +84,7 @@ export default function DeptFormDrawer({
       setColor(null)
     }
     setError(null)
+    setNameError('')
     setConfirmDelete(false)
   }, [target])
 
@@ -89,9 +93,11 @@ export default function DeptFormDrawer({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setError('Department name is required')
+      setNameError('Enter a name for the department.')
+      requestAnimationFrame(() => document.getElementById('dept-name')?.focus())
       return
     }
+    setNameError('')
     setSaving(true)
     setError(null)
     try {
@@ -123,7 +129,7 @@ export default function DeptFormDrawer({
     } catch (err: unknown) {
       const raw = (err as { response?: { data?: { message?: string | string[] } } })?.response
         ?.data?.message
-      setError(Array.isArray(raw) ? raw[0] : raw ?? 'Failed to save department.')
+      setError(Array.isArray(raw) ? raw[0] : raw ?? 'Could not save the department. Try again.')
     } finally {
       setSaving(false)
     }
@@ -153,18 +159,28 @@ export default function DeptFormDrawer({
     } catch (err: unknown) {
       const raw = (err as { response?: { data?: { message?: string | string[] } } })?.response
         ?.data?.message
-      setError(Array.isArray(raw) ? raw[0] : raw ?? 'Failed to delete department.')
+      setError(Array.isArray(raw) ? raw[0] : raw ?? 'Could not delete the department. Try again.')
       setConfirmDelete(false)
     } finally {
       setDeleting(false)
     }
   }
 
+  const guarded = useGuardedClose({
+    open: !!target,
+    values: { name, description, parentId, headUserId, color },
+    noun: 'department',
+    mode: isEdit ? 'edit' : 'create',
+    onClose,
+  })
+
   return (
-    <Sheet open={open} onOpenChange={(next) => { if (!next) onClose() }}>
+    <>
+    {guarded.warning}
+    <Sheet open={open} onOpenChange={(next) => { if (!next) guarded.requestClose() }}>
       <SheetContent side="right">
         <SheetHeader>
-          <SheetTitle>{isEdit ? 'Edit Department' : 'Add Department'}</SheetTitle>
+          <SheetTitle>{isEdit ? 'Edit department' : 'Add department'}</SheetTitle>
         </SheetHeader>
 
         <SheetBody className="flex flex-col gap-6">
@@ -175,11 +191,13 @@ export default function DeptFormDrawer({
             <Input
               id="dept-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Engineering"
+              onChange={(e) => { setName(e.target.value); if (nameError) setNameError('') }}
+              placeholder="For example, Engineering"
+              aria-invalid={nameError ? true : undefined}
               className="mt-2 max-w-none"
               autoFocus
             />
+            <InlineFieldError>{nameError}</InlineFieldError>
           </div>
           <div>
             <Label htmlFor="dept-description">Description</Label>
@@ -188,7 +206,6 @@ export default function DeptFormDrawer({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Optional description…"
               className="mt-2"
             />
           </div>
@@ -211,7 +228,7 @@ export default function DeptFormDrawer({
                 value={headUserId}
                 onChange={setHeadUserId}
                 employees={users.map((u) => ({ user_id: u.id, name: u.name }))}
-                title="Select Department Head"
+                title="Select department head"
                 placeholder="No head assigned"
                 allowClear
               />
@@ -308,14 +325,15 @@ export default function DeptFormDrawer({
         </SheetBody>
 
         <SheetFooter>
-          <Button variant="secondary" onClick={onClose} disabled={saving || deleting}>
+          <Button variant="secondary" onClick={guarded.requestClose} disabled={saving || deleting}>
             Cancel
           </Button>
           <Button loading={saving} loadingLabel="Saving" onClick={handleSave}>
-            {isEdit ? 'Save' : 'Add Department'}
+            {isEdit ? 'Save department' : 'Add department'}
           </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
+    </>
   )
 }
