@@ -10,6 +10,8 @@ import OrgHolidayList from '@/components/holidays/OrgHolidayList'
 import OrgHolidayCalendar from '@/components/holidays/OrgHolidayCalendar'
 import HolidayFormModal, { type HolidayFormData } from '@/components/holidays/HolidayFormModal'
 import ImportHolidaysModal from '@/components/holidays/ImportHolidaysModal'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
 import HolidayDiscrepancyPanel from '@/components/holidays/HolidayDiscrepancyPanel'
 
 export default function OrgCalendarPage() {
@@ -76,10 +78,10 @@ export default function OrgCalendarPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
-      <div>
-        <h1 className="text-page-title font-medium text-text-primary">Org Calendar</h1>
-        <p className="text-body text-text-secondary mt-1">Set your working days and holidays. They drive deadlines, leave, and reports.</p>
-      </div>
+      <PageHeader
+        title="Org calendar"
+        meta="Set your working days and holidays. They drive deadlines, leave, and reports."
+      />
 
       {/* Working days — slim, auto-saving strip */}
       <WorkingWeekStrip value={localDays} onSave={saveWorkingDays} disabled={!isAdmin} />
@@ -96,7 +98,7 @@ export default function OrgCalendarPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedYear((y) => y - 1)}
-                  className="p-1.5 rounded-l-[7px] text-text-secondary hover:bg-surface-control transition-colors"
+                  className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring p-1.5 rounded-l-[7px] text-text-secondary hover:bg-surface-control transition-colors"
                   aria-label="Previous year"
                 >
                   <ChevronLeft size={15} />
@@ -105,7 +107,7 @@ export default function OrgCalendarPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedYear((y) => y + 1)}
-                  className="p-1.5 rounded-r-[7px] text-text-secondary hover:bg-surface-control transition-colors"
+                  className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring p-1.5 rounded-r-[7px] text-text-secondary hover:bg-surface-control transition-colors"
                   aria-label="Next year"
                 >
                   <ChevronRight size={15} />
@@ -115,22 +117,14 @@ export default function OrgCalendarPage() {
 
             {isAdmin && (
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowImport(true)}
-                  className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-body font-medium text-text-secondary hover:border-primary hover:text-primary-text transition-colors"
-                >
-                  <Upload size={14} />
+                <Button type="button" variant="secondary" onClick={() => setShowImport(true)}>
+                  <Upload size={16} />
                   Import CSV
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowAdd(true)}
-                  className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-                >
-                  <Plus size={15} />
-                  Add Holiday
-                </button>
+                </Button>
+                <Button type="button" onClick={() => setShowAdd(true)}>
+                  <Plus size={16} />
+                  Add holiday
+                </Button>
               </div>
             )}
           </div>

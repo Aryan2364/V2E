@@ -4,9 +4,9 @@ import { Info } from 'lucide-react'
 import type { HolidayOnTaskAction } from '@/lib/types/holidays'
 
 const ACTIONS: { value: HolidayOnTaskAction; label: string; desc: string }[] = [
-  { value: 'move_to_next_working_day', label: 'Move Forward', desc: 'Shift deadline to next working day' },
-  { value: 'move_to_prev_working_day', label: 'Move Backward', desc: 'Shift deadline to previous working day' },
-  { value: 'create_anyway', label: 'Create Anyway', desc: 'Create task even on holidays' },
+  { value: 'move_to_next_working_day', label: 'Move forward', desc: 'Shift deadline to next working day' },
+  { value: 'move_to_prev_working_day', label: 'Move backward', desc: 'Shift deadline to previous working day' },
+  { value: 'create_anyway', label: 'Create anyway', desc: 'Create task even on holidays' },
   { value: 'skip_create', label: 'Skip', desc: 'Do not create tasks on holidays' },
 ]
 
@@ -29,7 +29,7 @@ export default function HolidayConfigCard({ action, onActionChange, disabled }: 
               disabled={disabled}
               onClick={() => onActionChange(a.value)}
               className={[
-                'rounded-xl border px-3 py-3 text-left transition-colors',
+                'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring rounded-xl border px-3 py-3 text-left transition-colors',
                 disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
                 action === a.value
                   ? 'border-primary bg-primary-subtle'

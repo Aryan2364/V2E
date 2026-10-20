@@ -204,13 +204,9 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
           <div className="flex flex-col items-center text-center gap-2 py-8">
             <p className="text-body text-text-primary font-medium">Your leave could not be loaded</p>
             <p className="text-meta text-text-secondary">Check your connection and try again.</p>
-            <button
-              type="button"
-              onClick={() => { setStatus('loading'); load() }}
-              className="mt-2 flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-text border-2 border-primary rounded-lg hover:bg-primary-subtle transition-colors"
-            >
+            <Button type="button" onClick={() => { setStatus('loading'); load() }} variant="secondary">
               <RefreshCw size={14} /> Retry
-            </button>
+            </Button>
           </div>
         ) : leaves.length === 0 ? (
           <div className="flex flex-col items-center text-center gap-2 py-8">
@@ -235,24 +231,26 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
                 {!readOnly && (
                   <div className="flex items-center gap-2 shrink-0">
                     {l.state === 'rejected' && !l.overridden && (
-                      <button
+                      <Button
                         type="button"
                         disabled={busyId === l.id}
                         onClick={() => takeAnyway(l)}
-                        className="flex items-center gap-1 text-meta font-medium text-text-secondary border border-border-light bg-surface-control rounded-md px-2.5 py-1.5 min-h-[36px] hover:bg-surface-control disabled:bg-surface-control-pressed disabled:text-text-muted disabled:border-border-light transition-colors"
+                        variant="secondary"
+                        size="sm"
                       >
                         {busyId === l.id && <Loader2 size={12} className="animate-spin" />}
                         Take anyway
-                      </button>
+                      </Button>
                     )}
                     {l.state !== 'cancelled' && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => { setCancelError(null); setCancelTarget(l) }}
-                        className="text-meta font-medium text-text-secondary border border-border bg-surface rounded-md px-2.5 py-1.5 min-h-[36px] hover:bg-surface-control hover:text-text-primary transition-colors"
+                        variant="secondary"
+                        size="sm"
                       >
                         Cancel leave
-                      </button>
+                      </Button>
                     )}
                   </div>
                 )}

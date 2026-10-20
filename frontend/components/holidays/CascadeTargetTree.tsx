@@ -108,7 +108,7 @@ export default function CascadeTargetTree({ departments, originDeptId, originDep
               onClick={() => (q.key === 'all' ? setAll() : q.key === 'none' ? setNone() : undefined)}
               aria-pressed={active}
               className={[
-                'px-3 py-1.5 rounded-md text-body font-medium transition-colors',
+                'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring px-3 py-1.5 rounded-md text-body font-medium transition-colors',
                 active ? 'bg-surface text-primary-text shadow-card' : 'text-text-muted hover:text-text-primary',
                 q.key === 'some' ? 'cursor-default' : '',
               ].join(' ')}
@@ -141,7 +141,7 @@ export default function CascadeTargetTree({ departments, originDeptId, originDep
               type="button"
               onClick={() => toggle(row)}
               style={{ paddingLeft: 12 + row.depth * 18 }}
-              className="w-full flex items-center gap-2.5 pr-3 py-2 text-left hover:bg-surface-sunken transition-colors"
+              className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2.5 pr-3 py-2 text-left hover:bg-surface-sunken transition-colors"
             >
               {row.depth > 1 && <CornerDownRight size={13} className="shrink-0 text-text-muted -ml-1" />}
               <span

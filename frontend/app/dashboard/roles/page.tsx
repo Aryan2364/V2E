@@ -5,6 +5,8 @@ import { useAuth } from '@/lib/auth/context'
 import { getDepartments } from '@/lib/api/departments'
 import { getRoles } from '@/lib/api/roles'
 import { Search, Plus, Upload, Building2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
 import ViewToggle, { type ViewMode } from '@/components/ui/ViewToggle'
 import RolesTableView from '@/components/roles/RolesTableView'
 import RolesTreeView from '@/components/roles/RolesTreeView'
@@ -101,33 +103,24 @@ export default function RolesPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-6">
-      {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div>
-          <h1 className="text-page-title font-medium text-text-primary leading-tight">Job Roles</h1>
-          <p className="mt-1 text-body text-text-secondary">
-            Every job role across the organisation, with its KRAs and KPIs.
-          </p>
-        </div>
-        {canEdit && !noDepartments && (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowImport(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
-            >
-              <Upload size={16} />
-              Import
-            </button>
-            <button
-              onClick={() => setFormTarget({ mode: 'create' })}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-            >
-              <Plus size={16} />
-              Add Job Role
-            </button>
-          </div>
-        )}
-      </div>
+      <PageHeader
+        title="Job roles"
+        meta="Every job role across the organisation, with its KRAs and KPIs."
+        actions={
+          canEdit && !noDepartments ? (
+            <>
+              <Button type="button" variant="secondary" onClick={() => setShowImport(true)}>
+                <Upload size={16} />
+                Import
+              </Button>
+              <Button type="button" onClick={() => setFormTarget({ mode: 'create' })}>
+                <Plus size={16} />
+                Add job role
+              </Button>
+            </>
+          ) : undefined
+        }
+      />
 
       {noDepartments ? (
         <div className="bg-surface border border-border-light rounded-card shadow-card flex flex-col items-center justify-center py-12 text-center">

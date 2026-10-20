@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { AlertTriangle, Check, X } from 'lucide-react'
 import type { OrgHoliday } from '@/lib/types/holidays'
@@ -88,24 +89,14 @@ export default function PendingHolidayReviewer({ pending, year, onApply, onDismi
       </div>
 
       <div className="flex gap-2 justify-end">
-        <button
-          type="button"
-          disabled={saving}
-          onClick={dismiss}
-          className="flex items-center gap-1.5 h-9 px-4 rounded-lg border border-warning-border text-body font-medium text-warning bg-surface hover:bg-warning-bg disabled:opacity-50 transition-colors"
-        >
+        <Button type="button" disabled={saving} onClick={dismiss} variant="secondary">
           <X size={14} />
-          Dismiss All
-        </button>
-        <button
-          type="button"
-          disabled={saving || selected.size === 0}
-          onClick={apply}
-          className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-body font-medium text-primary-foreground bg-warning hover:bg-warning disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-        >
+          Dismiss all
+        </Button>
+        <Button type="button" disabled={saving || selected.size === 0} onClick={apply}>
           <Check size={14} />
-          Activate {selected.size > 0 ? `${selected.size} Selected` : ''}
-        </button>
+          Activate {selected.size > 0 ? `${selected.size} selected` : ''}
+        </Button>
       </div>
     </div>
   )

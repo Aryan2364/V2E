@@ -59,7 +59,7 @@ export default function EntityAuditHistory({ orgId, resource, entityId, title = 
               <button
                 type="button"
                 onClick={() => hasChanges(e) && setExpanded((c) => (c === e.id ? null : e.id))}
-                className={`w-full flex items-start gap-3 py-2.5 text-left ${hasChanges(e) ? 'cursor-pointer' : 'cursor-default'}`}
+                className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring w-full flex items-start gap-3 py-2.5 text-left ${hasChanges(e) ? 'cursor-pointer' : 'cursor-default'}`}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">

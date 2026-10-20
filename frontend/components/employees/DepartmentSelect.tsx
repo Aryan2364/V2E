@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronDown, Search, X, Check, Building2, Lock } from 'lucide-react'
@@ -130,14 +131,18 @@ export default function DepartmentSelect({
           autoFocus
         />
         {query && (
-          <button
-            type="button"
-            onClick={() => setQuery('')}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
-            aria-label="Clear search"
-          >
-            <X size={14} />
-          </button>
+          <Tooltip label="Clear search">
+            <Button
+              type="button"
+              onClick={() => setQuery('')}
+              aria-label="Clear search"
+              variant="in-field"
+              size="icon-sm"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2"
+            >
+              <X size={14} />
+            </Button>
+          </Tooltip>
         )}
       </div>
 
@@ -149,7 +154,7 @@ export default function DepartmentSelect({
           <button
             type="button"
             onClick={() => pick('')}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+            className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
               !value ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
             }`}
           >
@@ -187,7 +192,7 @@ export default function DepartmentSelect({
                   key={d.id}
                   type="button"
                   onClick={() => pick(d.id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                  className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
                     isSel ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                   }`}
                 >
@@ -219,7 +224,7 @@ export default function DepartmentSelect({
                 type="button"
                 onClick={() => pick(dept.id)}
                 style={{ paddingLeft: 12 + depth * 16 }}
-                className={`w-full flex items-center gap-2.5 pr-3 py-2 text-left transition-colors ${
+                className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2.5 pr-3 py-2 text-left transition-colors ${
                   isSel ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                 }`}
               >

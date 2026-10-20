@@ -1,5 +1,6 @@
 'use client'
 
+import Tooltip from '@/components/ui/tooltip'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Loader2, Plus, ChevronLeft, ChevronRight, ChevronDown, Trash2, Undo2, RotateCcw, X } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
@@ -9,7 +10,7 @@ import { formatDate } from '@/lib/format'
 import type { CalendarHoliday, RemovedOrgHoliday } from '@/lib/types/holidays'
 import type { Department } from '@/lib/types'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import WorkingDaysStrip from './WorkingDaysStrip'
 import OrgHolidayList from './OrgHolidayList'
 import OrgHolidayCalendar from './OrgHolidayCalendar'
@@ -269,35 +270,37 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
             <div className="flex items-center gap-3">
               <h2 className="text-section font-medium text-text-primary">Holidays</h2>
               <div className="flex items-center gap-1 rounded-lg border border-border bg-surface">
-                <button
-                  type="button"
-                  onClick={() => setSelectedYear((y) => y - 1)}
-                  className="p-1.5 rounded-l-[7px] text-text-secondary hover:bg-surface-control transition-colors"
-                  aria-label="Previous year"
-                >
-                  <ChevronLeft size={15} />
-                </button>
+                <Tooltip label="Previous year">
+                  <Button
+                    type="button"
+                    onClick={() => setSelectedYear((y) => y - 1)}
+                    aria-label="Previous year"
+                    variant="ghost"
+                    size="icon"
+                  >
+                    <ChevronLeft size={15} />
+                  </Button>
+                </Tooltip>
                 <span className="min-w-[44px] text-center text-body font-medium text-text-primary tabular-nums">{selectedYear}</span>
-                <button
-                  type="button"
-                  onClick={() => setSelectedYear((y) => y + 1)}
-                  className="p-1.5 rounded-r-[7px] text-text-secondary hover:bg-surface-control transition-colors"
-                  aria-label="Next year"
-                >
-                  <ChevronRight size={15} />
-                </button>
+                <Tooltip label="Next year">
+                  <Button
+                    type="button"
+                    onClick={() => setSelectedYear((y) => y + 1)}
+                    aria-label="Next year"
+                    variant="ghost"
+                    size="icon"
+                  >
+                    <ChevronRight size={15} />
+                  </Button>
+                </Tooltip>
               </div>
             </div>
 
             {isAdmin && (
-              <button
-                type="button"
-                onClick={() => setShowAdd(true)}
-                className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-              >
+              <Button type="button" onClick={() => setShowAdd(true)}>
                 <Plus size={15} />
-                New Holiday
-              </button>
+                New holiday
+              </Button>
             )}
           </div>
 
@@ -307,24 +310,25 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
               <span className="text-body font-medium text-primary-text">{selectedIds.size} selected</span>
               <div className="flex items-center gap-2">
                 {selectedIds.size < selectableCount && (
-                  <button type="button" onClick={selectAll} className="text-body font-medium text-primary-text hover:underline">
+                  <button type="button" onClick={selectAll} className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring text-body font-medium text-primary-text hover:underline">
                     Select all {selectableCount}
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={() => setSelectedIds(new Set())}
-                  className="text-body font-medium text-text-secondary hover:underline"
+                  className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring text-body font-medium text-text-secondary hover:underline"
                 >
                   Clear
                 </button>
-                <button
+                <Button
                   type="button"
                   onClick={() => { setScopeSubtree(true); setConfirmOpen(true) }}
-                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-body font-medium text-on-danger bg-danger hover:bg-danger-hover transition-colors"
+                  variant="danger"
+                  size="sm"
                 >
                   <Trash2 size={14} /> Remove selected
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -352,7 +356,7 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
               <button
                 type="button"
                 onClick={() => setShowRemoved((s) => !s)}
-                className="flex items-center gap-1.5 text-body font-medium text-text-secondary hover:text-text-primary"
+                className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring flex items-center gap-1.5 text-body font-medium text-text-secondary hover:text-text-primary"
               >
                 {showRemoved ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                 Removed holidays ({removedOrg.length})
@@ -369,13 +373,14 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
                         </p>
                       </div>
                       {isAdmin && (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => restoreOrgHoliday(r.org_holiday_id)}
-                          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-body font-medium text-primary-text hover:bg-primary-subtle transition-colors"
+                          variant="secondary"
+                          size="sm"
                         >
                           <RotateCcw size={13} /> Restore
-                        </button>
+                        </Button>
                       )}
                     </div>
                   ))}
@@ -392,7 +397,7 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
         isOpen={showAdd}
         onClose={() => setShowAdd(false)}
         onAdd={addHoliday}
-        title="New Department Holiday"
+        title="New department holiday"
         departments={departments}
         originDeptId={deptId}
         originDeptName={deptName}
@@ -430,7 +435,7 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
 
           <div className="flex items-center justify-end gap-2 pt-1">
             <Button variant="secondary" onClick={() => setConfirmOpen(false)} disabled={removing}>Cancel</Button>
-            <Button variant="danger" onClick={confirmRemove} isLoading={removing} disabled={removing}>
+            <Button variant="danger" onClick={confirmRemove} loading={removing} disabled={removing}>
               {selected.length === 1 ? 'Remove' : `Remove ${selected.length}`}
             </Button>
           </div>
@@ -444,11 +449,11 @@ export default function DepartmentCalendarPanel({ orgId, deptId, deptName }: Pro
           <button
             type="button"
             onClick={undoRemoval}
-            className="inline-flex items-center gap-1.5 text-body font-medium text-surface/70 hover:text-surface transition-colors"
+            className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring inline-flex items-center gap-1.5 text-body font-medium text-surface/70 hover:text-surface transition-colors"
           >
             <Undo2 size={14} /> Undo
           </button>
-          <button type="button" onClick={() => setUndoToast(null)} className="text-text-muted hover:text-text-primary transition-colors"><X size={14} /></button>
+          <button type="button" onClick={() => setUndoToast(null)} className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring text-text-muted hover:text-text-primary transition-colors"><X size={14} /></button>
         </div>
       )}
     </div>

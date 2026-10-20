@@ -58,7 +58,7 @@ export default function NewGroupPage() {
   return (
     <div className="max-w-2xl">
       <PageHeader
-        title="Create Group"
+        title="Create group"
         meta="Groups let you cluster related organizations and share users across them."
         trail={[
           { label: 'Groups', href: '/super-admin/groups' },

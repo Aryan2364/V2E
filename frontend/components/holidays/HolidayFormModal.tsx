@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import CascadeTargetTree from './CascadeTargetTree'
@@ -58,7 +58,7 @@ export default function HolidayFormModal({
   isOpen,
   onClose,
   onAdd,
-  title = 'New Holiday',
+  title = 'New holiday',
   allowRange = true,
   defaultType = 'company',
   departments,
@@ -147,7 +147,7 @@ export default function HolidayFormModal({
                   type="button"
                   onClick={() => setSpan(s)}
                   className={[
-                    'px-3 py-1.5 rounded-md text-body font-medium transition-colors',
+                    'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring px-3 py-1.5 rounded-md text-body font-medium transition-colors',
                     span === s ? 'bg-surface text-primary-text shadow-card' : 'text-text-muted hover:text-text-primary',
                   ].join(' ')}
                 >
@@ -260,7 +260,7 @@ export default function HolidayFormModal({
 
         <div className="flex gap-2 justify-end pt-1">
           <Button variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
-          <Button variant="primary" onClick={submit} isLoading={saving} disabled={saving}>Add holiday</Button>
+          <Button variant="primary" onClick={submit} loading={saving} disabled={saving}>Add holiday</Button>
         </div>
       </div>
     </Modal>

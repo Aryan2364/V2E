@@ -154,14 +154,15 @@ export default function IdentityFormDrawer({
             {/* Values */}
             <div className="rounded-lg border border-border-light bg-surface-sunken p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h4 className="text-body font-medium text-text-primary">Organizational Values</h4>
-                <button
+                <h4 className="text-body font-medium text-text-primary">Organisational values</h4>
+                <Button
                   type="button"
                   onClick={() => append({ title: '', description: '' })}
-                  className="inline-flex items-center gap-1 text-label font-medium text-primary-text hover:text-primary-text"
+                  variant="secondary"
+                  size="sm"
                 >
-                  <PlusIcon size={13} /> Add Value
-                </button>
+                  <PlusIcon size={13} /> Add value
+                </Button>
               </div>
               <div className="flex max-h-85 flex-col gap-3 overflow-y-auto pr-1">
                 {fields.length === 0 && (
@@ -190,14 +191,15 @@ export default function IdentityFormDrawer({
                         aria-label="Value description" placeholder="For example, We do what we say we will do"
                       />
                     </div>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => remove(index)}
-                      className="self-start rounded-xs p-1 text-text-muted hover:text-danger"
                       aria-label="Remove value"
+                      variant="ghost"
+                      size="icon"
                     >
                       <Trash2Icon size={14} />
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>

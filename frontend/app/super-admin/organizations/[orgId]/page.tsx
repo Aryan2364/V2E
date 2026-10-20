@@ -76,7 +76,7 @@ function orgStatusVariant(status: OrgStatus): 'success' | 'danger' | 'warning' {
 function orgStatusLabel(status: OrgStatus) {
   if (status === 'active') return 'Active'
   if (status === 'inactive') return 'Inactive'
-  return 'Pending Setup'
+  return 'Pending setup'
 }
 
 // ─── Info row ──────────────────────────────────────────────────────────────────
@@ -86,7 +86,7 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
     <div className="flex items-center gap-3">
       <div className="text-text-muted">{icon}</div>
       <div>
-        <p className="text-label font-medium uppercase tracking-wider text-text-muted">{label}</p>
+        <p className="text-label font-medium text-text-muted">{label}</p>
         <p className="text-body font-medium text-text-primary">{value || '—'}</p>
       </div>
     </div>
@@ -157,7 +157,7 @@ function EntitlementsCard({ orgId }: { orgId: string }) {
   }
 
   return (
-    <Card title="Module Entitlements">
+    <Card title="Module entitlements">
       <p className="mb-4 text-body text-text-secondary">
         Which modules this organization has purchased. This is a hard ceiling — no role, admin, or
         override inside the org can exceed it. <strong>Preview</strong> grants read-only access.
@@ -169,7 +169,7 @@ function EntitlementsCard({ orgId }: { orgId: string }) {
           {modules.map((m, i) => (
             <div key={m.module_key}>
               {m.group && m.group !== modules[i - 1]?.group && (
-                <p className="pt-3 pb-1 text-label font-medium uppercase tracking-widest text-text-muted">
+                <p className="pt-3 pb-1 text-label font-medium text-text-muted">
                   {m.group}
                 </p>
               )}
@@ -188,7 +188,7 @@ function EntitlementsCard({ orgId }: { orgId: string }) {
                         key={opt.value}
                         onClick={() => setEdits((p) => ({ ...p, [m.module_key]: opt.value }))}
                         className={[
-                          'border-r border-border-light px-4 py-2 text-body font-medium transition-colors last:border-r-0',
+                          'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring border-r border-border-light px-4 py-2 text-body font-medium transition-colors last:border-r-0',
                           active ? opt.on : ENT_OFF,
                         ].join(' ')}
                       >
@@ -515,7 +515,7 @@ export default function OrgDetailPage() {
                 {org.group && (
                   <button
                     onClick={() => router.push(`/super-admin/groups/${org.group!.id}`)}
-                    className="inline-flex items-center gap-1 rounded-full border border-border-light bg-surface-control px-3 py-0.5 text-meta font-medium text-text-secondary hover:bg-surface-control"
+                    className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring inline-flex items-center gap-1 rounded-full border border-border-light bg-surface-control px-3 py-0.5 text-meta font-medium text-text-secondary hover:bg-surface-control"
                   >
                     <LayersIcon size={11} />
                     {org.group.name}
@@ -572,7 +572,7 @@ export default function OrgDetailPage() {
                 },
                 {
                   key: 'also_in',
-                  header: 'Also In',
+                  header: 'Also in',
                   render: (m) =>
                     m.also_in.length === 0 ? (
                       <span className="text-meta text-text-muted">—</span>
@@ -582,7 +582,7 @@ export default function OrgDetailPage() {
                           <button
                             key={o.id}
                             onClick={() => router.push(`/super-admin/organizations/${o.id}`)}
-                            className="inline-flex items-center rounded-full border border-border-light bg-surface-control px-2 py-0.5 text-meta font-medium text-text-secondary hover:bg-surface-control"
+                            className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring inline-flex items-center rounded-full border border-border-light bg-surface-control px-2 py-0.5 text-meta font-medium text-text-secondary hover:bg-surface-control"
                           >
                             {o.name}
                           </button>
@@ -603,12 +603,9 @@ export default function OrgDetailPage() {
                   key: 'actions',
                   header: '',
                   render: (m) => (
-                    <button
-                      onClick={() => setEditingMember(m)}
-                      className="inline-flex items-center gap-1 text-label font-medium text-primary-text hover:text-primary-text"
-                    >
+                    <Button type="button" onClick={() => setEditingMember(m)} variant="secondary" size="sm">
                       <PencilIcon size={13} /> Edit
-                    </button>
+                    </Button>
                   ),
                 },
               ]}

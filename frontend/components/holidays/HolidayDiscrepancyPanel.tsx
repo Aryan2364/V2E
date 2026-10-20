@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { useState, useEffect, useCallback } from 'react'
 import { Loader2, ChevronDown, ChevronRight, RotateCcw, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { holidaysApi } from '@/lib/api/holidays'
@@ -89,21 +90,22 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                   <button
                     type="button"
                     onClick={() => toggle(d.department_id)}
-                    className="flex items-center gap-1.5 text-body font-medium text-text-primary hover:text-primary-text"
+                    className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring flex items-center gap-1.5 text-body font-medium text-text-primary hover:text-primary-text"
                   >
                     {isOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                     {d.department_name}
                     <span className="text-text-muted font-normal">— {d.removed.length} removed</span>
                   </button>
                   {isAdmin && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => reEnforce(d.department_id, allIds)}
                       disabled={busy === `${d.department_id}:${allIds.join(',')}`}
-                      className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-body font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
+                      variant="secondary"
+                      size="sm"
                     >
                       <RotateCcw size={13} /> Re-enforce all
-                    </button>
+                    </Button>
                   )}
                 </div>
 
@@ -120,14 +122,15 @@ export default function HolidayDiscrepancyPanel({ orgId, isAdmin }: Props) {
                           </p>
                         </div>
                         {isAdmin && (
-                          <button
+                          <Button
                             type="button"
                             onClick={() => reEnforce(d.department_id, [r.org_holiday_id])}
                             disabled={busy === `${d.department_id}:${r.org_holiday_id}`}
-                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-body font-medium text-primary-text hover:bg-primary-subtle transition-colors disabled:opacity-50"
+                            variant="secondary"
+                            size="sm"
                           >
                             <RotateCcw size={13} /> Re-enforce
-                          </button>
+                          </Button>
                         )}
                       </div>
                     ))}

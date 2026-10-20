@@ -268,20 +268,13 @@ function OrgChartInner({
 
         <div className="ml-auto flex items-center gap-2">
           {canEdit && (
-            <button
-              onClick={handleAutoArrange}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-body font-medium bg-surface border border-border-light text-text-secondary hover:text-text-primary hover:border-border transition-colors"
-            >
-              <LayoutGridIcon size={15} /> Auto-arrange
-            </button>
+            <Button type="button" variant="secondary" onClick={handleAutoArrange}>
+              <LayoutGridIcon size={16} /> Auto-arrange
+            </Button>
           )}
-          <button
-            onClick={handleExport}
-            disabled={exporting}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-body font-medium bg-surface border border-border-light text-text-secondary hover:text-text-primary hover:border-border disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-          >
-            <DownloadIcon size={15} /> {exporting ? 'Exporting…' : 'Export PNG'}
-          </button>
+          <Button type="button" variant="secondary" onClick={handleExport} disabled={exporting} loading={exporting} loadingLabel="Exporting">
+            <DownloadIcon size={16} /> Export PNG
+          </Button>
         </div>
       </div>
 
@@ -329,12 +322,9 @@ function EmptyState({ canEdit, onAdd }: { canEdit: boolean; onAdd: () => void })
           : 'Departments will appear here once they are created.'}
       </p>
       {canEdit && (
-        <button
-          onClick={onAdd}
-          className="mt-4 flex items-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium bg-primary text-primary-foreground hover:bg-primary-hover transition-colors"
-        >
-          <PlusIcon size={15} /> Add Department
-        </button>
+        <Button type="button" className="mt-4" onClick={onAdd}>
+          <PlusIcon size={16} /> Add department
+        </Button>
       )}
     </div>
   )
@@ -456,7 +446,7 @@ export default function OrgChartPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Department Structure"
+        title="Department structure"
         meta={
           canEdit
             ? 'Drag to arrange, click a department for details, and use the pencil to edit.'
@@ -471,7 +461,7 @@ export default function OrgChartPage() {
               </Button>
               <Button onClick={openCreate}>
                 <PlusIcon size={16} />
-                Add Department
+                Add department
               </Button>
             </div>
           ) : undefined
@@ -491,7 +481,7 @@ export default function OrgChartPage() {
               />
               <input
                 type="text"
-                placeholder="SearchIcon departments…"
+                placeholder="Search departments…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full pl-8 pr-3 py-[10px] text-body rounded-lg border border-border focus:border-primary focus:outline-hidden bg-surface text-text-primary placeholder:text-text-muted"

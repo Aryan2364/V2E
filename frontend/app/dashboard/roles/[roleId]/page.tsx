@@ -5,7 +5,8 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth/context'
 import { getRole } from '@/lib/api/roles'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
 import type { Role, RoleLevel } from '@/lib/types'
 import { ArrowLeft, Pencil, Briefcase } from 'lucide-react'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
@@ -119,7 +120,7 @@ export default function RoleDetailPage() {
         <p className="text-section font-medium text-text-primary">Job role not found</p>
         <Link href="/dashboard/roles" className="mt-4">
           <Button variant="secondary" size="sm">
-            <ArrowLeft size={14} /> Back to job roles
+            <ArrowLeft size={16} /> Back to job roles
           </Button>
         </Link>
       </div>
@@ -128,41 +129,30 @@ export default function RoleDetailPage() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      {/* Back link */}
-      <Link
-        href="/settings/organization/roles"
-        className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors"
-      >
-        <ArrowLeft size={15} />
-        All Job Roles
-      </Link>
-
-      {/* Role header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-page-title font-medium text-text-primary leading-tight">{role.title}</h1>
-          <div className="flex flex-wrap items-center gap-2">
-            {role.department?.name && (
-              <span className="inline-flex items-center rounded-full px-3 py-1 text-meta font-medium bg-primary-subtle text-primary-text">
-                {role.department.name}
-              </span>
-            )}
+      <PageHeader
+        title={role.title}
+        trail={[{ label: 'Job roles', href: '/settings/organization/roles' }]}
+        meta={
+          <span className="inline-flex flex-wrap items-center gap-2">
+            {role.department?.name && <span>{role.department.name}</span>}
             <LevelBadge level={role.level} />
-          </div>
-        </div>
-        {canEdit && (
-          <Link href="/settings/organization/roles">
-            <Button variant="secondary" size="sm">
-              <Pencil size={14} />
-              Edit
-            </Button>
-          </Link>
-        )}
-      </div>
+          </span>
+        }
+        actions={
+          canEdit ? (
+            <Link href="/settings/organization/roles">
+              <Button variant="secondary">
+                <Pencil size={16} />
+                Edit
+              </Button>
+            </Link>
+          ) : undefined
+        }
+      />
 
       {/* Job Description */}
       {role.job_description && (
-        <Section title="Job Description">
+        <Section title="Job description">
           <p className="text-text-primary leading-relaxed whitespace-pre-wrap text-body">
             {role.job_description}
           </p>
@@ -171,7 +161,7 @@ export default function RoleDetailPage() {
 
       {/* KRAs */}
       {role.kra && role.kra.length > 0 && (
-        <Section title="Key Result Areas (KRA)">
+        <Section title="Key result areas (KRA)">
           <ol className="space-y-4">
             {role.kra.map((kra, i) => (
               <li key={i} className="flex gap-4">
@@ -194,7 +184,7 @@ export default function RoleDetailPage() {
 
       {/* KPIs */}
       {role.kpi && role.kpi.length > 0 && (
-        <Section title="Key Performance Indicators (KPI)">
+        <Section title="Key performance indicators (KPI)">
           <ResponsiveTable
             className="border-0! rounded-none! shadow-none! bg-transparent! overflow-visible!"
             columns={kpiColumns}

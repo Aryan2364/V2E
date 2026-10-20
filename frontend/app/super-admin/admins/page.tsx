@@ -228,14 +228,11 @@ export default function AdminsPage() {
           <div className="rounded-card border border-border-light bg-surface p-6 shadow-card">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-section font-medium text-text-primary">New super admin</h2>
-              <button
-                type="button"
-                onClick={resetForm}
-                aria-label="Close"
-                className="rounded-md p-1 text-text-secondary hover:bg-surface-control"
-              >
-                <XIcon size={16} />
-              </button>
+              <Tooltip label="Close">
+                <Button type="button" onClick={resetForm} aria-label="Close" variant="ghost" size="icon">
+                  <XIcon size={16} />
+                </Button>
+              </Tooltip>
             </div>
 
             <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -310,14 +307,11 @@ export default function AdminsPage() {
               <h2 className="text-section font-medium text-text-primary">
                 Edit super admin ({editingAdmin.name})
               </h2>
-              <button
-                type="button"
-                onClick={resetEditForm}
-                aria-label="Close"
-                className="rounded-md p-1 text-text-secondary hover:bg-surface-control"
-              >
-                <XIcon size={16} />
-              </button>
+              <Tooltip label="Close">
+                <Button type="button" onClick={resetEditForm} aria-label="Close" variant="ghost" size="icon">
+                  <XIcon size={16} />
+                </Button>
+              </Tooltip>
             </div>
 
             <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -512,7 +506,7 @@ export default function AdminsPage() {
         </div>
 
         <div className="rounded-card border border-primary-border bg-primary-subtle px-4 py-4">
-          <p className="mb-1 text-body font-medium text-primary-text">Admin Portal credentials</p>
+          <p className="mb-1 text-body font-medium text-primary-text">Admin portal credentials</p>
           <p className="text-body text-primary-text">
             Login URL: <span className="font-medium">/admin</span> — Only users with super admin access can sign in here.
             Regular org accounts (even with the same email) use <span className="font-medium">/login</span> and land in their organization.

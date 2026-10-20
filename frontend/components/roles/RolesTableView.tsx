@@ -1,5 +1,7 @@
 'use client'
 
+import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import { useMemo } from 'react'
 import { ChevronRight, Pencil, Briefcase } from 'lucide-react'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
@@ -64,7 +66,7 @@ export default function RolesTableView({
   const columns: ResponsiveColumn<Role>[] = [
     {
       key: 'title',
-      header: 'Job Role',
+      header: 'Job role',
       primary: true,
       cellClassName: 'px-4 py-3.5',
       headerClassName: 'px-4 py-3.5',
@@ -131,17 +133,20 @@ export default function RolesTableView({
       render: (r) => (
         <div className="flex items-center justify-end gap-1">
           {canEdit && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                onEdit(r)
-              }}
-              className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
-              aria-label={`Edit ${r.title}`}
-            >
-              <Pencil size={14} />
-            </button>
+            <Tooltip label="Edit">
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onEdit(r)
+                }}
+                aria-label={`Edit ${r.title}`}
+                variant="ghost"
+                size="icon"
+              >
+                <Pencil size={14} />
+              </Button>
+            </Tooltip>
           )}
           <ChevronRight size={16} className="text-text-muted" />
         </div>

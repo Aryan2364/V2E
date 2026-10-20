@@ -1,5 +1,7 @@
 'use client'
 
+import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import { useMemo } from 'react'
 import { Users, ChevronRight, Pencil, Network, CornerDownRight } from 'lucide-react'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
@@ -95,7 +97,7 @@ export default function DeptTableView({
     },
     {
       key: 'parent',
-      header: 'Parent Dept.',
+      header: 'Parent department',
       desktopHiddenBelow: 'md',
       cellClassName: 'px-4 py-3.5',
       headerClassName: 'px-4 py-3.5',
@@ -143,17 +145,20 @@ export default function DeptTableView({
       render: ({ department }) => (
         <div className="flex items-center justify-end gap-1">
           {canEdit && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                onEdit(department)
-              }}
-              className="p-1.5 rounded-[6px] text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
-              aria-label={`Edit ${department.name}`}
-            >
-              <Pencil size={14} />
-            </button>
+            <Tooltip label="Edit">
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onEdit(department)
+                }}
+                aria-label={`Edit ${department.name}`}
+                variant="ghost"
+                size="icon"
+              >
+                <Pencil size={14} />
+              </Button>
+            </Tooltip>
           )}
           <ChevronRight size={16} className="text-text-muted" />
         </div>

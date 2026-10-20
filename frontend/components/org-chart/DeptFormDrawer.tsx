@@ -241,7 +241,7 @@ export default function DeptFormDrawer({
               <button
                 type="button"
                 onClick={() => setColor(null)}
-                className={`h-8 rounded-lg border px-3 text-label font-medium transition-colors ${
+                className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring h-8 rounded-lg border px-3 text-label font-medium transition-colors ${
                   color === null
                     ? 'border-primary bg-primary-subtle text-primary-text'
                     : 'border-border text-text-secondary hover:bg-surface-sunken'
@@ -280,18 +280,16 @@ export default function DeptFormDrawer({
                   : `Reassign its ${blockers.join(', ')} first`
               }
             >
-            <button
+            <Button
               type="button"
               onClick={() => canDelete && setConfirmDelete(true)}
               disabled={!canDelete}
-              className={`flex items-center gap-1 self-start text-body font-medium transition-colors ${
-                canDelete
-                  ? 'text-danger hover:text-danger'
-                  : 'cursor-not-allowed text-text-muted'
-              }`}
+              variant="danger"
+              size="sm"
+              className="self-start"
             >
               <Trash2Icon size={14} /> Delete department
-            </button>
+            </Button>
             </Tooltip>
           )}
 

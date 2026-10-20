@@ -5,7 +5,7 @@ import { Plus, Briefcase, ChevronRight, Building2 } from 'lucide-react'
 import { getRoles } from '@/lib/api/roles'
 import { flattenTree, ancestorsOf } from '@/lib/dept-tree'
 import { computeNodeColors } from '@/lib/org-chart-colors'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { levelColors } from '@/lib/role-levels'
 import RoleFormDrawer, { type RoleFormTarget } from './RoleFormDrawer'
 import type { Department, Role } from '@/lib/types'
@@ -53,7 +53,7 @@ function RoleCard({ role, onClick }: { role: Role; onClick?: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="text-left bg-surface border border-border-light rounded-xl p-4 hover:border-border hover:shadow-xs transition-all"
+      className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring text-left bg-surface border border-border-light rounded-xl p-4 hover:border-border hover:shadow-xs transition-all"
     >
       {body}
     </button>
@@ -133,7 +133,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
         {/* Left: department tree */}
         <div className="md:w-[260px] shrink-0 bg-surface border border-border-light rounded-card overflow-hidden self-start w-full">
           <div className="px-4 py-3 border-b border-border-light">
-            <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">
+            <p className="text-meta font-medium text-text-secondary">
               Departments
             </p>
           </div>
@@ -147,7 +147,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
                   onClick={() => setSelectedDeptId(dept.id)}
                   style={{ paddingLeft: 12 + depth * 16 }}
                   className={[
-                    'flex items-center gap-2 pr-3 py-2.5 text-left transition-colors',
+                    'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring flex items-center gap-2 pr-3 py-2.5 text-left transition-colors',
                     active ? 'bg-primary-subtle text-primary-text' : 'text-text-secondary hover:bg-surface-sunken',
                   ].join(' ')}
                 >
@@ -184,7 +184,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
                         <span key={a.id} className="flex items-center gap-1">
                           <button
                             onClick={() => setSelectedDeptId(a.id)}
-                            className="hover:text-primary-text transition-colors"
+                            className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring hover:text-primary-text transition-colors"
                           >
                             {a.name}
                           </button>
@@ -205,7 +205,7 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
                     size="sm"
                     onClick={() => setDrawerTarget({ mode: 'create', deptId: selectedDept.id })}
                   >
-                    <Plus size={14} /> Add Job Role
+                    <Plus size={14} /> Add job role
                   </Button>
                 )}
               </div>
@@ -221,12 +221,14 @@ export default function DeptRolesPanel({ departments, orgId, canEdit }: DeptRole
                     <Briefcase size={28} className="text-text-muted" />
                     <p className="text-body text-text-muted">No job roles in this department yet.</p>
                     {canEdit && (
-                      <button
+                      <Button
+                        type="button"
                         onClick={() => setDrawerTarget({ mode: 'create', deptId: selectedDept.id })}
-                        className="text-body text-primary-text font-medium hover:text-primary-text"
+                        variant="secondary"
+                        size="sm"
                       >
                         Add the first job role
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ) : (

@@ -127,14 +127,14 @@ export default function GroupDetailPage() {
           </div>
           <div className="mt-4 flex gap-8 border-t border-border-light pt-4">
             <div>
-              <p className="text-label font-medium uppercase tracking-wider text-text-muted">Organizations</p>
+              <p className="text-label font-medium text-text-muted">Organizations</p>
               <p className="mt-1 text-section font-medium text-text-primary">{group.organizations?.length ?? 0}</p>
             </div>
           </div>
         </Card>
 
         {/* Member orgs */}
-        <Card title="Member Organizations">
+        <Card title="Member organizations">
           {actionError ? (
             <Banner variant="danger" className="mb-4">
               <OctagonXIcon />
@@ -174,12 +174,14 @@ export default function GroupDetailPage() {
                     <p className="truncate text-body font-medium text-text-primary">{org.name}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
+                      type="button"
                       onClick={() => router.push(`/super-admin/organizations/${org.id}`)}
-                      className="px-2 py-1 text-label font-medium text-primary-text hover:text-primary-text"
+                      variant="secondary"
+                      size="sm"
                     >
                       View
-                    </button>
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -255,7 +257,7 @@ function GroupUsersTable({ groupId }: { groupId: string }) {
                 <button
                   key={org.id}
                   onClick={() => router.push(`/super-admin/organizations/${org.id}`)}
-                  className="inline-flex items-center rounded-full border border-border-light bg-surface-control px-2 py-0.5 text-meta font-medium text-text-secondary hover:bg-surface-control"
+                  className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring inline-flex items-center rounded-full border border-border-light bg-surface-control px-2 py-0.5 text-meta font-medium text-text-secondary hover:bg-surface-control"
                 >
                   {org.name}
                 </button>

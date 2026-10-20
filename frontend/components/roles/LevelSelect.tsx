@@ -70,7 +70,7 @@ export default function LevelSelect({ value, onChange, showHead = true }: Props)
                     key={l.value}
                     type="button"
                     onClick={() => pick(l.value)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                    className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
                       isSel ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                     }`}
                   >

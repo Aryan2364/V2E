@@ -53,7 +53,7 @@ function TriToggle({
             disabled={busy}
             onClick={() => onChange(o.v)}
             className={[
-              'px-2.5 py-1 text-meta font-medium transition-colors disabled:opacity-50',
+              'outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring px-2.5 py-1 text-meta font-medium transition-colors disabled:opacity-50',
               active ? o.on : 'bg-surface text-text-secondary hover:bg-surface-sunken',
             ].join(' ')}
           >
@@ -167,7 +167,7 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
     <div className="bg-surface border border-border-light rounded-card shadow-card overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-2 px-6 py-4 text-left"
+        className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2 px-6 py-4 text-left"
       >
         <ShieldCheck size={18} className="text-primary-text" />
         <span className="flex-1 text-card-heading font-medium text-text-primary">Access &amp; Permissions</span>
@@ -202,7 +202,7 @@ export default function EmployeePermissionsPanel({ orgId, userId }: { orgId: str
                   <div key={mod.key} className="mb-3 border border-border-light rounded-xl overflow-hidden">
                     <button
                       onClick={() => setCollapsed((c) => ({ ...c, [mod.key]: !c[mod.key] }))}
-                      className="w-full flex items-center gap-1.5 px-4 py-2.5 bg-surface-sunken text-left"
+                      className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-1.5 px-4 py-2.5 bg-surface-sunken text-left"
                     >
                       <ChevronRight size={15} className={['text-text-muted transition-transform', isCollapsed ? '' : 'rotate-90'].join(' ')} />
                       <span className="text-body font-medium text-text-primary">{mod.label}</span>

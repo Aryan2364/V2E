@@ -34,7 +34,7 @@ export default function GroupsPage() {
         actions={
           <Button onClick={() => router.push('/super-admin/groups/new')}>
             <PlusIcon size={16} />
-            New Group
+            New group
           </Button>
         }
       />
@@ -78,12 +78,14 @@ export default function GroupsPage() {
                 key: 'actions',
                 header: 'Actions',
                 render: (g) => (
-                  <button
+                  <Button
+                    type="button"
                     onClick={() => router.push(`/super-admin/groups/${g.id}`)}
-                    className="inline-flex items-center gap-1 text-body font-medium text-primary-text hover:text-primary-text"
+                    variant="secondary"
+                    size="sm"
                   >
                     View <ArrowRightIcon size={14} />
-                  </button>
+                  </Button>
                 ),
               },
             ]}
@@ -93,7 +95,7 @@ export default function GroupsPage() {
             skeletonRows={4}
             emptyState={
               <EmptyState variant="nothing-yet" heading="No groups yet">
-                Click &quot;New Group&quot; to create your first organization group.
+                Click &quot;New group&quot; to create your first organization group.
               </EmptyState>
             }
           />

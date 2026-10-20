@@ -6,7 +6,7 @@ import type { CalendarHoliday, HolidayType } from '@/lib/types/holidays'
 import { parseLocalDate, dateOnly } from '@/lib/date'
 import { formatDayMonth, formatWeekday } from '@/lib/format'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import DatePicker from '@/components/ui/DatePicker'
 import Tooltip from '@/components/ui/tooltip'
 
@@ -104,20 +104,22 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
                 onChange={(e) => setEditing((s) => s ? { ...s, name: e.target.value } : s)}
                 className="flex-1 h-8 px-2 rounded-md border border-border text-body text-text-primary bg-surface focus:border-primary outline-hidden"
               />
-              <button
-                type="button"
-                onClick={saveEdit}
-                className="p-1.5 rounded-md bg-success-bg text-success hover:bg-success-bg transition-colors"
-              >
-                <Check size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditing(null)}
-                className="p-1.5 rounded-md bg-surface-control text-text-secondary hover:bg-surface-control-pressed transition-colors"
-              >
-                <X size={14} />
-              </button>
+              <Tooltip label="Save">
+                <Button type="button" onClick={saveEdit} variant="ghost" size="icon" aria-label="Save">
+                  <Check size={14} />
+                </Button>
+              </Tooltip>
+              <Tooltip label="Cancel">
+                <Button
+                  type="button"
+                  onClick={() => setEditing(null)}
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Cancel"
+                >
+                  <X size={14} />
+                </Button>
+              </Tooltip>
             </div>
           )
         }
@@ -191,37 +193,40 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
             {h.inherited ? (
               onOptOut && (
                 <Tooltip label="Opt out (remove for this department and its sub-departments)">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => onOptOut(h)}
-                    className="p-1.5 rounded-md hover:bg-warning-bg text-text-secondary hover:text-warning transition-colors shrink-0"
                     aria-label="Opt out (remove for this department and its sub-departments)"
+                    variant="ghost"
+                    size="icon"
                   >
                     <Unlink size={13} />
-                  </button>
+                  </Button>
                 </Tooltip>
               )
             ) : (
               <>
                 <Tooltip label="Edit">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => startEdit(h)}
-                    className="p-1.5 rounded-md hover:bg-primary-subtle text-text-secondary hover:text-primary-text transition-colors shrink-0"
                     aria-label="Edit"
+                    variant="ghost"
+                    size="icon"
                   >
                     <Pencil size={13} />
-                  </button>
+                  </Button>
                 </Tooltip>
                 <Tooltip label="Delete">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setToDelete(h)}
-                    className="p-1.5 rounded-md hover:bg-danger-bg text-text-secondary hover:text-danger transition-colors shrink-0"
                     aria-label="Delete"
+                    variant="ghost"
+                    size="icon"
                   >
                     <Trash2 size={13} />
-                  </button>
+                  </Button>
                 </Tooltip>
               </>
             )}
@@ -242,7 +247,7 @@ export default function OrgHolidayList({ holidays, onDelete, onUpdate, emptyText
       </p>
       <div className="flex items-center justify-end gap-2 mt-4">
         <Button variant="secondary" onClick={() => setToDelete(null)} disabled={deleting}>Cancel</Button>
-        <Button variant="danger" onClick={confirmDelete} isLoading={deleting} disabled={deleting}>Delete</Button>
+        <Button variant="danger" onClick={confirmDelete} loading={deleting} disabled={deleting}>Delete</Button>
       </div>
     </Modal>
     </>

@@ -1,5 +1,6 @@
 'use client'
 
+import Tooltip from '@/components/ui/tooltip'
 import { useCallback, useEffect, useState } from 'react'
 import { PlusIcon, Trash2Icon, PencilIcon, XIcon, CheckIcon } from 'lucide-react'
 import {
@@ -131,21 +132,17 @@ function CultureCard({
           <p className="mt-1 text-body text-text-secondary">{standard.description}</p>
         )}
       </div>
-      <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <button
-          onClick={onEdit}
-          className="flex size-7 items-center justify-center rounded-md text-text-muted hover:bg-primary-subtle hover:text-primary-text"
-          aria-label="Edit"
-        >
-          <PencilIcon size={14} />
-        </button>
-        <button
-          onClick={onDelete}
-          className="flex size-7 items-center justify-center rounded-md text-text-muted hover:bg-danger-bg hover:text-danger"
-          aria-label="Delete"
-        >
-          <Trash2Icon size={14} />
-        </button>
+      <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+        <Tooltip label="Edit">
+          <Button type="button" onClick={onEdit} aria-label="Edit" variant="ghost" size="icon">
+            <PencilIcon size={14} />
+          </Button>
+        </Tooltip>
+        <Tooltip label="Delete">
+          <Button type="button" onClick={onDelete} aria-label="Delete" variant="ghost" size="icon">
+            <Trash2Icon size={14} />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   )
@@ -201,13 +198,15 @@ function Column({
         </span>
         <h3 className={`text-body font-medium ${headerText}`}>{title}</h3>
         {!showForm && (
-          <button
+          <Button
             type="button"
             onClick={() => setShowForm(true)}
-            className={`ml-auto inline-flex items-center gap-1 text-label font-medium ${headerText} hover:opacity-80`}
+            variant="secondary"
+            size="sm"
+            className="ml-auto"
           >
             <PlusIcon size={13} /> Add
-          </button>
+          </Button>
         )}
       </div>
 
@@ -322,14 +321,14 @@ export default function CultureManagerDrawer({
           ) : (
             <div className="flex flex-col gap-4 sm:flex-row">
               <Column
-                title="Expected Behaviors"
+                title="Expected behaviours"
                 type="expected_behavior"
                 items={expected}
                 orgId={orgId}
                 onRefresh={handleRefresh}
               />
               <Column
-                title="Unacceptable Behaviors"
+                title="Unacceptable behaviours"
                 type="unacceptable_behavior"
                 items={unacceptable}
                 orgId={orgId}

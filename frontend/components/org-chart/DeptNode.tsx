@@ -37,7 +37,7 @@ function DeptNode({ data, selected }: { data: DeptNodeData; selected: boolean })
       {data.canEdit && data.onEdit && (
         <button
           type="button"
-          className="nodrag absolute top-1.5 right-1.5 w-6 h-6 rounded-[6px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-surface/25"
+          className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring nodrag absolute top-1.5 right-1.5 w-6 h-6 rounded-[6px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-surface/25"
           style={{ color: text }}
           aria-label="Edit department"
           onMouseDown={(e) => e.stopPropagation()}

@@ -15,13 +15,14 @@ import { updateUser } from '@/lib/api/users'
 import { listSystemRoles, type SystemRoleLite } from '@/lib/api/permissions'
 import { getRoles } from '@/lib/api/roles'
 import { getDepartments } from '@/lib/api/departments'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
 import StyledSelect from '@/components/ui/StyledSelect'
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect'
 import { DEFAULT_COUNTRY, cleanNationalNumber, nationalDigitsFor } from '@/lib/phone'
 import EmployeePermissionsPanel from '@/components/permissions/EmployeePermissionsPanel'
 import type { EmployeeProfile, EmployeeStatus, Role, Department } from '@/lib/types'
-import { ArrowLeft, Users, ChevronDown, Pencil, Loader2, Eye, EyeOff, Trash2 } from 'lucide-react'
+import { ArrowLeft, Users, ChevronDown, Pencil, Eye, EyeOff, Trash2 } from 'lucide-react'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import DatePicker from '@/components/ui/DatePicker'
 import { Label } from '@/components/ui/label'
@@ -103,7 +104,7 @@ function StatusBadge({ status }: { status: EmployeeStatus }) {
 function InfoCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="text-meta font-medium text-text-secondary uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-meta font-medium text-text-secondary mb-1">{label}</p>
       <p className="text-body text-text-primary font-medium">{value ?? '—'}</p>
     </div>
   )
@@ -137,7 +138,7 @@ function ReportingChain({ emp, allEmployees }: { emp: EmployeeProfile; allEmploy
         return (
           <div key={mgr.id} className="flex items-start gap-3">
             <div className="flex flex-col items-center">
-              <div className={`w-8 h-8 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-meta font-medium shrink-0`}>
+              <div className={`w-8 h-8 rounded-full ${avatarColor(name)} flex items-center justify-center text-primary-foreground text-meta font-medium shrink-0`}>
                 {getInitials(name)}
               </div>
               {i < chain.length - 1 && <div className="w-px h-4 bg-surface-control-pressed mt-1" />}
@@ -446,14 +447,16 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                 aria-invalid={fieldErrors.password ? true : undefined}
                 className={`${inputClass} pr-8 aria-invalid:border-danger`}
               />
-              <button
+              <Button
                 type="button"
+                variant="in-field"
+                size="icon-sm"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
+                className="absolute right-1 top-1/2 -translate-y-1/2"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+              </Button>
             </div>
             <InlineFieldError>{fieldErrors.password}</InlineFieldError>
           </div>
@@ -504,8 +507,8 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                 value={form.employment_type}
                 onChange={(v) => set('employment_type', v)}
                 options={[
-                  { value: 'full_time', label: 'Full Time' },
-                  { value: 'part_time', label: 'Part Time' },
+                  { value: 'full_time', label: 'Full time' },
+                  { value: 'part_time', label: 'Part time' },
                   { value: 'contract', label: 'Contract' },
                 ]}
               />
@@ -575,7 +578,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
           {/* Reporting To */}
           <div>
-            <Label className="mb-2">Reports To</Label>
+            <Label className="mb-2">Reports to</Label>
             <StyledSelect
               value={form.reporting_to_user_id}
               onChange={(v) => set('reporting_to_user_id', v)}
@@ -603,7 +606,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                   <div className="flex flex-col gap-2 mb-3">
                     {deleteBlocked.blockers.reports.length > 0 && (
                       <div className="rounded-md bg-surface border border-danger-border px-3 py-2">
-                        <p className="text-meta font-medium text-danger uppercase tracking-wide mb-1">
+                        <p className="text-meta font-medium text-danger mb-1">
                           Left without a manager
                         </p>
                         <p className="text-body text-danger">
@@ -613,7 +616,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     )}
                     {deleteBlocked.blockers.departments.length > 0 && (
                       <div className="rounded-md bg-surface border border-danger-border px-3 py-2">
-                        <p className="text-meta font-medium text-danger uppercase tracking-wide mb-1">
+                        <p className="text-meta font-medium text-danger mb-1">
                           Left without a head
                         </p>
                         <p className="text-body text-danger">
@@ -623,21 +626,12 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     )}
                   </div>
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => handleDelete(true)}
-                      disabled={deleting}
-                      className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-on-danger bg-danger hover:bg-danger-hover rounded-lg transition-colors disabled:opacity-60"
-                    >
-                      {deleting && <Loader2 size={14} className="animate-spin" />}
+                    <Button type="button" variant="danger" onClick={() => handleDelete(true)} loading={deleting} loadingLabel="Deleting">
                       Clear links and delete
-                    </button>
-                    <button
-                      onClick={() => { setConfirmDelete(false); setDeleteBlocked(null) }}
-                      disabled={deleting}
-                      className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-lg hover:bg-surface-sunken transition-colors"
-                    >
+                    </Button>
+                    <Button type="button" variant="secondary" onClick={() => { setConfirmDelete(false); setDeleteBlocked(null) }} disabled={deleting}>
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </>
               ) : (
@@ -648,21 +642,12 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                     history, use <span className="font-medium">Inactive</span> instead.
                   </p>
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => handleDelete()}
-                      disabled={deleting}
-                      className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-on-danger bg-danger hover:bg-danger-hover rounded-lg transition-colors disabled:opacity-60"
-                    >
-                      {deleting && <Loader2 size={14} className="animate-spin" />}
+                    <Button type="button" variant="danger" onClick={() => handleDelete()} loading={deleting} loadingLabel="Deleting">
                       Delete employee
-                    </button>
-                    <button
-                      onClick={() => setConfirmDelete(false)}
-                      disabled={deleting}
-                      className="px-4 py-2 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-lg hover:bg-surface-sunken transition-colors"
-                    >
+                    </Button>
+                    <Button type="button" variant="secondary" onClick={() => setConfirmDelete(false)} disabled={deleting}>
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </>
               )}
@@ -672,18 +657,15 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
               {/* Danger action — hidden for yourself and the primary admin (both
                   are protected server-side too). */}
               {!isSelf && !isPrimaryAdmin ? (
-                <button
-                  onClick={() => setConfirmDelete(true)}
-                  className="flex items-center gap-1.5 text-body font-medium text-danger hover:text-danger transition-colors"
-                >
-                  <Trash2 size={15} /> Delete
-                </button>
+                <Button type="button" variant="danger" onClick={() => setConfirmDelete(true)}>
+                  <Trash2 size={16} /> Delete
+                </Button>
               ) : (
                 <span />
               )}
               <div className="flex items-center gap-2">
                 <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
-                <Button type="button" onClick={handleSave} disabled={saving} isLoading={saving}>
+                <Button type="button" onClick={handleSave} disabled={saving} loading={saving} loadingLabel="Saving">
                   Save employee
                 </Button>
               </div>
@@ -766,18 +748,6 @@ export default function EmployeeDetailPage() {
 
   const isHR = !!user?.is_admin
 
-  // Return to wherever the user came from — the department structure panel, the
-  // employees tree/table view, a reporting chain, etc. — rather than always the
-  // flat employees list. Falls back to that list only on a direct load (no
-  // in-app history to step back into).
-  function handleBack() {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      router.back()
-    } else {
-      router.push(employeesListHref)
-    }
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -792,7 +762,7 @@ export default function EmployeeDetailPage() {
         <Users size={36} className="text-text-muted mb-3" />
         <p className="text-section font-medium text-text-primary">Employee not found</p>
         <Link href="/settings/organization/employees" className="mt-4">
-          <Button variant="secondary" size="sm"><ArrowLeft size={14} /> Back to employees</Button>
+          <Button variant="secondary" size="sm"><ArrowLeft size={16} /> Back to employees</Button>
         </Link>
       </div>
     )
@@ -801,7 +771,7 @@ export default function EmployeeDetailPage() {
   const name = employee.user?.name ?? 'Unknown'
   const email = employee.user?.email ?? ''
   const employmentTypeLabels: Record<string, string> = {
-    full_time: 'Full Time', part_time: 'Part Time', contract: 'Contract',
+    full_time: 'Full time', part_time: 'Part time', contract: 'Contract',
   }
   const jdPreview = employee.role?.job_description
     ? employee.role.job_description.slice(0, 200) + (employee.role.job_description.length > 200 ? '…' : '')
@@ -809,61 +779,43 @@ export default function EmployeeDetailPage() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <button onClick={handleBack} className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors">
-        <ArrowLeft size={15} />
-        Back
-      </button>
-
-      {/* Profile header */}
-      <div className="bg-surface border border-border-light rounded-card shadow-card p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className={`w-20 h-20 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-page-title font-medium shrink-0`}>
-            {getInitials(name)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-page-title font-medium text-text-primary leading-tight">{name}</h1>
-            <div className="flex flex-wrap items-center gap-2 mt-1.5">
-              {employee.role?.title && <span className="text-body text-text-secondary font-medium">{employee.role.title}</span>}
-              {employee.department?.name && (
-                <>
-                  <span className="text-text-muted">·</span>
-                  <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text">
-                    {employee.department.name}
-                  </span>
-                </>
-              )}
-              <StatusBadge status={employee.status} />
-            </div>
-            {email && <p className="text-body text-text-secondary mt-1">{email}</p>}
-          </div>
-          {isHR && (
-            <button
-              onClick={() => setShowEdit(true)}
-              className="flex items-center gap-2 px-4 py-2.5 text-body font-medium text-text-secondary bg-surface border border-border-light rounded-lg hover:border-primary hover:text-primary-text transition-colors shrink-0"
-            >
-              <Pencil size={15} />
+      <PageHeader
+        title={name}
+        trail={[{ label: 'Employees', href: employeesListHref }]}
+        meta={
+          <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+            {employee.role?.title && <span className="font-medium text-text-secondary">{employee.role.title}</span>}
+            {employee.department?.name && <span>· {employee.department.name}</span>}
+            {email && <span>· {email}</span>}
+            <StatusBadge status={employee.status} />
+          </span>
+        }
+        actions={
+          isHR ? (
+            <Button type="button" onClick={() => setShowEdit(true)}>
+              <Pencil size={16} />
               Edit
-            </button>
-          )}
-        </div>
-      </div>
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* Info grid */}
-      <Section title="Employment Details">
+      <Section title="Employment details">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <InfoCell label="Employee Code" value={employee.employee_code} />
-          <InfoCell label="Date of Joining" value={formatDate(employee.date_of_joining)} />
-          <InfoCell label="Employment Type" value={employmentTypeLabels[employee.employment_type] ?? employee.employment_type} />
+          <InfoCell label="Employee code" value={employee.employee_code} />
+          <InfoCell label="Date of joining" value={formatDate(employee.date_of_joining)} />
+          <InfoCell label="Employment type" value={employmentTypeLabels[employee.employment_type] ?? employee.employment_type} />
           <InfoCell label="Status" value={<StatusBadge status={employee.status} />} />
-          {employee.date_of_birth && <InfoCell label="Date of Birth" value={formatDate(employee.date_of_birth)} />}
-          {employee.marriage_date && <InfoCell label="Marriage Date" value={formatDate(employee.marriage_date)} />}
+          {employee.date_of_birth && <InfoCell label="Date of birth" value={formatDate(employee.date_of_birth)} />}
+          {employee.marriage_date && <InfoCell label="Marriage date" value={formatDate(employee.marriage_date)} />}
         </div>
       </Section>
 
       {employee.reporting_to && (
-        <Section title="Reports To">
+        <Section title="Reports to">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full ${avatarColor(employee.reporting_to.name)} flex items-center justify-center text-white text-body font-medium shrink-0`}>
+            <div className={`w-10 h-10 rounded-full ${avatarColor(employee.reporting_to.name)} flex items-center justify-center text-primary-foreground text-body font-medium shrink-0`}>
               {getInitials(employee.reporting_to.name)}
             </div>
             <div>
@@ -874,7 +826,7 @@ export default function EmployeeDetailPage() {
         </Section>
       )}
 
-      <Section title="Reporting Chain">
+      <Section title="Reporting chain">
         <ReportingChain emp={employee} allEmployees={allEmployees} />
       </Section>
 
@@ -899,7 +851,7 @@ export default function EmployeeDetailPage() {
       )}
 
       {employee.role?.kra && employee.role.kra.length > 0 && (
-        <Section title="Key Result Areas">
+        <Section title="Key result areas">
           <ol className="space-y-3">
             {employee.role.kra.map((kra, i) => (
               <li key={i} className="flex gap-3">
@@ -915,7 +867,7 @@ export default function EmployeeDetailPage() {
       )}
 
       {employee.role?.kpi && employee.role.kpi.length > 0 && (
-        <Section title="Key Performance Indicators">
+        <Section title="Key performance indicators">
           <ResponsiveTable
             className="border-0! rounded-none! shadow-none! bg-transparent! overflow-visible!"
             columns={kpiColumns}

@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ReactFlow, {
@@ -295,7 +296,7 @@ function EmpCard({
       type="button"
       onClick={() => onOpen(emp.id)}
       style={{ borderLeft: `4px solid ${color}` }}
-      className={`relative w-full flex items-center gap-2.5 bg-surface rounded-xl border px-3 py-2.5 text-left hover:shadow-xs transition-shadow ${
+      className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring relative w-full flex items-center gap-2.5 bg-surface rounded-xl border px-3 py-2.5 text-left hover:shadow-xs transition-shadow ${
         freeRadical ? 'border-dashed border-border' : 'border-border-light'
       }`}
     >
@@ -531,13 +532,9 @@ export default function EmployeeTreeView({ employees, allEmployees, departments,
         {isDesktop && (
           <span className="ml-auto hidden items-center gap-3 md:inline-flex">
             <span className="text-text-muted">Drag to pan · Ctrl/⌘ + scroll or pinch to zoom</span>
-            <button
-              type="button"
-              onClick={() => fitRef.current?.()}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border-light bg-surface px-2.5 py-1 text-meta font-medium text-text-secondary transition-colors hover:bg-surface-sunken hover:text-text-primary"
-            >
+            <Button type="button" onClick={() => fitRef.current?.()} variant="secondary" size="sm">
               <Maximize2 size={12} /> Fit
-            </button>
+            </Button>
           </span>
         )}
       </div>

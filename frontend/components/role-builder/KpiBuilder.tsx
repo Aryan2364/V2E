@@ -1,4 +1,6 @@
 'use client';
+import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import { Plus, Trash2 } from 'lucide-react';
 
 export interface KpiItem {
@@ -26,11 +28,11 @@ export default function KpiBuilder({ items, onChange, readOnly }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-body font-medium text-text-primary">Key Performance Indicators (KPI)</h4>
+        <h4 className="text-body font-medium text-text-primary">Key performance indicators (KPI)</h4>
         {!readOnly && (
-          <button type="button" onClick={add} className="flex items-center gap-1 text-meta text-primary-text hover:underline font-medium">
+          <Button type="button" onClick={add} variant="secondary" size="sm">
             <Plus size={14} /> Add KPI
-          </button>
+          </Button>
         )}
       </div>
       {items.length > 0 && (
@@ -61,9 +63,17 @@ export default function KpiBuilder({ items, onChange, readOnly }: Props) {
                   ))}
                   {!readOnly && (
                     <td className="py-1">
-                      <button type="button" onClick={() => remove(i)} className="text-danger hover:text-danger">
-                        <Trash2 size={13} />
-                      </button>
+                      <Tooltip label="Remove KPI">
+                        <Button
+                          type="button"
+                          onClick={() => remove(i)}
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Remove KPI"
+                        >
+                          <Trash2 size={13} />
+                        </Button>
+                      </Tooltip>
                     </td>
                   )}
                 </tr>

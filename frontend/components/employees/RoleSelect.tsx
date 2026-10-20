@@ -1,5 +1,7 @@
 'use client'
 
+import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronDown, Search, X, Check, Briefcase } from 'lucide-react'
@@ -117,14 +119,18 @@ export default function RoleSelect({
                 autoFocus
               />
               {query && (
-                <button
-                  type="button"
-                  onClick={() => setQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
-                  aria-label="Clear search"
-                >
-                  <X size={14} />
-                </button>
+                <Tooltip label="Clear search">
+                  <Button
+                    type="button"
+                    onClick={() => setQuery('')}
+                    aria-label="Clear search"
+                    variant="in-field"
+                    size="icon-sm"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2"
+                  >
+                    <X size={14} />
+                  </Button>
+                </Tooltip>
               )}
             </div>
 
@@ -144,7 +150,7 @@ export default function RoleSelect({
                       key={r.id}
                       type="button"
                       onClick={() => pick(r.id)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                      className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
                         isSel ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
                       }`}
                     >

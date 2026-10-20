@@ -1,4 +1,6 @@
 'use client';
+import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import { Plus, Trash2 } from 'lucide-react';
 
 export interface KraItem {
@@ -24,11 +26,11 @@ export default function KraBuilder({ items, onChange, readOnly }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-body font-medium text-text-primary">Key Result Areas (KRA)</h4>
+        <h4 className="text-body font-medium text-text-primary">Key result areas (KRA)</h4>
         {!readOnly && (
-          <button type="button" onClick={add} className="flex items-center gap-1 text-meta text-primary-text hover:underline font-medium">
+          <Button type="button" onClick={add} variant="secondary" size="sm">
             <Plus size={14} /> Add KRA
-          </button>
+          </Button>
         )}
       </div>
       {items.map((item, i) => (
@@ -53,9 +55,17 @@ export default function KraBuilder({ items, onChange, readOnly }: Props) {
               />
             </div>
             {!readOnly && (
-              <button type="button" onClick={() => remove(i)} className="text-danger hover:text-danger mt-2">
-                <Trash2 size={14} />
-              </button>
+              <Tooltip label="Remove KRA">
+                <Button
+                  type="button"
+                  onClick={() => remove(i)}
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Remove KRA"
+                >
+                  <Trash2 size={14} />
+                </Button>
+              </Tooltip>
             )}
           </div>
         </div>

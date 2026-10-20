@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getNow } from '@/lib/clock'
@@ -58,25 +59,19 @@ export default function OrgHolidayCalendar({ workingDays, holidays }: Props) {
   return (
     <div className="bg-surface border border-border-light rounded-card p-4 shadow-card">
       <div className="flex items-center justify-between mb-4">
-        <button
-          type="button"
-          onClick={prev}
-          className="p-1.5 rounded-md hover:bg-surface-control text-text-secondary transition-colors"
-          aria-label="Previous month"
-        >
-          <ChevronLeft size={16} />
-        </button>
+        <Tooltip label="Previous month">
+          <Button type="button" onClick={prev} aria-label="Previous month" variant="ghost" size="icon">
+            <ChevronLeft size={16} />
+          </Button>
+        </Tooltip>
         <span className="text-body font-medium text-text-primary">
           {MONTHS[month]} {year}
         </span>
-        <button
-          type="button"
-          onClick={next}
-          className="p-1.5 rounded-md hover:bg-surface-control text-text-secondary transition-colors"
-          aria-label="Next month"
-        >
-          <ChevronRight size={16} />
-        </button>
+        <Tooltip label="Next month">
+          <Button type="button" onClick={next} aria-label="Next month" variant="ghost" size="icon">
+            <ChevronRight size={16} />
+          </Button>
+        </Tooltip>
       </div>
 
       <div className="grid grid-cols-7 gap-0.5 mb-1">

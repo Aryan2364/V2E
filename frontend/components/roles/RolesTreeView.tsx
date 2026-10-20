@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { useMemo } from 'react'
 import { Plus, ChevronRight, Pencil, Briefcase } from 'lucide-react'
 import { flattenTree } from '@/lib/dept-tree'
@@ -98,12 +99,15 @@ export default function RolesTreeView({
                 {deptRoles.length} job role{deptRoles.length !== 1 ? 's' : ''}
               </span>
               {canEdit && (
-                <button
+                <Button
+                  type="button"
                   onClick={() => onAddRole(dept.id)}
-                  className="ml-auto inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text transition-colors"
+                  variant="secondary"
+                  size="sm"
+                  className="ml-auto"
                 >
                   <Plus size={13} /> Add job role
-                </button>
+                </Button>
               )}
             </div>
 
@@ -121,7 +125,7 @@ export default function RolesTreeView({
                   key={role.id}
                   onClick={() => onSelect(role)}
                   style={{ paddingLeft: 16 + (depth + 1) * 18 + 18 }}
-                  className="group w-full flex items-center gap-3 pr-4 py-2.5 text-left hover:bg-surface-sunken transition-colors"
+                  className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring group w-full flex items-center gap-3 pr-4 py-2.5 text-left hover:bg-surface-sunken transition-colors"
                 >
                   <span className="font-medium text-body text-text-primary truncate">{role.title}</span>
                   <span

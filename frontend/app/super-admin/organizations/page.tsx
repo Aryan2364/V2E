@@ -23,7 +23,7 @@ function orgStatusVariant(status: OrgStatus): 'success' | 'danger' | 'warning' {
 function orgStatusLabel(status: OrgStatus): string {
   if (status === 'active') return 'Active'
   if (status === 'inactive') return 'Inactive'
-  return 'Pending Setup'
+  return 'Pending setup'
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -86,12 +86,14 @@ export default function OrganizationsPage() {
       key: 'actions',
       header: 'Actions',
       render: (org) => (
-        <button
+        <Button
+          type="button"
           onClick={() => router.push(`/super-admin/organizations/${org.id}`)}
-          className="inline-flex min-h-10 items-center gap-1 rounded-md text-body font-medium text-primary-text outline-none hover:text-primary-text focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-offset-2 focus-visible:outline-primary-ring sm:min-h-0"
+          variant="secondary"
+          size="sm"
         >
           View <ArrowRightIcon size={14} />
-        </button>
+        </Button>
       ),
     },
   ]
@@ -104,7 +106,7 @@ export default function OrganizationsPage() {
         actions={
           <Button onClick={() => router.push('/super-admin/organizations/new')}>
             <PlusIcon size={16} />
-            New Organization
+            New organization
           </Button>
         }
       />
@@ -124,7 +126,7 @@ export default function OrganizationsPage() {
             loading={isLoading}
             emptyState={
               <EmptyState variant="nothing-yet" heading="No organizations yet">
-                Click &quot;New Organization&quot; to add one.
+                Click &quot;New organization&quot; to add one.
               </EmptyState>
             }
           />

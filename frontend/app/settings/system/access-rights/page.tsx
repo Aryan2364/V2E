@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  ShieldCheck,
   Lock,
   Loader2,
   ChevronRight,
@@ -16,7 +15,10 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { toast } from '@/components/ui/sonner'
-import Button from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Switch } from '@/components/ui/switch'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -132,7 +134,7 @@ const SECTION_ORDER: { key: SectionKey; label: string }[] = [
   { key: 'learning', label: 'Learning' },
   { key: 'communication', label: 'Communication' },
   { key: 'work', label: 'Work' },
-  { key: 'ecs', label: 'Leave & Policies' },
+  { key: 'ecs', label: 'Leave & policies' },
   { key: 'governance', label: 'Governance' },
   { key: 'performance', label: 'Performance' },
   { key: 'settings', label: 'Settings' },
@@ -724,44 +726,33 @@ export default function AccessControlPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-page-title font-medium text-text-primary leading-tight">
-            <ShieldCheck size={24} className="text-primary-text" /> Access Control
-          </h1>
-          <p className="text-body text-text-secondary mt-1 max-w-2xl">
-            Define System Roles and what each can do. Assign a System Role to an employee when adding
-            them. Per-person exceptions are set on the employee&apos;s record.
-          </p>
-        </div>
-        {tab === 'roles' && !locked && selectedRole && (
-          <Button variant="primary" onClick={handleSave} isLoading={saving} disabled={!dirty || saving}>
-            {saving && <Loader2 size={15} className="animate-spin" />}
-            Save changes
-          </Button>
-        )}
-        {tab === 'subjects' && (
-          <Button variant="primary" onClick={handleSavePolicies} isLoading={savingPolicies} disabled={!policiesDirty || savingPolicies}>
-            {savingPolicies && <Loader2 size={15} className="animate-spin" />}
-            Save changes
-          </Button>
-        )}
-      </div>
-
-      {/* Tabs */}
-      <div className="inline-flex rounded-lg border border-border-light overflow-hidden mb-4">
-        {(['roles', 'subjects'] as Tab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={[
-              'px-4 py-2 text-body font-medium transition-colors',
-              tab === t ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-sunken',
-            ].join(' ')}
-          >
-            {t === 'roles' ? 'Roles & Permissions' : 'Subject eligibility'}
-          </button>
-        ))}
+      {/* Header and tabs stay pinned; the page owns the vertical scroll (section 10). */}
+      <div className="sticky -top-4 z-(--z-sticky) -mx-8 -mt-8 bg-surface-sunken px-8 pt-8">
+        <PageHeader
+          title="Access control"
+          meta="Define system roles and what each can do. Assign a system role to an employee when adding them. Per-person exceptions are set on the employee’s record."
+          actions={
+            tab === 'roles' ? (
+              !locked && selectedRole ? (
+                <Button variant="primary" onClick={handleSave} loading={saving} loadingLabel="Saving" disabled={!dirty || saving}>
+                  Save changes
+                </Button>
+              ) : null
+            ) : (
+              <Button variant="primary" onClick={handleSavePolicies} loading={savingPolicies} loadingLabel="Saving" disabled={!policiesDirty || savingPolicies}>
+                Save changes
+              </Button>
+            )
+          }
+          tabs={
+            <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="mb-4">
+              <TabsList>
+                <TabsTrigger value="roles">Roles &amp; permissions</TabsTrigger>
+                <TabsTrigger value="subjects">Subject eligibility</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          }
+        />
       </div>
 
       {tab === 'roles' && (
@@ -769,16 +760,18 @@ export default function AccessControlPage() {
           {/* Left: roles list */}
           <div className="lg:w-[240px] shrink-0">
             <div className="flex items-center justify-between px-1 mb-2">
-              <span className="text-meta font-medium text-text-muted uppercase tracking-wider">Roles</span>
-              <button
+              <span className="text-meta font-medium text-text-muted">Roles</span>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   setCreating(true)
                   setNewName('')
                 }}
-                className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text"
               >
-                <Plus size={13} /> New
-              </button>
+                <Plus size={16} /> New
+              </Button>
             </div>
             <div className="bg-surface border border-border-light rounded-card overflow-hidden">
               {creating && (
@@ -794,12 +787,16 @@ export default function AccessControlPage() {
                     placeholder="Role name"
                     className="flex-1 min-w-0 px-2 py-1 border border-border rounded-md text-body text-text-primary bg-surface focus:outline-hidden focus:border-primary"
                   />
-                  <button onClick={handleCreate} className="p-1 text-success hover:bg-success-bg rounded-xs" aria-label="Create role">
-                    <Check size={15} />
-                  </button>
-                  <button onClick={() => setCreating(false)} className="p-1 text-text-muted hover:bg-surface-control rounded-xs" aria-label="Cancel">
-                    <X size={15} />
-                  </button>
+                  <Tooltip label="Create role">
+                    <Button type="button" variant="ghost" size="icon-sm" onClick={handleCreate} aria-label="Create role">
+                      <Check size={16} />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip label="Cancel">
+                    <Button type="button" variant="ghost" size="icon-sm" onClick={() => setCreating(false)} aria-label="Cancel">
+                      <X size={16} />
+                    </Button>
+                  </Tooltip>
                 </div>
               )}
               {roles.map((r) => {
@@ -807,9 +804,11 @@ export default function AccessControlPage() {
                 return (
                   <button
                     key={r.id}
+                    type="button"
                     onClick={() => setSelectedRoleId(r.id)}
+                    aria-current={active ? 'true' : undefined}
                     className={[
-                      'w-full text-left px-4 py-2.5 border-l-[3px] transition-colors',
+                      'w-full text-left px-4 py-2.5 border-l-[3px] transition-colors outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring',
                       active ? 'bg-primary-subtle border-primary' : 'bg-surface border-transparent hover:bg-surface-sunken',
                     ].join(' ')}
                   >
@@ -859,12 +858,16 @@ export default function AccessControlPage() {
                           }}
                           className="px-2 py-1 border border-border rounded-md text-body text-text-primary bg-surface focus:outline-hidden focus:border-primary"
                         />
-                        <button onClick={handleRename} className="p-1 text-success hover:bg-success-bg rounded-xs" aria-label="Save name">
-                          <Check size={15} />
-                        </button>
-                        <button onClick={() => setRenaming(false)} className="p-1 text-text-muted hover:bg-surface-control rounded-xs" aria-label="Cancel">
-                          <X size={15} />
-                        </button>
+                        <Tooltip label="Save name">
+                          <Button type="button" variant="ghost" size="icon-sm" onClick={handleRename} aria-label="Save name">
+                            <Check size={16} />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip label="Cancel">
+                          <Button type="button" variant="ghost" size="icon-sm" onClick={() => setRenaming(false)} aria-label="Cancel">
+                            <X size={16} />
+                          </Button>
+                        </Tooltip>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
@@ -882,23 +885,31 @@ export default function AccessControlPage() {
                   </div>
                   {!locked && !renaming && (
                     <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => {
-                          setRenameValue(selectedRole.name)
-                          setRenaming(true)
-                        }}
-                        className="p-1.5 text-text-secondary hover:bg-surface-control rounded-md"
-                        aria-label="Rename role"
-                      >
-                        <Pencil size={15} />
-                      </button>
-                      <button
-                        onClick={() => { setDeleteRoleError(null); setConfirmDeleteRole(true) }}
-                        className="p-1.5 text-danger hover:bg-danger-bg rounded-md"
-                        aria-label="Delete role"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      <Tooltip label="Rename role">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setRenameValue(selectedRole.name)
+                            setRenaming(true)
+                          }}
+                          aria-label="Rename role"
+                        >
+                          <Pencil size={16} />
+                        </Button>
+                      </Tooltip>
+                      <Tooltip label="Delete role">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => { setDeleteRoleError(null); setConfirmDeleteRole(true) }}
+                          aria-label="Delete role"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </Tooltip>
                     </div>
                   )}
                 </div>
@@ -926,14 +937,14 @@ export default function AccessControlPage() {
                     <div className="min-w-[640px]">
                       {/* column header */}
                       <div className="flex items-center border-b border-border-light bg-surface-sunken px-4 py-3">
-                        <span className="flex-1 text-meta font-medium text-text-secondary uppercase tracking-wider">Section</span>
-                        <span className="w-12 text-center text-meta font-medium text-text-secondary uppercase tracking-wider">All</span>
+                        <span className="sticky left-0 z-(--z-sticky) -ml-4 flex-1 bg-inherit pl-4 text-meta font-medium text-text-secondary">Section</span>
+                        <span className="w-12 text-center text-meta font-medium text-text-secondary">All</span>
                         {ALL_ACTIONS.map((a) => (
-                          <span key={a} className="w-14 text-center text-meta font-medium text-text-secondary uppercase tracking-wider">
+                          <span key={a} className="w-14 text-center text-meta font-medium text-text-secondary">
                             {ACTION_LABEL[a]}
                           </span>
                         ))}
-                        <span className="w-48 text-meta font-medium text-text-secondary uppercase tracking-wider pl-2">Data Scope</span>
+                        <span className="w-48 text-meta font-medium text-text-secondary pl-2">Data scope</span>
                       </div>
 
                       {actorModules.map((mod) => {
@@ -947,13 +958,15 @@ export default function AccessControlPage() {
                         return (
                           <div key={mod.key} className="border-b border-border-light last:border-0">
                             {/* module header */}
-                            <div className="flex items-center px-4 py-2.5 bg-surface-control/60">
+                            <div className="flex items-center px-4 py-2.5 bg-surface-control">
                               <button
+                                type="button"
                                 onClick={() => setCollapsed((c) => ({ ...c, [mod.key]: !c[mod.key] }))}
-                                className="flex items-center gap-1.5 flex-1 min-w-0 text-left"
+                                aria-expanded={!isCollapsed}
+                                className="sticky left-0 z-(--z-sticky) -ml-4 flex min-w-0 flex-1 items-center gap-1.5 bg-inherit pl-4 text-left outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring"
                               >
                                 <ChevronRight size={15} className={['text-text-muted transition-transform', isCollapsed ? '' : 'rotate-90'].join(' ')} />
-                                <span className="text-body font-medium text-text-primary uppercase tracking-wide truncate">{mod.label}</span>
+                                <span className="text-body font-medium text-text-primary truncate">{mod.label}</span>
                                 <span className="text-meta text-text-muted">{onCount}/{pairs.length}</span>
                               </button>
                               <div className="w-12 flex justify-center">
@@ -990,7 +1003,7 @@ export default function AccessControlPage() {
                               mod.subModules.map((sub) => (
                                 <div key={sub.key}>
                                   <div className="px-4 pt-2 pb-1 pl-8 flex items-center gap-2">
-                                    <p className="text-meta font-medium text-text-muted uppercase tracking-wider">{sub.label}</p>
+                                    <p className="text-meta font-medium text-text-muted">{sub.label}</p>
                                     {sub.displayOnly && (
                                       <span className="text-meta font-medium text-text-muted bg-surface-control rounded-full px-2 py-0.5">
                                         Entitlement only
@@ -1011,8 +1024,8 @@ export default function AccessControlPage() {
                                     const single = lineSingleValue(selectedRole.id, f.key)
                                     const singleBroadened = single !== 'inherit' && SCOPE_RANK[single] > SCOPE_RANK[parent]
                                     return (
-                                      <div key={f.key} className="flex items-center px-4 py-2.5 pl-8 border-t border-border-light hover:bg-surface-sunken">
-                                        <div className="flex-1 min-w-0 pr-3">
+                                      <div key={f.key} className="flex items-center bg-surface px-4 py-2.5 pl-8 border-t border-border-light hover:bg-surface-sunken">
+                                        <div className="sticky left-0 z-(--z-sticky) -ml-8 min-w-0 flex-1 bg-inherit pl-8 pr-3">
                                           <p className="text-body font-medium text-text-primary">{f.label}</p>
                                           {f.description && <p className="text-meta text-text-muted mt-0.5">{f.description}</p>}
                                         </div>
@@ -1073,8 +1086,9 @@ export default function AccessControlPage() {
                                                 )}
                                               </div>
                                               <button
+                                                type="button"
                                                 onClick={() => toggleSplit(f.key, supportedScopeActions)}
-                                                className="text-meta text-primary-text hover:text-primary-text text-left"
+                                                className="text-meta text-primary-text hover:underline text-left outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
                                               >
                                                 Split by action
                                               </button>
@@ -1098,8 +1112,9 @@ export default function AccessControlPage() {
                                                 )
                                               })}
                                               <button
+                                                type="button"
                                                 onClick={() => toggleSplit(f.key, supportedScopeActions)}
-                                                className="inline-flex items-center gap-1 text-meta text-text-secondary hover:text-text-primary text-left"
+                                                className="inline-flex items-center gap-1 text-meta text-text-secondary hover:text-text-primary text-left outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
                                               >
                                                 <RotateCcw size={11} /> Combine
                                               </button>
@@ -1135,12 +1150,12 @@ export default function AccessControlPage() {
           {subjectSections.map((section) => (
             <div key={section.key} className="border-b border-border-light last:border-0">
               <div className="px-4 py-3 bg-surface-sunken">
-                <p className="text-body font-medium text-text-primary uppercase tracking-wide">{section.label}</p>
+                <p className="text-body font-medium text-text-primary">{section.label}</p>
               </div>
               {section.subModules.map((sub) => (
                 <div key={sub.key} className="border-t border-border-light">
                   <div className="px-4 pt-3 pb-1">
-                    <p className="text-meta font-medium text-text-muted uppercase tracking-wider">{sub.label}</p>
+                    <p className="text-meta font-medium text-text-muted">{sub.label}</p>
                   </div>
                   {sub.policies.map((p) => {
                     const on = policyEdits[p.subject_key]
@@ -1150,14 +1165,11 @@ export default function AccessControlPage() {
                           <p className="text-body font-medium text-text-primary">{p.label}</p>
                           <p className="text-meta text-text-muted mt-0.5">{on ? 'Everyone eligible unless revoked' : 'No one eligible unless granted'}</p>
                         </div>
-                        <button
-                          role="switch"
-                          aria-checked={on}
-                          onClick={() => setPolicyEdits((e) => ({ ...e, [p.subject_key]: !e[p.subject_key] }))}
-                          className={['relative w-11 h-6 rounded-full transition-colors shrink-0', on ? 'bg-primary' : 'bg-surface-control-pressed'].join(' ')}
-                        >
-                          <span className={['absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-surface transition-transform', on ? 'translate-x-5' : ''].join(' ')} />
-                        </button>
+                        <Switch
+                          checked={!!on}
+                          onCheckedChange={() => setPolicyEdits((e) => ({ ...e, [p.subject_key]: !e[p.subject_key] }))}
+                          aria-label={p.label}
+                        />
                       </div>
                     )
                   })}

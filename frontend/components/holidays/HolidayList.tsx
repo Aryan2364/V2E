@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { Pencil, Trash2, RefreshCw, Check, X } from 'lucide-react'
 import type { OrgHoliday, DepartmentHoliday, IndividualHoliday, HolidayType } from '@/lib/types/holidays'
@@ -77,20 +78,22 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
                   onChange={(e) => setEditing((s) => s ? { ...s, name: e.target.value } : s)}
                   className="flex-1 h-8 px-2 rounded-md border border-border text-body text-text-primary bg-surface focus:border-primary outline-hidden"
                 />
-                <button
-                  type="button"
-                  onClick={saveEdit}
-                  className="p-1.5 rounded-md bg-success-bg text-success hover:bg-success-bg transition-colors"
-                >
-                  <Check size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditing(null)}
-                  className="p-1.5 rounded-md bg-surface-control text-text-secondary hover:bg-surface-control-pressed transition-colors"
-                >
-                  <X size={14} />
-                </button>
+                <Tooltip label="Save">
+                  <Button type="button" onClick={saveEdit} variant="ghost" size="icon" aria-label="Save">
+                    <Check size={14} />
+                  </Button>
+                </Tooltip>
+                <Tooltip label="Cancel">
+                  <Button
+                    type="button"
+                    onClick={() => setEditing(null)}
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Cancel"
+                  >
+                    <X size={14} />
+                  </Button>
+                </Tooltip>
               </>
             ) : (
               <>
@@ -111,21 +114,29 @@ export default function HolidayList({ holidays, onDelete, onUpdate, emptyText = 
                     </span>
                   </Tooltip>
                 )}
-                <button
-                  type="button"
-                  onClick={() => startEdit(h)}
-                  className="p-1.5 rounded-md hover:bg-surface-control text-text-secondary transition-colors shrink-0"
-                >
-                  <Pencil size={13} />
-                </button>
-                <button
-                  type="button"
-                  disabled={isDeleting}
-                  onClick={() => confirmDelete(h.id)}
-                  className="p-1.5 rounded-md hover:bg-danger-bg text-danger transition-colors shrink-0"
-                >
-                  <Trash2 size={13} />
-                </button>
+                <Tooltip label="Edit">
+                  <Button
+                    type="button"
+                    onClick={() => startEdit(h)}
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Edit"
+                  >
+                    <Pencil size={13} />
+                  </Button>
+                </Tooltip>
+                <Tooltip label="Delete">
+                  <Button
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={() => confirmDelete(h.id)}
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Delete"
+                  >
+                    <Trash2 size={13} />
+                  </Button>
+                </Tooltip>
               </>
             )}
           </div>

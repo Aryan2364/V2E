@@ -1,8 +1,8 @@
 'use client'
 
 import { Suspense, useCallback, useEffect, useState } from 'react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Loader2, Save, Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Save, ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 import MyLeavePanel from '@/components/leave/MyLeavePanel'
@@ -15,6 +15,8 @@ import type { EmployeeProfile, KraItem, Role } from '@/lib/types'
 import { formatDate as formatDateToken } from '@/lib/format'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
+import { SectionTabs } from '@/components/ui/section-tabs'
 import { PasswordInput } from '@/components/ui/password-input'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
 
@@ -57,7 +59,7 @@ function avatarColor(name: string): string {
 
 function StatusBadge({ active }: { active: boolean }) {
   return (
-    <span className={`inline-flex items-center rounded-[999px] px-3 py-1 text-meta font-medium ${active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>
+    <span className={`inline-flex items-center rounded-full px-3 py-1 text-meta font-medium ${active ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>
       {active ? 'Active' : 'Inactive'}
     </span>
   )
@@ -66,7 +68,7 @@ function StatusBadge({ active }: { active: boolean }) {
 function InfoCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="text-meta font-medium text-text-secondary uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-meta font-medium text-text-secondary mb-1">{label}</p>
       <p className="text-body text-text-primary font-medium wrap-break-word">{value ?? '—'}</p>
     </div>
   )
@@ -123,41 +125,10 @@ function ReportingChain({ me, allEmployees }: { me: EmployeeProfile; allEmployee
 
 type ProfileTab = 'profile' | 'leave'
 
-const TABS: { key: ProfileTab; label: string }[] = [
-  { key: 'profile', label: 'Profile' },
-  { key: 'leave', label: 'Leave' },
+const TABS: { value: ProfileTab; label: string }[] = [
+  { value: 'profile', label: 'Profile' },
+  { value: 'leave', label: 'Leave' },
 ]
-
-// Section tabs (kit §33): the active tab lives in the URL (?tab=leave) so it can be
-// linked to — leave notifications deep-link here — and switching replaces history.
-function ProfileTabs({ active, onChange }: { active: ProfileTab; onChange: (t: ProfileTab) => void }) {
-  return (
-    <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 bg-surface-sunken">
-      <div role="tablist" aria-label="My profile sections" className="flex gap-6 border-b border-border-light">
-        {TABS.map((t) => {
-          const on = t.key === active
-          return (
-            <button
-              key={t.key}
-              type="button"
-              role="tab"
-              aria-selected={on}
-              onClick={() => onChange(t.key)}
-              className={[
-                '-mb-px h-11 sm:h-10 border-b-2 text-body transition-colors duration-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-t-[4px]',
-                on
-                  ? 'border-primary text-primary-text font-medium'
-                  : 'border-transparent text-text-secondary font-medium hover:text-text-primary',
-              ].join(' ')}
-            >
-              {t.label}
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
 
 export default function MyProfilePage() {
   // useSearchParams needs a Suspense boundary in the App Router.
@@ -180,8 +151,6 @@ function MyProfileContent() {
   const { user } = useAuth()
   const orgId = user?.organizationId ?? ''
   const { addToast } = useToast()
-  const router = useRouter()
-  const pathname = usePathname()
   const searchParams = useSearchParams()
 
   // Leave belongs to the `ecs` module — offered only when the org has it. It needs
@@ -191,10 +160,6 @@ function MyProfileContent() {
   const leaveAvailable = !entLoading && leaveState !== 'off'
   const wantsLeave = searchParams.get('tab') === 'leave'
   const tab: ProfileTab = wantsLeave && leaveAvailable ? 'leave' : 'profile'
-
-  function selectTab(t: ProfileTab) {
-    router.replace(t === 'leave' ? `${pathname}?tab=leave` : pathname, { scroll: false })
-  }
 
   const [profile, setProfile] = useState<EmployeeProfile | null>(null)
   const [allEmployees, setAllEmployees] = useState<EmployeeProfile[]>([])
@@ -283,32 +248,21 @@ function MyProfileContent() {
 
   return (
     <div className="space-y-6">
-      {/* Profile header — mirrors the employee-detail page */}
-      <div className="bg-surface border border-border-light rounded-xl shadow-card p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className={`w-20 h-20 rounded-full ${avatarColor(name)} flex items-center justify-center text-primary-foreground text-page-title font-medium shrink-0`}>
-            {getInitials(name)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-[28px] font-medium text-text-primary leading-tight">{name || 'My Profile'}</h1>
-            <div className="flex flex-wrap items-center gap-2 mt-1.5">
-              {role?.title && <span className="text-body text-text-secondary font-medium">{role.title}</span>}
-              {profile?.department?.name && (
-                <>
-                  <span className="text-muted">·</span>
-                  <span className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text">
-                    {profile.department.name}
-                  </span>
-                </>
-              )}
+      {/* Header and section tabs stay pinned under the top bar; the page scrolls beneath them (section 10). */}
+      <div className="sticky top-14 z-(--z-sticky) -mx-4 -mt-6 bg-surface-sunken px-4 pt-6 sm:-mx-6 sm:px-6 lg:-mx-8 lg:-mt-8 lg:px-8 lg:pt-8">
+        <PageHeader
+          title={name || 'My profile'}
+          meta={
+            <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+              {role?.title && <span className="font-medium text-text-secondary">{role.title}</span>}
+              {profile?.department?.name && <span>· {profile.department.name}</span>}
+              {email && <span>· {email}</span>}
               {profile && <StatusBadge active={isActive} />}
-            </div>
-            {email && <p className="text-body text-text-secondary mt-1">{email}</p>}
-          </div>
-        </div>
+            </span>
+          }
+          tabs={leaveAvailable ? <SectionTabs tabs={TABS} value={tab} param="tab" /> : undefined}
+        />
       </div>
-
-      {leaveAvailable && <ProfileTabs active={tab} onChange={selectTab} />}
 
       {tab === 'leave' ? (
         <MyLeavePanel readOnly={leaveState === 'preview'} />
@@ -318,13 +272,13 @@ function MyProfileContent() {
       {profile && (
         <Section title="Work details" subtitle="Managed by your administrator">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <InfoCell label="Employee Code" value={profile.employee_code} />
+            <InfoCell label="Employee code" value={profile.employee_code} />
             <InfoCell label="Role" value={role?.title} />
             <InfoCell label="Department" value={profile.department?.name} />
-            <InfoCell label="Employment Type" value={employmentLabel[profile.employment_type] ?? profile.employment_type} />
-            <InfoCell label="Date of Joining" value={formatDate(profile.date_of_joining)} />
-            <InfoCell label="Date of Birth" value={formatDate(profile.date_of_birth)} />
-            <InfoCell label="Marriage Date" value={formatDate(profile.marriage_date)} />
+            <InfoCell label="Employment type" value={employmentLabel[profile.employment_type] ?? profile.employment_type} />
+            <InfoCell label="Date of joining" value={formatDate(profile.date_of_joining)} />
+            <InfoCell label="Date of birth" value={formatDate(profile.date_of_birth)} />
+            <InfoCell label="Marriage date" value={formatDate(profile.marriage_date)} />
             <InfoCell label="Status" value={<StatusBadge active={isActive} />} />
           </div>
         </Section>
@@ -358,7 +312,7 @@ function MyProfileContent() {
           <div className="flex items-center gap-3 flex-wrap mb-3">
             <h3 className="font-medium text-text-primary">{role.title}</h3>
             {role.level && (
-              <span className="inline-flex items-center rounded-[999px] px-2.5 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text">
+              <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium bg-primary-subtle text-primary-text">
                 {roleLevelLabel[role.level] ?? role.level}
               </span>
             )}
@@ -378,7 +332,7 @@ function MyProfileContent() {
                 <span className="shrink-0 w-6 h-6 rounded-full bg-primary-subtle flex items-center justify-center text-meta font-medium text-primary-text">{i + 1}</span>
                 <div>
                   <p className="text-body font-medium text-text-primary">{k.title}</p>
-                  {k.description && <p className="text-[13px] text-text-secondary mt-0.5 whitespace-pre-wrap">{k.description}</p>}
+                  {k.description && <p className="text-label text-text-secondary mt-0.5 whitespace-pre-wrap">{k.description}</p>}
                 </div>
               </li>
             ))}

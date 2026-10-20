@@ -16,7 +16,7 @@ import type { Department, EmployeeProfile } from '@/lib/types'
 /** Small pill that tags the department head wherever they appear. */
 function HeadBadge() {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-meta font-medium uppercase tracking-wide text-primary-foreground">
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-meta font-medium text-primary-foreground">
       <CrownIcon size={10} />
       Head
     </span>
@@ -81,7 +81,7 @@ export default function DeptInfoPanel({
                       <span key={a.id} className="flex items-center gap-0.5">
                         <button
                           onClick={() => onSelectDepartment(a)}
-                          className="max-w-30 truncate font-medium hover:text-primary-text hover:underline"
+                          className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring max-w-30 truncate font-medium hover:text-primary-text hover:underline"
                         >
                           {a.name}
                         </button>
@@ -127,7 +127,7 @@ export default function DeptInfoPanel({
 
               {/* Members — the department head is pinned to the top and tagged. */}
               <section>
-                <h4 className="mb-2 flex items-center gap-1 text-label font-medium uppercase tracking-wider text-text-muted">
+                <h4 className="mb-2 flex items-center gap-1 text-label font-medium text-text-muted">
                   <UsersIcon size={13} /> Members ({members.length})
                 </h4>
                 {members.length === 0 && !headOnlyName ? (
@@ -155,7 +155,7 @@ export default function DeptInfoPanel({
                         <button
                           key={m.id}
                           onClick={() => router.push(`/settings/organization/employees/${m.id}`)}
-                          className={`group flex items-center gap-2 rounded-lg px-2 py-2 text-left transition-colors ${
+                          className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring group flex items-center gap-2 rounded-lg px-2 py-2 text-left transition-colors ${
                             isHead
                               ? 'bg-primary-subtle ring-1 ring-inset ring-primary-border hover:bg-primary-subtle'
                               : 'hover:bg-surface-sunken'
@@ -185,7 +185,7 @@ export default function DeptInfoPanel({
 
               {/* Sub-departments */}
               <section>
-                <h4 className="mb-2 flex items-center gap-1 text-label font-medium uppercase tracking-wider text-text-muted">
+                <h4 className="mb-2 flex items-center gap-1 text-label font-medium text-text-muted">
                   <NetworkIcon size={13} /> Sub-departments ({subDepartments.length})
                 </h4>
                 {subDepartments.length === 0 ? (
@@ -196,7 +196,7 @@ export default function DeptInfoPanel({
                       <button
                         key={d.id}
                         onClick={() => onSelectDepartment(d)}
-                        className="group flex items-center justify-between gap-2 rounded-lg bg-surface-sunken px-3 py-2 text-left hover:bg-primary-subtle"
+                        className="outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring group flex items-center justify-between gap-2 rounded-lg bg-surface-sunken px-3 py-2 text-left hover:bg-primary-subtle"
                       >
                         <span className="truncate text-body font-medium text-text-primary">{d.name}</span>
                         <span className="shrink-0 text-meta text-text-muted">

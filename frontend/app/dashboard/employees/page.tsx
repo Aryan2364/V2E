@@ -14,6 +14,8 @@ import ImportEmployeesModal from '@/components/employees/ImportEmployeesModal'
 import DepartmentMultiSelect from '@/components/employees/DepartmentMultiSelect'
 import EmployeeTreeView from '@/components/employees/EmployeeTreeView'
 import ViewToggle, { type EmployeeView } from '@/components/employees/ViewToggle'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -401,33 +403,24 @@ export default function EmployeesPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-6">
-      {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div>
-          <h1 className="text-page-title font-medium text-text-primary leading-tight">Employees</h1>
-          <p className="mt-1 text-body text-text-secondary">
-            Browse and manage all employee profiles.
-          </p>
-        </div>
-        {canManage && (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowImport(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
-            >
-              <Upload size={16} />
-              Import
-            </button>
-            <button
-              onClick={() => setShowAdd(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-            >
-              <UserPlus size={16} />
-              Add Employee
-            </button>
-          </div>
-        )}
-      </div>
+      <PageHeader
+        title="Employees"
+        meta="Browse and manage all employee profiles."
+        actions={
+          canManage ? (
+            <>
+              <Button type="button" variant="secondary" onClick={() => setShowImport(true)}>
+                <Upload size={16} />
+                Import
+              </Button>
+              <Button type="button" onClick={() => setShowAdd(true)}>
+                <UserPlus size={16} />
+                Add employee
+              </Button>
+            </>
+          ) : undefined
+        }
+      />
 
       {/* Profile setup warning banner */}
       {user && !user.isSuperAdmin && !hasProfile && !loading && (
@@ -435,22 +428,24 @@ export default function EmployeesPage() {
           <div className="flex items-start gap-3">
             <AlertTriangle size={20} className="text-warning shrink-0 mt-0.5" />
             <div>
-              <p className="text-body font-medium text-warning">Profile Setup Required</p>
+              <p className="text-body font-medium text-warning">Profile setup required</p>
               <p className="text-meta text-warning mt-0.5">
                 You do not have an employee profile in the directory yet. Set up your profile to assign yourself to a department, role, and enable full task assignments.
               </p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
+            className="self-start sm:self-center"
             onClick={() => {
               setPrefillSelf(true)
               setShowAdd(true)
             }}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-meta font-medium text-primary-foreground bg-warning hover:bg-warning transition-colors whitespace-nowrap self-start sm:self-center"
           >
-            Setup Profile
-          </button>
+            Set up profile
+          </Button>
         </div>
       )}
 

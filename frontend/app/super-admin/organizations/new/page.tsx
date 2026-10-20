@@ -190,7 +190,7 @@ export default function NewOrganizationPage() {
   return (
     <div className="max-w-2xl">
       <PageHeader
-        title="Create Organization"
+        title="Create organization"
         meta="Set up a new tenant organization and provision its first admin account."
         trail={[
           { label: 'Organizations', href: '/super-admin/organizations' },

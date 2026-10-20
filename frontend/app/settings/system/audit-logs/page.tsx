@@ -1,7 +1,8 @@
 'use client'
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ScrollText, ChevronDown, ChevronRight, Search } from 'lucide-react'
+import { ChevronDown, ChevronRight, Search } from 'lucide-react'
+import { PageHeader } from '@/components/shell/page-header'
 import { useAuth } from '@/lib/auth/context'
 import { auditApi, type AuditFilters } from '@/lib/api/audit'
 import type { AuditEntry, AuditModuleFacet } from '@/lib/types/audit'
@@ -236,13 +237,11 @@ function AuditLogsPageInner() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="mb-4 shrink-0">
-        <h1 className="flex items-center gap-2 text-page-title font-medium text-text-primary leading-tight">
-          <ScrollText size={24} className="text-primary-text" /> Audit Logs
-        </h1>
-        <p className="text-body text-text-secondary mt-1">
-          Software-wide record of who — or what — changed what, and when, across modules.
-        </p>
+      <div className="shrink-0">
+        <PageHeader
+          title="Audit logs"
+          meta="Software-wide record of who, or what, changed what, and when, across modules."
+        />
       </div>
 
       {/* Filters — search spans the full width; controls sit in an even row below */}

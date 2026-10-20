@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Loader2, Save, Search, Info } from 'lucide-react'
+import { Save, Search, Info } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
 import { toast } from '@/components/ui/sonner'
 
@@ -9,6 +9,8 @@ import { leaveApi } from '@/lib/api/leave'
 import { getEmployees } from '@/lib/api/employees'
 import type { LeaveApprovalMode, LeaveMaster } from '@/lib/types/leave'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
 
 interface Person {
   user_id: string
@@ -29,7 +31,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
       onClick={onChange}
       role="switch"
       aria-checked={on}
-      className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${on ? 'bg-primary' : 'bg-surface-control-pressed'}`}
+      className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring relative w-9 h-5 rounded-full transition-colors shrink-0 ${on ? 'bg-primary' : 'bg-surface-control-pressed'}`}
     >
       <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-surface shadow-xs transition-transform ${on ? 'translate-x-4' : 'translate-x-0'}`} />
     </button>
@@ -71,7 +73,7 @@ function UserMultiSelect({ people, selected, onToggle }: { people: Person[]; sel
               key={p.user_id}
               type="button"
               onClick={() => onToggle(p.user_id)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-body transition-colors ${on ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'}`}
+              className={`outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:-outline-offset-2 focus-visible:outline-primary-ring w-full flex items-center gap-2.5 px-3 py-2 text-left text-body transition-colors ${on ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'}`}
             >
               <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 ${on ? 'bg-primary border-primary' : 'border-border'}`}>
                 {on && <span className="text-primary-foreground text-meta leading-none">✓</span>}
@@ -144,10 +146,11 @@ export default function LeaveRulesPage() {
 
   return (
     <div className="space-y-4 max-w-3xl">
+      <PageHeader title="Leave rules" meta="How leave requests are routed and approved." />
       <div className="flex items-start gap-2 rounded-card border border-primary-border bg-primary-subtle p-4 text-body text-text-primary">
         <Info size={16} className="text-primary-text shrink-0 mt-0.5" />
         <p>
-          These rules govern how employees apply for leave from <span className="font-medium">My Profile → Leave</span>, and approvers decide requests under <span className="font-medium">Work → Leave Approvals</span>.
+          These rules govern how employees apply for leave from <span className="font-medium">My profile → Leave</span>, and approvers decide requests under <span className="font-medium">Work → Leave approvals</span>.
           Leave makes a person show as <span className="font-medium">on leave</span> on the chosen dates regardless of approval — approval is for governance.
           On-leave employees still appear in the assignee picker; only <span className="font-medium">inactive</span> employees are hidden.
         </p>
@@ -219,15 +222,10 @@ export default function LeaveRulesPage() {
         </div>
       </Card>
 
-      <button
-        type="button"
-        onClick={save}
-        disabled={saving}
-        className="flex items-center gap-2 px-4 py-[10px] text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-      >
-        {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-        {saving ? 'Saving…' : 'Save leave rules'}
-      </button>
+      <Button type="button" onClick={save} loading={saving} loadingLabel="Saving">
+        <Save size={16} />
+        Save leave rules
+      </Button>
     </div>
   )
 }

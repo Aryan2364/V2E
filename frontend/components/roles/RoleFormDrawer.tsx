@@ -1,12 +1,13 @@
 'use client'
 
+import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import { useEffect, useState, useMemo } from 'react'
 import { useForm, useFieldArray, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Plus, Trash2 } from 'lucide-react'
 import { createRole, updateRole, deleteRole } from '@/lib/api/roles'
-import Button, { Button as KitButton } from '@/components/ui/button'
 import DepartmentSelect from '@/components/employees/DepartmentSelect'
 import LevelSelect from './LevelSelect'
 import type { Department, Role, RoleLevel } from '@/lib/types'
@@ -58,7 +59,7 @@ const smInputCls =
 const textareaCls =
   'w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-body text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-2 focus:border-primary transition-colors resize-none'
 const labelCls = 'text-body font-medium text-text-secondary mb-1.5 block'
-const fieldLabelCls = 'text-meta font-medium text-text-muted uppercase tracking-wide mb-1 block'
+const fieldLabelCls = 'text-meta font-medium text-text-muted mb-1 block'
 
 const EMPTY: RoleFormValues = {
   department_id: '',
@@ -286,13 +287,14 @@ export default function RoleFormDrawer({
             <div className="bg-surface-sunken border border-border-light rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-body font-medium text-text-primary">Key result areas (KRA)</h4>
-                <button
+                <Button
                   type="button"
                   onClick={() => kraArray.append({ title: '', description: '' })}
-                  className="inline-flex items-center gap-1 text-meta text-primary-text font-medium hover:text-primary-text"
+                  variant="secondary"
+                  size="sm"
                 >
                   <Plus size={13} /> Add KRA
-                </button>
+                </Button>
               </div>
               <div className="flex flex-col gap-3">
                 {kraArray.fields.length === 0 && (
@@ -319,14 +321,17 @@ export default function RoleFormDrawer({
                         className={textareaCls}
                       />
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => kraArray.remove(i)}
-                      className="text-text-muted hover:text-danger self-start p-1 rounded-xs transition-colors"
-                      aria-label="Remove KRA"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <Tooltip label="Remove KRA">
+                      <Button
+                        type="button"
+                        onClick={() => kraArray.remove(i)}
+                        aria-label="Remove KRA"
+                        variant="ghost"
+                        size="icon"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </Tooltip>
                   </div>
                 ))}
               </div>
@@ -336,13 +341,14 @@ export default function RoleFormDrawer({
             <div className="bg-surface-sunken border border-border-light rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-body font-medium text-text-primary">Key performance indicators (KPI)</h4>
-                <button
+                <Button
                   type="button"
                   onClick={() => kpiArray.append({ title: '', metric: '', target: '', unit: '' })}
-                  className="inline-flex items-center gap-1 text-meta text-primary-text font-medium hover:text-primary-text"
+                  variant="secondary"
+                  size="sm"
                 >
                   <Plus size={13} /> Add KPI
-                </button>
+                </Button>
               </div>
               <div className="flex flex-col gap-3">
                 {kpiArray.fields.length === 0 && (
@@ -392,14 +398,17 @@ export default function RoleFormDrawer({
                         </div>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => kpiArray.remove(i)}
-                      className="text-text-muted hover:text-danger self-start p-1 rounded-xs transition-colors"
-                      aria-label="Remove KPI"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <Tooltip label="Remove KPI">
+                      <Button
+                        type="button"
+                        onClick={() => kpiArray.remove(i)}
+                        aria-label="Remove KPI"
+                        variant="ghost"
+                        size="icon"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </Tooltip>
                   </div>
                 ))}
               </div>
@@ -417,7 +426,7 @@ export default function RoleFormDrawer({
                 {confirmDelete ? (
                   <div className="flex items-center gap-3">
                     <p className="text-body text-text-secondary flex-1">Delete this job role permanently?</p>
-                    <Button variant="danger" size="sm" isLoading={deleting} onClick={handleDelete}>
+                    <Button variant="danger" size="sm" loading={deleting} onClick={handleDelete}>
                       Confirm delete
                     </Button>
                     <Button
@@ -430,13 +439,9 @@ export default function RoleFormDrawer({
                     </Button>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => setConfirmDelete(true)}
-                    className="inline-flex items-center gap-1.5 text-body text-danger font-medium hover:text-danger transition-colors"
-                  >
+                  <Button type="button" onClick={() => setConfirmDelete(true)} variant="danger" size="sm">
                     <Trash2 size={14} /> Delete job role
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
@@ -448,9 +453,9 @@ export default function RoleFormDrawer({
             <Button type="button" variant="secondary" onClick={requestClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <KitButton type="submit" form="role-form" loading={isSubmitting} loadingLabel="Saving">
+            <Button type="submit" form="role-form" loading={isSubmitting} loadingLabel="Saving">
               {isEdit ? 'Save job role' : 'Add job role'}
-            </KitButton>
+            </Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>

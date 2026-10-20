@@ -425,14 +425,16 @@ export default function AddEmployeeModal({
                       aria-invalid={fieldErrors.password ? true : undefined}
                       className={`${inputClass} pr-8 aria-invalid:border-danger`}
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      variant="in-field"
+                      size="icon-sm"
+                      className="absolute right-1 top-1/2 -translate-y-1/2"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
+                    </Button>
                   </div>
                   <InlineFieldError>{fieldErrors.password}</InlineFieldError>
                 </div>
@@ -475,13 +477,15 @@ export default function AddEmployeeModal({
                   )
                 })()}
                 {canCreateDept && (
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setCreatingDept(true)}
-                    className="mt-1.5 inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text"
+                    variant="secondary"
+                    size="sm"
+                    className="mt-1.5"
                   >
                     <Plus size={12} /> New department
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -517,13 +521,15 @@ export default function AddEmployeeModal({
                 {/* Inline role creation — opens the full role drawer over this
                     modal, scoped to the chosen department (admin only) */}
                 {canCreateRole && form.department_id && (
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setCreatingRole(true)}
-                    className="mt-1.5 inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text"
+                    variant="secondary"
+                    size="sm"
+                    className="mt-1.5"
                   >
                     <Plus size={12} /> New job role
-                  </button>
+                  </Button>
                 )}
               </div>
               <div>
