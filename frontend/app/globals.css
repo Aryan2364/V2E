@@ -372,6 +372,10 @@ html[data-keyboard="open"] {
   --spacing-fab: 56px;
   --spacing-list-end: 88px;
 
+  /* Comment thread on a computer - the fixed-height feed of 10: it scrolls
+     inside itself, no taller than this. On phone the page scrolls. */
+  --spacing-thread-max: 480px;
+
   --spacing-settings-menu: 200px;
 
   --spacing-auth-form: 400px;

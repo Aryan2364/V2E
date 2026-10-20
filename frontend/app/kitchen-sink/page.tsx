@@ -47,6 +47,8 @@ import {
   BannerTitle,
   useBannerDismissal,
 } from "@/components/ui/banner"
+import { CommentBox } from "@/components/ui/comment-box"
+import { CommentThread, type ThreadItem } from "@/components/ui/comment-thread"
 import { CategoryBarChart } from "@/components/ui/bar-chart"
 import {
   Breadcrumb,
@@ -2657,6 +2659,15 @@ export default function KitchenSinkPage() {
             <PhoneScreensDemo />
           </Section>
         </div>
+
+        {/* ---------------------------------------------------------- */}
+        <Section
+          n="25"
+          title="Comment thread"
+          note="Section 41.6 rule 5: oldest at the top, newest at the bottom, opening on the latest. Each comment has the photo, name and time with the text under it at full width; several in a row from one person sit together. Days are divided, a note is a grey line between comments, and the tag is the product's word. On a computer the thread scrolls inside itself; on phone the page scrolls."
+        >
+          <CommentThreadDemo />
+        </Section>
       </div>
     </main>
     </KeyboardShortcuts>
@@ -3235,6 +3246,63 @@ function OtpFieldDemo() {
         <Label htmlFor="ks-otp-checking">OTP, while checking</Label>
         <OtpField id="ks-otp-checking" className="mt-2" value="482915" readOnly onChange={() => {}} />
       </div>
+    </div>
+  )
+}
+
+/** Section 41.6 rule 5: the thread above the message box, with the box under it. */
+function CommentThreadDemo() {
+  // Built in the browser: "Today" and "Yesterday" are measured from now.
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
+  const [older, setOlder] = React.useState<ThreadItem[]>([])
+  const [sent, setSent] = React.useState<ThreadItem[]>([])
+  const [text, setText] = React.useState("")
+
+  const base = React.useMemo<ThreadItem[]>(() => {
+    if (!mounted) return []
+    const at = (daysAgo: number, hour: number, minute: number) => {
+      const d = new Date()
+      d.setDate(d.getDate() - daysAgo)
+      d.setHours(hour, minute, 0, 0)
+      return d.toISOString()
+    }
+    return [
+      { id: "t1", who: "Priya Nair", when: at(3, 10, 5), tag: "Client", text: "Round 1 looks good. Can we see the footer in the second layout?" },
+      { id: "t2", who: "Rakesh Mehta", when: at(3, 10, 40), text: "Yes, I will upload it this afternoon." },
+      { id: "t3", who: "Rakesh Mehta", when: at(3, 10, 41), text: "It uses the same grid, so nothing else moves." },
+      { id: "n1", kind: "note", when: at(1, 15, 12), text: "Rakesh uploaded round 2" },
+      { id: "t4", who: "Sunita Rao", when: at(1, 15, 30), tag: "Internal", edited: true, onShowEdits: () => toast.message("Earlier versions would open here."), text: "Hold the invoice until the client approves.\nI will check again on Monday." },
+      { id: "t5", who: "Priya Nair", when: at(0, 9, 20), tag: "Client", text: "Approved. Please go ahead." },
+    ]
+  }, [mounted])
+
+  const more = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 600))
+    const d = new Date()
+    d.setDate(d.getDate() - 6)
+    d.setHours(11, 0, 0, 0)
+    setOlder([
+      { id: "e1", who: "Sunita Rao", when: d.toISOString(), text: "Kick-off notes are in the project folder." },
+      { id: "e2", who: "Priya Nair", when: new Date(d.getTime() + 600000).toISOString(), tag: "Client", text: "Thanks, received." },
+    ])
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <CommentThread items={[...older, ...base, ...sent]} loading={!mounted} hasEarlier={older.length === 0} onShowEarlier={more} />
+      <CommentBox
+        value={text}
+        onChange={setText}
+        onSend={async () => {
+          await new Promise((resolve) => setTimeout(resolve, 400))
+          setSent((list) => [...list, { id: `new-${list.length}`, who: "Aryan Jain", when: new Date().toISOString(), text }])
+          setText("")
+        }}
+      />
     </div>
   )
 }

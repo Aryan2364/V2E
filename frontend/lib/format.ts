@@ -360,6 +360,23 @@ function formatRelative(value: Date | string, now: Date | string = new Date()): 
   return `${days} days ago`
 }
 
+/**
+ * The label of a day divider in a comment thread (section 18): "Today",
+ * "Yesterday", then the full date, DD Mon YYYY. Days are counted in
+ * TIME_ZONE, so the divider changes at the product's midnight, not the
+ * viewer's. A day in the future reads as its full date. Allowed in a
+ * thread only, like formatRelative's feeds.
+ */
+function formatDay(value: Date | string, now: Date | string = new Date()): string {
+  const then = readParts(value)
+  const at = toInstant(now)
+  if (then === null || at === null) return ""
+  const same = (a: CalendarParts, b: CalendarParts) => a.year === b.year && a.month === b.month && a.day === b.day
+  if (same(then, partsInZone(new Date(at)))) return "Today"
+  if (same(then, partsInZone(new Date(at - DAY_MS)))) return "Yesterday"
+  return formatDate(value)
+}
+
 function toInstant(value: Date | string): number | null {
   if (typeof value === "string") {
     const plain = PLAIN_DATE_RE.exec(value.trim())
@@ -398,4 +415,5 @@ export {
   formatShortCount,
   formatCount,
   formatRelative,
+  formatDay,
 }
