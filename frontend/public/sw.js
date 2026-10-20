@@ -288,8 +288,6 @@ function v2eSetBadge(count) {
   return Promise.resolve()
 }
 
-const V2E_IS_ANDROID = /Android/i.test((self.navigator && self.navigator.userAgent) || '')
-
 self.addEventListener('push', (event) => {
   let data = {}
   try {
@@ -302,12 +300,7 @@ self.addEventListener('push', (event) => {
     Promise.all([
       self.registration.showNotification(title, {
         body: data.body || '',
-        // Android always fills the notification's large-icon spot: with no
-        // icon it draws a letter ("V") in a circle. The owner wants neither
-        // that nor the logo box there (the top line already shows the V2E
-        // symbol and name), so Android gets a fully transparent image. A
-        // computer's notification has no badge, so it keeps the logo.
-        icon: V2E_IS_ANDROID ? '/icons/blank-96.png' : '/icons/icon-192.png',
+        icon: '/icons/icon-192.png',
         // Android draws the status-bar icon from the badge's alpha only, so it
         // must be the white symbol on transparent - the full-colour app icon
         // came out as a plain square.
