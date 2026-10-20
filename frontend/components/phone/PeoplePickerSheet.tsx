@@ -322,7 +322,7 @@ function PersonRow({
           type="button"
           onClick={onToggleOptional}
           className={cx(
-            'mr-[12px] min-h-[36px] shrink-0 rounded-full border px-[10px] text-meta font-medium',
+            'mr-[12px] min-h-[44px] shrink-0 rounded-full border px-[12px] text-label font-medium',
             optional ? 'border-primary bg-primary-subtle text-primary-text' : 'border-border text-text-secondary',
           )}
         >

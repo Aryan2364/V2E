@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bell, CalendarDays, CheckSquare, Menu, UserCheck } from 'lucide-react'
+import { Bell, CalendarDays, Inbox, Menu, UserCheck } from 'lucide-react'
 import { useKeyboard } from '@/lib/keyboard'
 import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { useNotifications } from '@/lib/notifications/NotificationsProvider'
@@ -43,7 +43,7 @@ type Tab = {
 }
 
 export const PHONE_TABS: Tab[] = [
-  { label: 'My work', href: PHONE_HOME, icon: <CheckSquare aria-hidden />, entitlement: 'tasks' },
+  { label: 'My work', href: PHONE_HOME, icon: <Inbox aria-hidden />, entitlement: 'tasks' },
   { label: 'Given', href: '/dashboard/tasks/assigned', icon: <UserCheck aria-hidden />, entitlement: 'tasks' },
   {
     label: 'Meetings',
@@ -115,7 +115,7 @@ export default function PhoneTabBar() {
               {count !== null ? (
                 <span
                   aria-hidden
-                  className="absolute top-[-8px] left-[12px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-[5px] text-[11px] font-medium leading-none text-primary-foreground"
+                  className="absolute top-[-8px] left-[12px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-[5px] text-meta font-medium leading-none text-primary-foreground"
                 >
                   {count > 99 ? '99+' : count}
                 </span>

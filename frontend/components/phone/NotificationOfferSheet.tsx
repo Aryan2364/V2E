@@ -69,8 +69,8 @@ export function NotificationOfferSheet({
           <PhoneButton disabled={busy} onClick={() => close(false)}>
             Skip for now
           </PhoneButton>
-          <PhoneButton variant="primary" disabled={busy} onClick={() => void turnOn()}>
-            {busy ? 'Turning on' : 'Turn on'}
+          <PhoneButton variant="primary" loading={busy} onClick={() => void turnOn()}>
+            Turn on
           </PhoneButton>
         </>
       }

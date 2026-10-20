@@ -22,7 +22,7 @@ import { RefreshCw, WifiOff } from 'lucide-react'
 export default function OfflineScreen() {
   return (
     <div className="flex min-h-dvh flex-col bg-surface-sunken text-text-primary">
-      <header className="bg-primary pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] text-white">
+      <header className="bg-primary pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] text-on-brand">
         <div className="flex h-[56px] items-center px-[16px]">
           <h1 className="truncate text-[20px] font-medium leading-[1.3]">V2E</h1>
         </div>
@@ -50,7 +50,7 @@ export default function OfflineScreen() {
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="mt-[24px] inline-flex min-h-11 w-full max-w-[420px] items-center justify-center gap-[8px] rounded-[8px] border-2 border-primary bg-primary px-[16px] py-[8px] text-[1rem] font-medium text-white active:bg-primary-pressed outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ring"
+          className="mt-[24px] inline-flex min-h-11 w-full max-w-[420px] items-center justify-center gap-[8px] rounded-[8px] border-2 border-primary bg-primary px-[16px] py-[8px] text-[1rem] font-medium text-primary-foreground active:bg-primary-pressed outline-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ring"
         >
           <RefreshCw aria-hidden className="size-[18px]" />
           Try again
