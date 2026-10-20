@@ -81,7 +81,7 @@ export function PhoneAppBar({
 export function BackButton({ parent }: { parent: string }) {
   const back = useBack(parent)
   return (
-    <button type="button" aria-label="Back" className={APP_BAR_BUTTON} onClick={back}>
+    <button type="button" aria-label="Back" data-leaves-page className={APP_BAR_BUTTON} onClick={back}>
       <ChevronLeft aria-hidden />
     </button>
   )

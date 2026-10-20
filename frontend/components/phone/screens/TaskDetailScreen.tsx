@@ -82,6 +82,8 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
   // 'done' while the optimistic complete animation/collapse is running, so
   // the row-style strike-through can play before the task state updates.
   const [completing, setCompleting] = React.useState(false)
+  const [reopening, setReopening] = React.useState(false)
+  const [reopenError, setReopenError] = React.useState(false)
 
   const load = React.useCallback(() => {
     if (!orgId || !taskId) return
@@ -202,16 +204,21 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
     } catch {
       throw new Error('Could not post the comment. Try again.')
     }
+    // Only files not yet tied to a posted comment go with this one; failed ones from an earlier send stay put with their own Try again.
+    const toSend = commentFiles.filter((f) => !f.commentId)
     let failed = 0
-    for (const item of commentFiles) {
+    for (const item of toSend) {
+      patchCommentFile(item.id, { status: 'uploading', commentId: created.id })
       try {
         const shrunk = await shrinkImageForUpload(item.file)
         await tasksApi.uploadCommentAttachment(orgId, task.id, created.id, shrunk)
+        setCommentFiles((prev) => prev.filter((u) => u.id !== item.id))
       } catch {
         failed += 1
+        patchCommentFile(item.id, { status: 'failed' })
       }
     }
-    if (commentFiles.length > 0) {
+    if (toSend.length > 0) {
       // The files are on the server now: reload once so the comment shows them. Same row keys, so nothing flickers.
       const fresh = await tasksApi.getComments(orgId, task.id).catch(() => null)
       setComments(fresh ?? ((prev) => [...(prev ?? []), created]))
@@ -219,12 +226,33 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
       setComments((prev) => [...(prev ?? []), created])
     }
     setCommentText('')
-    setCommentFiles([])
-    if (failed > 0) addToast(`Comment posted, but ${failed} file${failed === 1 ? '' : 's'} failed to upload. Add them from Files & proof.`, 'error')
+    if (failed > 0) addToast(`Comment posted, but ${failed} file${failed === 1 ? '' : 's'} could not be uploaded. Use Try again on the file.`, 'error')
     // Show the new comment above the box.
     requestAnimationFrame(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }))
     // Sending a comment is a reply you'd want to hear back about (plan 9, kit 41.12 rule 4) - offer once, at most.
     if (shouldOfferPushNow(userId)) setOfferPush(true)
+  }
+
+  function patchCommentFile(id: string, change: Partial<UploadItem>) {
+    setCommentFiles((prev) => prev.map((u) => (u.id === id ? { ...u, ...change } : u)))
+  }
+
+  /** Re-uploads one file that failed to attach to an already-posted comment. */
+  async function retryCommentFile(id: string) {
+    const item = commentFiles.find((u) => u.id === id)
+    if (!item || !item.commentId || item.status === 'uploading') return
+    const commentId = item.commentId
+    patchCommentFile(id, { status: 'uploading' })
+    try {
+      const shrunk = await shrinkImageForUpload(item.file)
+      await tasksApi.uploadCommentAttachment(orgId, task!.id, commentId, shrunk)
+      setCommentFiles((prev) => prev.filter((u) => u.id !== id))
+      const fresh = await tasksApi.getComments(orgId, task!.id).catch(() => null)
+      if (fresh) setComments(fresh)
+    } catch {
+      patchCommentFile(id, { status: 'failed' })
+      addToast('The file could not be uploaded. Try again.', 'error')
+    }
   }
 
   async function toggleChecklistItem(item: TaskChecklistItem) {
@@ -289,16 +317,24 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
               type="button"
               variant="secondary"
               fullWidth
+              loading={reopening}
               onClick={() => {
+                if (reopening) return
+                setReopening(true)
+                setReopenError(false)
                 callUndo(task)
                   .then(() => {
                     load()
                     void refreshBadge()
                   })
-                  .catch(() => addToast('Could not reopen the task. Try again.', 'error'))
+                  .catch(() => {
+                    setReopenError(true)
+                    addToast('Could not reopen the task. Try again.', 'error')
+                  })
+                  .finally(() => setReopening(false))
               }}
             >
-              Reopen task
+              {reopening ? 'Reopening…' : reopenError ? 'Try again' : 'Reopen task'}
             </PhoneButton>
           ) : (
             <PhoneButton type="button" variant="primary" fullWidth loading={completing} onClick={onTapComplete}>
@@ -420,7 +456,7 @@ export default function TaskDetailScreen({ route }: { route: PhoneRoute }) {
         placeholder="Write a comment…"
         attachments={
           commentFiles.length > 0 ? (
-            <UploadRows items={commentFiles} onRetry={() => {}} onRemove={(id) => setCommentFiles((prev) => prev.filter((u) => u.id !== id))} />
+            <UploadRows items={commentFiles} onRetry={(id) => void retryCommentFile(id)} onRemove={(id) => setCommentFiles((prev) => prev.filter((u) => u.id !== id))} />
           ) : undefined
         }
         tools={
@@ -566,6 +602,8 @@ type UploadItem = {
   file: File
   progress: number
   status: 'queued' | 'uploading' | 'done' | 'failed'
+  /** Set once the comment this file belongs to is posted: a retry attaches to that comment. */
+  commentId?: string
 }
 
 function newUpload(file: File): UploadItem {
@@ -581,18 +619,26 @@ function UploadRows({ items, onRetry, onRemove }: { items: UploadItem[]; onRetry
           <Paperclip aria-hidden className="size-[16px] shrink-0 text-text-secondary" />
           <span className="min-w-0 flex-1 truncate text-label text-text-primary">{u.file.name}</span>
           {u.status === 'uploading' ? (
-            <span className="shrink-0 text-meta text-text-secondary">{u.progress}%</span>
+            <span className="shrink-0 text-meta text-text-secondary">Uploading…</span>
           ) : u.status === 'done' ? (
             <span className="shrink-0 text-label font-medium text-success">Done</span>
           ) : u.status === 'failed' ? (
-            <button
-              type="button"
-              onClick={() => onRetry(u.id)}
-              className="inline-flex min-h-[44px] shrink-0 items-center gap-[4px] rounded-[6px] px-[8px] text-label font-medium text-danger active:bg-danger-bg"
-            >
-              <RotateCcw aria-hidden className="size-[14px]" />
-              Retry
-            </button>
+            <>
+              <span className="shrink-0 text-meta text-danger">Upload failed</span>
+              <button
+                type="button"
+                onClick={() => onRetry(u.id)}
+                className="inline-flex min-h-[44px] shrink-0 items-center gap-[4px] rounded-[6px] px-[8px] text-label font-medium text-danger active:bg-danger-bg"
+              >
+                <RotateCcw aria-hidden className="size-[14px]" />
+                Try again
+              </button>
+              {onRemove ? (
+                <button type="button" aria-label={`Remove ${u.file.name}`} onClick={() => onRemove(u.id)} className="inline-flex size-[44px] shrink-0 items-center justify-center rounded-full active:bg-surface-control">
+                  <X aria-hidden className="size-[16px] text-text-secondary" />
+                </button>
+              ) : null}
+            </>
           ) : onRemove ? (
             <button type="button" aria-label={`Remove ${u.file.name}`} onClick={() => onRemove(u.id)} className="inline-flex size-[44px] shrink-0 items-center justify-center rounded-full active:bg-surface-control">
               <X aria-hidden className="size-[16px] text-text-secondary" />

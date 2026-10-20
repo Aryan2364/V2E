@@ -11,6 +11,7 @@ import type { PersonOption } from '@/components/meetings/MeetingAttendeeSelector
 import type { MeetingType } from '@/lib/types/meetings'
 import { MEETINGS_HREF, type PhoneRoute } from '@/lib/phone-routes'
 import { useDraft } from '@/lib/drafts'
+import { isChanged, useUnsavedChanges } from '@/components/ui/unsaved-changes'
 import { DraftBanner } from '../DraftBanner'
 import PhoneScreen from '../PhoneScreen'
 import { PhoneButton, PhoneField, GrowTextarea, PHONE_INPUT, cx, enterMovesNext, focusFirstInvalid } from '../primitives'
@@ -101,6 +102,18 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
     values: draftValues,
   })
 
+  const [saved, setSaved] = React.useState(false)
+  const unsaved = useUnsavedChanges({
+    changed:
+      !saved &&
+      (isChanged(draftValues, { title: '', type: 'online', date: '', startTime: '', endTime: '', onlineLink: '', location: '', agenda: '' }) ||
+        attendeeIds.length > 0 ||
+        optionalIds.length > 0),
+    noun: 'meeting',
+    mode: 'create',
+    onLeave: () => draft.clear(),
+  })
+
   function restoreDraft(kept: Partial<MeetingCreateValues>) {
     if (kept.title !== undefined) setTitle(kept.title)
     if (kept.type !== undefined) setType(kept.type)
@@ -164,6 +177,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
         optional_user_ids: optionalIds,
         agenda: agenda.trim() || undefined,
       })
+      setSaved(true)
       draft.clear()
       addToast('Meeting created', 'success')
       router.replace(`/dashboard/governance/meetings/${meeting.id}`)
@@ -178,6 +192,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
 
   return (
     <PhoneScreen title={route.title} parent={route.parent ?? MEETINGS_HREF}>
+      {unsaved.warning}
       <form ref={formRef} noValidate onKeyDown={enterMovesNext} onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-[20px] pb-[96px]">
         <DraftBanner draft={draft} onUse={restoreDraft} />
 

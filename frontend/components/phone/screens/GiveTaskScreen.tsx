@@ -13,6 +13,7 @@ import { makeReminderRow, buildReminderSpecs } from '@/components/tasks/Reminder
 import { buildRecurringPayload, scheduleEntryError } from '@/lib/tasks/recurring-payload'
 import type { RecurringScheduleType } from '@/lib/types/tasks'
 import { useDraft } from '@/lib/drafts'
+import { isChanged, useUnsavedChanges } from '@/components/ui/unsaved-changes'
 import { DraftBanner } from '../DraftBanner'
 import { shouldOfferPushNow, declinePushOffer } from '@/lib/push'
 import PhoneScreen from '../PhoneScreen'
@@ -85,11 +86,20 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
   const recurring = React.useRef(false)
 
   const draft = draftValues
+  // Set once the task is saved, so leaving afterwards never asks (11.3 rule 10, 41.7 rule 3).
+  const [saved, setSaved] = React.useState(false)
   const fileDraft = useDraft<GiveTaskValues>({
     person: user?.id,
     form: 'task-give',
     record: 'new',
     values: draftValues,
+  })
+
+  const unsaved = useUnsavedChanges({
+    changed: !saved && isChanged(draftValues, EMPTY_DRAFT),
+    noun: 'task',
+    mode: 'create',
+    onLeave: () => fileDraft.clear(),
   })
 
   React.useEffect(() => {
@@ -150,6 +160,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           }),
         )
         recurring.current = true
+        setSaved(true)
         fileDraft.clear()
         addToast('Recurring task created', 'success')
         if (shouldOfferPushNow(user?.id)) setOfferPush(true)
@@ -163,6 +174,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
         deadline: draft.deadline ? new Date(draft.deadline.length === 10 ? `${draft.deadline}T23:59` : draft.deadline).toISOString() : undefined,
         assignee_user_ids: draft.assignees.map((a) => a.user_id),
       })
+      setSaved(true)
       fileDraft.clear()
       addToast('Task created', 'success')
       // The first useful moment to ask (plan §9, kit §41.12 rule 4): giving a
@@ -188,6 +200,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
 
   return (
     <PhoneScreen title="Give task" parent={route.parent ?? PHONE_HOME}>
+      {unsaved.warning}
       <form
         ref={formRef}
         noValidate

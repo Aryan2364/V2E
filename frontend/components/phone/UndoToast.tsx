@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { createPortal } from 'react-dom'
+import { Loader2 } from 'lucide-react'
 import { cx } from './primitives'
 
 /*
@@ -47,6 +48,8 @@ export function UndoToastProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = React.useState<UndoState | null>(null)
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
   const [mounted, setMounted] = React.useState(false)
+  // The undo call is running: the button shows it and ignores taps, and the toast stays until it settles.
+  const [busyId, setBusyId] = React.useState<string | null>(null)
   React.useEffect(() => setMounted(true), [])
 
   const clear = React.useCallback(() => {
@@ -94,15 +97,27 @@ export function UndoToastProvider({ children }: { children: React.ReactNode }) {
                 <span className="min-w-0 flex-1 text-body text-surface">{state.message}</span>
                 <button
                   type="button"
-                  className="shrink-0 min-h-[44px] rounded-[6px] px-[12px] text-body font-medium text-primary-border active:bg-surface/10"
-                  onClick={() => {
-                    const toUndo = state.onUndo
+                  disabled={busyId === state.id}
+                  aria-busy={busyId === state.id || undefined}
+                  className="inline-flex shrink-0 min-h-[44px] items-center gap-[8px] rounded-[6px] px-[12px] text-body font-medium text-primary-border active:bg-surface/10 disabled:opacity-60"
+                  onClick={async () => {
+                    if (busyId) return
+                    const { id, onUndo } = state
                     clear()
-                    setState(null)
-                    void toUndo()
+                    setBusyId(id)
+                    try {
+                      // Failures are reported by the caller (an error toast); the toast just stops waiting.
+                      await onUndo()
+                    } catch {
+                      /* reported by the caller */
+                    } finally {
+                      setBusyId(null)
+                      setState((cur) => (cur?.id === id ? null : cur))
+                    }
                   }}
                 >
-                  Undo
+                  {busyId === state.id ? <Loader2 aria-hidden className="size-[16px] animate-spin" /> : null}
+                  {busyId === state.id ? 'Undoing…' : 'Undo'}
                 </button>
               </div>
             </div>,
