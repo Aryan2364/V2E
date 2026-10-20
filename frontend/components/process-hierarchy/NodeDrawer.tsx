@@ -1,9 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
 import {
-  X, Trash2, Plus, Check, ChevronRight, Loader2, FileText, UserCircle2, Shield, ExternalLink,
+  Trash2, Plus, Check, ChevronRight, Loader2, FileText, UserCircle2, Shield, ExternalLink,
   Menu, GitBranch, Copy, Share2, Rows3,
 } from 'lucide-react'
 import {
@@ -31,6 +30,15 @@ import Tooltip from '@/components/ui/tooltip'
 import NodeDocuments from './node-materials'
 import { useToast } from '@/components/ui/Toast'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { X } from 'lucide-react'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetBody, SheetFooter } from '@/components/ui/sheet'
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const DRILLABLE = new Set(['container', 'subprocess'])
 const CONTAINER_KINDS = new Set(['container', 'subprocess'])
@@ -102,7 +110,6 @@ export default function NodeDrawer({
   const [confirmDel, setConfirmDel] = useState(false)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [showMenu, setShowMenu] = useState(false) // header ⋯ (Move to another area)
   const [detaching, setDetaching] = useState(false)
   const [makingReusable, setMakingReusable] = useState(false)
   const [deptError, setDeptError] = useState(false) // only shown after a save attempt
@@ -149,15 +156,6 @@ export default function NodeDrawer({
     if (dirty) setConfirmDiscard(true)
     else onClose()
   }, [dirty, onClose])
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || confirmDiscard || confirmDel) return
-      requestClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [requestClose, confirmDiscard, confirmDel])
 
   const canEdit = !!node?.can_edit
   const isNote = node?.kind === 'note' // a sticky annotation — only its text is editable
@@ -341,84 +339,87 @@ export default function NodeDrawer({
     [maps, mapId],
   )
 
-  const body = (
-    // Non-modal: no dimming backdrop, so the canvas stays visible and the selected
-    // node keeps its context while you edit it (Part B7). The panel slides in.
-    <div className="fixed inset-0 z-60 pointer-events-none">
-      <div className="absolute right-0 top-0 h-full w-full max-w-[440px] bg-surface shadow-2xl border-l border-border-light flex flex-col pointer-events-auto animate-[slideInRight_.22s_ease-out]">
+  return (
+    // Non-modal: no dimming backdrop and no focus trap, so the canvas stays visible and the
+    // selected node keeps its context while you edit it (Part B7). A click on the canvas is
+    // not a close request - only Escape, the header X and the guarded requestClose are.
+    <Sheet
+      open
+      modal={false}
+      onOpenChange={(next, details) => {
+        if (next) return
+        if (details.reason === 'outside-press' || confirmDiscard || confirmDel) {
+          details.cancel()
+          return
+        }
+        requestClose()
+      }}
+    >
+      <SheetContent side="right" className="data-[side=right]:sm:max-w-[440px]">
         {/* Header — breadcrumb path to this node; the last crumb is its live name. */}
-        <div className="flex items-center gap-2 px-4 py-3.5 border-b border-border-light">
-          <span className="text-primary-text shrink-0">{node ? KIND_META[node.kind].icon : <FileText size={14} />}</span>
-          <div className="min-w-0 flex-1 truncate text-meta text-text-muted">
-            {ancestorPath.map((a, i) => (
-              <span key={i}>{a} <span className="text-text-muted">/</span> </span>
-            ))}
-            <span className="text-text-primary font-medium">{node ? (name || KIND_META[node.kind].label) : 'Loading'}</span>
+        <SheetHeader>
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0">{node ? KIND_META[node.kind].icon : <FileText size={14} />}</span>
+            <SheetTitle className="min-w-0 flex-1 truncate text-label">
+              {ancestorPath.map((a, i) => (
+                <span key={i} className="opacity-80">{a} <span>/</span> </span>
+              ))}
+              <span className="font-medium">{node ? (name || KIND_META[node.kind].label) : 'Loading'}</span>
+            </SheetTitle>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex shrink-0 items-center gap-1.5">
             {drillable && (
-              <button
-                onClick={() => onDrill(nodeId)}
-                className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text px-2 py-1 rounded-[6px] hover:bg-primary-subtle transition-colors"
-              >
+              <Button variant="on-brand" size="sm" onClick={() => onDrill(nodeId)}>
                 Open <ChevronRight size={14} />
-              </button>
+              </Button>
             )}
-            {/* Hamburger: structural actions (Move, Delete) — kept out of the scroll body
+            {/* Structural actions (Move, Copy, Delete) — kept out of the scroll body
                 so they're always reachable without a footer button. */}
             {node && canEdit && (
-              <div className="relative">
+              <DropdownMenu>
                 <Tooltip label="Actions">
-                  <button onClick={() => setShowMenu((v) => !v)} aria-label="Actions" aria-haspopup="menu" aria-expanded={showMenu}
-                    className="text-text-muted hover:text-text-primary hover:bg-surface-control rounded-[6px] p-1 transition-colors">
+                  <DropdownMenuTrigger render={<Button variant="on-brand" size="icon" aria-label="Actions" />}>
                     <Menu size={18} />
-                  </button>
+                  </DropdownMenuTrigger>
                 </Tooltip>
-                {showMenu && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                    <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 bg-surface border border-border-light rounded-lg shadow-lg p-1.5 animate-[popIn_.12s_ease-out]">
-                      {!isEvent(node.kind) && moveOptions.length > 1 && (
-                        <>
-                          <p className="px-2 py-1 text-meta font-medium text-text-muted uppercase tracking-wide">Move to another area</p>
-                          <div className="max-h-48 overflow-y-auto">
-                            {moveOptions.map((o) => (
-                              <button key={o.value} onClick={() => { setShowMenu(false); moveTo(o.value) }}
-                                className="w-full text-left px-2.5 py-1.5 rounded-[6px] hover:bg-surface-control text-meta text-text-primary truncate">
-                                {o.label}
-                              </button>
-                            ))}
-                          </div>
-                          <p className="px-2 py-1 text-meta text-text-muted">Moves this step (and anything inside it) into another container.</p>
-                          <div className="my-1 border-t border-border-light" />
-                        </>
-                      )}
-                      {onCopy && (
-                        <button onClick={() => { setShowMenu(false); onCopy() }}
-                          className="w-full text-left px-2.5 py-1.5 rounded-[6px] hover:bg-surface-control text-meta font-medium text-text-primary inline-flex items-center gap-2">
-                          <Copy size={14} /> Copy
-                        </button>
-                      )}
-                      <button onClick={() => { setShowMenu(false); setConfirmDel(true) }}
-                        className="w-full text-left px-2.5 py-1.5 rounded-[6px] hover:bg-danger-bg text-meta font-medium text-danger inline-flex items-center gap-2">
-                        <Trash2 size={14} /> Delete node
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+                <DropdownMenuContent align="end" className="w-64">
+                  {!isEvent(node.kind) && moveOptions.length > 1 && (
+                    <>
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel>Move to another area</DropdownMenuLabel>
+                        <div className="max-h-48 overflow-y-auto">
+                          {moveOptions.map((o) => (
+                            <DropdownMenuItem key={o.value} onClick={() => moveTo(o.value)}>
+                              <span className="truncate">{o.label}</span>
+                            </DropdownMenuItem>
+                          ))}
+                        </div>
+                      </DropdownMenuGroup>
+                      <p className="px-3 py-1 text-meta text-text-muted">Moves this step (and anything inside it) into another container.</p>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  {onCopy && (
+                    <DropdownMenuItem onClick={() => onCopy()}>
+                      <Copy size={14} /> Copy
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem variant="danger" onClick={() => setConfirmDel(true)}>
+                    <Trash2 size={14} /> Delete node
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
-            <button onClick={requestClose} aria-label="Close panel" className="text-text-muted hover:text-text-primary transition-colors p-1"><X size={18} /></button>
           </div>
-        </div>
+        </SheetHeader>
 
         {!node ? (
-          <div className="flex-1 flex items-center justify-center">
+          <SheetBody className="flex items-center justify-center">
             <Loader2 size={22} className="animate-spin text-primary-text" />
-          </div>
+          </SheetBody>
         ) : (
           <>
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          <SheetBody className="space-y-4">
             {/* Name — capped so it always fits on the canvas (no ellipsis). A note has no
                 name, just body text, so it shows a roomy textarea instead. */}
             {isNote ? (
@@ -427,7 +428,7 @@ export default function NodeDrawer({
                   <Label>Note</Label>
                   {canEdit && <span className="text-meta text-text-muted tabular-nums">{name.length}/{NOTE_MAX}</span>}
                 </div>
-                <textarea className={`${inputCls} resize-none`} rows={6} value={name} disabled={!canEdit} maxLength={NOTE_MAX}
+                <Textarea className="resize-none" rows={6} value={name} disabled={!canEdit} maxLength={NOTE_MAX}
                   placeholder={canEdit ? 'Write your note…' : '—'}
                   onChange={(e) => { setName(e.target.value); touch() }} />
               </div>
@@ -437,7 +438,7 @@ export default function NodeDrawer({
                   <Label>Name</Label>
                   {canEdit && <span className="text-meta text-text-muted tabular-nums">{name.length}/{NAME_MAX}</span>}
                 </div>
-                <input className={inputCls} value={name} disabled={!canEdit} maxLength={NAME_MAX}
+                <Input value={name} disabled={!canEdit} maxLength={NAME_MAX}
                   onChange={(e) => { setName(e.target.value); touch() }} />
               </div>
             )}
@@ -465,18 +466,24 @@ export default function NodeDrawer({
               <div>
                 <Label className="mb-2">Description</Label>
                 {canEdit && descEditing ? (
-                  <textarea autoFocus className={`${inputCls} resize-none`} rows={3} value={description}
+                  <Textarea autoFocus className="resize-none" rows={3} value={description}
                     placeholder="What happens in this step?"
                     onChange={(e) => { setDescription(e.target.value); touch() }}
                     onBlur={() => setDescEditing(false)} />
                 ) : description.trim() ? (
                   <div
                     onClick={() => { if (canEdit) setDescEditing(true) }}
+                    role={canEdit ? 'button' : undefined}
+                    tabIndex={canEdit ? 0 : undefined}
+                    onKeyDown={(e) => { if (canEdit && e.key === 'Enter') setDescEditing(true) }}
                     className={`${inputCls} whitespace-pre-wrap wrap-break-word min-h-[76px] ${canEdit ? 'cursor-text' : ''}`}
                   >{linkify(description)}</div>
                 ) : (
                   <div
                     onClick={() => { if (canEdit) setDescEditing(true) }}
+                    role={canEdit ? 'button' : undefined}
+                    tabIndex={canEdit ? 0 : undefined}
+                    onKeyDown={(e) => { if (canEdit && e.key === 'Enter') setDescEditing(true) }}
                     className={`${inputCls} min-h-[76px] text-text-muted ${canEdit ? 'cursor-text' : ''}`}
                   >{canEdit ? 'What happens in this step?' : '—'}</div>
                 )}
@@ -577,10 +584,9 @@ export default function NodeDrawer({
                   </div>
                   {node.linked_map && (
                     <Tooltip label="Open linked map">
-                      <button onClick={() => onDrill(nodeId)}
-                        className="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 text-meta font-medium rounded-lg border border-primary text-primary-text hover:bg-primary-subtle">
+                      <Button variant="secondary" className="shrink-0" onClick={() => onDrill(nodeId)}>
                         <ExternalLink size={13} /> Open
-                      </button>
+                      </Button>
                     </Tooltip>
                   )}
                 </div>
@@ -588,10 +594,9 @@ export default function NodeDrawer({
                   <div className="mt-1 flex items-center justify-between gap-2">
                     <p className="text-meta text-text-muted">Opening this node jumps to “{node.linked_map.name}”.</p>
                     {canEdit && !node.linked_map.owned && (
-                      <button onClick={detach} disabled={detaching}
-                        className="shrink-0 inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:underline disabled:text-text-muted">
-                        {detaching ? <Loader2 size={11} className="animate-spin" /> : <Copy size={11} />} Make my own copy
-                      </button>
+                      <Button variant="secondary" size="sm" className="shrink-0" onClick={detach} loading={detaching} loadingLabel="Copying">
+                        <Copy size={11} /> Make my own copy
+                      </Button>
                     )}
                   </div>
                 )}
@@ -609,10 +614,9 @@ export default function NodeDrawer({
                       </p>
                     </div>
                     <Tooltip label="Make reusable">
-                      <button onClick={makeReusable} disabled={makingReusable}
-                        className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 text-meta font-medium rounded-lg border border-primary text-primary-text hover:bg-primary-subtle disabled:opacity-50">
-                        {makingReusable ? <Loader2 size={12} className="animate-spin" /> : <Share2 size={12} />} Make reusable
-                      </button>
+                      <Button variant="secondary" size="sm" className="shrink-0" onClick={makeReusable} loading={makingReusable} loadingLabel="Working">
+                        <Share2 size={12} /> Make reusable
+                      </Button>
                     </Tooltip>
                   </div>
                 )}
@@ -628,22 +632,27 @@ export default function NodeDrawer({
               />
             )}
 
-          </div>
+          </SheetBody>
 
           {/* Save — pinned footer, always visible so it's obvious your typed edits are
               held locally and only written when you click Save (never per keystroke). */}
           {canEdit && (
-            <div className="shrink-0 border-t border-border-light px-4 py-3">
-              <button onClick={saveCore} disabled={saving || !dirty}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors">
-                {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
-                {saving ? 'Saving…' : dirty ? 'Save changes' : 'Saved'}
-              </button>
-            </div>
+            <SheetFooter className="shrink-0 border-t border-border-light">
+              <Button
+                variant="primary"
+                className="w-full"
+                onClick={saveCore}
+                disabled={!dirty}
+                loading={saving}
+                loadingLabel="Saving"
+              >
+                <Check size={15} />
+                {dirty ? 'Save changes' : 'Saved'}
+              </Button>
+            </SheetFooter>
           )}
           </>
         )}
-      </div>
 
       <ConfirmDialog
         open={confirmDel}
@@ -670,10 +679,9 @@ export default function NodeDrawer({
         onConfirm={() => { setConfirmDiscard(false); onClose() }}
         onCancel={() => setConfirmDiscard(false)}
       />
-    </div>
+      </SheetContent>
+    </Sheet>
   )
-
-  return typeof document !== 'undefined' ? createPortal(body, document.body) : null
 }
 
 // ─── Checklist ─────────────────────────────────────────────────────────────
@@ -691,22 +699,24 @@ function ChecklistEditor({ items, canEdit, onChange }: {
         {items.map((it, i) => (
           <div key={it.id ?? i} className="flex items-center gap-2">
             <span className="w-4 h-4 rounded-xs border border-border shrink-0" />
-            <input className={`${inputCls} py-1.5 text-meta`} value={it.text} disabled={!canEdit}
+            <Input value={it.text} disabled={!canEdit} aria-label="Checklist item"
               onChange={(e) => onChange(items.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)))} />
             {canEdit && (
-              <button onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label="Remove item"
-                className="text-text-muted hover:text-danger shrink-0"><X size={14} /></button>
+              <Tooltip label="Remove item">
+                <Button variant="ghost" size="icon-sm" onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label="Remove item"><X size={14} /></Button>
+              </Tooltip>
             )}
           </div>
         ))}
       </div>
       {canEdit && (
         <div className="flex items-center gap-2 mt-2">
-          <input className={`${inputCls} py-1.5 text-meta`} value={draft} placeholder="Add checklist item…"
+          <Input value={draft} aria-label="New checklist item" placeholder="Add checklist item…"
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && draft.trim()) { onChange([...items, { text: draft.trim() }]); setDraft('') } }} />
-          <button onClick={() => { if (draft.trim()) { onChange([...items, { text: draft.trim() }]); setDraft('') } }} aria-label="Add checklist item"
-            className="shrink-0 w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover"><Plus size={15} /></button>
+          <Tooltip label="Add checklist item">
+            <Button variant="secondary" size="icon" onClick={() => { if (draft.trim()) { onChange([...items, { text: draft.trim() }]); setDraft('') } }} aria-label="Add checklist item"><Plus size={15} /></Button>
+          </Tooltip>
         </div>
       )}
     </div>
@@ -802,23 +812,26 @@ function SharingSection({ orgId, mapId, nodeId, node, departments, roles, employ
               </span>
               <span className="flex-1 truncate text-text-primary">{r.label}</span>
               <span className="text-meta text-text-muted capitalize shrink-0">{r.kind === 'exclude_user' ? 'person' : r.kind}</span>
-              <button onClick={() => remove(r.id)} aria-label="Remove rule" className="text-text-muted hover:text-danger shrink-0"><X size={13} /></button>
+              <Tooltip label="Remove rule">
+                <Button variant="ghost" size="icon-sm" onClick={() => remove(r.id)} aria-label="Remove rule"><X size={13} /></Button>
+              </Tooltip>
             </div>
           ))}
         </div>
       )}
       {/* Add-rule form stays behind a single link until you want it. */}
       {!showAddForm ? (
-        <button onClick={() => setShowAddForm(true)}
-          className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:underline">
+        <Button variant="secondary" size="sm" onClick={() => setShowAddForm(true)}>
           <Plus size={14} /> Add person, role or department
-        </button>
+        </Button>
       ) : (
       /* One control per line so nothing crams; searchable pickers for role/person. */
       <div className="bg-surface-sunken border border-border-light rounded-lg p-3 space-y-2.5">
         <div className="flex items-center justify-between">
-          <p className="text-meta font-medium text-text-muted uppercase tracking-wide">Give access to</p>
-          <button onClick={() => setShowAddForm(false)} aria-label="Close" className="text-text-muted hover:text-text-primary"><X size={14} /></button>
+          <p className="text-meta font-medium text-text-muted">Give access to</p>
+          <Tooltip label="Close">
+            <Button variant="ghost" size="icon-sm" onClick={() => setShowAddForm(false)} aria-label="Close"><X size={14} /></Button>
+          </Tooltip>
         </div>
 
         <StyledSelect value={kind} onChange={(v) => { setKind(v as ProcessAccessKind); setEntityId('') }}
@@ -843,17 +856,16 @@ function SharingSection({ orgId, mapId, nodeId, node, departments, roles, employ
           {kind !== 'exclude_user' && (
             <div className="inline-flex rounded-lg border border-border-light overflow-hidden bg-surface">
               {(['view', 'edit'] as ProcessAccessLevel[]).map((lv) => (
-                <button key={lv} type="button" onClick={() => setLevel(lv)}
+                <button key={lv} type="button" onClick={() => setLevel(lv)} aria-pressed={level === lv}
                   className={`px-3 py-1.5 text-meta font-medium transition-colors ${level === lv ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-control'}`}>
                   {lv === 'view' ? 'Can view' : 'Can edit'}
                 </button>
               ))}
             </div>
           )}
-          <button onClick={add} disabled={!entityId || busy}
-            className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 text-meta font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors">
-            {busy ? <Loader2 size={14} className="animate-spin" /> : <Plus size={15} />} Add
-          </button>
+          <Button variant="secondary" size="sm" className="ml-auto" onClick={add} disabled={!entityId} loading={busy} loadingLabel="Adding">
+            <Plus size={15} /> Add
+          </Button>
         </div>
       </div>
       )}
