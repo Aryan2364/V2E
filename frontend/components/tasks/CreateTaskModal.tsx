@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import StyledSelect from '@/components/ui/StyledSelect'
@@ -164,6 +166,22 @@ export default function CreateTaskModal({
   const [checklistTemplates, setChecklistTemplates] = useState<ChecklistTemplate[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Per-field validation (kit 11.3 rule 6): the message sits under the field that is wrong.
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; assignees?: string; deadline?: string }>({})
+  const clearFieldError = (k: 'title' | 'assignees' | 'deadline') =>
+    setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
+  /** Show the field errors and move focus to the first wrong field (kit 39.3). Returns true when valid. */
+  function failFields(next: { title?: string; assignees?: string; deadline?: string }): boolean {
+    if (!next.title && !next.assignees && !next.deadline) { setFieldErrors({}); return true }
+    setFieldErrors(next)
+    const id = next.title ? 'create-task-title' : next.assignees ? 'create-task-assignees' : 'create-task-deadline'
+    requestAnimationFrame(() => {
+      const el = document.getElementById(id)
+      const target = el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button')
+      target?.focus()
+    })
+    return false
+  }
   const [holidayCheck, setHolidayCheck] = useState<HolidayCheckResult | null>(null)
   // When the deadline lands on a non-working day the system suggests an
   // adjustment; the user may override and keep their chosen date.
@@ -285,6 +303,17 @@ export default function CreateTaskModal({
     onClose()
   }
 
+  // Leaving a half-filled form asks first (kit 11.3 rule 10). Creating: nothing exists yet.
+  const formChanged =
+    tab === 'single' &&
+    (title.trim() !== '' || description.trim() !== '' || assignees.length > 0 || deadlineDate !== '' ||
+      tagIds.length > 0 || attachmentFiles.length > 0 || checklistGroups.length > 0 ||
+      goalId !== '' || priorityId !== '' || categoryId !== '')
+  const unsaved = useUnsavedChanges({ changed: isOpen && formChanged && !createdRecurring, noun: 'task', mode: 'create' })
+  function requestClose(details?: { cancel?: () => void }) {
+    unsaved.guard((open) => { if (!open) handleClose() })(false, details)
+  }
+
   function handleDeadlineDateChange(val: string) {
     // Clearing the date also clears the time. Range is enforced by the DatePicker.
     if (!val) { setDeadlineDate(''); setDeadlineTime(''); setRemindersOpen(false); return }
@@ -307,13 +336,18 @@ export default function CreateTaskModal({
     // may force it true on retry.
     const useHolidayOverride = holidayOverrideArg ?? holidayOverride
     if (mode === 'recurring') { await handleCreateRecurring(); return }
-    if (!title.trim()) { setError('Title is required.'); return }
-    if (assignees.filter((a) => !a.is_cc).length === 0) { setError('At least one assignee is required. CC-only tasks are not allowed.'); return }
-    if (!deadlineDate) { setError('Deadline is required.'); return }
-    if (deadlineDate) {
-      if (deadlineDate < todayStr) { setError('Deadline cannot be in the past.'); return }
-      if (deadlineDate > '2100-12-31') { setError('Deadline year cannot exceed 2100.'); return }
-    }
+    const deadlineProblem = !deadlineDate
+      ? 'Choose a deadline date.'
+      : deadlineDate < todayStr
+        ? 'Choose a deadline that is today or later.'
+        : deadlineDate > '2100-12-31'
+          ? 'Choose a deadline before the year 2100.'
+          : undefined
+    if (!failFields({
+      title: title.trim() ? undefined : 'Enter a title for the task.',
+      assignees: assignees.filter((a) => !a.is_cc).length === 0 ? 'Add at least one assignee. A task with only people in CC has no one to do it.' : undefined,
+      deadline: deadlineProblem,
+    })) return
     const reminderError = validateRemindersAgainstDeadline(reminders, deadline || null, deadlineDate)
     if (reminderError) { setError(reminderError); return }
     setSubmitting(true)
@@ -382,8 +416,10 @@ export default function CreateTaskModal({
   // uploads its attachments (which the scheduler copies into every spawned
   // instance), then shows a confirmation pointing to the Recurring tab.
   async function handleCreateRecurring() {
-    if (!title.trim()) { setError('Title is required.'); return }
-    if (assignees.filter((a) => !a.is_cc).length === 0) { setError('At least one assignee is required. CC-only tasks are not allowed.'); return }
+    if (!failFields({
+      title: title.trim() ? undefined : 'Enter a title for the task.',
+      assignees: assignees.filter((a) => !a.is_cc).length === 0 ? 'Add at least one assignee. A task with only people in CC has no one to do it.' : undefined,
+    })) return
     const scheduleError = scheduleEntriesError(scheduleEntries)
     if (scheduleError) { setError(scheduleError); return }
     if (reminders.some((r) => r.kind === 'absolute' && !r.date)) { setError('Pick a date for each “on a date” reminder.'); return }
@@ -464,7 +500,7 @@ export default function CreateTaskModal({
                 Done
               </Button>
               <Button onClick={() => { onCreated(); handleClose(); router.push('/dashboard/tasks/recurring') }} className="w-full sm:flex-1">
-                Go to Recurring
+                Open recurring tasks
               </Button>
             </div>
           </div>
@@ -475,6 +511,7 @@ export default function CreateTaskModal({
 
   return (
     <>
+    {unsaved.warning}
     <Dialog
       open
       onOpenChange={(open, eventDetails) => {
@@ -485,7 +522,7 @@ export default function CreateTaskModal({
           eventDetails.cancel()
           return
         }
-        handleClose()
+        requestClose(eventDetails)
       }}
     >
       <DialogContent
@@ -498,7 +535,7 @@ export default function CreateTaskModal({
             80dvh cap. */}
         <DialogHeader>
           <DialogTitle>
-            {lockMode && mode === 'recurring' ? 'Create Recurring Task' : 'Create Task'}
+            {lockMode && mode === 'recurring' ? 'Create recurring task' : 'Create task'}
           </DialogTitle>
         </DialogHeader>
 
@@ -546,40 +583,46 @@ export default function CreateTaskModal({
         <form id="create-task-form" onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
           {/* Title */}
           <div>
-            <Label className="mb-2" required>
+            <Label className="mb-2" htmlFor="create-task-title" required>
               Title
             </Label>
             <div className="relative">
               <input
+                id="create-task-title"
                 type="text"
                 value={title}
-                onChange={(e) => setTitle(e.target.value.slice(0, 50))}
+                onChange={(e) => { setTitle(e.target.value.slice(0, 50)); clearFieldError('title') }}
                 maxLength={50}
-                placeholder="Task title..."
-                className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-body sm:text-body text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
+                placeholder="For example, Send the monthly report"
+                aria-invalid={fieldErrors.title ? true : undefined}
+                className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-body sm:text-body text-text-primary placeholder:text-text-muted focus:border-2 focus:border-primary focus:outline-hidden bg-surface aria-invalid:border-danger"
               />
               {/* Count lives inside the field, right-aligned */}
               <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-meta ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
                 {title.length}/50
               </span>
             </div>
+            <InlineFieldError>{fieldErrors.title}</InlineFieldError>
           </div>
 
           {/* Assignees & CC */}
           <div>
-            <Label className="mb-2">Assignees & CC</Label>
+            <Label className="mb-2" required>Assignees & CC</Label>
+            <div id="create-task-assignees">
             <AssigneeSelector
               orgId={orgId}
               value={assignees}
-              onChange={setAssignees}
+              onChange={(v) => { setAssignees(v); clearFieldError('assignees') }}
               currentUser={user ? { user_id: user.id, name: user.name } : undefined}
             />
+            </div>
+            <InlineFieldError>{fieldErrors.assignees}</InlineFieldError>
             <p className="text-meta text-text-secondary mt-1">Add people · click their badge to toggle between Assignee and CC</p>
           </div>
 
           {/* Completion mode — only relevant when multiple assignees are selected */}
           {primaryAssigneeCount > 1 && <div>
-            <Label className="mb-2">Completion Mode</Label>
+            <Label className="mb-2">Completion mode</Label>
             <div className="flex gap-3">
               {(['any_can_complete', 'all_must_complete'] as CompletionMode[]).map((mode) => (
                 <label
@@ -641,7 +684,7 @@ export default function CreateTaskModal({
           /* Deadline */
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label required>Deadline</Label>
+              <Label htmlFor="create-task-deadline" required>Deadline</Label>
               {deadlineDate && (
                 <button
                   type="button"
@@ -658,8 +701,10 @@ export default function CreateTaskModal({
               {/* Date picker — shared calendar component (opens on click) */}
               <div className="flex-1">
                 <DatePicker
+                  id="create-task-deadline"
+                  invalid={!!fieldErrors.deadline}
                   value={deadlineDate}
-                  onChange={handleDeadlineDateChange}
+                  onChange={(v) => { handleDeadlineDateChange(v); clearFieldError('deadline') }}
                   min={todayStr}
                   max="2100-12-31"
                   placeholder="Select date"
@@ -679,6 +724,7 @@ export default function CreateTaskModal({
               </div>
             </div>
 
+            <InlineFieldError>{fieldErrors.deadline}</InlineFieldError>
             <HolidayWarningBadge
               check={holidayCheck}
               overridden={holidayOverride}
@@ -900,6 +946,9 @@ export default function CreateTaskModal({
             </div>
           )}
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <Button type="button" variant="secondary" onClick={() => requestClose()} disabled={submitting} className="w-full sm:w-auto">
+              Cancel
+            </Button>
             <Button
               type="submit"
               form="create-task-form"
@@ -908,7 +957,7 @@ export default function CreateTaskModal({
               loadingLabel="Creating"
               className="w-full sm:w-auto"
             >
-              {mode === 'recurring' ? 'Create Recurring Task' : 'Create Task'}
+              {mode === 'recurring' ? 'Create recurring task' : 'Create task'}
             </Button>
           </div>
         </DialogFooter>

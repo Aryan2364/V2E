@@ -24,6 +24,8 @@ interface DatePickerProps {
   max?: string // ISO yyyy-mm-dd
   disabled?: boolean
   id?: string
+  /** Danger border for a failed validation (kit 11.3 rule 6). */
+  invalid?: boolean
   /** ISO yyyy-mm-dd days to flag with a dot (e.g. a selected assignee is on leave). */
   markedDates?: string[]
   /** Tooltip shown on marked days. */
@@ -62,12 +64,14 @@ export default function DatePicker({
   max,
   disabled,
   id,
+  invalid,
   markedDates,
   markedHint,
 }: DatePickerProps) {
   return (
     <KitDatePicker
       id={id}
+      invalid={invalid}
       value={parseIso(value)}
       onValueChange={(date) => onChange(toIso(date))}
       disabled={disabled}

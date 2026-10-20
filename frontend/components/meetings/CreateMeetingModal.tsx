@@ -19,6 +19,8 @@ import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSel
 import FindTimeDialog from './FindTimeDialog'
 import { DurationField } from './shared'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 const inputClass =
   'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
@@ -95,6 +97,22 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
   const [actualEnd, setActualEnd] = useState('11:00')
 
   const [saving, setSaving] = useState(false)
+  // Field errors sit under the field that is wrong (kit 11.3 rule 6), never in a toast.
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; date?: string; actualDate?: string; recurrence?: string }>({})
+  const clearErr = (k: 'title' | 'date' | 'actualDate' | 'recurrence') => setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
+  function failField(key: 'title' | 'date' | 'actualDate' | 'recurrence', message: string, focusId: string) {
+    setFieldErrors({ [key]: message })
+    requestAnimationFrame(() => {
+      const el = document.getElementById(focusId)
+      ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+    })
+  }
+  const guarded = useGuardedClose({
+    open: isOpen,
+    values: { title, type, onlineLink, location, callMode, attendees, optional, agenda, minutes, linkType, linkEntityId, durationMin, recurMode, sched, date, startTime, endTime, actualDate, actualStart, actualEnd },
+    noun: 'meeting',
+    onClose,
+  })
 
   const nameOf = useMemo(() => new Map(people.map((p) => [p.user_id, p.name])), [people])
   const requiredIds = useMemo(() => attendees.filter((a) => !optional.includes(a)), [attendees, optional])
@@ -169,17 +187,17 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!title.trim()) return addToast('Title is required', 'error')
+    if (!title.trim()) return failField('title', 'Enter a title for the meeting.', 'create-meeting-title')
 
     // NOTE (backend flag): `remind` (Remind 15 min before) has no create-DTO field
     // yet, so it is intentionally NOT sent. See the summary for what the backend needs.
 
     // Recurring → create a rhythm (the existing rhythm engine), not a single meeting.
     if (callMode === 'fixed' && recurMode === 'recurring') {
-      if (!sched.start_date) return addToast('Pick a start date for the recurrence', 'error')
-      if (sched.schedule_type === 'weekly' && sched.days.length === 0) return addToast('Pick at least one weekday', 'error')
-      if (sched.schedule_type === 'monthly' && sched.month_days.length === 0) return addToast('Pick at least one day of the month', 'error')
-      if (sched.schedule_type === 'yearly' && sched.yearly_dates.length === 0) return addToast('Pick at least one date', 'error')
+      if (!sched.start_date) return failField('recurrence', 'Choose a start date for the recurrence.', 'create-meeting-recurrence')
+      if (sched.schedule_type === 'weekly' && sched.days.length === 0) return failField('recurrence', 'Choose at least one weekday.', 'create-meeting-recurrence')
+      if (sched.schedule_type === 'monthly' && sched.month_days.length === 0) return failField('recurrence', 'Choose at least one day of the month.', 'create-meeting-recurrence')
+      if (sched.schedule_type === 'yearly' && sched.yearly_dates.length === 0) return failField('recurrence', 'Choose at least one date.', 'create-meeting-recurrence')
       const schedule: RhythmScheduleInput = {
         schedule_type: sched.schedule_type,
         every: sched.every,
@@ -206,14 +224,15 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
       if (agenda.trim()) rhythmDto.agenda = agenda.trim()
       if (linkType) { rhythmDto.link_type = linkType; rhythmDto.link_entity_id = linkEntityId || undefined }
 
+      setFieldErrors({})
       setSaving(true)
       try {
         const rhythm = await meetingsApi.createRhythm(orgId, rhythmDto)
-        addToast('Rhythm created — occurrences will appear on the calendar', 'success')
+        addToast('Recurring meeting added. Its occurrences will appear on the calendar.', 'success')
         onCreated(rhythm as unknown as Meeting)
         onClose()
       } catch (err: any) {
-        addToast(err?.response?.data?.message ?? 'Failed to create rhythm', 'error')
+        addToast(err?.response?.data?.message ?? 'Could not add the recurring meeting. Try again.', 'error')
       } finally {
         setSaving(false)
       }
@@ -232,25 +251,26 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
     if (linkType) { dto.link_type = linkType; dto.link_entity_id = linkEntityId || undefined }
 
     if (callMode === 'fixed') {
-      if (!date) return addToast('Pick a date', 'error')
+      if (!date) return failField('date', 'Choose the date of the meeting.', 'create-meeting-date')
       dto.scheduled_start = toISO(date, startTime)
       dto.scheduled_end = toISO(date, endTime)
     } else {
-      if (!actualDate) return addToast('Pick the date it happened', 'error')
+      if (!actualDate) return failField('actualDate', 'Choose the date the meeting happened.', 'create-meeting-actual-date')
       dto.log_past = true
       dto.actual_start = toISO(actualDate, actualStart)
       dto.actual_end = toISO(actualDate, actualEnd)
       if (minutes.trim()) dto.minutes = minutes.trim()
     }
 
+    setFieldErrors({})
     setSaving(true)
     try {
       const m = await meetingsApi.create(orgId, dto)
-      addToast('Meeting created', 'success')
+      addToast('Meeting added', 'success')
       onCreated(m)
       onClose()
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? 'Failed to create meeting', 'error')
+      addToast(err?.response?.data?.message ?? 'Could not add the meeting. Try again.', 'error')
     } finally {
       setSaving(false)
     }
@@ -262,12 +282,15 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
       active ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-secondary hover:bg-surface-sunken'].join(' ')
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="New meeting" size="lg" closeOnEscape={false}>
+    <>
+    {guarded.warning}
+    <Modal isOpen={isOpen} onClose={guarded.requestClose} title="New meeting" size="lg">
       <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
         {/* Title */}
         <div>
-          <Label className="mb-2" required>Title</Label>
-          <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Meeting title" autoFocus />
+          <Label className="mb-2" htmlFor="create-meeting-title" required>Title</Label>
+          <input id="create-meeting-title" className={`${inputClass} aria-invalid:border-danger`} aria-invalid={fieldErrors.title ? true : undefined} value={title} onChange={(e) => { setTitle(e.target.value); clearErr('title') }} placeholder="For example, Weekly sales review" autoFocus />
+          <InlineFieldError>{fieldErrors.title}</InlineFieldError>
         </div>
 
         {/* Attendees */}
@@ -309,8 +332,9 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
                 <>
                   <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-3">
                     <div>
-                      <Label className="mb-2" required>Date</Label>
-                      <DatePicker value={date} onChange={setDate} min={todayStr()} placeholder="Select date" />
+                      <Label className="mb-2" htmlFor="create-meeting-date" required>Date</Label>
+                      <DatePicker id="create-meeting-date" invalid={!!fieldErrors.date} value={date} onChange={(v) => { setDate(v); clearErr('date') }} min={todayStr()} placeholder="Select date" />
+                      <InlineFieldError>{fieldErrors.date}</InlineFieldError>
                     </div>
                     <div>
                       <Label className="mb-2">Start</Label>
@@ -326,7 +350,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
                   )}
                 </>
               ) : (
-                <div className="border border-border-light rounded-[10px] p-4 bg-surface-sunken">
+                <div id="create-meeting-recurrence" tabIndex={-1} className="border border-border-light rounded-[10px] p-4 bg-surface-sunken">
                   <ScheduleEntryRow
                     entry={sched}
                     index={0}
@@ -335,7 +359,8 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
                     canDelete={false}
                   />
                   <SkipHolidaysField orgId={orgId} sched={sched} value={skipHolidays} onChange={setSkipHolidays} />
-                  <p className="text-meta text-text-muted mt-3">Creates a rhythm — occurrences spawn automatically.</p>
+                  <InlineFieldError>{fieldErrors.recurrence}</InlineFieldError>
+                  <p className="text-meta text-text-muted mt-3">Creates a recurring meeting. Occurrences are added automatically.</p>
                 </div>
               )}
             </>
@@ -344,8 +369,9 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
           {callMode === 'log_past' && (
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <Label className="mb-2" required>Date</Label>
-                <DatePicker value={actualDate} onChange={setActualDate} max={todayStr()} placeholder="Select date" />
+                <Label className="mb-2" htmlFor="create-meeting-actual-date" required>Date</Label>
+                <DatePicker id="create-meeting-actual-date" invalid={!!fieldErrors.actualDate} value={actualDate} onChange={(v) => { setActualDate(v); clearErr('actualDate') }} max={todayStr()} placeholder="Select date" />
+                <InlineFieldError>{fieldErrors.actualDate}</InlineFieldError>
               </div>
               <div>
                 <Label className="mb-2">Started</Label>
@@ -437,7 +463,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-light">
-          <Button variant="secondary" type="button" onClick={onClose}>Cancel</Button>
+          <Button variant="secondary" type="button" onClick={guarded.requestClose}>Cancel</Button>
           <Button variant="primary" type="submit" isLoading={saving} disabled={saving}>Create meeting</Button>
         </div>
       </form>
@@ -467,6 +493,7 @@ export default function CreateMeetingModal({ isOpen, onClose, orgId, people, ini
         />
       )}
     </Modal>
+    </>
   )
 }
 
