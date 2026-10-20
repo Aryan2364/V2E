@@ -1,9 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import {
-  X,
   Download,
   UploadCloud,
   FileText,
@@ -11,14 +9,15 @@ import {
   AlertCircle,
   Loader2,
   History,
-  ArrowLeft,
   Undo2,
 } from 'lucide-react'
 import { createDepartment, listImportBatches, createImportBatch, undoImport } from '@/lib/api/departments'
 import { placeUnderParent } from '@/lib/org-chart-layout'
 import { toast } from '@/components/ui/sonner'
 import type { Department, User } from '@/lib/types'
-import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import ImportDialog from '@/components/imports/ImportDialog'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 import { formatDateTime } from '@/lib/format'
 
 interface Props {
@@ -126,16 +125,6 @@ export default function ImportDepartmentsModal({
   onImported,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prev
-    }
-  }, [])
 
   const [fileName, setFileName] = useState('')
   const [rows, setRows] = useState<ImportRow[]>([])
@@ -477,51 +466,59 @@ export default function ImportDepartmentsModal({
 
   const failedRows = result?.results.filter((r) => r.status === 'failed') ?? []
 
-  if (!mounted) return null
+  const guard = useGuardedClose({
+    open: true,
+    values: { file: result ? '' : fileName, count: result ? 0 : rows.length },
+    noun: 'import',
+    onClose,
+  })
 
-  return createPortal(
-    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
-      <div className="bg-surface w-full sm:max-w-2xl sm:rounded-[12px] rounded-t-[16px] shadow-xl max-h-[92vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
-          <div className="flex items-center gap-3">
-            {phase === 'history' && (
-              <Tooltip label="Back to upload">
-              <button
-                onClick={() => setPhase('upload')}
-                className="p-1 hover:bg-surface-control rounded-xs transition-colors text-text-muted hover:text-text-primary"
-                aria-label="Back to upload"
-              >
-                <ArrowLeft size={16} />
-              </button>
-              </Tooltip>
-            )}
-            <h2 className="text-section font-medium text-text-primary">Import Departments</h2>
-          </div>
-          <div className="flex items-center gap-2.5">
-            {phase === 'upload' && !result && (
-              <button
-                onClick={() => {
-                  setPhase('history')
-                  loadHistory()
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-meta font-medium text-text-secondary bg-surface-control hover:bg-surface-control-pressed transition-colors"
-              >
-                <History size={14} /> Import History
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
-              aria-label="Close"
+  return (
+    <ImportDialog
+      title="Import departments"
+      onClose={guard.requestClose}
+      busy={importing}
+      size="md"
+      back={phase === 'history' ? { label: 'Back to upload', onClick: () => setPhase('upload') } : undefined}
+      headerAction={
+        phase === 'upload' && !result ? (
+          <Button
+            variant="on-brand"
+            size="sm"
+            onClick={() => {
+              setPhase('history')
+              loadHistory()
+            }}
+          >
+            <History size={14} /> Import history
+          </Button>
+        ) : undefined
+      }
+      footer={
+        result ? (
+          <>
+            <Button variant="secondary" onClick={reset}>Import another file</Button>
+            <Button variant="primary" onClick={onClose}>Done</Button>
+          </>
+        ) : phase !== 'history' ? (
+          <>
+            <Button variant="secondary" type="button" onClick={guard.requestClose} disabled={importing}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="button"
+              onClick={handleImport}
+              disabled={rows.length === 0}
+              loading={importing}
+              loadingLabel="Importing"
             >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Body */}
-        <div className="px-6 py-4 overflow-y-auto space-y-4">
+              {`Import${rows.length > 0 ? ` ${rows.length}` : ''}`}
+            </Button>
+          </>
+        ) : undefined
+      }
+    >
           {phase === 'history' ? (
             <HistoryView
               batches={batches}
@@ -547,7 +544,7 @@ export default function ImportDepartmentsModal({
               {failedRows.length > 0 && (
                 <div className="border border-border-light rounded-[10px] overflow-hidden">
                   <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
-                    <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">
+                    <p className="text-meta font-medium text-text-secondary">
                       Rows that need fixing
                     </p>
                   </div>
@@ -570,21 +567,6 @@ export default function ImportDepartmentsModal({
                 <span className="font-medium text-text-primary">Auto-arrange</span> in the tree view to
                 tidy the whole structure.
               </p>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={reset}
-                  className="px-4 py-2.5 rounded-[8px] text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
-                >
-                  Import another file
-                </button>
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2.5 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-                >
-                  Done
-                </button>
-              </div>
             </div>
           ) : (
             <>
@@ -602,14 +584,10 @@ export default function ImportDepartmentsModal({
                     <strong>also being imported</strong> — rows are created parents-first
                     automatically.
                   </p>
-                  <button
-                    onClick={downloadTemplate}
-                    disabled={building}
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-                  >
+                  <Button variant="secondary" className="mt-3" onClick={downloadTemplate} disabled={building}>
                     {building ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
                     {building ? 'Building…' : 'Download Excel template'}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -655,32 +633,8 @@ export default function ImportDepartmentsModal({
               )}
             </>
           )}
-        </div>
-
-        {/* Footer */}
-        {!result && phase !== 'history' && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-[8px] text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleImport}
-              disabled={rows.length === 0 || importing}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
-            >
-              {importing && <Loader2 size={15} className="animate-spin" />}
-              {importing ? 'Importing…' : `Import${rows.length > 0 ? ` ${rows.length}` : ''}`}
-            </button>
-          </div>
-        )}
-      </div>
-    </div>,
-    document.body,
+      {guard.warning}
+    </ImportDialog>
   )
 }
 
@@ -727,17 +681,13 @@ function HistoryView({
               </p>
             </div>
             {b.can_undo ? (
-              <button
-                onClick={() => onUndo(b.id)}
-                disabled={undoingId === b.id}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-meta font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors shrink-0"
-              >
+              <Button variant="secondary" size="sm" className="shrink-0" onClick={() => onUndo(b.id)} disabled={undoingId === b.id}>
                 {undoingId === b.id ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />}
                 Undo
-              </button>
+              </Button>
             ) : (
               <span className="text-meta text-text-muted shrink-0">
-                {b.status === 'undone' ? 'Undone' : 'Cannot Undo'}
+                {b.status === 'undone' ? 'Undone' : 'Cannot undo'}
               </span>
             )}
           </div>

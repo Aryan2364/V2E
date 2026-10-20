@@ -1,9 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import {
-  X,
   Download,
   UploadCloud,
   FileText,
@@ -11,7 +9,6 @@ import {
   AlertCircle,
   AlertTriangle,
   Loader2,
-  ArrowLeft,
   History,
   Undo2,
   ShieldAlert,
@@ -34,6 +31,19 @@ import {
 } from '@/lib/api/employees'
 import { listSystemRoles, type SystemRoleLite } from '@/lib/api/permissions'
 import { toast } from '@/components/ui/sonner'
+import { Button } from '@/components/ui/button'
+import ImportDialog from '@/components/imports/ImportDialog'
+import { useGuardedClose } from '@/lib/use-guarded-close'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import Tooltip from '@/components/ui/tooltip'
 import type { Department, Role, EmployeeProfile } from '@/lib/types'
 import { formatDateTime } from '@/lib/format'
@@ -235,16 +245,6 @@ export default function ImportEmployeesModal({
   onImported,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prev
-    }
-  }, [])
 
   const [systemRoles, setSystemRoles] = useState<SystemRoleLite[]>([])
   useEffect(() => {
@@ -789,77 +789,89 @@ export default function ImportEmployeesModal({
     }
   }, [validation, chipFilter])
 
-  if (!mounted) return null
-
   // The review step ("Review before importing") is a full-page workspace so the
   // whole row table is visible at once; every other phase stays a compact modal.
   const isFullPage = phase === 'preview'
 
-  return createPortal(
-    <div
-      className={`fixed inset-0 z-60 flex justify-center bg-backdrop ${
-        isFullPage ? 'items-stretch p-0' : 'items-end sm:items-center p-0 sm:p-4'
-      }`}
-    >
-      <div
-        className={`bg-surface shadow-xl flex flex-col ${
-          isFullPage
-            ? 'w-full h-full max-h-none rounded-none'
-            : 'w-full sm:max-w-3xl sm:rounded-card rounded-t-xl max-h-[92vh]'
-        }`}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
-          <div className="flex items-center gap-3">
-            {(phase === 'history' || phase === 'batch-detail') && (
-              <button
-                onClick={
-                  phase === 'history'
-                    ? resetToUpload
-                    : detailOrigin === 'import'
-                      ? resetToUpload
-                      : openHistory
-                }
-                className="p-1.5 rounded-md text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
-                aria-label="Back"
-              >
-                <ArrowLeft size={18} />
-              </button>
-            )}
-            <h2 className="text-section font-medium text-text-primary">
-              {phase === 'preview'
-                ? 'Review before importing'
-                : phase === 'history'
-                  ? 'Import history'
-                  : phase === 'batch-detail'
-                    ? 'Import details'
-                    : 'Import Employees'}
-            </h2>
-          </div>
-          <div className="flex items-center gap-1">
-            {phase === 'upload' && (
-              <button
-                onClick={openHistory}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-label font-medium text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
-              >
-                <History size={15} /> History
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-md text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
-              aria-label="Close"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
+  const guard = useGuardedClose({
+    open: true,
+    values: {
+      file: phase === 'upload' || phase === 'preview' ? fileName : '',
+      count: phase === 'upload' || phase === 'preview' ? parsedRows.length : 0,
+    },
+    noun: 'import',
+    onClose,
+  })
 
-        {/* Body — in full-page review this is the single scroll region so the
-            whole content (summary + table) scrolls under a pinned header/footer. */}
-        <div
-          className={`px-6 py-4 overflow-y-auto space-y-4 ${isFullPage ? 'flex-1 min-h-0' : ''}`}
+  const dialogTitle =
+    phase === 'preview'
+      ? 'Review before importing'
+      : phase === 'history'
+        ? 'Import history'
+        : phase === 'batch-detail'
+          ? 'Import details'
+          : 'Import employees'
+
+  const footer =
+    phase === 'preview' && validation ? (
+      <>
+        {/* Warning fills the empty space on the left of the button bar. */}
+        <div className="mr-auto flex min-w-0 flex-1 items-start gap-2">
+          <ShieldAlert size={16} className="mt-0.5 shrink-0 text-warning" />
+          <p className="text-meta leading-snug text-warning">
+            Importing creates live user accounts and is <strong>not automatically reversible</strong> — please check the
+            rows above thoroughly. Only the <strong>{validation.ready} ready</strong> row
+            {validation.ready !== 1 ? 's' : ''} will be imported; the rest are skipped (download them to fix and
+            re-upload). A short-lived undo is available right after import.
+          </p>
+        </div>
+        <Button variant="secondary" type="button" className="shrink-0" onClick={() => setPhase('upload')} disabled={importing}>
+          Choose another file
+        </Button>
+        <Button
+          variant="primary"
+          type="button"
+          className="shrink-0"
+          onClick={() => setConfirmOpen(true)}
+          disabled={validation.ready === 0}
+          loading={importing}
+          loadingLabel="Importing"
         >
+          {`Import ${validation.ready} ready`}
+        </Button>
+      </>
+    ) : phase === 'result' || (phase === 'batch-detail' && detailOrigin === 'import') ? (
+      // Finish actions only after a fresh import. When opened from history,
+      // the header's back arrow is the only affordance needed.
+      <>
+        <Button variant="secondary" onClick={resetToUpload}>Import another file</Button>
+        <Button variant="primary" onClick={onClose}>Done</Button>
+      </>
+    ) : undefined
+
+  return (
+    <ImportDialog
+      title={dialogTitle}
+      onClose={guard.requestClose}
+      busy={importing}
+      fullScreen={isFullPage}
+      back={
+        phase === 'history' || phase === 'batch-detail'
+          ? {
+              label: 'Back',
+              onClick: phase === 'history' ? resetToUpload : detailOrigin === 'import' ? resetToUpload : openHistory,
+            }
+          : undefined
+      }
+      headerAction={
+        phase === 'upload' ? (
+          <Button variant="on-brand" size="sm" onClick={openHistory}>
+            <History size={15} /> History
+          </Button>
+        ) : undefined
+      }
+      footer={footer}
+    >
           {/* ── Upload ── */}
           {phase === 'upload' && (
             <>
@@ -874,14 +886,10 @@ export default function ImportEmployeesModal({
                     are <strong>dropdowns</strong> sourced from the reference sheets. Dates use a date picker and can’t be
                     in the future. Leave password blank to default to <strong>Welcome@123</strong>.
                   </p>
-                  <button
-                    onClick={downloadTemplate}
-                    disabled={building}
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-                  >
+                  <Button variant="secondary" className="mt-3" onClick={downloadTemplate} disabled={building}>
                     {building ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
                     {building ? 'Building…' : 'Download Excel template'}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -1038,12 +1046,9 @@ export default function ImportEmployeesModal({
                         Download a file with <strong>only those {notReady} {rowWord}</strong> (each tagged with the reason it
                         failed), fix them there, and re-upload just that file — no need to touch the rows that already passed.
                       </p>
-                      <button
-                        onClick={downloadFailures}
-                        className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-                      >
+                      <Button variant="secondary" size="sm" className="mt-2.5" onClick={downloadFailures}>
                         <Download size={14} /> Download {notReady} {rowWord} to fix
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )
@@ -1084,152 +1089,60 @@ export default function ImportEmployeesModal({
               onDownload={() => batchDetail && downloadBatchDetailRows(batchDetail)}
             />
           )}
-        </div>
+      <AlertDialog
+        open={confirmOpen && !!validation}
+        onOpenChange={(next) => {
+          if (!next) setConfirmOpen(false)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Import {validation?.ready} employees?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This creates live accounts and <strong>cannot be undone automatically</strong>. A guarded undo is
+              available for a short window afterward, but it can only remove people who haven’t started accumulating
+              data. Make sure you’ve reviewed the rows.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Go back</AlertDialogCancel>
+            <AlertDialogAction onClick={handleImport}>Import now</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-        {/* Footer */}
-        {phase === 'preview' && validation && (
-          <div className="flex items-center gap-4 px-6 py-4 border-t border-border-light">
-            {/* Warning fills the empty space on the left of the button bar. */}
-            <div className="flex items-start gap-2 flex-1 min-w-0">
-              <ShieldAlert size={16} className="text-warning mt-0.5 shrink-0" />
-              <p className="text-meta leading-snug text-warning">
-                Importing creates live user accounts and is <strong>not automatically reversible</strong> — please check the
-                rows above thoroughly. Only the <strong>{validation.ready} ready</strong> row
-                {validation.ready !== 1 ? 's' : ''} will be imported; the rest are skipped (download them to fix and
-                re-upload). A short-lived undo is available right after import.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setPhase('upload')}
-              className="shrink-0 px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
+      <AlertDialog
+        open={!!undoConfirm}
+        onOpenChange={(next) => {
+          if (!next) setUndoConfirm(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Undo this import?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the employee accounts created by this import. Anyone who already has activity — heads a
+              department, owns data, or has people reporting to them — is <strong>kept</strong> and listed afterward.
+              This can’t be reversed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Go back</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const id = undoConfirm
+                setUndoConfirm(null)
+                if (id) handleUndo(id)
+              }}
             >
-              Choose another file
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirmOpen(true)}
-              disabled={validation.ready === 0 || importing}
-              className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
-            >
-              {importing && <Loader2 size={15} className="animate-spin" />}
-              {importing ? 'Importing…' : `Import ${validation.ready} ready`}
-            </button>
-          </div>
-        )}
+              <Undo2 size={14} /> Undo import
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-        {phase === 'result' && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
-            <button
-              onClick={resetToUpload}
-              className="px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
-            >
-              Import another file
-            </button>
-            <button
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-            >
-              Done
-            </button>
-          </div>
-        )}
-
-        {/* Footer only after a fresh import (finish actions). When opened from
-            history, the top-left back arrow is the only affordance needed. */}
-        {phase === 'batch-detail' && detailOrigin === 'import' && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
-            <button
-              onClick={resetToUpload}
-              className="px-4 py-2.5 rounded-lg text-body font-medium text-primary-text bg-surface border-2 border-primary hover:bg-primary-subtle transition-colors"
-            >
-              Import another file
-            </button>
-            <button
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-            >
-              Done
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Confirm popup */}
-      {confirmOpen && validation && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center bg-backdrop p-4">
-          <div className="bg-surface rounded-card shadow-xl max-w-md w-full p-6">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
-                <ShieldAlert size={20} className="text-danger" />
-              </div>
-              <div>
-                <h3 className="text-card-heading font-medium text-text-primary">Import {validation.ready} employees?</h3>
-                <p className="text-label text-text-secondary mt-1">
-                  This creates live accounts and <strong>cannot be undone automatically</strong>. A guarded undo is
-                  available for a short window afterward, but it can only remove people who haven’t started accumulating
-                  data. Make sure you’ve reviewed the rows.
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                onClick={() => setConfirmOpen(false)}
-                className="px-4 py-2 rounded-lg text-body font-medium text-text-secondary bg-surface border border-border-light hover:bg-surface-sunken transition-colors"
-              >
-                Go back
-              </button>
-              <button
-                onClick={handleImport}
-                className="px-4 py-2 rounded-lg text-body font-medium text-on-danger bg-danger hover:bg-danger-hover transition-colors"
-              >
-                Yes, import now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Undo confirmation */}
-      {undoConfirm && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center bg-backdrop p-4">
-          <div className="bg-surface rounded-card shadow-xl max-w-md w-full p-6">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
-                <Undo2 size={20} className="text-danger" />
-              </div>
-              <div>
-                <h3 className="text-card-heading font-medium text-text-primary">Undo this import?</h3>
-                <p className="text-label text-text-secondary mt-1">
-                  This removes the employee accounts created by this import. Anyone who already has activity — heads a
-                  department, owns data, or has people reporting to them — is <strong>kept</strong> and listed afterward.
-                  This can’t be reversed.
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                onClick={() => setUndoConfirm(null)}
-                className="px-4 py-2 rounded-lg text-body font-medium text-text-secondary bg-surface border border-border-light hover:bg-surface-sunken transition-colors"
-              >
-                Go back
-              </button>
-              <button
-                onClick={() => {
-                  const id = undoConfirm
-                  setUndoConfirm(null)
-                  handleUndo(id)
-                }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-body font-medium text-on-danger bg-danger hover:bg-danger-hover transition-colors"
-              >
-                <Undo2 size={14} /> Yes, undo import
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>,
-    document.body,
+      {guard.warning}
+    </ImportDialog>
   )
 }
 
@@ -1321,29 +1234,22 @@ function ResultView({
               </div>
             )}
             {result.batch_id && result.created > 0 && (
-              <button
-                onClick={onUndo}
-                disabled={undoing}
-                className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-body font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
-              >
+              <Button variant="secondary" className="ml-auto" onClick={onUndo} disabled={undoing}>
                 {undoing ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />}
                 Undo this import
-              </button>
+</Button>
             )}
           </>
         )}
       </div>
 
       {downloadCount > 0 && (
-        <button
-          onClick={onDownload}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-label font-medium text-primary-text bg-primary-subtle border border-primary-border hover:bg-primary-subtle transition-colors"
-        >
+        <Button variant="secondary" onClick={onDownload}>
           <Download size={14} />
           {removed.length > 0
             ? `Download ${downloadCount} rows to fix & re-upload (${failed.length} failed + ${removed.length} removed)`
             : `Download ${failed.length} ${failed.length === 1 ? 'row' : 'rows'} to fix & re-upload`}
-        </button>
+</Button>
       )}
 
       {undoResult && undoResult.kept.length > 0 && <UndoSummary undoResult={undoResult} compact />}
@@ -1351,7 +1257,7 @@ function ResultView({
       {removed.length > 0 && (
         <div className="border border-border-light rounded-xl overflow-hidden">
           <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
-            <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">Removed ({removed.length})</p>
+            <p className="text-meta font-medium text-text-secondary">Removed ({removed.length})</p>
           </div>
           <div className="max-h-52 overflow-y-auto divide-y divide-surface-control">
             {removed.map((r) => (
@@ -1369,7 +1275,7 @@ function ResultView({
       {failed.length > 0 && (
         <div className="border border-border-light rounded-xl overflow-hidden">
           <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
-            <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">Rows that need fixing</p>
+            <p className="text-meta font-medium text-text-secondary">Rows that need fixing</p>
           </div>
           <div className="max-h-56 overflow-y-auto divide-y divide-surface-control">
             {failed.map((r) => (
@@ -1470,14 +1376,10 @@ function HistoryView({
               </button>
               </Tooltip>
               {b.can_undo ? (
-                <button
-                  onClick={() => onUndo(b.id)}
-                  disabled={undoingId === b.id}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-label font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors shrink-0"
-                >
+                <Button variant="secondary" size="sm" className="shrink-0" onClick={() => onUndo(b.id)} disabled={undoingId === b.id}>
                   {undoingId === b.id ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />}
                   Undo
-                </button>
+</Button>
               ) : (
                 <span className="text-meta text-text-muted shrink-0">
                   {b.status === 'committed' ? 'Undo window passed' : 'Undone'}
@@ -1553,14 +1455,10 @@ function BatchDetailView({
           </div>
         )}
         {detail.can_undo && (
-          <button
-            onClick={() => onUndo(detail.id)}
-            disabled={undoing}
-            className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-body font-medium text-danger bg-surface border border-danger-border hover:bg-danger-bg disabled:opacity-60 transition-colors"
-          >
+          <Button variant="secondary" className="ml-auto" onClick={() => onUndo(detail.id)} disabled={undoing}>
             {undoing ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />}
             Undo this import
-          </button>
+</Button>
         )}
       </div>
 
@@ -1586,15 +1484,12 @@ function BatchDetailView({
           )}
 
           {downloadCount > 0 && (
-            <button
-              onClick={onDownload}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-label font-medium text-primary-text bg-primary-subtle border border-primary-border hover:bg-primary-subtle transition-colors"
-            >
+            <Button variant="secondary" onClick={onDownload}>
               <Download size={14} />
               {removed.length > 0
                 ? `Download ${downloadCount} rows to fix & re-upload (${failed.length} failed + ${removed.length} removed)`
                 : `Download ${failed.length} ${failed.length === 1 ? 'row' : 'rows'} to fix & re-upload`}
-            </button>
+</Button>
           )}
 
           {detail.undo_summary && detail.undo_summary.kept.length > 0 && (
@@ -1615,7 +1510,7 @@ function BatchDetailView({
           {removed.length > 0 && (
             <div className="border border-border-light rounded-xl overflow-hidden">
               <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
-                <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">Removed ({removed.length})</p>
+                <p className="text-meta font-medium text-text-secondary">Removed ({removed.length})</p>
               </div>
               <div className="max-h-52 overflow-y-auto divide-y divide-surface-control">
                 {removed.map((r) => (
@@ -1633,7 +1528,7 @@ function BatchDetailView({
           {createdPresent.length > 0 && (
             <div className="border border-border-light rounded-xl overflow-hidden">
               <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
-                <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">Imported &amp; present ({createdPresent.length})</p>
+                <p className="text-meta font-medium text-text-secondary">Imported &amp; present ({createdPresent.length})</p>
               </div>
               <div className="max-h-52 overflow-y-auto divide-y divide-surface-control">
                 {createdPresent.map((r) => (
@@ -1651,7 +1546,7 @@ function BatchDetailView({
           {failed.length > 0 && (
             <div className="border border-border-light rounded-xl overflow-hidden">
               <div className="px-4 py-2.5 bg-surface-sunken border-b border-border-light">
-                <p className="text-meta font-medium text-text-secondary uppercase tracking-wider">Rows that need fixing ({failed.length})</p>
+                <p className="text-meta font-medium text-text-secondary">Rows that need fixing ({failed.length})</p>
               </div>
               <div className="max-h-56 overflow-y-auto divide-y divide-surface-control">
                 {failed.map((r) => (

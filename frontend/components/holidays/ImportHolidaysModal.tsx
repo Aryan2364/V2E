@@ -1,8 +1,12 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { X, Upload, Download, AlertCircle, CheckCircle2, Trash2 } from 'lucide-react'
+import { Upload, Download, AlertCircle, CheckCircle2, Trash2 } from 'lucide-react'
 import { holidaysApi } from '@/lib/api/holidays'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
+import ImportDialog from '@/components/imports/ImportDialog'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 interface ParsedHoliday {
   name: string
@@ -124,38 +128,53 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
   const validSelected = rows.filter((r, i) => selected.has(i) && !r._error).length
   const errorCount = rows.filter((r) => r._error).length
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-backdrop backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="relative w-full max-w-3xl bg-surface rounded-t-xl sm:rounded-card shadow-menu border border-border-light max-h-[92vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-4 pb-4 border-b border-border-light shrink-0">
-          <h2 className="text-section font-medium text-text-primary">Import Holidays</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-md flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors">
-            <X size={18} />
-          </button>
-        </div>
+  const guard = useGuardedClose({
+    open: true,
+    values: { count: result ? 0 : rows.length },
+    noun: 'import',
+    onClose,
+  })
 
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+  return (
+    <ImportDialog
+      title="Import holidays"
+      onClose={guard.requestClose}
+      busy={importing}
+      footer={
+        <>
+          <p className="mr-auto hidden text-body text-text-secondary sm:block">
+            {rows.length > 0 ? <><span className="font-medium text-text-primary">{validSelected}</span> of {rows.length} rows selected</> : 'No file uploaded'}
+          </p>
+          <Button variant="secondary" type="button" onClick={guard.requestClose} disabled={importing}>
+            {result ? 'Close' : 'Cancel'}
+          </Button>
+          {!result && (
+            <Button
+              variant="primary"
+              type="button"
+              onClick={handleImport}
+              disabled={validSelected === 0}
+              loading={importing}
+              loadingLabel="Importing"
+            >
+              {`Import ${validSelected} holiday${validSelected !== 1 ? 's' : ''}`}
+            </Button>
+          )}
+        </>
+      }
+    >
           {/* Actions row */}
           <div className="flex items-center gap-3 flex-wrap">
-            <button
-              type="button"
-              onClick={downloadTemplate}
-              className="flex items-center gap-2 h-9 px-4 rounded-lg text-body font-medium text-text-secondary border border-border bg-surface hover:bg-surface-sunken transition-colors"
-            >
+            <Button variant="secondary" type="button" onClick={downloadTemplate}>
               <Download size={14} />
-              Download Template
-            </button>
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="flex items-center gap-2 h-9 px-4 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-            >
+              Download template
+            </Button>
+            <Button variant="secondary" type="button" onClick={() => fileRef.current?.click()}>
               <Upload size={14} />
               {rows.length > 0 ? 'Replace CSV' : 'Upload CSV'}
-            </button>
+            </Button>
             <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={handleFile} className="hidden" />
-            <p className="text-meta text-text-muted">Columns: Name, Date (YYYY-MM-DD), Type, Recurring Yearly (yes/no), Description</p>
+            <p className="text-meta text-text-muted">Columns: Name, Date (YYYY-MM-DD), Type, Recurring yearly (yes/no), Description</p>
           </div>
 
           {/* Error summary */}
@@ -188,10 +207,10 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
                         className="accent-primary"
                       />
                     </th>
-                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted uppercase tracking-wide">Name</th>
-                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted uppercase tracking-wide">Date</th>
-                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted uppercase tracking-wide">Type</th>
-                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted uppercase tracking-wide">Recurring</th>
+                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted">Name</th>
+                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted">Date</th>
+                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted">Type</th>
+                    <th className="px-3 py-2.5 text-left text-meta font-medium text-text-muted">Recurring</th>
                     <th className="w-8 px-2 py-2.5"></th>
                   </tr>
                 </thead>
@@ -215,9 +234,11 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
                       <td className="px-3 py-2 text-text-secondary capitalize">{row.type}</td>
                       <td className="px-3 py-2 text-text-secondary">{row.is_recurring_yearly ? 'Yes' : 'No'}</td>
                       <td className="px-2 py-2">
-                        <button type="button" onClick={() => removeRow(i)} className="text-text-muted hover:text-danger transition-colors">
-                          <Trash2 size={13} />
-                        </button>
+                        <Tooltip label="Remove row">
+                          <Button variant="ghost" size="icon-sm" type="button" onClick={() => removeRow(i)} aria-label="Remove row">
+                            <Trash2 size={13} />
+                          </Button>
+                        </Tooltip>
                       </td>
                     </tr>
                   ))}
@@ -233,30 +254,7 @@ export default function ImportHolidaysModal({ orgId, onClose, onImported }: Prop
               <p className="text-meta text-text-secondary mt-1">Download the template above to get started</p>
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 border-t border-border-light">
-          <p className="text-body text-text-secondary">
-            {rows.length > 0 ? <><span className="font-medium text-text-primary">{validSelected}</span> of {rows.length} rows selected</> : 'No file uploaded'}
-          </p>
-          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
-            <button type="button" onClick={onClose} className="w-full sm:w-auto px-4 py-2 text-body font-medium text-primary-text border-2 border-primary rounded-lg hover:bg-primary-subtle transition-colors">
-              {result ? 'Close' : 'Cancel'}
-            </button>
-            {!result && (
-              <button
-                type="button"
-                onClick={handleImport}
-                disabled={importing || validSelected === 0}
-                className="w-full sm:w-auto px-4 py-2 text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors"
-              >
-                {importing ? 'Importing...' : `Import ${validSelected} Holiday${validSelected !== 1 ? 's' : ''}`}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+      {guard.warning}
+    </ImportDialog>
   )
 }
