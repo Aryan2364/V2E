@@ -15,7 +15,8 @@ import { DraftBanner } from '../DraftBanner'
 import PhoneScreen from '../PhoneScreen'
 import { PhoneButton, cx } from '../primitives'
 import { PhoneDateField, PhoneTimeField } from '../PhoneDateTimeField'
-import { PeoplePickerSheet, SelectedPeopleList } from '../PeoplePickerSheet'
+import { PeoplePickerSheet, SelectedPeopleList, type PickerSection } from '../PeoplePickerSheet'
+import { Label } from '@/components/ui/label'
 
 /*
  * Create meeting - plan-phone-2026-10-14.md §5.9, grounded in
@@ -38,6 +39,26 @@ type MeetingCreateValues = {
   location: string
   agenda: string
 }
+type AttendeeOption = PersonOption & { department?: string | null; role?: string | null }
+
+/** Departments A-Z, people A-Z inside each, people without a department last (like the task assignee picker). */
+function groupByDepartment(people: AttendeeOption[]): PickerSection[] {
+  const byName = (a: AttendeeOption, b: AttendeeOption) => a.name.localeCompare(b.name)
+  const groups = new Map<string, AttendeeOption[]>()
+  for (const p of people) {
+    const key = p.department?.trim() || ''
+    groups.set(key, [...(groups.get(key) ?? []), p])
+  }
+  const toSection = (name: string, list: AttendeeOption[]): PickerSection => ({
+    id: name || 'none',
+    name: name || 'No department',
+    people: [...list].sort(byName).map((p) => ({ user_id: p.user_id, name: p.name, role: p.role ?? null, department: p.department ?? null })),
+  })
+  const named = [...groups.keys()].filter(Boolean).sort((a, b) => a.localeCompare(b)).map((k) => toSection(k, groups.get(k)!))
+  const none = groups.get('')
+  return none ? [...named, toSection('', none)] : named
+}
+
 export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
   const router = useRouter()
   const { user } = useAuth()
@@ -54,7 +75,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
   const [agendaOpen, setAgendaOpen] = React.useState(false)
   const [agenda, setAgenda] = React.useState('')
 
-  const [people, setPeople] = React.useState<PersonOption[]>([])
+  const [people, setPeople] = React.useState<AttendeeOption[]>([])
   const [attendeeIds, setAttendeeIds] = React.useState<string[]>([])
   const [optionalIds, setOptionalIds] = React.useState<string[]>([])
   const [pickerOpen, setPickerOpen] = React.useState(false)
@@ -100,7 +121,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
         setPeople(
           emps
             .filter((e) => e.user_id !== user?.id)
-            .map((e: any) => ({ user_id: e.user_id, name: e.user?.name ?? e.name ?? e.email ?? 'Unknown', email: e.user?.email })),
+            .map((e: any) => ({ user_id: e.user_id, name: e.user?.name ?? e.name ?? e.email ?? 'Unknown', email: e.user?.email, department: e.department?.name ?? null, role: e.role?.name ?? null })),
         ),
       )
       .catch(() => setPeople([]))
@@ -273,7 +294,7 @@ export default function MeetingCreateScreen({ route }: { route: PhoneRoute }) {
         open={pickerOpen}
         onOpenChange={setPickerOpen}
         title="Invite"
-        sections={[{ id: 'all', people: [...people].sort((a, b) => a.name.localeCompare(b.name)).map((p) => ({ user_id: p.user_id, name: p.name })) }]}
+        sections={groupByDepartment(people)}
         selected={selectedPeople}
         optionalIds={optionalIds}
         allowOptional
@@ -299,9 +320,9 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-[6px]">
-      <label className="text-label font-medium text-text-secondary">
+      <Label>
         {label} {required ? <span aria-hidden>*</span> : null}
-      </label>
+      </Label>
       {children}
       {error ? <p className="text-meta text-danger">{error}</p> : null}
     </div>
