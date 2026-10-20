@@ -8,7 +8,8 @@ import { useToast } from '@/components/ui/Toast'
 import { instanceNameKey, normalizeInstanceName, workflowsApi, workflowErrorMessage, workflowErrorStatus, workflowErrorTarget } from '@/lib/api/workflows'
 import type { WorkflowTemplate } from '@/lib/types/workflows'
 import { instanceTitle } from './instanceLabel'
-import { BTN, ErrorBanner, InfoTip, runHref } from './shared'
+import { Button } from '@/components/ui/button'
+import { ErrorBanner, InfoTip, runHref } from './shared'
 import { Label } from '@/components/ui/label'
 
 const NAME_MAX = 80
@@ -181,13 +182,13 @@ export default function StartWorkflowModal({
         {error && <ErrorBanner message={error} />}
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-1">
-          <button type="button" onClick={onClose} disabled={busy} className={BTN.quiet}>
+          <Button variant="secondary" onClick={onClose} disabled={busy}>
             Cancel
-          </button>
-          <button type="submit" disabled={busy} className={BTN.primary}>
+          </Button>
+          <Button type="submit" loading={busy} loadingLabel="Running">
             <Play size={16} />
-            {busy ? 'Running…' : 'Run'}
-          </button>
+            Run
+          </Button>
         </div>
       </form>
     </Modal>

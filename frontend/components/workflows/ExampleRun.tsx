@@ -5,6 +5,7 @@ import { AlertTriangle, CalendarRange, ChevronDown, Loader2, RefreshCw } from 'l
 import { workflowsApi, workflowErrorMessage, workflowErrorStatus } from '@/lib/api/workflows'
 import type { TimelinePreview, TimingWarning, WorkflowDefinitionInput } from '@/lib/types/workflows'
 import { InfoTip, Reveal, Skeleton, fmtDayDateTime, fmtSpan } from './shared'
+import { Button } from '@/components/ui/button'
 import { stepName } from './tracks'
 
 /** Edits settle for this long before the example is worked out again. */
@@ -160,9 +161,9 @@ export default function ExampleRun({
                 {state.error}
                 {data ? ' The dates below may be out of date.' : ''}
               </span>
-              <button type="button" onClick={() => setRetryKey((k) => k + 1)} className="inline-flex items-center gap-1 text-label font-medium underline shrink-0">
-                <RefreshCw size={13} /> Try again
-              </button>
+              <Button variant="secondary" size="sm" onClick={() => setRetryKey((k) => k + 1)} className="shrink-0">
+                <RefreshCw size={16} /> Try again
+              </Button>
             </div>
           )}
 
@@ -244,9 +245,9 @@ export default function ExampleRun({
                     <AlertTriangle size={14} className="shrink-0 mt-0.5 text-warning" />
                     <span className="flex-1 min-w-0 wrap-break-word">{warningText(w, nameOf)}</span>
                     {key && order.has(key) && (
-                      <button type="button" onClick={() => onOpenStep(key)} className="font-medium underline shrink-0">
+                      <Button variant="secondary" size="sm" onClick={() => onOpenStep(key)} className="shrink-0">
                         Show step
-                      </button>
+                      </Button>
                     )}
                   </li>
                 )

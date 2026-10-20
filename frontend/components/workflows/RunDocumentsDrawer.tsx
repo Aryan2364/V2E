@@ -13,7 +13,9 @@ import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
 import { formatBytes } from '@/lib/attachments'
 import type { RunDocuments, RunFile, RunStepFile } from '@/lib/types/workflows'
 import Sheet from './Sheet'
-import { BTN, EmptyState, ErrorState, InfoTip, REASONS, Skeleton, fmtDateTime, taskHref } from './shared'
+import { EmptyState, ErrorState, InfoTip, REASONS, Skeleton, fmtDateTime, taskHref } from './shared'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 interface Uploading {
   key: string
@@ -153,12 +155,12 @@ export default function RunDocumentsDrawer({
                       </span>
                       {u.error && (
                         <>
-                          <button type="button" onClick={() => upload(u.file, u.key)} className={BTN.quiet}>
+                          <Button variant="secondary" onClick={() => upload(u.file, u.key)}>
                             <RefreshCw size={14} /> Retry
-                          </button>
-                          <button type="button" aria-label={`Dismiss ${u.file.name}`} onClick={() => setUploads((x) => x.filter((y) => y.key !== u.key))} className={BTN.icon}>
+                          </Button>
+                          <Tooltip label={`Dismiss ${u.file.name}`}><Button variant="ghost" size="icon" aria-label={`Dismiss ${u.file.name}`} onClick={() => setUploads((x) => x.filter((y) => y.key !== u.key))}>
                             <Trash2 size={16} />
-                          </button>
+                          </Button></Tooltip>
                         </>
                       )}
                     </li>
@@ -264,14 +266,14 @@ function FileRow({ name, meta, tag, onDownload, onRemove }: { name: string; meta
         <span className="block text-meta text-text-secondary truncate">{meta}</span>
       </span>
       {onDownload && (
-        <button type="button" aria-label={`Download ${name}`} onClick={onDownload} className={BTN.icon}>
+        <Tooltip label={`Download ${name}`}><Button variant="ghost" size="icon" aria-label={`Download ${name}`} onClick={onDownload}>
           <Download size={16} />
-        </button>
+        </Button></Tooltip>
       )}
       {onRemove && (
-        <button type="button" aria-label={`Remove ${name}`} onClick={onRemove} className={`${BTN.icon} hover:text-danger! hover:bg-danger-bg!`}>
+        <Tooltip label={`Remove ${name}`}><Button variant="ghost" size="icon" aria-label={`Remove ${name}`} onClick={onRemove}>
           <Trash2 size={16} />
-        </button>
+        </Button></Tooltip>
       )}
     </li>
   )

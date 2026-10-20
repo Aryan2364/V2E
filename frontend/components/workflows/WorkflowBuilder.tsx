@@ -50,7 +50,6 @@ import { useWorkflowActions } from './useWorkflowActions'
 import { useWorkflowLookups } from './useWorkflowLookups'
 import {
   AddStepBar,
-  BTN,
   EmptyState,
   ErrorBanner,
   ErrorState,
@@ -63,7 +62,6 @@ import {
   Skeleton,
   TemplateStatusBadge,
   WORKFLOWS_BASE,
-  WorkflowBreadcrumb,
   creatorOf,
   editHref,
   gate,
@@ -73,6 +71,8 @@ import {
   workflowHref,
 } from './shared'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
 
 /** From this many steps a second "Add step" sits in the section header too. */
 const LONG_LIST = 4
@@ -1395,7 +1395,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
             />
           )}
           {t.key !== MAIN_TRACK && group.length === 0 && !pending && (
-            <GatedButton allowed={edit.allowed} reason={edit.reason} icon={X} variant="quiet" className="min-h-[40px]! sm:min-h-[34px]! px-2.5! shrink-0" onClick={() => removeTrack(t.key)}>
+            <GatedButton allowed={edit.allowed} reason={edit.reason} icon={X} variant="quiet" className="shrink-0" onClick={() => removeTrack(t.key)}>
               Remove path
             </GatedButton>
           )}
@@ -1444,7 +1444,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       </GatedButton>
     )
   ) : isDraft ? (
-    <GatedButton allowed={goLiveGate.allowed} reason={goLiveGate.reason} icon={Play} variant="primary" loading={saving === 'save'} disabled={!!saving} onClick={() => save('save')}>
+    <GatedButton allowed={goLiveGate.allowed} reason={goLiveGate.reason} icon={Play} variant="primary" loading={saving === 'save'} loadingLabel="Going live" disabled={!!saving} onClick={() => save('save')}>
       Save
     </GatedButton>
   ) : (
@@ -1473,6 +1473,7 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       icon={w?.status === 'paused' ? Play : Pause}
       variant="secondary"
       loading={pausing}
+      loadingLabel={w?.status === 'paused' ? 'Resuming' : 'Pausing'}
       disabled={!!saving}
       onClick={() => setPaused(w?.status !== 'paused')}
     >
@@ -1491,51 +1492,39 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
   return (
     <div className="flex flex-col gap-6 pb-8">
       {/* Pinned header: title, state and the save actions. One row on a phone. */}
-      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-3 bg-surface-sunken border-b border-border-light">
-        <WorkflowBreadcrumb
-          trail={
-            w
-              ? [{ label: 'Workflows', href: WORKFLOWS_BASE }, { label: w.name || 'Workflow', href: workflowHref(w.id) }, { label: 'Edit' }]
-              : [{ label: 'Workflows', href: WORKFLOWS_BASE }, { label: 'New workflow' }]
+      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-3 bg-surface-sunken border-b border-border-light [&>nav]:mb-2 [&>div]:mb-0">
+        <PageHeader
+          title={work.name.trim() || w?.name || 'New workflow'}
+          trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }]}
+          meta={
+            <span className="inline-flex flex-wrap items-center gap-2">
+              <TemplateStatusBadge status={w?.status ?? 'draft'} />
+              <span className="text-text-secondary">{plural(steps.length, 'step')}</span>
+              {saveState}
+            </span>
+          }
+          actions={
+            <>
+              {secondaryButtons}
+              {primaryButton}
+              {w && !narrow && (
+                <Button variant="secondary" render={<Link href={workflowHref(w.id)} />}>
+                  <Eye size={16} /> View
+                </Button>
+              )}
+              <ActionMenu items={menuItems} label="More workflow actions" />
+            </>
           }
         />
-        <div className="flex items-center justify-between gap-2 sm:gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">
-              {work.name.trim() || w?.name || 'New workflow'}
-            </h1>
-            <div className="hidden sm:flex items-center gap-2 flex-wrap mt-1.5 min-h-[24px]">
-              <TemplateStatusBadge status={w?.status ?? 'draft'} />
-              <span className="text-label text-text-secondary">{plural(steps.length, 'step')}</span>
-              {saveState}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {secondaryButtons}
-            {primaryButton}
-            {w && !narrow && (
-              <Link href={workflowHref(w.id)} className={BTN.quiet}>
-                <Eye size={16} /> View
-              </Link>
-            )}
-            <ActionMenu items={menuItems} label="More workflow actions" />
-          </div>
-        </div>
-        {/* Phone: status and save state on one slim line under the title row. */}
-        <div className="flex sm:hidden items-center gap-2 mt-1.5 min-w-0 text-meta">
-          <TemplateStatusBadge status={w?.status ?? 'draft'} />
-          <span className="text-text-secondary whitespace-nowrap">{plural(steps.length, 'step')}</span>
-          <span className="truncate">{saveState}</span>
-        </div>
       </div>
 
       {saveError && (
         <div className="flex flex-col gap-2">
           <ErrorBanner message={saveError} onClose={() => setSaveError(null)} />
           {conflict && (
-            <button type="button" onClick={() => load()} className={`${BTN.secondary} self-start`}>
+            <Button variant="secondary" onClick={() => load()} className="self-start">
               <RefreshCw size={16} /> Reload the latest version
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -1593,9 +1582,9 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
       {lookups.failed.length > 0 && (
         <div className="flex items-center gap-2 text-label text-warning">
           <span>Some lists didn’t load ({lookups.failed.join(', ')}). Choices may be missing.</span>
-          <button type="button" onClick={lookups.reload} className="font-medium underline">
+          <Button variant="secondary" size="sm" onClick={lookups.reload}>
             Try again
-          </button>
+          </Button>
         </div>
       )}
 
@@ -1694,17 +1683,16 @@ export default function WorkflowBuilder({ id: initialId }: { id: string | null }
               text={edit.allowed === true ? 'Add a step to get started.' : 'This workflow has no steps.'}
               action={
                 edit.allowed === true ? (
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
                     // The form takes the empty box's place, starting where the box did.
                     onClick={() => {
                       const box = document.getElementById('steps-empty')
                       openAdd(MAIN_TRACK, null, undefined, box ? { id: FORM_ID, top: box.getBoundingClientRect().top } : null)
                     }}
-                    className={BTN.secondary}
                   >
                     <Plus size={16} /> Add first step
-                  </button>
+                  </Button>
                 ) : undefined
               }
             />

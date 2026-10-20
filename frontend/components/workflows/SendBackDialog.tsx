@@ -7,7 +7,8 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import { useToast } from '@/components/ui/Toast'
 import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
 import type { SendBackTarget, WorkflowInstance } from '@/lib/types/workflows'
-import { BTN, ErrorBanner, InfoTip, Skeleton } from './shared'
+import { Button } from '@/components/ui/button'
+import { ErrorBanner, InfoTip, Skeleton } from './shared'
 import { Label } from '@/components/ui/label'
 
 const MIN = 5
@@ -127,9 +128,9 @@ export default function SendBackDialog({
           {loadError ? (
             <div className="flex flex-col gap-2">
               <ErrorBanner message={loadError} />
-              <button type="button" onClick={() => subject && load(subject)} className={`${BTN.quiet} self-start`}>
+              <Button variant="secondary" onClick={() => subject && load(subject)} className="self-start">
                 Try again
-              </button>
+              </Button>
             </div>
           ) : targets === null ? (
             <Skeleton className="h-11" />
@@ -184,13 +185,13 @@ export default function SendBackDialog({
         {error && <ErrorBanner message={error} />}
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-1">
-          <button type="button" onClick={onClose} disabled={busy} className={BTN.quiet}>
+          <Button variant="secondary" onClick={onClose} disabled={busy}>
             Cancel
-          </button>
-          <button type="submit" disabled={busy || !targets?.length || !target} className={BTN.primary}>
+          </Button>
+          <Button type="submit" disabled={!targets?.length || !target} loading={busy} loadingLabel="Sending back">
             <Undo2 size={16} />
-            {busy ? 'Sending back…' : 'Send back'}
-          </button>
+            Send back
+          </Button>
         </div>
       </form>
     </Modal>

@@ -22,7 +22,8 @@ import {
 } from 'lucide-react'
 import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
 import type { WorkflowRunEvent } from '@/lib/types/workflows'
-import { BTN, Skeleton, fmtDateTime } from './shared'
+import { Skeleton, fmtDateTime } from './shared'
+import { Button } from '@/components/ui/button'
 
 const PAGE = 15
 
@@ -105,9 +106,9 @@ export default function RunHistory({
       ) : status === 'failed' ? (
         <div className="flex flex-col gap-2 text-body text-danger">
           <span>History could not be loaded. {error}</span>
-          <button type="button" onClick={load} className={`${BTN.quiet} self-start`}>
+          <Button variant="secondary" onClick={load} className="self-start">
             <RefreshCw size={14} /> Try again
-          </button>
+          </Button>
         </div>
       ) : events.length === 0 ? (
         <p className="text-body text-text-secondary">No activity yet.</p>
@@ -148,9 +149,9 @@ export default function RunHistory({
             })}
           </ol>
           {events.length > limit && (
-            <button type="button" onClick={() => setLimit((l) => l + PAGE)} className={`${BTN.quiet} self-start`}>
+            <Button variant="secondary" onClick={() => setLimit((l) => l + PAGE)} className="self-start">
               Show {Math.min(PAGE, events.length - limit)} more
-            </button>
+            </Button>
           )}
         </>
       )}

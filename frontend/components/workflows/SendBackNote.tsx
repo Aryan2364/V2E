@@ -32,7 +32,7 @@ export function ReasonQuote({ reason, collapsible = false, className = '' }: { r
             e.stopPropagation()
             setOpen((o) => !o)
           }}
-          className="text-label font-medium text-text-secondary hover:underline rounded-xs min-h-[32px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-border-light"
+          className="text-label font-medium text-text-secondary hover:underline rounded-xs min-h-[32px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
         >
           {open ? 'Show less' : 'View reason'}
         </button>

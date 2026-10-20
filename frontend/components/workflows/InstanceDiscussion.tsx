@@ -12,7 +12,7 @@ import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import { useToast } from '@/components/ui/Toast'
 import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
 import type { DiscussionFile, DiscussionMessage, DiscussionStep, PersonRef } from '@/lib/types/workflows'
-import { Avatar, BTN, ErrorBanner, InfoTip } from './shared'
+import { Avatar, ErrorBanner, InfoTip } from './shared'
 import {
   MESSAGE_MAX,
   activeMentionIds,
@@ -27,6 +27,7 @@ import {
   splitMentions,
   taggableSteps,
 } from './discussion'
+import { Button } from '@/components/ui/button'
 
 /** Top-level messages per page. */
 const PAGE = 20
@@ -452,9 +453,9 @@ export default function InstanceDiscussion({
       {status === 'failed' ? (
         <div className="flex flex-col items-start gap-2 text-body text-danger">
           <span>{loadError}</span>
-          <button type="button" onClick={() => load()} className={BTN.quiet}>
+          <Button variant="secondary" onClick={() => load()}>
             <RefreshCw size={14} /> Try again
-          </button>
+          </Button>
         </div>
       ) : (
         <CommentThread
@@ -559,7 +560,7 @@ export default function InstanceDiscussion({
                     onClick={() => setFiles((list) => list.filter((_, idx) => idx !== i))}
                     disabled={posting}
                     aria-label={`Remove ${f.name}`}
-                    className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center hover:bg-primary/10 disabled:opacity-50 transition-colors"
+                    className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center hover:bg-primary-subtle disabled:opacity-50 transition-colors outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
                   >
                     <X size={12} />
                   </button>
@@ -568,33 +569,20 @@ export default function InstanceDiscussion({
               tools={
                 <>
                   <Tooltip label="Mention someone">
-                    <button type="button" onClick={startMention} disabled={canWrite !== true || posting} aria-label="Mention someone" className={BTN.icon}>
+                    <Tooltip label="Mention someone"><Button variant="ghost" size="icon" onClick={startMention} disabled={canWrite !== true || posting} aria-label="Mention someone">
                       <AtSign size={16} />
-                    </button>
+                    </Button></Tooltip>
                   </Tooltip>
                   <Tooltip label="Attach files">
-                    <button
-                      type="button"
-                      onClick={() => fileRef.current?.click()}
-                      disabled={canWrite !== true || posting}
-                      aria-label="Attach files"
-                      className={BTN.icon}
-                    >
+                    <Tooltip label="Attach files"><Button variant="ghost" size="icon" onClick={() => fileRef.current?.click()} disabled={canWrite !== true || posting} aria-label="Attach files">
                       <Paperclip size={16} className="-rotate-45" />
-                    </button>
+                    </Button></Tooltip>
                   </Tooltip>
                   {tagChoices.length > 0 && !replyTo && (
                     <Tooltip label="Show this message at the top of a later step’s task when it starts">
-                      <button
-                        type="button"
-                        onClick={() => setShowFor((v) => !v)}
-                        disabled={canWrite !== true || posting}
-                        aria-expanded={showFor}
-                        aria-label="For a later step"
-                        className={`${BTN.icon} ${showFor || forRow ? 'text-warning! bg-warning-bg!' : ''}`}
-                      >
+                      <Tooltip label="For a later step"><Button variant="ghost" size="icon" onClick={() => setShowFor((v) => !v)} disabled={canWrite !== true || posting} aria-expanded={showFor} aria-label="For a later step" className={showFor || forRow ? 'text-warning bg-warning-bg' : undefined}>
                         <Flag size={16} />
-                      </button>
+                      </Button></Tooltip>
                     </Tooltip>
                   )}
                   {text.length > MESSAGE_MAX - 200 && (
@@ -672,7 +660,7 @@ function Chip({
         type="button"
         onClick={onClear}
         aria-label={clearLabel}
-        className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center hover:bg-surface/70 transition-colors"
+        className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center hover:bg-surface/70 transition-colors outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring"
       >
         <X size={13} />
       </button>
@@ -768,20 +756,21 @@ function messageItem(m: DiscussionMessage, d: MessageDeps): ThreadItem {
                     </span>
                   )}
                   <Tooltip label={`Download “${f.file_name}”`}>
-                    <button type="button" onClick={() => d.onDownload(f)} aria-label={`Download ${f.file_name}`} className={`${BTN.icon} w-9! h-9! sm:w-7! sm:h-7!`}>
+                    <Tooltip label={`Download ${f.file_name}`}><Button variant="ghost" size="icon" onClick={() => d.onDownload(f)} aria-label={`Download ${f.file_name}`}>
                       <Download size={14} />
-                    </button>
+                    </Button></Tooltip>
                   </Tooltip>
                 </span>
                 {canPromote && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => d.onMarkProof(f)}
-                    disabled={markingId === f.id}
-                    className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text disabled:text-text-muted min-h-[32px]"
+                    loading={markingId === f.id}
+                    loadingLabel="Marking"
                   >
-                    {markingId === f.id ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />} Mark as proof
-                  </button>
+                    <ShieldCheck size={16} /> Mark as proof
+                  </Button>
                 )}
               </li>
             )
@@ -792,23 +781,14 @@ function messageItem(m: DiscussionMessage, d: MessageDeps): ThreadItem {
       canReply || m.can_delete ? (
         <>
           {canReply && (
-            <button
-              type="button"
-              onClick={() => d.onReply(m)}
-              className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-meta font-medium text-text-secondary hover:text-primary-text hover:bg-primary-subtle transition-colors"
-            >
-              <CornerUpLeft size={13} /> Reply
-            </button>
+            <Button variant="secondary" size="sm" onClick={() => d.onReply(m)}>
+              <CornerUpLeft size={16} /> Reply
+            </Button>
           )}
           {m.can_delete && (
-            <button
-              type="button"
-              onClick={() => d.onDelete(m)}
-              aria-label="Delete message"
-              className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-meta font-medium text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
-            >
-              <Trash2 size={13} /> Delete
-            </button>
+            <Button variant="secondary" size="sm" onClick={() => d.onDelete(m)} aria-label="Delete message">
+              <Trash2 size={16} /> Delete
+            </Button>
           )}
         </>
       ) : undefined,

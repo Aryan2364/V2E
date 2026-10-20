@@ -7,6 +7,7 @@ import { useEntitlements } from '@/lib/auth/use-entitlements'
 import { getNow } from '@/lib/clock'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import { WEEKDAYS_LONG, WEEKDAYS_SHORT, fmtTime, ordinal, plural } from './format'
 import type {
   PersonRef,
@@ -259,6 +260,9 @@ export const BTN = {
   icon: 'inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:text-text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed shrink-0',
 } as const
 
+/** The old workflow button names, mapped onto the kit Button's variants. */
+const KIT_VARIANT = { primary: 'primary', secondary: 'secondary', danger: 'danger', quiet: 'secondary', icon: 'ghost' } as const
+
 /**
  * A button whose action may be refused: disabled until a definite yes, and when the
  * answer is no its reason is reachable by hover, focus and tap (PermissionTooltip).
@@ -275,6 +279,7 @@ export function GatedButton({
   className = '',
   type = 'button',
   ariaLabel,
+  loadingLabel,
 }: {
   allowed: boolean | undefined
   reason: string
@@ -287,19 +292,25 @@ export function GatedButton({
   className?: string
   type?: 'button' | 'submit'
   ariaLabel?: string
+  /** Words shown while `loading` (the Button's own loading state). */
+  loadingLabel?: string
 }) {
   return (
     <PermissionTooltip allowed={allowed} reason={reason}>
-      <button
+      <Button
         type={type}
         onClick={onClick}
         aria-label={ariaLabel}
-        disabled={allowed !== true || loading || disabled}
-        className={`${BTN[variant]} ${className}`}
+        disabled={allowed !== true || disabled}
+        loading={loading}
+        loadingLabel={loadingLabel}
+        variant={KIT_VARIANT[variant]}
+        size={variant === 'icon' ? 'icon' : 'default'}
+        className={className}
       >
-        {loading ? <Loader2 size={16} className="animate-spin" /> : Icon ? <Icon size={16} /> : null}
+        {Icon ? <Icon size={16} /> : null}
         {children}
-      </button>
+      </Button>
     </PermissionTooltip>
   )
 }
@@ -533,9 +544,9 @@ export function ErrorState({ title, message, onRetry }: { title: string; message
       <h3 className="text-card-heading font-medium text-text-primary mb-1">{title}</h3>
       <p className="text-body text-text-secondary max-w-md">{message}</p>
       {onRetry && (
-        <button type="button" onClick={onRetry} className={`${BTN.secondary} mt-6`}>
-          <RefreshCw size={15} /> Try again
-        </button>
+        <Button variant="secondary" onClick={onRetry} className="mt-6">
+          <RefreshCw size={16} /> Try again
+        </Button>
       )}
     </div>
   )
@@ -549,9 +560,9 @@ export function NotFoundState({ what, backHref, backLabel }: { what: string; bac
       </div>
       <h2 className="text-card-heading font-medium text-text-primary mb-1">{what} not found</h2>
       <p className="text-body text-text-secondary max-w-md">It may have been removed, or you may not have access.</p>
-      <Link href={backHref} className={`${BTN.primary} mt-6`}>
+      <Button render={<Link href={backHref} />} className="mt-6">
         {backLabel}
-      </Link>
+      </Button>
     </div>
   )
 }
@@ -565,9 +576,9 @@ export function NoAccessState({ title, text, backHref, backLabel }: { title: str
       </div>
       <h2 className="text-card-heading font-medium text-text-primary mb-1">{title}</h2>
       <p className="text-body text-text-secondary max-w-md">{text}</p>
-      <Link href={backHref} className={`${BTN.primary} mt-6`}>
+      <Button render={<Link href={backHref} />} className="mt-6">
         {backLabel}
-      </Link>
+      </Button>
     </div>
   )
 }
@@ -583,9 +594,9 @@ export function ErrorBanner({ message, onClose }: { message: string; onClose?: (
       <AlertTriangle size={16} className="shrink-0 mt-0.5" />
       <span className="flex-1 min-w-0 wrap-break-word">{message}</span>
       {onClose && (
-        <button type="button" onClick={onClose} className="text-danger hover:underline text-label font-medium shrink-0">
+        <Button variant="secondary" size="sm" onClick={onClose} className="shrink-0">
           Close
-        </button>
+        </Button>
       )}
     </div>
   )
@@ -614,9 +625,9 @@ export function SaveIndicator({ state, error, onRetry }: { state: SaveState; err
       <AlertTriangle size={12} className="shrink-0" />
       <span className="truncate max-w-[260px]">{error || 'Not saved'}</span>
       {onRetry && (
-        <button type="button" onClick={onRetry} className="font-medium underline shrink-0">
+        <Button variant="secondary" size="sm" onClick={onRetry} className="shrink-0">
           Retry
-        </button>
+        </Button>
       )}
     </span>
   )

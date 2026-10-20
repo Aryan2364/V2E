@@ -22,7 +22,6 @@ import SendBackNote, { ReasonQuote } from './SendBackNote'
 import { sendBackLead, sendBackReason } from './sendBack'
 import { getNow } from '@/lib/clock'
 import {
-  BTN,
   ErrorBanner,
   ErrorState,
   GatedButton,
@@ -33,7 +32,6 @@ import {
   STEP_STATUS,
   Skeleton,
   WORKFLOWS_BASE,
-  WorkflowBreadcrumb,
   fmtDateTime,
   fmtDayDateTime,
   fmtSpan,
@@ -44,6 +42,8 @@ import {
   useWorkflowsWritable,
   workflowHref,
 } from './shared'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
 
 type RunAction = { kind: 'cancel' } | { kind: 'retry' } | { kind: 'skip'; row: WorkflowInstanceStep }
 
@@ -439,14 +439,14 @@ export default function RunView({ templateId, instanceId }: { templateId: string
 
   const canDocs = run.capabilities?.can_view_documents !== false
   const docsButton = canDocs ? (
-    <button type="button" onClick={() => setDocsOpen(true)} className={BTN.secondary}>
+    <Button variant="secondary" onClick={() => setDocsOpen(true)}>
       <FolderOpen size={16} /> Documents
       {docCount !== null && docCount > 0 && (
         <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-meta font-medium flex items-center justify-center">
           {docCount > 99 ? '99+' : docCount}
         </span>
       )}
-    </button>
+    </Button>
   ) : null
   const openRetry = () => {
     setActionError(null)
@@ -483,63 +483,61 @@ export default function RunView({ templateId, instanceId }: { templateId: string
 
   return (
     <div className="flex flex-col gap-6 pb-8">
-      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-surface-sunken border-b border-border-light">
-        <WorkflowBreadcrumb
+      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-surface-sunken border-b border-border-light [&>nav]:mb-2 [&>div]:mb-0">
+        <PageHeader
+          title={run.name}
           trail={[
             { label: 'Workflows', href: WORKFLOWS_BASE },
             { label: run.template?.name ?? 'Workflow', href: instancesHref(templateId) },
-            { label: run.name },
           ]}
-        />
-        <div className="flex items-center lg:items-start justify-between gap-2 sm:gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{run.name}</h1>
-            <div className="flex items-center gap-2 flex-wrap mt-1.5">
-              {run.instance_number ? <span className="text-label font-medium text-text-secondary whitespace-nowrap">{instanceTitle(run.instance_number)}</span> : null}
+          meta={
+            <span className="inline-flex flex-wrap items-center gap-2">
+              {run.instance_number ? <span className="font-medium text-text-secondary whitespace-nowrap">{instanceTitle(run.instance_number)}</span> : null}
               <RunStatusBadge run={run} />
               {!narrow && startedLine}
+            </span>
+          }
+          actions={
+            <>
+              {narrow ? (
+                <>
+                  {run.status === 'stuck' ? retryButton : docsButton}
+                  <ActionMenu items={runMenu} label="More instance actions" />
+                </>
+              ) : (
+                <>
+                  {docsButton}
+                  <Button variant="secondary" onClick={() => load(true)} disabled={refreshing}>
+                    <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} /> Refresh
+                  </Button>
+                  {run.status === 'stuck' && retryButton}
+                  {live && (
+                    <GatedButton
+                      allowed={cancelGate.allowed}
+                      reason={cancelGate.reason}
+                      icon={XCircle}
+                      variant="quiet"
+                      onClick={openCancel}
+                    >
+                      Cancel instance
+                    </GatedButton>
+                  )}
+                </>
+              )}
+            </>
+          }
+        />
+        {/* Waiting for info: why, said once in the header (shortened, with "View reason"). */}
+        {live &&
+          senderRows.map((r) => (
+            <div key={r.id} className="mt-2 flex flex-col gap-1 max-w-3xl text-label text-text-secondary">
+              <p className="font-medium wrap-break-word">
+                <span className="font-medium">{nameOf(r.id)}</span> is waiting · {sendBackLead(r.send_back!, getNow())}
+                {sendBackReason(r.send_back) ? ':' : ''}
+              </p>
+              {sendBackReason(r.send_back) && <ReasonQuote reason={sendBackReason(r.send_back)!} collapsible />}
             </div>
-            {/* Waiting for info: why, said once in the header (shortened, with "View reason"). */}
-            {live &&
-              senderRows.map((r) => (
-                <div key={r.id} className="mt-2 flex flex-col gap-1 max-w-3xl text-label text-text-secondary">
-                  <p className="font-medium wrap-break-word">
-                    <span className="font-medium">{nameOf(r.id)}</span> is waiting · {sendBackLead(r.send_back!, getNow())}
-                    {sendBackReason(r.send_back) ? ':' : ''}
-                  </p>
-                  {sendBackReason(r.send_back) && <ReasonQuote reason={sendBackReason(r.send_back)!} collapsible />}
-                </div>
-              ))}
-          </div>
-          <div className="flex items-center gap-2 flex-wrap justify-end shrink-0">
-            {narrow ? (
-              <>
-                {run.status === 'stuck' ? retryButton : docsButton}
-                <ActionMenu items={runMenu} label="More instance actions" />
-              </>
-            ) : (
-              <>
-                {docsButton}
-                <button type="button" onClick={() => load(true)} disabled={refreshing} className={BTN.quiet}>
-                  <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} /> Refresh
-                </button>
-                {run.status === 'stuck' && retryButton}
-                {live && (
-                  <GatedButton
-                    allowed={cancelGate.allowed}
-                    reason={cancelGate.reason}
-                    icon={XCircle}
-                    variant="quiet"
-                    className="text-danger!"
-                    onClick={openCancel}
-                  >
-                    Cancel instance
-                  </GatedButton>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+          ))}
       </div>
 
       {narrow && <div className="-mt-2">{startedLine}</div>}
@@ -656,7 +654,7 @@ export default function RunView({ templateId, instanceId }: { templateId: string
                             variant="secondary"
                             loading={startingRowId === r.id}
                             disabled={!!startingRowId}
-                            className="min-h-[44px]! sm:min-h-[34px]! px-3!"
+                            loadingLabel="Starting"
                             onClick={() => startNow(r)}
                           >
                             Start now

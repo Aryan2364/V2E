@@ -16,7 +16,7 @@ import type { CompletionMode, SelectedAssignee } from '@/lib/types/tasks'
 import type { ChecklistItem, EscalationMode, IfLate, StepInput, WorkflowStep } from '@/lib/types/workflows'
 import ActionMenu from './ActionMenu'
 import type { WorkflowLookups } from './useWorkflowLookups'
-import { BTN, ErrorBanner, InfoTip, Reveal, completionWords } from './shared'
+import { ErrorBanner, InfoTip, Reveal, completionWords } from './shared'
 import StepTiming from './StepTiming'
 import { commitDraft, draftTouched, normItems, same, toInput, type CommitNewStep, type StepDraft } from './stepDraft'
 import {
@@ -31,6 +31,7 @@ import {
 import { anchorFor, orderProblemOf, stepNextCycle, type NamedStep, type PlanContext, type PlannedDates } from './timingPlan'
 import { predecessorName } from './timing'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 
 /** The sample run's plan (timingPlan.ts): the timing calendar, its greyed days and Save's order check. */
 export interface StepPlanInput {
@@ -224,20 +225,19 @@ export function IconAction({
   danger?: boolean
 }) {
   const btn = (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="icon"
       aria-label={label}
       disabled={allowed !== true || disabled}
       onClick={(e) => {
         e.stopPropagation()
         onClick()
       }}
-      className={`inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:text-text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed ${
-        danger ? 'text-text-secondary hover:text-danger hover:bg-danger-bg' : 'text-text-secondary hover:text-text-primary hover:bg-surface-control'
-      }`}
+      className={danger ? 'hover:text-danger' : undefined}
     >
       <Icon size={16} />
-    </button>
+    </Button>
   )
   if (allowed === false) return <PermissionTooltip allowed={false} reason={reason}>{btn}</PermissionTooltip>
   return <Tooltip label={disabled ? '' : label}>{btn}</Tooltip>
@@ -273,7 +273,7 @@ function MergeChip({ label, redundant, onRemove, disabled }: { label: string; re
           onRemove()
         }}
         onKeyDown={(e) => e.stopPropagation()}
-        className={`shrink-0 w-4 h-4 rounded-[4px] flex items-center justify-center cursor-pointer disabled:cursor-not-allowed ${
+        className={`shrink-0 w-4 h-4 rounded-[4px] flex items-center justify-center cursor-pointer disabled:cursor-not-allowed outline-none focus-visible:outline-2 focus-visible:[outline-style:solid] focus-visible:outline-primary-ring ${
           redundant ? 'text-text-secondary hover:bg-surface-control-pressed hover:text-text-primary' : 'text-primary-text hover:bg-primary-subtle hover:text-primary-text'
         }`}
       >
@@ -737,9 +737,9 @@ export default function StepCard(props: EditProps | CreateProps) {
                     </div>
                   </Reveal>
                 ) : mergeOptions.length > 0 && !disabled ? (
-                  <button type="button" onClick={() => setMergeOpen(true)} disabled={creating} className={`${BTN.quiet} self-start -ml-2`}>
+                  <Button variant="secondary" onClick={() => setMergeOpen(true)} disabled={creating} className="self-start -ml-2">
                     <GitMerge size={16} /> Also waits for
-                  </button>
+                  </Button>
                 ) : null}
               </div>
               ) : null
@@ -794,9 +794,9 @@ export default function StepCard(props: EditProps | CreateProps) {
                   </div>
                 ))}
                 {escRows.length < MAX_ESCALATION && !disabled && (
-                  <button type="button" onClick={() => setEscRows((r) => [...r, ''])} className={`${BTN.quiet} self-start`}>
+                  <Button variant="secondary" onClick={() => setEscRows((r) => [...r, ''])} className="self-start">
                     <Plus size={16} /> Add level
-                  </button>
+                  </Button>
                 )}
                 {escError && <p className="text-label text-danger">{escError}</p>}
               </div>
@@ -807,12 +807,11 @@ export default function StepCard(props: EditProps | CreateProps) {
 
       {/* More options */}
       <div className="border-t border-border-light pt-4">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           aria-expanded={moreOpen}
           aria-controls={`${idPrefix}-more`}
           onClick={() => setMoreOpen((v) => !v)}
-          className="inline-flex items-center gap-2 min-h-[44px] sm:min-h-[36px] px-2 -mx-2 rounded-[8px] text-body font-medium text-primary-text hover:bg-primary-subtle focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
         >
           <SlidersHorizontal size={16} />
           More options
@@ -822,7 +821,7 @@ export default function StepCard(props: EditProps | CreateProps) {
             </span>
           )}
           <ChevronDown size={16} className={`transition-transform duration-200 ${moreOpen ? 'rotate-180' : ''}`} />
-        </button>
+        </Button>
 
         <Reveal open={moreOpen} id={`${idPrefix}-more`}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-6 gap-y-6 pt-4">
@@ -905,13 +904,13 @@ export default function StepCard(props: EditProps | CreateProps) {
         <>
           {createError && <ErrorBanner message={createError} />}
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border-light">
-            <button type="button" onClick={props.onCancel} disabled={creating} className={BTN.quiet}>
+            <Button variant="secondary" onClick={props.onCancel} disabled={creating}>
               Cancel
-            </button>
-            <button type="button" onClick={submitCreate} disabled={creating || disabled} className={BTN.primary}>
+            </Button>
+            <Button variant="primary" onClick={submitCreate} disabled={creating || disabled}>
               <Plus size={16} />
               {creating ? 'Adding…' : 'Add step'}
-            </button>
+            </Button>
           </div>
         </>
       )}

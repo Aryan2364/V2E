@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import type { WorkflowInstance } from '@/lib/types/workflows'
 import { instanceTitle } from './instanceLabel'
-import { BTN, RunStatusBadge, fmtDateTime, runDisplayStatus, runHref } from './shared'
+import { RunStatusBadge, fmtDateTime, runDisplayStatus, runHref } from './shared'
+import { Button } from '@/components/ui/button'
 
 const PAGE = 25
 
@@ -137,9 +138,9 @@ export default function InstanceList({
           <span className="text-label text-text-secondary">
             1–{rows.length} of {instances.length}
           </span>
-          <button type="button" onClick={() => setLimit((l) => l + PAGE)} className={BTN.quiet}>
+          <Button variant="secondary" onClick={() => setLimit((l) => l + PAGE)}>
             Show more
-          </button>
+          </Button>
         </div>
       )}
     </div>

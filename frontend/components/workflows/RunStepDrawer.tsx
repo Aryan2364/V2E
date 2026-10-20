@@ -12,7 +12,9 @@ import type { InstanceNote, WorkflowInstanceStep } from '@/lib/types/workflows'
 import StepNotes from './StepNotes'
 import SendBackNote from './SendBackNote'
 import Sheet from './Sheet'
-import { Avatar, BTN, CompletionChip, ErrorBanner, GatedButton, Skeleton, StepStatusBadge, fmtDateTime, fmtDayDateTime, taskHref } from './shared'
+import { Avatar, CompletionChip, ErrorBanner, GatedButton, Skeleton, StepStatusBadge, fmtDateTime, fmtDayDateTime, taskHref } from './shared'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 type Load<T> = { status: 'idle' | 'loading' | 'ready' | 'failed' | 'hidden'; data: T; error?: string }
 
@@ -152,7 +154,7 @@ export default function RunStepDrawer({
   const footer = (
     <>
       {waiting && canStartNow !== undefined && onStartNow && (
-        <GatedButton allowed={canStartNow} reason={startNowReason} icon={Play} variant="primary" loading={startingNow} onClick={() => onStartNow(row)}>
+        <GatedButton allowed={canStartNow} reason={startNowReason} icon={Play} variant="primary" loading={startingNow} loadingLabel="Starting" onClick={() => onStartNow(row)}>
           Start now
         </GatedButton>
       )}
@@ -167,9 +169,9 @@ export default function RunStepDrawer({
         </GatedButton>
       )}
       {taskId && (
-        <Link href={taskHref(taskId)} className={BTN.primary}>
+        <Button render={<Link href={taskHref(taskId)} />}>
           <ExternalLink size={16} /> Open task
-        </Link>
+        </Button>
       )}
     </>
   )
@@ -349,14 +351,9 @@ export default function RunStepDrawer({
                       {f.uploaded_by_name ? ` · ${f.uploaded_by_name}` : ''} · {fmtDateTime(f.created_at)}
                     </span>
                   </span>
-                  <button
-                    type="button"
-                    aria-label={`Download ${f.file_name}`}
-                    onClick={() => download(() => tasksApi.downloadProof(orgId, taskId, f.id))}
-                    className={BTN.icon}
-                  >
+                  <Tooltip label={`Download ${f.file_name}`}><Button variant="ghost" size="icon" aria-label={`Download ${f.file_name}`} onClick={() => download(() => tasksApi.downloadProof(orgId, taskId, f.id))}>
                     <Download size={16} />
-                  </button>
+                  </Button></Tooltip>
                 </li>
               ))}
             </ul>
@@ -372,9 +369,9 @@ export default function RunStepDrawer({
           </h3>
           <p className="text-body text-text-secondary">All steps share one discussion on this instance’s page.</p>
           {onOpenDiscussion && (
-            <button type="button" onClick={onOpenDiscussion} className={`${BTN.quiet} self-start`}>
+            <Button variant="secondary" onClick={onOpenDiscussion} className="self-start">
               <MessageSquare size={16} /> Go to the discussion
-            </button>
+            </Button>
           )}
         </section>
       )}

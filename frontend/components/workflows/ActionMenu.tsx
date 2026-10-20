@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { createPortal } from 'react-dom'
 import { MoreHorizontal, type LucideIcon } from 'lucide-react'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import PermissionTooltip from '@/components/ui/PermissionTooltip'
 
 export interface ActionMenuItem {
@@ -89,9 +90,10 @@ export default function ActionMenu({ items, label = 'More actions' }: { items: A
   return (
     <>
       <Tooltip label={open ? '' : label}>
-        <button
+        <Button
           ref={btnRef}
-          type="button"
+          variant="ghost"
+          size="icon"
           aria-label={label}
           aria-haspopup="menu"
           aria-expanded={open}
@@ -100,10 +102,10 @@ export default function ActionMenu({ items, label = 'More actions' }: { items: A
             e.stopPropagation()
             setOpen((v) => !v)
           }}
-          className="relative z-10 inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-[8px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+          className="relative z-10"
         >
           <MoreHorizontal size={18} />
-        </button>
+        </Button>
       </Tooltip>
       {open &&
         pos &&

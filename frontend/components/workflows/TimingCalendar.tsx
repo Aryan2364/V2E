@@ -5,6 +5,8 @@ import { ChevronLeft, ChevronRight, Play } from 'lucide-react'
 import { WEEKDAYS_SHORT, fmtTime } from './format'
 import { weekPosition } from './timing'
 import { dateOfDayNumber, dayNumber, eventsOn, type CalendarSpan, type DayEvent, type PlanContext } from './timingPlan'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
 
 // The timing calendar: where a step's day is picked, with the whole sample run on view —
 // the run start (▶), every other step's planned start → due as a light band (the steps
@@ -224,9 +226,6 @@ export default function TimingCalendar({
   for (let i = 0; i < cells.length; i += 7) rows.push(cells.slice(i, i + 7))
   if (rows.length) while (rows[rows.length - 1].length < 7) rows[rows.length - 1].push(null)
 
-  const navBtn =
-    'inline-flex items-center justify-center w-11 h-11 rounded-[8px] text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed'
-
   const cellFor = (dayNo: number) => {
     const isSel = selected === dayNo
     const grey = greyed(dayNo)
@@ -300,15 +299,19 @@ export default function TimingCalendar({
       <div className="rounded-[10px] border border-border-light bg-surface p-1.5 sm:p-2">
         {/* Header: ◀ Month 2 · Dec ▶ */}
         <div className="flex items-center justify-between gap-1 mb-1">
-          <button type="button" aria-label={`Previous ${noun}`} onClick={() => go(-1)} disabled={page <= minPage} className={navBtn}>
-            <ChevronLeft size={18} />
-          </button>
+          <Tooltip label={`Previous ${noun}`}>
+            <Button variant="ghost" size="icon" aria-label={`Previous ${noun}`} onClick={() => go(-1)} disabled={page <= minPage}>
+              <ChevronLeft size={18} />
+            </Button>
+          </Tooltip>
           <span id={`${uid}-title`} aria-live="polite" className="text-body font-medium text-text-primary tabular-nums text-center">
             {title}
           </span>
-          <button type="button" aria-label={`Next ${noun}`} onClick={() => go(1)} disabled={page >= maxPage} className={navBtn}>
-            <ChevronRight size={18} />
-          </button>
+          <Tooltip label={`Next ${noun}`}>
+            <Button variant="ghost" size="icon" aria-label={`Next ${noun}`} onClick={() => go(1)} disabled={page >= maxPage}>
+              <ChevronRight size={18} />
+            </Button>
+          </Tooltip>
         </div>
 
         <div
@@ -337,19 +340,15 @@ export default function TimingCalendar({
 
         {lastDay && unit === 'Month' && (
           <div className="mt-1.5 flex">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               aria-pressed={lastDay.selected && selected !== null && pageOf(selected) === page}
               disabled={disabled || (minDay !== null && firstDayOfMonth(page) + daysInMonthIdx(page) - 1 < minDay)}
               onClick={() => lastDay.onPick(cycleOfPage(page))}
-              className={`min-h-[44px] sm:min-h-[36px] px-3 rounded-[8px] border text-label font-medium transition-colors duration-150 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-text-muted disabled:border-border-light ${
-                lastDay.selected && selected !== null && pageOf(selected) === page
-                  ? 'bg-primary border-primary text-primary-foreground'
-                  : 'bg-surface border-border text-text-secondary hover:border-primary hover:text-primary-text'
-              }`}
+              className={lastDay.selected && selected !== null && pageOf(selected) === page ? 'bg-primary-subtle' : undefined}
             >
               Last day of {MONTHS_SHORT[page % 12]}
-            </button>
+            </Button>
           </div>
         )}
       </div>

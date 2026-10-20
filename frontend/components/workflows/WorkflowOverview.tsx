@@ -19,7 +19,6 @@ import { useWorkflowActions } from './useWorkflowActions'
 import { useWorkflowLookups } from './useWorkflowLookups'
 import {
   Avatar,
-  BTN,
   CompletionChip,
   EmptyState,
   ErrorState,
@@ -31,7 +30,6 @@ import {
   Skeleton,
   TemplateStatusBadge,
   WORKFLOWS_BASE,
-  WorkflowBreadcrumb,
   creatorOf,
   editHref,
   fmtDate,
@@ -45,6 +43,8 @@ import {
   useNarrowScreen,
   useWorkflowsWritable,
 } from './shared'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shell/page-header'
 
 type RunFilter = 'all' | RunDisplayStatus
 const RUN_FILTERS: { value: RunFilter; label: string }[] = [
@@ -309,12 +309,12 @@ export default function WorkflowOverview({ id }: { id: string }) {
   // Steps and People open in side panels; the page leads with the instances.
   const panelButtons = (
     <>
-      <button type="button" aria-haspopup="dialog" onClick={() => setPanel('steps')} className={`${BTN.quiet} w-full sm:w-auto`}>
+      <Button variant="secondary" aria-haspopup="dialog" onClick={() => setPanel('steps')} className="w-full sm:w-auto">
         <GitBranch size={16} /> Steps · {steps.length}
-      </button>
-      <button type="button" aria-haspopup="dialog" onClick={() => setPanel('people')} className={`${BTN.quiet} w-full sm:w-auto`}>
+      </Button>
+      <Button variant="secondary" aria-haspopup="dialog" onClick={() => setPanel('people')} className="w-full sm:w-auto">
         <Users size={16} /> People · {involved.length}
-      </button>
+      </Button>
     </>
   )
 
@@ -346,43 +346,44 @@ export default function WorkflowOverview({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-6 pb-8">
-      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-surface-sunken border-b border-border-light">
-        <WorkflowBreadcrumb trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }, { label: w.name }]} />
-        <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{w.name}</h1>
-            {!narrow && <div className="mt-1.5">{meta}</div>}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="hidden xl:flex items-center gap-2">{panelButtons}</div>
-            {editInMenu ? null : edit.allowed === true ? (
-              <Link href={editHref(w.id)} className={BTN.secondary}>
-                <Pencil size={16} /> Edit
-              </Link>
-            ) : (
-              <GatedButton allowed={edit.allowed} reason={edit.reason} icon={Pencil} variant="secondary">
-                Edit
-              </GatedButton>
-            )}
-            {archived ? (
-              <GatedButton allowed={rawEdit.allowed} reason={rawEdit.reason} icon={ArchiveRestore} variant="primary" onClick={() => actions.restore(w)}>
-                Restore
-              </GatedButton>
-            ) : start.hidden ? null : (
-              <GatedButton allowed={start.allowed} reason={start.reason} icon={Play} variant="primary" onClick={() => actions.start(w)}>
-                Run
-              </GatedButton>
-            )}
-            <ActionMenu items={menuItems} label="More workflow actions" />
-          </div>
-        </div>
-        {/* Phone: the status on one slim line; the rest of the meta sits under the header. */}
-        {narrow && (
-          <div className="flex items-center gap-2 mt-1.5 min-w-0 text-meta text-text-secondary">
-            <TemplateStatusBadge status={w.status} />
-            <span className="whitespace-nowrap">{plural(steps.length, 'step')}</span>
-          </div>
-        )}
+      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-surface-sunken border-b border-border-light [&>nav]:mb-2 [&>div]:mb-0">
+        <PageHeader
+          title={w.name}
+          trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }]}
+          meta={
+            narrow ? (
+              <span className="inline-flex flex-wrap items-center gap-2">
+                <TemplateStatusBadge status={w.status} />
+                <span className="whitespace-nowrap">{plural(steps.length, 'step')}</span>
+              </span>
+            ) : undefined
+          }
+          actions={
+            <>
+              <div className="hidden xl:flex items-center gap-2">{panelButtons}</div>
+              {editInMenu ? null : edit.allowed === true ? (
+                <Button variant="secondary" render={<Link href={editHref(w.id)} />}>
+                  <Pencil size={16} /> Edit
+                </Button>
+              ) : (
+                <GatedButton allowed={edit.allowed} reason={edit.reason} icon={Pencil} variant="secondary">
+                  Edit
+                </GatedButton>
+              )}
+              {archived ? (
+                <GatedButton allowed={rawEdit.allowed} reason={rawEdit.reason} icon={ArchiveRestore} variant="primary" onClick={() => actions.restore(w)}>
+                  Restore
+                </GatedButton>
+              ) : start.hidden ? null : (
+                <GatedButton allowed={start.allowed} reason={start.reason} icon={Play} variant="primary" onClick={() => actions.start(w)}>
+                  Run
+                </GatedButton>
+              )}
+              <ActionMenu items={menuItems} label="More workflow actions" />
+            </>
+          }
+        />
+        {!narrow && <div className="mt-1.5">{meta}</div>}
       </div>
 
       {narrow && <div className="-mt-2">{meta}</div>}
@@ -430,9 +431,9 @@ export default function WorkflowOverview({ id }: { id: string }) {
             text={edit.allowed === true ? 'Add steps to get started.' : 'This workflow has no steps.'}
             action={
               edit.allowed === true ? (
-                <Link href={editHref(w.id)} className={BTN.secondary}>
+                <Button variant="secondary" render={<Link href={editHref(w.id)} />}>
                   <Pencil size={16} /> Add steps
-                </Link>
+                </Button>
               ) : undefined
             }
           />
@@ -566,9 +567,9 @@ export default function WorkflowOverview({ id }: { id: string }) {
                     title={`No instances are “${RUN_STATUS[filter as RunDisplayStatus].label.toLowerCase()}”`}
                     text="Try another filter."
                     action={
-                      <button type="button" onClick={() => setFilter('all')} className={BTN.secondary}>
+                      <Button variant="secondary" onClick={() => setFilter('all')}>
                         Show all instances
-                      </button>
+                      </Button>
                     }
                   />
                 ) : (
@@ -669,23 +670,19 @@ function MyInstancesView({
   const start = workflow ? startGate(workflow, writable) : null
   return (
     <div className="flex flex-col gap-6 pb-8">
-      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-surface-sunken border-b border-border-light">
-        <WorkflowBreadcrumb trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }, { label: name }]} />
-        <div className="flex items-center sm:items-start justify-between gap-2 sm:gap-3">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-card-heading sm:text-page-title font-medium text-text-primary leading-tight truncate sm:whitespace-normal sm:wrap-break-word">{name}</h1>
-            {workflow && (
-              <div className="mt-1.5">
-                <TemplateStatusBadge status={workflow.status} />
-              </div>
-            )}
-          </div>
-          {workflow && start && !start.hidden && (
-            <GatedButton allowed={start.allowed} reason={start.reason} icon={Play} variant="primary" onClick={() => onRun(workflow)}>
-              Run
-            </GatedButton>
-          )}
-        </div>
+      <div className="sticky -top-6 lg:-top-8 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 lg:pt-8 pb-2.5 sm:pb-4 bg-surface-sunken border-b border-border-light [&>nav]:mb-2 [&>div]:mb-0">
+        <PageHeader
+          title={name}
+          trail={[{ label: 'Workflows', href: WORKFLOWS_BASE }]}
+          meta={workflow ? <TemplateStatusBadge status={workflow.status} /> : undefined}
+          actions={
+            workflow && start && !start.hidden ? (
+              <GatedButton allowed={start.allowed} reason={start.reason} icon={Play} variant="primary" onClick={() => onRun(workflow)}>
+                Run
+              </GatedButton>
+            ) : undefined
+          }
+        />
       </div>
 
       <section id="instances" aria-labelledby="my-instances-heading" className="flex flex-col gap-3 scroll-mt-40">

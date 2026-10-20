@@ -9,7 +9,8 @@ import SendBackDialog, { type SendBackSubject } from './SendBackDialog'
 import StepNotes from './StepNotes'
 import SendBackNote from './SendBackNote'
 import { instanceTitle } from './instanceLabel'
-import { BTN, runHref } from './shared'
+import { runHref } from './shared'
+import { Button } from '@/components/ui/button'
 
 /**
  * On a task a workflow created: why it was sent back (if it was), which workflow,
@@ -96,26 +97,14 @@ export default function WorkflowTaskBanner({
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {ctx?.can_send_back && (
-            <button
-              type="button"
-              onClick={() =>
-                setSubject({
-                  templateId: ctx.template_id,
-                  instanceId: ctx.instance_id,
-                  rowId: ctx.row_id,
-                  stepTitle: ctx.step_title,
-                  stepLabel: ctx.step_label ?? null,
-                })
-              }
-              className={BTN.secondary}
-            >
+            <Button variant="secondary" onClick={() => setSubject({ templateId: ctx.template_id, instanceId: ctx.instance_id, rowId: ctx.row_id, stepTitle: ctx.step_title, stepLabel: ctx.step_label ?? null, }) }>
               <Undo2 size={16} /> Send back
-            </button>
+            </Button>
           )}
           {ctx && ctx.can_open_run !== false && (
-            <Link href={runHref(ctx.template_id, ctx.instance_id)} className={BTN.quiet}>
+            <Button variant="secondary" render={<Link href={runHref(ctx.template_id, ctx.instance_id)} />}>
               Open instance <ArrowRight size={16} />
-            </Link>
+            </Button>
           )}
         </div>
       </div>

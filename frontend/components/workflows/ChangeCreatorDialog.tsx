@@ -8,7 +8,8 @@ import StyledSelect from '@/components/ui/StyledSelect'
 import { useToast } from '@/components/ui/Toast'
 import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
 import type { OrgMemberOption, PersonRef, WorkflowTemplate } from '@/lib/types/workflows'
-import { BTN, ErrorBanner, InfoTip } from './shared'
+import { Button } from '@/components/ui/button'
+import { ErrorBanner, InfoTip } from './shared'
 
 /**
  * Admins only: hand the creator role — the permanent editor no one can remove — to another
@@ -99,13 +100,13 @@ export default function ChangeCreatorDialog({
         {error && <ErrorBanner message={error} />}
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-1">
-          <button type="button" onClick={onClose} disabled={busy} className={BTN.quiet}>
+          <Button variant="secondary" onClick={onClose} disabled={busy}>
             Cancel
-          </button>
-          <button type="submit" disabled={busy || !picked} className={BTN.primary}>
+          </Button>
+          <Button type="submit" disabled={!picked} loading={busy} loadingLabel="Saving">
             <UserCog size={16} />
-            {busy ? 'Saving…' : 'Change creator'}
-          </button>
+            Change creator
+          </Button>
         </div>
       </form>
     </Modal>
