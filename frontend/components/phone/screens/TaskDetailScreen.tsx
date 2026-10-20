@@ -536,7 +536,7 @@ function FullScreenOverlay({ title, onClose, footer, children }: { title: string
     <div className="fixed inset-x-0 top-0 bottom-(--keyboard-inset) z-75 flex flex-col bg-surface-sunken">
       <header
         className={cx(
-          'sticky top-0 z-10 flex h-(--h-topbar) shrink-0 items-center gap-[8px] bg-primary text-on-brand',
+          'sticky top-0 z-10 flex h-(--spacing-topbar) shrink-0 items-center gap-[8px] bg-primary text-on-brand',
           'pt-(--safe-top) pl-[max(4px,var(--safe-left))] pr-[max(16px,var(--safe-right))]',
         )}
       >

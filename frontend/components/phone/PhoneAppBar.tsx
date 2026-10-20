@@ -60,7 +60,7 @@ export function PhoneAppBar({
     >
       <div
         className={cx(
-          'flex h-(--h-topbar) items-center gap-[8px]',
+          'flex h-(--spacing-topbar) items-center gap-[8px]',
           hasLeading ? 'pl-[4px]' : 'pl-[16px]',
           count > 0 ? 'pr-[4px]' : 'pr-[16px]',
         )}
