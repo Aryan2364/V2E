@@ -212,6 +212,39 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           </button>
         </Field>
 
+        {/* When: Repeat first, then either the one-off Due date or the schedule
+            fields in its place - one decision, in one place. */}
+        <Field label="Repeat">
+          <select
+            value={schedule?.schedule_type ?? ''}
+            onChange={(e) => {
+              setAttempted(false)
+              setDraft((d) => {
+                if (!e.target.value) return { ...d, schedule: null }
+                const next = entryForFrequency(d.schedule, e.target.value as RecurringScheduleType)
+                // Switching from a one-off due date: carry its date and time over as the
+                // schedule's start, so what the user already picked is not thrown away.
+                if (!d.schedule && d.deadline) {
+                  next.start_date = d.deadline.slice(0, 10)
+                  if (d.deadline.length >= 16) next.time = d.deadline.slice(11, 16)
+                }
+                return { ...d, schedule: next }
+              })
+            }}
+            className="min-h-(--h-control) w-full rounded-[8px] border border-border-strong bg-surface px-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary"
+          >
+            <option value="">Does not repeat</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </Field>
+
+        {schedule ? (
+          <RepeatFields entry={schedule} onChange={(next) => setDraft((d) => ({ ...d, schedule: next }))} showErrors={attempted} />
+        ) : null}
+
         {schedule ? null : (
         <Field label="Due date">
           <input
@@ -255,27 +288,6 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
             + Add description
           </button>
         )}
-
-        <Field label="Repeat">
-          <select
-            value={schedule?.schedule_type ?? ''}
-            onChange={(e) => {
-              setAttempted(false)
-              setDraft((d) => ({ ...d, schedule: e.target.value ? entryForFrequency(d.schedule, e.target.value as RecurringScheduleType) : null }))
-            }}
-            className="min-h-(--h-control) w-full rounded-[8px] border border-border-strong bg-surface px-[12px] text-[16px] text-text-primary outline-hidden focus-visible:border-primary"
-          >
-            <option value="">Does not repeat</option>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="yearly">Yearly</option>
-          </select>
-        </Field>
-
-        {schedule ? (
-          <RepeatFields entry={schedule} onChange={(next) => setDraft((d) => ({ ...d, schedule: next }))} showErrors={attempted} />
-        ) : null}
 
         {(draft.title || draft.description) ? (
           <button type="button" onClick={onDiscard} className="self-start text-label font-medium text-danger">
