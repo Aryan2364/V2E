@@ -15,6 +15,8 @@ import {
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 import type {
   RecurringTemplate, RecurringScheduleEntry, TaskAttachment,
   TaskCategory, TaskPriority, CompletionMode, SelectedAssignee, YearlyDate, ChecklistTemplate,
@@ -129,6 +131,18 @@ export default function EditRecurringModal({ template, orgId, categories, priori
   }, [primaryAssigneeCount, assigneesLoaded])
 
   const [submitting, setSubmitting] = useState(false)
+  // Per-field validation (kit 11.3 rule 6): the message sits under the field that is wrong.
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; assignees?: string }>({})
+  function failFields(next: { title?: string; assignees?: string }): boolean {
+    if (!next.title && !next.assignees) { setFieldErrors({}); return true }
+    setFieldErrors(next)
+    const id = next.title ? 'edit-recurring-title' : 'edit-recurring-assignees'
+    requestAnimationFrame(() => {
+      const el = document.getElementById(id)
+      ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+    })
+    return false
+  }
   const [error, setError] = useState<string | null>(null)
   // A committed save that propagation could not fully apply — held so the user sees
   // which occurrences were left alone before the modal closes.
@@ -199,8 +213,10 @@ export default function EditRecurringModal({ template, orgId, categories, priori
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!title.trim()) { setError('Title is required.'); return }
-    if (assignees.filter((a) => !a.is_cc).length === 0) { setError('At least one assignee is required. CC-only tasks are not allowed.'); return }
+    if (!failFields({
+      title: title.trim() ? undefined : 'Enter a title for the task.',
+      assignees: assignees.filter((a) => !a.is_cc).length === 0 ? 'Add at least one assignee. A task with only people in CC has no one to do it.' : undefined,
+    })) return
 
     for (const entry of scheduleEntries) {
       if (entry.schedule_type === 'weekly' && entry.days.length === 0) {
@@ -290,8 +306,20 @@ export default function EditRecurringModal({ template, orgId, categories, priori
     }
   }
 
+  const guarded = useGuardedClose({
+    open: assigneesLoaded,
+    values: {
+      title, description, priorityId, categoryId, tagIds, completionMode, proofRequired, proofAllowedExtensions,
+      escalationIds, goalId, assignees, scheduleEntries, checklistGroups, reminders, pendingFiles: pendingFiles.length,
+    },
+    noun: 'recurring task',
+    mode: 'edit',
+    onClose,
+  })
+
   return (
     <>
+    {guarded.warning}
     <Dialog
       open
       onOpenChange={(open, eventDetails) => {
@@ -302,13 +330,13 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           eventDetails.cancel()
           return
         }
-        onClose()
+        guarded.requestClose()
       }}
     >
       <DialogContent size="lg" className="max-w-2xl">
         <DialogHeader>
           <div>
-            <DialogTitle>Edit recurring template</DialogTitle>
+            <DialogTitle>Edit recurring task</DialogTitle>
             <p className="text-body text-on-brand-muted mt-0.5">Changes apply to future task instances only.</p>
           </div>
         </DialogHeader>
@@ -342,23 +370,29 @@ export default function EditRecurringModal({ template, orgId, categories, priori
           <div className="space-y-4">
             <p className="text-meta font-medium text-text-muted uppercase tracking-wider">Task Details</p>
             <div>
-              <Label className="mb-2" required>Title</Label>
+              <Label className="mb-2" htmlFor="edit-recurring-title" required>Title</Label>
               <div className="relative">
                 <input
+                  id="edit-recurring-title"
                   type="text"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value.slice(0, 50))}
+                  onChange={(e) => { setTitle(e.target.value.slice(0, 50)); if (fieldErrors.title) setFieldErrors((p) => ({ ...p, title: undefined })) }}
                   maxLength={50}
-                  className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-body sm:text-body text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
+                  aria-invalid={fieldErrors.title ? true : undefined}
+                  className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-body sm:text-body text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface aria-invalid:border-danger"
                 />
                 <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-meta ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
                   {title.length}/50
                 </span>
               </div>
+              <InlineFieldError>{fieldErrors.title}</InlineFieldError>
             </div>
             <div>
               <Label className="mb-2" required>Assignees & CC</Label>
-              <AssigneeSelector orgId={orgId} value={assignees} onChange={setAssignees} disabled={!assigneesLoaded} />
+              <div id="edit-recurring-assignees">
+              <AssigneeSelector orgId={orgId} value={assignees} onChange={(v) => { setAssignees(v); if (fieldErrors.assignees) setFieldErrors((p) => ({ ...p, assignees: undefined })) }} disabled={!assigneesLoaded} />
+              </div>
+              <InlineFieldError>{fieldErrors.assignees}</InlineFieldError>
               <p className="text-meta text-text-secondary mt-1">
                 {assigneesLoaded
                   ? 'Add people · click their badge to toggle between Assignee and CC'
@@ -584,9 +618,14 @@ export default function EditRecurringModal({ template, orgId, categories, priori
                 Done
               </Button>
             ) : (
-              <Button type="submit" form="edit-recurring-form" disabled={submitting} loading={submitting} loadingLabel="Saving" className="w-full sm:w-auto">
-                Save Changes
-              </Button>
+              <>
+                <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={submitting} className="w-full sm:w-auto">
+                  Cancel
+                </Button>
+                <Button type="submit" form="edit-recurring-form" disabled={submitting} loading={submitting} loadingLabel="Saving" className="w-full sm:w-auto">
+                  Save task
+                </Button>
+              </>
             )}
           </div>
         </DialogFooter>

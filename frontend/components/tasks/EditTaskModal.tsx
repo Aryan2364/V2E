@@ -18,6 +18,8 @@ import {
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 import FileDropzone, { AttachmentErrorBox } from '@/components/ui/FileDropzone'
 import { PendingFileList, AttachmentList } from '@/components/ui/AttachmentList'
 import { useAuth } from '@/lib/auth/context'
@@ -158,7 +160,20 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // In-app confirmations (DESIGN_RULES Part 7 — never a native browser dialog).
-  const [discardOpen, setDiscardOpen] = useState(false)
+  // Per-field validation (kit 11.3 rule 6): the message sits under the field that is wrong.
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; assignees?: string; deadline?: string }>({})
+  const clearFieldError = (k: 'title' | 'assignees' | 'deadline') =>
+    setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
+  function failFields(next: { title?: string; assignees?: string; deadline?: string }): boolean {
+    if (!next.title && !next.assignees && !next.deadline) { setFieldErrors({}); return true }
+    setFieldErrors(next)
+    const id = next.title ? 'edit-task-title' : next.assignees ? 'edit-task-assignees' : 'edit-task-deadline'
+    requestAnimationFrame(() => {
+      const el = document.getElementById(id)
+      ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+    })
+    return false
+  }
   const [pendingAttachmentRemoval, setPendingAttachmentRemoval] = useState<TaskAttachment | null>(null)
   const [holidayPrompt, setHolidayPrompt] = useState<string | null>(null)
   const [holidayCheck, setHolidayCheck] = useState<HolidayCheckResult | null>(null)
@@ -245,9 +260,10 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
     deadlineReason.trim() !== '' ||
     (!taskIsTerminal && JSON.stringify(buildChecklistItems(checklistGroups) ?? []) !== initialChecklistSig)
 
-  function handleCloseAttempt() {
-    if (isDirty) { setDiscardOpen(true); return }
-    onClose()
+  // Leaving with edits asks first, in the kit's words (kit 11.3 rule 10).
+  const unsaved = useUnsavedChanges({ changed: isDirty, noun: 'task', mode: 'edit' })
+  function handleCloseAttempt(details?: { cancel?: () => void }) {
+    unsaved.guard((open) => { if (!open) onClose() })(false, details)
   }
 
   function handleDownloadAttachment(a: TaskAttachment) {
@@ -282,13 +298,14 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
   async function handleSubmit(e: React.FormEvent, holidayOverrideArg?: boolean) {
     e.preventDefault()
     const useHolidayOverride = holidayOverrideArg ?? holidayOverride
-    if (!title.trim()) { setError('Title is required.'); return }
-    if (!deadlineDate) { setError('Deadline is required.'); return }
     // Mirrors the backend rule, caught here so the user isn't bounced by a 400.
-    if (!taskIsTerminal && canReassign && primaryAssignees.length === 0) {
-      setError('A task needs at least one assignee. Add someone to do the work, or make a CC an assignee.')
-      return
-    }
+    if (!failFields({
+      title: title.trim() ? undefined : 'Enter a title for the task.',
+      assignees: !taskIsTerminal && canReassign && primaryAssignees.length === 0
+        ? 'Add at least one assignee, or change someone in CC to an assignee.'
+        : undefined,
+      deadline: deadlineDate ? undefined : 'Choose a deadline date.',
+    })) return
     setSubmitting(true)
     setError(null)
     try {
@@ -374,6 +391,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
 
   return (
     <>
+    {unsaved.warning}
     <Dialog
       open
       onOpenChange={(open, eventDetails) => {
@@ -384,7 +402,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           eventDetails.cancel()
           return
         }
-        handleCloseAttempt()
+        handleCloseAttempt(eventDetails)
       }}
     >
       <DialogContent size="lg" className="max-w-2xl">
@@ -397,19 +415,22 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
         <form id="edit-task-form" onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
           {/* Title */}
           <div>
-            <Label className="mb-2" required>Title</Label>
+            <Label className="mb-2" htmlFor="edit-task-title" required>Title</Label>
             <div className="relative">
               <input
+                id="edit-task-title"
                 type="text"
                 value={title}
-                onChange={(e) => setTitle(e.target.value.slice(0, 50))}
+                onChange={(e) => { setTitle(e.target.value.slice(0, 50)); clearFieldError('title') }}
                 maxLength={50}
-                className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-body sm:text-body text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface"
+                aria-invalid={fieldErrors.title ? true : undefined}
+                className="w-full border border-border rounded-lg pl-3 pr-12 py-[10px] text-body sm:text-body text-text-primary focus:border-2 focus:border-primary focus:outline-hidden bg-surface aria-invalid:border-danger"
               />
               <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-meta ${title.length >= 50 ? 'text-danger' : 'text-text-muted'}`}>
                 {title.length}/50
               </span>
             </div>
+            <InlineFieldError>{fieldErrors.title}</InlineFieldError>
           </div>
 
           {/* Assignees & CC — finally where you'd look for them, rather than only on
@@ -452,13 +473,16 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 </>
               ) : canReassign ? (
                 <>
+                  <div id="edit-task-assignees">
                   <AssigneeSelector
                     orgId={orgId}
                     value={roster}
-                    onChange={setRoster}
+                    onChange={(v) => { setRoster(v); clearFieldError('assignees') }}
                     disabled={submitting}
                     currentUser={user ? { user_id: user.id, name: user.name } : undefined}
                   />
+                  </div>
+                  <InlineFieldError>{fieldErrors.assignees}</InlineFieldError>
                   <p className="text-meta text-text-secondary mt-1">
                     Add or remove people · click their badge to toggle between Assignee and CC
                   </p>
@@ -533,7 +557,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
           {/* Deadline */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label required>Deadline</Label>
+              <Label htmlFor="edit-task-deadline" required>Deadline</Label>
               {deadlineDate && (
                 <button type="button" onClick={() => { setDeadlineDate(''); setDeadlineTime('') }} className="flex items-center gap-1 text-meta text-text-muted hover:text-danger transition-colors">
                   <X size={10} /> Clear
@@ -544,8 +568,11 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
               {/* Date picker — shared calendar component (opens on click) */}
               <div className="flex-1">
                 <DatePicker
+                  id="edit-task-deadline"
+                  invalid={!!fieldErrors.deadline}
                   value={deadlineDate}
                   onChange={(iso) => {
+                    clearFieldError('deadline')
                     if (!iso) { setDeadlineDate(''); setDeadlineTime(''); return }
                     setDeadlineDate(iso)
                     if (!deadlineTime) setDeadlineTime('23:59')
@@ -567,6 +594,7 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
                 />
               </div>
             </div>
+            <InlineFieldError>{fieldErrors.deadline}</InlineFieldError>
             <HolidayWarningBadge
               check={holidayCheck}
               overridden={holidayOverride}
@@ -801,8 +829,11 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
             <div className="bg-danger-bg border border-danger-border rounded-lg px-4 py-3 text-body text-danger">{error}</div>
           )}
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <Button type="button" variant="secondary" onClick={() => handleCloseAttempt()} disabled={submitting} className="w-full sm:w-auto">
+              Cancel
+            </Button>
             <Button type="submit" form="edit-task-form" disabled={submitting} loading={submitting} loadingLabel="Saving" className="w-full sm:w-auto">
-              Save Changes
+              Save task
             </Button>
           </div>
         </DialogFooter>
@@ -810,19 +841,6 @@ export default function EditTaskModal({ task, categories, priorities, statuses, 
     </Dialog>
 
       {/* Styled confirmations — never a native browser dialog (DESIGN_RULES Part 7). */}
-      <AlertDialog open={discardOpen} onOpenChange={(next) => { if (!next) setDiscardOpen(false) }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
-            <AlertDialogDescription>Your edits to this task haven't been saved yet.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
-            <AlertDialogAction variant="danger" onClick={() => { setDiscardOpen(false); onClose() }}>Discard</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <AlertDialog open={!!pendingAttachmentRemoval} onOpenChange={(next) => { if (!next) setPendingAttachmentRemoval(null) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
