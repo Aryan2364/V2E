@@ -288,8 +288,6 @@ function v2eSetBadge(count) {
   return Promise.resolve()
 }
 
-const V2E_IS_ANDROID = /Android/i.test((self.navigator && self.navigator.userAgent) || '')
-
 self.addEventListener('push', (event) => {
   let data = {}
   try {
@@ -302,11 +300,7 @@ self.addEventListener('push', (event) => {
     Promise.all([
       self.registration.showNotification(title, {
         body: data.body || '',
-        // No large icon on Android: its header line already shows the V2E
-        // symbol (the badge below) and the app name, so the big blue logo box
-        // only repeated it. A computer's notification has no badge, so it
-        // keeps the logo there.
-        ...(V2E_IS_ANDROID ? {} : { icon: '/icons/icon-192.png' }),
+        icon: '/icons/icon-192.png',
         // Android draws the status-bar icon from the badge's alpha only, so it
         // must be the white symbol on transparent - the full-colour app icon
         // came out as a plain square.
