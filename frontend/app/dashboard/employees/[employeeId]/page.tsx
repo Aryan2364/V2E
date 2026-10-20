@@ -1,7 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import Modal from '@/components/ui/Modal'
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth/context'
@@ -18,7 +21,7 @@ import CountryCodeSelect from '@/components/ui/CountryCodeSelect'
 import { DEFAULT_COUNTRY, cleanNationalNumber, nationalDigitsFor } from '@/lib/phone'
 import EmployeePermissionsPanel from '@/components/permissions/EmployeePermissionsPanel'
 import type { EmployeeProfile, EmployeeStatus, Role, Department } from '@/lib/types'
-import { ArrowLeft, Users, ChevronDown, Pencil, Loader2, X, Eye, EyeOff, Trash2 } from 'lucide-react'
+import { ArrowLeft, Users, ChevronDown, Pencil, Loader2, Eye, EyeOff, Trash2 } from 'lucide-react'
 import ResponsiveTable, { type ResponsiveColumn } from '@/components/ui/ResponsiveTable'
 import DatePicker from '@/components/ui/DatePicker'
 import { Label } from '@/components/ui/label'
@@ -185,6 +188,10 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
     date_of_birth: employee.date_of_birth ? employee.date_of_birth.slice(0, 10) : '',
     marriage_date: employee.marriage_date ? employee.marriage_date.slice(0, 10) : '',
   })
+  const [initialForm] = useState(form)
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<'name' | 'contact' | 'password' | 'systemRole' | 'role', string>>>({})
+  const clearErr = (k: 'name' | 'contact' | 'password' | 'systemRole' | 'role') => setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
+  const guarded = useGuardedClose({ open: true, values: form, saved: initialForm, noun: 'employee', mode: 'edit', onClose })
   const isPrimaryAdmin = employee.system_role?.is_admin && !allEmployees.some(
     (e) => e.system_role?.is_admin && e.created_at && new Date(e.created_at) < new Date(employee.created_at)
   )
@@ -241,30 +248,24 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
   function handleSave() {
     setError('')
 
-    if (!form.name.trim()) {
-      setError('Name is required.')
-      return
-    }
+    // Field errors sit under the field that is wrong; focus goes to the first one (kit 11.3, 39.3).
+    const errs: Partial<Record<'name' | 'contact' | 'password' | 'systemRole' | 'role', string>> = {}
+    if (!form.name.trim()) errs.name = 'Enter the full name of the employee.'
     // Email OR phone — at least one identity is required (phone can be cleared as
     // long as an email remains, so a wrong number can be removed).
-    if (!form.email.trim() && !phoneDigits) {
-      setError('Enter an email address or a phone number (at least one).')
-      return
-    }
-    if (phoneDigits && phoneDigits.length !== expectedDigits) {
-      setError(`Enter a ${expectedDigits}-digit number for ${form.country_code}.`)
-      return
-    }
-    if (form.password && form.password.length < 8) {
-      setError('Password must be at least 8 characters.')
-      return
-    }
-    if (!form.system_role_id) {
-      setError('Please select a system role.')
-      return
-    }
-    if (!form.role_id) {
-      setError('Please select a job role.')
+    if (!form.email.trim() && !phoneDigits) errs.contact = 'Enter an email address or a phone number. At least one is needed.'
+    else if (phoneDigits && phoneDigits.length !== expectedDigits) errs.contact = `Enter a ${expectedDigits}-digit number for ${form.country_code}.`
+    if (form.password && form.password.length < 8) errs.password = 'Use at least 8 characters in the password.'
+    if (!form.system_role_id) errs.systemRole = 'Choose a system role.'
+    if (!form.role_id) errs.role = 'Choose a job role.'
+    setFieldErrors(errs)
+    const order = ['name', 'contact', 'password', 'systemRole', 'role'] as const
+    const firstBad = order.find((k) => errs[k])
+    if (firstBad) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(`edit-employee-${firstBad}`)
+        ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+      })
       return
     }
 
@@ -358,24 +359,11 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
   if (!mounted) return null
 
-  return createPortal(
-    <div className="fixed inset-0 z-60 flex items-center justify-center px-4 py-4 bg-backdrop">
-      <div className="bg-surface rounded-[16px] w-full max-w-lg shadow-xl flex flex-col max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light shrink-0">
-          <h2 className="text-section font-medium text-text-primary">Edit Employee</h2>
-          <button onClick={onClose} className="p-1.5 text-text-muted hover:text-text-primary hover:bg-surface-control rounded-md transition-colors">
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="overflow-y-auto px-6 py-4 flex flex-col gap-4 flex-1 min-h-0">
-          {error && (
-            <div className="text-body text-danger bg-danger-bg border border-danger-border rounded-lg px-4 py-3">
-              {error}
-            </div>
-          )}
+  return (
+    <>
+      {guarded.warning}
+      <Modal isOpen onClose={guarded.requestClose} title="Edit employee" size="lg">
+        <div className="flex flex-col gap-4">
 
           {/* Cross-firm notice — this person's login is shared across firms. */}
           {orgCount !== null && orgCount > 1 && (
@@ -391,23 +379,28 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
           {/* Identity — name / email / password reset */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="mb-2">Full name</Label>
+              <Label className="mb-2" htmlFor="edit-employee-name" required>Full name</Label>
               <input
+                id="edit-employee-name"
                 type="text"
                 value={form.name}
-                onChange={(e) => set('name', e.target.value)}
-                placeholder="Jane Doe"
-                className={inputClass}
+                onChange={(e) => { set('name', e.target.value); clearErr('name') }}
+                placeholder="For example, Jane Doe"
+                aria-invalid={fieldErrors.name ? true : undefined}
+                className={`${inputClass} aria-invalid:border-danger`}
               />
+              <InlineFieldError>{fieldErrors.name}</InlineFieldError>
             </div>
             <div>
-              <Label className="mb-2">Email</Label>
+              <Label className="mb-2" htmlFor="edit-employee-contact">Email</Label>
               <input
+                id="edit-employee-contact"
                 type="email"
                 value={form.email}
-                onChange={(e) => set('email', e.target.value)}
-                placeholder="jane@company.com"
-                className={inputClass}
+                onChange={(e) => { set('email', e.target.value); clearErr('contact') }}
+                placeholder="For example, jane@company.com"
+                aria-invalid={fieldErrors.contact ? true : undefined}
+                className={`${inputClass} aria-invalid:border-danger`}
               />
             </div>
           </div>
@@ -415,7 +408,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
           {/* Phone — a login identity. Editable here so a wrong number can be fixed
               or removed; clearing it removes phone sign-in (email still works). */}
           <div>
-            <Label className="mb-2">Phone number <span className="font-normal text-text-muted">— used to sign in</span></Label>
+            <Label className="mb-2">Phone number</Label>
             <div className="flex gap-2">
               <CountryCodeSelect
                 value={form.country_code}
@@ -429,26 +422,29 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                 type="tel"
                 inputMode="numeric"
                 value={form.phone}
-                onChange={(e) => set('phone', cleanNationalNumber(e.target.value, form.country_code))}
+                onChange={(e) => { set('phone', cleanNationalNumber(e.target.value, form.country_code)); clearErr('contact') }}
                 maxLength={expectedDigits}
                 placeholder={`${expectedDigits}-digit number`}
                 className={`${inputClass} flex-1`}
               />
             </div>
+            <InlineFieldError>{fieldErrors.contact}</InlineFieldError>
             <p className="mt-1 text-meta text-text-muted">
               They can sign in with this number. Leave it empty to remove phone sign-in. Changing it updates their login everywhere they work.
             </p>
           </div>
 
           <div>
-            <Label className="mb-2">Reset password</Label>
+            <Label className="mb-2" htmlFor="edit-employee-password">Reset password</Label>
             <div className="relative">
               <input
+                id="edit-employee-password"
                 type={showPassword ? 'text' : 'password'}
                 value={form.password}
-                onChange={(e) => set('password', e.target.value)}
-                placeholder="Leave blank to keep current password"
-                className={`${inputClass} pr-8`}
+                onChange={(e) => { set('password', e.target.value); clearErr('password') }}
+                placeholder="Leave blank to keep the current password"
+                aria-invalid={fieldErrors.password ? true : undefined}
+                className={`${inputClass} pr-8 aria-invalid:border-danger`}
               />
               <button
                 type="button"
@@ -459,6 +455,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+            <InlineFieldError>{fieldErrors.password}</InlineFieldError>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -474,7 +471,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
 
             {/* Job Role — scoped to the selected department */}
             <div>
-              <Label className="mb-2">Job role</Label>
+              <Label className="mb-2" required>Job role</Label>
               <StyledSelect
                 value={form.role_id}
                 onChange={(v) => set('role_id', v)}
@@ -488,7 +485,7 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
             {/* System Role — access-rights bundle (required). StyledSelect (not a native
                 <select>) so it can't be silently scroll-changed to another role. */}
             <div>
-              <Label className="mb-2">System role</Label>
+              <Label className="mb-2" required>System role</Label>
               <StyledSelect
                 value={form.system_role_id}
                 onChange={(v) => set('system_role_id', v)}
@@ -590,8 +587,10 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
           </div>
         </div>
 
+        {error && <p role="alert" className="text-label text-danger">{error}</p>}
+
         {/* Footer */}
-        <div className="flex flex-col gap-3 px-6 py-4 border-t border-border-light shrink-0">
+        <div className="flex flex-col gap-3 pt-4 border-t border-border-light shrink-0">
           {confirmDelete ? (
             <div className="rounded-lg border border-danger-border bg-danger-bg p-3">
               {deleteBlocked ? (
@@ -682,27 +681,23 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
               ) : (
                 <span />
               )}
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-2 px-4 py-2.5 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed"
-              >
-                {saving && <Loader2 size={15} className="animate-spin" />}
-                Save Changes
-              </button>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
+                <Button type="button" onClick={handleSave} disabled={saving} isLoading={saving}>
+                  Save employee
+                </Button>
+              </div>
             </div>
           )}
         </div>
-      </div>
+      </Modal>
 
       {/* Password-change warning — a shared login is one password across all firms */}
-      {showPwWarning && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center px-4 bg-backdrop">
-          <div className="bg-surface w-full max-w-md rounded-card shadow-xl p-6">
-            <h3 className="text-card-heading font-medium text-text-primary">
-              Change {employee.user?.name ?? 'this person'}’s password?
-            </h3>
-            <p className="mt-2 text-body text-text-secondary leading-relaxed">
+      <AlertDialog open={showPwWarning} onOpenChange={(next) => { if (!next) setShowPwWarning(false) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change {employee.user?.name ?? 'this person'}’s password?</AlertDialogTitle>
+            <AlertDialogDescription>
               {orgCount && orgCount > 1 ? (
                 <>
                   This is their <strong>one login password</strong> for{' '}
@@ -716,28 +711,17 @@ function EditModal({ employee, allEmployees, roles, departments, onClose, onSave
                   new password the next time they sign in — make sure to share it with them.
                 </>
               )}
-            </p>
-            <div className="mt-4 flex items-center justify-end gap-3">
-              <button
-                onClick={() => setShowPwWarning(false)}
-                className="px-4 py-2 text-body font-medium text-text-secondary hover:text-text-primary transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={doSave}
-                disabled={saving}
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg transition-colors disabled:bg-surface-control-pressed disabled:text-text-muted"
-              >
-                {saving && <Loader2 size={15} className="animate-spin" />}
-                {orgCount && orgCount > 1 ? 'Change password everywhere' : 'Change password'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>,
-    document.body,
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={doSave} disabled={saving}>
+              {orgCount && orgCount > 1 ? 'Change password everywhere' : 'Change password'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
 
