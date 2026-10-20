@@ -1264,7 +1264,7 @@ export default function TaskDetailPage() {
                         markingProofId={actionLoading?.startsWith('mark-proof-') ? actionLoading.replace('mark-proof-', '') : null}
                       />
                     ),
-                    actions:
+                    trailing:
                       c.user_id === user?.id ? (
                         <TaskCommentDelete
                           comment={c}

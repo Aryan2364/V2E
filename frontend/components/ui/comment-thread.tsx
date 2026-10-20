@@ -95,6 +95,12 @@ type ThreadComment = {
   attachments?: React.ReactNode
   /** The comment's own controls (Reply, Delete, ...), on a row under the text. */
   actions?: React.ReactNode
+  /**
+   * v2e: one small icon control (a Delete icon) at the far end of the
+   * name and time line, so a lone icon does not take a line of its own
+   * under the text. Labelled controls (Reply, Delete) stay in `actions`.
+   */
+  trailing?: React.ReactNode
   /** A line with this word opens the comment ("New"): where the reader stopped last time. */
   dividerBefore?: string
 }
@@ -405,10 +411,11 @@ function Entry({ comment, grouped }: { comment: ThreadComment; grouped: boolean 
     return (
       <div className="flex min-w-0 flex-col gap-1">
         {text}
-        <p className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           {time}
           {edited}
-        </p>
+          {comment.trailing ? <span className="ml-auto flex shrink-0 items-center">{comment.trailing}</span> : null}
+        </div>
       </div>
     )
   }
@@ -424,6 +431,7 @@ function Entry({ comment, grouped }: { comment: ThreadComment; grouped: boolean 
         {comment.tag ? <Badge variant="neutral">{comment.tag}</Badge> : null}
         {time}
         {edited}
+        {comment.trailing ? <span className="ml-auto flex shrink-0 items-center">{comment.trailing}</span> : null}
       </header>
       {text}
     </article>
