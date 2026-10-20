@@ -423,6 +423,8 @@ html[data-keyboard="open"] {
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-text: var(--primary-text);
   --color-on-brand-accent: var(--on-brand-accent);
+  /* v2e: lets bg-backdrop resolve (used by hand-rolled overlays); same value as --backdrop. */
+  --color-backdrop: var(--backdrop);
 
   --color-on-brand: var(--on-brand);
   --color-on-brand-muted: var(--on-brand-muted);
