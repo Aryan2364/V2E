@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { AtSign, CornerUpLeft, Download, FileText, Flag, Loader2, MessageSquare, Paperclip, RefreshCw, Send, ShieldCheck, Trash2, Undo2, X, type LucideIcon } from 'lucide-react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AtSign, CornerUpLeft, Download, FileText, Flag, Loader2, MessageSquare, Paperclip, RefreshCw, ShieldCheck, Trash2, Undo2, X, type LucideIcon } from 'lucide-react'
 import { useAuth } from '@/lib/auth/context'
-import { getNow } from '@/lib/clock'
+import { CommentBox } from '@/components/ui/comment-box'
+import { CommentThread, type ThreadItem } from '@/components/ui/comment-thread'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import StyledSelect from '@/components/ui/StyledSelect'
 import Tooltip from '@/components/ui/tooltip'
@@ -11,7 +12,7 @@ import PermissionTooltip from '@/components/ui/PermissionTooltip'
 import { useToast } from '@/components/ui/Toast'
 import { workflowsApi, workflowErrorMessage } from '@/lib/api/workflows'
 import type { DiscussionFile, DiscussionMessage, DiscussionStep, PersonRef } from '@/lib/types/workflows'
-import { Avatar, BTN, ErrorBanner, InfoTip, Skeleton } from './shared'
+import { Avatar, BTN, ErrorBanner, InfoTip } from './shared'
 import {
   MESSAGE_MAX,
   activeMentionIds,
@@ -22,7 +23,6 @@ import {
   insertMention,
   mentionQuery,
   mergeMessages,
-  messageTime,
   removeMessage,
   splitMentions,
   taggableSteps,
@@ -32,9 +32,6 @@ import {
 const PAGE = 20
 /** Quiet refresh while the page is visible. */
 const REFRESH_MS = 30000
-/** Longer messages start collapsed. */
-const LONG = 400
-
 type Load = 'loading' | 'ready' | 'failed'
 
 /** Lets the task page's proof card know a shared file was promoted. */
@@ -180,15 +177,10 @@ export default function InstanceDiscussion({
     return () => io.disconnect()
   }, [status, unread, markRead])
 
-  // "Show earlier messages" keeps what you were looking at in place.
-  const anchorRef = useRef<{ id: string; top: number } | null>(null)
-  const itemRefs = useRef(new Map<string, HTMLLIElement>())
+  // "Show earlier" adds the older page at the top; the thread keeps what you were reading in place.
   async function loadEarlier() {
     if (!nextBefore || loadingEarlier) return
     setLoadingEarlier(true)
-    const first = messages[0]
-    const node = first ? itemRefs.current.get(first.id) : undefined
-    anchorRef.current = first && node ? { id: first.id, top: node.getBoundingClientRect().top } : null
     try {
       const page = await workflowsApi.getDiscussion(orgId, templateId, instanceId, { before: nextBefore, limit: PAGE })
       setMessages((shown) => mergeMessages(page.messages, shown))
@@ -200,15 +192,6 @@ export default function InstanceDiscussion({
       setLoadingEarlier(false)
     }
   }
-  useLayoutEffect(() => {
-    const a = anchorRef.current
-    if (!a) return
-    anchorRef.current = null
-    const node = itemRefs.current.get(a.id)
-    const scroller = node ? scrollParent(node) : null
-    if (node && scroller) scroller.scrollTop += node.getBoundingClientRect().top - a.top
-  }, [messages])
-
   // ── Composer ────────────────────────────────────────────────────────────────
   const [text, setText] = useState('')
   const [files, setFiles] = useState<File[]>([])
@@ -240,19 +223,11 @@ export default function InstanceDiscussion({
     [mention, people, myId],
   )
 
-  // Auto-grow the write box (one line when empty, up to ~6 lines).
-  useEffect(() => {
-    const el = textRef.current
-    if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${Math.min(el.scrollHeight, 160)}px`
-  }, [text])
-
-  function onTextChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    const value = e.target.value.slice(0, MESSAGE_MAX)
+  function onTextChange(raw: string) {
+    const value = raw.slice(0, MESSAGE_MAX)
     setText(value)
     setPostError(null)
-    setMention(mentionQuery(value, e.target.selectionStart ?? value.length))
+    setMention(mentionQuery(value, textRef.current?.selectionStart ?? value.length))
     setMentionIndex(0)
   }
 
@@ -293,10 +268,7 @@ export default function InstanceDiscussion({
       setMention(null)
       return
     }
-    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-      e.preventDefault()
-      send()
-    }
+    // Enter sends through the comment box itself.
   }
 
   function startMention() {
@@ -425,8 +397,27 @@ export default function InstanceDiscussion({
     requestAnimationFrame(() => textRef.current?.focus())
   }
 
-  const now = getNow()
   const headingId = `${sectionId}-title`
+  const flat = messages.flatMap((m) => [m, ...m.replies])
+  const threadItems: ThreadItem[] = flat.map((m) => {
+    const parent = flat.find((x) => x.id === m.reply_to_id)
+    return messageItem(m, {
+      myId,
+      taskId,
+      proof,
+      markingId,
+      canReply: canWrite === true,
+      replyingTo: parent ? (parent.author?.name ?? 'Someone') : undefined,
+      isFirstUnread: m.id === dividerId,
+      onReply: reply,
+      onDelete: (x) => {
+        setDeleteError(null)
+        setDeleteTarget(x)
+      },
+      onDownload: download,
+      onMarkProof: markProof,
+    })
+  })
   const forStep = tagChoices.find((s) => s.row_id === forRow)
 
   return (
@@ -458,87 +449,26 @@ export default function InstanceDiscussion({
       </div>
 
       {/* Messages */}
-      {status === 'loading' ? (
-        <div className="flex flex-col gap-3" aria-busy>
-          <Skeleton className="h-14" />
-          <Skeleton className="h-14" />
-        </div>
-      ) : status === 'failed' ? (
+      {status === 'failed' ? (
         <div className="flex flex-col items-start gap-2 text-body text-danger">
           <span>{loadError}</span>
           <button type="button" onClick={() => load()} className={BTN.quiet}>
             <RefreshCw size={14} /> Try again
           </button>
         </div>
-      ) : messages.length === 0 ? (
-        <p className="text-body text-text-secondary">No messages yet. Start the discussion.</p>
       ) : (
-        <div className="flex flex-col gap-3">
-          {hasMore && (
-            <button type="button" onClick={loadEarlier} disabled={loadingEarlier} className={`${BTN.quiet} self-center`}>
-              {loadingEarlier ? <Loader2 size={14} className="animate-spin" /> : null}
-              {loadingEarlier ? 'Loading…' : 'Show earlier messages'}
-            </button>
-          )}
-          <ul className="flex flex-col gap-4">
-            {messages.map((m) => (
-              <li
-                key={m.id}
-                ref={(el) => {
-                  if (el) itemRefs.current.set(m.id, el)
-                  else itemRefs.current.delete(m.id)
-                }}
-                className="flex flex-col gap-3"
-              >
-                {m.id === dividerId && <NewDivider />}
-                <MessageItem
-                  m={m}
-                  now={now}
-                  myId={myId}
-                  taskId={taskId}
-                  proof={proof}
-                  markingId={markingId}
-                  canReply={canWrite === true}
-                  onReply={reply}
-                  onDelete={(x) => {
-                    setDeleteError(null)
-                    setDeleteTarget(x)
-                  }}
-                  onDownload={download}
-                  onMarkProof={markProof}
-                />
-                {m.replies.length > 0 && (
-                  <ul className="flex flex-col gap-3 pl-6 sm:pl-8 border-l-2 border-border-light ml-4">
-                    {m.replies.map((r) => (
-                      <li key={r.id}>
-                        <MessageItem
-                          m={r}
-                          now={now}
-                          myId={myId}
-                          taskId={taskId}
-                          proof={proof}
-                          markingId={markingId}
-                          canReply={canWrite === true}
-                          onReply={reply}
-                          onDelete={(x) => {
-                            setDeleteError(null)
-                            setDeleteTarget(x)
-                          }}
-                          onDownload={download}
-                          onMarkProof={markProof}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <CommentThread
+          loading={status === 'loading'}
+          items={threadItems}
+          hasEarlier={hasMore}
+          onShowEarlier={loadEarlier}
+          onWrite={() => textRef.current?.focus()}
+          label={title}
+        />
       )}
 
       {/* Composer */}
-      <div className="flex flex-col gap-2 border-t border-border-light pt-4">
+      <div className="flex flex-col gap-2">
         {(replyTo || forStep) && (
           <div className="flex flex-wrap gap-1.5">
             {replyTo && (
@@ -555,41 +485,68 @@ export default function InstanceDiscussion({
           </div>
         )}
 
-        <div className="relative rounded-[12px] border border-border bg-surface focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-colors">
-          {/* @mention suggestions: people who can see this instance */}
-          {mention && suggestions.length > 0 && (
-            <ul
-              role="listbox"
-              aria-label="People who can see this instance"
-              className="absolute bottom-full left-0 mb-1.5 z-30 w-full sm:w-80 max-h-64 overflow-y-auto rounded-lg border border-border-light bg-surface shadow-menu py-1"
-            >
-              {suggestions.map((p, i) => (
-                <li key={p.id} role="option" aria-selected={i === mentionIndex}>
-                  <button
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => pickPerson(p)}
-                    onMouseEnter={() => setMentionIndex(i)}
-                    className={`w-full flex items-center gap-2.5 px-3 min-h-[44px] sm:min-h-[38px] text-left text-body text-text-primary transition-colors ${
-                      i === mentionIndex ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
-                    }`}
-                  >
-                    <Avatar name={p.name} size="sm" />
-                    <span className="truncate">{p.name}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          {mention && suggestions.length === 0 && mention.query.length > 0 && (
-            <p className="absolute bottom-full left-0 mb-1.5 z-30 rounded-lg border border-border-light bg-surface shadow-menu px-3 py-2 text-label text-text-secondary">
-              No one who can see this instance matches “{mention.query}”.
-            </p>
-          )}
+        <PermissionTooltip allowed={canWrite} reason={writeReason} className="flex w-full">
+          <div className="relative w-full">
+            {/* @mention suggestions: people who can see this instance */}
+            {mention && suggestions.length > 0 && (
+              <ul
+                role="listbox"
+                aria-label="People who can see this instance"
+                className="absolute bottom-full left-0 mb-1.5 z-30 w-full sm:w-80 max-h-64 overflow-y-auto rounded-lg border border-border-light bg-surface shadow-menu py-1"
+              >
+                {suggestions.map((p, i) => (
+                  <li key={p.id} role="option" aria-selected={i === mentionIndex}>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => pickPerson(p)}
+                      onMouseEnter={() => setMentionIndex(i)}
+                      className={`w-full flex items-center gap-2.5 px-3 min-h-[44px] sm:min-h-[38px] text-left text-body text-text-primary transition-colors ${
+                        i === mentionIndex ? 'bg-primary-subtle' : 'hover:bg-surface-sunken'
+                      }`}
+                    >
+                      <Avatar name={p.name} size="sm" />
+                      <span className="truncate">{p.name}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {mention && suggestions.length === 0 && mention.query.length > 0 && (
+              <p className="absolute bottom-full left-0 mb-1.5 z-30 rounded-lg border border-border-light bg-surface shadow-menu px-3 py-2 text-label text-text-secondary">
+                No one who can see this instance matches “{mention.query}”.
+              </p>
+            )}
 
-          {files.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 px-3 pt-3">
-              {files.map((f, i) => (
+            <input
+              ref={fileRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                const list = Array.from(e.target.files ?? [])
+                if (list.length) setFiles((prev) => [...prev, ...list])
+                e.target.value = ''
+              }}
+            />
+            <CommentBox
+              label="Write a message"
+              value={text}
+              onChange={onTextChange}
+              onSend={send}
+              textareaRef={textRef}
+              maxLength={MESSAGE_MAX}
+              disabled={canWrite !== true || posting}
+              hasContent={files.length > 0}
+              placeholder={replyTo ? 'Write a reply' : 'Write a message — @ to mention someone'}
+              onTextKeyDown={onKeyDown}
+              textareaProps={{
+                onClick: (e) => setMention(mentionQuery(text, e.currentTarget.selectionStart ?? text.length)),
+                onBlur: () => setTimeout(() => setMention(null), 150),
+                'aria-autocomplete': 'list',
+                'aria-expanded': !!mention && suggestions.length > 0,
+              }}
+              attachments={files.map((f, i) => (
                 <span
                   key={`${f.name}-${i}`}
                   className="inline-flex items-center gap-1.5 max-w-[240px] bg-primary-subtle border border-primary-border text-primary-text text-meta font-medium pl-2 pr-1 py-1 rounded-[6px]"
@@ -608,91 +565,48 @@ export default function InstanceDiscussion({
                   </button>
                 </span>
               ))}
-            </div>
-          )}
-
-          <label htmlFor={`${sectionId}-input`} className="sr-only">
-            Write a message
-          </label>
-          <textarea
-            id={`${sectionId}-input`}
-            ref={textRef}
-            value={text}
-            rows={1}
-            maxLength={MESSAGE_MAX}
-            disabled={canWrite !== true || posting}
-            onChange={onTextChange}
-            onKeyDown={onKeyDown}
-            onClick={(e) => setMention(mentionQuery(text, e.currentTarget.selectionStart ?? text.length))}
-            onBlur={() => setTimeout(() => setMention(null), 150)}
-            aria-autocomplete="list"
-            aria-expanded={!!mention && suggestions.length > 0}
-            placeholder={replyTo ? 'Write a reply' : 'Write a message — @ to mention someone'}
-            className="block w-full border-0 bg-transparent px-3 pt-2.5 pb-1 text-card-heading sm:text-body text-text-primary placeholder:text-text-muted focus:outline-hidden resize-none max-h-40 overflow-y-auto disabled:cursor-not-allowed"
-          />
-          <div className="flex items-center gap-1 px-2 pb-2">
-            <input
-              ref={fileRef}
-              type="file"
-              multiple
-              className="hidden"
-              onChange={(e) => {
-                const list = Array.from(e.target.files ?? [])
-                if (list.length) setFiles((prev) => [...prev, ...list])
-                e.target.value = ''
-              }}
+              tools={
+                <>
+                  <Tooltip label="Mention someone">
+                    <button type="button" onClick={startMention} disabled={canWrite !== true || posting} aria-label="Mention someone" className={BTN.icon}>
+                      <AtSign size={16} />
+                    </button>
+                  </Tooltip>
+                  <Tooltip label="Attach files">
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      disabled={canWrite !== true || posting}
+                      aria-label="Attach files"
+                      className={BTN.icon}
+                    >
+                      <Paperclip size={16} className="-rotate-45" />
+                    </button>
+                  </Tooltip>
+                  {tagChoices.length > 0 && !replyTo && (
+                    <Tooltip label="Show this message at the top of a later step’s task when it starts">
+                      <button
+                        type="button"
+                        onClick={() => setShowFor((v) => !v)}
+                        disabled={canWrite !== true || posting}
+                        aria-expanded={showFor}
+                        aria-label="For a later step"
+                        className={`${BTN.icon} ${showFor || forRow ? 'text-warning! bg-warning-bg!' : ''}`}
+                      >
+                        <Flag size={16} />
+                      </button>
+                    </Tooltip>
+                  )}
+                  {text.length > MESSAGE_MAX - 200 && (
+                    <span className={`px-1 text-meta tabular-nums ${text.length >= MESSAGE_MAX ? 'text-danger' : 'text-text-secondary'}`}>
+                      {text.length}/{MESSAGE_MAX}
+                    </span>
+                  )}
+                </>
+              }
             />
-            <Tooltip label="Mention someone">
-              <button type="button" onClick={startMention} disabled={canWrite !== true || posting} aria-label="Mention someone" className={BTN.icon}>
-                <AtSign size={16} />
-              </button>
-            </Tooltip>
-            <Tooltip label="Attach files">
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={canWrite !== true || posting}
-                aria-label="Attach files"
-                className={BTN.icon}
-              >
-                <Paperclip size={16} className="-rotate-45" />
-              </button>
-            </Tooltip>
-            {tagChoices.length > 0 && !replyTo && (
-              <Tooltip label="Show this message at the top of a later step’s task when it starts">
-                <button
-                  type="button"
-                  onClick={() => setShowFor((v) => !v)}
-                  disabled={canWrite !== true || posting}
-                  aria-expanded={showFor}
-                  aria-label="For a later step"
-                  className={`${BTN.icon} ${showFor || forRow ? 'text-warning! bg-warning-bg!' : ''}`}
-                >
-                  <Flag size={16} />
-                </button>
-              </Tooltip>
-            )}
-            <span className="ml-auto flex items-center gap-2">
-              {text.length > MESSAGE_MAX - 200 && (
-                <span className={`text-meta tabular-nums ${text.length >= MESSAGE_MAX ? 'text-danger' : 'text-text-secondary'}`}>
-                  {text.length}/{MESSAGE_MAX}
-                </span>
-              )}
-              <PermissionTooltip allowed={canWrite} reason={writeReason}>
-                <button
-                  type="button"
-                  onClick={send}
-                  disabled={!canSend}
-                  aria-label="Send"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-[36px] px-3.5 rounded-[8px] text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
-                >
-                  {posting ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-                  <span className="hidden sm:inline">{posting ? 'Sending…' : 'Send'}</span>
-                </button>
-              </PermissionTooltip>
-            </span>
           </div>
-        </div>
+        </PermissionTooltip>
 
         <div className={`grid transition-all duration-200 ease-in-out ${showFor && !replyTo ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
           <div ref={forPanelRef} className={showFor && !replyTo ? 'overflow-visible' : 'overflow-hidden'}>
@@ -736,27 +650,6 @@ function short(s: string, n: number): string {
   return t.length > n ? `${t.slice(0, n)}…` : t
 }
 
-/** The nearest scrolling ancestor (the page's own scroll area), for keeping place on "Show earlier". */
-function scrollParent(el: HTMLElement): HTMLElement | null {
-  let p = el.parentElement
-  while (p) {
-    const oy = getComputedStyle(p).overflowY
-    if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight) return p
-    p = p.parentElement
-  }
-  return (document.scrollingElement as HTMLElement | null) ?? null
-}
-
-function NewDivider() {
-  return (
-    <div className="flex items-center gap-2" role="separator" aria-label="New messages">
-      <span className="h-px flex-1 bg-danger-bg" />
-      <span className="text-meta font-medium text-danger uppercase tracking-wide">New</span>
-      <span className="h-px flex-1 bg-danger-bg" />
-    </div>
-  )
-}
-
 function Chip({
   icon: Icon,
   label,
@@ -787,160 +680,137 @@ function Chip({
   )
 }
 
-function MessageItem({
-  m,
-  now,
-  myId,
-  taskId,
-  proof,
-  markingId,
-  canReply,
-  onReply,
-  onDelete,
-  onDownload,
-  onMarkProof,
-}: {
-  m: DiscussionMessage
-  now: Date
+type MessageDeps = {
   myId: string | undefined
   taskId: string | null
   proof?: DiscussionProof
   markingId: string | null
   canReply: boolean
+  replyingTo?: string
+  isFirstUnread: boolean
   onReply: (m: DiscussionMessage) => void
   onDelete: (m: DiscussionMessage) => void
   onDownload: (f: DiscussionFile) => void
   onMarkProof: (f: DiscussionFile) => void
-}) {
-  const [expanded, setExpanded] = useState(false)
-  if (m.deleted) {
-    return <p className="text-body italic text-text-secondary pl-8">This message was deleted.</p>
+}
+
+/** One discussion message as an entry of the kit comment thread. */
+function messageItem(m: DiscussionMessage, d: MessageDeps): ThreadItem {
+  const { myId, taskId, proof, markingId, canReply } = d
+  const base = {
+    id: m.id,
+    who: m.author?.name ?? 'Someone',
+    when: m.created_at,
+    tag: m.for_step ? `For “${m.for_step.title}”` : undefined,
+    replyingTo: d.replyingTo,
+    dividerBefore: d.isFirstUnread ? 'New' : undefined,
   }
-  const name = m.author?.name ?? 'Someone'
-  const long = m.body.length > LONG
-  const segments = splitMentions(long && !expanded ? `${m.body.slice(0, LONG)}…` : m.body, m.mentions)
+  if (m.deleted) {
+    return { ...base, tag: undefined, text: <span className="italic text-text-secondary">This message was deleted.</span> }
+  }
   const sentBack = m.send_back
   const mentionsMe = !!myId && m.mentions.some((p) => p.id === myId)
+  const segments = splitMentions(m.body, m.mentions)
 
   const bodyNode = m.body ? (
-    <p className="text-body text-text-primary leading-relaxed whitespace-pre-wrap wrap-break-word wrap-anywhere">
-      {segments.map((s, i) =>
-        s.mention ? (
+    <span className="wrap-anywhere">
+      {segments.map((seg, i) =>
+        seg.mention ? (
           <span
             key={i}
-            className={`rounded-xs px-0.5 font-medium ${s.mention.id === myId ? 'bg-warning-bg text-warning' : 'bg-primary-subtle text-primary-text'}`}
+            className={`rounded-xs px-0.5 font-medium ${seg.mention.id === myId ? 'bg-warning-bg text-warning' : 'bg-primary-subtle text-primary-text'}`}
           >
-            {s.text}
+            {seg.text}
           </span>
         ) : (
-          <React.Fragment key={i}>{s.text}</React.Fragment>
+          <React.Fragment key={i}>{seg.text}</React.Fragment>
         ),
       )}
-    </p>
+    </span>
   ) : null
+
+  const text = sentBack ? (
+    <span className="flex flex-col gap-1 rounded-[10px] border border-border-light bg-surface-control px-3 py-2 whitespace-normal">
+      <span className="flex items-center gap-1.5 text-label font-medium text-text-secondary wrap-break-word">
+        <Undo2 size={14} className="shrink-0" aria-hidden /> Sent back to “{sentBack.to_title}”
+      </span>
+      <span className="whitespace-pre-line">{bodyNode}</span>
+    </span>
+  ) : mentionsMe ? (
+    <span className="rounded-[8px] bg-warning-bg px-1.5 py-0.5 box-decoration-clone">{bodyNode}</span>
+  ) : (
+    bodyNode
+  )
 
   const extOk = (f: DiscussionFile) => {
     const list = proof?.allowedExtensions ?? []
     return list.length === 0 || list.includes((f.file_name.split('.').pop() ?? '').toLowerCase())
   }
 
-  return (
-    <div className="flex items-start gap-2.5 min-w-0">
-      <Avatar name={name} size="md" />
-      <div className="min-w-0 flex-1 flex flex-col gap-1.5">
-        <div className="flex items-baseline gap-x-2 gap-y-0.5 flex-wrap">
-          <span className="text-body font-medium text-text-primary wrap-break-word">{name}</span>
-          <span className="text-meta text-text-secondary">· {messageTime(m.created_at, now)}</span>
-          {m.for_step && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-warning-bg border border-warning-border text-warning px-2 py-0.5 text-meta font-medium max-w-full">
-              <Flag size={11} className="shrink-0" aria-hidden />
-              <span className="truncate">For “{m.for_step.title}”</span>
-            </span>
-          )}
-        </div>
-
-        {sentBack ? (
-          <div className="rounded-[10px] border border-border-light bg-surface-control px-3 py-2 flex flex-col gap-1">
-            <p className="flex items-center gap-1.5 text-label font-medium text-text-secondary wrap-break-word">
-              <Undo2 size={14} className="shrink-0" aria-hidden /> Sent back to “{sentBack.to_title}”
-            </p>
-            {bodyNode}
-          </div>
-        ) : (
-          <div className={mentionsMe ? 'rounded-[8px] bg-warning-bg -mx-1.5 px-1.5 py-0.5' : ''}>{bodyNode}</div>
-        )}
-        {long && (
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="self-start text-label font-medium text-primary-text hover:text-primary-text min-h-[32px]"
-          >
-            {expanded ? 'Show less' : 'Read more'}
-          </button>
-        )}
-
-        {m.attachments.length > 0 && (
-          <ul className="flex flex-col gap-1.5">
-            {m.attachments.map((f) => {
-              const canPromote =
-                !!proof?.canSubmit && f.task_id === taskId && f.uploaded_by_user_id === myId && !f.is_proof && extOk(f)
-              return (
-                <li key={f.id} className="flex items-center gap-2 flex-wrap">
-                  <span className="inline-flex items-center gap-2 min-w-0 max-w-full rounded-[8px] border border-border-light bg-surface-sunken pl-2.5 pr-1 py-1">
-                    <FileText size={14} className="shrink-0 text-text-secondary" aria-hidden />
-                    <span className="truncate text-label text-text-primary">{f.file_name}</span>
-                    <span className="shrink-0 text-meta text-text-secondary">{fileSize(f.size_bytes)}</span>
-                    {f.is_proof && (
-                      <span className="shrink-0 inline-flex items-center gap-1 text-meta font-medium text-success">
-                        <ShieldCheck size={12} /> Proof
-                      </span>
-                    )}
-                    <Tooltip label={`Download “${f.file_name}”`}>
-                      <button type="button" onClick={() => onDownload(f)} aria-label={`Download ${f.file_name}`} className={`${BTN.icon} w-9! h-9! sm:w-7! sm:h-7!`}>
-                        <Download size={14} />
-                      </button>
-                    </Tooltip>
-                  </span>
-                  {canPromote && (
-                    <button
-                      type="button"
-                      onClick={() => onMarkProof(f)}
-                      disabled={markingId === f.id}
-                      className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text disabled:text-text-muted min-h-[32px]"
-                    >
-                      {markingId === f.id ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />} Mark as proof
-                    </button>
+  return {
+    ...base,
+    text,
+    attachments:
+      m.attachments.length > 0 ? (
+        <ul className="flex flex-col gap-1.5">
+          {m.attachments.map((f) => {
+            const canPromote =
+              !!proof?.canSubmit && f.task_id === taskId && f.uploaded_by_user_id === myId && !f.is_proof && extOk(f)
+            return (
+              <li key={f.id} className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-2 min-w-0 max-w-full rounded-[8px] border border-border-light bg-surface-sunken pl-2.5 pr-1 py-1">
+                  <FileText size={14} className="shrink-0 text-text-secondary" aria-hidden />
+                  <span className="truncate text-label text-text-primary">{f.file_name}</span>
+                  <span className="shrink-0 text-meta text-text-secondary">{fileSize(f.size_bytes)}</span>
+                  {f.is_proof && (
+                    <span className="shrink-0 inline-flex items-center gap-1 text-meta font-medium text-success">
+                      <ShieldCheck size={12} /> Proof
+                    </span>
                   )}
-                </li>
-              )
-            })}
-          </ul>
-        )}
-
-        {(canReply || m.can_delete) && (
-          <div className="flex items-center gap-1 -ml-2">
-            {canReply && (
-              <button
-                type="button"
-                onClick={() => onReply(m)}
-                className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-meta font-medium text-text-secondary hover:text-primary-text hover:bg-primary-subtle transition-colors"
-              >
-                <CornerUpLeft size={13} /> Reply
-              </button>
-            )}
-            {m.can_delete && (
-              <button
-                type="button"
-                onClick={() => onDelete(m)}
-                aria-label="Delete message"
-                className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-meta font-medium text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
-              >
-                <Trash2 size={13} /> Delete
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  )
+                  <Tooltip label={`Download “${f.file_name}”`}>
+                    <button type="button" onClick={() => d.onDownload(f)} aria-label={`Download ${f.file_name}`} className={`${BTN.icon} w-9! h-9! sm:w-7! sm:h-7!`}>
+                      <Download size={14} />
+                    </button>
+                  </Tooltip>
+                </span>
+                {canPromote && (
+                  <button
+                    type="button"
+                    onClick={() => d.onMarkProof(f)}
+                    disabled={markingId === f.id}
+                    className="inline-flex items-center gap-1 text-meta font-medium text-primary-text hover:text-primary-text disabled:text-text-muted min-h-[32px]"
+                  >
+                    {markingId === f.id ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />} Mark as proof
+                  </button>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      ) : undefined,
+    actions:
+      canReply || m.can_delete ? (
+        <>
+          {canReply && (
+            <button
+              type="button"
+              onClick={() => d.onReply(m)}
+              className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-meta font-medium text-text-secondary hover:text-primary-text hover:bg-primary-subtle transition-colors"
+            >
+              <CornerUpLeft size={13} /> Reply
+            </button>
+          )}
+          {m.can_delete && (
+            <button
+              type="button"
+              onClick={() => d.onDelete(m)}
+              aria-label="Delete message"
+              className="inline-flex items-center gap-1 rounded-[6px] px-2 min-h-[36px] sm:min-h-[28px] text-meta font-medium text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors"
+            >
+              <Trash2 size={13} /> Delete
+            </button>
+          )}
+        </>
+      ) : undefined,
+  }
 }

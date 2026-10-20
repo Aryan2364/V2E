@@ -95,6 +95,8 @@ type ThreadComment = {
   attachments?: React.ReactNode
   /** The comment's own controls (Reply, Delete, ...), on a row under the text. */
   actions?: React.ReactNode
+  /** A line with this word opens the comment ("New"): where the reader stopped last time. */
+  dividerBefore?: string
 }
 
 type ThreadNote = {
@@ -309,10 +311,14 @@ function CommentThread({
           // Grouped under the person above: a comment right after one by
           // the same person on the same day, with no note between.
           const grouped =
-            !newDay && item.kind !== "note" && previous?.kind !== "note" && previous?.who === item.who
+            !newDay &&
+            item.kind !== "note" &&
+            previous?.kind !== "note" &&
+            previous?.who === item.who &&
+            !item.dividerBefore
           // 5.2: related items sit closer than unrelated ones. 4px inside a
           // group, 16px between people; a day divider brings its own space.
-          const space = index === 0 || newDay ? "" : grouped ? "pt-1" : "pt-4"
+          const space = index === 0 || newDay || (item.kind !== "note" && item.dividerBefore) ? "" : grouped ? "pt-1" : "pt-4"
 
           return (
             <React.Fragment key={item.id}>
@@ -324,6 +330,13 @@ function CommentThread({
                   <span aria-hidden className="h-px flex-1 bg-border-light" />
                   <span suppressHydrationWarning>{formatDay(item.when, now)}</span>
                   <span aria-hidden className="h-px flex-1 bg-border-light" />
+                </li>
+              ) : null}
+              {item.kind !== "note" && item.dividerBefore ? (
+                <li className={cn("flex items-center gap-3 pb-4 text-meta font-medium text-danger", index > 0 && !newDay && "pt-4")}>
+                  <span aria-hidden className="h-px flex-1 bg-danger-border" />
+                  <span>{item.dividerBefore}</span>
+                  <span aria-hidden className="h-px flex-1 bg-danger-border" />
                 </li>
               ) : null}
               <li

@@ -100,6 +100,8 @@ function CommentBox({
   maxLength,
   error,
   textareaRef,
+  onTextKeyDown,
+  textareaProps,
 }: {
   value: string
   onChange: (text: string) => void
@@ -123,6 +125,13 @@ function CommentBox({
   /** A failed send the caller reports in the box rather than as a toast. */
   error?: string | null
   textareaRef?: React.Ref<HTMLTextAreaElement>
+  /** Runs before the Enter-sends rule; calling preventDefault() on the event keeps the box from sending (an open @mention list). */
+  onTextKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
+  /** Extra attributes for the textarea (aria-*, onClick, onBlur). */
+  textareaProps?: Omit<
+    React.ComponentProps<"textarea">,
+    "value" | "onChange" | "onKeyDown" | "id" | "className" | "disabled" | "placeholder" | "maxLength" | "ref"
+  >
 }) {
   const { layout } = useLayout()
   const phone = layout === "phone"
@@ -171,7 +180,12 @@ function CommentBox({
           placeholder={placeholder}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
-          onKeyDown={enterSends(send)}
+          {...textareaProps}
+          onKeyDown={(event) => {
+            onTextKeyDown?.(event)
+            if (event.defaultPrevented) return
+            enterSends(send)(event)
+          }}
         />
         <InputGroupAddon align="inline-end" className={ADDON}>
           {tools}
