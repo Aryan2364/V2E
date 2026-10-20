@@ -220,7 +220,7 @@ export default function GiveTaskScreen({ route }: { route: PhoneRoute }) {
           />
         </PhoneField>
 
-        <PhoneField label="Assignee(s)" htmlFor="task-assignees" required error={noAssigneeError}>
+        <PhoneField label="Assignees" htmlFor="task-assignees" required error={noAssigneeError}>
           <div className="flex flex-col gap-[8px]">
             <button
               id="task-assignees"
