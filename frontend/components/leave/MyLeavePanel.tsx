@@ -20,6 +20,8 @@ import { leaveApi } from '@/lib/api/leave'
 import type { Leave } from '@/lib/types/leave'
 import { formatDate } from '@/lib/format'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
 
 function fmt(iso: string): string {
   return formatDate(new Date(iso))
@@ -63,6 +65,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [dateErrors, setDateErrors] = useState<{ start?: string; end?: string }>({})
 
   // Cancelling is irreversible, so it confirms in-app first.
   const [cancelTarget, setCancelTarget] = useState<Leave | null>(null)
@@ -87,8 +90,15 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
   }, [load])
 
   async function apply() {
-    if (!start || !end) { setFormError('Pick a start and an end date.'); return }
-    if (end < start) { setFormError('The end date cannot be before the start date.'); return }
+    if (!start || !end || end < start) {
+      setDateErrors({
+        start: start ? undefined : 'Choose the first day of your leave.',
+        end: !end ? 'Choose the last day of your leave.' : end < start ? 'Choose an end date on or after the start date.' : undefined,
+      })
+      requestAnimationFrame(() => document.getElementById(start ? 'leave-end' : 'leave-start')?.focus())
+      return
+    }
+    setDateErrors({})
     setFormError(null)
     setSubmitting(true)
     try {
@@ -110,7 +120,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
       toast.success('Leave taken anyway')
       await load()
     } catch (e) {
-      toast.error(errorMessage(e, 'Could not update this leave'))
+      toast.error(errorMessage(e, 'Could not update this leave. Try again.'))
     } finally {
       setBusyId(null)
     }
@@ -142,12 +152,14 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
         <CardHeader title="Apply for leave" subtitle={readOnly ? 'Preview — changes are disabled' : undefined} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label className="mb-2">From</Label>
-            <DatePicker value={start} onChange={setStart} min={todayStr} placeholder="Start date" disabled={readOnly} />
+            <Label className="mb-2" htmlFor="leave-start" required>From</Label>
+            <DatePicker id="leave-start" invalid={!!dateErrors.start} value={start} onChange={(v) => { setStart(v); setDateErrors((p) => ({ ...p, start: undefined })) }} min={todayStr} placeholder="Select date" disabled={readOnly} />
+            <InlineFieldError>{dateErrors.start}</InlineFieldError>
           </div>
           <div>
-            <Label className="mb-2">To</Label>
-            <DatePicker value={end} onChange={setEnd} min={start || todayStr} placeholder="End date" disabled={readOnly} />
+            <Label className="mb-2" htmlFor="leave-end" required>To</Label>
+            <DatePicker id="leave-end" invalid={!!dateErrors.end} value={end} onChange={(v) => { setEnd(v); setDateErrors((p) => ({ ...p, end: undefined })) }} min={start || todayStr} placeholder="Select date" disabled={readOnly} />
+            <InlineFieldError>{dateErrors.end}</InlineFieldError>
           </div>
         </div>
         <div className="mt-4">
@@ -157,7 +169,7 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
             type="text"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="e.g. Family function"
+            placeholder="For example, Family function"
             disabled={readOnly}
             className={inputCls}
           />
@@ -170,20 +182,15 @@ export default function MyLeavePanel({ readOnly = false }: { readOnly?: boolean 
             disabled={readOnly}
             className="accent-primary mt-1"
           />
-          <span className="text-body text-text-primary">Declare as unplanned leave (e.g. sick) — book now without waiting for approval</span>
+          <span className="text-body text-text-primary">Declare as unplanned leave, such as sick leave. It is booked now without waiting for approval.</span>
         </label>
         {formError && (
           <div className="mt-4 rounded-lg border border-danger-border bg-danger-bg px-3 py-2 text-body text-danger">{formError}</div>
         )}
-        <button
-          type="button"
-          onClick={apply}
-          disabled={submitting || readOnly}
-          className="mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-[10px] min-h-[44px] sm:min-h-0 text-body font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
-        >
-          {submitting ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
-          {submitting ? 'Submitting…' : declare ? 'Declare leave' : 'Submit request'}
-        </button>
+        <Button type="button" onClick={apply} disabled={submitting || readOnly} loading={submitting} loadingLabel="Sending" className="mt-4 w-full sm:w-auto">
+          <Plus size={15} />
+          {declare ? 'Declare leave' : 'Send leave request'}
+        </Button>
       </div>
 
       {/* My leave list */}

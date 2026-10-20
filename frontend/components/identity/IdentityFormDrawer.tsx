@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 import { Banner, BannerDescription } from '@/components/ui/banner'
 import {
   Sheet,
@@ -68,7 +69,7 @@ export default function IdentityFormDrawer({
     handleSubmit,
     control,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<FormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema) as any,
@@ -76,6 +77,10 @@ export default function IdentityFormDrawer({
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'values' })
+
+  // Leaving with unsaved changes asks first (kit 11.3 rule 10).
+  const unsaved = useUnsavedChanges({ changed: open && isDirty && !isSubmitting, noun: 'identity', mode: 'edit' })
+  const requestClose = () => unsaved.guard((next) => { if (!next) onClose() })(false)
 
   // Hydrate each time the drawer opens.
   useEffect(() => {
@@ -97,12 +102,14 @@ export default function IdentityFormDrawer({
     } catch (err: unknown) {
       const raw = (err as { response?: { data?: { message?: string | string[] } } })?.response?.data
         ?.message
-      setFormError(Array.isArray(raw) ? raw[0] : raw ?? 'Failed to save identity.')
+      setFormError(Array.isArray(raw) ? raw[0] : raw ?? 'Could not save the identity. Try again.')
     }
   }
 
   return (
-    <Sheet open={open} onOpenChange={(next) => { if (!next) onClose() }}>
+    <>
+    {unsaved.warning}
+    <Sheet open={open} onOpenChange={(next) => { if (!next) requestClose() }}>
       <SheetContent side="right" className="sm:max-w-xl">
         <SheetHeader>
           <SheetTitle>Edit organization identity</SheetTitle>
@@ -172,7 +179,7 @@ export default function IdentityFormDrawer({
                       <div>
                         <Input
                           {...register(`values.${index}.title`)}
-                          placeholder="Value title (e.g. Integrity)"
+                          aria-label="Value title" placeholder="For example, Integrity"
                           className="max-w-none"
                         />
                         <InlineFieldError>{errors.values?.[index]?.title?.message}</InlineFieldError>
@@ -180,7 +187,7 @@ export default function IdentityFormDrawer({
                       <Textarea
                         {...register(`values.${index}.description`)}
                         rows={2}
-                        placeholder="What does this value mean in practice?"
+                        aria-label="Value description" placeholder="For example, We do what we say we will do"
                       />
                     </div>
                     <button
@@ -206,14 +213,15 @@ export default function IdentityFormDrawer({
         </form>
 
         <SheetFooter>
-          <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
+          <Button type="button" variant="secondary" onClick={requestClose} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button type="submit" form="identity-form" loading={isSubmitting} loadingLabel="Saving">
-            Save
+            Save identity
           </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
+    </>
   )
 }

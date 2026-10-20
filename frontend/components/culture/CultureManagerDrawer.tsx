@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -47,16 +48,18 @@ function InlineForm({
   const [description, setDescription] = useState(initial?.description ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; description?: string }>({})
 
   const handleSave = async () => {
-    if (!title.trim()) {
-      setError('Title is required')
+    if (!title.trim() || !description.trim()) {
+      setFieldErrors({
+        title: title.trim() ? undefined : 'Enter a title for this standard.',
+        description: description.trim() ? undefined : 'Describe this standard.',
+      })
+      requestAnimationFrame(() => document.getElementById(title.trim() ? 'culture-description' : 'culture-title')?.focus())
       return
     }
-    if (!description.trim()) {
-      setError('Description is required')
-      return
-    }
+    setFieldErrors({})
     setSaving(true)
     setError(null)
     try {
@@ -64,7 +67,7 @@ function InlineForm({
     } catch (err: unknown) {
       const raw = (err as { response?: { data?: { message?: string | string[] } } })?.response?.data
         ?.message
-      setError(Array.isArray(raw) ? raw[0] : raw ?? 'Failed to save. Please try again.')
+      setError(Array.isArray(raw) ? raw[0] : raw ?? 'Could not save the standard. Try again.')
     } finally {
       setSaving(false)
     }
@@ -73,32 +76,38 @@ function InlineForm({
   return (
     <div className="mt-2 flex flex-col gap-3 rounded-lg border border-border-light bg-surface-sunken p-4">
       <div>
-        <Label required>Title</Label>
+        <Label htmlFor="culture-title" required>Title</Label>
         <Input
+          id="culture-title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Proactive Communication"
-          className="mt-1 max-w-none"
+          onChange={(e) => { setTitle(e.target.value); if (fieldErrors.title) setFieldErrors((p) => ({ ...p, title: undefined })) }}
+          placeholder="For example, Proactive communication"
+          aria-invalid={fieldErrors.title ? true : undefined}
+          className="mt-2 max-w-none"
           autoFocus
         />
+        <InlineFieldError>{fieldErrors.title}</InlineFieldError>
       </div>
       <div>
-        <Label required>Description</Label>
+        <Label htmlFor="culture-description" required>Description</Label>
         <Textarea
+          id="culture-description"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => { setDescription(e.target.value); if (fieldErrors.description) setFieldErrors((p) => ({ ...p, description: undefined })) }}
           rows={2}
-          placeholder="Describe this standard in detail…"
-          className="mt-1"
+          placeholder="For example, We tell colleagues early when plans change"
+          aria-invalid={fieldErrors.description ? true : undefined}
+          className="mt-2"
         />
+        <InlineFieldError>{fieldErrors.description}</InlineFieldError>
       </div>
       {error && <p className="text-label text-danger">{error}</p>}
-      <div className="flex gap-2">
-        <Button size="sm" loading={saving} onClick={handleSave}>
-          <CheckIcon size={13} /> Save
-        </Button>
+      <div className="flex justify-end gap-2">
         <Button size="sm" variant="secondary" disabled={saving} onClick={onCancel}>
           <XIcon size={13} /> Cancel
+        </Button>
+        <Button size="sm" loading={saving} loadingLabel="Saving" onClick={handleSave}>
+          <CheckIcon size={13} /> Save standard
         </Button>
       </div>
     </div>
