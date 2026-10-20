@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/ui/password-input'
 import { OtpField } from '@/components/ui/otp-field'
 import { Banner, BannerDescription } from '@/components/ui/banner'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
 import { BrandGlyph } from '@/components/ui/BrandMark'
 
 const RESEND_COOLDOWN_S = 60
@@ -34,6 +35,8 @@ export default function ForgotPasswordPage() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // The message for the one field being asked for, shown under it (kit 11.3 rule 6).
+  const [fieldError, setFieldError] = useState<string | null>(null)
   const [cooldown, setCooldown] = useState(0)
 
   // Tick down the resend cooldown once a code has been sent.
@@ -46,16 +49,18 @@ export default function ForgotPasswordPage() {
   const sendCode = async () => {
     setError(null)
     if (!email.trim()) {
-      setError('Please enter your email address.')
+      setFieldError('Enter your email address.')
+      document.getElementById('fp-email')?.focus()
       return
     }
+    setFieldError(null)
     setIsLoading(true)
     try {
       await forgotPassword(email.trim())
       setStep('otp')
       setCooldown(RESEND_COOLDOWN_S)
     } catch (err) {
-      setError(errMsg(err, 'Could not send a reset code. Please try again.'))
+      setError(errMsg(err, 'Could not send a reset code. Try again.'))
     } finally {
       setIsLoading(false)
     }
@@ -69,7 +74,7 @@ export default function ForgotPasswordPage() {
       await forgotPassword(email.trim())
       setCooldown(RESEND_COOLDOWN_S)
     } catch (err) {
-      setError(errMsg(err, 'Could not resend the code. Please try again.'))
+      setError(errMsg(err, 'Could not resend the code. Try again.'))
     } finally {
       setIsLoading(false)
     }
@@ -78,16 +83,18 @@ export default function ForgotPasswordPage() {
   const verifyCode = async () => {
     setError(null)
     if (otp.trim().length < 6) {
-      setError('Enter the 6-digit code from your email.')
+      setFieldError('Enter the 6-digit code from your email.')
+      document.getElementById('fp-otp')?.focus()
       return
     }
+    setFieldError(null)
     setIsLoading(true)
     try {
       const { reset_token } = await verifyResetOtp(email.trim(), otp.trim())
       setResetToken(reset_token)
       setStep('password')
     } catch (err) {
-      setError(errMsg(err, 'That code is not valid. Please try again.'))
+      setError(errMsg(err, 'That code is not right. Check your email and try again.'))
     } finally {
       setIsLoading(false)
     }
@@ -96,19 +103,22 @@ export default function ForgotPasswordPage() {
   const submitNewPassword = async () => {
     setError(null)
     if (password.length < 8) {
-      setError('Password must be at least 8 characters.')
+      setFieldError('Use at least 8 characters in the password.')
+      document.getElementById('fp-password')?.focus()
       return
     }
     if (password !== confirm) {
-      setError('Passwords do not match.')
+      setFieldError('The two passwords do not match. Enter the same password in both fields.')
+      document.getElementById('fp-confirm')?.focus()
       return
     }
+    setFieldError(null)
     setIsLoading(true)
     try {
       await resetPassword(email.trim(), resetToken, password)
       setStep('done')
     } catch (err) {
-      setError(errMsg(err, 'Could not reset your password. Please start again.'))
+      setError(errMsg(err, 'Could not reset your password. Start again from the first step.'))
     } finally {
       setIsLoading(false)
     }
@@ -157,12 +167,14 @@ export default function ForgotPasswordPage() {
                   id="fp-email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
+                  onChange={(e) => { setEmail(e.target.value); setFieldError(null) }}
+                  placeholder="For example, you@company.com"
+                  aria-invalid={fieldError ? true : undefined}
                   autoComplete="email"
                   autoFocus
                   className="mt-2 max-w-none"
                 />
+                <InlineFieldError>{fieldError}</InlineFieldError>
               </div>
               <Button type="submit" size="lg" loading={isLoading} loadingLabel="Sending" className="mt-1 w-full">
                 Send reset code
@@ -187,9 +199,10 @@ export default function ForgotPasswordPage() {
                   id="fp-otp"
                   length={6}
                   value={otp}
-                  onChange={setOtp}
+                  onChange={(v) => { setOtp(v); setFieldError(null) }}
                   className="mt-2"
                 />
+                <InlineFieldError>{fieldError}</InlineFieldError>
               </div>
               <Button type="submit" size="lg" loading={isLoading} loadingLabel="Verifying" className="mt-1 w-full">
                 Verify code
@@ -222,12 +235,14 @@ export default function ForgotPasswordPage() {
                 <PasswordInput
                   id="fp-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min. 8 characters"
+                  onChange={(e) => { setPassword(e.target.value); setFieldError(null) }}
+                  aria-invalid={fieldError && password.length < 8 ? true : undefined}
                   autoComplete="new-password"
                   autoFocus
                   className="mt-2 max-w-none"
                 />
+                {password.length < 8 ? <InlineFieldError>{fieldError}</InlineFieldError> : null}
+                <p className="mt-2 text-meta text-text-muted">Use at least 8 characters.</p>
               </div>
               <div>
                 <Label htmlFor="fp-confirm" required>
@@ -236,11 +251,12 @@ export default function ForgotPasswordPage() {
                 <PasswordInput
                   id="fp-confirm"
                   value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  placeholder="Repeat your password"
+                  onChange={(e) => { setConfirm(e.target.value); setFieldError(null) }}
+                  aria-invalid={fieldError && password.length >= 8 ? true : undefined}
                   autoComplete="new-password"
                   className="mt-2 max-w-none"
                 />
+                {password.length >= 8 ? <InlineFieldError>{fieldError}</InlineFieldError> : null}
               </div>
               <Button type="submit" size="lg" loading={isLoading} loadingLabel="Updating" className="mt-1 w-full">
                 Update password

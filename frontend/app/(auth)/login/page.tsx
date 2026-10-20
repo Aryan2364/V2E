@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Banner, BannerDescription } from '@/components/ui/banner'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect'
 import { BrandGlyph } from '@/components/ui/BrandMark'
 import { DEFAULT_COUNTRY, cleanNationalNumber } from '@/lib/phone'
@@ -31,6 +32,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<{ identifier?: string; password?: string }>({})
 
   // One box for both. As soon as what's typed looks like a phone (has a digit and
   // no '@'), a country-code picker appears beside it; an email keeps the box alone.
@@ -42,9 +44,14 @@ export default function LoginPage() {
     setError(null)
 
     if (!identifier.trim() || !password) {
-      setError('Please enter your email or phone number, and your password.')
+      setFieldErrors({
+        identifier: identifier.trim() ? undefined : 'Enter your email address or mobile number.',
+        password: password ? undefined : 'Enter your password.',
+      })
+      document.getElementById(identifier.trim() ? 'password' : 'identifier')?.focus()
       return
     }
+    setFieldErrors({})
 
     setIsLoading(true)
     try {
@@ -55,10 +62,13 @@ export default function LoginPage() {
         await login(cleanNationalNumber(identifier, countryCode), password, countryCode)
       }
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? 'Could not sign you in. Please check your details and try again.'
-      setError(message)
+      // Never says which field was wrong (kit 11.7).
+      const status = (err as { response?: { status?: number } })?.response?.status
+      setError(
+        status && status >= 500
+          ? 'We could not sign you in just now. Try again in a moment.'
+          : 'The email or password is not right. Check both and try again.',
+      )
     } finally {
       setIsLoading(false)
     }
@@ -122,7 +132,7 @@ export default function LoginPage() {
 
           <div className="mt-8">
             <Label htmlFor="identifier" required>
-              Email address / Phone number
+              Email address or mobile number
             </Label>
             <div className="mt-2 flex gap-2">
               {isPhoneish && (
@@ -137,15 +147,16 @@ export default function LoginPage() {
                 id="identifier"
                 name="identifier"
                 type="text"
-                placeholder="you@company.com or mobile number"
+                placeholder="For example, you@company.com"
                 value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                required
+                onChange={(e) => { setIdentifier(e.target.value); setFieldErrors((p) => ({ ...p, identifier: undefined })) }}
+                aria-invalid={fieldErrors.identifier ? true : undefined}
                 disabled={isLoading}
                 autoComplete="username"
                 className="max-w-none flex-1"
               />
             </div>
+            <InlineFieldError>{fieldErrors.identifier}</InlineFieldError>
           </div>
 
           <div className="mt-6">
@@ -156,12 +167,13 @@ export default function LoginPage() {
               id="password"
               name="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: undefined })) }}
+              aria-invalid={fieldErrors.password ? true : undefined}
               disabled={isLoading}
               autoComplete="current-password"
               className="mt-2 max-w-none"
             />
+            <InlineFieldError>{fieldErrors.password}</InlineFieldError>
             <div className="mt-2 flex justify-end">
               <a
                 href="/forgot-password"

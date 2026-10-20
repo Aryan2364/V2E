@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Banner, BannerDescription } from '@/components/ui/banner'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
 
 export default function AdminLoginPage() {
   const [identifier, setIdentifier] = useState('')
@@ -18,6 +19,7 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<{ identifier?: string; password?: string }>({})
 
   // Same one-box behaviour as the main login: a country picker appears when the
   // input looks like a phone (has a digit, no '@').
@@ -37,9 +39,14 @@ export default function AdminLoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!identifier.trim() || !password) {
-      setError('Please enter your email or phone number, and your password.')
+      setFieldErrors({
+        identifier: identifier.trim() ? undefined : 'Enter your email address or mobile number.',
+        password: password ? undefined : 'Enter your password.',
+      })
+      document.getElementById(identifier.trim() ? 'password' : 'identifier')?.focus()
       return
     }
+    setFieldErrors({})
     setError(null)
     setLoading(true)
     try {
@@ -50,10 +57,13 @@ export default function AdminLoginPage() {
       localStorage.setItem('refresh_token', tokens.refresh_token)
       window.location.href = '/super-admin/organizations'
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-        ?? 'Could not sign you in. Please check your details and try again.'
-      setError(msg)
+      // Never says which field was wrong (kit 11.7).
+      const status = (err as { response?: { status?: number } })?.response?.status
+      setError(
+        status && status >= 500
+          ? 'We could not sign you in just now. Try again in a moment.'
+          : 'The email or password is not right. Check both and try again.',
+      )
       setLoading(false)
     }
   }
@@ -71,7 +81,7 @@ export default function AdminLoginPage() {
           <div className="flex size-14 items-center justify-center rounded-card border border-border-light bg-surface shadow-card">
             <ShieldCheckIcon size={28} className="text-primary-text" />
           </div>
-          <h1 className="mt-4 text-page-title font-medium text-text-primary">Admin Portal</h1>
+          <h1 className="mt-4 text-page-title font-medium text-text-primary">Admin portal</h1>
           <p className="mt-1 text-body text-text-muted">Super administrator access only</p>
         </div>
 
@@ -88,7 +98,7 @@ export default function AdminLoginPage() {
             {/* Email or phone */}
             <div>
               <Label htmlFor="identifier" required>
-                Email address / Phone number
+                Email address or mobile number
               </Label>
               <div className="mt-2 flex gap-2">
                 {isPhoneish && (
@@ -104,12 +114,14 @@ export default function AdminLoginPage() {
                   type="text"
                   autoComplete="username"
                   value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
+                  onChange={(e) => { setIdentifier(e.target.value); setFieldErrors((p) => ({ ...p, identifier: undefined })) }}
+                  aria-invalid={fieldErrors.identifier ? true : undefined}
                   disabled={loading}
-                  placeholder="admin@example.com or mobile number"
+                  placeholder="For example, admin@example.com"
                   className="max-w-none flex-1"
                 />
               </div>
+              <InlineFieldError>{fieldErrors.identifier}</InlineFieldError>
             </div>
 
             {/* Password */}
@@ -121,11 +133,12 @@ export default function AdminLoginPage() {
                 id="password"
                 autoComplete="current-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: undefined })) }}
+                aria-invalid={fieldErrors.password ? true : undefined}
                 disabled={loading}
-                placeholder="Enter your password"
                 className="mt-2 max-w-none"
               />
+              <InlineFieldError>{fieldErrors.password}</InlineFieldError>
             </div>
 
             {/* Submit */}
