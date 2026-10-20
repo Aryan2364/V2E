@@ -1,14 +1,17 @@
 'use client'
 
 import React from 'react'
-import { Camera, FileUp, Paperclip, RotateCcw, X } from 'lucide-react'
+import { Paperclip } from 'lucide-react'
 import { tasksApi } from '@/lib/api/tasks'
 import { useToast } from '@/components/ui/Toast'
 import type { Task } from '@/lib/types/tasks'
 import { shrinkImageForUpload } from '@/lib/image-resize'
 import { unfinishedChecklistItems, hasSubmittedProof, finishBlockedReason } from '@/lib/tasks/finish-rules'
+import { acceptFromExtensions } from '@/lib/attachments'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 import { PhoneSheet } from './PhoneSheet'
-import { PhoneButton, cx } from './primitives'
+import { PhoneButton } from './primitives'
+import { StagedFileRow, newStagedFile, type StagedFile } from './FileRows'
 
 /*
  * The Finish task sheet - plan-phone-2026-10-14.md §5.1,
@@ -18,23 +21,17 @@ import { PhoneButton, cx } from './primitives'
  *   - Lists only what's still needed (not the whole checklist).
  *   - Checklist items tick inline here, optimistically, via the SAME
  *     existing endpoint the desktop checklist card uses.
- *   - "Attach proof": Take photo / Choose file, constrained to
- *     proof_allowed_extensions, client-side shrunk to 1600px long side,
- *     per-file progress, Retry on failure. Uses the existing :id/proof
- *     endpoint.
+ *   - "Attach proof": one button that opens the phone's own picker
+ *     (Camera, Photos, Files), constrained to proof_allowed_extensions.
+ *     Picked files are held here, one row each, and can be removed until
+ *     "Complete task": that tap sends them through the existing :id/proof
+ *     endpoint (shrunk to 1600px, per-file progress, Retry on failure) and
+ *     then completes. Closing the sheet discards them (after a warning).
  *   - Footer: one full-width "Complete task", disabled with a plain-language
  *     reason until everything clears. Tapping it hands off to the caller
  *     (`onComplete`), which runs the SAME optimistic Undo-toast flow as a
  *     direct row tap (item 4) - this sheet never completes the task itself.
  */
-
-type UploadState = {
-  id: string
-  file: File
-  progress: number
-  status: 'uploading' | 'done' | 'error'
-  error?: string
-}
 
 export function FinishTaskSheet({
   open,
@@ -56,21 +53,23 @@ export function FinishTaskSheet({
   onComplete: () => void
 }) {
   const { addToast } = useToast()
-  const [uploads, setUploads] = React.useState<UploadState[]>([])
+  const [staged, setStaged] = React.useState<StagedFile[]>([])
+  const [submitting, setSubmitting] = React.useState(false)
   const [checking, setChecking] = React.useState<Set<string>>(new Set())
   const fileInputRef = React.useRef<HTMLInputElement>(null)
-  const cameraInputRef = React.useRef<HTMLInputElement>(null)
 
   const unfinished = unfinishedChecklistItems(task)
   const proofNeeded = task.proof_required && !hasSubmittedProof(task, userId)
-  const stillUploading = uploads.some((u) => u.status === 'uploading')
-  const blockedReason = finishBlockedReason(task, userId)
-  const disabledReason = stillUploading ? 'Finishing upload…' : blockedReason
+  // Picked proof counts as attached; it is sent when "Complete task" is tapped.
+  const blockedReason = proofNeeded && staged.length > 0
+    ? (unfinished.length > 0 ? 'Finish the checklist to complete' : null)
+    : finishBlockedReason(task, userId)
+  const disabledReason = submitting ? 'Sending proof…' : blockedReason
 
-  const accept =
-    task.proof_allowed_extensions && task.proof_allowed_extensions.length > 0
-      ? task.proof_allowed_extensions.map((ext) => `.${ext.replace(/^\./, '')}`).join(',')
-      : undefined
+  const accept = acceptFromExtensions(task.proof_allowed_extensions)
+
+  const unsaved = useUnsavedChanges({ changed: staged.length > 0, noun: 'form', mode: 'create' })
+  const guardedOpenChange = unsaved.guard(onOpenChange, () => setStaged([]))
 
   async function toggleChecklistItem(itemId: string) {
     if (checking.has(itemId)) return
@@ -89,40 +88,57 @@ export function FinishTaskSheet({
     }
   }
 
-  async function uploadOne(file: File) {
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`
-    setUploads((prev) => [...prev, { id, file, progress: 0, status: 'uploading' }])
+  const patch = (id: string, change: Partial<StagedFile>) =>
+    setStaged((prev) => prev.map((u) => (u.id === id ? { ...u, ...change } : u)))
+
+  /** Sends one proof file; true when it landed. A failure marks only its own row. */
+  async function sendOne(item: StagedFile): Promise<boolean> {
+    patch(item.id, { status: 'uploading', progress: 0 })
     try {
-      const shrunk = await shrinkImageForUpload(file)
-      await tasksApi.uploadProof(orgId, task.id, shrunk, 'private', (pct) =>
-        setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, progress: pct } : u))),
-      )
-      setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, status: 'done', progress: 100 } : u)))
-      const refreshed = await tasksApi.getTask(orgId, task.id)
-      onTaskUpdate(refreshed)
+      const shrunk = await shrinkImageForUpload(item.file)
+      await tasksApi.uploadProof(orgId, task.id, shrunk, 'private', (pct) => patch(item.id, { progress: pct }))
+      setStaged((prev) => prev.filter((u) => u.id !== item.id))
+      return true
     } catch {
-      setUploads((prev) =>
-        prev.map((u) => (u.id === id ? { ...u, status: 'error', error: 'Upload failed' } : u)),
-      )
+      patch(item.id, { status: 'failed' })
+      return false
     }
   }
 
-  function retry(uploadId: string) {
-    const upload = uploads.find((u) => u.id === uploadId)
-    if (!upload) return
-    setUploads((prev) => prev.filter((u) => u.id !== uploadId))
-    void uploadOne(upload.file)
+  /** Complete task: send every picked file, then hand off to the caller's completion. */
+  async function submit() {
+    if (submitting) return
+    setSubmitting(true)
+    let allSent = true
+    for (const item of staged) {
+      if (!(await sendOne(item))) allSent = false
+    }
+    if (allSent && staged.length > 0) {
+      try {
+        onTaskUpdate(await tasksApi.getTask(orgId, task.id))
+      } catch {
+        /* the completion below re-reads the task */
+      }
+    }
+    setSubmitting(false)
+    if (allSent) onComplete()
+    else addToast('Some files did not upload. Retry or remove them, then complete the task.', 'error')
+  }
+
+  function retry(id: string) {
+    const item = staged.find((u) => u.id === id)
+    if (item) void sendOne(item)
   }
 
   function onFilesPicked(files: FileList | null) {
-    if (!files) return
-    Array.from(files).forEach((f) => void uploadOne(f))
+    const picked = files ? Array.from(files) : []
+    if (picked.length > 0) setStaged((prev) => [...prev, ...picked.map(newStagedFile)])
   }
 
   return (
     <PhoneSheet
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={guardedOpenChange}
       title="Finish task"
       footer={
         <PhoneButton
@@ -131,7 +147,7 @@ export function FinishTaskSheet({
           fullWidth
           disabled={disabledReason !== null}
           title={disabledReason ?? undefined}
-          onClick={onComplete}
+          onClick={() => void submit()}
         >
           {disabledReason ?? 'Complete task'}
         </PhoneButton>
@@ -168,37 +184,17 @@ export function FinishTaskSheet({
           <section className="flex flex-col gap-[8px]">
             <h3 className="text-label font-medium text-text-secondary">Attach proof</h3>
 
-            <div className="flex gap-[8px]">
-              <PhoneButton
-                type="button"
-                variant="secondary"
-                fullWidth
-                onClick={() => cameraInputRef.current?.click()}
-              >
-                <Camera aria-hidden className="size-[18px]" />
-                Take photo
-              </PhoneButton>
-              <PhoneButton
-                type="button"
-                variant="secondary"
-                fullWidth
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <FileUp aria-hidden className="size-[18px]" />
-                Choose file
-              </PhoneButton>
-            </div>
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept={accept ?? 'image/*'}
-              capture="environment"
-              className="hidden"
-              onChange={(e) => {
-                onFilesPicked(e.target.files)
-                e.target.value = ''
-              }}
-            />
+            <PhoneButton
+              type="button"
+              variant="secondary"
+              fullWidth
+              disabled={submitting}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Paperclip aria-hidden className="size-[18px]" />
+              Attach proof
+            </PhoneButton>
+            {/* The phone's own picker (Camera, Photos, Files). No `capture`. */}
             <input
               ref={fileInputRef}
               type="file"
@@ -211,46 +207,29 @@ export function FinishTaskSheet({
               }}
             />
 
-            {uploads.length > 0 ? (
+            {staged.length > 0 ? (
               <ul className="flex flex-col gap-[8px]">
-                {uploads.map((u) => (
-                  <li
+                {staged.map((u) => (
+                  <StagedFileRow
                     key={u.id}
-                    className="flex items-center gap-[8px] rounded-[8px] border border-border-light bg-surface px-[12px] py-[8px]"
-                  >
-                    <Paperclip aria-hidden className="size-[16px] shrink-0 text-text-secondary" />
-                    <span className="min-w-0 flex-1 truncate text-label text-text-primary">
-                      {u.file.name}
-                    </span>
-                    {u.status === 'uploading' ? (
-                      <span className="text-meta text-text-secondary">{u.progress}%</span>
-                    ) : u.status === 'error' ? (
-                      <button
-                        type="button"
-                        onClick={() => retry(u.id)}
-                        className={cx(
-                          'inline-flex items-center gap-[4px] rounded-[6px] px-[8px] py-[4px]',
-                          'text-label font-medium text-danger active:bg-danger-bg',
-                        )}
-                      >
-                        <RotateCcw aria-hidden className="size-[14px]" />
-                        Retry
-                      </button>
-                    ) : (
-                      <span className="text-label font-medium text-success">Done</span>
-                    )}
-                  </li>
+                    item={u}
+                    onRetry={retry}
+                    onRemove={(id) => setStaged((prev) => prev.filter((x) => x.id !== id))}
+                  />
                 ))}
               </ul>
             ) : null}
-            {proofNeeded && uploads.length === 0 ? (
+            {proofNeeded && staged.length === 0 ? (
               <p className="text-meta text-text-secondary">
-                {accept ? `Allowed types: ${accept}` : 'Any file type is allowed.'}
+                {task.proof_allowed_extensions && task.proof_allowed_extensions.length > 0
+                  ? `Allowed types: ${task.proof_allowed_extensions.join(', ')}`
+                  : 'Any file type is allowed.'}
               </p>
             ) : null}
           </section>
         ) : null}
       </div>
+      {unsaved.warning}
     </PhoneSheet>
   )
 }
