@@ -7,7 +7,9 @@ import { useAuth } from '@/lib/auth/context'
 import { projectsApi } from '@/lib/api/projects'
 import TemplateBuilder, { newMilestone, newTask } from '@/components/projects/TemplateBuilder'
 import type { TemplateMilestone, TemplateTask } from '@/components/projects/TemplateBuilder'
-import { ChevronLeft, Loader2 } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 
 export default function NewTemplatePage() {
   const { user } = useAuth()
@@ -20,9 +22,22 @@ export default function NewTemplatePage() {
   const [directTasks, setDirectTasks] = useState<TemplateTask[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [nameError, setNameError] = useState('')
+
+  // A new template exists only once saved: leaving a filled-in form asks first (kit 11.3 rule 10).
+  const unsaved = useUnsavedChanges({
+    changed: !saving && (name.trim() !== '' || description.trim() !== '' || directTasks.length > 0 || milestones.length !== 1 || milestones.some((m) => m.name.trim() !== '' || m.tasks.length > 0)),
+    noun: 'template',
+    mode: 'create',
+  })
 
   async function handleSave() {
-    if (!name.trim()) { setError('Template name is required'); return }
+    if (!name.trim()) {
+      setNameError('Enter a name for the template.')
+      requestAnimationFrame(() => document.getElementById('template-name')?.focus())
+      return
+    }
+    setNameError('')
     setSaving(true)
     setError('')
     try {
@@ -49,7 +64,7 @@ export default function NewTemplatePage() {
       })
       router.push(`/dashboard/projects/templates/${template.id}`)
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Failed to create template'
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Could not save the template. Try again.'
       setError(msg)
     } finally {
       setSaving(false)
@@ -58,15 +73,16 @@ export default function NewTemplatePage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
+      {unsaved.warning}
       <div>
         <Link
           href="/dashboard/projects/templates"
           className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3"
         >
           <ChevronLeft size={15} />
-          Back to Templates
+          Back to templates
         </Link>
-        <h1 className="text-page-title font-medium text-text-primary leading-tight">New Template</h1>
+        <h1 className="text-page-title font-medium text-text-primary leading-tight">New template</h1>
         <p className="mt-1 text-body text-text-secondary">Define a reusable project structure.</p>
       </div>
 
@@ -82,7 +98,8 @@ export default function NewTemplatePage() {
           description={description}
           milestones={milestones}
           directTasks={directTasks}
-          onNameChange={setName}
+          onNameChange={(v) => { setName(v); if (nameError) setNameError('') }}
+          nameError={nameError}
           onDescChange={setDescription}
           onMilestonesChange={setMilestones}
           onDirectTasksChange={setDirectTasks}
@@ -90,15 +107,10 @@ export default function NewTemplatePage() {
       </div>
 
       <div className="flex justify-end">
-        <button
-          type="button"
-          disabled={saving}
-          onClick={handleSave}
-          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-primary-foreground text-body font-medium disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
-        >
-          {saving && <Loader2 size={14} className="animate-spin" />}
-          {saving ? 'Saving...' : 'Save Template'}
-        </button>
+        <div className="flex gap-2">
+          <Button type="button" variant="secondary" data-leaves-page onClick={() => router.push('/dashboard/projects/templates')} disabled={saving}>Cancel</Button>
+          <Button type="button" disabled={saving} loading={saving} loadingLabel="Saving" onClick={handleSave}>Save template</Button>
+        </div>
       </div>
     </div>
   )

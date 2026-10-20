@@ -9,7 +9,9 @@ import { projectsApi } from '@/lib/api/projects'
 import type { ProjectTemplate } from '@/lib/types/projects'
 import TemplateBuilder from '@/components/projects/TemplateBuilder'
 import type { TemplateMilestone, TemplateTask } from '@/components/projects/TemplateBuilder'
-import { ChevronLeft, Loader2 } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useUnsavedChanges } from '@/components/ui/unsaved-changes'
 
 export default function EditTemplatePage() {
   const { id } = useParams<{ id: string }>()
@@ -26,6 +28,7 @@ export default function EditTemplatePage() {
   const [directTasks, setDirectTasks] = useState<TemplateTask[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [nameError, setNameError] = useState('')
 
   useEffect(() => {
     if (!orgId || !id) return
@@ -52,11 +55,16 @@ export default function EditTemplatePage() {
         estimated_days: task.estimated_days?.toString() ?? '',
       }))
       setDirectTasks(direct)
-    }).catch(() => setError('Failed to load template')).finally(() => setLoading(false))
+    }).catch(() => setError('Could not load the template. Refresh the page to try again.')).finally(() => setLoading(false))
   }, [orgId, id])
 
   async function handleSave() {
-    if (!name.trim()) { setError('Template name is required'); return }
+    if (!name.trim()) {
+      setNameError('Enter a name for the template.')
+      requestAnimationFrame(() => document.getElementById('template-name')?.focus())
+      return
+    }
+    setNameError('')
     setSaving(true)
     setError('')
     try {
@@ -66,7 +74,7 @@ export default function EditTemplatePage() {
       })
       router.push('/dashboard/projects/templates')
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Failed to save template'
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Could not save the template. Try again.'
       setError(msg)
     } finally {
       setSaving(false)
@@ -87,7 +95,7 @@ export default function EditTemplatePage() {
       <div className="flex flex-col items-center justify-center h-64">
         <p className="font-medium text-text-primary">Template not found</p>
         <Link href="/dashboard/projects/templates" className="mt-2 text-body text-primary-text hover:underline">
-          Back to Templates
+          Back to templates
         </Link>
       </div>
     )
@@ -101,9 +109,9 @@ export default function EditTemplatePage() {
           className="inline-flex items-center gap-1.5 text-body text-text-secondary hover:text-text-primary transition-colors mb-3"
         >
           <ChevronLeft size={15} />
-          Back to Templates
+          Back to templates
         </Link>
-        <h1 className="text-page-title font-medium text-text-primary leading-tight">Edit Template</h1>
+        <h1 className="text-page-title font-medium text-text-primary leading-tight">Edit template</h1>
         <p className="mt-1 text-body text-text-secondary">{template.name}</p>
       </div>
 
@@ -119,7 +127,8 @@ export default function EditTemplatePage() {
           description={description}
           milestones={milestones}
           directTasks={directTasks}
-          onNameChange={setName}
+          onNameChange={(v) => { setName(v); if (nameError) setNameError('') }}
+          nameError={nameError}
           onDescChange={setDescription}
           onMilestonesChange={setMilestones}
           onDirectTasksChange={setDirectTasks}
@@ -127,15 +136,10 @@ export default function EditTemplatePage() {
       </div>
 
       <div className="flex justify-end">
-        <button
-          type="button"
-          disabled={saving}
-          onClick={handleSave}
-          className="h-10 px-6 rounded-[8px] bg-primary hover:bg-primary-hover text-primary-foreground text-body font-medium disabled:bg-surface-control-pressed disabled:text-text-muted transition-colors flex items-center gap-2"
-        >
-          {saving && <Loader2 size={14} className="animate-spin" />}
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
+        <div className="flex gap-2">
+          <Button type="button" variant="secondary" onClick={() => router.push('/dashboard/projects/templates')} disabled={saving}>Cancel</Button>
+          <Button type="button" disabled={saving} loading={saving} loadingLabel="Saving" onClick={handleSave}>Save template</Button>
+        </div>
       </div>
     </div>
   )
