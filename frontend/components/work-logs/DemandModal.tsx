@@ -21,6 +21,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 interface Props {
   orgId: string
@@ -57,6 +59,14 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
   const [schedules, setSchedules] = useState<ScheduleEntryDraft[]>([defaultSchedule()])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; assignee?: string; deadline?: string }>({})
+  const clearErr = (k: 'title' | 'assignee' | 'deadline') => setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
+  const guarded = useGuardedClose({
+    open: true,
+    values: { title, description, assignees, kind, deadlineDate, deadlineTime, schedules },
+    noun: 'log request',
+    onClose,
+  })
 
   const assignee = assignees[0]
 
@@ -67,9 +77,21 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
 
   async function submit() {
     setError(null)
-    if (!title.trim()) return setError('Give the log a title.')
-    if (!assignee) return setError('Pick who must write this log.')
-    if (kind === 'one_time' && !deadline) return setError('Set a deadline.')
+    const errs = {
+      title: title.trim() ? undefined : 'Enter a title for the log.',
+      assignee: assignee ? undefined : 'Choose who must write this log.',
+      deadline: kind === 'one_time' && !deadline ? 'Choose a deadline date.' : undefined,
+    }
+    if (errs.title || errs.assignee || errs.deadline) {
+      setFieldErrors(errs)
+      const id = errs.title ? 'demand-title' : errs.assignee ? 'demand-assignee' : 'demand-deadline'
+      requestAnimationFrame(() => {
+        const el = document.getElementById(id)
+        ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+      })
+      return
+    }
+    setFieldErrors({})
 
     const payload: CreateDemandPayload = {
       title: title.trim(),
@@ -101,14 +123,16 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
       onCreated()
       onClose()
     } catch (e: any) {
-      setError(e?.response?.data?.message ?? 'Could not create the demand.')
+      setError(e?.response?.data?.message ?? 'Could not send the log request. Try again.')
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
+    <>
+    {guarded.warning}
+    <Dialog open onOpenChange={(next) => { if (!next) guarded.requestClose() }}>
       <DialogContent size="lg">
         <DialogHeader>
           <DialogTitle>Demand a log</DialogTitle>
@@ -116,24 +140,28 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
         <DialogBody>
           <div className="space-y-4">
             <div>
-              <Label className="mb-1.5">Title</Label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Update on outstanding amount" />
+              <Label className="mb-2" htmlFor="demand-title" required>Title</Label>
+              <Input id="demand-title" value={title} onChange={(e) => { setTitle(e.target.value); clearErr('title') }} aria-invalid={fieldErrors.title ? true : undefined} placeholder="For example, Update on outstanding amount" />
+              <InlineFieldError>{fieldErrors.title}</InlineFieldError>
             </div>
 
             <div>
-              <Label className="mb-1.5">Description</Label>
+              <Label className="mb-2">Description</Label>
               <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
             </div>
 
             <div>
-              <Label className="mb-1.5">Who must write this log</Label>
-              <AssigneeSelector orgId={orgId} value={assignees} onChange={handleAssigneeChange} />
+              <Label className="mb-2" required>Who must write this log</Label>
+              <div id="demand-assignee">
+              <AssigneeSelector orgId={orgId} value={assignees} onChange={(v) => { handleAssigneeChange(v); clearErr('assignee') }} />
+              </div>
+              <InlineFieldError>{fieldErrors.assignee}</InlineFieldError>
               <p className="text-meta text-text-muted mt-1">Must be someone below you in the hierarchy.</p>
             </div>
 
             {/* Kind */}
             <div>
-              <Label className="mb-1.5">Frequency</Label>
+              <Label className="mb-2">Frequency</Label>
               <div className="flex items-center border border-border-light rounded-lg p-0.5 gap-0.5 w-fit">
                 {(['one_time', 'recurring'] as const).map((k) => (
                   <Button
@@ -151,12 +179,15 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
 
             {kind === 'one_time' ? (
               <div>
-                <Label className="mb-1.5">Deadline</Label>
+                <Label className="mb-2" htmlFor="demand-deadline" required>Deadline</Label>
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <DatePicker
+                      id="demand-deadline"
+                      invalid={!!fieldErrors.deadline}
                       value={deadlineDate}
                       onChange={(iso) => {
+                        clearErr('deadline')
                         if (!iso) { setDeadlineDate(''); setDeadlineTime(''); return }
                         setDeadlineDate(iso)
                         if (!deadlineTime) setDeadlineTime('23:59')
@@ -174,26 +205,28 @@ export default function DemandModal({ orgId, onClose, onCreated }: Props) {
                     />
                   </div>
                 </div>
+                <InlineFieldError>{fieldErrors.deadline}</InlineFieldError>
               </div>
             ) : (
               <div>
-                <Label className="mb-1.5">Recurrence</Label>
+                <Label className="mb-2" required>Recurrence</Label>
                 <ScheduleEntryList entries={schedules} onChange={setSchedules} />
               </div>
             )}
 
-            {error && <p className="text-body text-danger">{error}</p>}
+            {error && <p role="alert" className="text-label text-danger">{error}</p>}
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={guarded.requestClose}>
             Cancel
           </Button>
           <Button onClick={submit} loading={saving} loadingLabel="Creating">
-            Demand log
+            Send log request
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   )
 }

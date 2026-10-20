@@ -1,8 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { X, Eye, EyeOff, Loader2, Plus } from 'lucide-react'
+import Modal from '@/components/ui/Modal'
+import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
+import { Eye, EyeOff, Plus } from 'lucide-react'
 import { createEmployee, checkAccount, type AccountCheck } from '@/lib/api/employees'
 import { getUsers } from '@/lib/api/users'
 import { listSystemRoles, type SystemRoleLite } from '@/lib/api/permissions'
@@ -248,49 +251,45 @@ export default function AddEmployeeModal({
   }, [])
 
 
+  type FieldKey = 'name' | 'contact' | 'password' | 'department' | 'role' | 'systemRole' | 'code'
+  const FIELD_ORDER: FieldKey[] = ['name', 'contact', 'password', 'department', 'role', 'systemRole', 'code']
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, string>>>({})
+  const clearErr = (k: FieldKey) => setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
+  const guarded = useGuardedClose({ open: mounted, values: form, noun: 'employee', onClose })
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
 
     if (duplicateInOrg) {
-      setError('This person is already an employee in this firm.')
+      setError('This person is already an employee in this firm. Open their profile from the employee list instead.')
       return
     }
-    if (!form.name.trim()) {
-      setError('Name is required.')
-      return
-    }
+    // Field errors sit under the field that is wrong; focus goes to the first one (kit 11.3, 39.3).
+    const errs: Partial<Record<FieldKey, string>> = {}
+    if (!form.name.trim()) errs.name = 'Enter the full name of the employee.'
     // Email OR phone — at least one is required (both is fine).
-    if (!form.email.trim() && !form.phone.trim()) {
-      setError('Enter an email address or a phone number (at least one).')
-      return
-    }
-    if (form.phone.trim() && form.phone.replace(/\D/g, '').length !== expectedDigits) {
-      setError(`Enter a ${expectedDigits}-digit number for ${form.country_code}.`)
-      return
+    if (!form.email.trim() && !form.phone.trim()) errs.contact = 'Enter an email address or a phone number. At least one is needed.'
+    else if (form.phone.trim() && form.phone.replace(/\D/g, '').length !== expectedDigits) {
+      errs.contact = `Enter a ${expectedDigits}-digit number for ${form.country_code}.`
     }
     // A password is required ONLY for a brand-new login. An existing account keeps
     // the password it already uses across its other firms.
     if (!existingAccount) {
-      if (!form.password) {
-        setError('Password is required for a new user.')
-        return
-      }
-      if (form.password.length < 8) {
-        setError('Password must be at least 8 characters.')
-        return
-      }
+      if (!form.password) errs.password = 'Enter a password of at least 8 characters.'
+      else if (form.password.length < 8) errs.password = 'Use at least 8 characters in the password.'
     }
-    if (!form.department_id || !form.role_id) {
-      setError('Please select a department and job role.')
-      return
-    }
-    if (!form.system_role_id) {
-      setError('Please select a system role.')
-      return
-    }
-    if (codeTaken) {
-      setError('That employee code is already in use. Please choose a unique code.')
+    if (!form.department_id) errs.department = 'Choose a department.'
+    if (!form.role_id) errs.role = form.department_id ? 'Choose a job role.' : 'Choose a department first, then a job role.'
+    if (!form.system_role_id) errs.systemRole = 'Choose a system role.'
+    if (codeTaken) errs.code = 'That employee code is already in use. Enter a different one.'
+    setFieldErrors(errs)
+    const firstBad = FIELD_ORDER.find((k) => errs[k])
+    if (firstBad) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(`add-employee-${firstBad}`)
+        ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+      })
       return
     }
 
@@ -318,7 +317,7 @@ export default function AddEmployeeModal({
       onCreated()
     } catch (err: any) {
       const msg =
-        err?.response?.data?.message ?? 'Failed to add employee. Please try again.'
+        err?.response?.data?.message ?? 'Could not add the employee. Try again.'
       setError(Array.isArray(msg) ? msg.join(', ') : msg)
     } finally {
       setSaving(false)
@@ -327,52 +326,39 @@ export default function AddEmployeeModal({
 
   if (!mounted) return null
 
-  return createPortal(
-    <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center bg-backdrop p-0 sm:p-4">
-      <div className="bg-surface w-full sm:max-w-2xl sm:rounded-card rounded-t-xl shadow-xl max-h-[92vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-light">
-          <h2 className="text-section font-medium text-text-primary">Add Employee</h2>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-md text-text-secondary hover:bg-surface-control hover:text-text-primary transition-colors"
-            aria-label="Close"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-          <div className="px-6 py-4 overflow-y-auto space-y-4">
-            {error && (
-              <div className="p-3 bg-danger-bg border border-danger-border rounded-lg text-body text-danger">
-                {error}
-              </div>
-            )}
-
+  return (
+    <>
+      {guarded.warning}
+      <Modal isOpen onClose={guarded.requestClose} title="Add employee" size="lg">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label className="mb-2" required>Full name</Label>
+                <Label className="mb-2" htmlFor="add-employee-name" required>Full name</Label>
                 <input
+                  id="add-employee-name"
                   value={form.name}
-                  onChange={(e) => set('name', e.target.value)}
-                  placeholder="Jane Doe"
-                  className={inputClass}
+                  onChange={(e) => { set('name', e.target.value); clearErr('name') }}
+                  placeholder="For example, Jane Doe"
+                  aria-invalid={fieldErrors.name ? true : undefined}
+                  className={`${inputClass} aria-invalid:border-danger`}
                   disabled={prefillSelf || existingAccount}
                 />
+                <InlineFieldError>{fieldErrors.name}</InlineFieldError>
                 {existingAccount && (
                   <p className="mt-1 text-meta text-text-muted">Name comes from their existing account.</p>
                 )}
               </div>
               <div>
-                <Label className="mb-2">Email <span className="font-normal text-text-muted">or phone</span></Label>
+                <Label className="mb-2" htmlFor="add-employee-contact">Email</Label>
                 <input
+                  id="add-employee-contact"
                   type="email"
                   value={form.email}
-                  onChange={(e) => set('email', e.target.value)}
-                  placeholder="jane@company.com"
-                  className={inputClass}
+                  onChange={(e) => { set('email', e.target.value); clearErr('contact') }}
+                  placeholder="For example, jane@company.com"
+                  aria-invalid={fieldErrors.contact ? true : undefined}
+                  className={`${inputClass} aria-invalid:border-danger`}
                   disabled={prefillSelf}
                 />
               </div>
@@ -396,13 +382,14 @@ export default function AddEmployeeModal({
                     type="tel"
                     inputMode="numeric"
                     value={form.phone}
-                    onChange={(e) => set('phone', cleanNationalNumber(e.target.value, form.country_code))}
+                    onChange={(e) => { set('phone', cleanNationalNumber(e.target.value, form.country_code)); clearErr('contact') }}
                     maxLength={expectedDigits}
                     placeholder={`${expectedDigits}-digit number`}
                     className={`${inputClass} flex-1`}
                     disabled={prefillSelf}
                   />
                 </div>
+                <InlineFieldError>{fieldErrors.contact}</InlineFieldError>
                 <p className="mt-1 text-meta text-text-muted">Email or phone — at least one. They can sign in with either.</p>
               </div>
               <div className="flex items-start">
@@ -427,14 +414,16 @@ export default function AddEmployeeModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {!prefillSelf && !existingAccount && (
                 <div>
-                  <Label className="mb-2" required>Password</Label>
+                  <Label className="mb-2" htmlFor="add-employee-password" required>Password</Label>
                   <div className="relative">
                     <input
+                      id="add-employee-password"
                       type={showPassword ? 'text' : 'password'}
                       value={form.password}
-                      onChange={(e) => set('password', e.target.value)}
-                      placeholder="Min. 8 characters"
-                      className={`${inputClass} pr-8`}
+                      onChange={(e) => { set('password', e.target.value); clearErr('password') }}
+                      placeholder="At least 8 characters"
+                      aria-invalid={fieldErrors.password ? true : undefined}
+                      className={`${inputClass} pr-8 aria-invalid:border-danger`}
                     />
                     <button
                       type="button"
@@ -445,10 +434,12 @@ export default function AddEmployeeModal({
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  <InlineFieldError>{fieldErrors.password}</InlineFieldError>
                 </div>
               )}
               <div className={prefillSelf || existingAccount ? 'sm:col-span-2' : ''}>
                 <Label className="mb-2" required>Department</Label>
+                <div id="add-employee-department">
                 <DepartmentSelect
                   value={form.department_id}
                   departments={localDepartments}
@@ -460,8 +451,11 @@ export default function AddEmployeeModal({
                       make_dep_head: false,
                     }))
                     setCreatingRole(false) // roles are dept-scoped
+                    clearErr('department')
                   }}
                 />
+                </div>
+                <InlineFieldError>{fieldErrors.department}</InlineFieldError>
                 {(() => {
                   const selectedDept = localDepartments.find((d) => d.id === form.department_id)
                   const showHeadOption = selectedDept ? !selectedDept.head_user_id : false
@@ -495,6 +489,7 @@ export default function AddEmployeeModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="mb-2" required>Job role</Label>
+                <div id="add-employee-role">
                 <RoleSelect
                   value={form.role_id}
                   roles={deptRoles}
@@ -508,8 +503,11 @@ export default function AddEmployeeModal({
                       role_id: id,
                       make_dep_head: role?.level === 'head' && !hasHead ? true : (role?.level === 'head' ? f.make_dep_head : false),
                     }))
+                    clearErr('role')
                   }}
                 />
+                </div>
+                <InlineFieldError>{fieldErrors.role}</InlineFieldError>
                 {isHeadRoleSelected && deptHasHead && (
                   <p className="mt-1.5 text-meta text-warning bg-warning-bg border border-warning-border rounded-md px-2.5 py-1.5 font-medium">
                     Already there is a head here.
@@ -543,16 +541,16 @@ export default function AddEmployeeModal({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <Label className="mb-2" required>System role</Label>
+                <div id="add-employee-systemRole">
                 <StyledSelect
                   value={form.system_role_id}
-                  onChange={(v) => set('system_role_id', v)}
+                  onChange={(v) => { set('system_role_id', v); clearErr('systemRole') }}
                   disabled={prefillSelf}
-                  placeholder="— Select —"
-                  options={[
-                    { value: '', label: '— Select —' },
-                    ...systemRoles.map((r) => ({ value: r.id, label: r.name })),
-                  ]}
+                  placeholder="Select system role"
+                  options={systemRoles.map((r) => ({ value: r.id, label: r.name }))}
                 />
+                </div>
+                <InlineFieldError>{fieldErrors.systemRole}</InlineFieldError>
               </div>
               <div>
                 <Label className="mb-2">Employment type</Label>
@@ -563,18 +561,17 @@ export default function AddEmployeeModal({
                 />
               </div>
               <div>
-                <Label className="mb-2">Employee code</Label>
+                <Label className="mb-2" htmlFor="add-employee-code">Employee code</Label>
                 <input
+                  id="add-employee-code"
                   value={form.employee_code}
-                  onChange={(e) => set('employee_code', e.target.value)}
-                  placeholder="EMP-001"
+                  onChange={(e) => { set('employee_code', e.target.value); clearErr('code') }}
+                  placeholder="For example, EMP-001"
                   className={`${inputClass} ${
                     codeTaken ? 'border-danger! focus:border-danger! focus:ring-danger!' : ''
                   }`}
                 />
-                {codeTaken && (
-                  <p className="mt-1 text-meta text-danger">This code is already in use.</p>
-                )}
+                <InlineFieldError>{codeTaken ? 'This code is already in use. Enter a different one.' : fieldErrors.code}</InlineFieldError>
               </div>
             </div>
 
@@ -608,19 +605,17 @@ export default function AddEmployeeModal({
             </div>
           </div>
 
+          {error && <p role="alert" className="text-label text-danger">{error}</p>}
+
           {/* Footer */}
-          <div className="flex items-center justify-end px-6 py-4 border-t border-border-light">
-            <button
-              type="submit"
-              disabled={saving || duplicateInOrg || checkingAccount}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover disabled:bg-surface-control-pressed disabled:text-text-muted disabled:cursor-not-allowed transition-colors"
-            >
-              {saving && <Loader2 size={15} className="animate-spin" />}
-              {saving ? 'Adding…' : existingAccount ? 'Add to firm' : 'Add Employee'}
-            </button>
+          <div className="flex items-center justify-end gap-2 pt-4 border-t border-border-light">
+            <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
+            <Button type="submit" disabled={saving || duplicateInOrg || checkingAccount} loading={saving} loadingLabel="Adding">
+              {existingAccount ? 'Add to firm' : 'Add employee'}
+            </Button>
           </div>
         </form>
-      </div>
+      </Modal>
 
       {/* Inline department creation — opens over this modal, keeping the user in flow */}
       {canCreateDept && (
@@ -664,7 +659,6 @@ export default function AddEmployeeModal({
           }}
         />
       )}
-    </div>,
-    document.body,
+    </>
   )
 }
