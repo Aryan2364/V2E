@@ -301,7 +301,10 @@ self.addEventListener('push', (event) => {
       self.registration.showNotification(title, {
         body: data.body || '',
         icon: '/icons/icon-192.png',
-        badge: '/icons/icon-192.png',
+        // Android draws the status-bar icon from the badge's alpha only, so it
+        // must be the white symbol on transparent - the full-colour app icon
+        // came out as a plain square.
+        badge: '/icons/badge-96.png',
         data: { link: data.link || '/dashboard/notifications' },
       }),
       'badge_count' in data ? v2eSetBadge(Number(data.badge_count)) : Promise.resolve(),
