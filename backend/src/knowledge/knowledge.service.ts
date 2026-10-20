@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { parsePagination } from '../common/pagination';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateKnowledgePostDto } from './dto/create-knowledge-post.dto';
 import { CreateKnowledgeCommentDto } from './dto/create-comment.dto';
@@ -38,11 +39,11 @@ export class KnowledgeService {
 
     // Opt-in pagination (kit §11.1.1): omitting `page` returns the plain array,
     // byte-for-byte what the knowledge feed gets today.
-    const page = query.page ? parseInt(query.page, 10) : undefined;
-    if (!page) {
+    const { page, pageSize } = parsePagination(query.page, query.pageSize);
+    if (page === undefined) {
       return this.prisma.knowledgePost.findMany({ where, include: POST_INCLUDE, orderBy });
     }
-    const take = Math.min(Math.max(query.pageSize ? parseInt(query.pageSize, 10) : 25, 1), 100);
+    const take = pageSize ?? 25;
     const skip = (Math.max(page, 1) - 1) * take;
     const [items, total] = await Promise.all([
       this.prisma.knowledgePost.findMany({ where, include: POST_INCLUDE, orderBy, skip, take }),

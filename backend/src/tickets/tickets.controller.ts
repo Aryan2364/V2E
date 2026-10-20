@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common'
+import { parsePagination } from '../common/pagination'
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { OrgScopeGuard } from '../common/guards/org-scope.guard'
@@ -55,6 +56,7 @@ export class TicketsController {
     @Query('pageSize') pageSize?: string,
     @Query('sort') sort?: 'created_desc' | 'created_asc',
   ) {
+    const pg = parsePagination(page, pageSize)
     return this.ticketsService.listTickets(
       orgId,
       principalFromUser(user),
@@ -70,8 +72,8 @@ export class TicketsController {
         to,
         search,
       },
-      page !== undefined ? parseInt(page, 10) : undefined,
-      pageSize !== undefined ? parseInt(pageSize, 10) : undefined,
+      pg.page,
+      pg.pageSize,
       sort,
     )
   }
@@ -99,12 +101,13 @@ export class TicketsController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
   ) {
+    const pg = parsePagination(page, pageSize)
     return this.ticketsService.listArchive(
       orgId,
       user.is_admin ? undefined : user.id,
       search,
-      page !== undefined ? parseInt(page, 10) : undefined,
-      pageSize !== undefined ? parseInt(pageSize, 10) : undefined,
+      pg.page,
+      pg.pageSize,
     )
   }
 

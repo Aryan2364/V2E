@@ -6,6 +6,7 @@ import { OrgScopeGuard } from '../common/guards/org-scope.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { ACCESS_RIGHTS_RESOURCE } from '../access-rights/access-rights.constants';
+import { parseSkipTake } from '../common/pagination';
 import { AuditService } from './audit.service';
 
 @ApiTags('audit-logs')
@@ -33,6 +34,7 @@ export class AuditController {
     @Query('skip') skip?: string,
     @Query('take') take?: string,
   ) {
+    const range = parseSkipTake(skip, take);
     return this.audit.list(orgId, {
       resource,
       module,
@@ -44,8 +46,8 @@ export class AuditController {
       from_date,
       to_date,
       search,
-      skip: skip ? Number(skip) : undefined,
-      take: take ? Number(take) : undefined,
+      skip: range.skip,
+      take: range.take,
     });
   }
 

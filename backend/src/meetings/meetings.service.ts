@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { parsePagination } from '../common/pagination';
 import { DataScope, PermissionAction, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
@@ -232,11 +233,11 @@ export class MeetingsService {
     // Opt-in pagination (kit §11.1.1): omitting `page` returns the plain array,
     // byte-for-byte what every existing caller (the calendar view, filters) gets
     // today. Passing `page` returns the { items, total, page, pageSize } envelope.
-    const page = filters.page ? parseInt(filters.page, 10) : undefined;
-    if (!page) {
+    const { page, pageSize } = parsePagination(filters.page, filters.pageSize);
+    if (page === undefined) {
       return this.prisma.meeting.findMany({ where, orderBy, include });
     }
-    const take = Math.min(Math.max(filters.pageSize ? parseInt(filters.pageSize, 10) : 25, 1), 100);
+    const take = pageSize ?? 25;
     const skip = (Math.max(page, 1) - 1) * take;
     const [items, total] = await Promise.all([
       this.prisma.meeting.findMany({ where, orderBy, include, skip, take }),

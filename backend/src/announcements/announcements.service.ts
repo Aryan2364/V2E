@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { parsePagination } from '../common/pagination';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
@@ -42,11 +43,11 @@ export class AnnouncementsService {
 
     // Opt-in pagination (kit §11.1.1): omitting `page` returns the plain array,
     // byte-for-byte what the announcements feed gets today.
-    const page = query.page ? parseInt(query.page, 10) : undefined;
-    if (!page) {
+    const { page, pageSize } = parsePagination(query.page, query.pageSize);
+    if (page === undefined) {
       return this.prisma.announcement.findMany({ where, include, orderBy });
     }
-    const take = Math.min(Math.max(query.pageSize ? parseInt(query.pageSize, 10) : 25, 1), 100);
+    const take = pageSize ?? 25;
     const skip = (Math.max(page, 1) - 1) * take;
     const [items, total] = await Promise.all([
       this.prisma.announcement.findMany({ where, include, orderBy, skip, take }),
