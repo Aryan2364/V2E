@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { X, Pencil, Building2, Target, ListChecks, FileText } from 'lucide-react'
+import { Pencil, Building2, Target, ListChecks, FileText } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Tooltip from '@/components/ui/tooltip'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetBody, SheetFooter } from '@/components/ui/sheet'
 import { levelColors } from '@/lib/role-levels'
 import type { Role } from '@/lib/types'
 
@@ -23,75 +24,57 @@ interface Props {
  */
 export default function RoleInfoPanel({ role, departmentName, canEdit, onEdit, onClose }: Props) {
   const open = !!role
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-
-  if (!mounted) return null
-
   const kra = role?.kra ?? []
   const kpi = role?.kpi ?? []
 
-  return createPortal(
-    <>
-      {open && <div className="fixed inset-0 bg-backdrop z-60" onClick={onClose} />}
-
-      <div
-        className={`fixed inset-y-0 right-0 z-70 w-full max-w-lg bg-surface border-l border-border-light shadow-menu flex flex-col transition-transform duration-300 ease-in-out ${
-          open ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 px-4 py-4 border-b border-border-light">
-          <div className="min-w-0">
-            {departmentName && (
-              <span className="inline-flex items-center gap-1 text-meta text-text-muted mb-1">
-                <Building2 size={12} /> {departmentName}
-              </span>
-            )}
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-medium text-text-primary text-card-heading truncate">{role?.title}</h3>
-              {role && (
-                <span
-                  className={[
-                    'inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium capitalize',
-                    levelColors[role.level],
-                  ].join(' ')}
-                >
-                  {role.level}
-                </span>
+  return (
+    <Sheet open={open} onOpenChange={(next) => { if (!next) onClose() }}>
+      <SheetContent side="right" className="data-[side=right]:sm:max-w-lg">
+        {role && (
+          <>
+            <SheetHeader>
+              <div className="min-w-0">
+                {departmentName && (
+                  <span className="mb-1 inline-flex items-center gap-1 text-meta opacity-90">
+                    <Building2 size={12} /> {departmentName}
+                  </span>
+                )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <SheetTitle className="truncate">{role.title}</SheetTitle>
+                  <span
+                    className={[
+                      'inline-flex items-center rounded-full px-2.5 py-0.5 text-meta font-medium capitalize',
+                      levelColors[role.level],
+                    ].join(' ')}
+                  >
+                    {role.level}
+                  </span>
+                </div>
+                <p className="mt-1 text-meta opacity-90">
+                  {kra.length} KRA{kra.length !== 1 ? 's' : ''} · {kpi.length} KPI
+                  {kpi.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              {canEdit && (
+                <Tooltip label="Edit job role">
+                  <Button
+                    variant="on-brand"
+                    size="icon"
+                    className="absolute top-3 right-14"
+                    onClick={() => onEdit(role)}
+                    aria-label="Edit job role"
+                  >
+                    <Pencil size={15} />
+                  </Button>
+                </Tooltip>
               )}
-            </div>
-            <p className="text-meta text-text-muted mt-1">
-              {kra.length} KRA{kra.length !== 1 ? 's' : ''} · {kpi.length} KPI
-              {kpi.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            {canEdit && role && (
-              <button
-                onClick={() => onEdit(role)}
-                className="w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-primary-text hover:bg-primary-subtle transition-colors"
-                aria-label="Edit job role"
-              >
-                <Pencil size={15} />
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-control transition-colors"
-              aria-label="Close"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        </div>
+            </SheetHeader>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
-          {/* Job description */}
+            <SheetBody className="flex flex-col gap-6">
+        {/* Job description */}
           <section>
-            <h4 className="flex items-center gap-1.5 text-meta font-medium text-text-secondary uppercase tracking-wider mb-2">
-              <FileText size={13} /> Job Description
+            <h4 className="flex items-center gap-1.5 text-meta font-medium text-text-secondary mb-2">
+              <FileText size={13} /> Job description
             </h4>
             {role?.job_description ? (
               <p className="text-body text-text-secondary whitespace-pre-wrap leading-relaxed">
@@ -104,8 +87,8 @@ export default function RoleInfoPanel({ role, departmentName, canEdit, onEdit, o
 
           {/* KRAs */}
           <section>
-            <h4 className="flex items-center gap-1.5 text-meta font-medium text-text-secondary uppercase tracking-wider mb-3">
-              <ListChecks size={13} /> Key Result Areas
+            <h4 className="flex items-center gap-1.5 text-meta font-medium text-text-secondary mb-3">
+              <ListChecks size={13} /> Key result areas
               <span className="text-text-muted font-medium normal-case tracking-normal">
                 ({kra.length})
               </span>
@@ -140,8 +123,8 @@ export default function RoleInfoPanel({ role, departmentName, canEdit, onEdit, o
 
           {/* KPIs */}
           <section>
-            <h4 className="flex items-center gap-1.5 text-meta font-medium text-text-secondary uppercase tracking-wider mb-3">
-              <Target size={13} /> Key Performance Indicators
+            <h4 className="flex items-center gap-1.5 text-meta font-medium text-text-secondary mb-3">
+              <Target size={13} /> Key performance indicators
               <span className="text-text-muted font-medium normal-case tracking-normal">
                 ({kpi.length})
               </span>
@@ -178,21 +161,18 @@ export default function RoleInfoPanel({ role, departmentName, canEdit, onEdit, o
               </div>
             )}
           </section>
-        </div>
+            </SheetBody>
 
-        {/* Footer */}
-        {canEdit && role && (
-          <div className="px-4 py-4 border-t border-border-light">
-            <button
-              onClick={() => onEdit(role)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover transition-colors"
-            >
-              <Pencil size={15} /> Edit job role
-            </button>
-          </div>
+            {canEdit && (
+              <SheetFooter>
+                <Button variant="primary" onClick={() => onEdit(role)}>
+                  <Pencil size={15} /> Edit job role
+                </Button>
+              </SheetFooter>
+            )}
+          </>
         )}
-      </div>
-    </>,
-    document.body,
+      </SheetContent>
+    </Sheet>
   )
 }

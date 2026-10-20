@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { X, ChevronLeft, ChevronRight, Info, Loader2, Check, Sparkles } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Info, Loader2, Check, Sparkles } from 'lucide-react'
 import { meetingsApi } from '@/lib/api/meetings'
 import type { BusyView } from '@/lib/types/meetings'
 import DatePicker from '@/components/ui/DatePicker'
@@ -10,6 +9,8 @@ import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSel
 import Tooltip from '@/components/ui/tooltip'
 import { DurationField } from './shared'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 
 // geometry
 const START_HOUR = 6
@@ -63,18 +64,12 @@ export default function FindTimeDialog({
   orgId, people, attendees, optional, date, durationMin, initialStartMin,
   onChangeAttendees, onChangeOptional, onChangeDate, onChangeDuration, onConfirm, onClose,
 }: Props) {
-  const [mounted, setMounted] = useState(false)
   const [data, setData] = useState<BusyView | null>(null)
   const [loading, setLoading] = useState(false)
   const [cand, setCand] = useState<number>(() => initialStartMin ?? 10 * 60)
   const colsRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { setMounted(true); const t = setTimeout(() => scrollToMin(cand), 80); return () => clearTimeout(t) }, [])
-  useEffect(() => {
-    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', h)
-    return () => window.removeEventListener('keydown', h)
-  }, [onClose])
+  useEffect(() => { const t = setTimeout(() => scrollToMin(cand), 80); return () => clearTimeout(t) }, [])
 
   const requiredIds = useMemo(() => attendees.filter((a) => !optional.includes(a)), [attendees, optional])
   const dayStartMs = useMemo(() => new Date(`${date}T00:00`).getTime(), [date])
@@ -168,24 +163,30 @@ export default function FindTimeDialog({
   const hours = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i)
   const cols = perPerson.length || 1
 
-  if (!mounted) return null
-
-  return createPortal(
-    <div className="fixed inset-0 z-70 bg-surface flex flex-col">
-      <div className="w-full flex-1 min-h-0 bg-surface flex flex-col overflow-hidden">
-        {/* header */}
-        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border-light">
+  return (
+    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
+      <DialogContent
+        size="lg"
+        className="h-dvh max-h-dvh w-screen max-w-none rounded-none data-[size=lg]:max-w-none"
+      >
+        <DialogHeader>
           <div className="flex items-center gap-2">
-            <Sparkles size={18} className="text-primary-text" />
-            <h3 className="text-[18px] font-medium text-text-primary">Find a time</h3>
+            <Sparkles size={18} />
+            <DialogTitle>Find a time</DialogTitle>
           </div>
-          <div className="flex items-center gap-1.5">
-            <button aria-label="Previous day" onClick={() => shiftDay(-1)} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control"><ChevronLeft size={18} /></button>
-            <DatePicker value={date} onChange={onChangeDate} min={todayStr()} placeholder="Pick a date" bare hideClear />
-            <button aria-label="Next day" onClick={() => shiftDay(1)} className="p-1.5 rounded-[6px] text-text-secondary hover:bg-surface-control"><ChevronRight size={18} /></button>
-            <button onClick={() => onChangeDate(todayStr())} className="px-2.5 py-1 text-body font-medium text-text-secondary rounded-[6px] hover:bg-surface-control">Today</button>
-            <button onClick={onClose} className="p-1.5 text-text-muted hover:text-text-secondary ml-1"><X size={18} /></button>
-          </div>
+        </DialogHeader>
+        <DialogBody className="flex flex-col overflow-hidden p-0">
+      <div className="w-full flex-1 min-h-0 bg-surface flex flex-col overflow-hidden">
+        {/* day navigation */}
+        <div className="flex items-center gap-1.5 px-4 py-2 border-b border-border-light">
+          <Tooltip label="Previous day">
+            <Button variant="ghost" size="icon" aria-label="Previous day" onClick={() => shiftDay(-1)}><ChevronLeft size={18} /></Button>
+          </Tooltip>
+          <DatePicker value={date} onChange={onChangeDate} min={todayStr()} placeholder="Pick a date" bare hideClear />
+          <Tooltip label="Next day">
+            <Button variant="ghost" size="icon" aria-label="Next day" onClick={() => shiftDay(1)}><ChevronRight size={18} /></Button>
+          </Tooltip>
+          <Button variant="secondary" size="sm" onClick={() => onChangeDate(todayStr())}>Today</Button>
         </div>
 
         {/* duration */}
@@ -204,7 +205,7 @@ export default function FindTimeDialog({
 
             {/* best times */}
             <div>
-              <p className="text-meta font-medium text-text-secondary uppercase tracking-wider mb-2">Best times</p>
+              <p className="text-meta font-medium text-text-secondary mb-2">Best times</p>
               {!data || data.suggestions.length === 0 ? (
                 <p className="text-body text-text-muted">{attendees.length === 0 ? 'Add people to see suggestions.' : 'No clear slot on this day — try another day or trim the guest list.'}</p>
               ) : (
@@ -234,7 +235,7 @@ export default function FindTimeDialog({
             {/* Who's free at the selected slot — vertical list scales to any headcount */}
             {useAgg && perPerson.length > 0 && (
               <div>
-                <p className="text-meta font-medium text-text-secondary uppercase tracking-wider mb-2">At {minLabel(cand)} – {minLabel(candEnd)}</p>
+                <p className="text-meta font-medium text-text-secondary mb-2">At {minLabel(cand)} – {minLabel(candEnd)}</p>
                 <div className="flex flex-col gap-1 max-h-[240px] overflow-y-auto pr-1">
                   {[...perPerson].sort((a, b) => Number(b.conflict) - Number(a.conflict)).map((p) => (
                     <div key={p.user_id} className="flex items-center gap-2 text-body">
@@ -270,9 +271,9 @@ export default function FindTimeDialog({
                   </span>
                 )}
               </div>
-              <button onClick={confirm} className="inline-flex items-center gap-1.5 px-4 py-2 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-lg">
+              <Button variant="primary" onClick={confirm}>
                 <Check size={15} /> Use this time
-              </button>
+              </Button>
             </div>
 
             {/* calendar card — rounded like the week view; header + body reserve a stable
@@ -377,7 +378,8 @@ export default function FindTimeDialog({
           </div>
         </div>
       </div>
-    </div>,
-    document.body,
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
   )
 }

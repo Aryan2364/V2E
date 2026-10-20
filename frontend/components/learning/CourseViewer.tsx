@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import {
   ArrowLeft, CheckCircle, Lock, Play, FileText, Link2, BookOpen,
@@ -15,6 +14,8 @@ import MaterialViewer from './MaterialViewer'
 import { toEmbeddableVideoUrl } from '@/lib/learning/video-embed'
 import LinkEmbed from './LinkEmbed'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
 
 const TYPE_ICONS: Record<ContentType, any> = {
   video: Play, file: FileIcon, document: FileText, url: Link2, article: BookOpen,
@@ -81,14 +82,6 @@ export default function CourseViewer({
     if (idx >= 0) openItem(items[idx], idx)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // Esc exits fullscreen
-  useEffect(() => {
-    if (!expanded) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setExpanded(false) }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [expanded])
 
   async function openItem(item: LearningItem, idx: number) {
     if (lockedAt(idx)) return
@@ -394,33 +387,19 @@ export default function CourseViewer({
       </div>
 
       {/* Fullscreen material overlay */}
-      {expanded && activeItem?.content_type === 'file' && fileView && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-70 bg-surface flex flex-col">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border-light shrink-0">
-            <div className="min-w-0 flex items-center gap-2">
-              <FileIcon size={16} className="text-primary-text shrink-0" />
-              <h3 className="text-label font-medium text-text-primary truncate">{activeItem.title}</h3>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {fileView.allow_download && onDownload && (
-                <button
-                  onClick={() => onDownload(activeItem.id)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
-                >
-                  <Download size={15} /> Download
-                </button>
-              )}
-              <Tooltip label="Exit fullscreen (Esc)">
-                <button
-                  onClick={() => setExpanded(false)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-label font-medium text-text-secondary bg-surface border border-border-light rounded-control hover:text-primary-text hover:border-primary transition-colors"
-                >
-                  <Minimize2 size={15} /> Exit
-                </button>
-              </Tooltip>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4">
+      {activeItem?.content_type === 'file' && fileView && (
+        <Dialog open={expanded} onOpenChange={(next) => { if (!next) setExpanded(false) }}>
+          <DialogContent
+            size="lg"
+            className="h-dvh max-h-dvh w-screen max-w-none rounded-none data-[size=lg]:max-w-none"
+          >
+            <DialogHeader>
+              <div className="min-w-0 flex items-center gap-2 pr-10">
+                <FileIcon size={16} className="shrink-0" />
+                <DialogTitle className="truncate">{activeItem.title}</DialogTitle>
+              </div>
+            </DialogHeader>
+            <DialogBody className="bg-surface-sunken">
             <MaterialViewer
               key={`${activeItem.id}-fs`}
               data={fileView}
@@ -429,9 +408,19 @@ export default function CourseViewer({
               pdfLoader={() => loadFile(activeItem.id)}
               fullscreen
             />
-          </div>
-        </div>,
-        document.body,
+            </DialogBody>
+            {fileView.allow_download && onDownload && (
+              <DialogFooter>
+                <Button variant="secondary" onClick={() => setExpanded(false)}>
+                  <Minimize2 size={15} /> Exit fullscreen
+                </Button>
+                <Button variant="primary" onClick={() => onDownload(activeItem.id)}>
+                  <Download size={15} /> Download
+                </Button>
+              </DialogFooter>
+            )}
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   )

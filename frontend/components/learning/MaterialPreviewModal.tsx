@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
 import {
-  X, Maximize2, Minimize2, Download, ExternalLink,
+  Maximize2, Minimize2, Download, ExternalLink,
   Play, FileText, Link2, BookOpen, File as FileIcon, Loader2,
 } from 'lucide-react'
 import {
@@ -15,6 +14,8 @@ import MaterialViewer from './MaterialViewer'
 import ItemTypeBadge from './ItemTypeBadge'
 import { toEmbeddableVideoUrl } from '@/lib/learning/video-embed'
 import Tooltip from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
 
 const TYPE_ICONS: Record<ContentType, any> = {
   video: Play,
@@ -25,10 +26,10 @@ const TYPE_ICONS: Record<ContentType, any> = {
 }
 
 /**
- * Click-to-open preview popup for a course material. Opens as a centered window
- * (Windows-style) with a maximize/restore toggle and a close X. File materials
- * render inline via MaterialViewer; article/video/url/document show their body
- * or an open-in-new-tab affordance. Portals to <body> and closes on Esc.
+ * Click-to-open preview dialog for a course material (kit Dialog), with a
+ * maximize/restore toggle in its header band. File materials render inline via
+ * MaterialViewer; article/video/url/document show their body or an
+ * open-in-new-tab affordance. Closes on Esc, the backdrop or the close button.
  */
 export default function MaterialPreviewModal({
   orgId,
@@ -57,82 +58,47 @@ export default function MaterialPreviewModal({
     return () => { cancelled = true }
   }, [orgId, pathId, item.id, item.content_type])
 
-  // Esc closes the popup.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
-  if (typeof document === 'undefined') return null
-
   const TypeIcon = TYPE_ICONS[item.content_type] ?? BookOpen
   const canDownload = item.content_type === 'file' && !!fileView?.allow_download
   const watermark = [user?.name, user?.email, new Date().toISOString().slice(0, 10)]
     .filter(Boolean)
     .join(' · ')
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-60 flex bg-black/50"
-      style={maximized ? undefined : { padding: '3vh 4vw' }}
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div
-        className={[
-          'bg-surface flex flex-col overflow-hidden shadow-2xl mx-auto w-full',
-          maximized ? 'rounded-none max-w-none' : 'rounded-card max-w-5xl',
-        ].join(' ')}
+  return (
+    <Dialog open onOpenChange={(next) => { if (!next) onClose() }}>
+      <DialogContent
+        size="lg"
+        className={
+          maximized
+            ? 'h-dvh max-h-dvh w-screen max-w-none rounded-none data-[size=lg]:max-w-none'
+            : 'h-[94dvh] max-h-[94dvh] data-[size=lg]:max-w-5xl'
+        }
       >
-        {/* Title bar */}
-        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border-light shrink-0 bg-surface">
-          <div className="min-w-0 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-control bg-surface-control flex items-center justify-center shrink-0">
-              <TypeIcon size={15} className="text-primary-text" />
-            </div>
+        <DialogHeader>
+          <div className="min-w-0 flex items-center gap-2.5 pr-10">
+            <TypeIcon size={18} className="shrink-0" />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-label font-medium text-text-primary truncate">{item.title}</h3>
+                <DialogTitle className="truncate">{item.title}</DialogTitle>
                 <ItemTypeBadge type={item.content_type} />
               </div>
-              {item.file_name && (
-                <p className="text-meta text-text-muted truncate">{item.file_name}</p>
-              )}
+              {item.file_name && <p className="truncate text-meta opacity-90">{item.file_name}</p>}
             </div>
           </div>
+          <Tooltip label={maximized ? 'Restore' : 'Maximize'}>
+            <Button
+              variant="on-brand"
+              size="icon"
+              className="absolute top-3 right-14"
+              onClick={() => setMaximized((m) => !m)}
+              aria-label={maximized ? 'Restore' : 'Maximize'}
+            >
+              {maximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+            </Button>
+          </Tooltip>
+        </DialogHeader>
 
-          <div className="flex items-center gap-1 shrink-0">
-            {canDownload && (
-              <button
-                onClick={() => downloadAdminItem(orgId, pathId, item.id)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 mr-1 text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
-              >
-                <Download size={14} /> Download
-              </button>
-            )}
-            <Tooltip label={maximized ? 'Restore' : 'Maximize'}>
-              <button
-                onClick={() => setMaximized((m) => !m)}
-                aria-label={maximized ? 'Restore' : 'Maximize'}
-                className="p-2 text-text-secondary hover:text-primary-text hover:bg-primary-subtle rounded-control transition-colors"
-              >
-                {maximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-              </button>
-            </Tooltip>
-            <Tooltip label="Close (Esc)">
-              <button
-                onClick={onClose}
-                aria-label="Close (Esc)"
-                className="p-2 text-text-secondary hover:text-danger hover:bg-danger-bg rounded-control transition-colors"
-              >
-                <X size={16} />
-              </button>
-            </Tooltip>
-          </div>
-        </div>
-
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-surface-sunken">
+        <DialogBody className="bg-surface-sunken sm:p-6">
           {item.description && (
             <p className="text-label text-text-secondary mb-4">{item.description}</p>
           )}
@@ -186,15 +152,13 @@ export default function MaterialPreviewModal({
                 <TypeIcon size={22} className="text-primary-text" />
               </div>
               <p className="text-label text-text-secondary break-all max-w-lg">{item.content_url}</p>
-              <a
-                href={item.content_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-label font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors"
+              <Button
+                variant="primary"
+                render={<a href={item.content_url} target="_blank" rel="noopener noreferrer" />}
               >
                 <ExternalLink size={15} />
-                Open {item.content_type === 'document' ? 'Document' : 'Link'}
-              </a>
+                Open {item.content_type === 'document' ? 'document' : 'link'}
+              </Button>
             </div>
           )}
 
@@ -204,9 +168,16 @@ export default function MaterialPreviewModal({
             && !item.content_url && (
             <p className="text-label text-text-muted text-center py-12">No content available for this material.</p>
           )}
-        </div>
-      </div>
-    </div>,
-    document.body,
+        </DialogBody>
+
+        {canDownload && (
+          <DialogFooter>
+            <Button variant="primary" onClick={() => downloadAdminItem(orgId, pathId, item.id)}>
+              <Download size={14} /> Download
+            </Button>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }

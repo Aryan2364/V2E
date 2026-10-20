@@ -1,9 +1,17 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog'
 
 /**
  * Asks before leaving a form with unsaved changes (kit §11.3 rule 10):
@@ -146,90 +154,45 @@ export function useUnsavedChangesGuard(
     go?.()
   }
 
-  // Escape is "Stay", like the backdrop.
-  useEffect(() => {
-    if (!pending) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        stay()
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [pending, stay])
-
   const canSave = !!save
   const title = words === 'create' ? 'Leave this workflow?' : 'Leave without saving?'
   const message = words === 'create' ? 'What you have entered will be lost.' : 'Your changes will be lost.'
 
-  const dialog =
-    pending && typeof document !== 'undefined'
-      ? createPortal(
-          <div className="fixed inset-0 z-(--z-dialog) flex items-center justify-center px-4 bg-backdrop" onClick={stay}>
-            <div
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="unsaved-title"
-              aria-describedby="unsaved-message"
-              className="bg-surface rounded-card w-full max-w-md sm:max-w-[540px] p-6 shadow-dialog"
-              onClick={(e) => e.stopPropagation()}
+  // The kit AlertDialog refuses Escape and the backdrop, so "Stay" is only ever an explicit press
+  // (and Android back, which the kit maps to Cancel).
+  const dialog = (
+    <AlertDialog
+      open={!!pending}
+      onOpenChange={(next) => {
+        if (!next) stay()
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{message}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          {/* A Close: pressing it fires onOpenChange(false) above, which is "Stay". */}
+          <AlertDialogCancel disabled={savingToLeave}>Stay</AlertDialogCancel>
+          <Button variant="danger" onClick={leave} disabled={savingToLeave}>
+            {words === 'create' && !canSave ? 'Leave' : 'Leave without saving'}
+          </Button>
+          {save && (
+            <Button
+              variant="primary"
+              // The safe choice takes the focus, so Enter keeps the work.
+              autoFocus
+              onClick={saveAndLeave}
+              loading={savingToLeave}
             >
-              <div className="flex items-start gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-danger-bg flex items-center justify-center shrink-0">
-                  <AlertTriangle size={20} className="text-danger" />
-                </div>
-                <div className="min-w-0">
-                  <h3 id="unsaved-title" className="text-card-heading font-medium text-text-primary">
-                    {title}
-                  </h3>
-                  <p id="unsaved-message" className="text-body text-text-secondary mt-1">
-                    {message}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3">
-                <button
-                  type="button"
-                  onClick={stay}
-                  disabled={savingToLeave}
-                  className="min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-body font-medium text-text-secondary hover:text-text-primary rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60"
-                >
-                  Stay
-                </button>
-                <button
-                  type="button"
-                  onClick={leave}
-                  disabled={savingToLeave}
-                  className={[
-                    'min-h-[44px] sm:min-h-[40px] px-4 whitespace-nowrap text-body font-medium rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60',
-                    // With a save on offer, leaving is the second choice: outlined danger.
-                    canSave
-                      ? 'bg-surface text-danger border border-danger-border hover:bg-danger-bg'
-                      : 'bg-danger text-on-danger hover:bg-danger-hover',
-                  ].join(' ')}
-                >
-                  {words === 'create' && !canSave ? 'Leave' : 'Leave without saving'}
-                </button>
-                {save && (
-                  <button
-                    type="button"
-                    // The safe choice takes the focus, so Enter keeps the work.
-                    autoFocus
-                    onClick={saveAndLeave}
-                    disabled={savingToLeave}
-                    className="inline-flex items-center justify-center gap-2 min-h-[44px] sm:min-h-[40px] px-6 whitespace-nowrap text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-control transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-primary-border"
-                  >
-                    {savingToLeave && <Loader2 size={15} className="animate-spin" />}
-                    {save.label}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )
-      : null
+              {save.label}
+            </Button>
+          )}
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
 
   return { dialog, disarm, confirmLeave }
 }

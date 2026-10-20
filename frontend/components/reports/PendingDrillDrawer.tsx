@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { X, ArrowLeft, ChevronRight, Inbox, ArrowUpDown } from 'lucide-react'
+import { X, ChevronRight, Inbox, ArrowUpDown } from 'lucide-react'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import type { AgeBucketKey, PendingTaskRow } from '@/lib/types/reports'
 import { fmtDate, fmtAsOn, OVER_MONTH_BUCKETS } from '@/lib/reports/ageing-format'
 import { useSort } from '@/lib/reports/use-sort'
@@ -37,15 +37,7 @@ export default function PendingDrillDrawer({
   onOpenTask: (taskId: string) => void
 }) {
   const [filter, setFilter] = useState<DrillFilter>(initial)
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
   useEffect(() => setFilter(initial), [initial])
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
 
   const rows = useMemo(() => {
     const bset = filter.buckets ? new Set(filter.buckets) : null
@@ -90,8 +82,6 @@ export default function PendingDrillDrawer({
   const heading = singlePerson ? filter.personName ?? 'Person' : singleTask ? filter.taskTitle! : 'All pending work'
   const sub = filter.bandLabel ?? (singlePerson || singleTask ? 'All pending work' : `${total} open ${total === 1 ? 'task' : 'tasks'}`)
 
-  if (!mounted) return null
-
   const clearPerson = () => setFilter((f) => ({ ...f, personId: null, personName: null }))
   const clearTask = () => setFilter((f) => ({ ...f, taskTitle: null }))
   const clearBand = () => setFilter((f) => ({ ...f, buckets: null, bandLabel: null }))
@@ -105,29 +95,15 @@ export default function PendingDrillDrawer({
     </th>
   )
 
-  return createPortal(
-    <div className="fixed inset-0 z-70">
-      <div className="absolute inset-0 bg-(--backdrop)" onClick={onClose} />
-      <aside className="absolute right-0 top-0 h-full w-full max-w-[760px] bg-surface shadow-dialog flex flex-col">
-        {/* Header */}
-        <div className="px-4 py-4 flex items-start justify-between border-b border-border-light shrink-0">
-          <div className="min-w-0 flex items-start gap-3">
-            <button
-              onClick={onClose}
-              className="mt-0.5 w-8 h-8 rounded-lg border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control shrink-0"
-              title="Back to grid"
-            >
-              <ArrowLeft size={16} />
-            </button>
-            <div className="min-w-0">
-              <div className="text-meta font-medium text-primary-text">{sub}</div>
-              <h3 className="text-section font-medium tracking-tight text-text-primary truncate">{heading}</h3>
-            </div>
+  return (
+    <Sheet open onOpenChange={(next) => { if (!next) onClose() }}>
+      <SheetContent side="right" className="flex flex-col p-0 data-[side=right]:sm:max-w-[760px]">
+        <SheetHeader>
+          <div className="min-w-0">
+            <div className="text-meta opacity-90">{sub}</div>
+            <SheetTitle className="truncate">{heading}</SheetTitle>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg border border-border-light flex items-center justify-center text-text-secondary hover:bg-surface-control shrink-0">
-            <X size={16} />
-          </button>
-        </div>
+        </SheetHeader>
 
         {/* Filter chips */}
         <div className="px-4 py-2.5 flex items-center gap-2 flex-wrap border-b border-border-light bg-surface-sunken shrink-0">
@@ -158,12 +134,12 @@ export default function PendingDrillDrawer({
               <thead className="sticky top-0 z-10 bg-surface-sunken shadow-card">
                 <tr className="text-left text-text-secondary">
                   {!singleTask && <SortTh id="title" label="Task" />}
-                  {!singlePerson && <SortTh id="assigned_to" label="Assigned To" />}
+                  {!singlePerson && <SortTh id="assigned_to" label="Assigned to" />}
                   <SortTh id="frequency" label="Frequency" />
-                  <SortTh id="assigned_by" label="Assigned By" />
-                  <SortTh id="due_date" label="Due Date" />
-                  <SortTh id="days_late" label="Days Late" className="text-right" />
-                  <th className="px-3 py-2.5 font-medium whitespace-nowrap">How Late</th>
+                  <SortTh id="assigned_by" label="Assigned by" />
+                  <SortTh id="due_date" label="Due date" />
+                  <SortTh id="days_late" label="Days late" className="text-right" />
+                  <th className="px-3 py-2.5 font-medium whitespace-nowrap">How late</th>
                   <th className="px-2 py-2.5 w-8" />
                 </tr>
               </thead>
@@ -206,9 +182,8 @@ export default function PendingDrillDrawer({
             </table>
           )}
         </div>
-      </aside>
-    </div>,
-    document.body,
+      </SheetContent>
+    </Sheet>
   )
 }
 
@@ -216,7 +191,7 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border pl-3 pr-1.5 py-1 text-meta font-medium text-text-primary max-w-[260px]">
       <span className="truncate">{label}</span>
-      <button onClick={onRemove} className="w-4 h-4 rounded-full flex items-center justify-center text-text-muted hover:bg-danger-bg hover:text-danger transition-colors shrink-0" title="Remove filter">
+      <button onClick={onRemove} aria-label={`Remove filter ${label}`} className="w-4 h-4 focus-visible:outline-2 focus-visible:outline-primary-ring rounded-full flex items-center justify-center text-text-muted hover:bg-danger-bg hover:text-danger transition-colors shrink-0" title="Remove filter">
         <X size={12} strokeWidth={3} />
       </button>
     </span>
