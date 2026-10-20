@@ -7,6 +7,9 @@ import DatePicker from '@/components/ui/DatePicker'
 import TimeField from '@/components/ui/TimeField'
 import { timeBlocksApi, type TimeBlock } from '@/lib/api/time-blocks'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 const labelClass = 'block text-body font-medium text-text-secondary mb-1.5'
 const inputClass =
@@ -81,14 +84,32 @@ export default function CreateTimeBlockModal({
     }
   }, [isOpen, initialStart, block])
 
+  // Field errors sit under the field that is wrong (kit 11.3 rule 6).
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; date?: string; time?: string }>({})
+  function failField(key: 'title' | 'date' | 'time', message: string, focusId: string) {
+    setFieldErrors({ [key]: message })
+    requestAnimationFrame(() => {
+      const el = document.getElementById(focusId)
+      ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+    })
+  }
+  const guarded = useGuardedClose({
+    open: isOpen,
+    values: { title, note, date, startTime, endTime },
+    noun: 'time block',
+    mode: isEditing ? 'edit' : 'create',
+    onClose,
+  })
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    if (!title.trim()) { setError('Give this block a name.'); return }
-    if (!date) { setError('Pick a date.'); return }
+    if (!title.trim()) return failField('title', 'Enter a name for the time block.', 'time-block-name')
+    if (!date) return failField('date', 'Choose the date of the time block.', 'time-block-date')
     const startAt = new Date(`${date}T${startTime}:00`)
     const endAt = new Date(`${date}T${endTime}:00`)
-    if (endAt <= startAt) { setError('End time must be after the start time.'); return }
+    if (endAt <= startAt) return failField('time', 'Choose an end time after the start time.', 'time-block-end')
+    setFieldErrors({})
     setBusy(true)
     try {
       const payload = { title: title.trim(), note: note.trim() || undefined, start_at: startAt.toISOString(), end_at: endAt.toISOString() }
@@ -98,7 +119,7 @@ export default function CreateTimeBlockModal({
       onSaved(saved)
       onClose()
     } catch {
-      setError('Could not save. Please try again.')
+      setError('Could not save the time block. Try again.')
     } finally {
       setBusy(false)
     }
@@ -112,13 +133,15 @@ export default function CreateTimeBlockModal({
       onDeleted?.()
       onClose()
     } catch {
-      setError('Could not delete. Please try again.')
+      setError('Could not delete the time block. Try again.')
       setBusy(false)
     }
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Edit time-block' : 'New time-block'} size="md" closeOnEscape={false}>
+    <>
+    {guarded.warning}
+    <Modal isOpen={isOpen} onClose={guarded.requestClose} title={isEditing ? 'Edit time block' : 'New time block'} size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
         {isGoogle ? (
           <div className="flex items-start gap-2 text-meta text-text-muted bg-surface-sunken border border-border-light rounded-[8px] px-3 py-2">
@@ -133,14 +156,16 @@ export default function CreateTimeBlockModal({
         )}
 
         <div>
-          <Label className="mb-2" required>Name</Label>
-          <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Dentist, Focus time, Lunch" autoFocus={!isEditing} />
+          <Label className="mb-2" htmlFor="time-block-name" required>Name</Label>
+          <input id="time-block-name" className={`${inputClass} aria-invalid:border-danger`} aria-invalid={fieldErrors.title ? true : undefined} value={title} onChange={(e) => { setTitle(e.target.value); setFieldErrors((p) => (p.title ? { ...p, title: undefined } : p)) }} placeholder="For example, Dentist" autoFocus={!isEditing} />
+          <InlineFieldError>{fieldErrors.title}</InlineFieldError>
         </div>
 
         <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-3">
           <div>
-            <Label className="mb-2" required>Date</Label>
-            <DatePicker value={date} onChange={setDate} placeholder="Select date" />
+            <Label className="mb-2" htmlFor="time-block-date" required>Date</Label>
+            <DatePicker id="time-block-date" invalid={!!fieldErrors.date} value={date} onChange={(v) => { setDate(v); setFieldErrors((p) => (p.date ? { ...p, date: undefined } : p)) }} placeholder="Select date" />
+            <InlineFieldError>{fieldErrors.date}</InlineFieldError>
           </div>
           <div>
             <Label className="mb-2">Start</Label>
@@ -148,16 +173,17 @@ export default function CreateTimeBlockModal({
           </div>
           <div>
             <Label className="mb-2">End</Label>
-            <TimeField value={endTime} onChange={setEndTime} />
+            <div id="time-block-end"><TimeField value={endTime} onChange={(t) => { setEndTime(t); setFieldErrors((p) => (p.time ? { ...p, time: undefined } : p)) }} /></div>
+            <InlineFieldError>{fieldErrors.time}</InlineFieldError>
           </div>
         </div>
 
         <div>
-          <Label className="mb-2">Note <span className="text-text-muted font-normal">(optional, private)</span></Label>
+          <Label className="mb-2">Private note</Label>
           <textarea className={`${inputClass} min-h-[64px] resize-y`} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything you want to remember" />
         </div>
 
-        {error && <p className="text-body text-danger">{error}</p>}
+        {error && <p role="alert" className="text-label text-danger">{error}</p>}
 
         {confirmDelete && (
           <div className="flex items-center justify-between gap-3 bg-danger-bg border border-danger-border rounded-[8px] px-3 py-2.5">
@@ -178,13 +204,12 @@ export default function CreateTimeBlockModal({
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2.5 text-body font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken">Cancel</button>
-            <button type="submit" disabled={busy} className="px-4 py-2.5 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50">
-              {busy ? 'Saving…' : isEditing ? 'Save changes' : 'Create time-block'}
-            </button>
+            <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={busy}>Cancel</Button>
+            <Button type="submit" loading={busy} loadingLabel="Saving" disabled={busy}>{isEditing ? 'Save time block' : 'Add time block'}</Button>
           </div>
         </div>
       </form>
     </Modal>
+    </>
   )
 }

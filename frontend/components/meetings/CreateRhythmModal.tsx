@@ -14,6 +14,8 @@ import SkipHolidaysField from './SkipHolidaysField'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
 import { DurationField } from './shared'
 import { Label } from '@/components/ui/label'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 const inputClass =
   'w-full border border-border rounded-[8px] px-3 py-2 text-[15px] text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary'
@@ -169,15 +171,33 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
     return () => { active = false }
   }, [isOpen, orgId])
 
+  // Field errors sit under the field that is wrong (kit 11.3 rule 6), never in a toast.
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; recurrence?: string }>({})
+  function failField(key: 'title' | 'recurrence', message: string, focusId: string) {
+    setFieldErrors({ [key]: message })
+    requestAnimationFrame(() => {
+      const el = document.getElementById(focusId)
+      ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+    })
+  }
+  const guarded = useGuardedClose({
+    open: isOpen,
+    values: { title, type, onlineLink, location, attendees, optional, agenda, durationMin, sched, skipHolidays },
+    noun: 'meeting',
+    mode: rhythm ? 'edit' : 'create',
+    onClose,
+  })
+
   function toggleOptional(id: string) { setOptional((o) => (o.includes(id) ? o.filter((x) => x !== id) : [...o, id])) }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!title.trim()) return addToast('Title is required', 'error')
-    if (sched.schedule_type === 'weekly' && sched.days.length === 0) return addToast('Pick at least one weekday', 'error')
-    if (sched.schedule_type === 'monthly' && sched.month_days.length === 0) return addToast('Pick at least one day of the month', 'error')
-    if (sched.schedule_type === 'yearly' && sched.yearly_dates.length === 0) return addToast('Pick at least one date', 'error')
-    if (!sched.start_date) return addToast('Pick a start date', 'error')
+    if (!title.trim()) return failField('title', 'Enter a title for the meeting.', 'rhythm-title')
+    if (sched.schedule_type === 'weekly' && sched.days.length === 0) return failField('recurrence', 'Choose at least one weekday.', 'rhythm-recurrence')
+    if (sched.schedule_type === 'monthly' && sched.month_days.length === 0) return failField('recurrence', 'Choose at least one day of the month.', 'rhythm-recurrence')
+    if (sched.schedule_type === 'yearly' && sched.yearly_dates.length === 0) return failField('recurrence', 'Choose at least one date.', 'rhythm-recurrence')
+    if (!sched.start_date) return failField('recurrence', 'Choose a start date.', 'rhythm-recurrence')
+    setFieldErrors({})
 
     const dto: CreateRhythmInput = {
       title: title.trim(),
@@ -208,22 +228,25 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
       const r = rhythm
         ? await meetingsApi.updateRhythm(orgId, rhythm.id, dto)
         : await meetingsApi.createRhythm(orgId, dto)
-      addToast(rhythm ? 'Rhythm updated' : 'Rhythm created', 'success')
+      addToast(rhythm ? 'Recurring meeting saved' : 'Recurring meeting added', 'success')
       onCreated(r)
       onClose()
     } catch (err: any) {
-      addToast(err?.response?.data?.message ?? (rhythm ? 'Failed to update rhythm' : 'Failed to create rhythm'), 'error')
+      addToast(err?.response?.data?.message ?? (rhythm ? 'Could not save the recurring meeting. Try again.' : 'Could not add the recurring meeting. Try again.'), 'error')
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Edit Rhythm' : 'New Rhythm'} size="lg" closeOnEscape={false}>
+    <>
+    {guarded.warning}
+    <Modal isOpen={isOpen} onClose={guarded.requestClose} title={isEditing ? 'Edit recurring meeting' : 'New recurring meeting'} size="lg">
       <form onSubmit={submit} className="flex flex-col gap-4">
         <div>
-          <Label className="mb-2" required>Title</Label>
-          <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Daily huddle, Thursday review" autoFocus />
+          <Label className="mb-2" htmlFor="rhythm-title" required>Title</Label>
+          <input id="rhythm-title" className={`${inputClass} aria-invalid:border-danger`} aria-invalid={fieldErrors.title ? true : undefined} value={title} onChange={(e) => { setTitle(e.target.value); setFieldErrors((p) => (p.title ? { ...p, title: undefined } : p)) }} placeholder="For example, Daily huddle" autoFocus />
+          <InlineFieldError>{fieldErrors.title}</InlineFieldError>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -274,7 +297,7 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
         {/* Recurrence — the SAME shared editor as recurring tasks and meetings */}
         <div>
           <Label className="mb-2" required>Recurrence</Label>
-          <div className="border border-border-light rounded-[12px] p-4">
+          <div id="rhythm-recurrence" tabIndex={-1} className="border border-border-light rounded-[12px] p-4">
             <ScheduleEntryRow
               entry={sched}
               index={0}
@@ -284,6 +307,7 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
             />
             <SkipHolidaysField orgId={orgId} sched={sched} value={skipHolidays} onChange={setSkipHolidays} />
           </div>
+          <InlineFieldError>{fieldErrors.recurrence}</InlineFieldError>
           <p className="mt-2 flex items-start gap-2 text-body text-primary-text font-medium bg-primary-subtle border border-primary-border rounded-[8px] px-3 py-2">
             <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
             <span>{recurrenceSummary(sched)}</span>
@@ -296,10 +320,11 @@ export default function CreateRhythmModal({ isOpen, onClose, orgId, people, onCr
         </div>
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-light">
-          <Button variant="secondary" type="button" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" type="submit" isLoading={saving} disabled={saving}>Create rhythm</Button>
+          <Button variant="secondary" type="button" onClick={guarded.requestClose}>Cancel</Button>
+          <Button variant="primary" type="submit" isLoading={saving} disabled={saving}>{isEditing ? 'Save meeting' : 'Add recurring meeting'}</Button>
         </div>
       </form>
     </Modal>
+    </>
   )
 }

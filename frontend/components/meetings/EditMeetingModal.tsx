@@ -12,6 +12,9 @@ import type { Meeting, MeetingType } from '@/lib/types/meetings'
 import MeetingAttendeeSelector, { type PersonOption } from './MeetingAttendeeSelector'
 import { DurationField } from './shared'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { InlineFieldError } from '@/components/ui/inline-field-error'
+import { useGuardedClose } from '@/lib/use-guarded-close'
 
 const labelClass = 'block text-body font-medium text-text-secondary mb-1.5'
 const inputClass =
@@ -66,10 +69,27 @@ export default function EditMeetingModal({
   const [optional, setOptional] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  // Field errors sit under the field that is wrong (kit 11.3 rule 6).
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; date?: string; time?: string }>({})
+  const clearErr = (k: 'title' | 'date' | 'time') => setFieldErrors((p) => (p[k] ? { ...p, [k]: undefined } : p))
+  function failField(key: 'title' | 'date' | 'time', message: string, focusId: string) {
+    setFieldErrors({ [key]: message })
+    requestAnimationFrame(() => {
+      const el = document.getElementById(focusId)
+      ;(el?.matches('input,textarea,button') ? el : el?.querySelector<HTMLElement>('input,button'))?.focus()
+    })
+  }
+  const guarded = useGuardedClose({
+    open: isOpen && !!meeting,
+    values: { title, type, onlineLink, onlinePassword, location, date, startTime, endTime, attendees, optional },
+    noun: 'meeting',
+    mode: 'edit',
+    onClose,
+  })
 
   useEffect(() => {
     if (!isOpen || !meeting) return
-    setError(''); setSaving(false)
+    setError(''); setFieldErrors({}); setSaving(false)
     setTitle(meeting.title)
     setType(meeting.type)
     setOnlineLink(meeting.online_link ?? '')
@@ -100,11 +120,12 @@ export default function EditMeetingModal({
     e.preventDefault()
     if (!meeting) return
     setError('')
-    if (!title.trim()) { setError('Give the meeting a title.'); return }
-    if (!date) { setError('Pick a date.'); return }
+    if (!title.trim()) return failField('title', 'Enter a title for the meeting.', 'edit-meeting-title')
+    if (!date) return failField('date', 'Choose the date of the meeting.', 'edit-meeting-date')
     const startAt = new Date(`${date}T${startTime}:00`)
     const endAt = new Date(`${date}T${endTime}:00`)
-    if (endAt <= startAt) { setError('End time must be after the start time.'); return }
+    if (endAt <= startAt) return failField('time', 'Choose an end time after the start time.', 'edit-meeting-end')
+    setFieldErrors({})
     setSaving(true)
     try {
       const dto: Record<string, unknown> = {
@@ -119,18 +140,20 @@ export default function EditMeetingModal({
         optional_user_ids: optional,
       }
       const updated = await meetingsApi.update(orgId, meeting.id, dto)
-      addToast('Meeting updated', 'success')
+      addToast('Meeting saved', 'success')
       onSaved(updated)
       onClose()
     } catch (err: any) {
-      setError(err?.response?.data?.message ?? 'Could not save. Please try again.')
+      setError(err?.response?.data?.message ?? 'Could not save the meeting. Try again.')
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Edit meeting" size="lg" closeOnEscape={false}>
+    <>
+    {guarded.warning}
+    <Modal isOpen={isOpen} onClose={guarded.requestClose} title="Edit meeting" size="lg">
       <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
         {isOccurrence && (
           <div className="flex items-start gap-2 text-meta text-primary-text bg-primary-subtle border border-primary-border rounded-[8px] px-3 py-2">
@@ -140,8 +163,9 @@ export default function EditMeetingModal({
         )}
 
         <div>
-          <Label className="mb-2" required>Title</Label>
-          <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
+          <Label className="mb-2" htmlFor="edit-meeting-title" required>Title</Label>
+          <input id="edit-meeting-title" className={`${inputClass} aria-invalid:border-danger`} aria-invalid={fieldErrors.title ? true : undefined} value={title} onChange={(e) => { setTitle(e.target.value); clearErr('title') }} autoFocus />
+          <InlineFieldError>{fieldErrors.title}</InlineFieldError>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -175,8 +199,9 @@ export default function EditMeetingModal({
 
         <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-3">
           <div>
-            <Label className="mb-2" required>Date</Label>
-            <DatePicker value={date} onChange={setDate} placeholder="Select date" />
+            <Label className="mb-2" htmlFor="edit-meeting-date" required>Date</Label>
+            <DatePicker id="edit-meeting-date" invalid={!!fieldErrors.date} value={date} onChange={(v) => { setDate(v); clearErr('date') }} placeholder="Select date" />
+            <InlineFieldError>{fieldErrors.date}</InlineFieldError>
           </div>
           <div>
             <Label className="mb-2">Start</Label>
@@ -184,7 +209,8 @@ export default function EditMeetingModal({
           </div>
           <div>
             <Label className="mb-2">End</Label>
-            <TimeField value={endTime} onChange={(t) => { setEndTime(t); setDurationMin(minutesBetween(startTime, t)) }} />
+            <div id="edit-meeting-end"><TimeField value={endTime} onChange={(t) => { setEndTime(t); setDurationMin(minutesBetween(startTime, t)); clearErr('time') }} /></div>
+            <InlineFieldError>{fieldErrors.time}</InlineFieldError>
           </div>
         </div>
 
@@ -199,15 +225,14 @@ export default function EditMeetingModal({
           <p className="text-meta text-text-muted mt-1">Everyone is on it by default. Toggle who’s optional.</p>
         </div>
 
-        {error && <p className="text-body text-danger">{error}</p>}
+        {error && <p role="alert" className="text-label text-danger">{error}</p>}
 
         <div className="flex items-center justify-end gap-2 pt-1 border-t border-border-light mt-1">
-          <button type="button" onClick={onClose} className="px-4 py-2.5 text-body font-medium text-text-secondary border border-border-light rounded-[8px] hover:bg-surface-sunken">Cancel</button>
-          <button type="submit" disabled={saving} className="px-4 py-2.5 text-body font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded-[8px] disabled:opacity-50">
-            {saving ? 'Saving…' : 'Save changes'}
-          </button>
+          <Button type="button" variant="secondary" onClick={guarded.requestClose} disabled={saving}>Cancel</Button>
+          <Button type="submit" loading={saving} loadingLabel="Saving" disabled={saving}>Save meeting</Button>
         </div>
       </form>
     </Modal>
+    </>
   )
 }
